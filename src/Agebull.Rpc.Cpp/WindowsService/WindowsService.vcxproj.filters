@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="生成的文件">
+      <UniqueIdentifier>{218684ed-fbff-4b7a-88a5-fc927b0b2d4c}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="sys">
+      <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd">
+      <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\server">
+      <UniqueIdentifier>{228defeb-1eeb-4db2-9ed7-f246534a35ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\sharp">
+      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\tson">
+      <UniqueIdentifier>{e756b97c-7436-4dff-a95d-28324bbb74f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\model">
+      <UniqueIdentifier>{6ebfb74e-f77f-415a-802d-6e860219ac51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\redis">
+      <UniqueIdentifier>{74d6ab0d-ffc5-4b5b-aecc-2f702db1d183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\lock">
+      <UniqueIdentifier>{d3ccf8b4-4895-49d1-b61f-6d4f79568b73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\log">
+      <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\cfg">
+      <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\debug">
+      <UniqueIdentifier>{70b5afd3-d398-460d-a9b4-6ca7e1477578}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MQ">
+      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsService_i.c">
+      <Filter>生成的文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\net_command_server.cpp">
+      <Filter>sys\net_cmd\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\net_request.cpp">
+      <Filter>sys\net_cmd\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp">
+      <Filter>sys\net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\net_command.cpp">
+      <Filter>sys\net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\zmq_monitor.cpp">
+      <Filter>sys\net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\redis\TransRedis.cpp">
+      <Filter>sys\redis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\SimpleEvent.cpp">
+      <Filter>sys\lock</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\log\mylogger.cpp">
+      <Filter>sys\log</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\cfg\config.cpp">
+      <Filter>sys\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\debug\StackWalker.cpp">
+      <Filter>sys\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\debug\TraceStack.cpp">
+      <Filter>sys\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\InnerTrade\MqCommand.cpp">
+      <Filter>MQ</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
+      <Filter>MQ</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MqCenter\WorkflowCommand.cpp">
+      <Filter>MQ</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MqCenter\WorkflowManager.cpp">
+      <Filter>MQ</Filter>
+    </ClCompile>
+    <ClCompile Include="RpcService.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\rpc\RpcManager.cpp">
+      <Filter>sys\net_cmd\server</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsService_i.h">
+      <Filter>生成的文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\boostinc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\stdinc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\tm_extend.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\net_request.h">
+      <Filter>sys\net_cmd\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\command_def.h">
+      <Filter>sys\net_cmd\sharp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\net_command.h">
+      <Filter>sys\net_cmd\sharp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\Tson\tson_def.h">
+      <Filter>sys\tson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\Tson\tson_deserializer.h">
+      <Filter>sys\tson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\Tson\tson_serializer.h">
+      <Filter>sys\tson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\mydecimal.h">
+      <Filter>sys\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\redis\redis.h">
+      <Filter>sys\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\redis\TransRedis.h">
+      <Filter>sys\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\SimpleEvent.h">
+      <Filter>sys\lock</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\log\mylogger.h">
+      <Filter>sys\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\cfg\config.h">
+      <Filter>sys\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\debug\StackWalker.h">
+      <Filter>sys\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\debug\TraceStack.h">
+      <Filter>sys\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\InnerTrade\MqCommand.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\redis\entity_redis.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MqCenter\WorkflowCommand.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MqCenter\WorkflowManager.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MqCenter\WorkItem.h">
+      <Filter>MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\rpc\rpc.h">
+      <Filter>sys\net_cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\rpc\RpcManager.h">
+      <Filter>sys\net_cmd\server</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WindowsService.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="WindowsService.rgs">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="WindowsService.idl">
+      <Filter>源文件</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

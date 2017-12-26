@@ -1,0 +1,18 @@
+// WindowsService.idl : WindowsService的 IDL 源
+//
+
+// 此文件将由 MIDL 工具处理以
+// 产生类型库(WindowsService.tlb)和封送处理代码。
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(24F23D84-B4B1-4ED9-BDB3-BBB93D88B292),
+	version(1.0),
+]
+library WindowsServiceLib
+{
+	importlib("stdole2.tlb");
+};
+
