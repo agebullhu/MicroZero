@@ -212,6 +212,7 @@
   <ItemGroup>
     <ClCompile Include="..\MqCenter\WorkflowCommand.cpp" />
     <ClCompile Include="..\MqCenter\WorkflowManager.cpp" />
+    <ClCompile Include="..\SharpCode\api\ApiRoute.cpp" />
     <ClCompile Include="..\SharpCode\cfg\config.cpp" />
     <ClCompile Include="..\SharpCode\debug\StackWalker.cpp" />
     <ClCompile Include="..\SharpCode\debug\TraceStack.cpp" />
@@ -252,6 +253,7 @@
     <ClInclude Include="..\MqCenter\WorkflowCommand.h" />
     <ClInclude Include="..\MqCenter\WorkflowManager.h" />
     <ClInclude Include="..\MqCenter\WorkItem.h" />
+    <ClInclude Include="..\SharpCode\api\ApiRoute.h" />
     <ClInclude Include="..\SharpCode\boostinc.h" />
     <ClInclude Include="..\SharpCode\cfg\config.h" />
     <ClInclude Include="..\SharpCode\debug\StackWalker.h" />
@@ -265,7 +267,7 @@
     <ClInclude Include="..\SharpCode\redis\entity_redis.h" />
     <ClInclude Include="..\SharpCode\redis\redis.h" />
     <ClInclude Include="..\SharpCode\redis\TransRedis.h" />
-    <ClInclude Include="..\SharpCode\rpc\rpc.h" />
+    <ClInclude Include="..\SharpCode\rpc\CRpcService.h" />
     <ClInclude Include="..\SharpCode\rpc\RpcManager.h" />
     <ClInclude Include="..\SharpCode\SimpleEvent.h" />
     <ClInclude Include="..\SharpCode\stdinc.h" />
@@ -286,6 +288,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config.json" />
     <None Include="WindowsService.rgs" />
   </ItemGroup>
   <ItemGroup>

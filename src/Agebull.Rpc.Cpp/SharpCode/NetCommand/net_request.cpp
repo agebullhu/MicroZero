@@ -94,7 +94,7 @@ namespace Agebull
 
 				if (!check_crc(ptr.m_command))
 				{
-					log_error1("接收到未法请求(%s),正在通知重发", m_address);
+					log_error1("接收到非法请求(%s),正在通知重发", m_address);
 					ptr->cmd_state = NET_COMMAND_STATE_ARGUMENT_INVALID;
 					write_crc(ptr.m_command);
 					zmq_result = zmq_send(socket, ptr.m_buffer, len, ZMQ_DONTWAIT);

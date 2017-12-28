@@ -1,6 +1,12 @@
 #include "config.h"
 #include "Psapi.h"
 
+#ifdef WIN32
+#include <direct.h>
+#else
+#include <unistd.h>  
+#endif
+
 std::map<std::string, std::string> config::m_cfg;
 
 
@@ -10,10 +16,12 @@ void config::init()
 	{
 		std::string path = "";
 		GetProcessFilePath(path);
-		path.append(".json");
+		path.append("\\config.json");
 		log_acl_msg(path.c_str());
 
 		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
+		if (fp == nullptr)
+			return;
 		char buf[1024];
 		int ret = 0;
 		acl::string cfg;
@@ -50,7 +58,6 @@ int config::get_int(const char * name)
 	return vl.empty() ? 0 : atoi(vl.c_str());
 }
 
-
 /* 功  能：获取指定进程所对应的可执行（EXE）文件全路径
 * 参  数：hProcess - 进程句柄。必须具有PROCESS_QUERY_INFORMATION 或者
 PROCESS_QUERY_LIMITED_INFORMATION 权限
@@ -59,6 +66,8 @@ PROCESS_QUERY_LIMITED_INFORMATION 权限
 */
 void GetProcessFilePath(OUT string& sFilePath)
 {
+#ifndef WIN32
+	
 	char tsFileDosPath[MAX_PATH + 1];
 	ZeroMemory(tsFileDosPath, sizeof(char)*(MAX_PATH + 1));
 
@@ -123,4 +132,8 @@ void GetProcessFilePath(OUT string& sFilePath)
 
 	delete[]pLogicDriveString;
 	delete[]pDosDriveName;
+#else
+	char buffer[MAX_PATH + 1];
+	sFilePath = _getcwd(buffer, MAX_PATH);
+#endif
 }

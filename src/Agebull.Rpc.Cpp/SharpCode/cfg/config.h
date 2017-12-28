@@ -1,4 +1,5 @@
 #pragma once
+#ifndef AGEBULL_CONFIG_H
 #include <stdinc.h>
 class config
 {
@@ -16,3 +17,4 @@ PROCESS_QUERY_LIMITED_INFORMATION 权限
 * 返回值：
 */
 void GetProcessFilePath(OUT string& sFilePath);
+#endif

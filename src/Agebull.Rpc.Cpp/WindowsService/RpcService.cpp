@@ -1,9 +1,15 @@
 // WindowsService.cpp : WinMain 的实现
 
+#include "stdafx.h"
+#include "rpc/CRpcService.h"
+#include "api/ApiRoute.h"
+#ifdef WIN32
+#include <direct.h>
+#else
+#include <unistd.h>  
+#endif
 
 #ifdef WINDOWS_SERVICE
-#include "stdafx.h"
-#include "rpc/rpc.h"
 
 #include "resource.h"
 #include "WindowsService_i.h"
@@ -189,5 +195,22 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
 	CRpcService::Initialize();
 	return _AtlModule.WinMain(nShowCmd);
 }
-
+#else
+int main(void)
+{
+	char buffer[MAX_PATH + 1];
+	char *p = _getcwd(buffer, MAX_PATH);
+	cout << p << endl;
+	CRpcService::Initialize();
+	CRpcService::Start();
+	ApiRoute route("test", "tcp://*:10001", "tcp://*:10002", "tcp://*:10000");
+	startRoute(route);
+	char c;
+	std::cout << endl << "启动完成，按任意键结束";
+	std::cin >> c;
+	CRpcService::Stop();
+	thread_sleep(1000);
+	std::cout << endl << "已关闭";
+	return 0;
+}
 #endif

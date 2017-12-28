@@ -1,4 +1,3 @@
-#ifdef WINDOWS_SERVICE
 
 
 /* this ALWAYS GENERATED file contains the IIDs and CLSIDs */
@@ -7,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Wed Dec 13 16:45:21 2017
+/* at Tue Dec 26 16:03:57 2017
  */
 /* Compiler settings for WindowsService.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
@@ -77,5 +76,4 @@ MIDL_DEFINE_GUID(IID, LIBID_WindowsServiceLib,0x24F23D84,0xB4B1,0x4ED9,0xBD,0xB3
 #endif
 
 
-#endif
 

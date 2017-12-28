@@ -47,9 +47,9 @@ Helper header file for example applications.
 //  Caller must free returned string. Returns NULL if the context
 //  is being terminated.
 static char *
-s_recv(void *socket) {
+s_recv(void *socket,size_t flag=0) {
 	char buffer[256];
-	int size = zmq_recv(socket, buffer, 255, 0);
+	int size = zmq_recv(socket, buffer, 255, flag);
 	if (size == -1)
 		return NULL;
 	buffer[size] = '\0';

@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 
-#ifdef CONSOLE
+#ifdef CONSOLE_TEST
 
 //
 // 使用LRU算法的装置
@@ -75,7 +75,11 @@ static DWORD worker_task(LPVOID arg)
 		char *request = s_recv(worker);      //3、获取 信息
 		cout << "``````````````````Worker:"<< identity << ",Client:" << address << ",Request:" << request << endl;
 		free(request);
-
+		if (strcmp(address, "Bye") == 0)
+		{
+			free(address);
+			break;
+		}
 		//封装消息
 		s_sendmore(worker, address);      //地址信封
 		s_sendmore(worker, "");              //空帧
@@ -88,8 +92,11 @@ static DWORD worker_task(LPVOID arg)
 }
 int client_nbr;
 int worker_nbr;
-DWORD route(LPVOID)
+
+
+DWORD route(LPVOID arg)
 {
+	auto name = static_cast<char*>(arg);
 
 	// 准备0MQ上下文和套接字
 	void *context = zmq_init(1);

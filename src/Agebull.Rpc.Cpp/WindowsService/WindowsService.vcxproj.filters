@@ -53,6 +53,9 @@
     <Filter Include="MQ">
       <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sys\api">
+      <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -111,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="..\SharpCode\rpc\RpcManager.cpp">
       <Filter>sys\net_cmd\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\api\ApiRoute.cpp">
+      <Filter>sys\api</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,11 +201,14 @@
     <ClInclude Include="..\MqCenter\WorkItem.h">
       <Filter>MQ</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\rpc\rpc.h">
-      <Filter>sys\net_cmd</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\rpc\RpcManager.h">
       <Filter>sys\net_cmd\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\rpc\CRpcService.h">
+      <Filter>sys\net_cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\api\ApiRoute.h">
+      <Filter>sys\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -214,6 +223,7 @@
     <None Include="WindowsService.rgs">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="config.json" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WindowsService.idl">

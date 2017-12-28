@@ -1,11 +1,10 @@
 
 
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
-#ifdef WINDOWS_SERVICE
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Wed Dec 13 16:45:21 2017
+/* at Tue Dec 26 16:03:57 2017
  */
 /* Compiler settings for WindowsService.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
@@ -70,7 +69,6 @@ EXTERN_C const IID LIBID_WindowsServiceLib;
 }
 #endif
 
-#endif
 #endif
 
 

@@ -384,7 +384,7 @@ void server_notify()
 			}
 			continue;
 		}
-		log_msg1("消息广播(%s)", cmd_call->cmd_identity);
+		log_msg2("消息广播(%s-%s)", cmd_call->cmd_identity, cmd_call->user_token);
 #ifdef _DEBUG
 		log_trace4(DEBUG_SUB, 3, "(%s)命令(%d)状态(%d)通知到%s", address, cmd_call->cmd_id, cmd_call->cmd_state, cmd_call->user_token);
 #endif
