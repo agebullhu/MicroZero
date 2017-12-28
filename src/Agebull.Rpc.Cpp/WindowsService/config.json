@@ -1,0 +1,7 @@
+{
+  "request_add": "tcp://*:9901",
+  "answer_add": "tcp://*:9902",
+  "notify_add": "tcp://*:9903",
+  "redis_add": "127.0.0.1:6379",
+  "defaultHost": "http://uat.yizuanbao.cn" 
+}

@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4B22F3C3-11A5-4063-BD7E-BEF91705CAFB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Yizuan.Service.ApiContract</RootNamespace>
+    <AssemblyName>Yizuan.Service.ApiContract</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;Monitor</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Yizuan.Service.ApiContract.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\Yizuan.Service.Fundtion\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NServiceKit.Redis, Version=1.0.20.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApiContract\ApiArgument\Argument.cs" />
+    <Compile Include="ApiContract\ApiArgument\PageArgument.cs" />
+    <Compile Include="ApiContract\ApiResult\ApiArrayResult.cs" />
+    <Compile Include="ApiContract\ApiResult\ApiPageResult.cs" />
+    <Compile Include="ApiContract\ApiResult\ApiResult.cs" />
+    <Compile Include="ApiContract\ApiResult\ApiStatsResult.cs" />
+    <Compile Include="ApiContract\ApiResult\ApiValueResult.cs" />
+    <Compile Include="ApiContract\ApiResult\IApiResult.cs" />
+    <Compile Include="ApiContract\ApiResult\IApiResultData.cs" />
+    <Compile Include="ApiContract\ApiResult\IApiStatusResult.cs" />
+    <Compile Include="ApiContract\ErrorCode.cs" />
+    <Compile Include="ApiContract\ApiArgument\IApiArgument.cs" />
+    <Compile Include="Auth\IBearValidater.cs" />
+    <Compile Include="Auth\ILoginUserInfo.cs" />
+    <Compile Include="Context\ApiContext.cs" />
+    <Compile Include="InternalCall\InternalCallContext.cs" />
+    <Compile Include="Logging.Log4\LocaleItem.cs" />
+    <Compile Include="Logging.Log4\Log4Recorder.cs" />
+    <Compile Include="Logging.Log4\LogContent.cs" />
+    <Compile Include="Logging.Log4\MyMessagePatternConverter.cs" />
+    <Compile Include="Logging.Log4\MyPatternLayout.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="log4.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Agebull.Extend\Agebull.Common.Extend.csproj">
+      <Project>{e204d26e-ea0a-4905-a53f-19bd92f405be}</Project>
+      <Name>Agebull.Common.Extend</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataEntity\Agebull.Common.DataEntity.csproj">
+      <Project>{0d626dda-02c0-4bd8-b2fd-efee0971510f}</Project>
+      <Name>Agebull.Common.DataEntity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ApiHelper\Yizuan.Service.Fundtion.csproj">
+      <Project>{178CC1E7-92C6-4613-9989-EF2951A89255}</Project>
+      <Name>Yizuan.Service.Fundtion</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>COPY $(TargetPath) "..\..\..\Lib\" /Y
+COPY $(ProjectDir)$(OutDir)$(TargetName).xml "..\..\..\Lib\" /Y
+COPY $(ProjectDir)$(OutDir)$(TargetName).pdb "..\..\..\Lib\" /Y</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
