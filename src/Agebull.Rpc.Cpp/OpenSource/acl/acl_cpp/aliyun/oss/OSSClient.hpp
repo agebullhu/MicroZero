@@ -1,7 +1,7 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "acl_cpp/acl_cpp_define.hpp"
 #include <list>
-#include "acl/acl_cpp/aliyun/oss/model/CORSRule.hpp"
+#include "acl_cpp/aliyun/oss/model/CORSRule.hpp"
 
 namespace acl
 {

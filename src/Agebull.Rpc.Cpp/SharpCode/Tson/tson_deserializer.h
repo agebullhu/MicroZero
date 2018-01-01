@@ -4,7 +4,7 @@
 #include "tson_def.h"
 
 #pragma unmanaged
-namespace Agebull
+namespace agebull
 {
 	namespace Tson
 	{

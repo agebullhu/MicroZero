@@ -218,6 +218,11 @@ inline acl::string read_first_from_redis(const char* key_fmt, TArg1 arg1, TArg2 
 	return read_first_from_redis(key);
 }
 
+inline int append_redis(const char* key,const char* value)
+{
+	return TransRedis::get_context()->append(key, value);
+}
+
 
 inline bool unlock_from_redis(const char* key)
 {

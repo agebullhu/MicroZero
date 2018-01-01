@@ -1,7 +1,7 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
-#include "acl/acl_cpp/stdlib/locker.hpp"
-#include "acl/acl_cpp/ipc/ipc_server.hpp"
+#include "../acl_cpp_define.hpp"
+#include "../stdlib/locker.hpp"
+#include "ipc_server.hpp"
 
 struct acl_pthread_pool_t;
 

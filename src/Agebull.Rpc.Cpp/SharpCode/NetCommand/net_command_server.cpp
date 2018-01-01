@@ -85,7 +85,6 @@ void server_request()
 		log_error2("构造SOCKET对象(%s)发生错误:%s", address, err);
 		return;
 	}
-	int zmq_result;
 	//zmq_result = zmq_socket_monitor(socket, "inproc://server_cmd.rep", ZMQ_EVENT_ALL);
 	//assert(zmq_result == 0);
 	int iZMQ_IMMEDIATE = 1;//列消息只作用于已完成的链接
@@ -96,7 +95,7 @@ void server_request()
 	zmq_setsockopt(socket, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(int));
 	int iSndTimeout = 500;
 	zmq_setsockopt(socket, ZMQ_SNDTIMEO, &iSndTimeout, sizeof(int));
-	zmq_result = zmq_bind(socket, address);
+	int zmq_result = zmq_bind(socket, address);
 	if (zmq_result < 0)
 	{
 		auto err = zmq_strerror(errno);

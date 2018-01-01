@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
+#include "../stdlib/acl_define.h"
 
  /* External interface. */
 
@@ -16,6 +16,8 @@ extern "C" {
  */
 ACL_API const char *acl_host_port(char *buf, char **host, char *def_host,
 		char **port, char *def_service);
+
+ACL_API struct addrinfo *acl_host_addrinfo(const char *addr, int type);
 
 #ifdef	__cplusplus
 }

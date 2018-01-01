@@ -55,7 +55,7 @@ s_recv(void *socket,size_t flag=0) {
 	buffer[size] = '\0';
 
 #if (defined (WIN32))
-	return strdup(buffer);
+	return _strdup(buffer);
 #else
 	return strndup(buffer, sizeof(buffer) - 1);
 #endif
@@ -66,14 +66,14 @@ s_recv(void *socket,size_t flag=0) {
 
 //  Convert C string to 0MQ string and send to socket
 static int
-s_send(void *socket, char *string) {
+s_send(void *socket, const  char *string) {
 	int size = zmq_send(socket, string, strlen(string), 0);
 	return size;
 }
 
 //  Sends string as 0MQ string, as multipart non-terminal
 static int
-s_sendmore(void *socket, char *string) {
+s_sendmore(void *socket,const char *string) {
 	int size = zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
 	return size;
 }

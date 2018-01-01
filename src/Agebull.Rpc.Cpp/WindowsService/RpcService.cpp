@@ -2,7 +2,8 @@
 
 #include "stdafx.h"
 #include "rpc/CRpcService.h"
-#include "api/ApiRoute.h"
+#include "NetCommand/NetStation.h"
+#include "NetCommand/NetDispatcher.h"
 #ifdef WIN32
 #include <direct.h>
 #else
@@ -196,21 +197,35 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
 	return _AtlModule.WinMain(nShowCmd);
 }
 #else
-int main(void)
+int main(int argc, char *argv[])
 {
+	//int i = 0;
+	//while (i < argc)
+	//	std::cout << argv[i++] << " ";
+	//std::cout << endl;
 	char buffer[MAX_PATH + 1];
 	char *p = _getcwd(buffer, MAX_PATH);
 	cout << p << endl;
+	agebull::zmq_net::StationWarehouse::clear();
 	CRpcService::Initialize();
 	CRpcService::Start();
-	ApiRoute route("test", "tcp://*:10001", "tcp://*:10002", "tcp://*:10000");
-	startRoute(route);
-	char c;
-	std::cout << endl << "启动完成，按任意键结束";
-	std::cin >> c;
+	while(get_net_state() == NET_STATE_RUNING)
+	{
+		std::cout << endl << "请输入操作命令(shutdown):";
+		char cmd[128];
+		std::cin >> cmd;
+		char arg[128];
+		std::cin >> arg;
+		//vector<string> SplitVec;
+		//boost::split(SplitVec, str, boost::is_any_of(" "), boost::token_compress_on);
+		//if(SplitVec.size() ==0)
+		//	continue;
+		std::cout << cmd << " " << arg << " ";
+		agebull::zmq_net::NetDispatcher::exec_command("", cmd, arg);
+	}
 	CRpcService::Stop();
-	thread_sleep(1000);
 	std::cout << endl << "已关闭";
+	thread_sleep(200);
 	return 0;
 }
 #endif

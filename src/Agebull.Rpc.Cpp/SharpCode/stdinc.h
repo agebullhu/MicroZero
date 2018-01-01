@@ -14,7 +14,6 @@
 #define CLIENT_COMMAND
 #endif
 #include "mydecimal.h"
-
 #include "zeromq/zmq.h"
 
 #include <cassert>
@@ -68,7 +67,7 @@ typedef unsigned int u_int;
 #include "acl.h"
 #include "boostinc.h"
 //线程中断
-#define thread_sleep(n) boost::this_thread::sleep(boost::posix_time::milliseconds(n));
+#define thread_sleep(n) boost::this_thread::sleep(boost::posix_time::milliseconds(n))
 //启动线程
 #define start_thread(func, args) \
 {\
@@ -82,7 +81,7 @@ inline HANDLE start_thread(LPTHREAD_START_ROUTINE func, LPVOID args)
 	return CreateThread(nullptr, 0, func, args, 0, &threadID); // 创建线程
 }
 //线程中断
-#define thread_sleep(n) Sleep(n);
+#define thread_sleep(n) Sleep(n)
 #endif
 
 #include "log/mylogger.h"

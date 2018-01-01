@@ -1,9 +1,9 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <map>
 #include <vector>
-#include "acl/acl_cpp/stdlib/string.hpp"
-#include "acl/acl_cpp/redis/redis_command.hpp"
+#include "../stdlib/string.hpp"
+#include "redis_command.hpp"
 
 namespace acl
 {
@@ -50,6 +50,14 @@ public:
 	 */
 	bool hmset(const char* key, const std::map<string, string>& attrs);
 	bool hmset(const char* key, const std::map<string, const char*>& attrs);
+	bool hmset(const char* key, const std::vector<string>& names,
+		const std::vector<string>& values);
+	bool hmset(const char* key, const std::vector<const char*>& names,
+		const std::vector<const char*>& values);
+	bool hmset(const char* key, const char* names[], const char* values[],
+		size_t argc);
+	bool hmset(const char* key, const char* names[], const size_t names_len[],
+		const char* values[], const size_t values_len[], size_t argc);
 
 	/////////////////////////////////////////////////////////////////////
 
@@ -168,8 +176,9 @@ public:
 	 * @param result {acl::string&} 存储查询结果值(内部对该 string 进行内容追加)
 	 *  store the value result of the given field
 	 * @return {bool} 返回值含义：
-	 *  true -- 成功获得对象的域字段值
-	 *          get the value associated with field
+	 *  true -- 操作成功，当result为空时表示 KEY 或字段域不存在
+	 *          get the value associated with field; if result is empty then
+	 *          the key or the name field doesn't exist
 	 *  false -- 域字段不存在或操作失败或该 key 对象非哈希对象
 	 *           the field not exists, or error happened,
 	 *           or the key isn't a hash key

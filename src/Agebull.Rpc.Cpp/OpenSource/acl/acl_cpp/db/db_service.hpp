@@ -1,8 +1,8 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <list>
-#include "acl/acl_cpp/ipc/ipc_service.hpp"
-#include "acl/acl_cpp/stdlib/string.hpp"
+#include "../ipc/ipc_service.hpp"
+#include "../stdlib/string.hpp"
 
 namespace acl {
 

@@ -1,8 +1,8 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <list>
-#include "acl/acl_cpp/db/db_handle.hpp"
-#include "acl/acl_cpp/connpool/connect_pool.hpp"
+#include "../db/db_handle.hpp"
+#include "../connpool/connect_pool.hpp"
 
 namespace acl {
 

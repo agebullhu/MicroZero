@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -70,8 +70,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\boost_1_62_0;$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>..\boost_1_62_0\stage\lib;..\lib;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(BOOSTLIB);..\lib;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>..\publish</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -81,6 +81,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(BOOSTLIB);..\lib;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -150,10 +152,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;SERVER;NOCLR;SysCmdArg;COMMANDPROXY;CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -173,10 +179,11 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -210,21 +217,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\MqCenter\WorkflowCommand.cpp" />
-    <ClCompile Include="..\MqCenter\WorkflowManager.cpp" />
-    <ClCompile Include="..\SharpCode\api\ApiRoute.cpp" />
     <ClCompile Include="..\SharpCode\cfg\config.cpp" />
     <ClCompile Include="..\SharpCode\debug\StackWalker.cpp" />
     <ClCompile Include="..\SharpCode\debug\TraceStack.cpp" />
-    <ClCompile Include="..\SharpCode\InnerTrade\MqCommand.cpp" />
     <ClCompile Include="..\SharpCode\log\mylogger.cpp" />
+    <ClCompile Include="..\SharpCode\NetCommand\ApiStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp" />
+    <ClCompile Include="..\SharpCode\NetCommand\NetDispatcher.cpp" />
+    <ClCompile Include="..\SharpCode\NetCommand\VoteStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\net_command.cpp" />
-    <ClCompile Include="..\SharpCode\NetCommand\net_command_server.cpp" />
-    <ClCompile Include="..\SharpCode\NetCommand\net_request.cpp" />
+    <ClCompile Include="..\sharpcode\NetCommand\BroadcastingStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\zmq_monitor.cpp" />
     <ClCompile Include="..\SharpCode\redis\TransRedis.cpp" />
-    <ClCompile Include="..\SharpCode\rpc\RpcManager.cpp" />
     <ClCompile Include="..\SharpCode\SimpleEvent.cpp" />
     <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -250,25 +254,23 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\MqCenter\WorkflowCommand.h" />
-    <ClInclude Include="..\MqCenter\WorkflowManager.h" />
-    <ClInclude Include="..\MqCenter\WorkItem.h" />
-    <ClInclude Include="..\SharpCode\api\ApiRoute.h" />
     <ClInclude Include="..\SharpCode\boostinc.h" />
     <ClInclude Include="..\SharpCode\cfg\config.h" />
     <ClInclude Include="..\SharpCode\debug\StackWalker.h" />
     <ClInclude Include="..\SharpCode\debug\TraceStack.h" />
-    <ClInclude Include="..\SharpCode\InnerTrade\MqCommand.h" />
     <ClInclude Include="..\SharpCode\log\mylogger.h" />
     <ClInclude Include="..\SharpCode\mydecimal.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\command_def.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\NetDispatcher.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\NetStation.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\VoteStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h" />
-    <ClInclude Include="..\SharpCode\NetCommand\net_request.h" />
+    <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h" />
     <ClInclude Include="..\SharpCode\redis\entity_redis.h" />
     <ClInclude Include="..\SharpCode\redis\redis.h" />
     <ClInclude Include="..\SharpCode\redis\TransRedis.h" />
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h" />
-    <ClInclude Include="..\SharpCode\rpc\RpcManager.h" />
     <ClInclude Include="..\SharpCode\SimpleEvent.h" />
     <ClInclude Include="..\SharpCode\stdinc.h" />
     <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h" />

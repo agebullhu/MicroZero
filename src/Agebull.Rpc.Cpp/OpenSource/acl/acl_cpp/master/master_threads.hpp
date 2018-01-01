@@ -1,8 +1,9 @@
 #pragma once
-#include "acl/acl_cpp/master/master_base.hpp"
+#include "master_base.hpp"
 
 struct ACL_VSTREAM;
 struct ACL_EVENT;
+struct ACL_VSTRING;
 
 namespace acl {
 
@@ -25,7 +26,7 @@ public:
 
 	/**
 	 * 在单独运行时的处理函数，用户可以调用此函数进行一些必要的调试工作
-	 * @param addrs {const char*} 服务监听地址列表，格式：IP:PORT, IP:PORT...
+	 * @param addrs {const char*} 监听地址列表，格式：IP:PORT, IP:PORT...
 	 * @param path {const char*} 配置文件全路径
 	 * @param count {unsigned int} 循环服务的次数，达到此值后函数自动返回；
 	 *  若该值为 0 则表示程序一直循环处理外来请求而不返回
@@ -34,7 +35,8 @@ public:
 	 *  且不会启动线程处理客户端请求
 	 * @return {bool} 监听是否成功
 	 *  注：count, threads_count 两个参数不再有效，将会使用配置文件中的
-	 *  配置值
+	 *  配置值 ioctl_use_limit(控制处理连接的个数) 及 ioctl_max_threads(
+	 *  控制启动的最大线程数)
 	 */
 	bool run_alone(const char* addrs, const char* path = NULL,
 		unsigned int count = 1, int threads_count = 1);
@@ -50,6 +52,12 @@ public:
 	 * @param stream {socket_stream*}
 	 */
 	void thread_disable_read(socket_stream* stream);
+
+	/**
+	 * 获得配置文件路径
+	 * @return {const char*} 返回值为 NULL 表示没有设配置文件
+	 */
+	const char* get_conf_path(void) const;
 
 protected:
 	// 该类不能直接被实例化
@@ -152,39 +160,26 @@ protected:
 	}
 
 private:
-	// 线程开始创建后的回调函数
-	static int thread_begin(void* arg);
-
-	// 线程结束运行前的回调函数
-	static void thread_finish(void* arg);
-
-	// 多线程情况下的处理函数
-	static void thread_run(void* arg);
-
-	// 仅运行一次
-	static void run_once(ACL_VSTREAM* client);
-
-	// 监听套被回调的函数
-	static void listen_callback(int event_type, ACL_EVENT*,
-		ACL_VSTREAM*, void *context);
-
-	//////////////////////////////////////////////////////////////////
+	void run(int argc, char** argv);
 
 	// 当接收到一个客户端连接时回调此函数
-	static int service_main(ACL_VSTREAM*, void*);
+	static int service_main(void*, ACL_VSTREAM*);
+
+	// 当监听一个服务地址时回调此函数
+	static void service_on_listen(void*, ACL_VSTREAM*);
 
 	// 当接收到一个客户连接时的回调函数，可以进行一些初始化
-	static int service_on_accept(ACL_VSTREAM*);
+	static int service_on_accept(void*, ACL_VSTREAM*);
 
 	// 当接收到客户端连接后服务端需要与客户端做一些事先的握手动作时
 	// 回调此函数，该函数会在 service_on_accept 之后被调用
-	static int service_on_handshake(ACL_VSTREAM*);
+	static int service_on_handshake(void*, ACL_VSTREAM*);
 
 	// 当客户端连接读写超时时的回调函数
-	static int service_on_timeout(ACL_VSTREAM*, void*);
+	static int service_on_timeout(void*, ACL_VSTREAM*);
 
 	// 当客户端连接关闭时的回调函数
-	static void service_on_close(ACL_VSTREAM*, void*);
+	static void service_on_close(void*, ACL_VSTREAM*);
 
 	// 当进程切换用户身份后调用的回调函数
 	static void service_pre_jail(void*);
@@ -193,7 +188,7 @@ private:
 	static void service_init(void*);
 
 	// 当进程需要退出时调用此函数，由应用来确定进程是否需要退出
-	static int service_exit_timer(size_t, size_t);
+	static int service_exit_timer(void*, size_t, size_t);
 
 	// 当进程退出时调用的回调函数
 	static void service_exit(void*);
@@ -203,6 +198,9 @@ private:
 
 	// 当线程退出前调用的回调函数
 	static void thread_exit(void*);
+
+	// 当进程收到 SIGHUP 信号后会回调本函数
+	static int service_on_sighup(void*, ACL_VSTRING*);
 };
 
 } // namespace acl

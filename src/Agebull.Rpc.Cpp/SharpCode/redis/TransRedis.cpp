@@ -20,7 +20,9 @@ int RedisDb = config::get_int("redis_defdb");
 */
 RedisDbScope::~RedisDbScope()
 {
-	TransRedis::get_context()->select(RedisDb);
+	TransRedis* context = TransRedis::get_current();
+	if (context != nullptr)
+		(*context)->select(RedisDb);
 }
 /**
 * @brief 生成当前线程上下文的事务Redis对象
@@ -42,6 +44,14 @@ TransRedis& TransRedis::get_context()
 {
 	open_context();
 	return *_context;
+}
+/**
+* @brief 取得当前线程上下文的事务Redis对象
+* @return 当前线程上下文的操作对象
+*/
+TransRedis* TransRedis::get_current()
+{
+	return _context;
 }
 /**
 * @brief 关闭当前线程上下文的事务Redis对象

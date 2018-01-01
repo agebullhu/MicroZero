@@ -12,7 +12,7 @@ const TRADECOMMAND_STATUS TRADECOMMAND_STATUS_ES_SERVER_OPEN_FAILURE = 1;
 //·þÎñÆ÷µÇÂ¼Ê§°Ü
 const TRADECOMMAND_STATUS TRADECOMMAND_STATUS_ES_LOGIN_FAILURE = 2;
 
-namespace Agebull
+namespace agebull
 {
 	namespace Rpc
 	{

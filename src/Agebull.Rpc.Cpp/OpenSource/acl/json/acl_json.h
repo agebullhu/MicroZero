@@ -5,12 +5,12 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
-#include "stdlib/acl_dbuf_pool.h"
-#include "stdlib/acl_iterator.h"
-#include "stdlib/acl_vstring.h"
-#include "stdlib/acl_ring.h"
-#include "stdlib/acl_array.h"
+#include "../stdlib/acl_define.h"
+#include "../stdlib/acl_dbuf_pool.h"
+#include "../stdlib/acl_iterator.h"
+#include "../stdlib/acl_vstring.h"
+#include "../stdlib/acl_ring.h"
+#include "../stdlib/acl_array.h"
 
 typedef struct ACL_JSON ACL_JSON;
 typedef struct ACL_JSON_NODE ACL_JSON_NODE;
@@ -86,6 +86,7 @@ struct ACL_JSON {
 	int   finish;               /**< 是否分析结束 */
 	unsigned flag;              /**< 标志位 */
 #define	ACL_JSON_FLAG_PART_WORD	(1 << 0)  /**< 是否兼容半个汉字 */
+#define ACL_JSON_FLAG_ADD_SPACE	(1 << 1)  /**< 创建 json 时是否添空格 */
 
 	/* public: for acl_iterator, 通过 acl_foreach 可以列出所有子节点 */
 

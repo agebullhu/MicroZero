@@ -6,6 +6,7 @@ extern "C" {
 #endif
 #include "acl_define.h"
 #include "acl_vstring.h"
+#include "acl_iterator.h"
 
 #define ACL_PRINT_CHAR(x)  \
 	((((x) >= 'a' && (x) <='z')  \
@@ -25,24 +26,46 @@ extern "C" {
 	|| (x) == '\'' || (x) == '"')  \
 	? (x) : '-')
 
-typedef struct ACL_TOKEN {
-	unsigned char  ch;
-	unsigned int  flag;
+typedef struct ACL_TOKEN ACL_TOKEN;
+
+struct ACL_TOKEN {
+	unsigned char     ch;
+	unsigned int      flag;
 #define ACL_TOKEN_F_NONE	0
 #define ACL_TOKEN_F_STOP	(1 << 0)
 #define ACL_TOKEN_F_PASS	(1 << 1)
 #define ACL_TOKEN_F_DENY	(1 << 2)
 #define ACL_TOKEN_F_UTF8	(1 << 3)
 
-#define ACL_TOKEN_WIDTH		255
+#define ACL_TOKEN_WIDTH		256
 	struct ACL_TOKEN *tokens[ACL_TOKEN_WIDTH];
 	struct ACL_TOKEN *parent;
-	const void *ctx;
-} ACL_TOKEN;
+	void             *ctx;
+
+	ACL_TOKEN *(*iter_head)(ACL_ITER*, ACL_TOKEN*);
+	ACL_TOKEN *(*iter_next)(ACL_ITER*, ACL_TOKEN*);
+};
+
+#define ACL_TOKEN_TREE_WORD_MATCH(acl_token_tree_in, word_in, acl_token_out) \
+{ \
+	const unsigned char *_ptr = (const unsigned char*) word_in; \
+	ACL_TOKEN *_token_iter = acl_token_tree_in, *_token = NULL; \
+	while (*_ptr) { \
+		_token = _token_iter->tokens[*_ptr]; \
+		if (_token == NULL) \
+			break; \
+		_token_iter = _token; \
+		_ptr++; \
+	} \
+	if (_token && (_token->flag & ACL_TOKEN_F_STOP)) \
+		acl_token_out = _token; \
+	else \
+		acl_token_out = NULL; \
+}
 
 #define ACL_TOKEN_TREE_MATCH(acl_token_tree_in, s_in, delim_in, delim_tab_in, acl_token_out) do  \
 {  \
-	const ACL_TOKEN *acl_token_iter = (acl_token_tree_in), *acl_token_tmp; \
+	ACL_TOKEN *acl_token_iter = (acl_token_tree_in), *acl_token_tmp; \
 	(acl_token_out) = NULL;  \
 	if (((const char*) delim_in)) {  \
 		int   _i;  \
@@ -114,25 +137,25 @@ ACL_API char *acl_token_delim_tab_new(const char *delim);
 ACL_API void acl_token_delim_tab_free(char *delim_tab);
 ACL_API ACL_TOKEN *acl_token_new(void);
 ACL_API void acl_token_free(ACL_TOKEN *token);
-ACL_API void acl_token_name(const ACL_TOKEN *token, ACL_VSTRING *buf);
-ACL_API const char *acl_token_name1(const ACL_TOKEN *token);
+ACL_API void acl_token_name(ACL_TOKEN *token, ACL_VSTRING *buf);
+ACL_API const char *acl_token_name1(ACL_TOKEN *token);
 ACL_API ACL_TOKEN *acl_token_tree_add(ACL_TOKEN *token_tree,
 	const char *word, unsigned int flag, const void *ctx);
 ACL_API ACL_TOKEN *acl_token_tree_add_word_map(ACL_TOKEN *token_tree,
 	const char *word, const char *word_map, unsigned int flag);
-ACL_API const ACL_TOKEN *acl_token_tree_word_match(const ACL_TOKEN *token_tree,
+ACL_API ACL_TOKEN *acl_token_tree_word_match(ACL_TOKEN *token_tree,
 	const char *word);
-ACL_API const ACL_TOKEN *acl_token_tree_match(const ACL_TOKEN *token_tree,
+ACL_API void acl_token_tree_word_remove(ACL_TOKEN *tree, const char *word);
+ACL_API ACL_TOKEN *acl_token_tree_match(ACL_TOKEN *token_tree,
 	const char **ptr, const char *delim, const char *delim_tab);
-ACL_API void acl_token_tree_walk(const ACL_TOKEN *token_tree,
-	void (*walk_fn)(const ACL_TOKEN*, void*), void *arg);
-ACL_API void acl_token_tree_print(const ACL_TOKEN *token_tree);
+ACL_API void acl_token_tree_walk(ACL_TOKEN *token_tree,
+	void (*walk_fn)(ACL_TOKEN*, void*), void *arg);
+ACL_API void acl_token_tree_print(ACL_TOKEN *token_tree);
 ACL_API ACL_TOKEN *acl_token_tree_create(const char *s);
 ACL_API ACL_TOKEN *acl_token_tree_create2(const char *s, const char *sep);
 ACL_API void acl_token_tree_destroy(ACL_TOKEN *token_tree);
 ACL_API void acl_token_tree_load_deny(const char *filepath, ACL_TOKEN *token_tree);
 ACL_API void acl_token_tree_load_pass(const char *filepath, ACL_TOKEN *token_tree);
-ACL_API void acl_token_tree_test(void);
 
 #ifdef __cplusplus
 }

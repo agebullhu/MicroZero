@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
+#include "../stdlib/acl_define.h"
+
 #ifdef ACL_UNIX
 
 extern int   acl_var_trigger_pid;		/* get by call getpid() */
@@ -25,7 +26,7 @@ extern int   acl_var_trigger_rw_timeout;
 extern int   acl_var_trigger_in_flow_delay;
 
 #define	ACL_VAR_TRIGGER_IDLE_LIMIT	"trigger_idle_limit"
-#define	ACL_DEF_TRIGGER_IDLE_LIMIT	180
+#define	ACL_DEF_TRIGGER_IDLE_LIMIT	0
 extern int   acl_var_trigger_idle_limit;
 
 #define	ACL_VAR_TRIGGER_QUEUE_DIR	"trigger_queue_dir"
@@ -53,7 +54,7 @@ extern int   acl_var_trigger_delay_usec;
 extern int   acl_var_trigger_daemon_timeout;
 
 #define	ACL_VAR_TRIGGER_USE_LIMIT	"trigger_use_limit"
-#define	ACL_DEF_TRIGGER_USE_LIMIT	10
+#define	ACL_DEF_TRIGGER_USE_LIMIT	0
 extern int   acl_var_trigger_use_limit;
 
 #define	ACL_VAR_TRIGGER_ENABLE_CORE	"trigger_enable_core"

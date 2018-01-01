@@ -23,9 +23,6 @@
     <Filter Include="sys\net_cmd">
       <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\server">
-      <UniqueIdentifier>{228defeb-1eeb-4db2-9ed7-f246534a35ae}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sys\net_cmd\sharp">
       <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
     </Filter>
@@ -50,11 +47,23 @@
     <Filter Include="sys\debug">
       <UniqueIdentifier>{70b5afd3-d398-460d-a9b4-6ca7e1477578}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MQ">
-      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sys\api">
+    <Filter Include="sys\net_cmd\api">
       <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\notify">
+      <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\vote">
+      <UniqueIdentifier>{1313c213-b967-4e11-871c-1af7c5c93720}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\base">
+      <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\dispatcher">
+      <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\net_cmd\MQ">
+      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,12 +72,6 @@
     </ClCompile>
     <ClCompile Include="WindowsService_i.c">
       <Filter>生成的文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharpCode\NetCommand\net_command_server.cpp">
-      <Filter>sys\net_cmd\server</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharpCode\NetCommand\net_request.cpp">
-      <Filter>sys\net_cmd\server</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp">
       <Filter>sys\net_cmd\sharp</Filter>
@@ -97,26 +100,23 @@
     <ClCompile Include="..\SharpCode\debug\TraceStack.cpp">
       <Filter>sys\debug</Filter>
     </ClCompile>
-    <ClCompile Include="..\SharpCode\InnerTrade\MqCommand.cpp">
-      <Filter>MQ</Filter>
-    </ClCompile>
     <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
-      <Filter>MQ</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MqCenter\WorkflowCommand.cpp">
-      <Filter>MQ</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MqCenter\WorkflowManager.cpp">
-      <Filter>MQ</Filter>
+      <Filter>sys\net_cmd\MQ</Filter>
     </ClCompile>
     <ClCompile Include="RpcService.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\SharpCode\rpc\RpcManager.cpp">
-      <Filter>sys\net_cmd\server</Filter>
+    <ClCompile Include="..\SharpCode\NetCommand\VoteStation.cpp">
+      <Filter>sys\net_cmd\vote</Filter>
     </ClCompile>
-    <ClCompile Include="..\SharpCode\api\ApiRoute.cpp">
-      <Filter>sys\api</Filter>
+    <ClCompile Include="..\SharpCode\NetCommand\ApiStation.cpp">
+      <Filter>sys\net_cmd\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\NetDispatcher.cpp">
+      <Filter>sys\net_cmd\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sharpcode\NetCommand\BroadcastingStation.cpp">
+      <Filter>sys\net_cmd\notify</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,9 +140,6 @@
     </ClInclude>
     <ClInclude Include="..\SharpCode\tm_extend.h">
       <Filter>sys</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\NetCommand\net_request.h">
-      <Filter>sys\net_cmd\server</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\command_def.h">
       <Filter>sys\net_cmd\sharp</Filter>
@@ -183,32 +180,29 @@
     <ClInclude Include="..\SharpCode\debug\TraceStack.h">
       <Filter>sys\debug</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\InnerTrade\MqCommand.h">
-      <Filter>MQ</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\redis\entity_redis.h">
-      <Filter>MQ</Filter>
+      <Filter>sys\net_cmd\MQ</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h">
-      <Filter>MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MqCenter\WorkflowCommand.h">
-      <Filter>MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MqCenter\WorkflowManager.h">
-      <Filter>MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MqCenter\WorkItem.h">
-      <Filter>MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\rpc\RpcManager.h">
-      <Filter>sys\net_cmd\server</Filter>
+      <Filter>sys\net_cmd\MQ</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h">
       <Filter>sys\net_cmd</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\api\ApiRoute.h">
-      <Filter>sys\api</Filter>
+    <ClInclude Include="..\SharpCode\NetCommand\VoteStation.h">
+      <Filter>sys\net_cmd\vote</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\NetStation.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h">
+      <Filter>sys\net_cmd\api</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\NetDispatcher.h">
+      <Filter>sys\net_cmd\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h">
+      <Filter>sys\net_cmd\notify</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

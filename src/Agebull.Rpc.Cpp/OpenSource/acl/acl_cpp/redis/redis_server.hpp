@@ -1,8 +1,8 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <map>
-#include "acl/acl_cpp/stdlib/string.hpp"
-#include "acl/acl_cpp/redis/redis_command.hpp"
+#include "../stdlib/string.hpp"
+#include "redis_command.hpp"
 
 namespace acl
 {

@@ -4,7 +4,7 @@
 #include <InnerTrade\MqCommand.h>
 typedef Agebull::Rpc::MqCommand CommandProxy;
 
-namespace Agebull
+namespace agebull
 {
 	namespace Rpc
 	{

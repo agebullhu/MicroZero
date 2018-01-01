@@ -7,12 +7,12 @@
 #include <unistd.h>  
 #endif
 
-std::map<std::string, std::string> config::m_cfg;
+std::map<std::string, std::string> config::m_machine_cfg;
 
 
 void config::init()
 {
-	if (m_cfg.empty())
+	if (m_machine_cfg.empty())
 	{
 		std::string path = "";
 		GetProcessFilePath(path);
@@ -30,34 +30,59 @@ void config::init()
 			cfg += buf;
 		}
 		acl_vstream_fclose(fp);
-
-		acl::json json;
-		json.update(cfg);
-		acl::json_node* iter = json.first_node();
-		while (iter)
-		{
-			if (iter->tag_name())
-			{
-				m_cfg.insert(std::make_pair(iter->tag_name(), iter->get_text()));
-			}
-			iter = json.next_node();
-		}
+		read(cfg, m_machine_cfg);
 	}
 }
 
+void config::read(acl::string& str, std::map<std::string, std::string>& cfg)
+{
+	cfg.clear();
+	acl::json json;
+	json.update(str);
+	acl::json_node* iter = json.first_node();
+	while (iter)
+	{
+		if (iter->tag_name())
+		{
+			cfg.insert(std::make_pair(iter->tag_name(), iter->get_text()));
+		}
+		iter = json.next_node();
+	}
+}
 std::string& config::get_config(const char * name)
 {
 	init();
-	return m_cfg[name];
+	return m_machine_cfg[name];
 }
 
 int config::get_int(const char * name)
+{
+	init();
+	auto vl = m_machine_cfg[name];
+	return vl.empty() ? 0 : atoi(vl.c_str());
+}
+
+bool config::boolean(const char * name)
+{
+	init();
+	auto vl = m_machine_cfg[name];
+	return !vl.empty() && _stricmp(vl.c_str(),"true");
+}
+int config::number(const char * name)
 {
 	init();
 	auto vl = m_cfg[name];
 	return vl.empty() ? 0 : atoi(vl.c_str());
 }
 
+config::config(const char* json)
+{
+	read(acl::string(json),m_cfg);
+}
+std::string& config::operator[](const char * name)
+{
+	return m_cfg[name];
+}
 /* 功  能：获取指定进程所对应的可执行（EXE）文件全路径
 * 参  数：hProcess - 进程句柄。必须具有PROCESS_QUERY_INFORMATION 或者
 PROCESS_QUERY_LIMITED_INFORMATION 权限

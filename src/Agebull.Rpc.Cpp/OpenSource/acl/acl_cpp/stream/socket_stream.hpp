@@ -1,10 +1,10 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #if defined(_WIN32) || defined(_WIN64)
 #include <WinSock2.h>
 #endif
-#include "acl/acl_cpp/stream/istream.hpp"
-#include "acl/acl_cpp/stream/ostream.hpp"
+#include "istream.hpp"
+#include "ostream.hpp"
 
 struct ACL_VSTREAM;
 
@@ -21,20 +21,22 @@ public:
 	/**
 	 * 根据套接字打开的一个网络流
 	 * @param fd 套接字
+	 * @param udp_mode {bool} 是否是 UDP 方式
 	 * @return {bool} 连接是否成功
 	 */
 #if defined(_WIN32) || defined(_WIN64)
-	bool open(SOCKET fd);
+	bool open(SOCKET fd, bool udp_mode = false);
 #else
-	bool open(int fd);
+	bool open(int fd, bool udp_mode = false);
 #endif
 
 	/**
 	 * 根据 ACL_VSTREAM 流打开网络流
 	 * @param vstream {ACL_VSTREAM*}
+	 * @param udp_mode {bool} 是否是 UDP 方式
 	 * @return {bool} 连接是否成功
 	 */
-	bool open(ACL_VSTREAM* vstream);
+	bool open(ACL_VSTREAM* vstream, bool udp_mode = false);
 
 	/**
 	 * 连接远程服务器并打开网络连接流
@@ -53,9 +55,28 @@ public:
 	 * 绑定本地 UDP 地址，创建 UDP 网络流对象
 	 * @param addr {const char*} 本机地址，格式：ip:port
 	 * @param rw_timeout {int} 读写超时时间(秒)
+	 * @param flag {unsigned}
 	 * @return {bool} 绑定是否成功
 	 */
-	bool bind_udp(const char* addr, int rw_timeout = 0);
+	bool bind_udp(const char* addr, int rw_timeout = 0, unsigned flag = 0);
+
+	/**
+	 * 关闭套接口读操作
+	 * @return {bool}
+	 */
+	bool shutdown_read(void);
+
+	/**
+	 * 关闭套接口写操作
+	 * @return {bool}
+	 */
+	bool shutdown_write(void);
+
+	/**
+	 * 关闭套接口读写操作
+	 * @return {bool}
+	 */
+	bool shutdown_readwrite(void);
 
 	/**
 	 * 获得网络连接流的套接字连接句柄
@@ -213,8 +234,8 @@ public:
 
 private:
 	char  dummy_[1];
-	char  peer_ip_[33];
-	char  local_ip_[33];
+	char  peer_ip_[256];
+	char  local_ip_[256];
 	const char* get_ip(const char* addr, char* buf, size_t size);
 };
 

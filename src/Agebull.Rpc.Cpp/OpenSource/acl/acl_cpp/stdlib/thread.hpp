@@ -1,4 +1,5 @@
 #pragma once
+#include "../acl_cpp_define.hpp"
 
 namespace acl
 {
@@ -73,6 +74,10 @@ public:
 	 * @return {unsigned long}
 	 */
 	static unsigned long thread_self();
+	static unsigned long self()
+	{
+		return thread_self();
+	}
 
 private:
 	bool detachable_;

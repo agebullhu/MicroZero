@@ -1,10 +1,10 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <list>
-#include "acl/acl_cpp/ipc/ipc_service.hpp"
-#include "acl/acl_cpp/stdlib/string.hpp"
-#include "acl/acl_cpp/stream/aio_handle.hpp"
-#include "acl/acl_cpp/stream/aio_delay_free.hpp"
+#include "../ipc/ipc_service.hpp"
+#include "../stream/aio_handle.hpp"
+#include "../stream/aio_delay_free.hpp"
+#include "string.hpp"
 
 namespace acl
 {

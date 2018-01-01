@@ -1,6 +1,6 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
-#include "acl/acl_cpp/stdlib/pipe_stream.hpp"
+#include "../acl_cpp_define.hpp"
+#include "pipe_stream.hpp"
 
 typedef struct z_stream_s z_stream;
 

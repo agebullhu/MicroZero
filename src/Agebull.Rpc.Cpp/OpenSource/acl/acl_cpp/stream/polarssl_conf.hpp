@@ -1,5 +1,6 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
+#include "../stdlib/thread_mutex.hpp"
 #include <vector>
 
 namespace acl
@@ -14,6 +15,8 @@ typedef enum
 	POLARSSL_VERIFY_OPT,	// 选择性校验，可以在握手时或握手后校验
 	POLARSSL_VERIFY_REQ	// 要求在握手时校验
 } polarssl_verify_t;
+
+class polarssl_io;
 
 /**
  * SSL 连接对象的配置类，该类对象一般可以声明为全局对象，用来对每一个 SSL
@@ -80,7 +83,23 @@ public:
 	 */
 	bool setup_certs(void* ssl, bool server_side);
 
+	/**
+	 * 必须首先调用此函数设置 libpolarssl.so 的全路径
+	 * @param path {const char*} libpolarssl.so 的全路径
+	 */
+	static void set_libpath(const char* path);
+
+	/**
+	 * 可以显式调用本方法，动态加载 polarssl 动态库
+	 */
+	static void load(void);
+
 private:
+	friend class polarssl_io;
+
+	bool has_inited_;
+	thread_mutex lock_;
+
 	void* entropy_;
 	void* cacert_;
 	void* pkey_;
@@ -88,6 +107,7 @@ private:
 	void* cache_;
 	polarssl_verify_t verify_mode_;
 
+	void init_once(void);
 	void free_ca();
 };
 

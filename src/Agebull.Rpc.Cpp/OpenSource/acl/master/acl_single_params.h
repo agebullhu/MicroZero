@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
+#include "../stdlib/acl_define.h"
+
 #ifdef ACL_UNIX
 
 extern int   acl_var_single_pid;	/* get by call getpid() */
@@ -29,7 +30,7 @@ extern int   acl_var_single_in_flow_delay;
  * connection (except queue manager).
  */
 #define	ACL_VAR_SINGLE_IDLE_LIMIT	"single_idle_limit"
-#define	ACL_DEF_SINGLE_IDLE_LIMIT	180
+#define	ACL_DEF_SINGLE_IDLE_LIMIT	0
 extern int   acl_var_single_idle_limit;
 
 #define	ACL_VAR_SINGLE_QUEUE_DIR	"single_queue_dir"
@@ -65,7 +66,7 @@ extern int   acl_var_single_daemon_timeout;
  * subsystem terminates (except queue manager).
  */
 #define	ACL_VAR_SINGLE_USE_LIMIT	"single_use_limit"
-#define	ACL_DEF_SINGLE_USE_LIMIT	10
+#define	ACL_DEF_SINGLE_USE_LIMIT	0
 extern int   acl_var_single_use_limit;
 
 #define	ACL_VAR_SINGLE_ENABLE_CORE	"single_enable_core"

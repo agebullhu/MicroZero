@@ -2,7 +2,7 @@
 #define _AGEBULL_TSON_H
 #pragma once
 //Type Serialize Object Notation
-namespace Agebull
+namespace agebull
 {
 	namespace Tson
 	{

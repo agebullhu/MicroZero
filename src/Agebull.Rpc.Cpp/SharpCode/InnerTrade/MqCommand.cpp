@@ -2,7 +2,7 @@
 #include "SysCmdArg/StringArgument.h"
 #include "redis/entity_redis.h"
 
-namespace Agebull
+namespace agebull
 {
 	namespace Rpc
 	{

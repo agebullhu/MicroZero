@@ -19,7 +19,7 @@ typedef uuid_t GUID;
 using namespace std;
 
 
-namespace Agebull
+namespace agebull
 {
 	namespace Rpc
 	{

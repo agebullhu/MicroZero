@@ -5,22 +5,21 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
-#include "stdlib/acl_vstream.h"
+#include "../stdlib/acl_define.h"
+#include "../stdlib/acl_vstream.h"
 
 /**
  * 监听某个地址（对于UNIX，还可以监听域套接字）
  * @param addr {const char*} 监听地址,
  *  如：127.0.0.1:80; 或域套接字(UNIX平台) 如：/tmp/test.sock
  * @param qlen {int} 监听队列的长度
- * @param block_mode {int} 是阻塞监听还是非阻塞监听, ACL_BLOCKING: 阻塞模式,
- *  ACL_NON_BLOCKING: 非阻塞模式
+ * @param flag {unsigned} 监听标志位，参见：ACL_INET_FLAG_XXX
  * @param bufsize {int} 接收的新的客户端套接字的IO缓冲区大小
  * @param rw_timeout {int} 接收的新的客户端套接字的IO读写超时时间，单位为秒
  * @return {ACL_VSTREAM*} 监听流指针
  */
 ACL_API ACL_VSTREAM *acl_vstream_listen_ex(const char *addr, int qlen,
-		int block_mode, int io_bufsize, int rw_timeout);
+		unsigned flag, int io_bufsize, int rw_timeout);
 
 /**
  * 监听某个地址（对于UNIX，还可以监听域套接字）
@@ -90,9 +89,10 @@ ACL_API ACL_VSTREAM *acl_vstream_connect(const char *addr, int block_mode,
  * @param addr {const char*} 本地 UDP 地址，格式：ip:port，可以输入地址 ip:0 来让
  *  操作系统自动分配本地端口号
  * @param rw_timeout {int} 读写超时时间(秒)
+ * @param flag {unsigned} 标志位
  * @return {ACL_VSTREAM*} 返回 NULL 表示绑定失败
  */
-ACL_API ACL_VSTREAM *acl_vstream_bind(const char *addr, int rw_timeout);
+ACL_API ACL_VSTREAM *acl_vstream_bind(const char *addr, int rw_timeout, unsigned flag);
 
 /**
  * 将网络流对象设置为 UDP IO 模式

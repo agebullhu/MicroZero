@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZmqNet.Rpc.Core", "ZmqNet\ZmqNetCore\ZmqNet.Rpc.Core.csproj", "{6E0309CA-32DF-4CF3-9865-9753186396F9}"
 EndProject
@@ -23,7 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpRoute", "HttpRoute", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZmqNet.Http.Route", "ZmqNet\HttpRoute\HttpRoute\ZmqNet.Http.Route.csproj", "{6BCD29DE-95EB-4FBE-95B5-53B6F85EE3D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpcTest", "test\RpcTest\RpcTest.csproj", "{AAC4FF96-B77A-42DE-BF05-064363D924D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RpcTest", "test\RpcTest\RpcTest.csproj", "{AAC4FF96-B77A-42DE-BF05-064363D924D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZmqPlan", "ZmqNet\ZmqPlan\ZmqPlan.csproj", "{95610DE7-477D-4B55-B756-06E5EF24E70A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,6 +117,18 @@ Global
 		{AAC4FF96-B77A-42DE-BF05-064363D924D1}.Release|x64.Build.0 = Release|Any CPU
 		{AAC4FF96-B77A-42DE-BF05-064363D924D1}.Release|x86.ActiveCfg = Release|Any CPU
 		{AAC4FF96-B77A-42DE-BF05-064363D924D1}.Release|x86.Build.0 = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|x64.Build.0 = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Debug|x86.Build.0 = Debug|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|x64.ActiveCfg = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|x64.Build.0 = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|x86.ActiveCfg = Release|Any CPU
+		{95610DE7-477D-4B55-B756-06E5EF24E70A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +141,7 @@ Global
 		{07C8CC71-D012-4E74-9D7F-E434BE9C153A} = {72F24744-3D23-4FC5-9C33-E50FDBEF9F6D}
 		{6BCD29DE-95EB-4FBE-95B5-53B6F85EE3D7} = {DDCA49A4-133B-44C4-99FE-8AAF3BA1D0F8}
 		{AAC4FF96-B77A-42DE-BF05-064363D924D1} = {077B94AA-9FAB-4BDA-BE34-3196AB3012CB}
+		{95610DE7-477D-4B55-B756-06E5EF24E70A} = {077B94AA-9FAB-4BDA-BE34-3196AB3012CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3D47F416-C560-4804-BF40-0A19335FDB7C}

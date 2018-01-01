@@ -1,10 +1,10 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
+#include "../acl_cpp_define.hpp"
 #include <map>
 #include <vector>
-#include "acl/acl_cpp/stdlib/string.hpp"
-#include "acl/acl_cpp/stream/socket_stream.hpp"
-#include "acl/acl_cpp/hsocket/hsproto.hpp"
+#include "../stdlib/string.hpp"
+#include "../stream/socket_stream.hpp"
+#include "../hsocket/hsproto.hpp"
 
 struct ACL_ARGV;
 

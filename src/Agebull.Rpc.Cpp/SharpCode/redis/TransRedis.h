@@ -49,6 +49,11 @@ public:
 	*/
 	static TransRedis& get_context();
 	/**
+	* @brief 取得当前线程上下文的事务Redis对象
+	* @return 当前线程上下文的操作对象
+	*/
+	static TransRedis* get_current();
+	/**
 	* @brief 生成当前线程上下文的事务Redis对象
 	*/
 	static void open_context();
@@ -357,7 +362,9 @@ public:
 	*/
 	~RedisLiveScope()
 	{
-		TransRedis::get_context().close_context();
+		TransRedis* context = TransRedis::get_current();
+		if(context != nullptr)
+			context->close_context();
 	}
 };
 /**
@@ -378,10 +385,13 @@ public:
 	*/
 	~RedisTransScope()
 	{
-		TransRedis::get_context().end_trans();
+		TransRedis* context = TransRedis::get_current();
+		if (context != nullptr)
+			context->end_trans();
 	}
 };
 
+#define REDIS_DB_NET_STATION 7//站点配置
 #define REDIS_DB_SYSTEM 6//系统
 #define REDIS_DB_TEMPLATE 5//模板
 #define REDIS_DB_CUSOMER 4//客户

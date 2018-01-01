@@ -6,8 +6,7 @@
 extern "C" {
 #endif
 
-#include "stdlib/acl_define.h"
-#ifdef ACL_UNIX
+#include "../stdlib/acl_define.h"
 
 extern int   acl_var_udp_pid;
 extern char *acl_var_udp_procname;
@@ -21,8 +20,12 @@ extern int   acl_var_udp_buf_size;
 #define	ACL_DEF_UDP_RW_TIMEOUT		30
 extern int   acl_var_udp_rw_timeout;
 
+#define ACL_VAR_UDP_USE_LIMIT		"udp_use_limit"
+#define ACL_DEF_UDP_USE_LIMIT		0
+extern long long int acl_var_udp_use_limit;
+
 #define	ACL_VAR_UDP_IDLE_LIMIT		"udp_idle_limit"
-#define	ACL_DEF_UDP_IDLE_LIMIT		180
+#define	ACL_DEF_UDP_IDLE_LIMIT		0
 extern int   acl_var_udp_idle_limit;
 
 #define	ACL_VAR_UDP_QUEUE_DIR		"udp_queue_dir"
@@ -73,7 +76,21 @@ extern char *acl_var_udp_log_debug;
 #define	ACL_DEF_UDP_MAX_DEBUG		1000
 extern int   acl_var_udp_max_debug;
 
-#endif /* ACL_UNIX */
+#define ACL_VAR_UDP_THREADS		"udp_threads"
+#define ACL_DEF_UDP_THREADS		1
+extern int   acl_var_udp_threads;
+
+#define ACL_VAR_UDP_THREADS_DETACHED	"udp_threads_detached"
+#define ACL_DEF_UDP_THREADS_DETACHED	1
+extern int   acl_var_udp_threads_detached;
+
+#define ACL_VAR_UDP_NON_BLOCK		"master_nonblock"
+#define ACL_DEF_UDP_NON_BLOCK		1
+extern int   acl_var_udp_non_block;
+
+#define ACL_VAR_UDP_REUSEPORT		"master_reuseport"
+#define ACL_DEF_UDP_REUSEPORT		1
+extern int   acl_var_udp_reuse_port;
 
 #ifdef	__cplusplus
 }

@@ -3,11 +3,19 @@
 #include <stdinc.h>
 class config
 {
-	static std::map<std::string, std::string> m_cfg;
+	static std::map<std::string, std::string> m_machine_cfg;
 	static void init();
 public:
 	static int get_int(const char * name);
 	static std::string& get_config(const char * name);
+private:
+	std::map<std::string, std::string> m_cfg;
+	static void read(acl::string& str, std::map<std::string, std::string>& cfg);
+public:
+	config(const char* json);
+	int number(const char * name);
+	bool boolean(const char * name);
+	std::string& operator[](const char * name);
 };
 
 /* 功  能：获取指定进程所对应的可执行（EXE）文件全路径

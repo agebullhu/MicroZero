@@ -1,7 +1,7 @@
 #pragma once
-#include "acl/acl_cpp/acl_cpp_define.hpp"
-#include "acl/acl_cpp/stdlib/string.hpp"
-#include "acl/acl_cpp/db/db_handle.hpp"
+#include "../acl_cpp_define.hpp"
+#include "../stdlib/string.hpp"
+#include "../db/db_handle.hpp"
 
 typedef struct sqlite3 sqlite3;
 
@@ -55,14 +55,14 @@ public:
 	 * 自数据库打开后所有的影响的记录行数
 	 * @return {int} 影响的行数，-1 表示出错
 	 */
-	int affect_total_count() const;
+	int affect_total_count(void) const;
 
 	/**
 	 * 直接获得 sqlite 的句柄，如果返回 NULL 则表示 sqlite 还没有打开
 	 * 或出错时内部自动关闭了 sqlite
 	 * @return {sqlite3*}
 	 */
-	sqlite3* get_conn() const
+	sqlite3* get_conn(void) const
 	{
 		return db_;
 	}
@@ -72,70 +72,69 @@ public:
 	/********************************************************************/
 
 	/**
-	 * 返回数据库的类型描述
-	 * @return {const char*}
+	 * @override
 	 */
-	const char* dbtype() const;
+	const char* dbtype(void) const;
 
 	/**
-	 * 获得上次数据库操作的出错错误号
-	 * @return {int}
+	 * @override
 	 */
-	int get_errno() const;
+	int get_errno(void) const;
 
 	/**
-	 * 获得上次数据库操作的出错错描述
-	 * @return {const char*}
+	 * @override
 	 */
-	const char* get_error() const;
+	const char* get_error(void) const;
 
 	/**
-	 * 基类 db_handle 的纯虚接口
-	 * @param charset {const char*} 打开数据库连接时采用的字符集，当该
-	 *  参数非空时将会覆盖构造函数中传入的字符集
-	 * @return {bool} 打开是否成功
+	 * @override
 	 */
 	bool dbopen(const char* charset = NULL);
 
 	/**
-	 * 基类 db_handle 的纯虚接口，数据库是否已经打开了
-	 * @return {bool} 返回 true 表明数据库已经打开了
+	 * @override
 	 */
-	bool is_opened() const;
+	bool is_opened(void) const;
 
 	/**
-	 * 基类 db_handle 的纯虚接口
-	 * @return {bool} 关闭是否成功
+	 * @override
 	 */
 	bool close(void);
 
 	/**
-	 * 基类 db_handle 的纯虚接口，子类必须实现此接口用于判断数据表是否存在
-	 * @return {bool} 是否存在
+	 * @override
 	 */
 	bool tbl_exists(const char* tbl_name);
 
 	/**
-	 * 基类 db_handle 的纯虚接口
-	 * @param sql {const char*} 标准的 SELECT SQL 语句，并且一定得要
-	 *  注意该 SQL 语句必须经过转义处理，以防止 SQL 注入攻击
-	 * @return {bool} 执行是否成功
+	 * @override
 	 */
-	bool sql_select(const char* sql);
+	bool sql_select(const char* sql, db_rows* result = NULL);
 
 	/**
-	 * 基类 db_handle 的纯虚接口
-	 * @param sql {const char*} 标准的 INSERT/UPDATE/DELETE SQL 语句，
-	 *  并且一定得要注意该 SQL 语句必须经过转义处理，以防止 SQL 注入攻击
-	 * @return {bool} 执行是否成功
+	 * @override
 	 */
 	bool sql_update(const char* sql);
 
 	/**
-	 * 基类 db_handle 的纯虚接口：上次 sql 操作影响的记录行数
-	 * @return {int} 影响的行数，-1 表示出错
+	 * @override
 	 */
-	int affect_count() const;
+	int affect_count(void) const;
+
+	/**
+	 * @override
+	 */
+	bool begin_transaction(void);
+
+	/**
+	 * @override
+	 */
+	bool commit(void);
+
+	/**
+	 * @override
+	 */
+	bool set_busy_timeout(int nMillisecs);
 
 private:
 	// sqlite 引擎
@@ -151,7 +150,7 @@ private:
 	string charset_;
 
 	// 真正执行SQL查询的函数
-	bool exec_sql(const char* sql);
+	bool exec_sql(const char* sql, db_rows* result = NULL);
 };
 
 } // namespace acl

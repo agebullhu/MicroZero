@@ -1,6 +1,6 @@
 #pragma once
 #ifndef RPC_MANAGER_H
-namespace Agebull
+namespace agebull
 {
 	namespace Rpc
 	{

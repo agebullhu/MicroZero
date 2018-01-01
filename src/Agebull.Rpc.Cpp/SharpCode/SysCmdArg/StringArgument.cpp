@@ -3,11 +3,11 @@
 #include "StringArgument.h"
 
 using namespace std;
-using namespace Agebull::Tson;
+using namespace agebull::Tson;
 
 #pragma unmanaged
 
-namespace Agebull
+namespace agebull
 {
     namespace Rpc
     {

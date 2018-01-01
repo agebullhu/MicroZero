@@ -7,9 +7,9 @@
 #include <stdafx.h>
 
 using namespace std;
-using namespace Agebull::Tson;
+using namespace agebull::Tson;
 
-namespace Agebull
+namespace agebull
 {
     namespace Rpc
     {

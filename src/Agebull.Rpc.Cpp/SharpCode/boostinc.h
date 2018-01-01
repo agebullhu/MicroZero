@@ -43,4 +43,5 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp> 
 #include <boost/unordered_map.hpp> 
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #endif
