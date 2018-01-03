@@ -107,9 +107,27 @@ namespace agebull
 			/**
 			* @brief 执行
 			*/
-			static void start(shared_ptr<ApiStation> netobj)
+			static void start(shared_ptr<ApiStation> arg)
 			{
-				station_run(netobj);
+				ApiStation* station = arg.get();
+				if (!StationWarehouse::join(station))
+				{
+					return;
+				}
+				if (station->_zmq_state == 0)
+					log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_out_address, station->_inner_address);
+				else
+					log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_out_address, station->_inner_address);
+				bool reStrart = station->poll();
+				StationWarehouse::left(station);
+				if (reStrart)
+				{
+					run(station->_station_name);
+				}
+				else
+				{
+					log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_out_address, station->_inner_address);
+				}
 			}
 		private:
 			/**

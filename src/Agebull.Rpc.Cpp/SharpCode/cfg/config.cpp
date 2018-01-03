@@ -17,7 +17,7 @@ void config::init()
 		std::string path = "";
 		GetProcessFilePath(path);
 		path.append("\\config.json");
-		log_acl_msg(path.c_str());
+		log_acl_trace(0,3,path.c_str());
 
 		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
 		if (fp == nullptr)

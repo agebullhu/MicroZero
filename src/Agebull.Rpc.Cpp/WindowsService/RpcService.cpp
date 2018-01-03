@@ -4,6 +4,7 @@
 #include "rpc/CRpcService.h"
 #include "NetCommand/NetStation.h"
 #include "NetCommand/NetDispatcher.h"
+#include "NetCommand/BroadcastingStation.h"
 #ifdef WIN32
 #include <direct.h>
 #else
@@ -197,8 +198,41 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
 	return _AtlModule.WinMain(nShowCmd);
 }
 #else
+#include<winsock2.h>  
+#pragma comment(lib,"ws2_32.lib") // 静态库  
+
+void getIPs()
+{
+	char hname[128];
+	gethostname(hname, sizeof(hname));
+	cout << "Host:" << hname << "  IP:";
+	struct addrinfo hint;
+	memset(&hint, 0, sizeof(hint));
+	hint.ai_family = AF_INET;
+	hint.ai_socktype = SOCK_STREAM;
+
+	addrinfo* info = nullptr;
+	char ipstr[16];
+	if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
+	{
+		addrinfo* now = info;
+		do
+		{
+			inet_ntop(AF_INET, &(((struct sockaddr_in *)(now->ai_addr))->sin_addr), ipstr, 16);
+			cout << ipstr << " ";
+			now = now->ai_next;
+		} while (now != nullptr);
+		freeaddrinfo(info);
+	}
+	cout << endl;
+}
+
 int main(int argc, char *argv[])
 {
+	getIPs();
+	//WORD v = MAKEWORD(1, 1);
+	//WSADATA wsaData;
+	//WSAStartup(v, &wsaData); // 加载套接字库    
 	//int i = 0;
 	//while (i < argc)
 	//	std::cout << argv[i++] << " ";
@@ -209,19 +243,20 @@ int main(int argc, char *argv[])
 	agebull::zmq_net::StationWarehouse::clear();
 	CRpcService::Initialize();
 	CRpcService::Start();
-	while(get_net_state() == NET_STATE_RUNING)
+	while (get_net_state() == NET_STATE_RUNING)
 	{
-		std::cout << endl << "请输入操作命令(shutdown):";
-		char cmd[128];
-		std::cin >> cmd;
-		char arg[128];
-		std::cin >> arg;
-		//vector<string> SplitVec;
-		//boost::split(SplitVec, str, boost::is_any_of(" "), boost::token_compress_on);
-		//if(SplitVec.size() ==0)
-		//	continue;
-		std::cout << cmd << " " << arg << " ";
-		agebull::zmq_net::NetDispatcher::exec_command("", cmd, arg);
+		std::cout << endl << "请输入操作命令(exit):";
+		string cmd;
+		getline(cin, cmd);
+		if (cmd.length() == 0)
+			break;
+		std::vector<string> cmdline;
+		// boost::is_any_of这里相当于分割规则了  
+		boost::split(cmdline, cmd, boost::is_any_of(" \n\r\t"));
+		if (cmdline.size() == 0)
+			break;
+		string result = agebull::zmq_net::NetDispatcher::exec_command(cmdline[0].c_str(), cmdline.size() > 1 ? cmdline[1].c_str() : "");
+		std::cout << result << endl;
 	}
 	CRpcService::Stop();
 	std::cout << endl << "已关闭";

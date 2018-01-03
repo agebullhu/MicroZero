@@ -17,8 +17,8 @@ namespace agebull
 			//boost::interprocess::interprocess_semaphore _semaphore;
 
 		public:
-			NetDispatcher(string name)
-				:NetStation(name, STATION_TYPE_DISPATCHER, ZMQ_REQ, -1, -1)
+			NetDispatcher()
+				:NetStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_REP, -1, -1)
 			{
 
 			}
@@ -29,13 +29,40 @@ namespace agebull
 			*/
 			static NetDispatcher* example;
 
+			/**
+			* @brief 暂停
+			*/
+			bool pause(bool waiting) override
+			{
+				return false;
+			}
+
+			/**
+			* @brief 继续
+			*/
+			bool resume(bool waiting)override
+			{
+				return false;
+			}
+
+			/**
+			* @brief 结束
+			*/
+			bool close(bool waiting)override
+			{
+				return false;
+			}
 		public:
 			/**
 			*消息泵
 			*/
 			static void start()
 			{
-				StationWarehouse::join(example);
+				if (!StationWarehouse::join(example))
+				{
+					delete example;
+					return;
+				}
 				if (example->_zmq_state == 0)
 					log_msg3("%s(%s | %s)正在启动", example->_station_name, example->_out_address, example->_inner_address);
 				else
@@ -44,54 +71,52 @@ namespace agebull
 				StationWarehouse::left(example);
 				if (reStrart)
 				{
-					example = new NetDispatcher(example->_station_name);
+					delete example;
+					example = new NetDispatcher();
 					example->_zmq_state = -1;
 					boost::thread thrds_s(boost::bind(start));
 				}
 				else
 				{
 					log_msg3("%s(%s | %s)已关闭", example->_station_name, example->_out_address, example->_inner_address);
+					delete example;
+					example = nullptr;
 				}
 			}
 
 			/**
 			* 运行一个广播线程
 			*/
-			static void run(const char* name)
+			static void run()
 			{
 				if (example != nullptr)
 				{
 					return;
 				}
-				example = new NetDispatcher(name);
+				example = new NetDispatcher();
 				boost::thread thrds_s(boost::bind(start));
 			}
 
 			/**
-			*消息泵
-			*/
-			static bool send_result(string caller, string state);
-
-			/**
 			* @brief 开始执行一条命令
 			*/
-			void command_start(const char* caller, vector< string> lines)
+			void command_start(const  char* caller, vector<string> lines)
 			{
-				exec_command(caller, lines[0].c_str(), lines[1].c_str());
+				exec_command(lines[0].c_str(), lines[1].c_str());
 			}
 			/**
 			* @brief 结束执行一条命令
 			*/
-			void command_end(const char* caller, vector< string> lines)
+			void command_end(const  char* caller, vector<string> lines)
 			{
-				send_result(caller, lines[0]);
+				//send_result(lines[0]);
 			}
 		private:
 
 			/**
 			* @brief 处理反馈
 			*/
-			virtual void response()
+			virtual void response()override
 			{
 
 			}
@@ -103,35 +128,40 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			virtual void heartbeat()
+			virtual void heartbeat()override
 			{
 
 			}
 		public:
 			/**
-			* @brief 暂停站点
+			* @brief 站点安装
 			*/
-			static void pause_station(string caller, string stattion);
+			static string install_station(int type, string stattion);
 			/**
-			* @brief 继续站点
+			* @brief 取机器信息
 			*/
-			static void resume_station(string caller, string stattion);
+			static string host_info(string stattion);
 			/**
 			*  @brief 启动站点
 			*/
-			static void start_station(string caller, string stattion);
+			static string start_station(string stattion);
+			/**
+			* @brief 暂停站点
+			*/
+			static string pause_station(string stattion);
+			/**
+			* @brief 继续站点
+			*/
+			static string resume_station(string stattion);
 			/**
 			* @brief 关闭站点
 			*/
-			static void close_station(string caller, string stattion);
+			static string close_station(string stattion);
 			/**
 			* @brief 执行命令
 			*/
-			static void exec_command(const char* client_addr, const  char* command, const  char* argument);
-			/**
-			* @brief 关闭所有站点
-			*/
-			static void shutdown(string caller, string stattion);
+			static string exec_command(const char* command, const  char* argument);
+
 		};
 	}
 }

@@ -3,6 +3,7 @@
 #include "debug/TraceStack.h"
 #include "ApiStation.h"
 #include "BroadcastingStation.h"
+#include "NetDispatcher.h"
 using namespace std;
 
 ZMQ_HANDLE net_context;
@@ -31,6 +32,11 @@ void set_command_thread_end()
 NET_STATE get_net_state()
 {
 	return net_state;
+}
+//运行状态
+void set_net_state(NET_STATE state)
+{
+	net_state= state;
 }
 //#ifdef COMMANDPROXY
 //CommandProxy* proxy = new CommandProxy();
@@ -61,6 +67,9 @@ int start_net_command()
 	log_msg("正在启动网络命令环境...");
 	net_state = NET_STATE_RUNING;
 
+	agebull::zmq_net::NetDispatcher::run();
+	agebull::zmq_net::SystemMonitorStation::run();
+
 	int cnt = agebull::zmq_net::StationWarehouse::restore();
 
 	while (command_thread_count < cnt)
@@ -70,13 +79,15 @@ int start_net_command()
 }
 
 //关闭网络命令环境
-void close_net_command()
+void close_net_command(bool wait)
 {
+	thread_sleep(10);
+
 	log_msg("正在关闭网络命令环境...");
 	if (net_state != NET_STATE_RUNING)
 		return;
 	net_state = NET_STATE_CLOSING;
-	while (command_thread_count > 0)
+	while (wait && command_thread_count > 0)
 		thread_sleep(10);
 	net_state = NET_STATE_CLOSED;
 	log_msg("网络命令环境已关闭");

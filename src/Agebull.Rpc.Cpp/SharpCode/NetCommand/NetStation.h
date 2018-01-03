@@ -4,9 +4,10 @@
 #include <zeromq/zhelpers.h>
 
 #define STATION_TYPE_DISPATCHER 1
-#define STATION_TYPE_API 2
-#define STATION_TYPE_VOTE 3
-#define STATION_TYPE_PUBLISH 4
+#define STATION_TYPE_MONITOR 2
+#define STATION_TYPE_API 3
+#define STATION_TYPE_VOTE 4
+#define STATION_TYPE_PUBLISH 5
 
 namespace agebull
 {
@@ -93,6 +94,7 @@ namespace agebull
 		*/
 		class NetStation
 		{
+			acl::string _config;
 			friend StationWarehouse;
 		protected:
 			/**
@@ -152,8 +154,6 @@ namespace agebull
 			* @brief 当前ZMQ执行状态
 			*/
 			int _zmq_state;
-
-		public:
 			/**
 			* @brief API服务名称
 			*/
@@ -162,6 +162,64 @@ namespace agebull
 			* @brief 当前站点状态
 			*/
 			station_state _station_state;
+		public:
+			const char* get_config()
+			{
+				return _config.c_str();
+			}
+			/**
+			* @brief 当前ZMQ执行状态
+			*/
+			int get_zmq_state() const
+			{
+				return _zmq_state;
+			}
+			/**
+			* @brief API服务名称
+			*/
+			int get_station_type() const
+			{
+				return _station_type;
+			}
+			/**
+			* @brief 当前站点状态
+			*/
+			station_state get_station_state() const
+			{
+				return _station_state;
+			}
+			/**
+			* @brief API服务名称
+			*/
+			const string& get_station_name() const
+			{
+				return _station_name;
+			}
+
+			/**
+			* @brief 外部地址
+			*/
+			const string& get_out_address()const
+			{
+				return _out_address;
+			}
+
+			/**
+			* @brief 工作地址
+			*/
+			const	string& get_inner_address()const
+			{
+				return _inner_address;
+			}
+
+			/**
+			* @brief 心跳地址
+			*/
+			const string& get_heart_address()const
+			{
+				return _heart_address;
+			}
+		public:
 
 			/**
 			* @brief 构造
@@ -176,12 +234,12 @@ namespace agebull
 				close(true);
 				_station_state = station_state::Destroy;
 			}
-
-		protected:
 			/**
 			* @brief 网络循环
 			*/
 			bool poll();
+
+		protected:
 			/**
 			* @brief 处理反馈
 			*/
@@ -194,7 +252,7 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			virtual void heartbeat() =0;
+			virtual void heartbeat() = 0;
 		protected:
 			/**
 			 * @brief 接收空帧
@@ -208,8 +266,7 @@ namespace agebull
 			*/
 			bool can_do() const
 			{
-				return (_station_state == station_state::Run || _station_state == station_state::Pause) &&
-					get_net_state() == NET_STATE_RUNING;
+				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() == NET_STATE_RUNING;
 			}
 			/**
 			* @brief 检查是否暂停
@@ -229,7 +286,7 @@ namespace agebull
 			/**
 			* @brief 暂停
 			*/
-			bool pause(bool waiting)
+			virtual bool pause(bool waiting)
 			{
 				if (station_state::Run != _station_state)
 					return false;
@@ -240,7 +297,7 @@ namespace agebull
 			/**
 			* @brief 继续
 			*/
-			bool resume(bool waiting)
+			virtual bool resume(bool waiting)
 			{
 				if (station_state::Pause != _station_state)
 					return false;
@@ -252,7 +309,7 @@ namespace agebull
 			/**
 			* @brief 结束
 			*/
-			bool close(bool waiting)
+			virtual bool close(bool waiting)
 			{
 				if (!can_do())
 					return false;
@@ -269,6 +326,7 @@ namespace agebull
 			* @brief 结束执行一条命令
 			*/
 			virtual void command_end(const char* caller, vector< string> lines) = 0;
+
 		};
 
 		/**
@@ -308,7 +366,7 @@ namespace agebull
 			/**
 			* @brief 工作对象退出
 			*/
-			virtual void worker_left(char* addr) ;
+			virtual void worker_left(char* addr);
 
 			/**
 			* @brief 工作对象加入
@@ -331,15 +389,15 @@ namespace agebull
 		inline NetStation::NetStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 			: _state_semaphore(1)
 			, _station_name(name)
-			, _station_type(type)
 			, _out_socket(nullptr)
 			, _inner_socket(nullptr)
 			, _heart_socket(nullptr)
 			, _out_zmq_type(out_zmq_type)
 			, _inner_zmq_type(inner_zmq_type)
 			, _heart_zmq_type(heart_zmq_type)
-			, _station_state(station_state::None)
 			, _zmq_state(0)
+			, _station_type(type)
+			, _station_state(station_state::None)
 		{
 		}
 
@@ -399,14 +457,18 @@ namespace agebull
 				// 处理_inner_socket中inner的队列
 				if (items[0].revents & ZMQ_POLLIN)
 				{
-					response();
+					request();
 				}
 
 				if (cnt > 1 && items[1].revents & ZMQ_POLLIN)
 				{
-					request();
+					response();
 				}
 
+				if (cnt > 1 && items[1].revents & ZMQ_POLLOUT)
+				{
+					response();
+				}
 				if (cnt > 2 && items[2].revents & ZMQ_POLLIN)
 				{
 					heartbeat();
@@ -509,7 +571,6 @@ namespace agebull
 		}
 
 
-		//开始线程的宏
 #define station_run(station)\
 			if(!StationWarehouse::join(station.get()))\
 				return;\

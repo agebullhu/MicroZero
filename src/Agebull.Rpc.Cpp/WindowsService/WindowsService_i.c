@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Mon Jan 01 16:01:25 2018
+/* at Wed Jan 03 13:55:29 2018
  */
 /* Compiler settings for WindowsService.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 

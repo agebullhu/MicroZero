@@ -1,7 +1,11 @@
 ﻿using Agebull.Zmq.Rpc;
 using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Gboxt.Common.DataModel;
+using NetMQ;
+using NetMQ.Sockets;
 using Newtonsoft.Json;
 using Yizuan.Service.Api;
 
@@ -11,19 +15,128 @@ namespace RpcTest
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-
-            RouteRpc.Run();
-            string msg;
+            Console.WriteLine($"Hello {name}");
+            Task.Factory.StartNew(sub);
+            Task.Factory.StartNew(pool);
             do
             {
-                msg = Console.ReadLine();
-                Call(msg);
-            } while (msg != "bye");
-            RouteRpc.ShutDown();
-            Console.ReadKey();
+                Console.Write("请输入：");
+                var cmd = Console.ReadLine();
+                //if (cmd == "exist")
+                //{
+                //    runing = false;
+                //    semaphore.Release();
+                //    break;
+                //}
+                var words = cmd.Split(new char[] {' ', '\t', '\r', '\n'});
+                if (words.Length == 0)
+                {
+                    Console.WriteLine("请输入正确命令");
+                    continue;
+                }
+                Queue.Enqueue(new CommandAgument
+                {
+                    Commmand = words[0],
+                    Argument = words.Length == 1 ? null : words[1]
+                });
+                semaphore.Release();
+                semaphore.WaitOne();
+            } while (runing);
+            //RouteRpc.Run();
+            //string msg;
+            //do
+            //{
+            //    msg = Console.ReadLine();
+            //    Call(msg);
+            //} while (msg != "bye");
+            //RouteRpc.ShutDown();
+            semaphore.WaitOne();
+            //Console.ReadKey();
+        }
+        static string name = RandomOperate.Generate(10);
+        static Semaphore semaphore =new Semaphore(0,1);
+        static Queue<CommandAgument> Queue = new Queue<CommandAgument>();
+        private static bool runing = false;
+        class CommandAgument
+        {
+            public string Commmand { get; set; }
+            public string Argument { get; set; }
+        }
+        static void pool()
+        {
+            try
+            {
+                var request = new RequestSocket();
+
+                request.Options.Identity = name.ToAsciiBytes();
+                request.Connect("tcp://127.0.0.1:20181");
+                
+                runing = true;
+                while (runing)
+                {
+                    
+                    if (!semaphore.WaitOne(new TimeSpan(0, 0, 1)))
+                        continue;
+                    if (!runing)
+                    {
+                        semaphore.Release();
+                        break;
+                    }
+                    var arg = Queue.Dequeue();
+                    request.SendMoreFrame(arg.Commmand ?? "");
+                    request.SendMoreFrameEmpty();
+                    request.SendFrame(arg.Argument ?? "");
+                    bool more = true;
+                    string result = request.ReceiveFrameString(out more);
+                    Console.Write("返回：" + result);
+                    while (more)
+                    {
+                        result = request.ReceiveFrameString(out more);
+                        Console.Write(result);
+                    }
+                    Console.WriteLine();
+                    semaphore.Release();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            runing = false;
         }
 
+        static void sub()
+        {
+            try
+            {
+                var subscriber = new SubscriberSocket();
+                subscriber.Options.Identity = name.ToAsciiBytes();
+                subscriber.Connect("tcp://127.0.0.1:20183");
+                subscriber.Subscribe("");
+                runing = true;
+                while (runing)
+                {
+                    bool more = true;
+                    string result;
+                    if(!subscriber.TryReceiveFrameString(new TimeSpan(0, 0, 10), out result, out more))
+                        continue;
+
+                    Console.Write("通知：" + result);
+                    if (result == "exit")
+                        runing = false;
+                    while (more)
+                    {
+                        result = subscriber.ReceiveFrameString(out more);
+                        Console.Write(result);
+                    }
+                    Console.WriteLine();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         private static string Message
         {
             set { Console.WriteLine(value); }
