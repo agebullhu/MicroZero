@@ -12,7 +12,7 @@ namespace agebull
 	namespace zmq_net
 	{
 		VoteStation::VoteStation(string name)
-			: RouteStation<VoteStation, Voter, STATION_TYPE_VOTE>(name)
+			: BalanceStation<VoteStation, Voter, STATION_TYPE_VOTE>(name)
 		{
 		}
 
@@ -35,43 +35,18 @@ namespace agebull
 			strs.append("]");
 			return send_state(client_addr, request_token, "*", strs.c_str());
 		}
-		bool  VoteStation::send_state(const char* client_addr, const  char* request_token, const  char* voter, const  char* state)
-		{
-			_zmq_state = s_sendmore(_outSocket, client_addr);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_outSocket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_outSocket, request_token);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_outSocket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_outSocket, voter);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_outSocket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_send(_outSocket, state);//真实发送
-			return _zmq_state > 0;
-		}
 		/**
 		* 当远程调用进入时的处理
 		*/
-		void VoteStation::onCallerPollIn()
+		void VoteStation::request()
 		{
-			// 获取下一个client的请求，交给空闲的worker处理
-			// client请求的消息格式是：[client地址][空帧][请求内容]
-			char* client_addr = s_recv(_outSocket, 0);
-			recv_empty(_outSocket);
-			char* request_token = s_recv(_outSocket);
-			recv_empty(_outSocket);
-			char* request_state = s_recv(_outSocket);
-			recv_empty(_outSocket);
-			char* request_argument = s_recv(_outSocket);
+			char* client_addr = s_recv(_out_socket, 0);
+			recv_empty(_out_socket);
+			char* request_token = s_recv(_out_socket);
+			recv_empty(_out_socket);
+			char* request_state = s_recv(_out_socket);
+			recv_empty(_out_socket);
+			char* request_argument = s_recv(_out_socket);
 			RedisLiveScope redis_live_scope;
 			if (strcmp(request_state, "voters"))//请求投票者名单
 			{
@@ -103,52 +78,90 @@ namespace agebull
 			free(request_argument);
 		}
 
+		/**
+		* @brief 开始执行一条命令
+		*/
+		void VoteStation::command_start(const char* caller, vector< string> lines)
+		{
+			send_state(caller, lines[0].c_str(), lines[1].c_str(), lines[2].c_str());
+		}
+		/**
+		* @brief 结束执行一条命令
+		*/
+		void VoteStation::command_end(const char* caller, vector<string> lines)
+		{
+			start_vote(caller, lines[0].c_str(), lines[1].c_str());
+		}
 		bool VoteStation::start_vote(const char* client_addr, const  char* request_token, const  char* request_argument)
 		{
 			//路由到所有工作对象
 			for (auto voter : _workers)
 			{
-				_zmq_state = s_sendmore(_innerSocket, voter.second.net_name.c_str());
+				_zmq_state = s_sendmore(_inner_socket, voter.second.net_name.c_str());
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_sendmore(_innerSocket, "");
+				_zmq_state = s_sendmore(_inner_socket, "");
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_sendmore(_innerSocket, client_addr);
+				_zmq_state = s_sendmore(_inner_socket, client_addr);
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_sendmore(_innerSocket, "");
+				_zmq_state = s_sendmore(_inner_socket, "");
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_send(_innerSocket, request_token);//真实发送
+				_zmq_state = s_send(_inner_socket, request_token);//真实发送
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_sendmore(_innerSocket, "");
+				_zmq_state = s_sendmore(_inner_socket, "");
 				if (_zmq_state < 0)
 					return false;
-				_zmq_state = s_send(_innerSocket, request_argument);//真实发送
+				_zmq_state = s_send(_inner_socket, request_argument);//真实发送
 				if (_zmq_state < 0)
 					return false;
 			}
 			return true;
 		}
+
+		bool  VoteStation::send_state(const char* client_addr, const  char* request_token, const  char* voter, const  char* state)
+		{
+			_zmq_state = s_sendmore(_out_socket, client_addr);
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_sendmore(_out_socket, "");
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_sendmore(_out_socket, request_token);
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_sendmore(_out_socket, "");
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_sendmore(_out_socket, voter);
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_sendmore(_out_socket, "");
+			if (_zmq_state < 0)
+				return false;
+			_zmq_state = s_send(_out_socket, state);//真实发送
+			return _zmq_state > 0;
+		}
 		/**
 		* 当工作操作返回时的处理
 		*/
-		void VoteStation::onWorkerPollIn()
+		void VoteStation::response()
 		{
 			// 将worker的地址入队
-			char* worker_addr = s_recv(_innerSocket);
-			recv_empty(_innerSocket);
-			char* client_addr = s_recv(_innerSocket);
-			recv_empty(_innerSocket);
-			char* request_token = s_recv(_outSocket);
-			recv_empty(_outSocket);
-			char* reply = s_recv(_innerSocket);
+			char* worker_addr = s_recv(_inner_socket);
+			recv_empty(_inner_socket);
+			char* client_addr = s_recv(_inner_socket);
+			recv_empty(_inner_socket);
+			char* request_token = s_recv(_out_socket);
+			recv_empty(_out_socket);
+			char* reply = s_recv(_inner_socket);
 			// 如果是一个应答消息，则转发给client
 			if (strcmp(request_token, "READY") == 0)
 			{
-				join(worker_addr, reply, true);
+				worker_join(worker_addr, reply, true);
 			}
 			else
 			{

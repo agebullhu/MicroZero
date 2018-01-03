@@ -1,3 +1,4 @@
+#ifndef ZMQ_API_BROADCASTING_STATION_H
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
@@ -13,21 +14,11 @@ namespace agebull
 
 		public:
 			BroadcastingStation(string name)
-				:NetStation(name, STATION_TYPE_PUBLISH)
+				:NetStation(name, STATION_TYPE_PUBLISH, ZMQ_REQ, ZMQ_PUB, -1)
 			{
 
 			}
 			virtual ~BroadcastingStation() {}
-		private:
-			/**
-			*消息泵
-			*/
-			bool poll();
-			/**
-			* @brief 当前活动的发布类
-			*/
-			static map<string, shared_ptr<BroadcastingStation>> examples;
-
 		public:
 			/**
 			*消息泵
@@ -47,25 +38,46 @@ namespace agebull
 			}
 
 			/**
-			*消息泵
+			* @brief 开始执行一条命令
 			*/
-			static bool publish(string name, string type, string arg);
-			/**
-			* @brief 设置关闭所有
-			*/
-			static void close_all(bool waiting)
+			void command_start(const char* caller, vector< string> lines) override
 			{
-				map<string, shared_ptr<BroadcastingStation>>::iterator end = examples.end();
-				for_each(examples.begin(), examples.end(), [](pair<string, shared_ptr<BroadcastingStation>> iter)
-				{
-					iter.second->close(false);
-				});
-				if (waiting)
-				{
-					while (examples.size() > 0)
-						thread_sleep(250);
-				}
+				publish(caller, lines[0], lines[1]);
 			}
+			/**
+			* @brief 结束执行一条命令
+			*/
+			void command_end(const char* caller, vector<string> lines) override
+			{
+				publish(caller, lines[0], lines[1]);
+			}
+			/**
+			*@brief 广播内容
+			*/
+			static bool publish(string station, string publiher, string title, string arg);
+			/**
+			*@brief 广播内容
+			*/
+			static bool publish_monitor(string publiher, string title, string arg);
+			/**
+			*@brief 广播内容
+			*/
+			bool publish(string publiher, string title, string arg) const;
+
+			/**
+			* @brief 处理反馈
+			*/
+			void response()override;
+			/**
+			* @brief 处理请求
+			*/
+			void request()override;
+
+			/**
+			* 心跳的响应
+			*/
+			void heartbeat()override {}
 		};
 	}
 }
+#endif

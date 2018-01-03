@@ -153,9 +153,9 @@ namespace agebull
 				return false;
 			acl::string val = install(station->_station_type, station->_station_name.c_str());
 			config cfg(val);
-			station->_innerAddress = cfg["inner_addr"];
-			station->_outAddress = cfg["out_addr"];
-			station->_heartAddress = cfg["heart_addr"];
+			station->_inner_address = cfg["inner_addr"];
+			station->_out_address = cfg["out_addr"];
+			station->_heart_address = cfg["heart_addr"];
 			examples.insert(make_pair(station->_station_name, station));
 			return true;
 		}
@@ -195,9 +195,9 @@ namespace agebull
 				cout << state << endl;
 				return false;
 			}
-			s_sendmore(example->_outSocket, caller.c_str());
-			s_sendmore(example->_outSocket, "");
-			s_send(example->_outSocket, state.c_str());//真实发送
+			s_sendmore(example->_out_socket, caller.c_str());
+			s_sendmore(example->_out_socket, "");
+			s_send(example->_out_socket, state.c_str());//真实发送
 			return true;
 		}
 
@@ -310,51 +310,19 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		void NetDispatcher::onCallerPollIn()
+		void NetDispatcher::request()
 		{
-			// 获取下一个client的请求，交给空闲的worker处理
-			// client请求的消息格式是：[client地址][空帧][请求内容]
-			char* client_addr = s_recv(_outSocket, 0);
-			recv_empty(_outSocket);
-			char* command = s_recv(_outSocket);
-			recv_empty(_outSocket);
-			char* argument = s_recv(_outSocket);
+			char* client_addr = s_recv(_out_socket, 0);
+			recv_empty(_out_socket);
+			char* command = s_recv(_out_socket);
+			recv_empty(_out_socket);
+			char* argument = s_recv(_out_socket);
 
 			boost::thread thrds_s3(boost::bind(exec_command, client_addr, command, argument));
 			
 			free(client_addr);
 			free(command);
 			free(argument);
-		}
-
-		bool NetDispatcher::poll()
-		{
-			_zmq_state = 0;
-			_outSocket = create_socket(ZMQ_ROUTER, _outAddress.c_str());
-			zmq_pollitem_t items[] = {
-				{ _outSocket, 0, ZMQ_POLLIN, 0 }
-			};
-			log_msg3("%s(%s | %s)已启动", _station_name, _outAddress, _innerAddress);
-			//登记线程开始
-			set_command_thread_start();
-			_station_state = station_state::Run;
-			while (can_do())
-			{
-				poll_check_pause();
-				poll_zmq_poll(1);
-				if (items[0].revents & ZMQ_POLLIN)
-				{
-					onCallerPollIn();
-				}
-			}
-			_station_state = station_state::Closing;
-			zmq_unbind(_outSocket, _outAddress.c_str());
-			zmq_close(_outSocket);
-			_outSocket = nullptr;
-			//登记线程关闭
-			set_command_thread_end();
-			_station_state = station_state::Closed;
-			return _zmq_state < 0;
 		}
 	}
 }

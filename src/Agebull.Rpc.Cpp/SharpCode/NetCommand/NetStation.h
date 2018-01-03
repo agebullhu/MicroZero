@@ -104,53 +104,69 @@ namespace agebull
 			* @brief API服务名称
 			*/
 			string _station_name;
-			/**
-			* @brief API服务名称
-			*/
-			int _station_type;
 
 			/**
 			* @brief 外部地址
 			*/
-			string _outAddress;
+			string _out_address;
 
 			/**
 			* @brief 工作地址
 			*/
-			string _innerAddress;
+			string _inner_address;
 
 			/**
 			* @brief 心跳地址
 			*/
-			string _heartAddress;
+			string _heart_address;
 			/**
 			* @brief 调用句柄
 			*/
-			void* _outSocket;
+			void* _out_socket;
 
 			/**
 			* @brief 工作句柄
 			*/
-			void* _innerSocket;
+			void* _inner_socket;
 			/**
 			* @brief 心跳句柄
 			*/
-			void* _heartSocket;
+			void* _heart_socket;
 
+			/**
+			* @brief 外部SOCKET类型
+			*/
+			int _out_zmq_type;
+
+			/**
+			* @brief 工作SOCKET类型
+			*/
+			int _inner_zmq_type;
+
+			/**
+			* @brief 心跳SOCKET类型
+			*/
+			int _heart_zmq_type;
+
+			/**
+			* @brief 当前ZMQ执行状态
+			*/
+			int _zmq_state;
+
+		public:
+			/**
+			* @brief API服务名称
+			*/
+			int _station_type;
 			/**
 			* @brief 当前站点状态
 			*/
 			station_state _station_state;
 
 			/**
-			* @brief 当前ZMQ执行状态
-			*/
-			int _zmq_state;
-		public:
-			/**
 			* @brief 构造
 			*/
-			NetStation(string name, int type);
+			NetStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type);
 
 			/**
 			* @brief 析构
@@ -163,10 +179,30 @@ namespace agebull
 
 		protected:
 			/**
+			* @brief 网络循环
+			*/
+			bool poll();
+			/**
+			* @brief 处理反馈
+			*/
+			virtual void response() = 0;
+			/**
+			* @brief 处理请求
+			*/
+			virtual void request() = 0;
+
+			/**
+			* 心跳的响应
+			*/
+			virtual void heartbeat() =0;
+		protected:
+			/**
 			 * @brief 接收空帧
 			 */
 			static void recv_empty(ZMQ_HANDLE socket);
 
+
+		protected:
 			/**
 			* @brief 能否继续工作
 			*/
@@ -175,7 +211,19 @@ namespace agebull
 				return (_station_state == station_state::Run || _station_state == station_state::Pause) &&
 					get_net_state() == NET_STATE_RUNING;
 			}
-
+			/**
+			* @brief 检查是否暂停
+			*/
+			bool check_pause()
+			{
+				if (_station_state == station_state::Pause)
+				{
+					boost::posix_time::ptime now(boost::posix_time::microsec_clock::universal_time());
+					_state_semaphore.timed_wait(now + boost::posix_time::seconds(1));
+					return _station_state == station_state::Pause;
+				}
+				return false;
+			}
 		public:
 
 			/**
@@ -213,16 +261,24 @@ namespace agebull
 					thread_sleep(1000);
 				return true;
 			}
+			/**
+			* @brief 开始执行一条命令
+			*/
+			virtual void command_start(const char* caller, vector< string> lines) = 0;
+			/**
+			* @brief 结束执行一条命令
+			*/
+			virtual void command_end(const char* caller, vector< string> lines) = 0;
 		};
 
 		/**
-		 * \brief 表示一个基于ZMQ的路由站点
-		 * \tparam TNetStation 
-		 * \tparam TWorker 
-		 * \tparam NetType 
+		 * \brief 表示一个基于ZMQ的负载均衡站点
+		 * \tparam TNetStation
+		 * \tparam TWorker
+		 * \tparam NetType
 		 */
 		template <typename TNetStation, class TWorker, int NetType>
-		class RouteStation : public NetStation
+		class BalanceStation : public NetStation
 		{
 		protected:
 			/**
@@ -233,30 +289,12 @@ namespace agebull
 			/**
 			* @brief 构造
 			*/
-			RouteStation(string name)
-				: NetStation(name, NetType)
+			BalanceStation(string name)
+				: NetStation(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_REQ)
 			{
 			}
 
 		protected:
-			/**
-			* @brief 执行
-			*/
-			bool poll();
-
-			/**
-			* @brief 工作集合的响应
-			*/
-			virtual void onWorkerPollIn() = 0;
-			/**
-			* @brief 调用集合的响应
-			*/
-			virtual void onCallerPollIn() = 0;
-
-			/**
-			* 心跳的响应
-			*/
-			virtual void heartbeat();
 
 			/**
 			* @brief 生成工作对象
@@ -264,55 +302,50 @@ namespace agebull
 			virtual TWorker create_item(const char* addr, const char* value) = 0;
 
 			/**
+			* 心跳的响应
+			*/
+			virtual void heartbeat() override;
+			/**
 			* @brief 工作对象退出
 			*/
-			virtual void left(char* addr);
+			virtual void worker_left(char* addr) ;
 
 			/**
 			* @brief 工作对象加入
 			*/
-			virtual void join(char* addr, char* value, bool ready = false);
+			virtual void worker_join(char* addr, char* value, bool ready = false);
 		};
 
-#define poll_check_pause()\
-	if (_station_state == station_state::Pause)\
-	{\
-		do\
-		{\
-			boost::posix_time::ptime now(boost::posix_time::microsec_clock::universal_time());\
-			_state_semaphore.timed_wait(now + boost::posix_time::seconds(1));\
-		} while (_station_state == station_state::Pause && get_net_state() == NET_STATE_RUNING);\
-		if (!can_do())\
-			break;\
-	}
 
-#define poll_zmq_poll(cnt)\
-		_zmq_state = zmq_poll(items, cnt, 1000);\
-		if (_zmq_state == 0)\
-			continue;\
-		if (_zmq_state == -1)\
-			break;
 
+
+#define close_socket(socket,addr)\
+		zmq_unbind(socket, addr.c_str());\
+		zmq_close(socket);\
+		socket = nullptr
 		/**
-		 * \brief 
-		 * \param name 
-		 * \param type 
+		 * \brief
+		 * \param name
+		 * \param type
 		 */
-		inline NetStation::NetStation(string name, int type)
+		inline NetStation::NetStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 			: _state_semaphore(1)
 			, _station_name(name)
 			, _station_type(type)
-			, _outSocket(nullptr)
-			, _innerSocket(nullptr)
-			, _heartSocket(nullptr)
+			, _out_socket(nullptr)
+			, _inner_socket(nullptr)
+			, _heart_socket(nullptr)
+			, _out_zmq_type(out_zmq_type)
+			, _inner_zmq_type(inner_zmq_type)
+			, _heart_zmq_type(heart_zmq_type)
 			, _station_state(station_state::None)
 			, _zmq_state(0)
 		{
 		}
 
 		/**
-		 * \brief 
-		 * \param socket 
+		 * \brief
+		 * \param socket
 		 */
 		inline void NetStation::recv_empty(ZMQ_HANDLE socket)
 		{
@@ -328,52 +361,70 @@ namespace agebull
 		 * \brief
 		 * \return
 		 */
-		template <typename TNetStation, class TWorker, int NetType>
-		bool RouteStation<TNetStation, TWorker, NetType>::poll()
+		inline bool NetStation::poll()
 		{
 			_zmq_state = 0;
-			_outSocket = create_socket(ZMQ_ROUTER, _outAddress.c_str());
-			_innerSocket = create_socket(ZMQ_ROUTER, _innerAddress.c_str());
-			_heartSocket = create_socket(ZMQ_ROUTER, _heartAddress.c_str());
-			zmq_pollitem_t items[] = {
-				{_innerSocket, 0, ZMQ_POLLIN, 0},
-				{_outSocket, 0, ZMQ_POLLIN, 0},
-				{_heartSocket, 0, ZMQ_POLLIN, 0}
-			};
-			log_msg3("%s(%s | %s)已启动", _station_name, _outAddress, _innerAddress);
+			int cnt = 0;
+			zmq_pollitem_t items[3];
+			if (_out_zmq_type >= 0)
+			{
+				_out_socket = create_socket(_out_zmq_type, _out_address.c_str());
+				items[cnt++] = { _out_socket, 0, ZMQ_POLLIN, 0 };
+			}
+			if (_inner_zmq_type >= 0)
+			{
+				_inner_socket = create_socket(_inner_zmq_type, _inner_address.c_str());
+				items[cnt++] = { _inner_socket, 0, ZMQ_POLLIN, 0 };
+			}
+			if (_heart_zmq_type >= 0)
+			{
+				_heart_socket = create_socket(_heart_zmq_type, _heart_address.c_str());
+				items[cnt++] = { _heart_socket, 0, ZMQ_POLLIN, 0 };
+			}
+
+			log_msg3("%s(%s | %s)已启动", _station_name, _out_address, _inner_address);
 			//登记线程开始
 			set_command_thread_start();
 			_station_state = station_state::Run;
 			while (can_do())
 			{
-				poll_check_pause();
-				poll_zmq_poll(3);
-				// 处理_innerSocket中inner的队列
+				if (check_pause())
+					continue;
+
+				_zmq_state = zmq_poll(items, cnt, 1000);
+				if (_zmq_state == 0)
+					continue;
+				if (_zmq_state == -1)
+					break;
+				// 处理_inner_socket中inner的队列
 				if (items[0].revents & ZMQ_POLLIN)
 				{
-					onWorkerPollIn();
+					response();
 				}
 
-				if (items[1].revents & ZMQ_POLLIN)
+				if (cnt > 1 && items[1].revents & ZMQ_POLLIN)
 				{
-					onCallerPollIn();
+					request();
 				}
 
-				if (items[2].revents & ZMQ_POLLIN)
+				if (cnt > 2 && items[2].revents & ZMQ_POLLIN)
 				{
 					heartbeat();
 				}
 			}
 			_station_state = station_state::Closing;
-			zmq_unbind(_outSocket, _outAddress.c_str());
-			zmq_close(_outSocket);
-			_outSocket = nullptr;
-			zmq_unbind(_innerSocket, _innerAddress.c_str());
-			zmq_close(_innerSocket);
-			_innerSocket = nullptr;
-			zmq_unbind(_heartSocket, _heartAddress.c_str());
-			zmq_close(_heartSocket);
-			_heartSocket = nullptr;
+			if (_out_zmq_type >= 0)
+			{
+				close_socket(_out_socket, _out_address);
+			}
+			if (_inner_zmq_type >= 0)
+			{
+				close_socket(_inner_socket, _inner_address);
+			}
+			if (_heart_zmq_type >= 0)
+			{
+				close_socket(_heart_socket, _heart_address);
+			}
 			//登记线程关闭
 			set_command_thread_end();
 			_station_state = station_state::Closed;
@@ -384,32 +435,32 @@ namespace agebull
 		 * \brief
 		 */
 		template <typename TNetStation, class TWorker, int NetType>
-		void RouteStation<TNetStation, TWorker, NetType>::heartbeat()
+		void BalanceStation<TNetStation, TWorker, NetType>::heartbeat()
 		{
 			// 将inner的地址入队
-			char* inner_addr = s_recv(_heartSocket);
-			recv_empty(_heartSocket);
-			char* client_addr = s_recv(_heartSocket);
-			recv_empty(_heartSocket);
-			char* reply = s_recv(_heartSocket);
+			char* inner_addr = s_recv(_heart_socket);
+			recv_empty(_heart_socket);
+			char* client_addr = s_recv(_heart_socket);
+			recv_empty(_heart_socket);
+			char* reply = s_recv(_heart_socket);
 			// 如果是一个应答消息，则转发给client
 			if (strcmp(client_addr, "PAPA") == 0)
 			{
-				join(inner_addr, reply);
+				worker_join(inner_addr, reply);
 			}
 			else if (strcmp(client_addr, "MAMA") == 0)
 			{
-				join(inner_addr, reply);
+				worker_join(inner_addr, reply);
 			}
 			else if (strcmp(client_addr, "LAOWANG") == 0)
 			{
-				left(inner_addr);
+				worker_left(inner_addr);
 			}
-			_zmq_state = s_sendmore(_heartSocket, inner_addr);
+			_zmq_state = s_sendmore(_heart_socket, inner_addr);
 			if (_zmq_state < 0)
 				cout << inner_addr << endl;
-			_zmq_state = s_sendmore(_heartSocket, "");
-			_zmq_state = s_send(_heartSocket, "OK");//真实发送
+			_zmq_state = s_sendmore(_heart_socket, "");
+			_zmq_state = s_send(_heart_socket, "OK");//真实发送
 			if (_zmq_state <= 0)
 				cout << inner_addr << endl;
 
@@ -423,7 +474,7 @@ namespace agebull
 		 * \param addr
 		 */
 		template <typename TNetStation, class TWorker, int NetType>
-		void RouteStation<TNetStation, TWorker, NetType>::left(char* addr)
+		void BalanceStation<TNetStation, TWorker, NetType>::worker_left(char* addr)
 		{
 			auto vote = _workers.find(addr);
 			if (vote != _workers.end())
@@ -440,7 +491,7 @@ namespace agebull
 		 * \param ready
 		 */
 		template <typename TNetStation, class TWorker, int NetType>
-		void RouteStation<TNetStation, TWorker, NetType>::join(char* addr, char* value, bool ready)
+		void BalanceStation<TNetStation, TWorker, NetType>::worker_join(char* addr, char* value, bool ready)
 		{
 			TWorker item = create_item(addr, value);
 			auto old = _workers.find(addr);
@@ -463,9 +514,9 @@ namespace agebull
 			if(!StationWarehouse::join(station.get()))\
 				return;\
 			if (station->_zmq_state == 0)\
-				log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_outAddress, station->_innerAddress);\
+				log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_out_address, station->_inner_address);\
 			else\
-				log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_outAddress, station->_innerAddress);\
+				log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_out_address, station->_inner_address);\
 			bool reStrart = station->poll();\
 			StationWarehouse::left(station.get());\
 			if (reStrart)\
@@ -474,7 +525,7 @@ namespace agebull
 			}\
 			else\
 			{\
-				log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_outAddress, station->_innerAddress);\
+				log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_out_address, station->_inner_address);\
 			}
 
 

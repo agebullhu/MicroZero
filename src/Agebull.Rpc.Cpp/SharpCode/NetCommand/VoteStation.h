@@ -1,3 +1,4 @@
+#ifndef ZMQ_API_VOTE_STATION_H
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
@@ -48,7 +49,7 @@ namespace agebull
 		* 2 投票者，*表示系统（中间人）
 		* 3 投票结果（建议使用JSON格式）
 		*/
-		class VoteStation :public RouteStation<VoteStation, Voter, STATION_TYPE_VOTE>
+		class VoteStation :public BalanceStation<VoteStation, Voter, STATION_TYPE_VOTE>
 		{
 		public:
 			/**
@@ -74,12 +75,20 @@ namespace agebull
 			/**
 			* @brief 工作集合的响应
 			*/
-			void onWorkerPollIn()override;
+			void response()override;
 			/**
 			* @brief 调用集合的响应
 			*/
-			void onCallerPollIn() override;
+			void request() override;
 
+			/**
+			* @brief 开始执行一条命令
+			*/
+			void command_start(const char* caller, vector< string> lines) override;
+			/**
+			* @brief 结束执行一条命令
+			*/
+			void command_end(const char* caller, vector< string> lines)override;
 			/**
 			* @brief 向发起者推送投票状态
 			*/
@@ -113,3 +122,4 @@ namespace agebull
 		};
 	}
 }
+#endif
