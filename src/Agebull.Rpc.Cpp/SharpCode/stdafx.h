@@ -1,5 +1,3 @@
-#ifndef ___STDAFX_H
-#define ___STDAFX_H
 #pragma once
 #include "stdinc.h"
 
@@ -8,16 +6,10 @@
 #include "tson/tson_deserializer.h"
 #include "tson/tson_serializer.h"
 
-#ifdef NOCLR
 #include <cfg/config.h>
 #include "redis/redis.h"
 #include "NetCommand/command_serve.h"
-#endif
-
 #include "debug/TraceStack.h"
-
-#endif
-
 
 #define WIN32_LEAN_AND_MEAN             // 从 Windows 头中排除极少使用的资料
 // Windows 头文件: 

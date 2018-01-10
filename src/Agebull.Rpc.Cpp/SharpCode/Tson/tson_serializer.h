@@ -280,6 +280,10 @@ namespace agebull
 			{
 				Write(static_cast<ushort>(len));
 			}
+			void write_len(size_t len)
+			{
+				Write(static_cast<ushort>(len));
+			}
 		};
 	}
 }

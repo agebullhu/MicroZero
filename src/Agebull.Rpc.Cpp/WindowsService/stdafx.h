@@ -37,4 +37,3 @@
 #include "redis/redis.h"
 #include "NetCommand/command_serve.h"
 
-#include "debug/TraceStack.h"

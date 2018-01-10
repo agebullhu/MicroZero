@@ -2,6 +2,9 @@
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
+#include "BalanceStation.h"
+#include "StationWarehouse.h"
+
 namespace agebull
 {
 	namespace zmq_net
@@ -31,18 +34,18 @@ namespace agebull
 			 * 是否就绪
 			 */
 			bool ready;
-		}Voter, *PVoter;
+		} Voter, *PVoter;
 
 		/**
 		* @brief 表示一个网络投票站（并行任务或并行工作流）
 		* 投票请求格式：
 		* 1 请求标识（建议用GUID/UUID）
 		* 2 请求状态
-		* －voters 请求投票者名单, 返回名单的JSON格式的数组
-		* －start 开始投票
-		* －continue 继续等待投票结束，接收到投票者反馈的反应
-		* －end 完成投票, 返回bye
-		* －bad 投票失败, 返回bye
+		* －* 请求投票者名单, 返回名单的JSON格式的数组
+		* －@ 开始投票
+		* －% 继续等待投票结束，接收到投票者反馈的反应
+		* －v 完成投票, 返回bye
+		* －x 投票失败, 返回bye
 		* 3 请求参数
 		* 投票返回格式：
 		* 1 请求标识
@@ -55,13 +58,20 @@ namespace agebull
 			/**
 			* @brief 构造
 			*/
-			VoteStation(string name);
+			VoteStation(string name)
+				: BalanceStation<VoteStation, Voter, STATION_TYPE_VOTE>(name)
+			{
+			}
+
 			/**
 			* @brief 析构
 			*/
-			virtual ~VoteStation() {}
+			virtual ~VoteStation()
+			{
+			}
+
 		private:
-			Voter create_item(const char* addr, const char * value) override
+			Voter create_item(const char* addr, const char* value) override
 			{
 				config cfg(value);
 				Voter vote;
@@ -72,36 +82,33 @@ namespace agebull
 				vote.predefinition = cfg["predefinition"] == "true";
 				return vote;
 			}
+
 			/**
 			* @brief 工作集合的响应
 			*/
-			void response()override;
+			void response() override;
 			/**
 			* @brief 调用集合的响应
 			*/
-			void request() override;
+			void request(ZMQ_HANDLE socket) override;
 
 			/**
-			* @brief 开始执行一条命令
+			* @brief 执行一条命令
 			*/
-			void command_start(const char* caller, vector< string> lines) override;
-			/**
-			* @brief 结束执行一条命令
-			*/
-			void command_end(const char* caller, vector< string> lines)override;
+			sharp_char command(const char* caller, vector<string> lines) override;
 			/**
 			* @brief 向发起者推送投票状态
 			*/
-			bool send_state(const char* client_addr, const  char* request_token, const char* voter, const char* state);
+			bool send_state(const char* client_addr, const char* request_token, const char* voter, const char* state);
 
 			/**
 			* @brief 开始投票
 			*/
-			bool start_vote(const char* client_addr, const  char* request_token, const  char* request_argument);
+			bool start_vote(const char* client_addr, const char* request_token, const char* request_argument);
 			/**
 			* @brief 向发起者推送投票者列表
 			*/
-			bool get_voters(const char* client_addr, const  char* request_token);
+			bool get_voters(const char* client_addr, const char* request_token);
 
 		public:
 			/**
@@ -110,8 +117,9 @@ namespace agebull
 			static void run(string name)
 			{
 				VoteStation* route = new VoteStation(name);
-				boost::thread thrds_s1(boost::bind(VoteStation::start, shared_ptr<VoteStation>(route)));
+				boost::thread thrds_s1(boost::bind(start, shared_ptr<VoteStation>(route)));
 			}
+
 			/**
 			* @brief 执行
 			*/
@@ -122,19 +130,28 @@ namespace agebull
 				{
 					return;
 				}
-				if (station->_zmq_state == 0)
-					log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_out_address, station->_inner_address);
+				if (station->_zmq_state == ZmqSocketState::Succeed)
+					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				else
-					log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_out_address, station->_inner_address);
-				bool reStrart = station->poll();
+					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					if (!station->initialize())
+					{
+						log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+							return;
+					}
+				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					bool reStrart = station->poll();
 				StationWarehouse::left(station);
+				station->destruct();
 				if (reStrart)
 				{
-					run(station->_station_name);
+					VoteStation* station2 = new VoteStation(station->_station_name);
+					station2->_zmq_state = ZmqSocketState::Again;
+					boost::thread thrds_s1(boost::bind(start, shared_ptr<VoteStation>(station2)));
 				}
 				else
 				{
-					log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_out_address, station->_inner_address);
+					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				}
 			}
 		};

@@ -6,25 +6,14 @@
 
 #include "stdafx.h"
 #include "BroadcastingStation.h"
+#include "StationWarehouse.h"
 
 namespace agebull
 {
 	namespace zmq_net
 	{
-#define send_result(code,type,msg,addr)\
-	log_error3("%s(%s),正在%s",msg, addr,code);\
-	response[0] = type;\
-	result = zmq_send(_out_socket, response, 1, ZMQ_DONTWAIT);\
-	if(result <= 0)\
-	{\
-		if (!check_zmq_error(_zmq_state, request_address, code))\
-			break;\
-		continue;\
-	}\
-	log_debug2(DEBUG_REQUEST, 6, "%(%s)成功",code, request_address);
-
 		/**
-		*消息泵
+		*@brief 发布消息
 		*/
 		bool BroadcastingStation::publish(string station, string publiher, string title, string arg)
 		{
@@ -35,79 +24,39 @@ namespace agebull
 		}
 
 		/**
-		*消息泵
+		*@brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(string publiher, string title, string arg)
+		bool BroadcastingStationBase::publish(string publiher, string title, string arg) const
 		{
-			PublishItem item;
-			item.publiher = publiher;
-			item.title = title;
-			item.arg = arg;
-			items.push(item);
-			_pub_semaphore.post();
-			return true;
+			//boost::lock_guard<boost::mutex> guard(_mutex);
+			if (!can_do() || publiher.length() == 0)
+				return false;
+			vector<sharp_char> response;
+			vector<string> argument;
+			argument.push_back(title);
+			argument.push_back(arg);
+			RequestSocket<ZMQ_REQ, false> socket(publiher.c_str(), _station_name.c_str());
+			return socket.request(argument, response);
 		}
 
-		/**
-		* \brief
-		* \return
-		*/
-		bool BroadcastingStationBase::poll_pub()
-		{
-			_inner_socket = create_socket(ZMQ_PUB, _inner_address.c_str());
-			//登记线程开始
-			int state = 0;
-			set_command_thread_start();
-			{
-				string str;
-				str = str + "publish_start " + _station_name + " " + _inner_address;
-				thread_sleep(1000);
-				state = s_send(_inner_socket, str.c_str());
-			}
-			while (can_do())
-			{
-				boost::posix_time::ptime now(boost::posix_time::microsec_clock::universal_time());
-				if (!_pub_semaphore.timed_wait(now + boost::posix_time::seconds(1)) || items.empty())
-					continue;
-				auto item = items.front();
-				items.pop();
-				item.title = item.title + " " + item.publiher + " " + item.arg;
-				state = s_send(_inner_socket, item.title.c_str());
-			}
-			if (state == 0)
-			{
-				string str;
-				str = str + "station_end " + _station_name + " " + _inner_address;
-				state = s_send(_inner_socket, str.c_str());
-			}
-			close_socket(_inner_socket, _inner_address);
-			//登记线程关闭
-			set_command_thread_end();
-			return true;
-		}
-		/**
-		* @brief 处理反馈
-		*/
-		void BroadcastingStationBase::response()
-		{
-
-		}
 		/**
 		* @brief 处理请求
 		*/
-		void BroadcastingStationBase::request()
+		void BroadcastingStationBase::request(ZMQ_HANDLE socket)
 		{
-			char* client_addr = s_recv(_out_socket, 0);
-			recv_empty(_out_socket);
-			char* title = s_recv(_out_socket);
-			recv_empty(_out_socket);
-			char* content = s_recv(_out_socket);
+			vector<sharp_char> list;
+			//0 路由到的地址 1 空帧 2 标题 3 内容
+			_zmq_state = recv(socket, list);
+			if (_zmq_state != ZmqSocketState::Succeed)
+			{
+				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				return;
+			}
+			acl::string str(list[2]);
+			str.append(" ").append(list[0]).append(" ").append(list[3]);
 
-			publish(client_addr, title, content);
+			_zmq_state = send_late(_inner_socket, str.c_str());
 
-			free(client_addr);
-			free(title);
-			free(content);
 		}
 		SystemMonitorStation* SystemMonitorStation::example = nullptr;
 	}

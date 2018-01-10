@@ -2,15 +2,16 @@
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
+#include "BalanceStation.h"
+
 namespace agebull
 {
 	namespace zmq_net
 	{
-
 		/**
 		* @brief 负载均衡处理类
 		*/
-		class HostBalance :public vector<string>
+		class HostBalance :private vector<string>
 		{
 			/**
 			* @brief 当前工作者下标
@@ -18,16 +19,17 @@ namespace agebull
 			size_t _index;
 		public:
 			HostBalance()
-				:vector<string>(16)
-				, _index(0)
+				: _index(0)
 			{
-
 			}
+
 			/**
 			* @brief 加入集群
 			*/
 			void join(const char* host)
 			{
+				if (host == nullptr || strlen(host) == 0)
+					return;
 				push_back(host);
 			}
 
@@ -69,10 +71,9 @@ namespace agebull
 			*/
 			const char* get_host()
 			{
-				size_t s = size();
-				if (s == 0)
+				if (size() == 0)
 					return nullptr;
-				if (s == 1)
+				if (size() == 1)
 					return at(0).c_str();
 				if (_index < size())
 					return at(_index++).c_str();
@@ -87,47 +88,70 @@ namespace agebull
 		class ApiStation :public BalanceStation<ApiStation, string, STATION_TYPE_API>
 		{
 			HostBalance _balance;
+			boost::posix_time::ptime  _start;
+			/**
+			* @brief 发布消息队列访问锁
+			*/
+			boost::mutex _mutex;
 		public:
 			/**
 			* @brief 构造
 			*/
-			ApiStation(string name);
+			ApiStation(string name)
+				: BalanceStation<ApiStation, string, STATION_TYPE_API>(name)
+			{
+			}
+
 			/**
 			* @brief 析构
 			*/
-			virtual ~ApiStation() {}
+			virtual ~ApiStation()
+			{
+			}
+
 			/**
 			*消息泵
 			*/
 			static void run(string name)
 			{
-				ApiStation* netobj = new ApiStation(name);
-				boost::thread thrds_s1(boost::bind(start, shared_ptr<ApiStation>(netobj)));
+				zmq_threadstart(start, new ApiStation(name));
 			}
+
 			/**
 			* @brief 执行
 			*/
-			static void start(shared_ptr<ApiStation> arg)
+			static void start(void* arg)
 			{
-				ApiStation* station = arg.get();
+				ApiStation* station = static_cast<ApiStation*>(arg);
 				if (!StationWarehouse::join(station))
 				{
 					return;
 				}
-				if (station->_zmq_state == 0)
-					log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_out_address, station->_inner_address);
+				if (station->_zmq_state == ZmqSocketState::Succeed)
+					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				else
-					log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_out_address, station->_inner_address);
+					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+				if (!station->initialize())
+				{
+					log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					return;
+				}
+				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				bool reStrart = station->poll();
+
 				StationWarehouse::left(station);
+				station->destruct();
 				if (reStrart)
 				{
-					run(station->_station_name);
+					ApiStation* station2 = new ApiStation(station->_station_name);
+					station2->_zmq_state = ZmqSocketState::Again;
+					zmq_threadstart(start, station2);
 				}
 				else
 				{
-					log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_out_address, station->_inner_address);
+					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				}
+				delete station;
 			}
 		private:
 			/**
@@ -137,35 +161,33 @@ namespace agebull
 			/**
 			* @brief 调用集合的响应
 			*/
-			void request() override;
+			void request(ZMQ_HANDLE socket) override;
 			/**
-			* @brief 开始执行一条命令
+			* @brief 执行一条命令
 			*/
-			void command_start(const char* caller, vector< string> lines) override;
-			/**
-			* @brief 结束执行一条命令
-			*/
-			void command_end(const char* caller, vector< string> lines)override;
+			sharp_char command(const char* caller, vector< string> lines) override;
+
 			/**
 			* @brief 工作集合的响应
 			*/
-			string create_item(const char* addr, const char * value)override
+			string create_item(const char* addr, const char* value) override
 			{
 				return value;
 			}
+
 			/**
 			* @brief 工作开始（发送到工作者）
 			*/
-			bool job_start(const char* work, const char* client_addr, const  char* request);
+			bool job_start(const char* client_addr, const char* command, const char* request);
 			/**
 			* @brief 工作结束(发送到请求者)
 			*/
-			bool job_end(const char* client_addr, const  char* response);
+			bool job_end(const char* client_addr, const char* response);
 
 			/**
 			* @brief 工作对象退出
 			*/
-			void worker_left(char* addr)override
+			void worker_left(const char* addr) override
 			{
 				_balance.left(addr);
 				BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_left(addr);
@@ -174,8 +196,10 @@ namespace agebull
 			/**
 			* @brief 工作对象加入
 			*/
-			void worker_join(char* addr, char* value, bool ready = false)override
+			void worker_join(const char* addr, const char* value, bool ready = false) override
 			{
+				if (addr == nullptr || strlen(addr) == 0)
+					return;
 				_balance.join(addr);
 				BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_join(addr, value, ready);
 			}

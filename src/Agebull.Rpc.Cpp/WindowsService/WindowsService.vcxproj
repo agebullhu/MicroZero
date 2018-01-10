@@ -22,7 +22,7 @@
     <ProjectGuid>{A8BEDB4F-4B58-48C3-BAE9-15573C1A14A5}</ProjectGuid>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <Keyword>AtlProj</Keyword>
-    <ProjectName>RpcsService</ProjectName>
+    <ProjectName>ZeroNet</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,8 +71,12 @@
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(BOOSTLIB);..\lib;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <LibraryPath>$(BOOST)\lib32-msvc-14.0;..\lib\x86\Debug;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <OutDir>..\publish</OutDir>
+    <Linkage-czmq>
+    </Linkage-czmq>
+    <Linkage-libsodium>static</Linkage-libsodium>
+    <Linkage-libzmq>static</Linkage-libzmq>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -82,20 +86,28 @@
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>$(BOOSTLIB);..\lib;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <LibraryPath>$(BOOST)\lib32-msvc-14.0;$(GitLib)\x86\Release;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <Linkage-czmq>static</Linkage-czmq>
+    <Linkage-libsodium>static</Linkage-libsodium>
+    <Linkage-libzmq>static</Linkage-libzmq>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(BOOST)\lib64-msvc-14.0;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(GitLib)\x86\Debug</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;SERVER;NOCLR;SysCmdArg;COMMANDPROXY;CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;TIMER;CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -117,7 +129,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015d.lib;lib_acl_cpp_vc2015d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;lib_acl_vc2015d.lib;lib_acl_cpp_vc2015d.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <PerUserRedirection>false</PerUserRedirection>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
@@ -183,15 +195,16 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -214,12 +227,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>true</RegisterOutput>
+      <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\SharpCode\cfg\config.cpp" />
-    <ClCompile Include="..\SharpCode\debug\StackWalker.cpp" />
-    <ClCompile Include="..\SharpCode\debug\TraceStack.cpp" />
     <ClCompile Include="..\SharpCode\log\mylogger.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\ApiStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp" />
@@ -256,21 +269,23 @@
   <ItemGroup>
     <ClInclude Include="..\SharpCode\boostinc.h" />
     <ClInclude Include="..\SharpCode\cfg\config.h" />
-    <ClInclude Include="..\SharpCode\debug\StackWalker.h" />
-    <ClInclude Include="..\SharpCode\debug\TraceStack.h" />
     <ClInclude Include="..\SharpCode\log\mylogger.h" />
     <ClInclude Include="..\SharpCode\mydecimal.h" />
     <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\BalanceStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\command_def.h" />
     <ClInclude Include="..\SharpCode\NetCommand\NetDispatcher.h" />
     <ClInclude Include="..\SharpCode\NetCommand\NetStation.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\StationWarehouse.h" />
     <ClInclude Include="..\SharpCode\NetCommand\VoteStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h" />
     <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h" />
+    <ClInclude Include="..\SharpCode\NetCommand\zmq_extend.h" />
     <ClInclude Include="..\SharpCode\redis\entity_redis.h" />
     <ClInclude Include="..\SharpCode\redis\redis.h" />
     <ClInclude Include="..\SharpCode\redis\TransRedis.h" />
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h" />
+    <ClInclude Include="..\SharpCode\sharp_char.h" />
     <ClInclude Include="..\SharpCode\SimpleEvent.h" />
     <ClInclude Include="..\SharpCode\stdinc.h" />
     <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h" />
@@ -291,6 +306,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+    <None Include="packages.config" />
     <None Include="WindowsService.rgs" />
   </ItemGroup>
   <ItemGroup>
@@ -298,5 +314,16 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets" Condition="Exists('..\packages\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets')" />
+    <Import Project="..\packages\libzmq_vc120.4.2.0.0\build\native\libzmq_vc120.targets" Condition="Exists('..\packages\libzmq_vc120.4.2.0.0\build\native\libzmq_vc120.targets')" />
+    <Import Project="..\packages\czmq_vc120.3.0.2.0\build\native\czmq_vc120.targets" Condition="Exists('..\packages\czmq_vc120.3.0.2.0\build\native\czmq_vc120.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libsodium_vc120.0.5.0.0\build\native\libsodium_vc120.targets'))" />
+    <Error Condition="!Exists('..\packages\libzmq_vc120.4.2.0.0\build\native\libzmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\libzmq_vc120.4.2.0.0\build\native\libzmq_vc120.targets'))" />
+    <Error Condition="!Exists('..\packages\czmq_vc120.3.0.2.0\build\native\czmq_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\czmq_vc120.3.0.2.0\build\native\czmq_vc120.targets'))" />
+  </Target>
 </Project>

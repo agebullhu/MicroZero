@@ -66,7 +66,7 @@ bool config::boolean(const char * name)
 {
 	init();
 	auto vl = m_machine_cfg[name];
-	return !vl.empty() && _stricmp(vl.c_str(),"true");
+	return !vl.empty() && strcasecmp(vl.c_str(),"true");
 }
 int config::number(const char * name)
 {

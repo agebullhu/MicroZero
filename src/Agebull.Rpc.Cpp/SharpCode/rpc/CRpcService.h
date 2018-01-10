@@ -33,6 +33,7 @@ public:
 	*/
 	static void Stop()
 	{
+		close_net_command();
 		distory_net_command();
 		acl::log::close();
 	}

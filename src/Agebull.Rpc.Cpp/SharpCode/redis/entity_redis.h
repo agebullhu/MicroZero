@@ -1,6 +1,5 @@
 #pragma once
 #include <stdafx.h>
-#include "debug/TraceStack.h"
 
 //É¾³ıÃüÁî
 inline void delete_cmd_arg(PNetCommand cmd_arg)

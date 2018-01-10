@@ -4,106 +4,110 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		ApiStation::ApiStation(string name)
-			: BalanceStation<ApiStation, string, STATION_TYPE_API>(name)
+		/**
+		* @brief 开始执行一条命令
+		*/
+		sharp_char ApiStation::command(const char* caller, vector<string> lines)
 		{
+			vector<sharp_char> response;
+			RequestSocket<ZMQ_REQ,false> socket(caller, _station_name.c_str());
+			if(socket.request(lines, response))
+				return response.size() == 0 ? "error" : response[0];
+			switch(socket.get_state())
+			{
+			case ZmqSocketState::TimedOut:
+				return "time out";
+			default:
+				return "net error";
+			}
 		}
-
 		/**
 		 * 当远程调用进入时的处理
 		 */
-		void ApiStation::request()
+		void ApiStation::request(ZMQ_HANDLE socket)
 		{
-			char* client_addr = s_recv(_out_socket, 0);
-			recv_empty(_out_socket);
-			char* request = s_recv(_out_socket);
+			vector<sharp_char> list;
+			//0 请求地址 1 空帧 2命令 3参数
+			_zmq_state = recv(socket, list);
+			if (_zmq_state == ZmqSocketState::TimedOut)
+			{
+				return;
+			}
+			if (_zmq_state != ZmqSocketState::Succeed)
+			{
+				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				return;
+			}
 
-			const char* work = _balance.get_host();
-			job_start(work, client_addr, request);
-
-			free(client_addr);
-			free(request);
+			//cout << "request:" << ((boost::posix_time::microsec_clock::universal_time() - _start).total_microseconds() /*/ 1000.0*/) << "ms" << endl;
+			//_start = boost::posix_time::microsec_clock::universal_time();
+			if (_zmq_state == ZmqSocketState::Empty)
+			{
+				job_end(*list[0], "EmptyRequest");
+				return;
+			}
+			job_start(*(list[0]), *(list[2]), *(list[3]));
 		}
 		/**
 		* @brief 工作开始（发送到工作者）
 		*/
-		bool ApiStation::job_start(const char* work, const char* client_addr, const  char* request)
+		bool ApiStation::job_start(const char* client_addr, const char* command, const  char* request)
 		{
 			//路由到其中一个工作对象
-			if (work == nullptr)
+			const char* worker = _balance.get_host();
+			if (worker == nullptr)
 			{
-				return job_end(client_addr, "NoWorker");
+				return job_end(client_addr, "NoWork");
 			}
-			_zmq_state = s_sendmore(_inner_socket, work);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_inner_socket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_inner_socket, client_addr);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_inner_socket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_send(_inner_socket, request);//真实发送
-			return _zmq_state >= 0;
+			_zmq_state = send_addr(_inner_socket, worker);
+			_zmq_state = send_more(_inner_socket, client_addr);
+			_zmq_state = send_more(_inner_socket, command);
+			_zmq_state = send_late(_inner_socket, request);
+			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
 		/**
 		* @brief 工作结束(发送到请求者)
 		*/
-		bool ApiStation::job_end(const char* client_addr, const  char* response)
+		bool ApiStation::job_end(const char* client_addr, const char* response)
 		{
-			_zmq_state=s_sendmore(_out_socket, client_addr);
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_sendmore(_out_socket, "");
-			if (_zmq_state < 0)
-				return false;
-			_zmq_state = s_send(_out_socket, response);
-			return _zmq_state >= 0;
+			if (client_addr == nullptr)
+				return true;
+			ZMQ_HANDLE socket = client_addr[0] == '_' ? _out_socket_inproc : _out_socket;
+			_start = boost::posix_time::microsec_clock::universal_time();
+			_zmq_state = send_addr(socket, client_addr);
+			_zmq_state = send_late(socket, response);
+			//cout << "route:" << ((boost::posix_time::microsec_clock::universal_time() - _start).total_microseconds() /*/ 1000.0*/) << "ms" << endl;
+			//_start = boost::posix_time::microsec_clock::universal_time();
+
+			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
-		/**
-		* @brief 开始执行一条命令
-		*/
-		void ApiStation::command_start(const char* caller, vector< string> lines)
-		{
-			const char* worker = lines.size()==1 ? _balance.get_host() : lines[0].c_str();
-			const char* request = lines[lines.size() == 1 ? 0 : 1].c_str();
-			job_start(caller, worker, request);
-		}
-		/**
-		* @brief 结束执行一条命令
-		*/
-		void ApiStation::command_end(const char* caller, vector< string> lines)
-		{
-			job_end(caller, lines[0].c_str());
-		}
 		/**
 		 * 当工作操作返回时的处理
 		 */
 		void ApiStation::response()
 		{
-			// 将worker的地址入队
-			char* worker_addr = s_recv(_inner_socket);
-			recv_empty(_inner_socket);
-			char* client_addr = s_recv(_inner_socket);
-			recv_empty(_inner_socket);
-			char* response = s_recv(_inner_socket);
-			// 如果是一个应答消息，则转发给client
-			if (strcmp(client_addr, "READY") == 0)
+			vector<sharp_char> list;
+			//0 worker地址 1空帧 2请求者地址 3请求标识 4返回结果
+			_zmq_state = recv(_out_socket, list);
+			if (_zmq_state == ZmqSocketState::TimedOut)
 			{
-				worker_join(worker_addr, response, true);
+				return;
+			}
+			if (_zmq_state != ZmqSocketState::Succeed)
+			{
+				log_error3("接收结果失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				return;
+			}
+			if (strcmp(*list[2], "@") == 0)
+			{
+				worker_join(*list[0], *list[3], true);
 			}
 			else
 			{
-				job_end(client_addr, response);
+				job_end(*list[2], *list[3]);
 			}
-			free(worker_addr);
-			free(client_addr);
-			free(response);
 		}
 	}
 }

@@ -44,9 +44,6 @@
     <Filter Include="sys\cfg">
       <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\debug">
-      <UniqueIdentifier>{70b5afd3-d398-460d-a9b4-6ca7e1477578}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sys\net_cmd\api">
       <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
     </Filter>
@@ -93,12 +90,6 @@
     </ClCompile>
     <ClCompile Include="..\SharpCode\cfg\config.cpp">
       <Filter>sys\cfg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharpCode\debug\StackWalker.cpp">
-      <Filter>sys\debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharpCode\debug\TraceStack.cpp">
-      <Filter>sys\debug</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
       <Filter>sys\net_cmd\MQ</Filter>
@@ -174,12 +165,6 @@
     <ClInclude Include="..\SharpCode\cfg\config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\debug\StackWalker.h">
-      <Filter>sys\debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\debug\TraceStack.h">
-      <Filter>sys\debug</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\redis\entity_redis.h">
       <Filter>sys\net_cmd\MQ</Filter>
     </ClInclude>
@@ -204,6 +189,18 @@
     <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h">
       <Filter>sys\net_cmd\notify</Filter>
     </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\BalanceStation.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\zmq_extend.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\sharp_char.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\StationWarehouse.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WindowsService.rc">
@@ -218,6 +215,7 @@
       <Filter>资源文件</Filter>
     </None>
     <None Include="config.json" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="WindowsService.idl">

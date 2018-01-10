@@ -2,6 +2,8 @@
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
+#include "StationWarehouse.h"
+
 namespace agebull
 {
 	namespace zmq_net
@@ -18,62 +20,39 @@ namespace agebull
 		*/
 		class BroadcastingStationBase :public NetStation
 		{
-			/**
-			* @brief 状态信号量
-			*/
-			boost::interprocess::interprocess_semaphore _pub_semaphore;
-			queue<PublishItem> items;
 		public:
-			BroadcastingStationBase(string name,int type)
-				:NetStation(name, type, ZMQ_REQ, -1, -1)
-				, _pub_semaphore(1)
+			BroadcastingStationBase(string name, int type)
+				: NetStation(name, type, ZMQ_ROUTER, ZMQ_PUB, -1)
 			{
-
 			}
-			/**
-			*消息泵
-			*/
-			static void dopub(BroadcastingStationBase* netobj)
-			{
-				netobj->poll_pub();
-			}
-			/**
-			* 运行一个广播线程
-			*/
-			bool poll_pub();
 
 			/**
-			* @brief 开始执行一条命令
+			* @brief 执行一条命令
 			*/
-			void command_start(const char* caller, vector< string> lines) override
+			sharp_char command(const char* caller, vector< string> lines) override
 			{
-				publish(caller, lines[0], lines[1]);
+				bool res = publish(caller,lines[0], lines[1]);
+				return sharp_char(res ? "OK" : "Bad");
 			}
-			/**
-			* @brief 结束执行一条命令
-			*/
-			void command_end(const char* caller, vector<string> lines) override
-			{
-				publish(caller, lines[0], lines[1]);
-			}
+
 			/**
 			*@brief 广播内容
 			*/
-			bool publish(string publiher, string title, string arg);
+			bool publish(string caller, string title, string arg) const;
 
-			/**
-			* @brief 处理反馈
-			*/
-			void response()override;
 			/**
 			* @brief 处理请求
 			*/
-			void request()override;
+			void request(ZMQ_HANDLE socket)override;
 
 			/**
 			* 心跳的响应
 			*/
 			void heartbeat()override {}
+			/**
+			* @brief 处理反馈
+			*/
+			void response()override {}
 		};
 
 		/**
@@ -93,34 +72,45 @@ namespace agebull
 			*/
 			static void run(string publish_name)
 			{
-				BroadcastingStation* station = new BroadcastingStation(publish_name);
-				boost::thread(boost::bind(start, shared_ptr<BroadcastingStation>(station)));
+				zmq_threadstart(start, new BroadcastingStation(publish_name));
 			}
 			/**
 			*消息泵
 			*/
-			static void start(shared_ptr<BroadcastingStation> arg)
+			static void start(void* arg)
 			{
-				BroadcastingStation* station = arg.get();
+				BroadcastingStation* station = static_cast<BroadcastingStation*>(arg);
 				if (!StationWarehouse::join(station))
 				{
 					return;
 				}
-				if (station->_zmq_state == 0)
-					log_msg3("%s(%s | %s)正在启动", station->_station_name, station->_out_address, station->_inner_address);
+				if (station->_zmq_state == ZmqSocketState::Succeed)
+					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				else
-					log_msg3("%s(%s | %s)正在重启", station->_station_name, station->_out_address, station->_inner_address);
-				boost::thread(boost::bind(dopub, static_cast<BroadcastingStationBase*>(station)));
+					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+				if (!station->initialize())
+				{
+					log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					return;
+				}
+				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+
 				bool reStrart = station->poll();
+
+
 				StationWarehouse::left(station);
+				station->destruct();
 				if (reStrart)
 				{
-					run(station->_station_name);
+					BroadcastingStation* station2 = new BroadcastingStation(station->_station_name);
+					station2->_zmq_state = ZmqSocketState::Again;
+					zmq_threadstart(start, station2);
 				}
 				else
 				{
-					log_msg3("%s(%s | %s)已关闭", station->_station_name, station->_out_address, station->_inner_address);
+					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 				}
+				delete station;
 			}
 			/**
 			*@brief 广播内容
@@ -134,6 +124,13 @@ namespace agebull
 		*/
 		class SystemMonitorStation :BroadcastingStationBase
 		{
+			/**
+			* @brief 能否继续工作
+			*/
+			bool can_do() const override
+			{
+				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() < NET_STATE_DISTORY;
+			}
 			static SystemMonitorStation* example;
 		public:
 			SystemMonitorStation()
@@ -143,6 +140,29 @@ namespace agebull
 			}
 			virtual ~SystemMonitorStation() {}
 
+			///**
+			//* @brief 暂停
+			//*/
+			//bool pause(bool waiting) override
+			//{
+			//	return false;
+			//}
+
+			///**
+			//* @brief 继续
+			//*/
+			//bool resume(bool waiting)override
+			//{
+			//	return false;
+			//}
+
+			///**
+			//* @brief 结束
+			//*/
+			//bool close(bool waiting)override
+			//{
+			//	return false;
+			//}
 			/**
 			* 运行一个广播线程
 			*/
@@ -150,39 +170,48 @@ namespace agebull
 			{
 				if (example != nullptr)
 					return;
-				example = new SystemMonitorStation();
-				boost::thread(boost::bind(start));
+				zmq_threadstart(start, nullptr);
 			}
 			/**
 			*消息泵
 			*/
-			static void start()
+			static void start(void*)
 			{
+				example = new SystemMonitorStation();
 				if (!StationWarehouse::join(example))
 				{
 					delete example;
 					return;
 				}
-				if (example->_zmq_state == 0)
-					log_msg3("%s(%s | %s)正在启动", example->_station_name, example->_out_address, example->_inner_address);
+				if (example->_zmq_state == ZmqSocketState::Succeed)
+					log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 				else
-					log_msg3("%s(%s | %s)正在重启", example->_station_name, example->_out_address, example->_inner_address);
-				boost::thread(boost::bind(dopub, static_cast<BroadcastingStationBase*>(example)));
+					log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port)
+				if (!example->initialize())
+				{
+					log_msg3("%s(%d | %d)无法启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
+					return;
+				}
+				log_msg3("%s(%d | %d)正在运行", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 				bool reStrart = example->poll();
-				StationWarehouse::left(example);
+				
+				example->_state_semaphore.wait();//等发布循环结束
+				{
+					string str("station_end " + example->_station_name + " ");
+					str += example->_inner_port;
+					send_late(example->_inner_socket, str.c_str());
+				}
+				example->destruct();
 				if (reStrart)
 				{
-					//delete example;
-					example = new SystemMonitorStation();
-					example->_zmq_state = -1;
-					boost::thread(boost::bind(start));
+					zmq_threadstart(start, nullptr);
 				}
 				else
 				{
-					log_msg3("%s(%s | %s)已关闭", example->_station_name, example->_out_address, example->_inner_address);
-					//delete example;
-					//example = nullptr;
+					log_msg3("%s(%d | %d)已关闭", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 				}
+				delete example;
+				example = nullptr;
 			}
 			/**
 			*@brief 广播内容

@@ -130,7 +130,7 @@ void TransRedis::commit_inner()
 
 		if (m_redis_cmd.set(start->first.c_str(), start->first.length(), vl.c_str(), vl.length()) == false)
 		{
-			log_error3("(%s)write_to_redis(%s)时发生错误(%s)", RedisIp, start->first.c_str(), m_redis_cmd.result_error());
+			log_error3("(%s)write_to_redis(%s)时发生错误(%s)", RedisIp.c_str(), start->first.c_str(), m_redis_cmd.result_error());
 		}
 		++start;
 	}

@@ -1,5 +1,4 @@
 #pragma once
-#ifdef NOCLR
 #if BOOST_VERSION < 105000
 #define XT_TIME_UTC boost::TIME_UTC
 #else
@@ -44,4 +43,3 @@
 #include <boost/format.hpp> 
 #include <boost/unordered_map.hpp> 
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
-#endif

@@ -2,6 +2,8 @@
 #pragma once
 #include <stdinc.h>
 #include "NetStation.h"
+#include "StationWarehouse.h"
+
 namespace agebull
 {
 	namespace zmq_net
@@ -11,74 +13,76 @@ namespace agebull
 		 */
 		class NetDispatcher :NetStation
 		{
-			////返回消息队列
-			//std::queue<NetCommandArgPtr> _queue;
-			////返回消息队列锁
-			//boost::interprocess::interprocess_semaphore _semaphore;
-
-		public:
-			NetDispatcher()
-				:NetStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_REP, -1, -1)
-			{
-
-			}
-			virtual ~NetDispatcher() {}
-		private:
 			/**
 			* @brief 当前活动的发布类
 			*/
 			static NetDispatcher* example;
-
-			/**
-			* @brief 暂停
-			*/
-			bool pause(bool waiting) override
+		public:
+			NetDispatcher()
+				:NetStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
 			{
-				return false;
-			}
 
-			/**
-			* @brief 继续
-			*/
-			bool resume(bool waiting)override
-			{
-				return false;
 			}
+			virtual ~NetDispatcher() {}
+		//private:
 
-			/**
-			* @brief 结束
-			*/
-			bool close(bool waiting)override
-			{
-				return false;
-			}
+		//	/**
+		//	* @brief 暂停
+		//	*/
+		//	bool pause(bool waiting) override
+		//	{
+		//		return false;
+		//	}
+
+		//	/**
+		//	* @brief 继续
+		//	*/
+		//	bool resume(bool waiting)override
+		//	{
+		//		return false;
+		//	}
+
+		//	/**
+		//	* @brief 结束
+		//	*/
+		//	bool close(bool waiting)override
+		//	{
+		//		return false;
+		//	}
 		public:
 			/**
 			*消息泵
 			*/
-			static void start()
+			static void start(void*)
 			{
 				if (!StationWarehouse::join(example))
 				{
 					delete example;
 					return;
 				}
-				if (example->_zmq_state == 0)
-					log_msg3("%s(%s | %s)正在启动", example->_station_name, example->_out_address, example->_inner_address);
+				if (example->_zmq_state == ZmqSocketState::Succeed)
+					log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 				else
-					log_msg3("%s(%s | %s)正在重启", example->_station_name, example->_out_address, example->_inner_address);
+					log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port)
+				if (!example->initialize())
+				{
+					log_msg3("%s(%d | %d)无法启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
+					return;
+				}
+				log_msg3("%s(%d | %d)正在运行", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 				bool reStrart = example->poll();
 				StationWarehouse::left(example);
+				example->destruct();
 				if (reStrart)
 				{
 					delete example;
 					example = new NetDispatcher();
-					example->_zmq_state = -1;
-					boost::thread thrds_s(boost::bind(start));
+					example->_zmq_state = ZmqSocketState::Again;
+					zmq_threadstart(start, nullptr);
 				}
 				else
 				{
-					log_msg3("%s(%s | %s)已关闭", example->_station_name, example->_out_address, example->_inner_address);
+					log_msg3("%s(%d | %d)已关闭", example->_station_name.c_str(), example->_out_port, example->_inner_port)
 					delete example;
 					example = nullptr;
 				}
@@ -94,22 +98,17 @@ namespace agebull
 					return;
 				}
 				example = new NetDispatcher();
-				boost::thread thrds_s(boost::bind(start));
+				zmq_threadstart(start, nullptr);
+				//boost::thread thrds_s(boost::bind(start));
 			}
 
 			/**
-			* @brief 开始执行一条命令
+			* @brief 执行一条命令
 			*/
-			void command_start(const  char* caller, vector<string> lines)
+			sharp_char command(const char* caller, vector<string> lines) override
 			{
-				exec_command(lines[0].c_str(), lines[1].c_str());
-			}
-			/**
-			* @brief 结束执行一条命令
-			*/
-			void command_end(const  char* caller, vector<string> lines)
-			{
-				//send_result(lines[0]);
+				string val = call_station(caller, lines[0].c_str(), lines[1].c_str());
+				return sharp_char(val);
 			}
 		private:
 
@@ -123,7 +122,7 @@ namespace agebull
 			/**
 			* @brief 处理请求
 			*/
-			virtual void request()override;
+			virtual void request(ZMQ_HANDLE socket)override;
 
 			/**
 			* 心跳的响应
@@ -157,6 +156,10 @@ namespace agebull
 			* @brief 关闭站点
 			*/
 			static string close_station(string stattion);
+			/**
+			* @brief 远程调用
+			*/
+			static string call_station(string stattion, string command, string argument);
 			/**
 			* @brief 执行命令
 			*/

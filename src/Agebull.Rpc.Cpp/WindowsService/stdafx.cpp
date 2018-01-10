@@ -152,7 +152,7 @@ DWORD route(LPVOID arg)
 				char *reply = s_recv(backend);
 				s_sendmore(frontend, client_addr);
 				s_sendmore(frontend, "");
-				s_send(frontend, reply);      //真实发送
+				s_send(frontend, reply);      
 				cout << "******Result:" << client_addr<<",Res:"<< reply << endl;
 				free(reply);
 				if (--client_nbr == 0)
@@ -177,7 +177,7 @@ DWORD route(LPVOID arg)
 			s_sendmore(backend, "");
 			s_sendmore(backend, client_addr);
 			s_sendmore(backend, "");
-			s_send(backend, request);      //真实发送
+			s_send(backend, request);      
 			cout << "******Request:" << client_addr << ",Arg:" << request << endl;
 
 			free(client_addr);

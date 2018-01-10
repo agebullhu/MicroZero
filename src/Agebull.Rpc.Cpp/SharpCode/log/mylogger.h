@@ -30,7 +30,7 @@ inline void DebugOut(string msg)
 #define DEBUG_QUOTE_NOTIFY	(DEBUG_BASE + 6)
 #define DEBUG_CONFIG		("100:6; 101:6; 102:6; 103:6; 104:6; 106:6; 106:6")
 
-#ifdef CLR
+#ifndef LOG_BOOST_FORMAT
 
 #define log_warn(msg)  \
 	log_acl_warn__FILE__, __LINE__, __FUNCTION__, msg)

@@ -187,4 +187,23 @@ public:
 	}
 };
 
+//point是服务器标识(本地交易:lt, 易盛交易 : et, 易盛行情 : eq, 本地行情 : lq, 本地主账号 : la, 本地其它 : lo)
+#define command_key_fmt "b:cmd:lt:%s"
+
+//反序列化宏
+#define deserialize_cmd_arg(cmd,type,name) \
+	type name;\
+	Agebull::Tson::Deserializer reader(get_cmd_buffer(cmd));\
+	Deserialize(reader, &name);
+
+
+//序列化宏
+#define serialize_to_cmd(type,args,cmd_num) \
+	PNetCommand net_cmd = reinterpret_cast<PNetCommand>(new char[sizeof(type) * 2]);\
+	memset(net_cmd,0,NETCOMMAND_HEAD_LEN);\
+	net_cmd->cmd_id = cmd_num;\
+	Agebull::Tson::Serializer wirter(get_cmd_buffer(net_cmd), sizeof(type) * 2 - NETCOMMAND_HEAD_LEN);\
+	Serialize(wirter, &args);
+
+
 #endif // !_COMMAND_DEF_H
