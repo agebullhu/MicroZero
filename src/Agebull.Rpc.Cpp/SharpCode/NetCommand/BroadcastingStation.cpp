@@ -31,12 +31,12 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
 				return false;
-			vector<sharp_char> response;
+			vector<sharp_char> result;
 			vector<string> argument;
 			argument.push_back(title);
 			argument.push_back(arg);
 			RequestSocket<ZMQ_REQ, false> socket(publiher.c_str(), _station_name.c_str());
-			return socket.request(argument, response);
+			return socket.request(argument, result);
 		}
 
 		/**
@@ -56,6 +56,9 @@ namespace agebull
 			str.append(" ").append(list[0]).append(" ").append(list[3]);
 
 			_zmq_state = send_late(_inner_socket, str.c_str());
+
+			_zmq_state = send_addr(socket, *list[0]);
+			_zmq_state = send_late(socket, "ok");
 
 		}
 		SystemMonitorStation* SystemMonitorStation::example = nullptr;

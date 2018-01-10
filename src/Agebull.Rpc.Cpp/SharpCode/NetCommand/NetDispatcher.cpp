@@ -14,7 +14,7 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		map<string, NetStation*> StationWarehouse::examples;
+		map<string, ZeroStation*> StationWarehouse::examples;
 
 		/**
 		* @brief 实例队列访问锁
@@ -23,7 +23,7 @@ namespace agebull
 		/**
 		* @brief 当前活动的发布类
 		*/
-		NetDispatcher* NetDispatcher::example = nullptr;
+		NetDispatcher* NetDispatcher::instance = nullptr;
 
 
 		/**
@@ -31,14 +31,15 @@ namespace agebull
 		*/
 		bool monitor(string publiher, string state, string content)
 		{
-			return SystemMonitorStation::monitor(publiher, state, content);
+			boost::thread thread_xxx(boost::bind(SystemMonitorStation::monitor, publiher, state, content));
+			return true;
 		}
 
 
 		/**
 		* @brief 暂停
 		*/
-		bool  NetStation::pause(bool waiting)
+		bool  ZeroStation::pause(bool waiting)
 		{
 			if (station_state::Run != _station_state)
 				return false;
@@ -50,7 +51,7 @@ namespace agebull
 		/**
 		* @brief 继续
 		*/
-		bool  NetStation::resume(bool waiting)
+		bool  ZeroStation::resume(bool waiting)
 		{
 			if (station_state::Pause != _station_state)
 				return false;
@@ -63,7 +64,7 @@ namespace agebull
 		/**
 		* @brief 结束
 		*/
-		bool  NetStation::close(bool waiting)
+		bool  ZeroStation::close(bool waiting)
 		{
 			if (!can_do())
 				return false;
@@ -193,14 +194,14 @@ namespace agebull
 			}
 			val = node.to_string();
 			TransRedis::get_context()->set(key, val);
-			SystemMonitorStation::monitor(station_name, "station_install", val.c_str());
+			monitor(station_name, "station_install", val.c_str());
 			delete[] key;
 			return val;
 		}
 		/**
 		* @brief 加入服务
 		*/
-		bool StationWarehouse::join(NetStation* station)
+		bool StationWarehouse::join(ZeroStation* station)
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
@@ -214,13 +215,13 @@ namespace agebull
 			station->_out_port = cfg.number("out_port");
 			station->_heart_port = cfg.number("heart_port");
 
-			SystemMonitorStation::monitor(station->_station_name, "station_join", station->_config.c_str());
+			monitor(station->_station_name, "station_join", station->_config.c_str());
 			return true;
 		}
 		/**
 		* @brief 退出服务
 		*/
-		bool StationWarehouse::left(NetStation* station)
+		bool StationWarehouse::left(ZeroStation* station)
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
@@ -229,14 +230,14 @@ namespace agebull
 					return false;
 				examples.erase(station->_station_name);
 			}
-			SystemMonitorStation::monitor(station->_station_name, "station_left", "");
+			monitor(station->_station_name, "station_left", "");
 
 			return true;
 		}
 		/**
 		* @brief 加入服务
 		*/
-		NetStation* StationWarehouse::find(string name)
+		ZeroStation* StationWarehouse::find(string name)
 		{
 			auto iter = examples.find(name);
 			if (iter == examples.end())
@@ -252,13 +253,13 @@ namespace agebull
 		{
 			if (arg == "*")
 			{
-				for (map<string, NetStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
 				{
 					station.second->pause(true);
 				}
 				return "Ok";
 			}
-			NetStation* station = StationWarehouse::find(arg);
+			ZeroStation* station = StationWarehouse::find(arg);
 			if (station == nullptr)
 			{
 				return"NoFind";
@@ -273,13 +274,13 @@ namespace agebull
 		{
 			if (arg == "*")
 			{
-				for (map<string, NetStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
 				{
 					station.second->resume(true);
 				}
 				return "Ok";
 			}
-			NetStation* station = StationWarehouse::find(arg);
+			ZeroStation* station = StationWarehouse::find(arg);
 			if (station == nullptr)
 			{
 				return ("NoFind");
@@ -291,7 +292,7 @@ namespace agebull
 		*/
 		string NetDispatcher::start_station(string stattion)
 		{
-			NetStation* station = StationWarehouse::find(stattion);
+			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station != nullptr)
 			{
 				return "IsRuning";
@@ -311,7 +312,15 @@ namespace agebull
 			}
 			return "Failed";
 		}
+
 		/**
+		* @brief 执行一条命令
+		*/
+		sharp_char NetDispatcher::command(const char* caller, vector<string> lines)
+		{
+			string val = call_station(caller, lines[0].c_str(), lines[1].c_str());
+			return sharp_char(val);
+		}/**
 		* 当远程调用进入时的处理
 		*/
 		string NetDispatcher::install_station(int type, string stattion)
@@ -324,7 +333,7 @@ namespace agebull
 		*/
 		string  NetDispatcher::call_station(string stattion, string command, string argument)
 		{
-			NetStation* station = StationWarehouse::find(stattion);
+			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station == nullptr)
 			{
 				return "unknow stattion";
@@ -343,13 +352,13 @@ namespace agebull
 		{
 			if (stattion == "*")
 			{
-				for (map<string, NetStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
 				{
 					station.second->close(true);
 				}
 				return "Ok";
 			}
-			NetStation* station = StationWarehouse::find(stattion);
+			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station == nullptr)
 			{
 				return ("NoFind");
@@ -365,7 +374,7 @@ namespace agebull
 			if (stattion == "*")
 			{
 				string result = "[";
-				for (map<string, NetStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
 				{
 					result += station.second->get_config();
 					result += ",";
@@ -373,7 +382,7 @@ namespace agebull
 				result += "]";
 				return result;
 			}
-			NetStation* station = StationWarehouse::find(stattion);
+			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station == nullptr)
 			{
 				return"NoFind";
@@ -449,8 +458,43 @@ namespace agebull
 			//0 路由到的地址 1 空帧 2 命令 3 参数
 			_zmq_state = recv(_out_socket, list);
 			string result = exec_command(*list[2], *list[3]);
-			send_more(send_addr,*list[0]);
+			send_addr(socket,*list[0]);
 			send_late(socket, result.c_str());
+		}
+
+		void NetDispatcher::start(void*)
+		{
+			if (!StationWarehouse::join(instance))
+			{
+				delete instance;
+				return;
+			}
+			if (instance->_zmq_state == ZmqSocketState::Succeed)
+			log_msg3("%s(%d | %d)正在启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+			else
+			log_msg3("%s(%d | %d)正在重启", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+			if (!instance->initialize())
+			{
+				log_msg3("%s(%d | %d)无法启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				return;
+			}
+			log_msg3("%s(%d | %d)正在运行", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+			bool reStrart = instance->poll();
+			StationWarehouse::left(instance);
+			instance->destruct();
+			if (reStrart)
+			{
+				delete instance;
+				instance = new NetDispatcher();
+				instance->_zmq_state = ZmqSocketState::Again;
+				zmq_threadstart(start, nullptr);
+			}
+			else
+			{
+				log_msg3("%s(%d | %d)已关闭", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				delete instance;
+				instance = nullptr;
+			}
 		}
 	}
 }

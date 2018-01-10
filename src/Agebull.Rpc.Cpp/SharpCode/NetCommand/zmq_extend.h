@@ -241,7 +241,15 @@ namespace agebull
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
 
-			setsockopt(socket);
+
+			int iZMQ_IMMEDIATE = 1;//列消息只作用于已完成的链接
+			zmq_setsockopt(socket, ZMQ_IMMEDIATE, &iZMQ_IMMEDIATE, sizeof(int));
+			int iLINGER = 5000;//关闭设置停留时间,毫秒
+			zmq_setsockopt(socket, ZMQ_LINGER, &iLINGER, sizeof(int));
+			int iRcvTimeout = 5000;
+			zmq_setsockopt(socket, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(int));
+			int iSndTimeout = 5000;
+			zmq_setsockopt(socket, ZMQ_SNDTIMEO, &iSndTimeout, sizeof(int));
 
 			int zmq_result = zmq_connect(socket, addr);
 			if (zmq_result >= 0)
@@ -466,7 +474,7 @@ namespace agebull
 		*/
 		inline ZmqSocketState send_late(ZMQ_HANDLE socket, const char* string)
 		{
-			int state = zmq_send_const(socket, string, strlen(string), ZMQ_DONTWAIT);
+			int state = zmq_send(socket, string, strlen(string), ZMQ_DONTWAIT);
 			if (state < 0)
 			{
 				return check_zmq_error();
@@ -479,7 +487,7 @@ namespace agebull
 		*/
 		inline ZmqSocketState send_more(ZMQ_HANDLE socket, const char* string)
 		{
-			int state = zmq_send_const(socket, string, strlen(string), ZMQ_SNDMORE);
+			int state = zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
 			if (state < 0)
 			{
 				return check_zmq_error();
@@ -491,12 +499,12 @@ namespace agebull
 		*/
 		inline ZmqSocketState send_addr(ZMQ_HANDLE socket, const char* addr)
 		{
-			int state = zmq_send_const(socket, addr, strlen(addr), ZMQ_SNDMORE);
+			int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
 			if (state < 0)
 			{
 				return check_zmq_error();
 			}
-			state = zmq_send_const(socket, "", 0, ZMQ_SNDMORE);
+			state = zmq_send(socket, "", 0, ZMQ_SNDMORE);
 			if (state < 0)
 			{
 				return check_zmq_error();
@@ -512,7 +520,7 @@ namespace agebull
 			size_t idx = 0;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				int state = zmq_send_const(socket, *ls[idx], ls.size(), ZMQ_SNDMORE);
+				int state = zmq_send(socket, *ls[idx], ls.size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
@@ -528,7 +536,7 @@ namespace agebull
 			size_t idx = 0;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				int state = zmq_send_const(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
+				int state = zmq_send(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
@@ -617,7 +625,7 @@ namespace agebull
 			* @brief 进行一次请求
 			* @return 如果返回为false,请检查state.
 			*/
-			bool request(vector<string>& arguments, vector<sharp_char>& response, int retry = 3)
+			bool request(vector<string>& arguments, vector<sharp_char>& result, int retry = 3)
 			{
 #ifdef TIMER
 				char buffer[MAX_PATH];
@@ -626,7 +634,7 @@ namespace agebull
 				_state = send(arguments);
 
 #ifdef TIMER
-				sprintf_s(buffer, "\n【%s】 send: %dns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				sprintf_s(buffer, "\n【%s】 send: %ldns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 				cout << buffer;
 #endif
 
@@ -639,7 +647,7 @@ namespace agebull
 				int cnt = 0;
 				do
 				{
-					_state = recv(response);
+					_state = recv(result);
 					if (_state == ZmqSocketState::Succeed)
 					{
 						break;
@@ -647,7 +655,7 @@ namespace agebull
 				} while (_state == ZmqSocketState::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
-				sprintf_s(buffer, "\n【%s】 recv: %dns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				sprintf_s(buffer, "\n【%s】 recv: %ldns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 				cout << buffer;
 #endif
 				return _state == ZmqSocketState::Succeed;

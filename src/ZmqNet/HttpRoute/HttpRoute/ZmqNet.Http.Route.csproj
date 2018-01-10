@@ -38,9 +38,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
-    <PackageReference Include="Yizuan.Service.ApiContract.Core" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,10 +50,18 @@
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Handler\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ApiContract\ZmqNet.Api.Contract.csproj" />
+    <ProjectReference Include="..\..\ZmqNetCore\ZmqNet.Rpc.Core.csproj" />
   </ItemGroup>
 
 </Project>

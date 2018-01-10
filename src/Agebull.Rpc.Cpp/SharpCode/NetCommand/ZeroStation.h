@@ -20,7 +20,7 @@ namespace agebull
 		/**
 		* @brief 表示一个基于ZMQ的网络站点
 		*/
-		class NetStation
+		class ZeroStation
 		{
 			friend class StationWarehouse;
 		protected:
@@ -168,7 +168,7 @@ namespace agebull
 			/**
 			* @brief 构造
 			*/
-			NetStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
+			ZeroStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 				: _state_semaphore(1)
 				  , _station_name(name)
 				  , _station_type(type)
@@ -193,9 +193,9 @@ namespace agebull
 			/**
 			* @brief 析构
 			*/
-			virtual ~NetStation()
+			virtual ~ZeroStation ()
 			{
-				NetStation::close(true);
+				ZeroStation::close(true);
 				_station_state = station_state::Destroy;
 			}
 			/**
@@ -231,15 +231,15 @@ namespace agebull
 			/**
 			* @brief 处理反馈
 			*/
-			virtual void response() = 0;
+			virtual void response(){}
 			/**
 			* @brief 处理请求
 			*/
-			virtual void request(ZMQ_HANDLE socket) = 0;
+			virtual void request(ZMQ_HANDLE socket) {}
 			/**
 			* 心跳的响应
 			*/
-			virtual void heartbeat() = 0;
+			virtual void heartbeat() {}
 
 			/**
 			* @brief 析构
@@ -268,7 +268,7 @@ namespace agebull
 		/**
 		* @brief 初始化
 		*/
-		inline bool NetStation::initialize()
+		inline bool ZeroStation::initialize()
 		{
 			_station_state = station_state::Start;
 			_zmq_state = ZmqSocketState::Succeed;
@@ -335,7 +335,7 @@ namespace agebull
 		/**
 		* @brief 析构
 		*/
-		inline bool NetStation::destruct()
+		inline bool ZeroStation::destruct()
 		{
 			if (_poll_items == nullptr)
 				return true;
@@ -363,7 +363,7 @@ namespace agebull
 		 * \brief
 		 * \return
 		 */
-		inline bool NetStation::poll()
+		inline bool ZeroStation::poll()
 		{
 			//登记线程开始
 			set_command_thread_start();

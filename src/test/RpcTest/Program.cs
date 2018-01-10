@@ -1,5 +1,4 @@
-﻿using Agebull.Zmq.Rpc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,54 +6,120 @@ using Gboxt.Common.DataModel;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
-using Yizuan.Service.Api;
-
+using ZmqNet.Rpc.Core.ZeroNet;
+//using ZmqNet.Rpc.Core.ZeroNet;
 namespace RpcTest
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine($"Hello {name}");
-            Task.Factory.StartNew(sub);
-            Task.Factory.StartNew(pool);
-            do
+            Console.WriteLine("Hello ZeroNet");
+            StationProgram.RegisteApiStation(new ApiStation
             {
-                Console.Write("请输入：");
-                var cmd = Console.ReadLine();
-                //if (cmd == "exist")
-                //{
-                //    runing = false;
-                //    semaphore.Release();
-                //    break;
-                //}
-                var words = cmd.Split(new char[] {' ', '\t', '\r', '\n'});
-                if (words.Length == 0)
-                {
-                    Console.WriteLine("请输入正确命令");
-                    continue;
-                }
-                Queue.Enqueue(new CommandAgument
-                {
-                    Commmand = words[0],
-                    Argument = words.Length == 1 ? null : words[1]
-                });
-                semaphore.Release();
-                semaphore.WaitOne();
-            } while (runing);
-            //RouteRpc.Run();
-            //string msg;
-            //do
+                StationName = "agebull",
+                ExecFunc = ExecCommand
+            });
+            StationProgram.RunConsole();
+
+            //while (true)
             //{
-            //    msg = Console.ReadLine();
-            //    Call(msg);
-            //} while (msg != "bye");
-            //RouteRpc.ShutDown();
-            semaphore.WaitOne();
-            //Console.ReadKey();
+            //    Console.ReadKey();
+            //    cnt = 0;
+            //    Console.WriteLine("start...");
+            //    DateTime start = DateTime.Now;
+
+            //    time = 0.0;
+            //    for (int i = 0; i < 128; i++)
+            //        tasks.Add(Task.Factory.StartNew(Heart).Id);
+            //    //foreach (var task in tasks)
+            //    //    task.Wait();
+            //    double total;
+            //    while(tasks.Count > 0)
+            //    {
+            //        Thread.Sleep(1000);
+            //        total = (DateTime.Now - start).TotalMilliseconds;
+            //        Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+            //    }
+            //    total = (DateTime.Now - start).TotalMilliseconds;
+            //    Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+            //}
         }
+        /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        static string ExecCommand(List<string> args)
+        {
+            switch (args[1])
+            {
+                case "info":
+                    return "{\"Result\":true,\"ResultData\":\"***\"}";
+            }
+            return $"{{\"Result\":false,\"Message\":\"{args[1]}\",\"ErrorCode\":0}}";
+        }
+        static List<int> tasks = new List<int>();
+        private static volatile int cnt;
+        private static double time;
+        /// <summary>
+        /// 心跳
+        /// </summary>
+        /// <returns></returns>
+        public static void Heart()
+        {
+            var request = new RequestSocket();
+            try
+            {
+                request.Options.Identity = RandomOperate.Generate(8).ToAsciiBytes();
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                request.Connect("tcp://10.5.202.234:20184"); //127.0.0.1  10.5.202.234
+                for (int i = 0; i < 1024; i++)
+                {
+                    DateTime s = DateTime.Now;
+                    if (!request.TrySendFrame(new TimeSpan(0, 0, 0, 0, 500), "test", true))
+                    {
+                        Console.WriteLine("*  1");
+                        return;
+                    }
+                    if (!request.TrySendFrame(new TimeSpan(0, 0, 0, 0, 500), "{}"))
+                    {
+                        Console.WriteLine("*  3");
+                        return;
+                    }
+                    bool more = true;
+                    //收完消息
+                    while (more)
+                    {
+                        string result;
+                        if (request.TryReceiveFrameString(new TimeSpan(0, 0, 0, 500), out result, out more))
+                        {
+                            continue;
+                        }
+                        Console.WriteLine("*  4");
+                        return;
+                    }
+                    time += (DateTime.Now - s).TotalMilliseconds;
+                    cnt++;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                request.Close();
+                tasks.Remove(Task.CurrentId.Value);
+            }
+        }
+    }
+
+}
+/*
+ 
         static string name = RandomOperate.Generate(10);
-        static Semaphore semaphore =new Semaphore(0,1);
+        static Semaphore semaphore = new Semaphore(0, 1);
         static Queue<CommandAgument> Queue = new Queue<CommandAgument>();
         private static bool runing = false;
         class CommandAgument
@@ -69,29 +134,43 @@ namespace RpcTest
                 var request = new RequestSocket();
 
                 request.Options.Identity = name.ToAsciiBytes();
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
                 request.Connect("tcp://127.0.0.1:20181");
-                
-                runing = true;
+                var timeout = new TimeSpan(0, 0, 30);
+
                 while (runing)
                 {
-                    
-                    if (!semaphore.WaitOne(new TimeSpan(0, 0, 1)))
+                    if (!semaphore.WaitOne(timeout))
                         continue;
                     if (!runing)
                     {
                         semaphore.Release();
                         break;
                     }
+                    if (Queue.Count == 0)
+                        continue;
                     var arg = Queue.Dequeue();
-                    request.SendMoreFrame(arg.Commmand ?? "");
-                    request.SendMoreFrameEmpty();
-                    request.SendFrame(arg.Argument ?? "");
-                    bool more = true;
-                    string result = request.ReceiveFrameString(out more);
+                    request.TrySendFrame(timeout, arg.Commmand ?? "", true);
+                    request.TrySendFrameEmpty(timeout, true);
+                    request.TrySendFrame(timeout, arg.Argument ?? "");
+                    bool more;
+                    string result;
+                    if (!request.TryReceiveFrameString(timeout, out result, out more))
+                    {
+                        Console.Write("处理超时");
+                        semaphore.Release();
+                        Task.Factory.StartNew(pool);
+                        break;
+                    }
                     Console.Write("返回：" + result);
                     while (more)
                     {
-                        result = request.ReceiveFrameString(out more);
+                        if (!request.TryReceiveFrameString(timeout, out result, out more))
+                        {
+                            Task.Factory.StartNew(pool);
+                            Task.Factory.StartNew(pool);
+                            break;
+                        }
                         Console.Write(result);
                     }
                     Console.WriteLine();
@@ -102,128 +181,5 @@ namespace RpcTest
             {
                 Console.WriteLine(e);
             }
-            runing = false;
         }
-
-        static void sub()
-        {
-            try
-            {
-                var subscriber = new SubscriberSocket();
-                subscriber.Options.Identity = name.ToAsciiBytes();
-                subscriber.Connect("tcp://127.0.0.1:20183");
-                subscriber.Subscribe("");
-                runing = true;
-                while (runing)
-                {
-                    bool more = true;
-                    string result;
-                    if(!subscriber.TryReceiveFrameString(new TimeSpan(0, 0, 10), out result, out more))
-                        continue;
-
-                    Console.Write("通知：" + result);
-                    if (result == "exit")
-                        runing = false;
-                    while (more)
-                    {
-                        result = subscriber.ReceiveFrameString(out more);
-                        Console.Write(result);
-                    }
-                    Console.WriteLine();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-        private static string Message
-        {
-            set { Console.WriteLine(value); }
-        }
-
-        /// <summary>
-        ///     请求命令
-        /// </summary>
-        /// <returns></returns>
-        public static object Call(string command)
-        {
-            if (string.IsNullOrWhiteSpace(command))
-                return "NoCall";
-            object result = null;
-            var cmd = new CommandArgument
-            {
-                userToken = ApiContext.MyServiceKey,
-                commandName = command,
-                requestId = RandomOperate.Generate(12),
-                cmdId = RpcEnvironment.NET_COMMAND_CALL
-            };
-            cmd.RequestStateChanged += OnRequestStateChanged;
-            Message = "Start";
-            RouteRpc.Singleton.Request.request_net_cmmmand(cmd);
-            Message = "End";
-            return result;
-        }
-
-        
-        /// <summary>
-        ///     消息处理
-        /// </summary>
-        /// <param name="sender">发送者</param>
-        /// <param name="arg">最新接收的参数（如果这不是响应状态则与发送者相同）</param>
-        public static void OnRequestStateChanged(CommandArgument sender, CommandArgument arg)
-        {
-            switch (arg.cmdState)
-            {
-                case RpcEnvironment.NET_COMMAND_STATE_SENDING:
-                    Message = "正在发送请求";
-                    return;
-                case RpcEnvironment.NET_COMMAND_STATE_UNKNOW_DATA:
-                    Message = "正在接收远程数据接";
-                    return;
-                case RpcEnvironment.NET_COMMAND_STATE_WAITING:
-                    Message = "服务器正在处理请求";
-                    return;
-                case RpcEnvironment.NET_COMMAND_STATE_DATA:
-                    Message = "远程数据推送";
-                    return;
-                case RpcEnvironment.NET_COMMAND_STATE_UNKNOW:
-                    Message = "服务器未正确响应";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_CRC_ERROR:
-                    Message = "CRC校验错误";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_NETERROR:
-                    Message = "发生网络错误";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_RETRY_MAX:
-                    Message = "超过最大错误重试次数";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_LOGICAL_ERROR:
-                    Message = "系统内部错误";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_SERVER_UNKNOW:
-                    Message = "服务器内部错误";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_TIME_OUT:
-                    Message = "请求超时";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_DATA_REPEAT:
-                    Message = "应废弃的重复请求";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_ARGUMENT_INVALID:
-                    Message = "参数数错误";
-                    break;
-                case RpcEnvironment.NET_COMMAND_STATE_SUCCEED:
-                    Message = "执行成功";
-                    break;
-            }
-            sender.RequestStateChanged -= OnRequestStateChanged;
-            RpcEnvironment.RemoveCacheCommand(arg);
-
-            sender.OnEnd?.Invoke(arg);
-        }
-
-    }
-
-}
+*/

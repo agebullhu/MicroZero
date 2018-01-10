@@ -54,6 +54,16 @@ namespace ExternalStation.Models
         private string _model;
 
         /// <summary>
+        /// 当前请求调用的API名称
+        /// </summary>
+        private string _api;
+
+        /// <summary>
+        /// 当前请求调用的参数
+        /// </summary>
+        private string _query;
+
+        /// <summary>
         /// HTTP method
         /// </summary>
         private string _httpMethod;
@@ -169,11 +179,8 @@ namespace ExternalStation.Models
             if (_isFailed)
                 return;
             //4 查找远程机器
-            FindHost();
-            if (_isFailed)
-                return;
+            _resultMessage = hostData.ByZero ? CallZero() : CallHttp();
             //5 远程调用
-            _resultMessage = CallRemote();
             //缓存
             CacheData();
         }
@@ -229,61 +236,66 @@ namespace ExternalStation.Models
         /// </summary>
         private void InitializeRoute()
         {
-            StringBuilder sb = new StringBuilder();
-            bool isFirst = true;
-            foreach (var ch in _callUri.PathAndQuery)
-            {
-                switch (ch)
-                {
-                    case '/':
-                        if (!isFirst)
-                        {
-                            sb.Append(ch);
-                        }
-                        else if (sb.Length > 0)
-                        {
-                            isFirst = false;
-                            _model = sb.ToString();
-                            sb.Clear();
-                        }
-                        break;
-                    default:
-                        sb.Append(ch);
-                        break;
-                }
-            }
-            if (_model == null)
+
+            var words = _callUri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+            _model = words[0];
+            if (words.Length <= 1)
             {
                 _isFailed = true;
-                _resultMessage = DenyAccess;
+                return;
             }
-            if (sb.Length > 0)
-                _apiAndQuery = sb.ToString();
-            else
-            {
-                _isFailed = true;
-                _resultMessage = DenyAccess;
-            }
+            _api = words[1];
+            _apiAndQuery = _api + "?" + _callUri.Query;
+            hostData = RouteData.HostMap.TryGetValue(_model, out hostData) ? hostData : RouteData.DefaultHostData;
+
+            //StringBuilder sb = new StringBuilder();
+            //int step = 0;
+            //foreach (var ch in _callUri.PathAndQuery)
+            //{
+            //    switch (ch)
+            //    {
+            //        case '/':
+            //            if (step == 0)
+            //            {
+            //                sb.Append(ch);
+            //            }
+            //            else if (sb.Length > 0)
+            //            {
+            //                isFirst = false;
+            //                _model = sb.ToString();
+            //                sb.Clear();
+            //            }
+            //            break;
+            //        case '?':
+            //            _api = sb.ToString();
+            //            break;
+            //        default:
+            //            sb.Append(ch);
+            //            break;
+            //    }
+            //}
+            //if (_model == null)
+            //{
+            //    _isFailed = true;
+            //    _resultMessage = DenyAccess;
+            //}
+            //if (sb.Length > 0)
+            //    _apiAndQuery = sb.ToString();
+            //else
+            //{
+            //    _isFailed = true;
+            //    _resultMessage = DenyAccess;
+            //}
         }
+
+        RouteHost hostData;
 
         /// <summary>
         /// 查找主机
         /// </summary>
-        private void FindHost()
+        private void FindHttpHost()
         {
-            RouteHost hostData;
-            if (!RouteData.HostMap.TryGetValue(_model, out hostData) || hostData.Hosts.Length == 0)
-            {
-                lock (RouteData.DefaultHostData)//平均分配
-                {
-                    _host = RouteData.DefaultHostData.Hosts[RouteData.DefaultHostData.Next] + _model;
-                    if (++RouteData.DefaultHostData.Next >= RouteData.DefaultHostData.Hosts.Length)
-                    {
-                        RouteData.DefaultHostData.Next = 0;
-                    }
-                }
-            }
-            else if (hostData.Hosts.Length == 1)
+            if (hostData.Hosts.Length == 1)
             {
                 _host = hostData.Hosts[0];
             }
@@ -300,6 +312,59 @@ namespace ExternalStation.Models
             }
         }
 
+        #region Zero
+
+        /// <summary>
+        /// 远程调用
+        /// </summary>
+        /// <returns></returns>
+        private string CallZero()
+        {
+            var callContext = new InternalCallContext
+            {
+                ServiceKey = RouteData.ServiceKey,
+                RequestId = Guid.NewGuid(),
+                Bear = _bear
+            };
+            ApiContext.SetRequestContext(callContext);
+            return ZmqNet.Rpc.Core.ZeroNet.StationProgram.Call(_model,
+                callContext.RequestId.ToString(), JsonConvert.SerializeObject(callContext), _api, _callUri.Query);
+
+        }
+
+        #endregion
+
+        #region Http
+
+        /// <summary>
+        /// 远程调用状态
+        /// </summary>
+        WebExceptionStatus WebStatus;
+        /// <summary>
+        /// 远程调用
+        /// </summary>
+        /// <returns></returns>
+        private string CallHttp()
+        {
+            FindHttpHost();
+            var callContext = new InternalCallContext
+            {
+                ServiceKey = RouteData.ServiceKey,
+                RequestId = Guid.NewGuid(),
+                Bear = _bear
+            };
+            ApiContext.SetRequestContext(callContext);
+            ApiContext.Current.Cache();
+            var caller = new HttpApiCaller(_host)
+            {
+                Bearer = "Bear " + ApiContext.RequestContext.Bear
+            };
+            var req = caller.CreateRequest(_apiAndQuery, _httpMethod, _httpMethod == "POST" && Request.ContentLength > 0 ? Request.Form : null);
+
+            return caller.GetResult(req, out WebStatus);
+        }
+
+        #endregion
 
         #region 缓存
 
@@ -372,34 +437,6 @@ namespace ExternalStation.Models
             }
         }
 
-        #endregion
-        #region 远程调用
-        /// <summary>
-        /// 远程调用状态
-        /// </summary>
-        WebExceptionStatus WebStatus;
-        /// <summary>
-        /// 远程调用
-        /// </summary>
-        /// <returns></returns>
-        private string CallRemote()
-        {
-            var callContext = new InternalCallContext
-            {
-                ServiceKey = RouteData.ServiceKey,
-                RequestId = Guid.NewGuid(),
-                Bear = _bear
-            };
-            ApiContext.SetRequestContext(callContext);
-            ApiContext.Current.Cache();
-            var caller = new ApiCaller(_host)
-            {
-                Bearer = "Bear " + ApiContext.RequestContext.Bear
-            };
-            var req = caller.CreateRequest(_apiAndQuery, _httpMethod, _httpMethod == "POST" && Request.ContentLength > 0 ? Request.Form : null);
-
-            return caller.GetResult(req, out WebStatus);
-        }
         #endregion
         #region 跨域支持
 

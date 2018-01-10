@@ -43,7 +43,7 @@ namespace ExternalStation.Models
             //if (sm.TotalMilliseconds > 200)
             //    LogRecorder.Warning($"执行时间异常({sm.TotalMilliseconds}):{url.LocalPath}");
             //else
-                Console.WriteLine($"{((HttpContext)arg).Connection.LocalIpAddress}:{sm.TotalMilliseconds}");
+                Console.WriteLine($"{((HttpContext)arg).Connection.LocalIpAddress} => {sm.TotalMilliseconds}ms");
         }
     }
 }

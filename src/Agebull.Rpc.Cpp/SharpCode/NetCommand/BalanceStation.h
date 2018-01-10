@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _ZMQ_NET_BALANCESTATION_H_
 #include <stdinc.h>
-#include "NetStation.h"
+#include "ZeroStation.h"
 namespace agebull
 {
 	namespace zmq_net
@@ -14,7 +14,7 @@ namespace agebull
 		* \tparam NetType
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		class BalanceStation : public NetStation
+		class BalanceStation : public ZeroStation
 		{
 		protected:
 			/**
@@ -26,7 +26,7 @@ namespace agebull
 			* @brief ππ‘Ï
 			*/
 			BalanceStation(string name)
-				: NetStation(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
+				: ZeroStation(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
 			{
 			}
 
@@ -88,6 +88,12 @@ namespace agebull
 			{
 				_workers.erase(addr);
 				monitor(_station_name, "worker_left", addr);
+				vector<sharp_char> result;
+				vector<string> argument;
+				argument.push_back("@");
+				argument.push_back(addr);
+				RequestSocket<ZMQ_REQ, false> socket("_sys_", _station_name.c_str());
+				socket.request(argument, result);
 			}
 		}
 
@@ -105,12 +111,13 @@ namespace agebull
 			if (old == _workers.end())
 			{
 				_workers.insert(make_pair(addr, item));
+				//cout << addr << endl;
 				monitor(_station_name, "worker_join", addr);
 			}
 			else
 			{
 				old->second = item;
-				monitor(_station_name, "worker_heart", addr);
+				//monitor(_station_name, "worker_heart", addr);
 			}
 		}
 

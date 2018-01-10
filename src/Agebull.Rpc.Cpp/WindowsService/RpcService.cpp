@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "rpc/CRpcService.h"
-#include "NetCommand/NetStation.h"
+#include "NetCommand/ZeroStation.h"
 #include "NetCommand/NetDispatcher.h"
 #include "NetCommand/BroadcastingStation.h"
 #ifdef WIN32
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 	char buffer[MAX_PATH + 1];
 	char *p = _getcwd(buffer, MAX_PATH);
 	cout << p << endl;
-	agebull::zmq_net::StationWarehouse::clear();
+	//agebull::zmq_net::StationWarehouse::clear();
 	CRpcService::Initialize();
 	CRpcService::Start();
 	while (get_net_state() == NET_STATE_RUNING)

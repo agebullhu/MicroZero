@@ -1,0 +1,8 @@
+﻿{
+  "zeroAddr": "127.0.0.1",
+  "monitorPort": 20183,
+  "managePort": 20181,
+  "stationName": "MessageCenter-1",
+  "serviceName": "MarkPoint",
+  "ServiceName": "MarkPoint-1"
+}

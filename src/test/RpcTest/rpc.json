@@ -1,7 +1,0 @@
-﻿{
-  "heartbeatUrl": "tcp://127.0.0.1:10000",
-  "requestUrl": "tcp://127.0.0.1:10001",
-  "answerUrl": "tcp://127.0.0.1:10002",
-  "notifyUrl": "tcp://127.0.0.1:9903",
-  "token": "agebull"
-}

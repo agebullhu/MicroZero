@@ -1,7 +1,7 @@
 #ifndef ZMQ_API_VOTE_STATION_H
 #pragma once
 #include <stdinc.h>
-#include "NetStation.h"
+#include "ZeroStation.h"
 #include "BalanceStation.h"
 #include "StationWarehouse.h"
 

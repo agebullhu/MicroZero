@@ -37,8 +37,14 @@
 
   <ItemGroup>
     <Compile Remove="Entity\**" />
+    <Compile Remove="Rpc\**" />
+    <Compile Remove="Services\**" />
     <EmbeddedResource Remove="Entity\**" />
+    <EmbeddedResource Remove="Rpc\**" />
+    <EmbeddedResource Remove="Services\**" />
     <None Remove="Entity\**" />
+    <None Remove="Rpc\**" />
+    <None Remove="Services\**" />
   </ItemGroup>
 
   <ItemGroup>

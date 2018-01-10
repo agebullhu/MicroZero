@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.Primitives;
@@ -15,14 +14,14 @@ namespace Yizuan.Service.Host
     /// <summary>
     ///     内部服务调用代理
     /// </summary>
-    internal class ApiCaller
+    internal class HttpApiCaller
     {
         #region 基本构造
 
         /// <summary>
         ///     构造
         /// </summary>
-        public ApiCaller(string host)
+        public HttpApiCaller(string host)
         {
             Host = host;
         }

@@ -1,7 +1,7 @@
 #ifndef ZMQ_API_STATION_H
 #pragma once
 #include <stdinc.h>
-#include "NetStation.h"
+#include "ZeroStation.h"
 #include "BalanceStation.h"
 
 namespace agebull
@@ -11,16 +11,19 @@ namespace agebull
 		/**
 		* @brief 负载均衡处理类
 		*/
-		class HostBalance :private vector<string>
+		class HostBalance :private map<string, time_t>
 		{
 			/**
 			* @brief 当前工作者下标
 			*/
 			size_t _index;
+			boost::mutex _mutex;
+			vector<string> list;
 		public:
 			HostBalance()
 				: _index(0)
 			{
+				
 			}
 
 			/**
@@ -28,9 +31,17 @@ namespace agebull
 			*/
 			void join(const char* host)
 			{
-				if (host == nullptr || strlen(host) == 0)
-					return;
-				push_back(host);
+				boost::lock_guard<boost::mutex> guard(_mutex);
+				auto iter = find(host);
+				if (iter == end())
+				{
+					insert(make_pair(host, time(nullptr) + 10LL));
+					list.push_back(host);
+				}
+				else
+				{
+					iter->second = time(nullptr) + 10LL;
+				}
 			}
 
 			/**
@@ -38,7 +49,17 @@ namespace agebull
 			*/
 			void succees(const char* host)
 			{
-				//_hosts.push_back(host);
+				boost::lock_guard<boost::mutex> guard(_mutex);
+				auto iter = find(host);
+				if (iter == end())
+				{
+					insert(make_pair(host, time(nullptr) + 10LL));
+					list.push_back(host);
+				}
+				else
+				{
+					iter->second = time(nullptr) + 10LL;
+				}
 			}
 
 			/**
@@ -46,7 +67,8 @@ namespace agebull
 			*/
 			void bad(const char* host)
 			{
-				left(host);
+				boost::lock_guard<boost::mutex> guard(_mutex);
+				left_(host);
 			}
 
 			/**
@@ -54,16 +76,8 @@ namespace agebull
 			*/
 			void left(const char* host)
 			{
-				auto iter = begin();
-				while (iter != end())
-				{
-					if (iter->compare(host) == 0)
-					{
-						erase(iter);
-						break;
-					}
-					++iter;
-				}
+				boost::lock_guard<boost::mutex> guard(_mutex);
+				left_(host);
 			}
 
 			/**
@@ -71,14 +85,57 @@ namespace agebull
 			*/
 			const char* get_host()
 			{
+				boost::lock_guard<boost::mutex> guard(_mutex);
+				return get_host_();
+			}
+		private:
+			/**
+			* @brief 退出集群
+			*/
+			void left_(string host)
+			{
+				erase(host);
+				auto iter = list.begin();
+				while (iter != list.end())
+				{
+					if (iter->compare(host) == 0)
+					{
+						list.erase(iter);
+						break;
+					}
+					++iter;
+				}
+			}
+			/**
+			* @brief 取一个可用的主机
+			*/
+			const char* get_host_()
+			{
 				if (size() == 0)
 					return nullptr;
 				if (size() == 1)
-					return at(0).c_str();
-				if (_index < size())
-					return at(_index++).c_str();
-				_index = 1;
-				return at(0).c_str();
+				{
+					auto iter = begin();
+					if (time(nullptr) < iter->second)
+						return iter->first.c_str();
+					clear();
+					list.clear();
+					return nullptr;
+				}
+				{
+					if (_index == size())
+						_index = 0;
+					auto iter = find(list[_index]);
+					if(iter == end())
+					{
+						left_(list[_index]);
+						return get_host_();
+					}
+					if (time(nullptr) < iter->second)
+						return iter->first.c_str();
+					erase(iter);
+				}
+				return get_host_();
 			}
 		};
 
@@ -88,7 +145,6 @@ namespace agebull
 		class ApiStation :public BalanceStation<ApiStation, string, STATION_TYPE_API>
 		{
 			HostBalance _balance;
-			boost::posix_time::ptime  _start;
 			/**
 			* @brief 发布消息队列访问锁
 			*/
@@ -131,13 +187,13 @@ namespace agebull
 					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
 				else
 					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-				if (!station->initialize())
-				{
-					log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-					return;
-				}
+					if (!station->initialize())
+					{
+						log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+							return;
+					}
 				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-				bool reStrart = station->poll();
+					bool reStrart = station->poll();
 
 				StationWarehouse::left(station);
 				station->destruct();
@@ -178,11 +234,11 @@ namespace agebull
 			/**
 			* @brief 工作开始（发送到工作者）
 			*/
-			bool job_start(const char* client_addr, const char* command, const char* request);
+			bool job_start(vector<sharp_char>& list);
 			/**
 			* @brief 工作结束(发送到请求者)
 			*/
-			bool job_end(const char* client_addr, const char* response);
+			bool job_end(vector<sharp_char>& list);
 
 			/**
 			* @brief 工作对象退出
@@ -200,8 +256,15 @@ namespace agebull
 			{
 				if (addr == nullptr || strlen(addr) == 0)
 					return;
-				_balance.join(addr);
-				BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_join(addr, value, ready);
+				if (ready)
+				{
+					_balance.join(addr);
+					BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_join(addr, value, ready);
+				}
+				else
+				{
+					_balance.succees(addr);
+				}
 			}
 		};
 	}

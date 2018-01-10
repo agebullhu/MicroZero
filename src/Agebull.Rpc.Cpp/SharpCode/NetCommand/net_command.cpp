@@ -72,7 +72,7 @@ int start_net_command()
 		thread_sleep(10);
 	}
 	cout << endl;
-	agebull::zmq_net::SystemMonitorStation::monitor("*", "system_start", "*************We come ZeroNet,luck erery day!*************");
+	agebull::zmq_net::monitor("*", "system_start", "*************We come ZeroNet,luck erery day!*************");
 	log_msg("正在启动管理点");
 	agebull::zmq_net::NetDispatcher::run();
 	while (command_thread_count < 2)
@@ -101,7 +101,7 @@ void close_net_command(bool wait)
 	log_msg("正在关闭网络命令环境...");
 	if (net_state != NET_STATE_RUNING)
 		return;
-	agebull::zmq_net::SystemMonitorStation::monitor("*", "system_stop", "*************ZeroNet is closed, see you late!*************");
+	agebull::zmq_net::monitor("*", "system_stop", "*************ZeroNet is closed, see you late!*************");
 	thread_sleep(10);
 
 	net_state = NET_STATE_CLOSING;

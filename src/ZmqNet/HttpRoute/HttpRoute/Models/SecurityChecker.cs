@@ -42,6 +42,7 @@ namespace Yizuan.Service.Host
         /// </returns>
         public bool Check()
         {
+            return true;
             if (string.IsNullOrWhiteSpace(Bear))
             {
                 return Request.GetUri().LocalPath.Contains("/oauth/getdid");

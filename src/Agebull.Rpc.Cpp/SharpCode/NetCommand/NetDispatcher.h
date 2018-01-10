@@ -1,7 +1,7 @@
 #ifndef ZMQ_API_NET_DISPATCHER_H
 #pragma once
 #include <stdinc.h>
-#include "NetStation.h"
+#include "ZeroStation.h"
 #include "StationWarehouse.h"
 
 namespace agebull
@@ -11,127 +11,77 @@ namespace agebull
 		/**
 		 * @brief 表示一个广播站点
 		 */
-		class NetDispatcher :NetStation
+		class NetDispatcher :ZeroStation
 		{
 			/**
-			* @brief 当前活动的发布类
+			* @brief 单例
 			*/
-			static NetDispatcher* example;
+			static NetDispatcher* instance;
 		public:
+			/**
+			* @brief 构造
+			*/
 			NetDispatcher()
-				:NetStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
+				:ZeroStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
 			{
 
 			}
-			virtual ~NetDispatcher() {}
-		//private:
-
-		//	/**
-		//	* @brief 暂停
-		//	*/
-		//	bool pause(bool waiting) override
-		//	{
-		//		return false;
-		//	}
-
-		//	/**
-		//	* @brief 继续
-		//	*/
-		//	bool resume(bool waiting)override
-		//	{
-		//		return false;
-		//	}
-
-		//	/**
-		//	* @brief 结束
-		//	*/
-		//	bool close(bool waiting)override
-		//	{
-		//		return false;
-		//	}
-		public:
 			/**
-			*消息泵
+			* @brief 析构
 			*/
-			static void start(void*)
-			{
-				if (!StationWarehouse::join(example))
-				{
-					delete example;
-					return;
-				}
-				if (example->_zmq_state == ZmqSocketState::Succeed)
-					log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
-				else
-					log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port)
-				if (!example->initialize())
-				{
-					log_msg3("%s(%d | %d)无法启动", example->_station_name.c_str(), example->_out_port, example->_inner_port)
-					return;
-				}
-				log_msg3("%s(%d | %d)正在运行", example->_station_name.c_str(), example->_out_port, example->_inner_port)
-				bool reStrart = example->poll();
-				StationWarehouse::left(example);
-				example->destruct();
-				if (reStrart)
-				{
-					delete example;
-					example = new NetDispatcher();
-					example->_zmq_state = ZmqSocketState::Again;
-					zmq_threadstart(start, nullptr);
-				}
-				else
-				{
-					log_msg3("%s(%d | %d)已关闭", example->_station_name.c_str(), example->_out_port, example->_inner_port)
-					delete example;
-					example = nullptr;
-				}
-			}
+			~NetDispatcher() override {}
+			/**
+			* @brief 开始执行
+			*/
+			static void start(void*);
 
 			/**
-			* 运行一个广播线程
+			*  @brief 执行
 			*/
 			static void run()
 			{
-				if (example != nullptr)
+				if (instance != nullptr)
 				{
 					return;
 				}
-				example = new NetDispatcher();
+				instance = new NetDispatcher();
 				zmq_threadstart(start, nullptr);
 				//boost::thread thrds_s(boost::bind(start));
-			}
-
-			/**
-			* @brief 执行一条命令
-			*/
-			sharp_char command(const char* caller, vector<string> lines) override
-			{
-				string val = call_station(caller, lines[0].c_str(), lines[1].c_str());
-				return sharp_char(val);
 			}
 		private:
 
 			/**
-			* @brief 处理反馈
+			* @brief 暂停
 			*/
-			virtual void response()override
+			bool pause(bool waiting) override
 			{
+				return false;
+			}
 
+			/**
+			* @brief 继续
+			*/
+			bool resume(bool waiting)override
+			{
+				return false;
+			}
+
+			/**
+			* @brief 结束
+			*/
+			bool close(bool waiting)override
+			{
+				return false;
 			}
 			/**
 			* @brief 处理请求
 			*/
-			virtual void request(ZMQ_HANDLE socket)override;
-
-			/**
-			* 心跳的响应
-			*/
-			virtual void heartbeat()override
-			{
-
-			}
+			void request(ZMQ_HANDLE socket)override;
 		public:
+			/**
+			* @brief 执行一条命令
+			*/
+			sharp_char command(const char* caller, vector<string> lines) override;
 			/**
 			* @brief 站点安装
 			*/

@@ -115,21 +115,36 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 原始者请求地址 3 请求标识 4 结果
-			if (list[2][0] == '@')
+			_zmq_state = recv(_inner_socket, list);
+			if (_zmq_state == ZmqSocketState::TimedOut)
 			{
-				worker_join(*list[0], *list[3], true);
+				return;
 			}
-			else
+			if (_zmq_state != ZmqSocketState::Succeed)
 			{
-				RedisLiveScope redis_live_scope;
-				if (TransRedis::get_context()->exists(*list[3]))//如果投票还有效，返回结投票者
-				{
-					auto vote = _workers[*list[0]];
-					acl::string ver("|");
-					ver.append(vote.flow_name.c_str());
-					TransRedis::get_context()->append(*list[3], ver.c_str());
-					send_state(*list[0], *list[3], vote.flow_name.c_str(), *list[4]);
-				}
+				log_error3("接收结果失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				return;
+			}
+
+			switch (list[2][0])
+			{
+			case '@'://加入
+				worker_join(*list[0], *list[3], true);
+				send_addr(_inner_socket, *list[0]);
+				send_late(_inner_socket, "wecome");
+				return;
+			case '*'://开始工作
+				return;
+			default: break;
+			}
+			RedisLiveScope redis_live_scope;
+			if (TransRedis::get_context()->exists(*list[3]))//如果投票还有效，返回结投票者
+			{
+				auto vote = _workers[*list[0]];
+				acl::string ver("|");
+				ver.append(vote.flow_name.c_str());
+				TransRedis::get_context()->append(*list[3], ver.c_str());
+				send_state(*list[0], *list[3], vote.flow_name.c_str(), *list[4]);
 			}
 		}
 	}

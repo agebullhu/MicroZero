@@ -177,9 +177,6 @@
     <ClInclude Include="..\SharpCode\NetCommand\VoteStation.h">
       <Filter>sys\net_cmd\vote</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\NetCommand\NetStation.h">
-      <Filter>sys\net_cmd\base</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h">
       <Filter>sys\net_cmd\api</Filter>
     </ClInclude>
@@ -199,6 +196,9 @@
       <Filter>sys\net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\StationWarehouse.h">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\ZeroStation.h">
       <Filter>sys\net_cmd\base</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,7 @@
 #ifndef ZMQ_API_BROADCASTING_STATION_H
 #pragma once
 #include <stdinc.h>
-#include "NetStation.h"
+#include "ZeroStation.h"
 #include "StationWarehouse.h"
 
 namespace agebull
@@ -18,11 +18,11 @@ namespace agebull
 		/**
 		* @brief 表示一个广播站点
 		*/
-		class BroadcastingStationBase :public NetStation
+		class BroadcastingStationBase :public ZeroStation
 		{
 		public:
 			BroadcastingStationBase(string name, int type)
-				: NetStation(name, type, ZMQ_ROUTER, ZMQ_PUB, -1)
+				: ZeroStation(name, type, ZMQ_ROUTER, ZMQ_PUB, -1)
 			{
 			}
 

@@ -1,4 +1,9 @@
 {
-  "GoodLin-OAuth-Api": [ "Http://118.31.65.217/GoodLin-OAuth-Api" ],
-  "Default": [ "Http://118.31.65.217/" ]
+  "agebull": {
+    "zero": true,
+    "alias": [ "a" ]
+  },
+  "Default": {
+    "hosts": [ "Http://118.31.65.217/" ]
+  }
 }

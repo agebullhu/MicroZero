@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace ExternalStation.Models
@@ -9,17 +11,33 @@ namespace ExternalStation.Models
     /// <summary>
     /// 路由主机
     /// </summary>
+    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     internal class RouteHost
     {
         /// <summary>
+        /// 使用ZeroNet通讯吗
+        /// </summary>
+        [DataMember, JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool ByZero { get; set; }
+
+        /// <summary>
         /// 下一次命中的主机
         /// </summary>
+        [IgnoreDataMember, JsonIgnore]
         public int Next { get; set; }
 
         /// <summary>
         /// 主机列表
         /// </summary>
+        [DataMember, JsonProperty("hosts", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string[] Hosts { get; set; }
+        /// <summary>
+        /// 别名
+        /// </summary>
+        [DataMember, JsonProperty("alias", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string[] Alias { get; set; }
+        
     }
 
     /// <summary>
@@ -62,7 +80,7 @@ namespace ExternalStation.Models
             var rootPath = Startup.Configuration["contentRoot"];
             var file = Path.Combine(rootPath, "machine.json");
             var json = File.ReadAllText(file);
-            var map1 = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
+            var map1 = JsonConvert.DeserializeObject<Dictionary<string, RouteHost>>(json);
             HostMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
             if (map1 != null)
             {
@@ -70,17 +88,18 @@ namespace ExternalStation.Models
                 {
                     if (kv.Key == "Default")
                     {
-                        DefaultHostData = new RouteHost
-                        {
-                            Hosts = kv.Value.ToArray()
-                        };
+                        DefaultHostData = kv.Value;
                     }
                     else
                     {
-                        HostMap.Add(kv.Key, new RouteHost
+                        if (!kv.Value.ByZero && (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0))
+                            continue;
+                        HostMap.Add(kv.Key, kv.Value);
+                        if (kv.Value.Alias != null)
                         {
-                            Hosts = kv.Value.ToArray()
-                        });
+                            foreach(var name in kv.Value.Alias)
+                                HostMap.Add(name, kv.Value);
+                        }
                     }
                 }
             }
