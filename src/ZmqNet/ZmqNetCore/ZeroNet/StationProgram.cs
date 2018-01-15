@@ -28,8 +28,8 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <summary>
         ///     站点集合
         /// </summary>
-        public static readonly Dictionary<string, ApiStation> stations =
-            new Dictionary<string, ApiStation>(StringComparer.OrdinalIgnoreCase);
+        public static readonly Dictionary<string, ZeroStation> stations =
+            new Dictionary<string, ZeroStation>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     站点配置
@@ -60,7 +60,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <summary>
         /// </summary>
         /// <param name="station"></param>
-        public static void RegisteApiStation(ApiStation station)
+        public static void RegisteApiStation(ZeroStation station)
         {
             if (stations.ContainsKey(station.StationName))
             {
@@ -78,7 +78,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         #endregion
 
         #region System Command
-
+        
         /// <summary>
         /// 远程调用
         /// </summary>

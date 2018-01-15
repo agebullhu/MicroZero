@@ -220,7 +220,7 @@ namespace agebull
 			/**
 			* @brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector< string> lines) override;
+			sharp_char command(const char* caller, vector<sharp_char> lines) override;
 
 			/**
 			* @brief 工作集合的响应

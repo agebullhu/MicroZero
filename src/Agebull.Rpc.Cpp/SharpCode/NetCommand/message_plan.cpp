@@ -44,7 +44,7 @@ namespace agebull
 			{
 				RedisLiveScope redis_live_scope;
 				RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
-				TransRedis::get_context()->zrangebyscore(zkey, 0, time(nullptr), &keys);
+				TransRedis::get_context()->zrangebyscore(zkey, 0, static_cast<double>(time(nullptr)), &keys);
 			}
 			for (acl::string key : keys)
 			{
@@ -135,7 +135,7 @@ namespace agebull
 			array.set_tag("messages");
 			for (auto line : message.messages)
 			{
-				array.add_array_text(line.c_str());
+				array.add_array_text(*line);
 			}
 
 			char key[64];
@@ -157,7 +157,7 @@ namespace agebull
 			acl::json_node* iter = json.first_node();
 			while (iter)
 			{
-				int idx = strcmpi_array(5, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "caller", "messages");
+				int idx = strmatchi(5, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "caller", "messages");
 				switch (idx)
 				{
 				case 0:

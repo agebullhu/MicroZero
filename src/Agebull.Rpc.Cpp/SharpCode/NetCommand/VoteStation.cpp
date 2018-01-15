@@ -37,9 +37,9 @@ namespace agebull
 		/**
 		* @brief Ö´ĞĞÒ»ÌõÃüÁî
 		*/
-		sharp_char VoteStation::command(const char* caller, vector<string> lines)
+		sharp_char VoteStation::command(const char* caller, vector<sharp_char> lines)
 		{
-			if (send_state(caller, lines[0].c_str(), lines[1].c_str(), lines[2].c_str()))
+			if (send_state(caller,* lines[0],* lines[1],* lines[2]))
 				return sharp_char("vote start");
 			return sharp_char("bad");
 		}

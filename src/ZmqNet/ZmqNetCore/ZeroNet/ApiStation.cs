@@ -14,46 +14,9 @@ namespace ZmqNet.Rpc.Core.ZeroNet
     /// <summary>
     /// Api站点
     /// </summary>
-    public class ApiStation
+    public class ApiStation : ZeroStation
     {
         RequestSocket socket;
-        /// <summary>
-        /// 站点名称
-        /// </summary>
-        public string StationName { get; set; }
-        /// <summary>
-        /// 实例名称
-        /// </summary>
-        private string _realName;
-
-        /// <summary>
-        /// 实例名称
-        /// </summary>
-        public string RealName => _realName ?? (_realName = StationName + "-" + RandomOperate.Generate(5));
-
-        /// <summary>
-        /// 站点配置
-        /// </summary>
-        public StationConfig Config { get; set; }
-
-
-        /// <summary>
-        /// 执行
-        /// </summary>
-        /// <param name="station"></param>
-        public static void Run(ApiStation station)
-        {
-            station.Close();
-            station.Config = StationProgram.GetConfig(station.StationName);
-            if (station.Config == null)
-            {
-                StationProgram.WriteLine($"{station.StationName} not find,try install...");
-                StationProgram.InstallApiStation(station.StationName);
-                return;
-            }
-            station.Run();
-        }
-
         /// <summary>
         /// 命令处理方法 
         /// </summary>
@@ -121,9 +84,9 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        public bool Run()
+        public sealed override bool Run()
         {
-            lock(this)
+            lock (this)
             {
                 if (RunState != StationState.Run)
                     RunState = StationState.Start;
@@ -132,7 +95,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
             }
             inPoll = false;
             inHeart = false;
-            
+
             socket = new RequestSocket();
             try
             {
@@ -207,7 +170,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                         }
                         StationProgram.WriteLine($"【{StationName}】heartbeat error{errorCount}...");
                     }
-                    else if(errorCount > 0)
+                    else if (errorCount > 0)
                     {
                         errorCount = 0;
                         StationProgram.WriteLine($"【{StationName}】heartbeat resume...");
@@ -231,7 +194,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <returns></returns>
         private void PollTask()
         {
-            socket.SendString("*","*");
+            socket.SendString("*", "*");
             inPoll = true;
             StationProgram.WriteLine($"【{StationName}】poll start");
             //var timeout = new TimeSpan(0, 0, 5);
@@ -256,7 +219,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                     string response = ExecCommand(arg);
                     socket.SendMoreFrame(arg[0]);
                     socket.SendFrame(response);
-                    StationProgram.WriteLine($"【{StationName}】call {arg.LinkToString(",")}=>{response}");
+                    //StationProgram.WriteLine($"【{StationName}】call {arg.LinkToString(",")}=>{response}");
                 }
             }
             catch (Exception e)
@@ -288,25 +251,6 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 socket.Close();
                 socket = null;
             }
-        }
-        /// <summary>
-        /// 运行状态
-        /// </summary>
-        public StationState RunState;
-
-        /// <summary>
-        /// 关闭
-        /// </summary>
-        /// <returns></returns>
-        public bool Close()
-        {
-            if (RunState == StationState.Run)
-            {
-                RunState = StationState.Closing;
-                Thread.Sleep(100);
-            }
-            RunState = StationState.Closed;
-            return true;
         }
     }
 }

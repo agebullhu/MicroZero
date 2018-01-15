@@ -246,16 +246,19 @@ int main(int argc, char *argv[])
 	while (get_net_state() == NET_STATE_RUNING)
 	{
 		std::cout << endl << "请输入操作命令(exit):";
-		string cmd;
-		getline(cin, cmd);
-		if (cmd.length() == 0)
+		string line;
+		getline(cin, line);
+		if (line.length() == 0)
 			break;
 		std::vector<string> cmdline;
 		// boost::is_any_of这里相当于分割规则了  
-		boost::split(cmdline, cmd, boost::is_any_of(" \n\r\t"));
+		boost::split(cmdline, line, boost::is_any_of(" \n\r\t"));
 		if (cmdline.size() == 0)
 			break;
-		string result = agebull::zmq_net::NetDispatcher::exec_command(cmdline[0].c_str(), cmdline.size() > 1 ? cmdline[1].c_str() : "");
+		std::vector<agebull::zmq_net::sharp_char> arguments;
+		for (size_t idx = 1; idx < cmdline.size(); idx++)
+			arguments.push_back(cmdline[idx]);
+		string result = agebull::zmq_net::NetDispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
 	CRpcService::Stop();

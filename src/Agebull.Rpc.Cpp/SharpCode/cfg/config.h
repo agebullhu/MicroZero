@@ -26,17 +26,50 @@ PROCESS_QUERY_LIMITED_INFORMATION 权限
 */
 void GetProcessFilePath(OUT string& sFilePath);
 
-
 /**
-*@brief 文本比较，返回匹配的下标或-1
+* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
+* \param cnt 参数总数
+* \remark 第一个（0下标）为比较源，其它的为目标
+* \return 目标的第一个算0，或小于0表示未找到
 */
-inline int strcmpi_array(int cnt, ...)
+inline int strmatch(int cnt, ...)
 {
 	va_list ap;
 	va_start(ap, cnt);
 	const char * src = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
 	for (int i = 1; i < cnt; i++)
 	{
+		const char * dest = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
+		int idx = 0;
+		for (; dest[idx] != 0 && src[idx] != 0; idx++)
+		{
+			if (dest[idx] == src[idx])
+				continue;
+			idx = -1;
+			break;
+		}
+		if (idx>= 0 && dest[idx] == 0 && src[idx] == 0)
+			return i - 1;
+	}
+	va_end(ap);
+	return -1;
+}
+
+
+/**
+ * \brief 大小写不敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
+ * \param cnt 参数总数
+ * \remark 第一个（0下标）为比较源，其它的为目标
+ * \return 目标的第一个算0，或小于0表示未找到
+ */
+inline int strmatchi(int cnt, ...)
+{
+	va_list ap;
+	va_start(ap, cnt);
+	const char * src = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
+	for (int i = 1; i < cnt; i++)
+	{
+		
 		const char * dest = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
 		int idx = 0;
 		for (; dest[idx] != 0 && src[idx] != 0; idx++)
@@ -51,9 +84,10 @@ inline int strcmpi_array(int cnt, ...)
 			{
 				continue;
 			}
+			idx = -1;
 			break;
 		}
-		if (dest[idx] == 0 && src[idx] == 0)
+		if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
 			return i - 1;
 	}
 	va_end(ap);

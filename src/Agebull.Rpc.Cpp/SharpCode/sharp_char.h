@@ -19,6 +19,11 @@ namespace agebull
 			sharp_char() : _count(nullptr), _buffer(nullptr), _size(0)
 			{
 			}
+			sharp_char(const sharp_char& fri) : _count(fri._count), _buffer(fri._buffer), _size(fri._size)
+			{
+				if (_count != nullptr)
+					*_count += 1;
+			}
 			sharp_char(char* buffer, int len) : _count(new int()), _buffer(buffer), _size(len)
 			{
 				*_count = 1;
@@ -56,7 +61,6 @@ namespace agebull
 			}
 			sharp_char(std::string& msg)
 			{
-				free();
 				_size = msg.length();
 				if (_size == 0)
 				{
@@ -84,11 +88,6 @@ namespace agebull
 				*_count = 1;
 				memcpy(_buffer, msg.c_str(), _size);
 				_buffer[_size] = 0;
-			}
-			sharp_char(sharp_char& fri) : _count(fri._count), _buffer(fri._buffer), _size(fri._size)
-			{
-				if (_count != nullptr)
-					*_count += 1;
 			}
 			~sharp_char()
 			{
@@ -184,8 +183,8 @@ namespace agebull
 				*_count -= 1;
 				if (*_count == 0)
 				{
-					delete[] _buffer;
 					delete[] _count;
+					delete[] _buffer;
 				}
 				_count = nullptr;
 				_buffer = nullptr;
@@ -222,7 +221,7 @@ namespace agebull
 				}
 				return *this;
 			}
-			sharp_char& operator = (sharp_char& fri)
+			sharp_char& operator = (const sharp_char& fri)
 			{
 				free();
 				if (fri._buffer != nullptr)
@@ -236,7 +235,7 @@ namespace agebull
 			}
 			sharp_char& operator = (char* fri)
 			{
-				return binding(fri,fri == nullptr ? 0 : strlen(fri));
+				return binding(fri, fri == nullptr ? 0 : strlen(fri));
 			}
 			const char* operator*() const
 			{

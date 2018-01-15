@@ -8,22 +8,26 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Agebull Model Entity By Extend Tools</Description>
-    <Version>1.0.0.2</Version>
+    <Description>实现消息队列功能：
+1 Api站点
+2 消息发布与订阅
+3 网络投票（并行工作流）</Description>
+    <Version>1.0.0.3</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
-    <PackageVersion>1.0.0.2</PackageVersion>
+    <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
+    <PackageVersion>1.0.0.3</PackageVersion>
 	<IncludeSymbols>true</IncludeSymbols> 
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Agebull</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

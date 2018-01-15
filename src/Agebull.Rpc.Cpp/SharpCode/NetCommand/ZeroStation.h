@@ -263,7 +263,7 @@ namespace agebull
 			/**
 			* @brief 执行一条命令
 			*/
-			virtual sharp_char command(const char* caller, vector<string> lines) = 0;
+			virtual sharp_char command(const char* caller, vector<sharp_char> lines) = 0;
 		public:
 			/**
 			* @brief 计划轮询

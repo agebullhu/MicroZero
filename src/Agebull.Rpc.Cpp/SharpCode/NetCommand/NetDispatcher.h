@@ -81,11 +81,11 @@ namespace agebull
 			/**
 			* @brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<string> lines) override;
+			sharp_char command(const char* caller, vector<sharp_char> lines) override;
 			/**
 			* @brief 站点安装
 			*/
-			static string install_station(int type, string stattion);
+			static string install_station(string type_name, string stattion);
 			/**
 			* @brief 取机器信息
 			*/
@@ -111,9 +111,17 @@ namespace agebull
 			*/
 			static string call_station(string stattion, string command, string argument);
 			/**
+			* @brief 远程调用
+			*/
+			static string call_station(const char* stattion, vector<sharp_char>& arguments);
+			/**
 			* @brief 执行命令
 			*/
-			static string exec_command(const char* command, const  char* argument);
+			static string exec_command(const char* command, vector<sharp_char> arguments);
+			/**
+			* @brief 执行命令
+			*/
+			static string exec_command(const char* command, const char* argument);
 
 		};
 	}

@@ -12,7 +12,6 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-
 		SystemMonitorStation* SystemMonitorStation::example = nullptr;
 
 		/**
@@ -27,6 +26,15 @@ namespace agebull
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
+		/**
+		*@brief 发布消息
+		*/
+		bool BroadcastingStationBase::pub_data(string publiher, string line)
+		{
+			_zmq_state = send_late(_inner_socket, line.c_str());
+			return _zmq_state == ZmqSocketState::Succeed;
+		}
+
 		void BroadcastingStation::start(void* arg)
 		{
 			BroadcastingStation* station = static_cast<BroadcastingStation*>(arg);
@@ -35,9 +43,9 @@ namespace agebull
 				return;
 			}
 			if (station->_zmq_state == ZmqSocketState::Succeed)
-				log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+			log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 			else
-				log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+			log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 			if (!station->initialize())
 			{
 				log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
@@ -87,9 +95,9 @@ namespace agebull
 				return;
 			}
 			if (example->_zmq_state == ZmqSocketState::Succeed)
-				log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port);
+			log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port);
 			else
-				log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port);
+			log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port);
 			if (!example->initialize())
 			{
 				log_msg3("%s(%d | %d)无法启动", example->_station_name.c_str(), example->_out_port, example->_inner_port);
@@ -140,6 +148,23 @@ namespace agebull
 		}
 
 		/**
+		*@brief 发布消息
+		*/
+		bool BroadcastingStationBase::publish(string publiher, string title, string plan, string arg) const
+		{
+			//boost::lock_guard<boost::mutex> guard(_mutex);
+			if (!can_do() || publiher.length() == 0)
+				return false;
+			vector<sharp_char> result;
+			vector<string> argument;
+			argument.push_back(title);
+			argument.push_back(plan);
+			argument.push_back(arg);
+			RequestSocket<ZMQ_REQ, false> socket(publiher.c_str(), _station_name.c_str());
+			return socket.request(argument, result);
+		}
+
+		/**
 		* @brief 处理请求
 		*/
 		void BroadcastingStationBase::request(ZMQ_HANDLE socket)
@@ -152,43 +177,60 @@ namespace agebull
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			if (list.size() <= 4 || list[3].empty())
+			switch (list.size())
 			{
-				pub_data(list[0], list[2], list[3]);
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "ok");
-			}
-			else
-			{
-				PlanMessage message;
-				acl::json json;
-				json.update(*list[3]);
-				acl::json_node* iter = json.first_node();
-				while (iter)
+			case 3:
 				{
-					int idx = strcmpi_array(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
-					switch (idx)
-					{
-					case 0:
-						message.plan_type = static_cast<plan_date_type>(reinterpret_cast<int>(iter->get_int64()));
-						break;
-					case 1:
-						message.plan_value = reinterpret_cast<int>(iter->get_int64());
-						break;
-					case 2:
-						message.plan_repet = reinterpret_cast<int>(iter->get_int64());
-						break;
-					default: break;
-					}
-					iter = json.next_node();
+					pub_data(list[0], list[2]);
+					_zmq_state = send_addr(socket, *list[0]);
+					_zmq_state = send_late(socket, "ok");
+					return;
 				}
-				message.caller = list[0];
-				message.messages.push_back(list[2]);
-				message.messages.push_back(list[4]);
-				plan_next(message, true);
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "plan");
+			case 4:
+				{
+					pub_data(list[0], list[2], list[3]);
+					_zmq_state = send_addr(socket, *list[0]);
+					_zmq_state = send_late(socket, "ok");
+					return;
+				}
+			default:
+				if (list[3].empty())
+				{
+					pub_data(list[0], list[2], list[3]);
+					_zmq_state = send_addr(socket, *list[0]);
+					_zmq_state = send_late(socket, "ok");
+					return;
+				}
+				break;
 			}
+			PlanMessage message;
+			acl::json json;
+			json.update(*list[3]);
+			acl::json_node* iter = json.first_node();
+			while (iter)
+			{
+				int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
+				switch (idx)
+				{
+				case 0:
+					message.plan_type = static_cast<plan_date_type>(reinterpret_cast<int>(iter->get_int64()));
+					break;
+				case 1:
+					message.plan_value = reinterpret_cast<int>(iter->get_int64());
+					break;
+				case 2:
+					message.plan_repet = reinterpret_cast<int>(iter->get_int64());
+					break;
+				default: break;
+				}
+				iter = json.next_node();
+			}
+			message.caller = list[0];
+			message.messages.push_back(list[2]);
+			message.messages.push_back(list[4]);
+			plan_next(message, true);
+			_zmq_state = send_addr(socket, *list[0]);
+			_zmq_state = send_late(socket, "plan");
 		}
 	}
 }

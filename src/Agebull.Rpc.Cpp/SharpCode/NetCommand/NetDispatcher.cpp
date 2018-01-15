@@ -39,7 +39,7 @@ namespace agebull
 		/**
 		* @brief 暂停
 		*/
-		bool  ZeroStation::pause(bool waiting)
+		bool ZeroStation::pause(bool waiting)
 		{
 			if (station_state::Run != _station_state)
 				return false;
@@ -51,7 +51,7 @@ namespace agebull
 		/**
 		* @brief 继续
 		*/
-		bool  ZeroStation::resume(bool waiting)
+		bool ZeroStation::resume(bool waiting)
 		{
 			if (station_state::Pause != _station_state)
 				return false;
@@ -64,7 +64,7 @@ namespace agebull
 		/**
 		* @brief 结束
 		*/
-		bool  ZeroStation::close(bool waiting)
+		bool ZeroStation::close(bool waiting)
 		{
 			if (!can_do())
 				return false;
@@ -74,6 +74,7 @@ namespace agebull
 			monitor(_station_name, "station_closing", "");
 			return true;
 		}
+
 		/**
 		* @brief 还原服务
 		*/
@@ -96,7 +97,9 @@ namespace agebull
 				return false;
 			}
 		}
+
 #define port_redis_key "net:port:next"
+
 		/**
 		* @brief 还原服务
 		*/
@@ -128,6 +131,7 @@ namespace agebull
 			}
 			return cnt;
 		}
+
 		/**
 		* @brief 清除所有服务
 		*/
@@ -144,6 +148,7 @@ namespace agebull
 				install(STATION_TYPE_MONITOR, "SystemMonitor");
 			}
 		}
+
 		/**
 		* @brief 初始化服务
 		*/
@@ -198,6 +203,7 @@ namespace agebull
 			delete[] key;
 			return val;
 		}
+
 		/**
 		* @brief 加入服务
 		*/
@@ -218,6 +224,7 @@ namespace agebull
 			monitor(station->_station_name, "station_join", station->_config.c_str());
 			return true;
 		}
+
 		/**
 		* @brief 退出服务
 		*/
@@ -234,6 +241,7 @@ namespace agebull
 
 			return true;
 		}
+
 		/**
 		* @brief 加入服务
 		*/
@@ -262,7 +270,7 @@ namespace agebull
 			ZeroStation* station = StationWarehouse::find(arg);
 			if (station == nullptr)
 			{
-				return"NoFind";
+				return "NoFind";
 			}
 			return station->pause(true) ? "Ok" : "Failed";
 		}
@@ -287,6 +295,7 @@ namespace agebull
 			}
 			return station->resume(true) ? "Ok" : "Failed";
 		}
+
 		/**
 		* 当远程调用进入时的处理
 		*/
@@ -316,32 +325,73 @@ namespace agebull
 		/**
 		* @brief 执行一条命令
 		*/
-		sharp_char NetDispatcher::command(const char* caller, vector<string> lines)
+		sharp_char NetDispatcher::command(const char* caller, vector<sharp_char> lines)
 		{
-			string val = call_station(caller, lines[0].c_str(), lines[1].c_str());
+			string val = call_station(caller, lines[0], lines[1]);
 			return sharp_char(val);
 		}/**
 		* 当远程调用进入时的处理
 		*/
-		string NetDispatcher::install_station(int type, string stattion)
+		string NetDispatcher::install_station(string type_name, string stattion)
 		{
-			auto cfg = StationWarehouse::install(type, stattion.c_str());
-			return StationWarehouse::restore(cfg) ? "Ok" : "Failed";
+			int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
+			acl::string config;
+			switch(type)
+			{
+			case 0:
+				config = StationWarehouse::install(STATION_TYPE_API, stattion.c_str()); break;
+			case 1:
+				config = StationWarehouse::install(STATION_TYPE_PUBLISH, stattion.c_str()); break;
+			case 2:
+				config = StationWarehouse::install(STATION_TYPE_VOTE, stattion.c_str()); break;
+			default:
+				return "TypeError";
+			}
+			return StationWarehouse::restore(config) ? "Ok" : "Failed";
 		}
+
 		/**
 		* @brief 远程调用
 		*/
-		string  NetDispatcher::call_station(string stattion, string command, string argument)
+		string NetDispatcher::call_station(string stattion, string command, string argument)
 		{
 			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station == nullptr)
 			{
 				return "unknow stattion";
 			}
-			vector<string> lines;
+			vector<sharp_char> lines;
 			lines.push_back(command);
 			lines.push_back(argument);
-			auto result= station->command("_sys_", lines);
+			auto result = station->command("_sys_", lines);
+			return result;
+		}
+
+		/**
+		* @brief 远程调用
+		*/
+		string NetDispatcher::call_station(const char* stattion, vector<sharp_char>& arguments)
+		{
+			ZeroStation* station = StationWarehouse::find(stattion);
+			if (station == nullptr)
+			{
+				return "unknow stattion";
+			}
+			if (arguments.size() == 1)
+			{
+				sharp_char empty;
+				arguments.push_back(empty);
+				arguments.push_back(empty);
+				arguments.push_back(empty);
+			}
+			else if(arguments.size() == 2)
+			{
+				auto last = arguments.begin();
+				++last;
+				sharp_char empty;
+				arguments.insert(last,2, empty);
+			}
+			auto result = station->command("_sys_", arguments);
 			return result;
 		}
 
@@ -385,68 +435,75 @@ namespace agebull
 			ZeroStation* station = StationWarehouse::find(stattion);
 			if (station == nullptr)
 			{
-				return"NoFind";
+				return "NoFind";
 			}
 			return station->get_config();
 		}
+
 		/**
 		* @brief 执行命令
 		*/
-		string NetDispatcher::exec_command(const char* command, const  char* argument)
+		string NetDispatcher::exec_command(const char* command, vector<sharp_char> arguments)
 		{
-			acl::string str = command;
-			if (str.ncompare("call", 4) == 0)
+			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit");
+			if (idx < 0)
+				return ("NoSupper");
+			switch (idx)
 			{
-				auto list = str.split("_", true);
-				if (list.size() != 3)
-					return ("NoSupper");
-				auto iter = list.begin();
-				auto host = (++iter)->c_str();
-				auto cmd = (++iter)->c_str();
+			case 0:
+			{
+				if (arguments.size() < 2)
+					return ("ArgumentError! must like :call [name] [command] [argument]");
 
-				//for (int i = 0; i< 500; i++)
-				//	boost::thread thread_loc(boost::bind(call_station, host, cmd, argument));
-				return call_station(host, cmd, argument);
+				auto host = *arguments[0];
+				arguments.erase(arguments.begin());
+
+				return call_station(host, arguments);
 			}
-			
-			if (str.compare("pause", false) == 0)
+			case 1:
 			{
-				return	pause_station(string(argument));
+				return pause_station(arguments.size() < 1? "*" : arguments[0]);
 			}
-			if (str.compare("resume", false) == 0)
+			case 2:
 			{
-				return	resume_station(string(argument));
+				return resume_station(arguments.size() < 1 ? "*" : arguments[0]);
 			}
-			if (str.compare("close", false) == 0)
+			case 3:
 			{
-				return	close_station(string(argument));
+				return start_station(arguments.size() < 1 ? "*" : arguments[0]);
 			}
-			if (str.compare("start", false) == 0)
+			case 4:
 			{
-				return	start_station(string(argument));
+				return close_station(arguments.size() < 1 ? "*" : arguments[0]);
 			}
-			if (str.compare("host", false) == 0)
+			case 5:
 			{
-				return	host_info(string(argument));
+				return host_info(arguments.size() < 1 ? "*" : arguments[0]);
 			}
-			if (str.compare("install_api", false) == 0)
+			case 6:
 			{
-				return install_station(STATION_TYPE_API, string(argument));
+				if (arguments.size() < 2)
+					return ("ArgumentError! must like :install [type] [name]");
+				return install_station(arguments[0], arguments[1]);
 			}
-			if (str.compare("install_pub", false) == 0)
-			{
-				return install_station(STATION_TYPE_PUBLISH, string(argument));
-			}
-			if (str.compare("install_vote", false) == 0)
-			{
-				return install_station(STATION_TYPE_VOTE, string(argument));
-			}
-			if (str.compare("exit", false) == 0)
+			case 7:
 			{
 				boost::thread(boost::bind(distory_net_command));
+				sleep(1);
 				return "OK";
 			}
-			return ("NoSupper");
+			default:
+				return ("NoSupper");
+			}
+		}
+
+		/**
+		* @brief 执行命令
+		*/
+		string NetDispatcher::exec_command(const char* command, const char* argument)
+		{
+			acl::string str = command;
+			return exec_command(command,{ argument });
 		}
 
 		/**
@@ -457,8 +514,15 @@ namespace agebull
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 参数
 			_zmq_state = recv(_out_socket, list);
-			string result = exec_command(*list[2], *list[3]);
-			send_addr(socket,*list[0]);
+			sharp_char caller = list[0];
+			sharp_char cmd = list[2];
+
+			list.erase(list.begin());
+			list.erase(list.begin());
+			list.erase(list.begin());
+
+			string result = exec_command(*cmd, list);
+			send_addr(socket, *caller);
 			send_late(socket, result.c_str());
 		}
 

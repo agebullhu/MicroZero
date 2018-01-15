@@ -7,7 +7,7 @@ namespace agebull
 		/**
 		* @brief 开始执行一条命令
 		*/
-		sharp_char ApiStation::command(const char* caller, vector<string> lines)
+		sharp_char ApiStation::command(const char* caller, vector<sharp_char> lines)
 		{
 			vector<sharp_char> response;
 			RequestSocket<ZMQ_REQ,false> socket(caller, _station_name.c_str());

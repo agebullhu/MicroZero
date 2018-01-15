@@ -7,7 +7,6 @@ using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 using ZmqNet.Rpc.Core.ZeroNet;
-//using ZmqNet.Rpc.Core.ZeroNet;
 namespace RpcTest
 {
     class Program
@@ -15,22 +14,23 @@ namespace RpcTest
         static void Main(string[] args)
         {
             Console.WriteLine("Hello ZeroNet");
-            //StationProgram.RegisteApiStation(new ApiStation
+            //StationProgram.RegisteApiStation(new SubStation
             //{
-            //    StationName = "agebull",
+            //    StationName = "BusinessMonitor",
             //    ExecFunc = ExecCommand
             //});
-            //StationProgram.RunConsole();
+            //StationProgram.Run/*Console*/();
 
             while (true)
             {
                 Console.ReadKey();
+                //Heart();
                 cnt = 0;
                 Console.WriteLine("start...");
                 DateTime start = DateTime.Now;
 
                 time = 0.0;
-                for (int i = 0; i < 128; i++)
+                for (int i = 0; i < 16; i++)
                     tasks.Add(Task.Factory.StartNew(Heart).Id);
                 //foreach (var task in tasks)
                 //    task.Wait();
@@ -50,18 +50,17 @@ namespace RpcTest
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        static string ExecCommand(List<string> args)
+        static void ExecCommand(string args)
         {
-            switch (args[2])
-            {
-                case "info":
-                    return "{\"Result\":true,\"ResultData\":\"***\"}";
-            }
-            return $"{{\"Result\":false,\"Caller\":\"{args[0]}\",\"Message\":\"{args[2]}\",\"ErrorCode\":0}}";
+            Console.WriteLine(args);
         }
         static List<int> tasks = new List<int>();
         private static volatile int cnt;
         private static double time;
+
+        private const string args =
+                @"{""ActionId"":""15"",""TraceMark"":""fy-baidu-fq-stfc-5"",""Value"":""{\""UrlAddress\"":\""toufang.html\""}"",""Os"":""IOS"",""Browser"":""orther""}"
+            ;
         /// <summary>
         /// 心跳
         /// </summary>
@@ -71,18 +70,18 @@ namespace RpcTest
             var request = new RequestSocket();
             try
             {
+                int id = 1;
                 request.Options.Identity = RandomOperate.Generate(8).ToAsciiBytes();
                 request.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                request.Connect("tcp://10.5.202.234:20184"); //127.0.0.1  10.5.202.234
-                for (int i = 0; i < 1024; i++)
+                request.Connect("tcp://127.0.0.1:20187"); //127.0.0.1  10.5.202.234
+                for (int i = 0; i < 1024; i++)//
                 {
+                    //Console.WriteLine("request...");
                     DateTime s = DateTime.Now;
-                    if (!request.TrySendFrame(new TimeSpan(0, 0, 0, 0, 500), "test", true))
-                    {
-                        Console.WriteLine("*  1");
-                        return;
-                    }
-                    if (!request.TrySendFrame(new TimeSpan(0, 0, 0, 0, 500), "{}"))
+                    request.SendFrame("record/v1", true);
+                    request.SendFrame($"{id++}", true);
+                    request.SendFrame("{}", true);
+                    if (!request.TrySendFrame(new TimeSpan(0, 0, 0, 3), args))
                     {
                         Console.WriteLine("*  3");
                         return;
@@ -94,6 +93,7 @@ namespace RpcTest
                         string result;
                         if (request.TryReceiveFrameString(new TimeSpan(0, 0, 0, 500), out result, out more))
                         {
+                            //Console.WriteLine(result);
                             continue;
                         }
                         Console.WriteLine("*  4");
@@ -110,7 +110,7 @@ namespace RpcTest
             finally
             {
                 request.Close();
-                tasks.Remove(Task.CurrentId.Value);
+                //tasks.Remove(Task.CurrentId.Value);
             }
         }
     }

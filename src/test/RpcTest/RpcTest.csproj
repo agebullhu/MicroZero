@@ -5,6 +5,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>RELEASE;NETCOREAPP2_0</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="App.config">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

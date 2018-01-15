@@ -286,15 +286,15 @@ namespace agebull
 			size_t sz = sizeof(int);
 #endif
 
-			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
-			int nodelay = 1;
-			int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
-			assert(rc == 0);
 			setsockopt(socket);
 
 			int zmq_result = zmq_bind(socket, host);
 			if (zmq_result >= 0)
 				return socket;
+			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
+			int nodelay = 1;
+			int rc = setsockopt(fd, IPPROTO_MAX, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
+			assert(rc == 0);
 			zmq_close(socket);
 			log_error2("绑定地址(%s)发生错误:%s", host, zmq_strerror(zmq_errno()));
 			return nullptr;
@@ -668,6 +668,42 @@ namespace agebull
 			* @brief 进行一次请求
 			* @return 如果返回为false,请检查state.
 			*/
+			bool request(vector<sharp_char>& arguments, vector<sharp_char>& result, int retry = 3)
+			{
+#ifdef TIMER
+				boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
+#endif
+				_state = send(arguments);
+
+#ifdef TIMER
+				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+#endif
+
+				if (_state != ZmqSocketState::Succeed)
+					return false;
+
+#ifdef TIMER
+				start = boost::posix_time::microsec_clock::universal_time();
+#endif
+				int cnt = 0;
+				do
+				{
+					_state = recv(result);
+					if (_state == ZmqSocketState::Succeed)
+					{
+						break;
+					}
+				} while (_state == ZmqSocketState::TimedOut && ++cnt < retry);
+
+#ifdef TIMER
+				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+#endif
+				return _state == ZmqSocketState::Succeed;
+			}
+			/**
+			* @brief 进行一次请求
+			* @return 如果返回为false,请检查state.
+			*/
 			bool request(vector<string>& arguments, vector<sharp_char>& result, int retry = 3)
 			{
 #ifdef TIMER
@@ -766,7 +802,7 @@ namespace agebull
 			/**
 			* \brief 执行次数
 			*/
-			size_t real_repet;
+			int real_repet;
 
 			/**
 			* \brief 发起者
@@ -775,7 +811,7 @@ namespace agebull
 			/**
 			* \brief 消息内容
 			*/
-			vector<string> messages;
+			vector<sharp_char> messages;
 		};
 	}
 }
