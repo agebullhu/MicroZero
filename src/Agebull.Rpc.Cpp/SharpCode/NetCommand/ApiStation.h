@@ -23,7 +23,7 @@ namespace agebull
 			HostBalance()
 				: _index(0)
 			{
-				
+
 			}
 
 			/**
@@ -123,10 +123,10 @@ namespace agebull
 					return nullptr;
 				}
 				{
-					if (_index == size())
+					if (++_index == size())
 						_index = 0;
 					auto iter = find(list[_index]);
-					if(iter == end())
+					if (iter == end())
 					{
 						left_(list[_index]);
 						return get_host_();
@@ -144,11 +144,10 @@ namespace agebull
 		*/
 		class ApiStation :public BalanceStation<ApiStation, string, STATION_TYPE_API>
 		{
-			HostBalance _balance;
 			/**
 			* @brief 发布消息队列访问锁
 			*/
-			boost::mutex _mutex;
+			HostBalance _balance;
 		public:
 			/**
 			* @brief 构造
@@ -184,16 +183,16 @@ namespace agebull
 					return;
 				}
 				if (station->_zmq_state == ZmqSocketState::Succeed)
-					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 				else
-					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-					if (!station->initialize())
-					{
-						log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-							return;
-					}
-				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port)
-					bool reStrart = station->poll();
+					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				if (!station->initialize())
+				{
+					log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+					return;
+				}
+				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				bool reStrart = station->poll();
 
 				StationWarehouse::left(station);
 				station->destruct();
@@ -205,7 +204,7 @@ namespace agebull
 				}
 				else
 				{
-					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port)
+					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 				}
 				delete station;
 			}

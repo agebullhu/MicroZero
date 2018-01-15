@@ -3,6 +3,9 @@
     "zero": true,
     "alias": [ "a" ]
   },
+  "markpoint": {
+    "zero": true
+  },
   "Default": {
     "hosts": [ "Http://118.31.65.217/" ]
   }

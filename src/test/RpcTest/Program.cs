@@ -15,35 +15,35 @@ namespace RpcTest
         static void Main(string[] args)
         {
             Console.WriteLine("Hello ZeroNet");
-            StationProgram.RegisteApiStation(new ApiStation
-            {
-                StationName = "agebull",
-                ExecFunc = ExecCommand
-            });
-            StationProgram.RunConsole();
-
-            //while (true)
+            //StationProgram.RegisteApiStation(new ApiStation
             //{
-            //    Console.ReadKey();
-            //    cnt = 0;
-            //    Console.WriteLine("start...");
-            //    DateTime start = DateTime.Now;
+            //    StationName = "agebull",
+            //    ExecFunc = ExecCommand
+            //});
+            //StationProgram.RunConsole();
 
-            //    time = 0.0;
-            //    for (int i = 0; i < 128; i++)
-            //        tasks.Add(Task.Factory.StartNew(Heart).Id);
-            //    //foreach (var task in tasks)
-            //    //    task.Wait();
-            //    double total;
-            //    while(tasks.Count > 0)
-            //    {
-            //        Thread.Sleep(1000);
-            //        total = (DateTime.Now - start).TotalMilliseconds;
-            //        Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
-            //    }
-            //    total = (DateTime.Now - start).TotalMilliseconds;
-            //    Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
-            //}
+            while (true)
+            {
+                Console.ReadKey();
+                cnt = 0;
+                Console.WriteLine("start...");
+                DateTime start = DateTime.Now;
+
+                time = 0.0;
+                for (int i = 0; i < 128; i++)
+                    tasks.Add(Task.Factory.StartNew(Heart).Id);
+                //foreach (var task in tasks)
+                //    task.Wait();
+                double total;
+                while (tasks.Count > 0)
+                {
+                    Thread.Sleep(1000);
+                    total = (DateTime.Now - start).TotalMilliseconds;
+                    Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+                }
+                total = (DateTime.Now - start).TotalMilliseconds;
+                Console.WriteLine($"***{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+            }
         }
         /// <summary>
         /// 执行命令
@@ -52,12 +52,12 @@ namespace RpcTest
         /// <returns></returns>
         static string ExecCommand(List<string> args)
         {
-            switch (args[1])
+            switch (args[2])
             {
                 case "info":
                     return "{\"Result\":true,\"ResultData\":\"***\"}";
             }
-            return $"{{\"Result\":false,\"Message\":\"{args[1]}\",\"ErrorCode\":0}}";
+            return $"{{\"Result\":false,\"Caller\":\"{args[0]}\",\"Message\":\"{args[2]}\",\"ErrorCode\":0}}";
         }
         static List<int> tasks = new List<int>();
         private static volatile int cnt;

@@ -22,3 +22,4 @@ bin
 /src/Agebull.Rpc.Cpp/Release
 /src/Agebull.Rpc.Cpp/WindowsService/Release
 *.db
+packages

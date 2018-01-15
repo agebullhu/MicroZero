@@ -5,18 +5,18 @@
 #include "zmq_extend.h"
 #include "StationWarehouse.h"
 
-#define STATION_TYPE_DISPATCHER 1
-#define STATION_TYPE_MONITOR 2
-#define STATION_TYPE_API 3
-#define STATION_TYPE_VOTE 4
-#define STATION_TYPE_PUBLISH 5
-
 
 
 namespace agebull
 {
 	namespace zmq_net
 	{
+#define STATION_TYPE_DISPATCHER 1
+#define STATION_TYPE_MONITOR 2
+#define STATION_TYPE_API 3
+#define STATION_TYPE_VOTE 4
+#define STATION_TYPE_PUBLISH 5
+
 		/**
 		* @brief 表示一个基于ZMQ的网络站点
 		*/
@@ -24,6 +24,7 @@ namespace agebull
 		{
 			friend class StationWarehouse;
 		protected:
+			bool _in_plan_poll;
 
 			acl::string _config;
 			/**
@@ -170,22 +171,23 @@ namespace agebull
 			*/
 			ZeroStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 				: _state_semaphore(1)
-				  , _station_name(name)
-				  , _station_type(type)
-				  , _out_port(0)
-				  , _inner_port(0)
-				  , _heart_port(0)
-				  , _out_zmq_type(out_zmq_type)
-				  , _inner_zmq_type(inner_zmq_type)
-				  , _heart_zmq_type(heart_zmq_type)
-				  , _poll_items(nullptr)
-				  , _poll_count(0)
-				  , _out_socket(nullptr)
-				  , _out_socket_inproc(nullptr)
-			      , _inner_socket(nullptr)
-				  , _heart_socket(nullptr)
-				  , _zmq_state(ZmqSocketState::Succeed)
-				  , _station_state(station_state::None)
+				, _station_name(name)
+				, _station_type(type)
+				, _out_port(0)
+				, _inner_port(0)
+				, _heart_port(0)
+				, _out_zmq_type(out_zmq_type)
+				, _inner_zmq_type(inner_zmq_type)
+				, _heart_zmq_type(heart_zmq_type)
+				, _poll_items(nullptr)
+				, _poll_count(0)
+				, _out_socket(nullptr)
+				, _out_socket_inproc(nullptr)
+				, _inner_socket(nullptr)
+				, _heart_socket(nullptr)
+				, _zmq_state(ZmqSocketState::Succeed)
+				, _station_state(station_state::None)
+				, _in_plan_poll(false)
 			{
 			}
 
@@ -193,7 +195,7 @@ namespace agebull
 			/**
 			* @brief 析构
 			*/
-			virtual ~ZeroStation ()
+			virtual ~ZeroStation()
 			{
 				ZeroStation::close(true);
 				_station_state = station_state::Destroy;
@@ -231,7 +233,7 @@ namespace agebull
 			/**
 			* @brief 处理反馈
 			*/
-			virtual void response(){}
+			virtual void response() {}
 			/**
 			* @brief 处理请求
 			*/
@@ -261,7 +263,51 @@ namespace agebull
 			/**
 			* @brief 执行一条命令
 			*/
-			virtual sharp_char command(const char* caller, vector< string> lines) = 0;
+			virtual sharp_char command(const char* caller, vector<string> lines) = 0;
+		public:
+			/**
+			* @brief 计划轮询
+			*/
+			static void plan_poll(void* arg)
+			{
+				ZeroStation* station = static_cast<ZeroStation*>(arg);
+				station->plan_poll_();
+			}
+		protected:
+			/**
+			* @brief 计划轮询
+			*/
+			void plan_poll_();
+
+			/**
+			* \brief 载入现在到期的内容
+			*/
+			int load_now(vector<PlanMessage>& messages) const;
+
+			/**
+			* \brief 删除一个计划
+			*/
+			bool remove(PlanMessage& message) const;
+
+			/**
+			* \brief 计划下一次执行时间
+			*/
+			bool plan_next(PlanMessage& message, bool first) const;
+
+			/**
+			* \brief 保存下一次执行时间
+			*/
+			bool save_next(PlanMessage& message) const;
+
+			/**
+			* \brief 保存配置
+			*/
+			static bool save_message(PlanMessage& message);
+
+			/**
+			* \brief 读取配置
+			*/
+			static bool load_message(const char* key, PlanMessage& message);
 		};
 
 
@@ -293,11 +339,19 @@ namespace agebull
 			if (_out_zmq_type >= 0)
 			{
 				_out_socket = create_server_socket(_station_name.c_str(), _out_zmq_type, _out_port);
-				_out_socket_inproc = create_server_socket(_station_name.c_str(), _out_zmq_type);
-
 				if (_out_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
+					log_error2("%s initialize error(out) %s", _station_name, zmq_strerror(zmq_errno()));
+					set_command_thread_bad(_station_name.c_str());
+					return false;
+				}
+				_out_socket_inproc = create_server_socket(_station_name.c_str(), _out_zmq_type);
+				if (_out_socket_inproc == nullptr)
+				{
+					_station_state = station_state::Failed;
+					log_error2("%s initialize error(inproc) %s", _station_name, zmq_strerror(zmq_errno()));
+					set_command_thread_bad(_station_name.c_str());
 					return false;
 				}
 				if (_out_zmq_type != ZMQ_PUB)
@@ -312,6 +366,8 @@ namespace agebull
 				if (_inner_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
+					log_error2("%s initialize error(inner) %s", _station_name, zmq_strerror(zmq_errno()));
+					set_command_thread_bad(_station_name.c_str());
 					return false;
 				}
 				if (_inner_zmq_type != ZMQ_PUB)
@@ -323,6 +379,8 @@ namespace agebull
 				if (_heart_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
+					log_error2("%s initialize error(heart) %s", _station_name, zmq_strerror(zmq_errno()));
+					set_command_thread_bad(_station_name.c_str());
 					return false;
 				}
 				if (_heart_zmq_type != ZMQ_PUB)
@@ -355,7 +413,7 @@ namespace agebull
 				close_socket(_heart_socket, get_heart_address());
 			}
 			//登记线程关闭
-			set_command_thread_end();
+			set_command_thread_end(_station_name.c_str());
 			_station_state = station_state::Closed;
 			return true;
 		}
@@ -365,8 +423,8 @@ namespace agebull
 		 */
 		inline bool ZeroStation::poll()
 		{
+			set_command_thread_start(_station_name.c_str());
 			//登记线程开始
-			set_command_thread_start();
 			while (true)
 			{
 				if (!can_do())
@@ -411,7 +469,6 @@ namespace agebull
 					}
 				}
 			}
-			set_command_thread_end();
 			return _zmq_state < ZmqSocketState::Term && _zmq_state > ZmqSocketState::Empty;
 		}
 

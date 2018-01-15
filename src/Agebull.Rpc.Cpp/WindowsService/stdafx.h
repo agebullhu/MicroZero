@@ -20,11 +20,6 @@
 #define ATL_NO_ASSERT_ON_DESTROY_NONEXISTENT_WINDOW
 
 #include "resource.h"
-//#include <atlbase.h>
-//#include <atlcom.h>
-//#include <atlctl.h>
-
-
 
 #include "stdinc.h"
 
@@ -36,4 +31,10 @@
 #include <cfg/config.h>
 #include "redis/redis.h"
 #include "NetCommand/command_serve.h"
+
+#ifdef WINDOWS_SERVICE
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
+#endif
 

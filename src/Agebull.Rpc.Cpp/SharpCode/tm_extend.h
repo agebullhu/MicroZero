@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <string>
 
+#define time_span(ms) boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) + boost::posix_time::microseconds(ms)
+
 #ifndef CLR
 inline void today_str(char *str, int zone)
 {

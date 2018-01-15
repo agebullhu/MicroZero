@@ -88,6 +88,7 @@ namespace agebull
 			{
 				_workers.erase(addr);
 				monitor(_station_name, "worker_left", addr);
+
 				vector<sharp_char> result;
 				vector<string> argument;
 				argument.push_back("@");
@@ -111,12 +112,13 @@ namespace agebull
 			if (old == _workers.end())
 			{
 				_workers.insert(make_pair(addr, item));
-				//cout << addr << endl;
+				log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
 				monitor(_station_name, "worker_join", addr);
 			}
 			else
 			{
 				old->second = item;
+				log_trace2(DEBUG_BASE, 1, "station %s => %s heartbeat", _station_name, addr);
 				//monitor(_station_name, "worker_heart", addr);
 			}
 		}

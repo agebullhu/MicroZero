@@ -74,10 +74,9 @@ namespace agebull
 				_zmq_state = send_late(socket, "NoWork");
 				return _zmq_state == ZmqSocketState::Succeed;
 			}
-			list.insert(list.begin(), worker);
-			sharp_char& tmp = list[1];
-			list[1] = list[2];
-			list[2] = tmp;
+
+			_zmq_state = send_addr(_inner_socket, worker);
+			//list.erase(++list.begin());
 			_zmq_state = send(_inner_socket, list);
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
@@ -88,13 +87,10 @@ namespace agebull
 		bool ApiStation::job_end(vector<sharp_char>& list)
 		{
 			assert(list.size() >= 3 && list[2].size() > 0);
-
-			list.erase(list.begin());
-			sharp_char& tmp = list[0];
-			list[0] = list[1];
-			list[1] = tmp;
-
-			_zmq_state = send(list[2][0] == '_' ? _out_socket_inproc : _out_socket, list);
+			
+			//list.erase(b);
+			list[2].swap(list[1]);
+			_zmq_state = send(list[1][0] == '_' ? _out_socket_inproc : _out_socket, ++list.begin(), list.end());
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 

@@ -470,15 +470,15 @@ namespace agebull
 				return;
 			}
 			if (instance->_zmq_state == ZmqSocketState::Succeed)
-			log_msg3("%s(%d | %d)正在启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				log_msg3("%s(%d | %d)正在启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
 			else
-			log_msg3("%s(%d | %d)正在重启", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				log_msg3("%s(%d | %d)正在重启", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
 			if (!instance->initialize())
 			{
-				log_msg3("%s(%d | %d)无法启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				log_msg3("%s(%d | %d)无法启动", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
 				return;
 			}
-			log_msg3("%s(%d | %d)正在运行", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+			log_msg3("%s(%d | %d)正在运行", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
 			bool reStrart = instance->poll();
 			StationWarehouse::left(instance);
 			instance->destruct();
@@ -491,7 +491,7 @@ namespace agebull
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port)
+				log_msg3("%s(%d | %d)已关闭", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
 				delete instance;
 				instance = nullptr;
 			}

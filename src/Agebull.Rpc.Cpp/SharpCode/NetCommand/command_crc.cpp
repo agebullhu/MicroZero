@@ -113,37 +113,26 @@ static unsigned char auchCRCLo[] = {
 
 };
 
-unsigned short CRC166(unsigned char *puchMsg, unsigned short usDataLen)
+ushort get_crc(const char *msg, size_t len)
 {
-
 	unsigned char uchCRCHi = 0xFF;
-
 	unsigned char uchCRCLo = 0xFF;
-
-	unsigned uIndex;
-
-	while (usDataLen--)
+	while (len--)
 	{
-
-		uIndex = uchCRCHi ^ *puchMsg++;
-
+		unsigned uIndex = uchCRCHi ^ *msg++;
 		uchCRCHi = uchCRCLo ^ auchCRCHi[uIndex];
-
 		uchCRCLo = auchCRCLo[uIndex];
-
 	}
-
-	return ((uchCRCHi << 8) | uchCRCLo);
-
+	return (uchCRCHi << 8) | uchCRCLo;
 }
 
 //写入CRC校验码
 void write_crc(PNetCommand cmd)
 {
-	cmd->crc_code = CRC166(reinterpret_cast<unsigned char *>(cmd), NETCOMMAND_BODY_LEN);
+	cmd->crc_code = get_crc(reinterpret_cast<const char *>(cmd), NETCOMMAND_BODY_LEN);
 }
 //校验CRC校验码
 bool check_crc(PNetCommand cmd)
 {
-	return cmd->crc_code == CRC166(reinterpret_cast<unsigned char *>(cmd), NETCOMMAND_BODY_LEN);
+	return cmd->crc_code == get_crc(reinterpret_cast<const char *>(cmd), NETCOMMAND_BODY_LEN);
 }

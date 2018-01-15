@@ -5,13 +5,6 @@
 
 
 
-//网络状态
-typedef int NET_STATE;
-const NET_STATE NET_STATE_NONE = 0;
-const NET_STATE NET_STATE_RUNING = 1;
-const NET_STATE NET_STATE_CLOSING = 2;
-const NET_STATE NET_STATE_CLOSED = 3;
-const NET_STATE NET_STATE_DISTORY = 4;
 
 typedef void* ZMQ_HANDLE;
 
@@ -205,5 +198,9 @@ public:
 	Agebull::Tson::Serializer wirter(get_cmd_buffer(net_cmd), sizeof(type) * 2 - NETCOMMAND_HEAD_LEN);\
 	Serialize(wirter, &args);
 
+//写入CRC校验码
+void write_crc(PNetCommand cmd);
+//校验CRC校验码
+bool check_crc(PNetCommand cmd);
 
 #endif // !_COMMAND_DEF_H

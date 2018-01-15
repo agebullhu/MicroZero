@@ -390,13 +390,20 @@ public:
 			context->end_trans();
 	}
 };
-
-#define REDIS_DB_NET_STATION 7//站点配置
-#define REDIS_DB_SYSTEM 6//系统
-#define REDIS_DB_TEMPLATE 5//模板
-#define REDIS_DB_CUSOMER 4//客户
-#define REDIS_DB_COMMAND 2//命令
-#define REDIS_DB_PROXY 1//代理服务
+//消息队列的消息内容
+#define REDIS_DB_ZERO_MESSAGE 8
+//站点配置
+#define REDIS_DB_NET_STATION 7
+//系统
+#define REDIS_DB_SYSTEM 6
+//模板
+#define REDIS_DB_TEMPLATE 5
+//客户
+#define REDIS_DB_CUSOMER 4
+//命令
+#define REDIS_DB_COMMAND 2
+//代理服务
+#define REDIS_DB_PROXY 1
 
 #endif
 #endif

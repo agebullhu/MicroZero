@@ -12,17 +12,19 @@ void log_acl_debug(int section, int  level, const char* fname, int line, const c
 void log_acl_trace(int section, int  level, string msg);
 
 /*
- * 输出到DEBUG窗口
- */
-inline void DebugOut(string msg)
+* 输出到DEBUG窗口
+*/
+inline void out_debug(string msg)
 {
-	msg += "\r\n";
+	msg = "\r\n" + msg;
+#ifdef WIN32
 	OutputDebugStringA(msg.c_str());
-	//cout << msg.c_str() << endl;
+#endif
+	cout << msg.c_str();
 }
 
 #define DEBUG_BASE			100
-#define DEBUG_REQUEST		(DEBUG_BASE + 1)
+#define DEBUG_TIMER		    (DEBUG_BASE + 1)
 #define DEBUG_CALL			(DEBUG_BASE + 2)
 #define DEBUG_RESULT		(DEBUG_BASE + 3)
 #define DEBUG_PUB			(DEBUG_BASE + 4)
@@ -30,7 +32,7 @@ inline void DebugOut(string msg)
 #define DEBUG_QUOTE_NOTIFY	(DEBUG_BASE + 6)
 #define DEBUG_CONFIG		("100:6; 101:6; 102:6; 103:6; 104:6; 106:6; 106:6")
 
-#ifndef LOG_BOOST_FORMAT
+#ifdef LOG_SPRINTF_FORMAT
 
 #define log_warn(msg)  \
 	log_acl_warn__FILE__, __LINE__, __FUNCTION__, msg)
@@ -221,10 +223,10 @@ inline void DebugOut(string msg)
 #else
 
 #define log_warn(msg)  \
-	log_acl_warn__FILE__, __LINE__, __FUNCTION__, msg)
+	log_acl_warn(__FILE__, __LINE__, __FUNCTION__, msg)
 
 #define log_fatal(msg)  \
-	log_acl_fatal__FILE__, __LINE__, __FUNCTION__,msg)
+	log_acl_fatal(__FILE__, __LINE__, __FUNCTION__,msg)
 
 #define log_msg(msg) \
 	log_acl_msg(msg)

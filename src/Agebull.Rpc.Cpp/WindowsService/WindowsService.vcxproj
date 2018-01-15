@@ -237,6 +237,7 @@
     <ClCompile Include="..\SharpCode\log\mylogger.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\ApiStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp" />
+    <ClCompile Include="..\SharpCode\NetCommand\message_plan.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\NetDispatcher.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\VoteStation.cpp" />
     <ClCompile Include="..\SharpCode\NetCommand\net_command.cpp" />

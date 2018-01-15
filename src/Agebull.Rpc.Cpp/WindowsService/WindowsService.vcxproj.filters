@@ -109,6 +109,9 @@
     <ClCompile Include="..\sharpcode\NetCommand\BroadcastingStation.cpp">
       <Filter>sys\net_cmd\notify</Filter>
     </ClCompile>
+    <ClCompile Include="..\SharpCode\NetCommand\message_plan.cpp">
+      <Filter>sys\net_cmd\base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

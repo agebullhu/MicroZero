@@ -108,7 +108,7 @@ namespace agebull
 			}
 			bool empty() const
 			{
-				return _buffer == nullptr || _size <= 1;
+				return _buffer == nullptr || _size == 0;
 			}
 			char operator[](size_t idx) const
 			{
@@ -186,29 +186,57 @@ namespace agebull
 				{
 					delete[] _buffer;
 					delete[] _count;
-					_count = nullptr;
-					_buffer = nullptr;
 				}
+				_count = nullptr;
+				_buffer = nullptr;
+				_size = 0;
 			}
-			sharp_char& binding(char* fri)
+			sharp_char& binding(char* fri,size_t len)
 			{
 				free();
+				_size = len;
 				_buffer = fri;
 				_count = new int();
 				*_count = 1;
 				return *this;
 			}
+			/**
+			 * @brief ½»»»
+			 */
+			sharp_char& swap(sharp_char& fri) noexcept
+			{
+				{
+					char* tmp = _buffer;
+					_buffer = fri._buffer;
+					fri._buffer = tmp;
+				}
+				{
+					int* tmp = _count;
+					_count = fri._count;
+					fri._count = tmp;
+				}
+				{
+					size_t tmp = _size;
+					_size = fri._size;
+					fri._size = tmp;
+				}
+				return *this;
+			}
 			sharp_char& operator = (sharp_char& fri)
 			{
 				free();
-				_buffer = fri._buffer;
-				_count = fri._count;
-				*_count += 1;
+				if (fri._buffer != nullptr)
+				{
+					_buffer = fri._buffer;
+					_size = fri._size;
+					_count = fri._count;
+					*_count += 1;
+				}
 				return *this;
 			}
 			sharp_char& operator = (char* fri)
 			{
-				return binding(fri);
+				return binding(fri,fri == nullptr ? 0 : strlen(fri));
 			}
 			const char* operator*() const
 			{

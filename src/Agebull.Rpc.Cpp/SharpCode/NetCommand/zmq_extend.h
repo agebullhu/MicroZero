@@ -13,7 +13,6 @@ namespace agebull
 #define STATION_TYPE_VOTE 4
 #define STATION_TYPE_PUBLISH 5
 
-#define time_span(ms) boost::posix_time::ptime(boost::posix_time::microsec_clock::universal_time()) + boost::posix_time::microseconds(ms)
 
 
 		/**
@@ -267,7 +266,7 @@ namespace agebull
 			return create_req_socket(address, ZMQ_REQ, name);
 		}
 
-		//生成ZMQ连接对象
+		//生成ZMQ连接对象(tcp)
 		inline ZMQ_HANDLE create_server_socket(const char* name, int type, int port)
 		{
 			char host[MAX_PATH];
@@ -279,6 +278,18 @@ namespace agebull
 				return nullptr;
 			}
 
+#if WIN32
+			SOCKET fd;
+			size_t sz = sizeof(SOCKET);
+#else
+			int fd;
+			size_t sz = sizeof(int);
+#endif
+
+			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
+			int nodelay = 1;
+			int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
+			assert(rc == 0);
 			setsockopt(socket);
 
 			int zmq_result = zmq_bind(socket, host);
@@ -289,7 +300,7 @@ namespace agebull
 			return nullptr;
 		}
 
-		//生成ZMQ连接对象
+		//生成ZMQ连接对象(inproc)
 		inline ZMQ_HANDLE create_server_socket(const char* name, int type)
 		{
 			char host[MAX_PATH];
@@ -515,12 +526,29 @@ namespace agebull
 		/**
 		* @brief 发送
 		*/
+		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<sharp_char>::iterator iter, vector<sharp_char>::iterator end)
+		{
+			size_t idx = 0;
+			while (iter != end)
+			{
+				int state = zmq_send(socket, iter->operator*(), iter->size(), ZMQ_SNDMORE);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
+				++iter;
+			}
+			return send_late(socket, "");
+		}
+		/**
+		* @brief 发送
+		*/
 		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<sharp_char>& ls)
 		{
 			size_t idx = 0;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				int state = zmq_send(socket, *ls[idx], ls.size(), ZMQ_SNDMORE);
+				int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
@@ -563,6 +591,21 @@ namespace agebull
 			{
 				sprintf_s(_address, "%s://%s", is_tcp ? "tcp" : "inproc", station);
 				_socket = create_req_socket(_address, zmq_type, name);
+				if (is_tcp)
+				{
+#if WIN32
+					SOCKET fd;
+					size_t sz = sizeof(SOCKET);
+#else
+					int fd;
+					size_t sz = sizeof(int);
+#endif
+
+					zmq_getsockopt(_socket, ZMQ_FD, &fd, &sz);
+					int nodelay = 1;
+					int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
+					assert(rc == 0);
+				}
 #ifdef TIMER
 				strcpy(_station, station);
 #endif
@@ -628,14 +671,12 @@ namespace agebull
 			bool request(vector<string>& arguments, vector<sharp_char>& result, int retry = 3)
 			{
 #ifdef TIMER
-				char buffer[MAX_PATH];
 				boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 #endif
 				_state = send(arguments);
 
 #ifdef TIMER
-				sprintf_s(buffer, "\n【%s】 send: %ldns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
-				cout << buffer;
+				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 
 				if (_state != ZmqSocketState::Succeed)
@@ -655,11 +696,86 @@ namespace agebull
 				} while (_state == ZmqSocketState::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
-				sprintf_s(buffer, "\n【%s】 recv: %ldns\n", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
-				cout << buffer;
+				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 				return _state == ZmqSocketState::Succeed;
 			}
+		};
+
+
+		/**
+		* \brief 计划类型
+		*/
+		enum class plan_date_type
+		{
+			/**
+			* \brief 无计划，立即发送
+			*/
+			None,
+			/**
+			* \brief 在指定的时间发送
+			*/
+			Time,
+			/**
+			* \brief 分钟间隔后发送
+			*/
+			Minute,
+			/**
+			* \brief 小时间隔后发送
+			*/
+			Hour,
+			/**
+			* \brief 日间隔后发送
+			*/
+			Day,
+			/**
+			* \brief 周间隔后发送
+			*/
+			Week,
+			/**
+			* \brief 月间隔后发送
+			*/
+			Month,
+			/**
+			* \brief 年间隔后发送
+			*/
+			Year
+		};
+		struct PlanMessage
+		{
+			/**
+			* \brief 消息标识
+			*/
+			size_t plan_id;
+
+			/**
+			* \brief 计划类型
+			*/
+			plan_date_type plan_type;
+
+			/**
+			* \brief 类型值
+			*/
+			int plan_value;
+
+			/**
+			* \brief 重复次数,0不重复 >0重复次数,-1永久重复
+			*/
+			int plan_repet;
+
+			/**
+			* \brief 执行次数
+			*/
+			size_t real_repet;
+
+			/**
+			* \brief 发起者
+			*/
+			string caller;
+			/**
+			* \brief 消息内容
+			*/
+			vector<string> messages;
 		};
 	}
 }

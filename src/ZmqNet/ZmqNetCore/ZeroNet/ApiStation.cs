@@ -153,6 +153,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 var word = socket.Request("@", "");
                 if (word != "wecome")
                 {
+                    CloseSocket();
                     RunState = StationState.Failed;
                     StationProgram.WriteLine($"【{StationName}】proto error");
                     return false;
