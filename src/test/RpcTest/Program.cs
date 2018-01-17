@@ -30,7 +30,7 @@ namespace RpcTest
                 DateTime start = DateTime.Now;
 
                 time = 0.0;
-                for (int i = 0; i < 16; i++)
+                for (int i = 0; i < 256; i++)
                     tasks.Add(Task.Factory.StartNew(Heart).Id);
                 //foreach (var task in tasks)
                 //    task.Wait();
@@ -39,10 +39,10 @@ namespace RpcTest
                 {
                     Thread.Sleep(1000);
                     total = (DateTime.Now - start).TotalMilliseconds;
-                    Console.WriteLine($"{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+                    Console.WriteLine($"{cnt}/{time}ms/{total}ms => {cnt / time * 1000}/s -- {cnt / total * 1000}/s -- { total / cnt }ms -- { time / cnt }ms");
                 }
                 total = (DateTime.Now - start).TotalMilliseconds;
-                Console.WriteLine($"***{cnt}/{time}ms => {total} -- { total / cnt }ms -- { time / cnt }ms");
+                Console.WriteLine($"{cnt}/{time}ms/{total}ms => {cnt / time * 1000}/s -- {cnt / total * 1000}/s -- { total / cnt }ms -- { time / cnt }ms");
             }
         }
         /// <summary>
@@ -110,7 +110,7 @@ namespace RpcTest
             finally
             {
                 request.Close();
-                //tasks.Remove(Task.CurrentId.Value);
+                tasks.Remove(Task.CurrentId.Value);
             }
         }
     }

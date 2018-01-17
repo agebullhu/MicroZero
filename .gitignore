@@ -23,3 +23,15 @@ bin
 /src/Agebull.Rpc.Cpp/WindowsService/Release
 *.db
 packages
+/src/ZeroCenter/publish
+/src/ZeroCenter/NetLib
+/src/ZeroCenter/MqCenter
+/src/ZeroCenter/NetRpc
+/src/ZeroCenter/OpenSource/czmq
+/src/ZeroCenter/OpenSource/log4cxx
+/src/ZeroCenter/OpenSource/mysql
+/src/ZeroCenter/OpenSource/zeromq/src
+/src/ZeroCenter/Release
+/src/ZeroCenter/WindowsService
+/src/C_Lib
+/src/ZmqNet/publish
