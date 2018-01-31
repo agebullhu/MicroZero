@@ -6,6 +6,7 @@
 
 #include "stdafx.h"
 #include "NetDispatcher.h"
+ #include <utility>
 #include "ApiStation.h"
 #include "VoteStation.h"
 #include "BroadcastingStation.h"
@@ -15,17 +16,17 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* @brief 当前活动的发布类
+		* \brief 当前活动的发布类
 		*/
 		NetDispatcher* NetDispatcher::instance = nullptr;
 
 
 		/**
-		*@brief 广播内容
+		*\brief 广播内容
 		*/
 		bool monitor(string publiher, string state, string content)
 		{
-			boost::thread thread_xxx(boost::bind(SystemMonitorStation::monitor, publiher, state, content));
+			boost::thread thread_xxx(boost::bind(SystemMonitorStation::monitor, std::move(publiher), std::move(state), std::move(content)));
 			return true;
 		}
 
@@ -34,11 +35,11 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string NetDispatcher::pause_station(string arg)
+		string NetDispatcher::pause_station(const string& arg)
 		{
 			if (arg == "*")
 			{
-				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples_)
 				{
 					station.second->pause(true);
 				}
@@ -53,13 +54,13 @@ namespace agebull
 		}
 
 		/**
-		* @brief 继续站点
+		* \brief 继续站点
 		*/
-		string NetDispatcher::resume_station(string arg)
+		string NetDispatcher::resume_station(const string& arg)
 		{
 			if (arg == "*")
 			{
-				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples_)
 				{
 					station.second->resume(true);
 				}
@@ -100,16 +101,18 @@ namespace agebull
 		}
 
 		/**
-		* @brief 执行一条命令
+		* \brief 执行一条命令
 		*/
 		sharp_char NetDispatcher::command(const char* caller, vector<sharp_char> lines)
 		{
 			string val = call_station(caller, lines[0], lines[1]);
 			return sharp_char(val);
-		}/**
+		}
+		
+		/**
 		* 当远程调用进入时的处理
 		*/
-		string NetDispatcher::install_station(string type_name, string stattion)
+		string NetDispatcher::install_station(const string& type_name, const string& stattion)
 		{
 			int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
 			acl::string config;
@@ -128,11 +131,11 @@ namespace agebull
 		}
 
 		/**
-		* @brief 远程调用
+		* \brief 远程调用
 		*/
 		string NetDispatcher::call_station(string stattion, string command, string argument)
 		{
-			ZeroStation* station = StationWarehouse::find(stattion);
+			ZeroStation* station = StationWarehouse::find(std::move(stattion));
 			if (station == nullptr)
 			{
 				return "unknow stattion";
@@ -145,7 +148,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 远程调用
+		* \brief 远程调用
 		*/
 		string NetDispatcher::call_station(const char* stattion, vector<sharp_char>& arguments)
 		{
@@ -175,11 +178,11 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string NetDispatcher::close_station(string stattion)
+		string NetDispatcher::close_station(const string& stattion)
 		{
 			if (stattion == "*")
 			{
-				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples_)
 				{
 					station.second->close(true);
 				}
@@ -194,14 +197,14 @@ namespace agebull
 		}
 
 		/**
-		* @brief 取机器信息
+		* \brief 取机器信息
 		*/
-		string NetDispatcher::host_info(string stattion)
+		string NetDispatcher::host_info(const string& stattion)
 		{
 			if (stattion == "*")
 			{
 				string result = "[";
-				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples)
+				for (map<string, ZeroStation*>::value_type station : StationWarehouse::examples_)
 				{
 					result += station.second->get_config();
 					result += ",";
@@ -218,7 +221,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 执行命令
+		* \brief 执行命令
 		*/
 		string NetDispatcher::exec_command(const char* command, vector<sharp_char> arguments)
 		{
@@ -239,23 +242,23 @@ namespace agebull
 			}
 			case 1:
 			{
-				return pause_station(arguments.size() < 1? "*" : arguments[0]);
+				return pause_station(arguments.empty()? "*" : arguments[0]);
 			}
 			case 2:
 			{
-				return resume_station(arguments.size() < 1 ? "*" : arguments[0]);
+				return resume_station(arguments.empty() ? "*" : arguments[0]);
 			}
 			case 3:
 			{
-				return start_station(arguments.size() < 1 ? "*" : arguments[0]);
+				return start_station(arguments.empty() ? "*" : arguments[0]);
 			}
 			case 4:
 			{
-				return close_station(arguments.size() < 1 ? "*" : arguments[0]);
+				return close_station(arguments.empty() ? "*" : arguments[0]);
 			}
 			case 5:
 			{
-				return host_info(arguments.size() < 1 ? "*" : arguments[0]);
+				return host_info(arguments.empty() ? "*" : arguments[0]);
 			}
 			case 6:
 			{
@@ -275,7 +278,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 执行命令
+		* \brief 执行命令
 		*/
 		string NetDispatcher::exec_command(const char* command, const char* argument)
 		{

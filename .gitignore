@@ -35,3 +35,5 @@ packages
 /src/ZeroCenter/WindowsService
 /src/C_Lib
 /src/ZmqNet/publish
+/src/publish
+/src/ZmqNet/PublishNuget

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// ±æµÿ’æµ„≈‰÷√

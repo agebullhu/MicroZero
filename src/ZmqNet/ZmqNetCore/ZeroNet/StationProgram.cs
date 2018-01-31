@@ -5,11 +5,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     ///     站点应用
@@ -22,19 +23,34 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <summary>
         ///     站点集合
         /// </summary>
-        public static readonly Dictionary<string, StationConfig> configs =
-            new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
+        public static readonly Dictionary<string, StationConfig> Configs = new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     站点集合
         /// </summary>
-        public static readonly Dictionary<string, ZeroStation> stations =
-            new Dictionary<string, ZeroStation>(StringComparer.OrdinalIgnoreCase);
+        internal static readonly Dictionary<string, ZeroStation> Stations = new Dictionary<string, ZeroStation>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     站点配置
         /// </summary>
-        public static readonly LocalStationConfig Config;
+        private static LocalStationConfig _config;
+
+        /// <summary>
+        ///     站点配置
+        /// </summary>
+        public static LocalStationConfig Config
+        {
+            get
+            {
+                if (_config != null)
+                    return _config;
+                if(!File.Exists("host.json"))
+                    return _config =new LocalStationConfig();
+                var json = File.ReadAllText("host.json");
+                return _config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
+            }
+            set => _config = value;
+        }
 
         /// <summary>
         ///     监测中心广播地址
@@ -47,55 +63,44 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         public static string ZeroManageAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroManagePort}";
 
         /// <summary>
-        ///     静态构造
-        /// </summary>
-        static StationProgram()
-        {
-            var path = Path.GetDirectoryName(typeof(StationProgram).Assembly.Location);
-            var file = Path.Combine(path, "host.json");
-            var json = File.ReadAllText(file);
-            Config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
-        }
-
-        /// <summary>
         /// </summary>
         /// <param name="station"></param>
         public static void RegisteApiStation(ZeroStation station)
         {
-            if (stations.ContainsKey(station.StationName))
+            if (Stations.ContainsKey(station.StationName))
             {
-                stations[station.StationName].Close();
-                stations[station.StationName] = station;
+                Stations[station.StationName].Close();
+                Stations[station.StationName] = station;
             }
             else
             {
-                stations.Add(station.StationName, station);
+                Stations.Add(station.StationName, station);
             }
+
+            station.Config = GetConfig(station.StationName);
             if (State == StationState.Run)
-                ApiStation.Run(station);
+                ZeroStation.Run(station);
         }
 
         #endregion
 
         #region System Command
-        
+
         /// <summary>
         /// 远程调用
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="requestId"></param>
-        /// <param name="context"></param>
+        /// <param name="station"></param>
         /// <param name="commmand"></param>
         /// <param name="argument"></param>
         /// <returns></returns>
-        public static string Call(string host, string requestId, string context, string commmand, string argument)
+        public static string Call(string station, string commmand, string argument)
         {
-            var config = GetConfig(host);
+            var config = GetConfig(station);
             if (config == null)
             {
                 return "{\"Result\":false,\"Message\":\"UnknowHost\",\"ErrorCode\":404}";
             }
-            string result = config.OutAddress.RequestNet(commmand, requestId, context, argument);
+            var result = config.OutAddress.RequestNet(commmand, ApiContext.RequestContext.RequestId, JsonConvert.SerializeObject(ApiContext.Current), argument);
             if (string.IsNullOrEmpty(result))
                 return "{\"Result\":false,\"Message\":\"UnknowHost\",\"ErrorCode\":500}";
             if (result[0] == '{')
@@ -107,7 +112,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 case "NoWork":
                     return "{\"Result\":false,\"Message\":\"服务器正忙\",\"ErrorCode\":503}";
                 default:
-                    return "{\"Result\":false,\"Message\":\"参数错误\",\"ErrorCode\":-1}";
+                    return result;
             }
         }
 
@@ -144,9 +149,9 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <returns></returns>
         public static StationConfig GetConfig(string stationName)
         {
-            if (configs.ContainsKey(stationName))
-                return configs[stationName];
-            lock (configs)
+            if (Configs.ContainsKey(stationName))
+                return Configs[stationName];
+            lock (Configs)
             {
                 try
                 {
@@ -157,7 +162,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                         return null;
                     }
                     var config = JsonConvert.DeserializeObject<StationConfig>(result);
-                    configs.Add(stationName, config);
+                    Configs.Add(stationName, config);
                     return config;
                 }
                 catch (Exception e)
@@ -174,9 +179,9 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// <returns></returns>
         public static StationConfig InstallApiStation(string stationName)
         {
-            if (configs.ContainsKey(stationName))
-                return configs[stationName];
-            lock (configs)
+            if (Configs.ContainsKey(stationName))
+                return Configs[stationName];
+            lock (Configs)
             {
                 try
                 {
@@ -187,7 +192,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                         return null;
                     }
                     var config = JsonConvert.DeserializeObject<StationConfig>(result);
-                    configs.Add(stationName, config);
+                    Configs.Add(stationName, config);
                     return config;
                 }
                 catch (Exception e)
@@ -273,9 +278,9 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         {
             Console.Write("Program Stop.");
             State = StationState.Closing;
-            foreach (var stat in stations)
+            foreach (var stat in Stations)
                 stat.Value.Close();
-            while (stations.Values.Any(p => p.RunState == StationState.Run))
+            while (Stations.Values.Any(p => p.RunState == StationState.Run))
             {
                 Console.Write(".");
                 Thread.Sleep(100);
@@ -301,8 +306,8 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         public static void Run()
         {
             State = StationState.Run;
-            foreach (var station in stations.Values)
-                ApiStation.Run(station);
+            foreach (var station in Stations.Values)
+                ZeroStation.Run(station);
             Task.Factory.StartNew(RunMonitor);
         }
 
@@ -323,8 +328,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
 
                 while (State == StationState.Run)
                 {
-                    string result;
-                    if (!subscriber.TryReceiveFrameString(timeout, out result))
+                    if (!subscriber.TryReceiveFrameString(timeout, out var result))
                         continue;
                     OnMessagePush(result);
                 }
@@ -380,7 +384,60 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 case "station_install":
                     station_install(station, content);
                     break;
+                case "worker_heat":
+                    station_heat(station, content);
+                    break;
             }
+        }
+        /// <summary>
+        /// 站点事件参数
+        /// </summary>
+        public class StationEventArgument : EventArgs
+        {
+            /// <summary>
+            /// 构造
+            /// </summary>
+            /// <param name="eventName"></param>
+            /// <param name="config"></param>
+            public StationEventArgument(string eventName, StationConfig config)
+            {
+                EventConfig = config;
+                EventName = eventName;
+            }
+            /// <summary>
+            /// 站点名称
+            /// </summary>
+            public string EventName { get; }
+            /// <summary>
+            /// 配置
+            /// </summary>
+            public StationConfig EventConfig { get; }
+        }
+        /// <summary>
+        /// 站点事件发生
+        /// </summary>
+        public static event EventHandler<StationEventArgument> StationEvent;
+        private static void station_heat(string station, string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return;
+            StationConfig cfg;
+            try
+            {
+                cfg = JsonConvert.DeserializeObject<StationConfig>(content);
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                return;
+            }
+            cfg.State = StationState.None;
+            if (Configs.ContainsKey(station))
+                Configs[station] = cfg;
+            else
+                Configs.Add(station, cfg);
+
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_heat", cfg));
         }
 
         private static void station_install(string station, string content)
@@ -398,58 +455,59 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 return;
             }
             cfg.State = StationState.None;
-            if (configs.ContainsKey(station))
-                configs[station] = cfg;
+            if (Configs.ContainsKey(station))
+                Configs[station] = cfg;
             else
-                configs.Add(station, cfg);
+                Configs.Add(station, cfg);
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_install", cfg));
         }
 
         private static void station_closing(string station, string content)
         {
-            StationConfig cfg;
-            if (configs.TryGetValue(station, out cfg))
+            if (Configs.TryGetValue(station, out var cfg))
                 cfg.State = StationState.Closing;
-            if (stations.ContainsKey(station))
+            if (Stations.ContainsKey(station))
             {
                 WriteLine($"{station} is close");
-                stations[station].Close();
+                Stations[station].Close();
             }
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_closing", cfg));
         }
 
         private static void station_resume(string station, string content)
         {
-            StationConfig cfg;
-            if (configs.TryGetValue(station, out cfg))
+            if (Configs.TryGetValue(station, out var cfg))
                 cfg.State = StationState.Run;
-            if (stations.ContainsKey(station))
+            if (Stations.ContainsKey(station))
             {
                 WriteLine($"{station} is resume");
-                ApiStation.Run(stations[station]);
+                ZeroStation.Run(Stations[station]);
             }
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_resume", cfg));
         }
 
         private static void station_pause(string station, string content)
         {
-            StationConfig cfg;
-            if (configs.TryGetValue(station, out cfg))
+            if (Configs.TryGetValue(station, out var cfg))
                 cfg.State = StationState.Pause;
-            if (stations.ContainsKey(station))
+            if (Stations.ContainsKey(station))
             {
                 WriteLine($"{station} is pause");
-                stations[station].Close();
+                Stations[station].Close();
             }
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_pause", cfg));
         }
 
         private static void station_left(string station)
         {
-            StationConfig cfg;
-            if (configs.TryGetValue(station, out cfg))
+            if (Configs.TryGetValue(station, out var cfg))
                 cfg.State = StationState.Closed;
-            if (stations.ContainsKey(station))
+            if (Stations.ContainsKey(station))
             {
                 WriteLine($"{station} is left");
-                stations[station].Close();
+                Stations[station].Close();
             }
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_left", cfg));
         }
 
         private static void station_join(string station, string content)
@@ -467,38 +525,43 @@ namespace ZmqNet.Rpc.Core.ZeroNet
                 return;
             }
             cfg.State = StationState.Run;
-            if (configs.ContainsKey(station))
-                configs[station] = cfg;
+            if (Configs.ContainsKey(station))
+                Configs[station] = cfg;
             else
-                configs.Add(station, cfg);
-            if (stations.ContainsKey(station))
+                Configs.Add(station, cfg);
+            if (Stations.ContainsKey(station))
             {
-                stations[station].Config = cfg;
+                Stations[station].Config = cfg;
                 WriteLine($"{station} is join");
-                ApiStation.Run(stations[station]);
+                StationEvent?.Invoke(cfg, new StationEventArgument("station_join", cfg));
+                ZeroStation.Run(Stations[station]);
             }
         }
 
         private static void system_stop(string content)
         {
+            StationEvent?.Invoke(null, new StationEventArgument("system_stop", null));
             WriteLine(content);
-            foreach (var sta in stations)
+            foreach (var sta in Stations.Values)
             {
-                WriteLine($"Close {sta.Value.StationName}");
-                sta.Value.Close();
+                WriteLine($"Close {sta.StationName}");
+                sta.Close();
+                StationEvent?.Invoke(sta, new StationEventArgument("station_closing", sta.Config));
             }
-            configs.Clear();
+            Configs.Clear();
         }
 
         private static void system_start(string content)
         {
             WriteLine(content);
-            configs.Clear();
+            Configs.Clear();
 
-            foreach (var station in stations.Values)
+            StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
+            foreach (var sta in Stations.Values)
             {
-                WriteLine($"Restart {station.StationName}");
-                ApiStation.Run(station);
+                WriteLine($"Restart {sta.StationName}");
+                ZeroStation.Run(sta);
+                StationEvent?.Invoke(sta, new StationEventArgument("station_join", sta.Config));
             }
         }
 

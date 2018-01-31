@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// API返回数据泛型类

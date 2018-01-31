@@ -1,12 +1,8 @@
 {
-  "agebull": {
-    "zero": true,
-    "alias": [ "a" ]
-  },
-  "markpoint": {
-    "zero": true
-  },
   "Default": {
-    "hosts": [ "Http://118.31.65.217/" ]
+    "hosts": [ "Http://116.62.122.157:8080/" ]
+  },
+  "GoodLin-OAuth-Api": {
+    "hosts": [ "http://47.97.173.25/" ]
   }
 }

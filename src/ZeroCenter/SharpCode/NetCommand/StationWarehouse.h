@@ -8,47 +8,47 @@ namespace agebull
 		class ZeroStation;
 
 		/**
-		* @brief 网络站点实例管理（站点仓库，是不是很脑洞的名字）
+		* \brief 网络站点实例管理（站点仓库，是不是很脑洞的名字）
 		*/
 		class StationWarehouse
 		{
 			/**
-			* @brief 实例队列访问锁
+			* \brief 实例队列访问锁
 			*/
-			static boost::mutex _mutex;
+			static boost::mutex mutex_;
 		public:
 			/**
-			* @brief 实例集合
+			* \brief 实例集合
 			*/
-			static map<string, ZeroStation*> examples;
+			static map<string, ZeroStation*> examples_;
 			/**
-			* @brief 清除所有服务
+			* \brief 清除所有服务
 			*/
 			static void clear();
 			/**
-			* @brief 还原服务
+			* \brief 还原服务
 			*/
 			static int restore();
 			/**
-			* @brief 初始化服务
+			* \brief 初始化服务
 			*/
 			static acl::string install(int station_type, const char* station_name);
 			/**
-			* @brief 还原服务
+			* \brief 还原服务
 			*/
 			static bool restore(acl::string& value);
 			/**
-			* @brief 加入服务
+			* \brief 加入服务
 			*/
 			static bool join(ZeroStation* station);
 			/**
-			* @brief 加入服务
+			* \brief 加入服务
 			*/
 			static bool left(ZeroStation* station);
 			/**
-			* @brief 加入服务
+			* \brief 加入服务
 			*/
-			static ZeroStation* find(string name);
+			static ZeroStation* find(const string& name);
 		};
 	}
 }

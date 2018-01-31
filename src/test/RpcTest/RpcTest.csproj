@@ -11,13 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="StationTester.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="App.config">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\ZmqNet.Rpc.Core.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 #ifndef C_ZMQ_NET_OBJECT
 #include <stdinc.h>
+ #include <utility>
 #include "sharp_char.h"
 #include "zmq_extend.h"
 #include "StationWarehouse.h"
@@ -9,7 +10,7 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* @brief 表示一个基于ZMQ的网络站点
+		* \brief 表示一个基于ZMQ的网络站点
 		*/
 		class ZeroStation
 		{
@@ -19,77 +20,77 @@ namespace agebull
 
 			acl::string _config;
 			/**
-			* @brief 状态信号量
+			* \brief 状态信号量
 			*/
 			boost::interprocess::interprocess_semaphore _state_semaphore;
 			/**
-			* @brief API服务名称
+			* \brief API服务名称
 			*/
 			string _station_name;
 
 			/**
-			* @brief 站点类型
+			* \brief 站点类型
 			*/
 			int _station_type;
 
 			/**
-			* @brief 外部地址
+			* \brief 外部地址
 			*/
 			int _out_port;
 
 			/**
-			* @brief 工作地址
+			* \brief 工作地址
 			*/
 			int _inner_port;
 
 			/**
-			* @brief 心跳地址
+			* \brief 心跳地址
 			*/
 			int _heart_port;
 			/**
-			* @brief 外部SOCKET类型
+			* \brief 外部SOCKET类型
 			*/
 			int _out_zmq_type;
 
 			/**
-			* @brief 工作SOCKET类型
+			* \brief 工作SOCKET类型
 			*/
 			int _inner_zmq_type;
 
 			/**
-			* @brief 心跳SOCKET类型
+			* \brief 心跳SOCKET类型
 			*/
 			int _heart_zmq_type;
 			/*
-			*@brief 轮询节点
+			*\brief 轮询节点
 			*/
 			zmq_pollitem_t* _poll_items;
 			/*
-			*@brief 节点数量
+			*\brief 节点数量
 			*/
 			int _poll_count;
 			/**
-			* @brief 调用句柄
+			* \brief 调用句柄
 			*/
 			void* _out_socket;
 			/**
-			* @brief 调用句柄
+			* \brief 调用句柄
 			*/
 			void* _out_socket_inproc;
 			/**
-			* @brief 工作句柄
+			* \brief 工作句柄
 			*/
 			void* _inner_socket;
 			/**
-			* @brief 心跳句柄
+			* \brief 心跳句柄
 			*/
 			void* _heart_socket;
 			/**
-			* @brief 当前ZMQ执行状态
+			* \brief 当前ZMQ执行状态
 			*/
 			ZmqSocketState _zmq_state;
 			/**
-			* @brief 当前站点状态
+			* \brief 当前站点状态
 			*/
 			station_state _station_state;
 		public:
@@ -98,28 +99,28 @@ namespace agebull
 				return _config.c_str();
 			}
 			/**
-			* @brief 当前ZMQ执行状态
+			* \brief 当前ZMQ执行状态
 			*/
 			ZmqSocketState get_zmq_state() const
 			{
 				return _zmq_state;
 			}
 			/**
-			* @brief API服务名称
+			* \brief API服务名称
 			*/
 			int get_station_type() const
 			{
 				return _station_type;
 			}
 			/**
-			* @brief 当前站点状态
+			* \brief 当前站点状态
 			*/
 			station_state get_station_state() const
 			{
 				return _station_state;
 			}
 			/**
-			* @brief API服务名称
+			* \brief API服务名称
 			*/
 			const string& get_station_name() const
 			{
@@ -127,7 +128,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 外部地址
+			* \brief 外部地址
 			*/
 			string get_out_address()const
 			{
@@ -137,7 +138,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 工作地址
+			* \brief 工作地址
 			*/
 			string get_inner_address()const
 			{
@@ -147,7 +148,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 心跳地址
+			* \brief 心跳地址
 			*/
 			string get_heart_address()const
 			{
@@ -157,12 +158,12 @@ namespace agebull
 			}
 
 			/**
-			* @brief 构造
+			* \brief 构造
 			*/
 			ZeroStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 				: _in_plan_poll(false)
 				, _state_semaphore(1)
-				, _station_name(name)
+				, _station_name(std::move(name))
 				, _station_type(type)
 				, _out_port(0)
 				, _inner_port(0)
@@ -223,7 +224,7 @@ namespace agebull
 			/**
 			* \brief 保存消息参与者返回值
 			*/
-			bool save_message_result(uint msgid, string worker, string response) const;
+			bool save_message_result(uint msgid, const string& worker, const string& response) const;
 
 			/**
 			* \brief 取一个参与者的消息返回值
@@ -236,13 +237,13 @@ namespace agebull
 			map<acl::string, acl::string> get_message_result(uint msgid) const;
 
 			/**
-			* @brief 执行一条命令
+			* \brief 执行一条命令
 			*/
 			virtual sharp_char command(const char* caller, vector<sharp_char> lines) = 0;
 		public:
 
 			/**
-			* @brief 析构
+			* \brief 析构
 			*/
 			virtual ~ZeroStation()
 			{
@@ -250,14 +251,14 @@ namespace agebull
 				_station_state = station_state::Destroy;
 			}
 			/**
-			* @brief 能否继续工作
+			* \brief 能否继续工作
 			*/
 			virtual bool can_do() const
 			{
 				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() == NET_STATE_RUNING;
 			}
 			/**
-			* @brief 检查是否暂停
+			* \brief 检查是否暂停
 			*/
 			bool check_pause()
 			{
@@ -269,34 +270,34 @@ namespace agebull
 				return false;
 			}
 			/**
-			* @brief 初始化
+			* \brief 初始化
 			*/
 			bool initialize();
 
 			/**
-			* @brief 网络轮询
+			* \brief 网络轮询
 			*/
 			bool poll();
 
 			/**
-			* @brief 析构
+			* \brief 析构
 			*/
 			bool destruct();
 
 			/**
-			* @brief 暂停
+			* \brief 暂停
 			*/
 			virtual bool pause(bool waiting);
 			/**
-			* @brief 继续
+			* \brief 继续
 			*/
 			virtual bool resume(bool waiting);
 			/**
-			* @brief 结束
+			* \brief 结束
 			*/
 			virtual bool close(bool waiting);
 			/**
-			* @brief 计划轮询
+			* \brief 计划轮询
 			*/
 			static void plan_poll(void* arg)
 			{
@@ -305,16 +306,16 @@ namespace agebull
 			}
 		protected:
 			/**
-			* @brief 计划轮询
+			* \brief 计划轮询
 			*/
 			void plan_poll_();
 
 			/**
-			* @brief 工作集合的响应
+			* \brief 工作集合的响应
 			*/
 			virtual void response() {}
 			/**
-			* @brief 调用集合的响应
+			* \brief 调用集合的响应
 			*/
 			virtual void request(ZMQ_HANDLE socket) = 0;
 			/**

@@ -9,7 +9,7 @@ using Yizuan2.Service.Api.WebApi;
 using System.Web.Http;
 using System.Web.Mvc;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     /// WebApi应用辅助类

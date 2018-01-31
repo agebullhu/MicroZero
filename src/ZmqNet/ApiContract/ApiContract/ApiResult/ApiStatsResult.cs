@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// API状态返回接口实现

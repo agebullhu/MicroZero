@@ -25,7 +25,7 @@ namespace agebull
             struct StringArgument;
 
             /**
-            * @brief StringArgument序列化到字节
+            * \brief StringArgument序列化到字节
             * @param {StringArgument*} field 文本的参数对象指针
             * @param {size_t} len 返回长度
             * @return 字节数组
@@ -33,7 +33,7 @@ namespace agebull
             char* Serialize(const StringArgument* field,size_t& len);
             
             /**
-            * @brief StringArgument序列化到命令参数
+            * \brief StringArgument序列化到命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 命令参数
             */
@@ -41,7 +41,7 @@ namespace agebull
             
             
             /**
-            * @brief StringArgument序列化到命令参数
+            * \brief StringArgument序列化到命令参数
             * @param {PNetCommand} command 命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -49,7 +49,7 @@ namespace agebull
             void Serialize(PNetCommand command, const StringArgument* field);
             
             /**
-            * @brief StringArgument序列化到字节
+            * \brief StringArgument序列化到字节
             * @param {char*} buffer 字节数组
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -58,7 +58,7 @@ namespace agebull
             
             
             /**
-            * @brief StringArgument序列化到序列化器
+            * \brief StringArgument序列化到序列化器
             * @param {Serializer&} writer 序列化器
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -66,7 +66,7 @@ namespace agebull
             void Serialize(Serializer& writer, const StringArgument* field);
             
             /**
-            * @brief 从网络命令参数反序列化到StringArgument
+            * \brief 从网络命令参数反序列化到StringArgument
             * @param {PNetCommand} command 网络命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -74,7 +74,7 @@ namespace agebull
             void Deserialize(PNetCommand command, StringArgument* field);
             
             /**
-            * @brief 从字节反序列化到StringArgument
+            * \brief 从字节反序列化到StringArgument
             * @param {char*} buffer 字节数组指针
             * @param {size_t} len 字节数组长度
             * @param {StringArgument*} field 文本的参数对象指针
@@ -83,7 +83,7 @@ namespace agebull
             void Deserialize(char* buffer, size_t len, StringArgument* field);
             
             /**
-            * @brief 从网络命令参数反序列化到StringArgument
+            * \brief 从网络命令参数反序列化到StringArgument
             * @param {PNetCommand} command 网络命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -91,7 +91,7 @@ namespace agebull
             void Deserialize(PNetCommand command, StringArgument* field);
             
             /**
-            * @brief 从反序列化器反序列化到StringArgument
+            * \brief 从反序列化器反序列化到StringArgument
             * @param {Deserializer&} reader 反序列化器
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -100,14 +100,14 @@ namespace agebull
 
             
             /**
-            * @brief StringArgument的结构定义
+            * \brief StringArgument的结构定义
             */
             struct StringArgument
             {
                 //参数
                 char  Argument[512];
                 /**
-                * @brief 从网络命令参数反序列化到〖文本的参数〗
+                * \brief 从网络命令参数反序列化到〖文本的参数〗
                 * @param {PNetCommand} command 网络命令参数
                 * @return 文本的参数对象指针
                 */
@@ -122,7 +122,7 @@ namespace agebull
             
 
             /**
-            * @brief StringArgument序列化到命令参数
+            * \brief StringArgument序列化到命令参数
             * @param {StringArgument&} field 文本的参数对象
             * @param {PNetCommand} cmd 命令参数
             * @return 命令参数
@@ -133,7 +133,7 @@ namespace agebull
             }
             
             /**
-            * @brief StringArgument 快速序列化到命令参数
+            * \brief StringArgument 快速序列化到命令参数
             * @param {StringArgument&} field 文本的参数对象
             * @param {PNetCommand} cmd 命令参数
             * @return 命令参数
@@ -144,7 +144,7 @@ namespace agebull
             }
             
             /**
-            * @brief 命令参数快速反序列化到StringArgument
+            * \brief 命令参数快速反序列化到StringArgument
             * @param {PNetCommand} command 命令参数
             * @param {StringArgument&} field 文本的参数对象
             * @return 无
@@ -155,7 +155,7 @@ namespace agebull
             }
             
             /**
-            * @brief 从反序列化器反序列化到StringArgument
+            * \brief 从反序列化器反序列化到StringArgument
             * @param {PNetCommand} cmd 命令参数
             * @param {StringArgument&} field 文本的参数对象
             * @return 无
@@ -166,7 +166,7 @@ namespace agebull
             }
 
 			/**
-			* @brief StringArgument保存到redis
+			* \brief StringArgument保存到redis
 			* @param {StringArgument} field 文本的参数
 			* @return ID
 			*/

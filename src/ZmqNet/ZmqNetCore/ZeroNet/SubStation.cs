@@ -5,7 +5,7 @@ using Agebull.Common.Logging;
 using NetMQ;
 using NetMQ.Sockets;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// 消息订阅站点
@@ -40,7 +40,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public void ExecCommand(string args)
+        public virtual void ExecCommand(string args)
         {
             ExecFunc?.Invoke(args);
         }

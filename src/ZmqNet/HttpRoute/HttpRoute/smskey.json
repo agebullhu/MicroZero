@@ -1,0 +1,11 @@
+{
+  "TemplateCode": "SMS_123666001",
+  "SignName": "ÒÚ×ê±¦",
+  "RegionId": "cn-hangzhou",
+  "EndPointName": "cn-hangzhou",
+  "Product": "Dysmsapi",
+  "Domain": "dysmsapi.aliyuncs.com",
+  "AccessKeyId": "LTAI2tjhbAljDBla",
+  "AccessKeySecret": "XVXaG4D2JrcE9Nk5lPOyzleVGKb09Q",
+  "Phones": [ "15618965007", "18601763662", "13917111139" ]
+}

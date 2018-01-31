@@ -1,7 +1,7 @@
 using System.Threading;
 using Gboxt.Common.DataModel;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// Õ¾µã

@@ -8,7 +8,7 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		 * @brief 字节智能指针
+		 * \brief 字节智能指针
 		 */
 		class sharp_char
 		{
@@ -178,7 +178,7 @@ namespace agebull
 			}
 			void free()
 			{
-				if (_count == nullptr)
+				if (_count == nullptr || _count == nullptr || _size == 0)
 					return;
 				*_count -= 1;
 				if (*_count == 0)
@@ -190,7 +190,7 @@ namespace agebull
 				_buffer = nullptr;
 				_size = 0;
 			}
-			sharp_char& binding(char* fri,size_t len)
+			sharp_char& binding(char* fri, size_t len)
 			{
 				free();
 				_size = len;
@@ -200,7 +200,7 @@ namespace agebull
 				return *this;
 			}
 			/**
-			 * @brief 交换
+			 * \brief 交换
 			 */
 			sharp_char& swap(sharp_char& fri) noexcept
 			{
@@ -239,15 +239,15 @@ namespace agebull
 			}
 			const char* operator*() const
 			{
-				return _buffer == nullptr ? "" : _buffer;
+				return _size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer;
 			}
 			operator std::string() const
 			{
-				return std::string(_buffer == nullptr ? "" : _buffer);
+				return std::string(_size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer);
 			}
 			operator acl::string() const
 			{
-				return acl::string(_buffer == nullptr ? "" : _buffer);
+				return acl::string(_size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer);
 			}
 		};
 	}

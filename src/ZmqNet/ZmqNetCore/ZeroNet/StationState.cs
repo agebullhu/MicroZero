@@ -1,4 +1,4 @@
-﻿namespace ZmqNet.Rpc.Core.ZeroNet
+﻿namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// 站点状态

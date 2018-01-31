@@ -6,78 +6,78 @@
 #include <stdinc.h>
 using namespace std;
 /**
-* @brief 事务Redis 在没有启用时,与普通使用一样,启用时调用begin_trans,提交调用commit,回退调用rollback,且必须成对调用
+* \brief 事务Redis 在没有启用时,与普通使用一样,启用时调用begin_trans,提交调用commit,回退调用rollback,且必须成对调用
 */
 class TransRedis
 {
 	/**
-	* @brief 启用事务的次数
+	* \brief 启用事务的次数
 	*/
 	int m_trans_num;
 	/**
-	* @brief 是否有回退的调用,如果有所有即失败,除非显式设置为不回退
+	* \brief 是否有回退的调用,如果有所有即失败,除非显式设置为不回退
 	*/
 	bool m_failed;
 	/**
-	* @brief acl的redis客户端对象
+	* \brief acl的redis客户端对象
 	*/
 	acl::redis_client m_redis_client;
 	/**
-	* @brief acl的redis命令对象
+	* \brief acl的redis命令对象
 	*/
 	acl::redis m_redis_cmd;
 	/**
-	* @brief 事务中修改的内容
+	* \brief 事务中修改的内容
 	*/
 	map<acl::string, int> m_modifies;
 	/**
-	* @brief 本地缓存对象
+	* \brief 本地缓存对象
 	*/
 	map<acl::string, acl::string> m_local_values;
 public:
 	/**
-	* @brief 构造
+	* \brief 构造
 	*/
 	TransRedis();
 	/**
-	* @brief 析构
+	* \brief 析构
 	*/
 	~TransRedis();
 	/**
-	* @brief 取得当前线程上下文的事务Redis对象
+	* \brief 取得当前线程上下文的事务Redis对象
 	* @return 当前线程上下文的操作对象
 	*/
 	static TransRedis& get_context();
 	/**
-	* @brief 取得当前线程上下文的事务Redis对象
+	* \brief 取得当前线程上下文的事务Redis对象
 	* @return 当前线程上下文的操作对象
 	*/
 	static TransRedis* get_current();
 	/**
-	* @brief 生成当前线程上下文的事务Redis对象
+	* \brief 生成当前线程上下文的事务Redis对象
 	*/
 	static void open_context();
 	/**
-	* @brief 关闭当前线程上下文的事务Redis对象
+	* \brief 关闭当前线程上下文的事务Redis对象
 	*/
 	static void close_context();
 	/**
-	* @brief 启用事务
+	* \brief 启用事务
 	* @return 当前线程上下文的操作对象
 	*/
 	static TransRedis& begin_trans();
 	/**
-	* @brief 提交事务,如果不是最先启用事务的地方调用,只是减少事务启用次数,最后一次调用(对应最早调用begin_trans)时,如果之前m_failed已设置,内部还是会调用rollback,除非ignore_failed设置为true
+	* \brief 提交事务,如果不是最先启用事务的地方调用,只是减少事务启用次数,最后一次调用(对应最早调用begin_trans)时,如果之前m_failed已设置,内部还是会调用rollback,除非ignore_failed设置为true
 	* @param {bool} ignore_failed 忽略m_failed的设置,即绝对的调用提交
 	*/
 	static void end_trans(bool ignore_failed = false);
 	/**
-	* @brief 设置出错
+	* \brief 设置出错
 	*/
 	static void set_failed();
 private:
 	/**
-	* @brief 提交事务
+	* \brief 提交事务
 	*/
 	void TransRedis::commit_inner();
 	bool get(const char*, acl::string&);
@@ -327,38 +327,38 @@ public:
 	bool get_hash(const char* key, std::map<acl::string, acl::string>& vl);
 };
 /**
-* @brief 自动恢复的数据ID范围
+* \brief 自动恢复的数据ID范围
 */
 class RedisDbScope
 {
 public :
 	/**
-	* @brief 构造
+	* \brief 构造
 	*/
 	RedisDbScope(int db)
 	{
 		TransRedis::get_context()->select(db);
 	}
 	/**
-	* @brief 析构
+	* \brief 析构
 	*/
 	~RedisDbScope();
 };
 /**
-* @brief Redis当前上下文对象生存范围
+* \brief Redis当前上下文对象生存范围
 */
 class RedisLiveScope
 {
 public:
 	/**
-	* @brief 构造
+	* \brief 构造
 	*/
 	RedisLiveScope()
 	{
 		TransRedis::get_context().open_context();
 	}
 	/**
-	* @brief 析构
+	* \brief 析构
 	*/
 	~RedisLiveScope()
 	{
@@ -368,20 +368,20 @@ public:
 	}
 };
 /**
-* @brief 自动开启和提交的事务范围
+* \brief 自动开启和提交的事务范围
 */
 class RedisTransScope
 {
 public:
 	/**
-	* @brief 构造
+	* \brief 构造
 	*/
 	RedisTransScope()
 	{
 		TransRedis::get_context().begin_trans();
 	}
 	/**
-	* @brief 析构
+	* \brief 析构
 	*/
 	~RedisTransScope()
 	{

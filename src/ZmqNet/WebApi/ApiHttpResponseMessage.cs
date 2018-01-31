@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     /// 基于HTTP协议的返回消息对象扩展

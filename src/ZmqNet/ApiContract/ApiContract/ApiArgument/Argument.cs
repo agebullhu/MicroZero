@@ -2,7 +2,7 @@ using System.Text;
 using System.Web;
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// 请求参数
@@ -17,10 +17,13 @@ namespace Yizuan.Service.Api
         public string Value { get; set; }
 
 
-
+        /// <summary>
+        /// 转为Form的文本
+        /// </summary>
+        /// <returns></returns>
         string IApiArgument.ToFormString()
         {
-            StringBuilder code = new StringBuilder();
+            var code = new StringBuilder();
             code.Append($"Value={HttpUtility.UrlEncode(Value)}");
             return code.ToString();
         }
@@ -49,10 +52,13 @@ namespace Yizuan.Service.Api
         public T Value { get; set; }
 
 
-
+        /// <summary>
+        /// 转为Form的文本
+        /// </summary>
+        /// <returns></returns>
         string IApiArgument.ToFormString()
         {
-            StringBuilder code = new StringBuilder();
+            var code = new StringBuilder();
             code.Append($"Value={Value}");
             return code.ToString();
         }

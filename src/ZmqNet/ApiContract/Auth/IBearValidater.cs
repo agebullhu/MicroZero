@@ -1,8 +1,7 @@
-using System.Runtime.Serialization;
-using System.Text;
-using Newtonsoft.Json;
+using Agebull.Common.OAuth;
+using Agebull.ZeroNet.ZeroApi;
 
-namespace Yizuan.Service.Api.OAuth
+namespace Agebull.ZeroNet.OAuth
 {
     /// <summary>
     /// 用户身份校验

@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 	char buffer[MAX_PATH + 1];
 	char *p = _getcwd(buffer, MAX_PATH);
 	cout << p << endl;
-	//agebull::zmq_net::StationWarehouse::clear();
+	
 	CRpcService::Initialize();
 	CRpcService::Start();
 	while (get_net_state() == NET_STATE_RUNING)
@@ -250,10 +250,15 @@ int main(int argc, char *argv[])
 		getline(cin, line);
 		if (line.length() == 0)
 			break;
+		if(line == "clear")
+		{
+			agebull::zmq_net::StationWarehouse::clear();
+			break;
+		}
 		std::vector<string> cmdline;
 		// boost::is_any_of这里相当于分割规则了  
 		boost::split(cmdline, line, boost::is_any_of(" \n\r\t"));
-		if (cmdline.size() == 0)
+		if (cmdline.empty())
 			break;
 		std::vector<agebull::zmq_net::sharp_char> arguments;
 		for (size_t idx = 1; idx < cmdline.size(); idx++)

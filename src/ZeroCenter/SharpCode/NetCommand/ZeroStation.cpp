@@ -10,7 +10,7 @@ namespace agebull
 
 
 		/**
-		* @brief 初始化
+		* \brief 初始化
 		*/
 		
 		bool ZeroStation::initialize()
@@ -90,7 +90,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 析构
+		* \brief 析构
 		*/
 		
 		bool ZeroStation::destruct()
@@ -173,7 +173,7 @@ namespace agebull
 			return _zmq_state < ZmqSocketState::Term && _zmq_state > ZmqSocketState::Empty;
 		}
 		/**
-		* @brief 暂停
+		* \brief 暂停
 		*/
 		
 		bool ZeroStation::pause(bool waiting)
@@ -186,7 +186,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 继续
+		* \brief 继续
 		*/
 		
 		bool ZeroStation::resume(bool waiting)
@@ -200,7 +200,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 结束
+		* \brief 结束
 		*/
 		
 		bool ZeroStation::close(bool waiting)

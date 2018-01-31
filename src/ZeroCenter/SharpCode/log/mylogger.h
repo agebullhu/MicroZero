@@ -3,13 +3,13 @@
 #pragma once
 #include "stdinc.h"
 using namespace std;
-void log_acl_msg(string msg);
+void log_acl_msg(const string& msg);
 void log_acl_msg(const char* msg);
-void log_acl_warn(const char* fname, int line, const char* func, string msg);
-void log_acl_error(const char* fname, int line, const char* func, string msg);
-void log_acl_fatal(const char* fname, int line, const char* func, string msg);
-void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, string msg);
-void log_acl_trace(int section, int  level, string msg);
+void log_acl_warn(const char* fname, int line, const char* func, const string& msg);
+void log_acl_error(const char* fname, int line, const char* func, const string& msg);
+void log_acl_fatal(const char* fname, int line, const char* func, const string& msg);
+void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const string& msg);
+void log_acl_trace(int section, int  level, const string& msg);
 
 /*
 * Êä³öµ½DEBUG´°¿Ú

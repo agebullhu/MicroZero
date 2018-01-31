@@ -5,14 +5,14 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* @brief 开始执行一条命令
+		* \brief 开始执行一条命令
 		*/
 		sharp_char ApiStation::command(const char* caller, vector<sharp_char> lines)
 		{
 			vector<sharp_char> response;
 			RequestSocket<ZMQ_REQ,false> socket(caller, _station_name.c_str());
 			if(socket.request(lines, response))
-				return response.size() == 0 ? "error" : response[0];
+				return response.empty() ? "error" : response[0];
 			switch(socket.get_state())
 			{
 			case ZmqSocketState::TimedOut:
@@ -41,7 +41,7 @@ namespace agebull
 			job_start(list);
 		}
 		/**
-		* @brief 工作开始（发送到工作者）
+		* \brief 工作开始（发送到工作者）
 		*/
 		bool ApiStation::job_start(vector<sharp_char>& list)
 		{
@@ -51,7 +51,7 @@ namespace agebull
 				return false;
 			}
 			const char* client_addr = *list[0];
-			if(list.size() < 4 || list[2].size() == 0)
+			if(list.size() < 4 || list[2].empty())
 			{
 				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
@@ -82,11 +82,11 @@ namespace agebull
 		}
 
 		/**
-		* @brief 工作结束(发送到请求者)
+		* \brief 工作结束(发送到请求者)
 		*/
 		bool ApiStation::job_end(vector<sharp_char>& list)
 		{
-			assert(list.size() >= 3 && list[2].size() > 0);
+			assert(list.size() >= 3 && !list[2].empty());
 			
 			//list.erase(b);
 			list[2].swap(list[1]);

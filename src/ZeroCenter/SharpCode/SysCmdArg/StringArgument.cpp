@@ -15,7 +15,7 @@ namespace agebull
         {
 
             /**
-            * @brief StringArgument序列化到字节
+            * \brief StringArgument序列化到字节
             * @param {StringArgument*} field 文本的参数对象指针
             * @param {size_t} len 返回长度
             * @return 字节数组
@@ -31,7 +31,7 @@ namespace agebull
             
             
             /**
-            * @brief StringArgument序列化到命令参数
+            * \brief StringArgument序列化到命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 命令参数
             */
@@ -46,7 +46,7 @@ namespace agebull
             }
             
             /**
-            * @brief StringArgument序列化到命令参数
+            * \brief StringArgument序列化到命令参数
             * @param {PNetCommand} command 命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -58,7 +58,7 @@ namespace agebull
             }
             
             /**
-            * @brief StringArgument序列化到字节
+            * \brief StringArgument序列化到字节
             * @param {char*} buffer 字节数组
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -70,7 +70,7 @@ namespace agebull
             }
             
             /**
-            * @brief 从网络命令参数反序列化到StringArgument
+            * \brief 从网络命令参数反序列化到StringArgument
             * @param {PNetCommand} command 网络命令参数
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -82,7 +82,7 @@ namespace agebull
             }
             
             /**
-            * @brief 从字节反序列化到StringArgument
+            * \brief 从字节反序列化到StringArgument
             * @param {char*} buffer 字节数组指针
             * @param {size_t} len 字节数组长度
             * @param {StringArgument*} field 文本的参数对象指针
@@ -96,7 +96,7 @@ namespace agebull
             
             
             /**
-            * @brief StringArgument序列化到序列化器
+            * \brief StringArgument序列化到序列化器
             * @param {Serializer&} writer 序列化器
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无
@@ -119,7 +119,7 @@ namespace agebull
             
             
             /**
-            * @brief 从反序列化器反序列化到StringArgument
+            * \brief 从反序列化器反序列化到StringArgument
             * @param {Deserializer&} reader 反序列化器
             * @param {StringArgument*} field 文本的参数对象指针
             * @return 无

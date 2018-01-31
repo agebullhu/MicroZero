@@ -3,21 +3,28 @@
 #include "ApiStation.h"
 #include "VoteStation.h"
 
-#define port_redis_key "net:port:next"
-
 namespace agebull
 {
 	namespace zmq_net
 	{
-
-		map<string, ZeroStation*> StationWarehouse::examples;
 		/**
-		* @brief 实例队列访问锁
+		* \brief 端口自动分配的Redis键名
 		*/
-		boost::mutex StationWarehouse::_mutex;
+#define port_redis_key "net:port:next"
+
 
 		/**
-		* @brief 还原服务
+		 * \brief 活动实例集合
+		 */
+		map<string, ZeroStation*> StationWarehouse::examples_;
+
+		/**
+		* \brief 实例队列访问锁
+		*/
+		boost::mutex StationWarehouse::mutex_;
+
+		/**
+		* \brief 还原服务
 		*/
 		bool StationWarehouse::restore(acl::string& value)
 		{
@@ -41,12 +48,12 @@ namespace agebull
 
 
 		/**
-		* @brief 还原服务
+		* \brief 还原服务
 		*/
 		int StationWarehouse::restore()
 		{
 			//assert(examples.size() == 0);
-			char* pattern = "net:host:*";
+			char pattern[] = "net:host:*";
 			int cnt = 0;
 			RedisLiveScope redis_live_scope;
 			{
@@ -73,24 +80,24 @@ namespace agebull
 		}
 
 		/**
-		* @brief 清除所有服务
+		* \brief 清除所有服务
 		*/
 		void StationWarehouse::clear()
 		{
-			assert(examples.size() == 0);
+			assert(examples_.empty());
 			RedisLiveScope redis_live_scope;
 			{
 				RedisDbScope db_scope(REDIS_DB_NET_STATION);
 				TransRedis& redis = TransRedis::get_context();
 				redis->flushdb();
-				redis->incrby(port_redis_key, 20180L);
-				install(STATION_TYPE_DISPATCHER, "SystemManage");
-				install(STATION_TYPE_MONITOR, "SystemMonitor");
+				redis->incrby(port_redis_key, config::get_int("baseHost"));
 			}
+			install(STATION_TYPE_DISPATCHER, "SystemManage");
+			install(STATION_TYPE_MONITOR, "SystemMonitor");
 		}
 
 		/**
-		* @brief 初始化服务
+		* \brief 初始化服务
 		*/
 		acl::string StationWarehouse::install(int station_type, const char* station_name)
 		{
@@ -145,15 +152,15 @@ namespace agebull
 		}
 
 		/**
-		* @brief 加入服务
+		* \brief 加入服务
 		*/
 		bool StationWarehouse::join(ZeroStation* station)
 		{
 			{
-				boost::lock_guard<boost::mutex> guard(_mutex);
-				if (examples.find(station->_station_name) != examples.end())
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				if (examples_.find(station->_station_name) != examples_.end())
 					return false;
-				examples.insert(make_pair(station->_station_name, station));
+				examples_.insert(make_pair(station->_station_name, station));
 			}
 			station->_config = install(station->_station_type, station->_station_name.c_str());
 			config cfg(station->_config);
@@ -166,16 +173,16 @@ namespace agebull
 		}
 
 		/**
-		* @brief 退出服务
+		* \brief 退出服务
 		*/
 		bool StationWarehouse::left(ZeroStation* station)
 		{
 			{
-				boost::lock_guard<boost::mutex> guard(_mutex);
-				auto iter = examples.find(station->_station_name);
-				if (iter == examples.end() || iter->second != station)
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				auto iter = examples_.find(station->_station_name);
+				if (iter == examples_.end() || iter->second != station)
 					return false;
-				examples.erase(station->_station_name);
+				examples_.erase(station->_station_name);
 			}
 			monitor(station->_station_name, "station_left", "");
 
@@ -183,12 +190,12 @@ namespace agebull
 		}
 
 		/**
-		* @brief 加入服务
+		* \brief 加入服务
 		*/
-		ZeroStation* StationWarehouse::find(string name)
+		ZeroStation* StationWarehouse::find(const string& name)
 		{
-			auto iter = examples.find(name);
-			if (iter == examples.end())
+			auto iter = examples_.find(name);
+			if (iter == examples_.end())
 				return nullptr;
 			return iter->second;
 		}

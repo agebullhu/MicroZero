@@ -1,6 +1,7 @@
 #ifndef ZMQ_API_STATION_H
 #pragma once
 #include <stdinc.h>
+ #include <utility>
 #include "ZeroStation.h"
 #include "BalanceStation.h"
 
@@ -9,12 +10,12 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* @brief 负载均衡处理类
+		* \brief 负载均衡处理类
 		*/
 		class HostBalance :private map<string, time_t>
 		{
 			/**
-			* @brief 当前工作者下标
+			* \brief 当前工作者下标
 			*/
 			size_t _index;
 			boost::mutex _mutex;
@@ -27,7 +28,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 加入集群
+			* \brief 加入集群
 			*/
 			void join(const char* host)
 			{
@@ -45,7 +46,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 主机工作完成
+			* \brief 主机工作完成
 			*/
 			void succees(const char* host)
 			{
@@ -63,7 +64,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 主机工作失败
+			* \brief 主机工作失败
 			*/
 			void bad(const char* host)
 			{
@@ -72,7 +73,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 退出集群
+			* \brief 退出集群
 			*/
 			void left(const char* host)
 			{
@@ -81,7 +82,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 取一个可用的主机
+			* \brief 取一个可用的主机
 			*/
 			const char* get_host()
 			{
@@ -90,9 +91,9 @@ namespace agebull
 			}
 		private:
 			/**
-			* @brief 退出集群
+			* \brief 退出集群
 			*/
-			void left_(string host)
+			void left_(const string& host)
 			{
 				erase(host);
 				auto iter = list.begin();
@@ -107,11 +108,11 @@ namespace agebull
 				}
 			}
 			/**
-			* @brief 取一个可用的主机
+			* \brief 取一个可用的主机
 			*/
 			const char* get_host_()
 			{
-				if (size() == 0)
+				if (size->empty())
 					return nullptr;
 				if (size() == 1)
 				{
@@ -140,25 +141,25 @@ namespace agebull
 		};
 
 		/**
-		* @brief API站点
+		* \brief API站点
 		*/
 		class ApiStation :public BalanceStation<ApiStation, string, STATION_TYPE_API>
 		{
 			/**
-			* @brief 发布消息队列访问锁
+			* \brief 发布消息队列访问锁
 			*/
 			HostBalance _balance;
 		public:
 			/**
-			* @brief 构造
+			* \brief 构造
 			*/
 			ApiStation(string name)
-				: BalanceStation<ApiStation, string, STATION_TYPE_API>(name)
+				: BalanceStation<ApiStation, string, STATION_TYPE_API>(std::move(name))
 			{
 			}
 
 			/**
-			* @brief 析构
+			* \brief 析构
 			*/
 			virtual ~ApiStation()
 			{
@@ -169,11 +170,11 @@ namespace agebull
 			*/
 			static void run(string name)
 			{
-				zmq_threadstart(start, new ApiStation(name));
+				zmq_threadstart(start, new ApiStation(std::move(name)));
 			}
 
 			/**
-			* @brief 执行
+			* \brief 执行
 			*/
 			static void start(void* arg)
 			{
@@ -210,20 +211,20 @@ namespace agebull
 			}
 		private:
 			/**
-			* @brief 工作集合的响应
+			* \brief 工作集合的响应
 			*/
 			void response() override;
 			/**
-			* @brief 调用集合的响应
+			* \brief 调用集合的响应
 			*/
 			void request(ZMQ_HANDLE socket) override;
 			/**
-			* @brief 执行一条命令
+			* \brief 执行一条命令
 			*/
 			sharp_char command(const char* caller, vector<sharp_char> lines) override;
 
 			/**
-			* @brief 工作集合的响应
+			* \brief 工作集合的响应
 			*/
 			string create_item(const char* addr, const char* value) override
 			{
@@ -231,16 +232,16 @@ namespace agebull
 			}
 
 			/**
-			* @brief 工作开始（发送到工作者）
+			* \brief 工作开始（发送到工作者）
 			*/
 			bool job_start(vector<sharp_char>& list);
 			/**
-			* @brief 工作结束(发送到请求者)
+			* \brief 工作结束(发送到请求者)
 			*/
 			bool job_end(vector<sharp_char>& list);
 
 			/**
-			* @brief 工作对象退出
+			* \brief 工作对象退出
 			*/
 			void worker_left(const char* addr) override
 			{
@@ -249,9 +250,9 @@ namespace agebull
 			}
 
 			/**
-			* @brief 工作对象加入
+			* \brief 工作对象加入
 			*/
-			void worker_join(const char* addr, const char* value, bool ready = false) override
+			virtual void worker_join(const char* addr, const char* value, bool ready = false) override
 			{
 				if (addr == nullptr || strlen(addr) == 0)
 					return;

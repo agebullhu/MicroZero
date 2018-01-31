@@ -4,7 +4,7 @@ using System.Linq;
 using NetMQ;
 using NetMQ.Sockets;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// Zmq∞Ô÷˙¿‡
@@ -97,7 +97,7 @@ namespace ZmqNet.Rpc.Core.ZeroNet
             using (var request = new RequestSocket())
             {
                 request.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
-                request.Options.ReconnectInterval = new TimeSpan(0, 10, 59);
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 3);
                 request.Connect(address);
                 return Request(request, args);
             }

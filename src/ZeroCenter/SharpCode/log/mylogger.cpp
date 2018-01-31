@@ -47,7 +47,7 @@ void log_acl_msg(const char* msg)
 	}
 	acl::log::msg1(msg);
 }
-void log_acl_msg(string msg)
+void log_acl_msg(const string& msg)
 {
 	{
 		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
@@ -55,12 +55,12 @@ void log_acl_msg(string msg)
 	}
 	acl::log::msg1(msg.c_str());
 }
-void log_acl_warn(const char* fname, int line, const char* func, string msg)
+void log_acl_warn(const char* fname, int line, const char* func, const string& msg)
 {
 	out_debug(msg);
 	acl::log::warn4(fname, line, func, msg.c_str());
 }
-void log_acl_error(const char* fname, int line, const char* func, string msg)
+void log_acl_error(const char* fname, int line, const char* func, const string& msg)
 {
 	{
 		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
@@ -68,11 +68,11 @@ void log_acl_error(const char* fname, int line, const char* func, string msg)
 	}
 	acl::log::error4(fname, line, func, msg.c_str());
 }
-void log_acl_fatal(const char* fname, int line, const char* func, string msg)
+void log_acl_fatal(const char* fname, int line, const char* func, const string& msg)
 {
 	acl::log::fatal4(fname, line, func, msg.c_str());
 }
-void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, std::string msg)
+void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const std::string& msg)
 {
 	if (level < 2)
 	{
@@ -81,7 +81,7 @@ void log_acl_debug(int section, int  level, const char* fname, int line, const c
 	}
 	acl::log::msg6(section, level, fname, line, func, msg.c_str());
 }
-void log_acl_trace(int section, int  level, string msg)
+void log_acl_trace(int section, int  level, const string& msg)
 {
 	if (level < 2)
 	{

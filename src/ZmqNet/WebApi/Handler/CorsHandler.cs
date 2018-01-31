@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Yizuan.Service.Api.WebApi;
+using Agebull.ZeroNet.ZeroApi.WebApi;
 
 namespace Yizuan2.Service.Api.WebApi
 {

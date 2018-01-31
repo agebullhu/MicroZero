@@ -6,18 +6,22 @@
 
 #include "stdafx.h"
 #include "BroadcastingStation.h"
+ #include <utility>
 #include "StationWarehouse.h"
 
 namespace agebull
 {
 	namespace zmq_net
 	{
+		/**
+		 * \brief 单例
+		 */
 		SystemMonitorStation* SystemMonitorStation::example = nullptr;
 
 		/**
-		*@brief 发布消息
+		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(string publiher, string title, string arg)
+		bool BroadcastingStationBase::pub_data(const string& publiher, const string& title, const string& arg)
 		{
 			sharp_char data;
 			data.alloc(4 + publiher.length() + title.length() + arg.length());
@@ -27,18 +31,18 @@ namespace agebull
 		}
 
 		/**
-		*@brief 发布消息
+		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(string publiher, string line)
+		bool BroadcastingStationBase::pub_data(const string& publiher, const string& line)
 		{
 			_zmq_state = send_late(_inner_socket, line.c_str());
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
 		/**
-		*@brief 发布消息
+		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(string publiher, string title, string arg) const
+		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& arg) const
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
@@ -52,9 +56,9 @@ namespace agebull
 		}
 
 		/**
-		*@brief 发布消息
+		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(string publiher, string title, string plan, string arg) const
+		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& plan, const string& arg) const
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
@@ -69,7 +73,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 处理请求
+		* \brief 处理请求
 		*/
 		void BroadcastingStationBase::request(ZMQ_HANDLE socket)
 		{
@@ -83,6 +87,15 @@ namespace agebull
 			}
 			switch (list.size())
 			{
+			case 0:
+				return;
+			case 1:
+			case 2:
+			{
+				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_late(socket, "err");
+				return;
+			}
 			case 3:
 			{
 				pub_data(list[0], list[2]);
@@ -108,26 +121,29 @@ namespace agebull
 				break;
 			}
 			Message message;
-			acl::json json;
-			json.update(*list[3]);
-			acl::json_node* iter = json.first_node();
-			while (iter)
+			if(list[3][0] == '{')
 			{
-				int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
-				switch (idx)
+				acl::json json;
+				json.update(*list[3]);
+				acl::json_node* iter = json.first_node();
+				while (iter)
 				{
-				case 0:
-					message.plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-					break;
-				case 1:
-					message.plan_value = static_cast<int>(*iter->get_int64());
-					break;
-				case 2:
-					message.plan_repet = static_cast<int>(*iter->get_int64());
-					break;
-				default: break;
+					int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
+					switch (idx)
+					{
+					case 0:
+						message.plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
+						break;
+					case 1:
+						message.plan_value = static_cast<int>(*iter->get_int64());
+						break;
+					case 2:
+						message.plan_repet = static_cast<int>(*iter->get_int64());
+						break;
+					default: break;
+					}
+					iter = json.next_node();
 				}
-				iter = json.next_node();
 			}
 			message.request_caller = list[0];
 			message.messages.push_back(list[2]);
@@ -178,14 +194,14 @@ namespace agebull
 		}
 
 		/**
-		*@brief 发布消息
+		*\brief 发布消息
 		*/
 		bool BroadcastingStation::publish(string station, string publiher, string title, string arg)
 		{
-			auto pub = StationWarehouse::find(station);
+			auto pub = StationWarehouse::find(std::move(station));
 			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
 				return false;
-			return static_cast<BroadcastingStationBase*>(pub)->publish(publiher, title, arg);
+			return static_cast<BroadcastingStationBase*>(pub)->publish(std::move(publiher), std::move(title), std::move(arg));
 		}
 
 		void SystemMonitorStation::start(void*)
@@ -208,7 +224,7 @@ namespace agebull
 			log_msg3("%s(%d | %d)正在运行", example->_station_name.c_str(), example->_out_port, example->_inner_port);
 
 			zmq_threadstart(plan_poll, example);
-			bool reStrart = example->poll();
+			const bool reStrart = example->poll();
 			while (example->_in_plan_poll)
 			{
 				sleep(1);

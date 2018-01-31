@@ -1,6 +1,7 @@
 #ifndef ZMQ_API_VOTE_STATION_H
 #pragma once
 #include <stdinc.h>
+ #include <utility>
 #include "ZeroStation.h"
 #include "BalanceStation.h"
 #include "StationWarehouse.h"
@@ -37,7 +38,7 @@ namespace agebull
 		} Voter, *PVoter;
 
 		/**
-		* @brief 表示一个网络投票站（并行任务或并行工作流）
+		* \brief 表示一个网络投票站（并行任务或并行工作流）
 		* 投票请求格式：
 		* 1 请求标识（建议用GUID/UUID）
 		* 2 请求状态
@@ -56,15 +57,15 @@ namespace agebull
 		{
 		public:
 			/**
-			* @brief 构造
+			* \brief 构造
 			*/
 			VoteStation(string name)
-				: BalanceStation<VoteStation, Voter, STATION_TYPE_VOTE>(name)
+				: BalanceStation<VoteStation, Voter, STATION_TYPE_VOTE>(std::move(name))
 			{
 			}
 
 			/**
-			* @brief 析构
+			* \brief 析构
 			*/
 			virtual ~VoteStation()
 			{
@@ -84,29 +85,29 @@ namespace agebull
 			}
 
 			/**
-			* @brief 工作集合的响应
+			* \brief 工作集合的响应
 			*/
 			void response() override;
 			/**
-			* @brief 调用集合的响应
+			* \brief 调用集合的响应
 			*/
 			void request(ZMQ_HANDLE socket) override;
 
 			/**
-			* @brief 执行一条命令
+			* \brief 执行一条命令
 			*/
 			sharp_char command(const char* caller, vector<sharp_char> lines) override;
 			/**
-			* @brief 向发起者推送投票状态
+			* \brief 向发起者推送投票状态
 			*/
 			bool send_state(const char* client_addr, const char* request_token, const char* voter, const char* state);
 
 			/**
-			* @brief 开始投票
+			* \brief 开始投票
 			*/
 			bool start_vote(const char* client_addr, const char* request_token, const char* request_argument);
 			/**
-			* @brief 向发起者推送投票者列表
+			* \brief 向发起者推送投票者列表
 			*/
 			bool get_voters(const char* client_addr, const char* request_token);
 
@@ -116,18 +117,18 @@ namespace agebull
 			*/
 			static void run(string name)
 			{
-				VoteStation* route = new VoteStation(name);
+				VoteStation* route = new VoteStation(std::move(name));
 				boost::thread thrds_s1(boost::bind(start, shared_ptr<VoteStation>(route)));
 			}
 
 			/**
-			* @brief 执行
+			* \brief 执行
 			*/
-			static void start(shared_ptr<VoteStation> arg);
+			static void start(const shared_ptr<VoteStation>& arg);
 		private:
 
 			/**
-			* @brief 执行
+			* \brief 执行
 			*/
 			static void save(shared_ptr<VoteStation> arg);
 		};

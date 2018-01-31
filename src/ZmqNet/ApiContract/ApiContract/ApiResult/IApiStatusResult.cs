@@ -1,4 +1,4 @@
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// API状态返回（一般在出错时发生）

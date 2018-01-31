@@ -2,21 +2,21 @@
 #include "cfg/config.h"
 
 /**
-* @brief 当前线程静态唯一
+* \brief 当前线程静态唯一
 */
 static __thread  TransRedis* _context = nullptr;
 
 /**
-* @brief 配置文件中的redis的地址
+* \brief 配置文件中的redis的地址
 */
 string RedisIp = config::get_config("redis_add");
 /**
-* @brief 配置文件中的redis的db
+* \brief 配置文件中的redis的db
 */
 int RedisDb = config::get_int("redis_defdb");
 
 /**
-* @brief 析构
+* \brief 析构
 */
 RedisDbScope::~RedisDbScope()
 {
@@ -25,7 +25,7 @@ RedisDbScope::~RedisDbScope()
 		(*context)->select(RedisDb);
 }
 /**
-* @brief 生成当前线程上下文的事务Redis对象
+* \brief 生成当前线程上下文的事务Redis对象
 */
 void TransRedis::open_context()
 {
@@ -37,7 +37,7 @@ void TransRedis::open_context()
 	}
 }
 /**
-* @brief 取得当前线程上下文的事务Redis对象
+* \brief 取得当前线程上下文的事务Redis对象
 * @return 当前线程上下文的操作对象
 */
 TransRedis& TransRedis::get_context()
@@ -46,7 +46,7 @@ TransRedis& TransRedis::get_context()
 	return *_context;
 }
 /**
-* @brief 取得当前线程上下文的事务Redis对象
+* \brief 取得当前线程上下文的事务Redis对象
 * @return 当前线程上下文的操作对象
 */
 TransRedis* TransRedis::get_current()
@@ -54,7 +54,7 @@ TransRedis* TransRedis::get_current()
 	return _context;
 }
 /**
-* @brief 关闭当前线程上下文的事务Redis对象
+* \brief 关闭当前线程上下文的事务Redis对象
 */
 void TransRedis::close_context()
 {
@@ -63,7 +63,7 @@ void TransRedis::close_context()
 	_context = nullptr;
 }
 /**
-* @brief 构造
+* \brief 构造
 */
 TransRedis::TransRedis()
 	: m_trans_num(0)
@@ -74,7 +74,7 @@ TransRedis::TransRedis()
 	m_redis_cmd.select(RedisDb);
 }
 /**
-* @brief 析构
+* \brief 析构
 */
 TransRedis::~TransRedis()
 {
@@ -89,7 +89,7 @@ TransRedis::~TransRedis()
 }
 
 /**
-* @brief 启用事务
+* \brief 启用事务
 * @return 当前线程上下文的操作对象
 */
 TransRedis& TransRedis::begin_trans()
@@ -99,7 +99,7 @@ TransRedis& TransRedis::begin_trans()
 	return *_context;
 }
 /**
-* @brief 提交事务,如果不是最先启用事务的地方调用,只是减少事务启用次数,最后一次调用(对应最早调用begin_trans)时,如果之前m_failed已设置,内部还是会调用rollback,除非ignore_failed设置为true
+* \brief 提交事务,如果不是最先启用事务的地方调用,只是减少事务启用次数,最后一次调用(对应最早调用begin_trans)时,如果之前m_failed已设置,内部还是会调用rollback,除非ignore_failed设置为true
 * @param {bool} ignore_failed 忽略m_failed的设置,即绝对的调用提交
 */
 void TransRedis::end_trans(bool ignore_failed)
@@ -116,7 +116,7 @@ void TransRedis::end_trans(bool ignore_failed)
 	_context = nullptr;
 }
 /**
-* @brief 回退事务
+* \brief 回退事务
 */
 void TransRedis::commit_inner()
 {
@@ -137,7 +137,7 @@ void TransRedis::commit_inner()
 	log_debug(DEBUG_BASE, 5, "结束提交redis事务");
 }
 /**
-* @brief 设置出错
+* \brief 设置出错
 */
 void TransRedis::set_failed()
 {

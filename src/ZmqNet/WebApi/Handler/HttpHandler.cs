@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Logging;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     /// Handler

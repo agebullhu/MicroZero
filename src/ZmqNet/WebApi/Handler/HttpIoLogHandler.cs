@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     ///     Http进站出站的日志记录

@@ -2,8 +2,9 @@ using System;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.ZeroApi;
 
-namespace Yizuan.Service.Api.OAuth
+namespace Agebull.Common.OAuth
 {
     /// <summary>
     /// 当前登录的用户信息
@@ -91,13 +92,13 @@ namespace Yizuan.Service.Api.OAuth
         /// <summary>
         /// 用户数字标识
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("id")]
         public long UserId { get; set; }
 
         /// <summary>
         /// 用户昵称
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("nn")]
         public string NickName { get; set; }
 
         /// <summary>
@@ -106,7 +107,7 @@ namespace Yizuan.Service.Api.OAuth
         /// <remarks>
         /// 头像
         /// </remarks>
-        [JsonProperty]
+        [JsonProperty("id")]
         public string AvatarUrl
         {
             get;
@@ -115,57 +116,96 @@ namespace Yizuan.Service.Api.OAuth
         /// <summary>
         /// 当前用户登录到哪个系统（预先定义的系统标识）
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("ls")]
         public string LoginSystem { get; set; }
 
         /// <summary>
         /// 当前用户登录方式
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("lt")]
         public int LoginType { get; set; }
 
         /// <summary>
         /// 登录者的手机号
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("p")]
         public string Phone { get; set; }
 
 
         /// <summary>
         /// 登录者的账号
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("a")]
         public string Account { get; set; }
 
         /// <summary>
         /// 登录设备的标识
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("d")]
         public string DeviceId { get; set; }
 
         /// <summary>
         /// 登录设备的操作系统
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("os")]
         public string Os { get; set; }
 
         /// <summary>
         /// 登录设备的浏览器
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("br")]
         public string Browser { get; set; }
 
         /// <summary>
         ///     数据状态
         /// </summary>
-        [JsonProperty]
+        [JsonProperty("ds")]
         public DataStateType DataState { get; set; }
 
         /// <summary>
         ///     数据是否已冻结，如果是，则为只读数据
         /// </summary>
         /// <value>bool</value>
-        [JsonProperty]
+        [JsonProperty("df")]
         public bool IsFreeze { get; set; }
+
+        #region 预定义
+
+        /// <summary>
+        /// 匿名用户
+        /// </summary>
+        public static LoginUserInfo CreateAnymouse(string did, string br, string os)
+        {
+            return new LoginUserInfo
+            {
+                UserId = -2,
+                Account = "anymouse",
+                Browser = br,
+                Os = os,
+                DataState = DataStateType.Discard
+            };
+        }
+
+        /// <summary>
+        /// 系统用户
+        /// </summary>
+        private static readonly LoginUserInfo _system = new LoginUserInfo
+        {
+            UserId = -1,
+            Account = "system",
+            DeviceId = "***system***",
+            Browser = "sys",
+            Os = "sys",
+            IsFreeze = true,
+            LoginType = 0,
+            DataState = DataStateType.Enable
+        };
+        /// <summary>
+        /// 系统用户
+        /// </summary>
+        public static LoginUserInfo System => _system;
+
+        #endregion
+
     }
 }

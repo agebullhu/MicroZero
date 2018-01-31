@@ -1,0 +1,79 @@
+﻿{
+  /*系统设置*/
+  "sysConfig": {
+    /*机器名称*/
+    "ServiceKey": "HttpRoute-1",
+    /*是否记录跟踪日志*/
+    "LogMonitor": false,
+    /*是否校验Auth*/
+    "CheckBearCache": false,
+    /*HTTP调用超时*/
+    "HttpTimeOut": 10000,
+    /*校验Auth的Redis的地址*/
+    "RedisConnectionString": "127.0.0.1:6379",
+    /*黑洞地址*/
+    "BlackHost": "http://apl.yizuanbao.cn",
+    /*内容页地址*/
+    "ContextHost": "http://116.62.122.157:8080/"
+  },
+  /*ZeroNet站点配置*/
+  "zeroConfig": {
+    "zeroAddr": "10.5.202.234",
+    "monitorPort": 8001,
+    "managePort": 8000,
+    "stationName": "HttpRoute-1",
+    "serviceName": "HttpRoute",
+    "ServiceName": "HttpRoute-1"
+  },
+  /*路由信息*/
+  "route": {
+    "Default": {
+      "hosts": [ "Http://116.62.122.157:8080/" ]
+    },
+    "GoodLin-OAuth-Api": {
+      "hosts": [ "http://47.97.173.25/" ]
+    }
+  },
+  /*缓存设置*/
+  "cache": [
+    {
+      "Api": "/GoodLin-Goods-External-Api/v1/discover/info"
+    },
+    {
+      "Api": "/GoodLin-Goods-External-Api/v1/dashboard/advertandchannel"
+    },
+    {
+      "Api": "/GoodLin-Goods-External-Api/v2/dashboard/hotcake"
+    },
+    {
+      "Api": "/GoodLin-Goods-External-Api/v1/channel/info"
+    },
+    {
+      "Api": "/Yizuan-ForcedUpdating-External-Api/v1/start/updatingad",
+      "OnlyName": true
+    },
+    {
+      "Api": "/Yizuan-ForcedUpdating-External-Api/v2/activty/getconfig",
+      "OnlyName": true
+    },
+    {
+      "Api": "/GoodLin-DiamondMall-External-Api/v1/diamond/config",
+      "OnlyName": true,
+      "Bear": "*"
+    }
+  ],
+  /*运维短信通知*/
+  "smsConfig": {
+    "CycleHours": -1,
+    "CycleSendCount": 6,
+    "AliTemplateCode": "SMS_123666001",
+    "AliSignName": "亿钻宝",
+    "AliRegionId": "cn-hangzhou",
+    "AliEndPointName": "cn-hangzhou",
+    "AliProduct": "Dysmsapi",
+    "AliDomain": "dysmsapi.aliyuncs.com",
+    "AliAccessKeyId": "LTAI2tjhbAljDBla",
+    "AliAccessKeySecret": "XVXaG4D2JrcE9Nk5lPOyzleVGKb09Q",
+    "Phones": [ "15618965007", "18601763662", "13917111139" ]
+  }
+}

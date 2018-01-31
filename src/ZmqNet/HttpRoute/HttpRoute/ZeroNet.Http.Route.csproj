@@ -31,6 +31,9 @@
   <ItemGroup>
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
+    <Content Remove="cache.json" />
+    <Content Remove="host.json" />
+    <Content Remove="machine.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +41,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.1" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0" />
+    <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
@@ -47,21 +55,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="host.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Handler\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\ApiContract\ZmqNet.Api.Contract.csproj" />
-    <ProjectReference Include="..\..\ZmqNetCore\ZmqNet.Rpc.Core.csproj" />
+    <ProjectReference Include="..\..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
+    <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
 </Project>

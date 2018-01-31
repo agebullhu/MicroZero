@@ -1,256 +1,256 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using Agebull.Common.Base;
+using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Yizuan.Service.Host;
-using Agebull.Common;
-using Yizuan.Service.Api;
-using Agebull.Common.Logging;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 
-namespace ExternalStation.Models
+namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// 调用映射核心类
+    /// 路由数据
     /// </summary>
-    public class HttpRouter
+    internal class RouteData
     {
+        /// <summary>
+        /// 请求地址
+        /// </summary>
+        public Uri Uri;
+        /// <summary>
+        ///     当前适用的缓存设置对象
+        /// </summary>
+        public CacheSetting CacheSetting;
+        /// <summary>
+        ///     缓存键
+        /// </summary>
+        public string CacheKey;
+        /// <summary>
+        /// 执行状态
+        /// </summary>
+        public RouteStatus Status;
+        /// <summary>
+        ///     返回值
+        /// </summary>
+        public string ResultMessage;
+        
+        /// <summary>
+        ///     Http Header中的Authorization信息
+        /// </summary>
+        public string Bearer;
+
+        /// <summary>
+        ///     当前请求调用的主机名称
+        /// </summary>
+        public string HostName;
+
+        /// <summary>
+        ///     当前请求调用的API名称
+        /// </summary>
+        public string ApiName;
+
+        /// <summary>
+        ///     HTTP method
+        /// </summary>
+        public string HttpMethod;
+        /// <summary>
+        ///     路由主机信息
+        /// </summary>
+        public HostConfig RouteHost;
+
+
+    }
+    /// <inheritdoc />
+    /// <summary>
+    ///     调用映射核心类
+    /// </summary>
+    internal class HttpRouter : ScopeBase
+    {
+
         #region 变量
 
         /// <summary>
-        /// Http上下文
+        ///     Http上下文
         /// </summary>
         public HttpContext HttpContext { get; }
+
         /// <summary>
-        /// Http请求
+        ///     Http请求
         /// </summary>
         public HttpRequest Request { get; }
+
         /// <summary>
-        /// Http返回
+        ///     Http返回
         /// </summary>
         public HttpResponse Response { get; }
 
-
         /// <summary>
-        /// Http Header中的Authorization信息
+        ///     Http返回
         /// </summary>
-        string _bear;
-
-        /// <summary>
-        /// 当前路径
-        /// </summary>
-        private Uri _callUri;
-
-        /// <summary>
-        /// 当前请求调用的模型对应的主机名称
-        /// </summary>
-        private string _host;
-
-        /// <summary>
-        /// 当前请求调用的模型名称
-        /// </summary>
-        private string _model;
-
-        /// <summary>
-        /// 当前请求调用的API名称
-        /// </summary>
-        private string _api;
-
-        /// <summary>
-        /// 当前请求调用的参数
-        /// </summary>
-        private string _query;
-
-        /// <summary>
-        /// HTTP method
-        /// </summary>
-        private string _httpMethod;
-
-        /// <summary>
-        /// 当前请求调用的Api名称
-        /// </summary>
-        private string _apiAndQuery;
-
-        /// <summary>
-        /// 已失败
-        /// </summary>
-        private bool _isFailed;
-
-        /// <summary>
-        /// 返回值
-        /// </summary>
-        private string _resultMessage;
+        public RouteData Data { get; }
 
 
         #endregion
 
-        #region 默认返回内容
+        #region 流程
 
         /// <summary>
-        /// 拒绝访问的Json字符串
-        /// </summary>
-        private static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess));
-
-        /// <summary>
-        /// 拒绝访问的Json字符串
-        /// </summary>
-        private static readonly string DeviceUnknow = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_Device_Unknow));
-
-        /// <summary>
-        /// 拒绝访问的Json字符串
-        /// </summary>
-        private static readonly string TokenUnknow = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_Unknow));
-
-        /// <summary>
-        /// 操作成功的字符串
-        /// </summary>
-        private static readonly string DefaultSuccees = JsonConvert.SerializeObject(ApiResult.Succees());
-
-
-        #endregion
-
-
-        /// <summary>
-        /// 内部构架
+        ///     内部构架
         /// </summary>
         /// <param name="context"></param>
         private HttpRouter(HttpContext context)
         {
+            Data=new RouteData();
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
+            HttpIoLog.OnBegin(Request);
+        }
+
+        /// <inheritdoc />
+        /// <summary>清理资源</summary>
+        protected override void OnDispose()
+        {
+            HttpIoLog.OnEnd(Data.Status, Data.ResultMessage);
         }
 
         /// <summary>
-        /// 执行路由操作
+        ///     执行路由操作
         /// </summary>
         public static void Todo(HttpContext context)
         {
-            HttpRouter router = new HttpRouter(context);
-            router.DoRoute();
-        }
-        /// <summary>
-        /// 执行路由操作
-        /// </summary>
-        private void DoRoute()
-        {
-            _httpMethod = Request.Method.ToUpper();
-            //跨域支持
-            if (_httpMethod == "OPTIONS")
+            using (var router = new HttpRouter(context))
             {
-                Cros();
-                return;
+                // 正常调用
+                router.Call();
+                // 写入返回
+                router.WriteResult();
             }
-            //以下为正确流程
-            HttpIoLog.OnBegin(Request);
-            Call();
-            WriteResult();
-            HttpIoLog.OnEnd(_resultMessage ?? DenyAccess);
         }
 
         /// <summary>
-        /// 写入返回
+        /// 调用
         /// </summary>
-        void WriteResult()
+        private void Call()
         {
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.ContentType = "text/plain";
-            Response.WriteAsync(_resultMessage ?? DenyAccess, Encoding.UTF8);
-            //task.Wait();
-        }
+            Data.Uri = Request.GetUri();
+            Data.HttpMethod = Request.Method.ToUpper();
 
-        void Call()
-        {
             // 1 初始化基本信息
-            InitializeBaseContext();
-            if (_isFailed)
+            if (!InitializeContext())
                 return;
             // 2 缓存快速处理
-            if (CheckCache())
+            if (RouteRuntime.CheckCache(Data.Uri, Data.Bearer, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
+            {
+                //找到并返回缓存
+                Data.Status = RouteStatus.Cache;
                 return;
+            }
+
             //3 安全检查
-            SecurityCheck();
-            if (_isFailed)
-                return;
+            if (!SecurityCheck()) return;
             //3 初始化路由信息
-            InitializeRoute();
-            if (_isFailed)
+            if (!InitializeRoute())
                 return;
             //4 查找远程机器
-            _resultMessage = hostData.ByZero ? CallZero() : CallHttp();
+            Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
             //5 远程调用
             //缓存
-            CacheData();
+            RouteRuntime.CacheData(Data);
         }
 
         /// <summary>
-        /// 初始化基本上下文
+        ///     初始化基本上下文
         /// </summary>
-        void InitializeBaseContext()
+        private bool InitializeContext()
         {
-            _callUri = Request.GetUri();
-
             string authorization = Request.Headers["Authorization"];
-            if (string.IsNullOrWhiteSpace(authorization) ||
-                string.Equals(authorization, "Bear null", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(authorization))
             {
-                _bear = null;
+                Data.Bearer = Request.Query["ClientKey"];
             }
             else
             {
                 var aa = authorization.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (aa.Length != 2 || !string.Equals(aa[0], "Bear", StringComparison.OrdinalIgnoreCase))
-                    _bear = null;
+                if (aa.Length != 2 || !string.Equals(aa[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
+                    aa[1].Equals("null"))
+                    Data.Bearer = null;
                 else
-                    _bear = aa[1];
+                    Data.Bearer = aa[1];
             }
+            ApiContext.Current.Request.Bear = Data.Bearer;
+            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
+            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
+            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
+            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
+            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
+
+            return true;
         }
+
         /// <summary>
-        /// 安全检查
+        ///     安全检查
         /// </summary>
-        void SecurityCheck()
+        private bool SecurityCheck()
         {
-            SecurityChecker checker = new SecurityChecker
+            var checker = new SecurityChecker
             {
                 Request = Request,
-                Bear = _bear
+                Bearer = Data.Bearer
             };
             if (checker.Check())
-                return;
-            _isFailed = true;
-            switch (checker.Status)
-            {
-                case ErrorCode.Auth_Device_Unknow:
-                    _resultMessage = DeviceUnknow;
-                    break;
-                case ErrorCode.Auth_AccessToken_Unknow:
-                    _resultMessage = TokenUnknow;
-                    break;
-            }
+                return true;
+            Data.Status = RouteStatus.DenyAccess;
+            Data.ResultMessage = AppConfig.Config.SystemConfig.BlockHost;
+            Response.Redirect(AppConfig.Config.SystemConfig.BlockHost, false);
+            return false;
         }
 
-        /// <summary>
-        /// 初始化路由信息
-        /// </summary>
-        private void InitializeRoute()
-        {
 
-            var words = _callUri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-            _model = words[0];
+        /// <summary>
+        ///     写入返回
+        /// </summary>
+        private void WriteResult()
+        {
+            if (Data.Status >= RouteStatus.HttpRedirect)
+                return;
+            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            Response.ContentType = "text/plain; charset=utf-8";
+            if (Data.ResultMessage != null)
+                Response.WriteAsync(Data.ResultMessage, Encoding.UTF8);
+        }
+
+        #endregion
+
+        #region 路由
+
+        /// <summary>
+        ///     初始化路由信息
+        /// </summary>
+        private bool InitializeRoute()
+        {
+            var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+            Data.HostName = words[0];
             if (words.Length <= 1)
             {
-                _isFailed = true;
-                return;
+                Data.Status = RouteStatus.FormalError;
+                Data.ResultMessage = RouteRuntime.DenyAccess;
+                return false;
             }
-            _api = words[1];
-            _apiAndQuery = _api + "?" + _callUri.Query;
-            hostData = RouteData.HostMap.TryGetValue(_model, out hostData) ? hostData : RouteData.DefaultHostData;
 
+            Data.ApiName = words[1];
+            if (!AppConfig.Config.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
+                Data.RouteHost = HostConfig.DefaultHost;
+            return true;
             //StringBuilder sb = new StringBuilder();
             //int step = 0;
-            //foreach (var ch in _callUri.PathAndQuery)
+            //foreach (var ch in Data.Uri.PathAndQuery)
             //{
             //    switch (ch)
             //    {
@@ -276,60 +276,16 @@ namespace ExternalStation.Models
             //}
             //if (_model == null)
             //{
-            //    _isFailed = true;
-            //    _resultMessage = DenyAccess;
+            //    status != 0 = true;
+            //    Data.ResultMessage = DenyAccess;
             //}
             //if (sb.Length > 0)
             //    _apiAndQuery = sb.ToString();
             //else
             //{
-            //    _isFailed = true;
-            //    _resultMessage = DenyAccess;
+            //    status != 0 = true;
+            //    Data.ResultMessage = DenyAccess;
             //}
-        }
-
-        RouteHost hostData;
-
-        /// <summary>
-        /// 查找主机
-        /// </summary>
-        private void FindHttpHost()
-        {
-            if (hostData.Hosts.Length == 1)
-            {
-                _host = hostData.Hosts[0];
-            }
-            else
-            {
-                lock (hostData)//平均分配
-                {
-                    _host = hostData.Hosts[hostData.Next];
-                    if (++hostData.Next >= hostData.Hosts.Length)
-                    {
-                        hostData.Next = 0;
-                    }
-                }
-            }
-        }
-
-        #region Zero
-
-        /// <summary>
-        /// 远程调用
-        /// </summary>
-        /// <returns></returns>
-        private string CallZero()
-        {
-            var callContext = new InternalCallContext
-            {
-                ServiceKey = RouteData.ServiceKey,
-                RequestId = Guid.NewGuid(),
-                Bear = _bear
-            };
-            ApiContext.SetRequestContext(callContext);
-            return ZmqNet.Rpc.Core.ZeroNet.StationProgram.Call(_model,
-                callContext.RequestId.ToString(), JsonConvert.SerializeObject(callContext), _api, _callUri.Query);
-
         }
 
         #endregion
@@ -337,119 +293,112 @@ namespace ExternalStation.Models
         #region Http
 
         /// <summary>
-        /// 远程调用状态
-        /// </summary>
-        WebExceptionStatus WebStatus;
-        /// <summary>
-        /// 远程调用
+        ///     远程调用
         /// </summary>
         /// <returns></returns>
         private string CallHttp()
         {
-            FindHttpHost();
-            var callContext = new InternalCallContext
+            // 当前请求调用的模型对应的主机名称
+            string httpHost;
+
+            // 当前请求调用的Api名称
+            string httpApi = Data.RouteHost == HostConfig.DefaultHost ? Data.Uri.PathAndQuery : $"{Data.ApiName}{Data.Uri.Query}";
+
+            // 查找主机
+            if (Data.RouteHost.Hosts.Length == 1)
             {
-                ServiceKey = RouteData.ServiceKey,
-                RequestId = Guid.NewGuid(),
-                Bear = _bear
-            };
-            ApiContext.SetRequestContext(callContext);
-            ApiContext.Current.Cache();
-            var caller = new HttpApiCaller(_host)
-            {
-                Bearer = "Bear " + ApiContext.RequestContext.Bear
-            };
-            var req = caller.CreateRequest(_apiAndQuery, _httpMethod, _httpMethod == "POST" && Request.ContentLength > 0 ? Request.Form : null);
-
-            return caller.GetResult(req, out WebStatus);
-        }
-
-        #endregion
-
-        #region 缓存
-
-        /// <summary>
-        /// 当前适用的缓存设置对象
-        /// </summary>
-        CacheSetting _cacheSetting;
-
-        /// <summary>
-        /// 缓存键
-        /// </summary>
-        string _cacheKey;
-
-        CacheData cacheData;
-
-        /// <summary>
-        /// 检查缓存
-        /// </summary>
-        /// <returns>取到缓存，可以直接返回</returns>
-        private bool CheckCache()
-        {
-            if (!RouteData.CacheMap.TryGetValue(_callUri.LocalPath, out _cacheSetting))
-                return false;
-
-            if (_cacheSetting.Feature.HasFlag(CacheFeature.Bear) &&
-                _bear.Substring(0, _cacheSetting.Bear.Length) != _cacheSetting.Bear)
-            {
-                _cacheSetting = null;
-                return false;
+                httpHost = Data.RouteHost.Hosts[0];
             }
-
-            _cacheKey = _cacheSetting.OnlyName ? _callUri.LocalPath : _callUri.PathAndQuery;
-            lock (_cacheSetting)
-            {
-                if (!RouteData.Cache.TryGetValue(_cacheKey, out cacheData))
-                    return false;
-            }
-            if (cacheData.UpdateTime <= DateTime.Now)
-                return false;
-            _resultMessage = cacheData.Content;
-            return true;
-        }
-        /// <summary>
-        /// 缓存数据
-        /// </summary>
-        private void CacheData()
-        {
-            if (_cacheSetting == null)
-                return;
-            if (cacheData == null)
-                cacheData = new CacheData
+            else lock (Data.RouteHost)
                 {
-                    Content = _resultMessage
-                };
-            if (_cacheSetting.Feature.HasFlag(CacheFeature.NetError) && WebStatus != WebExceptionStatus.Success)
+                    //平均分配
+                    httpHost = Data.RouteHost.Hosts[Data.RouteHost.Next];
+                    if (++Data.RouteHost.Next >= Data.RouteHost.Hosts.Length)
+                        Data.RouteHost.Next = 0;
+                }
+            // 远程调用
+            var caller = new HttpApiCaller(httpHost)
             {
-                cacheData.UpdateTime = DateTime.Now.AddSeconds(30);
-            }
-            else
-            {
-                cacheData.UpdateTime = DateTime.Now.AddSeconds(_cacheSetting.FlushSecond);
-            }
+                Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
+            };
+            var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request);
 
-            lock (RouteData.Cache)
+            LogRecorder.BeginStepMonitor("内部HTTP调用");
+            LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
+            LogRecorder.MonitorTrace($"Auth:{caller.Bearer}");
+
+            try
             {
-                if (!RouteData.Cache.ContainsKey(_cacheKey))
-                    RouteData.Cache.Add(_cacheKey, cacheData);
-                else
-                    RouteData.Cache[_cacheKey] = cacheData;
+                // 远程调用状态
+                Data.ResultMessage = caller.GetResult(req, out var _webStatus);
+                LogRecorder.MonitorTrace(_webStatus.ToString());
+                if (_webStatus != WebExceptionStatus.Success)
+                    Data.Status = RouteStatus.RemoteError;
             }
+            catch (Exception ex)
+            {
+                LogRecorder.Exception(ex);
+                LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
+                Data.ResultMessage = RouteRuntime.NetworkError;
+                Data.Status = RouteStatus.RemoteError;
+            }
+            finally
+            {
+                LogRecorder.MonitorTrace(Data.ResultMessage);
+                LogRecorder.EndStepMonitor();
+            }
+            return Data.ResultMessage;
         }
 
+
         #endregion
-        #region 跨域支持
+
+        #region Zero
 
         /// <summary>
-        /// 跨域支持
+        ///     远程调用
         /// </summary>
-        void Cros()
+        /// <returns></returns>
+        private string CallZero()
         {
-            Response.Headers.Add("Access-Control-Allow-Methods", new[] { "GET", "POST" });
-            Response.Headers.Add("Access-Control-Allow-Headers", new[] { "x-requested-with", "content-type", "authorization", "*" });
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            var values = new Dictionary<string, string>();
+            //参数解析
+            foreach (var query in Request.Query.Keys)
+                if (!values.ContainsKey(query))
+                    values.Add(query, Request.Query[query]);
+
+            if (Data.HttpMethod == "POST")
+                if (Request.ContentLength > 0)
+                    foreach (var form in Request.Form.Keys)
+                        if (!values.ContainsKey(form))
+                            values.Add(form, Request.Form[form]);
+
+            LogRecorder.BeginStepMonitor("内部Zero调用");
+            LogRecorder.MonitorTrace($"Station:{Data.HostName}");
+            LogRecorder.MonitorTrace($"Command:{Data.ApiName}");
+
+            // 远程调用状态
+            try
+            {
+                Data.ResultMessage = StationProgram.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values));
+            }
+            catch (Exception ex)
+            {
+                LogRecorder.Exception(ex);
+                LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
+                Data.ResultMessage = RouteRuntime.NetworkError;
+                Data.Status = RouteStatus.RemoteError;
+            }
+            finally
+            {
+                LogRecorder.MonitorTrace(Data.ResultMessage);
+                LogRecorder.EndStepMonitor();
+            }
+
+            return Data.ResultMessage;
         }
 
         #endregion
+
     }
 }

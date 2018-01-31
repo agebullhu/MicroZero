@@ -1,15 +1,15 @@
 [
   {
     "Api": "/GoodLin-Goods-External-Api/v1/discover/info"
-    
   },
   {
     "Api": "/GoodLin-Goods-External-Api/v1/dashboard/advertandchannel"
-    
   },
   {
     "Api": "/GoodLin-Goods-External-Api/v2/dashboard/hotcake"
-    
+  },
+  {
+    "Api": "/GoodLin-Goods-External-Api/v1/channel/info"
   },
   {
     "Api": "/Yizuan-ForcedUpdating-External-Api/v1/start/updatingad",

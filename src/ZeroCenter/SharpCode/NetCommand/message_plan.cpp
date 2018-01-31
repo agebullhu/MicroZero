@@ -284,7 +284,7 @@ namespace agebull
 		* \brief 保存消息参与者返回值
 		*/
 
-		bool ZeroStation::save_message_result(uint msgid, string worker, string response) const
+		bool ZeroStation::save_message_result(uint msgid, const string& worker, const string& response) const
 		{
 			RedisLiveScope redis_live_scope;
 			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);

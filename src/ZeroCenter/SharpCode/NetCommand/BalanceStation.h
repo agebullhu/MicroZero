@@ -18,12 +18,12 @@ namespace agebull
 		{
 		protected:
 			/**
-			* @brief 参与者集合
+			* \brief 参与者集合
 			*/
 			map<string, TWorker> _workers;
 		public:
 			/**
-			* @brief 构造
+			* \brief 构造
 			*/
 			BalanceStation(string name)
 				: ZeroStation(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
@@ -42,12 +42,12 @@ namespace agebull
 			*/
 			void heartbeat() override;
 			/**
-			* @brief 工作对象退出
+			* \brief 工作对象退出
 			*/
 			virtual void worker_left(const char* addr);
 
 			/**
-			* @brief 工作对象加入
+			* \brief 工作对象加入
 			*/
 			virtual void worker_join(const char* addr, const  char* value, bool ready = false);
 		};
@@ -90,9 +90,7 @@ namespace agebull
 				monitor(_station_name, "worker_left", addr);
 
 				vector<sharp_char> result;
-				vector<string> argument;
-				argument.push_back("@");
-				argument.push_back(addr);
+				vector<string> argument{"@",addr };
 				RequestSocket<ZMQ_REQ, false> socket("_sys_", _station_name.c_str());
 				socket.request(argument, result);
 			}
@@ -114,6 +112,7 @@ namespace agebull
 				_workers.insert(make_pair(addr, item));
 				log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
 				monitor(_station_name, "worker_join", addr);
+				monitor(_station_name, "worker_heat", value);
 			}
 			else
 			{

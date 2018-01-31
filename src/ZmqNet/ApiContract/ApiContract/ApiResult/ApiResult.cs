@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
+
+
+
     /// <summary>
     /// API返回基类
     /// </summary>
@@ -14,6 +17,8 @@ namespace Yizuan.Service.Api
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public bool Result { get; set; }
+
+        
 
         /// <summary>
         /// API执行状态（为空表示状态正常）

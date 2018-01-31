@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// 表示API返回的列表

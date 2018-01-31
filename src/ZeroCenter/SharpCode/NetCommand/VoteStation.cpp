@@ -34,7 +34,7 @@ namespace agebull
 			return send_state(client_addr, request_token, "*", strs.c_str());
 		}
 
-		void VoteStation::start(shared_ptr<VoteStation> arg)
+		void VoteStation::start(const shared_ptr<VoteStation>& arg)
 		{
 			VoteStation* station = arg.get();
 			if (!StationWarehouse::join(station))
@@ -67,7 +67,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 执行一条命令
+		* \brief 执行一条命令
 		*/
 		sharp_char VoteStation::command(const char* caller, vector<sharp_char> lines)
 		{
@@ -77,7 +77,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 当远程调用进入时的处理
+		* \brief 当远程调用进入时的处理
 		*/
 		void VoteStation::request(ZMQ_HANDLE socket)
 		{
@@ -141,7 +141,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 当工作操作返回时的处理
+		* \brief 当工作操作返回时的处理
 		*/
 		void VoteStation::response()
 		{

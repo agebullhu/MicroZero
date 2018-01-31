@@ -1,4 +1,4 @@
-﻿namespace Yizuan.Service.Api
+﻿namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// 表示API请求参数

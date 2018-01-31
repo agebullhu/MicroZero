@@ -10,14 +10,20 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/agebullhu/ZmqNet/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
+    <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
     <PackageVersion>1.0.0.2</PackageVersion>
+    <Version>1.0.0.2</Version>
+    <Description>在ZeroNet使用WebAp的支撑库</Description>
+    <Company>Yizuanbao &amp; agebull</Company>
+    <Product>ZeroNet</Product>
+    <Authors>Agebull</Authors>
+    <PackageReleaseNotes>在ZeroNet使用WebAp的支撑库</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -105,7 +111,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApiContract\ZmqNet.Api.Contract.csproj" />
+    <ProjectReference Include="..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

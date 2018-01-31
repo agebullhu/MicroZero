@@ -12,22 +12,27 @@
 1 Api站点
 2 消息发布与订阅
 3 网络投票（并行工作流）</Description>
-    <Version>1.0.0.3</Version>
+    <Version>1.0.0.7</Version>
     <!--monoandroid60;xamarinios10-->
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
     <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.0.3</PackageVersion>
+    <PackageVersion>1.0.0.7</PackageVersion>
 	<IncludeSymbols>true</IncludeSymbols> 
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Agebull</Authors>
+    <Company>Yizuanbao &amp; Agebull</Company>
+    <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
+    <Product>Agebull.ZeroNet</Product>
+    <AssemblyVersion>1.0.0.7</AssemblyVersion>
+    <FileVersion>1.0.0.7</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -59,7 +64,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -82,12 +87,15 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0" />
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="1.0.0.2" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ApiContract\ZmqNet.Api.Contract.csproj" />
+    <ProjectReference Include="..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
   </ItemGroup>
 
 </Project>

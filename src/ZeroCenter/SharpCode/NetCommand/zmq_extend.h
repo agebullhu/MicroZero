@@ -16,7 +16,7 @@ namespace agebull
 
 
 		/**
-		*@brief 广播内容
+		*\brief 广播内容
 		*/
 		bool monitor(string publiher, string state, string content);
 		/**
@@ -59,140 +59,140 @@ namespace agebull
 		};
 
 		/**
-		* @brief ZMQ套接字状态
+		* \brief ZMQ套接字状态
 		*/
 		enum class ZmqSocketState
 		{
 			/**
-			* @brief 没问题
+			* \brief 没问题
 			*/
 			Succeed,
 			/**
-			* @brief 后续还有消息
+			* \brief 后续还有消息
 			*/
 			More,
 
 			/**
-			* @brief 空帧
+			* \brief 空帧
 			*/
 			Empty,
 
 			/**
-			* @brief 主机不可达
+			* \brief 主机不可达
 			*/
 			HostUnReach,
 			/**
-			* @brief 网络关闭
+			* \brief 网络关闭
 			*/
 			NetDown,
 
 			/**
-			* @brief 网络不可达
+			* \brief 网络不可达
 			*/
 			NetUnReach,
 
 			/**
-			* @brief 网络重置
+			* \brief 网络重置
 			*/
 			NetReset,
 
 			/**
-			* @brief 未连接
+			* \brief 未连接
 			*/
 			NotConn,
 			/**
-			* @brief 连接已在使用中？
+			* \brief 连接已在使用中？
 			*/
 			ConnRefUsed,
 			/**
-			* @brief 连接中断
+			* \brief 连接中断
 			*/
 			ConnAborted,
 
 			/**
-			* @brief 连接重置
+			* \brief 连接重置
 			*/
 			ConnReset,
 
 			/**
-			* @brief 超时
+			* \brief 超时
 			*/
 			TimedOut,
 
 			/**
-			* @brief 正在处理中？
+			* \brief 正在处理中？
 			*/
 			InProgress,
 
 			/**
-			* @brief 跨线程调用？
+			* \brief 跨线程调用？
 			*/
 			Mthread,
 
 			/**
-			* @brief 指定的socket不可用
+			* \brief 指定的socket不可用
 			*/
 			NotSocket,
 
 			/**
-			* @brief 内存不足
+			* \brief 内存不足
 			*/
 			NoBufs,
 
 			/**
-			* @brief 消息大小不合适？
+			* \brief 消息大小不合适？
 			*/
 			MsgSize,
 
 			/**
-			* @brief 指定的socket相关联的context已关闭
+			* \brief 指定的socket相关联的context已关闭
 			*/
 			Term,
 
 			/**
-			* @brief 系统信号中断
+			* \brief 系统信号中断
 			*/
 			Intr,
 
 			/**
-			* @brief 不支持？
+			* \brief 不支持？
 			*/
 			NotSup,
 
 			/**
-			* @brief 不支持的协议
+			* \brief 不支持的协议
 			*/
 			ProtoNoSupport,
 
 			/**
-			* @brief 协议不兼容
+			* \brief 协议不兼容
 			*/
 			NoCompatProto,
 
 			/**
-			* @brief ？
+			* \brief ？
 			*/
 			AfNoSupport,
 
 			/**
-			* @brief 地址问题？
+			* \brief 地址问题？
 			*/
 			AddrNotAvAll,
 			/**
-			* @brief 地址已被使用
+			* \brief 地址已被使用
 			*/
 			AddrInUse,
 			/**
-			* @brief ？
+			* \brief ？
 			*/
 			Fsm,
 
 			/**
-			* @brief 重启
+			* \brief 重启
 			*/
 			Again,
 			/**
-			* @brief 其它错误
+			* \brief 其它错误
 			*/
 			Unknow
 		};
@@ -229,7 +229,13 @@ namespace agebull
 			zmq_setsockopt(socket, ZMQ_SNDTIMEO, &iSndTimeout, sizeof(int));
 		}
 
-		//生成ZMQ连接对象
+		/**
+		 * \brief 生成ZMQ连接对象
+		 * \param addr 
+		 * \param type 
+		 * \param name 
+		 * \return 
+		 */
 		inline ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name)
 		{
 			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
@@ -271,7 +277,7 @@ namespace agebull
 		{
 			char host[MAX_PATH];
 			sprintf_s(host, "tcp://*:%d", port);
-			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+			const ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
 				log_error2("构造对象(%s)发生错误:%s", host, zmq_strerror(zmq_errno()));
@@ -293,7 +299,7 @@ namespace agebull
 				return socket;
 			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
 			int nodelay = 1;
-			int rc = setsockopt(fd, IPPROTO_MAX, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
+			const int rc = setsockopt(fd, IPPROTO_MAX, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
 			assert(rc == 0);
 			zmq_close(socket);
 			log_error2("绑定地址(%s)发生错误:%s", host, zmq_strerror(zmq_errno()));
@@ -328,7 +334,7 @@ namespace agebull
 		*/
 		inline ZmqSocketState check_zmq_error()
 		{
-			int err = zmq_errno();
+			const int err = zmq_errno();
 			switch (err)
 			{
 			case 0:
@@ -426,7 +432,7 @@ namespace agebull
 			}
 		}
 		/**
-		* @brief 接收
+		* \brief 接收
 		*/
 		inline ZmqSocketState recv(ZMQ_HANDLE socket, sharp_char& data, int flag = 0)
 		{
@@ -451,7 +457,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 接收
+		* \brief 接收
 		*/
 		inline ZmqSocketState recv(ZMQ_HANDLE socket, vector<sharp_char>& ls, int flag = 0)
 		{
@@ -481,7 +487,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 发送最后一帧
+		* \brief 发送最后一帧
 		*/
 		inline ZmqSocketState send_late(ZMQ_HANDLE socket, const char* string)
 		{
@@ -494,7 +500,7 @@ namespace agebull
 		}
 
 		/**
-		* @brief 发送帧
+		* \brief 发送帧
 		*/
 		inline ZmqSocketState send_more(ZMQ_HANDLE socket, const char* string)
 		{
@@ -506,7 +512,7 @@ namespace agebull
 			return ZmqSocketState::Succeed;
 		}
 		/**
-		* @brief 发送帧
+		* \brief 发送帧
 		*/
 		inline ZmqSocketState send_addr(ZMQ_HANDLE socket, const char* addr)
 		{
@@ -524,9 +530,9 @@ namespace agebull
 		}
 
 		/**
-		* @brief 发送
+		* \brief 发送
 		*/
-		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<sharp_char>::iterator iter, vector<sharp_char>::iterator end)
+		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<sharp_char>::iterator iter, const vector<sharp_char>::iterator& end)
 		{
 			size_t idx = 0;
 			while (iter != end)
@@ -541,7 +547,7 @@ namespace agebull
 			return send_late(socket, "");
 		}
 		/**
-		* @brief 发送
+		* \brief 发送
 		*/
 		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<sharp_char>& ls)
 		{
@@ -557,7 +563,7 @@ namespace agebull
 			return send_late(socket, *ls[idx]);
 		}
 		/**
-		* @brief 发送
+		* \brief 发送
 		*/
 		inline ZmqSocketState send(ZMQ_HANDLE socket, vector<string>& ls)
 		{
@@ -574,7 +580,7 @@ namespace agebull
 		}
 
 		/**
-		 * @brief 连接的SOCKET简单封装
+		 * \brief 连接的SOCKET简单封装
 		 */
 		template<int zmq_type = ZMQ_REQ, bool is_tcp = false>
 		class RequestSocket
@@ -603,7 +609,7 @@ namespace agebull
 
 					zmq_getsockopt(_socket, ZMQ_FD, &fd, &sz);
 					int nodelay = 1;
-					int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
+					const int rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int));
 					assert(rc == 0);
 				}
 #ifdef TIMER
@@ -620,7 +626,7 @@ namespace agebull
 				return _state;
 			}
 			/**
-			* @brief 接收
+			* \brief 接收
 			*/
 			ZmqSocketState recv(sharp_char& data, int flag = 0) const
 			{
@@ -628,7 +634,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 接收
+			* \brief 接收
 			*/
 			ZmqSocketState recv(vector<sharp_char>& ls, int flag = 0) const
 			{
@@ -636,7 +642,7 @@ namespace agebull
 			}
 
 			/**
-			* @brief 发送
+			* \brief 发送
 			*/
 			ZmqSocketState send_late(const char* string) const
 			{
@@ -644,28 +650,28 @@ namespace agebull
 			}
 
 			/**
-			* @brief 发送帧
+			* \brief 发送帧
 			*/
 			ZmqSocketState send_more(const char* string) const
 			{
 				return agebull::zmq_net::send_more(_socket, string);
 			}
 			/**
-			* @brief 发送
+			* \brief 发送
 			*/
 			ZmqSocketState send(vector<sharp_char>& ls) const
 			{
 				return agebull::zmq_net::send(_socket, ls);
 			}
 			/**
-			* @brief 发送
+			* \brief 发送
 			*/
 			ZmqSocketState send(vector<string>& ls) const
 			{
 				return agebull::zmq_net::send(_socket, ls);
 			}
 			/**
-			* @brief 进行一次请求
+			* \brief 进行一次请求
 			* @return 如果返回为false,请检查state.
 			*/
 			bool request(vector<sharp_char>& arguments, vector<sharp_char>& result, int retry = 3)
@@ -701,7 +707,7 @@ namespace agebull
 				return _state == ZmqSocketState::Succeed;
 			}
 			/**
-			* @brief 进行一次请求
+			* \brief 进行一次请求
 			* @return 如果返回为false,请检查state.
 			*/
 			bool request(vector<string>& arguments, vector<sharp_char>& result, int retry = 3)

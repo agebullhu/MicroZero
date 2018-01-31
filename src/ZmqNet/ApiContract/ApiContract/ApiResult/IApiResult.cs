@@ -1,4 +1,4 @@
-﻿namespace Yizuan.Service.Api
+﻿namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// API返回基类

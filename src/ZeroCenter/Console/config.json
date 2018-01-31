@@ -1,8 +1,4 @@
 {
-  "publish_request_add": "tcp://*:10000",
-  "publish_notify_add": "tcp://*:10001",
-  "answer_add": "tcp://*:9902",
-  "notify_add": "tcp://*:9903",
-  "redis_add": "127.0.0.1:6379",
-  "defaultHost": "http://uat.yizuanbao.cn" 
+  "baseHost": "7999",
+  "redis_add": "127.0.0.1:6379"
 }

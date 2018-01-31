@@ -2,7 +2,7 @@
 // ReSharper disable All
 
 
-namespace Yizuan.Service.Api
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// 系统错误代码
@@ -86,6 +86,11 @@ namespace Yizuan.Service.Api
         /// 客户端应中止请求
         /// </summary>
         public const int Ignore = -7;
+
+        /// <summary>
+        /// 方法不存在
+        /// </summary>
+        public const int NoFind = 404;
 
         /// <summary>
         /// 未知的RefreshToken

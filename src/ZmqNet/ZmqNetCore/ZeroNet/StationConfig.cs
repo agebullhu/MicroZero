@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace ZmqNet.Rpc.Core.ZeroNet
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// 站点配置
     /// </summary>
-    [Serializable]
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
     public class StationConfig
     {
         /// <summary>
@@ -16,6 +16,11 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// </summary>
         [DataMember, JsonProperty("station_name", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string StationName { get; set; }
+        /// <summary>
+        /// 站点别名
+        /// </summary>
+        [DataMember, JsonProperty("station_alias", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public List<string> StationAlias { get; set; }
         /// <summary>
         /// 站点类型
         /// </summary>
@@ -38,11 +43,13 @@ namespace ZmqNet.Rpc.Core.ZeroNet
         /// </summary>
         [DataMember, JsonProperty("inner_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public int InnerPort { get; set; }
+
         /// <summary>
         /// 出站地址
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public string InnerAddress=> $"tcp://{StationProgram.Config.ZeroAddress}:{InnerPort}";
+        public string InnerAddress => $"tcp://{StationProgram.Config.ZeroAddress}:{InnerPort}";
+
         /// <summary>
         /// 心跳端口
         /// </summary>

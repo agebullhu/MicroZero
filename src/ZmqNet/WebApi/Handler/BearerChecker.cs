@@ -9,9 +9,9 @@ using Agebull.Common.DataModel.Redis;
 using Agebull.Common.Logging;
 using GoodLin.Common.Ioc;
 using Newtonsoft.Json;
-using Yizuan.Service.Api.OAuth;
+using Agebull.ZeroNet.ZeroApi.OAuth;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     ///     Éí·Ý¼ì²éÆ÷
@@ -69,7 +69,7 @@ namespace Yizuan.Service.Api.WebApi
             {
                 default:
                 case '*':
-                    ApiContext.SetRequestContext(new InternalCallContext
+                    ApiContext.SetRequestContext(new CallContext
                     {
                         RequestId = Guid.NewGuid(),
                         ServiceKey = System.Configuration.ConfigurationManager.AppSettings["ServiceKey"],
@@ -82,7 +82,7 @@ namespace Yizuan.Service.Api.WebApi
                 case '$':
                     return RevertCallContext(request, token);
                 case '#':
-                    ApiContext.SetRequestContext(new InternalCallContext
+                    ApiContext.SetRequestContext(new CallContext
                     {
                         RequestId = Guid.NewGuid(),
                         ServiceKey = System.Configuration.ConfigurationManager.AppSettings["ServiceKey"],
@@ -136,7 +136,7 @@ namespace Yizuan.Service.Api.WebApi
         private void CreateApiContext(LoginUserInfo customer, string token)
         {
             ApiContext.SetCustomer(customer);
-            ApiContext.SetRequestContext(new InternalCallContext
+            ApiContext.SetRequestContext(new CallContext
             {
                 Bear = token,
                 Os = customer.Os,
@@ -194,10 +194,10 @@ namespace Yizuan.Service.Api.WebApi
         /// </returns>
         private int CheckServiceKey(HttpRequestMessage request, string token)
         {
-            InternalCallContext context;
+            CallContext context;
             try
             {
-                context = JsonConvert.DeserializeObject<InternalCallContext>(token);
+                context = JsonConvert.DeserializeObject<CallContext>(token);
             }
             catch (Exception e)
             {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-
-namespace ExternalStation
+namespace ZeroNet.Http.Route
 {
     public class Program
     {

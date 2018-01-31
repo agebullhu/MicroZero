@@ -7,7 +7,7 @@ using System.Web;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
-namespace Yizuan.Service.Api.WebApi
+namespace Agebull.ZeroNet.ZeroApi.WebApi
 {
     /// <summary>
     ///     内部服务调用代理
