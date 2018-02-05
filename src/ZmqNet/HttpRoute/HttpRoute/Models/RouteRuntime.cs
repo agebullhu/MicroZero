@@ -38,6 +38,12 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     服务器访问异常
         /// </summary>
+        internal static readonly string Inner2Error =
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "**系统内部错误**"));
+
+        /// <summary>
+        ///     服务器访问异常
+        /// </summary>
         internal static readonly string InnerError =
             JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "*系统内部错误*"));
 

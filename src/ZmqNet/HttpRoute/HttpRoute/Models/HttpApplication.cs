@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
@@ -188,7 +189,7 @@ namespace ZeroNet.Http.Route
                         context.Response.WriteAsync(JsonConvert.SerializeObject(RouteRuntime.Cache, Formatting.Indented), Encoding.UTF8);
                         return;
                 }
-                
+
             }
             catch (Exception e)
             {
@@ -203,13 +204,20 @@ namespace ZeroNet.Http.Route
             try
             {
                 var counter = RouteCounter.Begin();
-                // 正常调用
-                router.Call();
-                LogRecorder.BeginStepMonitor("End");
-                // 写入返回
-                router.WriteResult();
-                // 缓存
-                RouteRuntime.CacheResult(router.Data);
+                if (!SecurityChecker.KillDenyHttpHeaders(context))
+                {
+                    context.Response.WriteAsync(RouteRuntime.Inner2Error, Encoding.UTF8);
+                }
+                else
+                {
+                    // 正常调用
+                    router.Call();
+                    LogRecorder.BeginStepMonitor("End");
+                    // 写入返回
+                    router.WriteResult();
+                    // 缓存
+                    RouteRuntime.CacheResult(router.Data);
+                }
                 //计时
                 counter.End(router.Data);
             }
@@ -225,6 +233,7 @@ namespace ZeroNet.Http.Route
                 HttpIoLog.OnEnd(router.Data.Status, router.Data.ResultMessage);
             }
         }
+
         #endregion
         #region 跨域支持
 

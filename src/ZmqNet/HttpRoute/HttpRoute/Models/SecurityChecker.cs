@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Agebull.ZeroNet.ZeroApi;
 using Agebull.Common.DataModel.Redis;
+using Agebull.Common.Logging;
 using Agebull.Common.Redis;
 
 namespace ZeroNet.Http.Route
@@ -27,7 +29,67 @@ namespace ZeroNet.Http.Route
         /// 错误代码
         /// </summary>
         public int Status { get; set; }
-        
+
+        /// <summary>
+        /// 针对HttpHeader特征阻止不安全访问
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        internal static bool KillDenyHttpHeaders(HttpContext context)
+        {
+            if (AppConfig.Config.SystemConfig.DenyHttpHeaders == null)
+                return true;
+            try
+            {
+                foreach (var head in AppConfig.Config.SystemConfig.DenyHttpHeaders)
+                {
+                    if (!context.Request.Headers.ContainsKey(head.Head))
+                        continue;
+                    switch (head.DenyType)
+                    {
+                        case DenyType.Hase:
+                            if (context.Request.Headers.ContainsKey(head.Head))
+                                return false;
+                            break;
+                        case DenyType.NonHase:
+                            if (!context.Request.Headers.ContainsKey(head.Head))
+                                return false;
+                            break;
+                        case DenyType.Count:
+                            if (!context.Request.Headers.ContainsKey(head.Head))
+                                break;
+                            if (context.Request.Headers[head.Head].Count == int.Parse(head.Value))
+                                return false;
+                            break;
+                        case DenyType.Equals:
+                            if (!context.Request.Headers.ContainsKey(head.Head))
+                                break;
+                            if (string.Equals(context.Request.Headers[head.Head].ToString(), head.Value,StringComparison.OrdinalIgnoreCase))
+                                return false;
+                            break;
+                        case DenyType.Like:
+                            if (!context.Request.Headers.ContainsKey(head.Head))
+                                break;
+                            if (context.Request.Headers[head.Head].ToString().Contains(head.Value))
+                                return false;
+                            break;
+                        case DenyType.Regex:
+                            if (!context.Request.Headers.ContainsKey(head.Head))
+                                break;
+                            var regx = new Regex(head.Value, RegexOptions.IgnoreCase | RegexOptions.ECMAScript | RegexOptions.Multiline);
+                            if (regx.IsMatch(context.Request.Headers[head.Head].ToString()))
+                                return false;
+                            break;
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                return true;
+            }
+        }
         /// <summary>
         ///     执行检查
         /// </summary>
@@ -42,6 +104,12 @@ namespace ZeroNet.Http.Route
             if (string.IsNullOrWhiteSpace(Bearer))
             {
                 return true;//Request.GetUri().LocalPath.Contains("/oauth/getdid");
+            }
+
+            if (AppConfig.Config.SystemConfig.DenyTokens != null &&
+                AppConfig.Config.SystemConfig.DenyTokens.ContainsKey(Bearer))
+            {
+                return false;
             }
             //var header = Request.Headers.Values.LinkToString(" ");
             //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))

@@ -112,6 +112,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         private bool SecurityCheck()
         {
+
             string authorization = Request.Headers["Authorization"];
             if (string.IsNullOrWhiteSpace(authorization))
             {

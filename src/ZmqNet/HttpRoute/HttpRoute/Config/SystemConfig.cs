@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
@@ -62,5 +63,74 @@ namespace ZeroNet.Http.Route
         /// </summary>
         [JsonProperty]
         internal bool CheckBearerCache { get; set; }
+
+        /// <summary>
+        /// 黑名单令牌
+        /// </summary>
+        [JsonProperty]
+        internal Dictionary<string, string> DenyTokens { get; set; }
+
+        /// <summary>
+        /// 禁止的Http头信息
+        /// </summary>
+        [JsonProperty]
+        internal List<DenyItem> DenyHttpHeaders { get; set; }
+    }
+    /// <summary>
+    /// 阻止节点
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
+    public class DenyItem
+    {
+        /// <summary>
+        /// 头
+        /// </summary>
+        [JsonProperty]
+        public string Head { get; set; }
+        /// <summary>
+        /// 内容
+        /// </summary>
+        [JsonProperty]
+        public string Value { get; set; }
+        /// <summary>
+        /// 类型
+        /// </summary>
+        [JsonProperty]
+        public DenyType DenyType { get; set; }
+    }
+    
+    /// <summary>
+    /// 阻止类型
+    /// </summary>
+    public enum DenyType
+    {
+        /// <summary>
+        /// 不阻止
+        /// </summary>
+        None,
+        /// <summary>
+        /// 有此内容
+        /// </summary>
+        Hase,
+        /// <summary>
+        /// 没有此内容
+        /// </summary>
+        NonHase,
+        /// <summary>
+        /// 达到数组数量
+        /// </summary>
+        Count,
+        /// <summary>
+        /// 内容等于
+        /// </summary>
+        Equals,
+        /// <summary>
+        /// 内容包含
+        /// </summary>
+        Like,
+        /// <summary>
+        /// 正则匹配
+        /// </summary>
+        Regex
     }
 }
