@@ -32,6 +32,9 @@
     },
     "GoodLin-OAuth-Api": {
       "hosts": [ "http://47.97.173.25/" ]
+    },
+    "GoodLin-User-External-Api": {
+      "hosts": [ "http://47.97.173.25:8081/" ]
     }
   },
   /*缓存设置*/

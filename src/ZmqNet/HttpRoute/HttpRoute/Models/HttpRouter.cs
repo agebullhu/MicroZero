@@ -14,59 +14,6 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// 路由数据
-    /// </summary>
-    internal class RouteData
-    {
-        /// <summary>
-        /// 请求地址
-        /// </summary>
-        public Uri Uri;
-        /// <summary>
-        ///     当前适用的缓存设置对象
-        /// </summary>
-        public CacheSetting CacheSetting;
-        /// <summary>
-        ///     缓存键
-        /// </summary>
-        public string CacheKey;
-        /// <summary>
-        /// 执行状态
-        /// </summary>
-        public RouteStatus Status;
-        /// <summary>
-        ///     返回值
-        /// </summary>
-        public string ResultMessage;
-        
-        /// <summary>
-        ///     Http Header中的Authorization信息
-        /// </summary>
-        public string Bearer;
-
-        /// <summary>
-        ///     当前请求调用的主机名称
-        /// </summary>
-        public string HostName;
-
-        /// <summary>
-        ///     当前请求调用的API名称
-        /// </summary>
-        public string ApiName;
-
-        /// <summary>
-        ///     HTTP method
-        /// </summary>
-        public string HttpMethod;
-        /// <summary>
-        ///     路由主机信息
-        /// </summary>
-        public HostConfig RouteHost;
-
-
-    }
-    /// <inheritdoc />
-    /// <summary>
     ///     调用映射核心类
     /// </summary>
     internal class HttpRouter : ScopeBase
@@ -93,8 +40,7 @@ namespace ZeroNet.Http.Route
         ///     Http返回
         /// </summary>
         public RouteData Data { get; }
-
-
+        
         #endregion
 
         #region 流程
@@ -103,102 +49,82 @@ namespace ZeroNet.Http.Route
         ///     内部构架
         /// </summary>
         /// <param name="context"></param>
-        private HttpRouter(HttpContext context)
+        internal HttpRouter(HttpContext context)
         {
-            Data=new RouteData();
+            Data = new RouteData();
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
-            HttpIoLog.OnBegin(Request);
         }
+        
 
-        /// <inheritdoc />
-        /// <summary>清理资源</summary>
         protected override void OnDispose()
         {
-            HttpIoLog.OnEnd(Data.Status, Data.ResultMessage);
-        }
-
-        /// <summary>
-        ///     执行路由操作
-        /// </summary>
-        public static void Todo(HttpContext context)
-        {
-            using (var router = new HttpRouter(context))
-            {
-                // 正常调用
-                router.Call();
-                // 写入返回
-                router.WriteResult();
-            }
         }
 
         /// <summary>
         /// 调用
         /// </summary>
-        private void Call()
+        internal void Call()
         {
             Data.Uri = Request.GetUri();
             Data.HttpMethod = Request.Method.ToUpper();
 
-            // 1 初始化基本信息
+            if (!CheckCall())
+                return;
+            // 1 安全检查
+            if (!SecurityCheck())
+                return;
+            // 2 初始化路由信息
             if (!InitializeContext())
                 return;
-            // 2 缓存快速处理
-            if (RouteRuntime.CheckCache(Data.Uri, Data.Bearer, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
+            // 3 缓存快速处理
+            if (RouteRuntime.LoadCache(Data.Uri, Data.Bearer, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
             {
                 //找到并返回缓存
                 Data.Status = RouteStatus.Cache;
                 return;
             }
-
-            //3 安全检查
-            if (!SecurityCheck()) return;
-            //3 初始化路由信息
-            if (!InitializeRoute())
-                return;
-            //4 查找远程机器
+            // 4 远程调用
             Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
-            //5 远程调用
-            //缓存
-            RouteRuntime.CacheData(Data);
+            // 5 结果检查
+            Data.IsSucceed = RouteRuntime.CheckResult(Data);
         }
-
         /// <summary>
-        ///     初始化基本上下文
+        /// 检查调用内容
         /// </summary>
-        private bool InitializeContext()
+        /// <returns></returns>
+        private bool CheckCall()
         {
-            string authorization = Request.Headers["Authorization"];
-            if (string.IsNullOrWhiteSpace(authorization))
+            var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length <= 1)
             {
-                Data.Bearer = Request.Query["ClientKey"];
+                Data.Status = RouteStatus.FormalError;
+                Data.ResultMessage = RouteRuntime.DenyAccess;
+                return false;
             }
-            else
-            {
-                var aa = authorization.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (aa.Length != 2 || !string.Equals(aa[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
-                    aa[1].Equals("null"))
-                    Data.Bearer = null;
-                else
-                    Data.Bearer = aa[1];
-            }
-            ApiContext.Current.Request.Bear = Data.Bearer;
-            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
-            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
-            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
-            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
-            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
-
+            Data.HostName = words[0];
+            Data.ApiName = words[1];
             return true;
         }
-
         /// <summary>
         ///     安全检查
         /// </summary>
         private bool SecurityCheck()
         {
+            string authorization = Request.Headers["Authorization"];
+            if (string.IsNullOrWhiteSpace(authorization))
+            {
+                Data.Bearer = Request.Query["ClientKey"];
+                return true;
+            }
+
+            var words = authorization.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length != 2 || !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) || words[1].Equals("null") || words[1].Equals("undefined"))
+                Data.Bearer = null;
+            else
+                Data.Bearer = words[1];
+
             var checker = new SecurityChecker
             {
                 Request = Request,
@@ -209,6 +135,7 @@ namespace ZeroNet.Http.Route
             Data.Status = RouteStatus.DenyAccess;
             Data.ResultMessage = AppConfig.Config.SystemConfig.BlockHost;
             Response.Redirect(AppConfig.Config.SystemConfig.BlockHost, false);
+            Data.Redirect = true;
             return false;
         }
 
@@ -216,14 +143,12 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     写入返回
         /// </summary>
-        private void WriteResult()
+        internal void WriteResult()
         {
-            if (Data.Status >= RouteStatus.HttpRedirect)
+            if (Data.Redirect)
                 return;
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.ContentType = "text/plain; charset=utf-8";
-            if (Data.ResultMessage != null)
-                Response.WriteAsync(Data.ResultMessage, Encoding.UTF8);
+            Response.WriteAsync(Data.ResultMessage ?? RouteRuntime.RemoteEmptyError, Encoding.UTF8);
         }
 
         #endregion
@@ -231,61 +156,22 @@ namespace ZeroNet.Http.Route
         #region 路由
 
         /// <summary>
-        ///     初始化路由信息
+        ///     初始化基本上下文
         /// </summary>
-        private bool InitializeRoute()
+        private bool InitializeContext()
         {
-            var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-            Data.HostName = words[0];
-            if (words.Length <= 1)
-            {
-                Data.Status = RouteStatus.FormalError;
-                Data.ResultMessage = RouteRuntime.DenyAccess;
-                return false;
-            }
 
-            Data.ApiName = words[1];
+            ApiContext.Current.Request.Bear = Data.Bearer;
+            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
+            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
+            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
+            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
+            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
+
             if (!AppConfig.Config.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
                 Data.RouteHost = HostConfig.DefaultHost;
             return true;
-            //StringBuilder sb = new StringBuilder();
-            //int step = 0;
-            //foreach (var ch in Data.Uri.PathAndQuery)
-            //{
-            //    switch (ch)
-            //    {
-            //        case '/':
-            //            if (step == 0)
-            //            {
-            //                sb.Append(ch);
-            //            }
-            //            else if (sb.Length > 0)
-            //            {
-            //                isFirst = false;
-            //                _model = sb.ToString();
-            //                sb.Clear();
-            //            }
-            //            break;
-            //        case '?':
-            //            _api = sb.ToString();
-            //            break;
-            //        default:
-            //            sb.Append(ch);
-            //            break;
-            //    }
-            //}
-            //if (_model == null)
-            //{
-            //    status != 0 = true;
-            //    Data.ResultMessage = DenyAccess;
-            //}
-            //if (sb.Length > 0)
-            //    _apiAndQuery = sb.ToString();
-            //else
-            //{
-            //    status != 0 = true;
-            //    Data.ResultMessage = DenyAccess;
-            //}
         }
 
         #endregion
@@ -321,7 +207,7 @@ namespace ZeroNet.Http.Route
             {
                 Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
             };
-            var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request);
+            var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
             LogRecorder.BeginStepMonitor("内部HTTP调用");
             LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
@@ -399,6 +285,5 @@ namespace ZeroNet.Http.Route
         }
 
         #endregion
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace ZeroNet.Http.Route
         ///     开始时的处理
         /// </summary>
         /// <returns>如果返回内容不为空，直接返回,后续的处理不再继续</returns>
-        public static int OnBegin(HttpRequest request)
+        public static int OnBegin(HttpRequest request, RouteData data)
         {
             if (AppConfig.Config.SystemConfig.FireZero)
                 Task.Factory.StartNew(() =>
@@ -26,22 +27,34 @@ namespace ZeroNet.Http.Route
                 });
             if (!LogRecorder.LogMonitor)
                 return 0;
-            LogRecorder.BeginMonitor(request.Path.ToString());
-            LogRecorder.BeginStepMonitor("HTTP");
             try
             {
+                LogRecorder.BeginMonitor(request.Path.ToString());
+                LogRecorder.BeginStepMonitor("HTTP");
                 var args = new StringBuilder();
                 args.Append("Headers：");
                 foreach (var head in request.Headers)
                     args.Append($"【{head.Key}】{head.Value.LinkToString('|')}");
                 LogRecorder.MonitorTrace(args.ToString());
                 LogRecorder.MonitorTrace($"Method：{request.Method}");
-                LogRecorder.MonitorTrace($"Query：{request.QueryString}");
-                if (request.ContentLength.HasValue && request.ContentLength > 0)
-                    LogRecorder.MonitorTrace($"Form：{request.Form.LinkToString("&")}");
+                if (request.QueryString.HasValue)
+                    LogRecorder.MonitorTrace($"Query：{request.QueryString}");
+                if (request.HasFormContentType)
+                {
+                    LogRecorder.MonitorTrace($"Form：{request.Form.LinkToString(p => $"{p.Key}={p.Value}", "&")}");
+                }
+                else if (request.ContentLength != null)
+                {
+                    using (var texter = new StreamReader(request.Body))
+                    {
+                        data.Context = texter.ReadToEnd();
+                        LogRecorder.MonitorTrace("Context:" + data.Context);
+                    }
+                }
             }
             catch (Exception e)
             {
+                LogRecorder.MonitorTrace(e.Message);
                 LogRecorder.Exception(e);
             }
             finally
@@ -63,12 +76,14 @@ namespace ZeroNet.Http.Route
                 });
             if (!LogRecorder.LogMonitor)
                 return;
+            
             try
             {
                 LogRecorder.MonitorTrace($"Result：{result}");
             }
             catch (Exception e)
             {
+                LogRecorder.MonitorTrace(e.Message);
                 LogRecorder.Exception(e);
             }
             finally

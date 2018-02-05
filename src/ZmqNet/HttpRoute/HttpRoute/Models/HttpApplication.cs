@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
@@ -16,6 +17,8 @@ namespace ZeroNet.Http.Route
     /// </summary>
     public class HttpApplication
     {
+        #region 初始化
+
         /// <summary>
         /// 初始化
         /// </summary>
@@ -28,9 +31,25 @@ namespace ZeroNet.Http.Route
             StationProgram.Run();
             RouteRuntime.Flush();
             ZeroFlush();
-            Datas = new List<RouteData>();
-            
+            //Datas = new List<RouteData>();
+
         }
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public static void Flush()
+        {
+            AppConfig.Initialize();
+            RouteRuntime.Flush();
+            ZeroFlush();
+            //Datas = new List<RouteData>();
+
+        }
+
+        #endregion
+
+        #region ZeroNet
+
 
         /// <summary>
         /// 初始化
@@ -59,18 +78,6 @@ namespace ZeroNet.Http.Route
             }
             StationProgram.StationEvent += StationProgram_StationEvent;
         }
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public static void Flush()
-        {
-            AppConfig.Initialize();
-            RouteRuntime.Flush();
-            ZeroFlush();
-            Datas = new List<RouteData>();
-
-        }
-
         private static void StationProgram_StationEvent(object sender, StationProgram.StationEventArgument e)
         {
             switch (e.EventName)
@@ -106,6 +113,10 @@ namespace ZeroNet.Http.Route
             }
         }
 
+        #endregion
+
+        #region 基本调用
+
         /// <summary>
         /// POST调用
         /// </summary>
@@ -113,7 +124,7 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         public static Task Call(HttpContext h)
         {
-            return Task.Factory.StartNew(Call, h);
+            return Task.Factory.StartNew(CallTask, h);
         }
 
         /// <summary>
@@ -121,20 +132,23 @@ namespace ZeroNet.Http.Route
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
-        public static void Call(object arg)
+        public static void CallTask(object arg)
         {
-            var context = (HttpContext)arg;
+            CallTask((HttpContext)arg);
+        }
+
+        /// <summary>
+        /// 调用
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static void CallTask(HttpContext context)
+        {
             var uri = context.Request.GetUri();
             try
             {
-                //更新命令
-                if (uri.LocalPath.IndexOf("_1_clear_1_", StringComparison.Ordinal) >= 0)
-                {
-                    Flush();
-                    //context.Response.WriteAsync("The cache & config has been refreshed");
-                    context.Response.WriteAsync(JsonConvert.SerializeObject(AppConfig.Config));
-                    return ;
-                }
+                context.Response.ContentType = "text/plain; charset=utf-8";
+                context.Response.Headers["Content-Type"] = "text/plain; charset=utf-8";
                 //内容页转向
                 if (uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
                 {
@@ -147,31 +161,71 @@ namespace ZeroNet.Http.Route
                     Cros(context.Response);
                     return;
                 }
+                //命令
+                switch (uri.LocalPath)
+                {
+                    case "/":
+                        context.Response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
+                        return;
+                    case "/_1_clear_1_":
+                        Flush();
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(AppConfig.Config, Formatting.Indented), Encoding.UTF8);
+                        return;
+                    case "/_1_counter_1_/info":
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                        return;
+                    case "/_1_counter_1_/save":
+                        RouteCounter.Save();
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                        return;
+                    case "/_1_config_1_":
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(AppConfig.Config, Formatting.Indented), Encoding.UTF8);
+                        return;
+                    case "/_1_warings_1_":
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(RouteRuntime.WaringsTime, Formatting.Indented), Encoding.UTF8);
+                        return;
+                    case "/_1_cache_1_":
+                        context.Response.WriteAsync(JsonConvert.SerializeObject(RouteRuntime.Cache, Formatting.Indented), Encoding.UTF8);
+                        return;
+                }
+                
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
                 RouteRuntime.RuntimeWaring("Route", uri.LocalPath, e.Message);
+                context.Response.WriteAsync(RouteRuntime.InnerError, Encoding.UTF8);
                 return;
             }
-            var start = DateTime.Now;
+
+            var router = new HttpRouter(context);
+            HttpIoLog.OnBegin(context.Request, router.Data);
             try
             {
-                HttpRouter.Todo(context);
-                var sm = DateTime.Now - start;
-                if (sm.TotalMilliseconds > 200)
-                    LogRecorder.Warning($"执行时间异常({sm.TotalMilliseconds}):{uri.LocalPath}");
-
-                if (sm.TotalMilliseconds > 2000)
-                    RouteRuntime.RuntimeWaring("Route", uri.LocalPath, $"执行时间异常({sm.TotalMilliseconds}ms)");
+                var counter = RouteCounter.Begin();
+                // 正常调用
+                router.Call();
+                LogRecorder.BeginStepMonitor("End");
+                // 写入返回
+                router.WriteResult();
+                // 缓存
+                RouteRuntime.CacheResult(router.Data);
+                //计时
+                counter.End(router.Data);
             }
             catch (Exception e)
             {
+                router.Data.Status = RouteStatus.LocalError;
                 LogRecorder.Exception(e);
                 RouteRuntime.RuntimeWaring("Route", uri.LocalPath, e.Message);
-                context.Response.WriteAsync(RouteRuntime.InnerError);
+                context.Response.WriteAsync(RouteRuntime.InnerError, Encoding.UTF8);
+            }
+            finally
+            {
+                HttpIoLog.OnEnd(router.Data.Status, router.Data.ResultMessage);
             }
         }
+        #endregion
         #region 跨域支持
 
         /// <summary>
@@ -188,7 +242,7 @@ namespace ZeroNet.Http.Route
         #endregion
 
         #region 调用后处理
-
+        /*
         /// <summary>
         /// 数据
         /// </summary>
@@ -230,7 +284,7 @@ namespace ZeroNet.Http.Route
                     RouteRuntime.CacheData(datas[index]);
                 }
             }
-        }
+        }*/
 
         #endregion
     }

@@ -14,21 +14,21 @@ namespace ZeroNet.Http.Route
         /// </summary>
         Cache,
         /// <summary>
-        /// 远程错误
+        /// Http的OPTION协商
         /// </summary>
-        RemoteError,
+        HttpOptions,
         /// <summary>
         /// 非法格式
         /// </summary>
         FormalError,
         /// <summary>
-        /// 转向
+        /// 本地错误
         /// </summary>
-        HttpRedirect,
+        LocalError,
         /// <summary>
-        /// Http的OPTION协商
+        /// 远程错误
         /// </summary>
-        HttpOptions,
+        RemoteError,
         /// <summary>
         /// 非法请求
         /// </summary>

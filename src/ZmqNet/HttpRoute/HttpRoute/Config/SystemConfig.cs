@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
+using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -31,7 +33,12 @@ namespace ZeroNet.Http.Route
         /// </summary>
         [JsonProperty]
         internal int HttpTimeOut { get; set; }
-        
+        /// <summary>
+        /// 触发警告的执行时间
+        /// </summary>
+        [JsonProperty]
+        internal int WaringTime { get; set; }
+
         /// <summary>
         /// 内容页地址
         /// </summary>
@@ -48,7 +55,7 @@ namespace ZeroNet.Http.Route
         /// 记录跟踪日志
         /// </summary>
         [JsonProperty]
-        internal string LogPath { get; set; }
+        internal string LogPath { get => TxtRecorder.LogPath; set => TxtRecorder.LogPath = value; }
 
         /// <summary>
         /// 是否检查Auth头

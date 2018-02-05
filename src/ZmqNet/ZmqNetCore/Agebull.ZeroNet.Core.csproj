@@ -87,12 +87,13 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0" />
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0" />
+    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.2" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.2" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.2" />
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ApiContract\Agebull.ZeroNet.Contract.csproj" />

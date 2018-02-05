@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.ZeroApi;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
@@ -20,42 +21,26 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     拒绝访问的Json字符串
         /// </summary>
-        internal static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess));
-
-        /// <summary>
-        ///     拒绝访问的Json字符串
-        /// </summary>
-        internal static readonly string DeviceUnknow =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_Device_Unknow));
-
-        /// <summary>
-        ///     拒绝访问的Json字符串
-        /// </summary>
-        internal static readonly string TokenUnknow =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_Unknow));
-
-        /// <summary>
-        ///     操作成功的字符串
-        /// </summary>
-        internal static readonly string DefaultSuccees = JsonConvert.SerializeObject(ApiResult.Succees());
-
+        internal static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*拒绝访问*"));
+        
         /// <summary>
         ///     服务器无返回值的字符串
         /// </summary>
         internal static readonly string RemoteEmptyError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError, "服务器无返回值"));
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError, "*服务器无返回值*"));
 
         /// <summary>
         ///     服务器访问异常
         /// </summary>
         internal static readonly string NetworkError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, "服务器访问异常"));
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, "*服务器访问异常*"));
 
         /// <summary>
         ///     服务器访问异常
         /// </summary>
         internal static readonly string InnerError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "系统内部错误"));
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "*系统内部错误*"));
+
 
         #endregion
 
@@ -85,7 +70,7 @@ namespace ZeroNet.Http.Route
         /// 检查缓存
         /// </summary>
         /// <returns>取到缓存，可以直接返回</returns>
-        internal static bool CheckCache(Uri uri, string bearer, out CacheSetting setting, out string key, ref string resultMessage)
+        internal static bool LoadCache(Uri uri, string bearer, out CacheSetting setting, out string key, ref string resultMessage)
         {
             if (!AppConfig.Config.CacheMap.TryGetValue(uri.LocalPath, out setting))
             {
@@ -118,39 +103,20 @@ namespace ZeroNet.Http.Route
             return true;
         }
 
-
         /// <summary>
-        /// 缓存数据
+        /// 缓存返回值
         /// </summary>
-        internal static void CacheData(RouteData resultData)
+        /// <param name="data"></param>
+        internal static void CacheResult(RouteData data)
         {
-            if (resultData.Status == RouteStatus.None)
-            {
-                try
-                {
-                    var result = JsonConvert.DeserializeObject<ApiResult>(resultData.ResultMessage);
-                    if (!result.Result)//错误数据不缓存
-                    {
-                        if (result.Status != null && result.Status.ErrorCode >= ErrorCode.Auth_User_Unknow)
-                            return;
-                        RuntimeWaring(resultData.HostName, resultData.ApiName, result?.Status?.Message ?? "处理错误但无消息");
-                        return;
-                    }
-                }
-                catch
-                {
-                    RuntimeWaring(resultData.HostName, resultData.ApiName, "返回值非法(不是Json格式)");
-                    return;
-                }
-            }
-            if (resultData.CacheSetting == null)
+            if (data.CacheSetting == null || !data.IsSucceed)
                 return;
             CacheData cacheData;
-            if (resultData.CacheSetting.Feature.HasFlag(CacheFeature.NetError) && resultData.Status == RouteStatus.RemoteError)
+            if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) && data.Status == RouteStatus.RemoteError)
             {
                 cacheData = new CacheData
                 {
-                    Content = resultData.ResultMessage,
+                    Content = data.ResultMessage,
                     UpdateTime = DateTime.Now.AddSeconds(30)
                 };
             }
@@ -158,22 +124,69 @@ namespace ZeroNet.Http.Route
             {
                 cacheData = new CacheData
                 {
-                    Content = resultData.ResultMessage,
-                    UpdateTime = DateTime.Now.AddSeconds(resultData.CacheSetting.FlushSecond)
+                    Content = data.ResultMessage,
+                    UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
                 };
             }
 
-            lock (resultData.CacheSetting)
+            lock (data.CacheSetting)
             {
-                if (!Cache.ContainsKey(resultData.CacheKey))
-                    Cache.Add(resultData.CacheKey, cacheData);
+                if (!Cache.ContainsKey(data.CacheKey))
+                    Cache.Add(data.CacheKey, cacheData);
                 else
-                    Cache[resultData.CacheKey] = cacheData;
+                    Cache[data.CacheKey] = cacheData;
             }
         }
+
         #endregion
 
         #region 运维需求
+
+        /// <summary>
+        /// 检查返回值是否合理
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        internal static bool CheckResult(RouteData data)
+        {
+            if (data.Status != RouteStatus.None || data.HostName == null)// "".Equals(data.HostName,StringComparison.OrdinalIgnoreCase))
+                return false;
+            try
+            {
+                var result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
+                if (result == null)
+                {
+                    RuntimeWaring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                    return false;
+                }
+                if (result.Status != null && !result.Result)
+                {
+                    switch (result.Status.ErrorCode)
+                    {
+                        case ErrorCode.ReTry:
+                        case ErrorCode.DenyAccess:
+                        case ErrorCode.Ignore:
+                        case ErrorCode.ArgumentError:
+                        case ErrorCode.Auth_RefreshToken_Unknow:
+                        case ErrorCode.Auth_ServiceKey_Unknow:
+                        case ErrorCode.Auth_AccessToken_Unknow:
+                        case ErrorCode.Auth_User_Unknow:
+                        case ErrorCode.Auth_Device_Unknow:
+                        case ErrorCode.Auth_AccessToken_TimeOut:
+                            return false;
+                        default:
+                            RuntimeWaring(data.HostName, data.ApiName, result.Status?.Message ?? "处理错误但无消息");
+                            return false;
+                    }
+                }
+            }
+            catch
+            {
+                RuntimeWaring(data.HostName, data.ApiName, "返回值非法(不是Json格式)");
+                return false;
+            }
+            return true;
+        }
 
         /// <summary>
         /// 运行时警告节点
@@ -193,13 +206,13 @@ namespace ZeroNet.Http.Route
             /// <summary>
             /// 发生问题的API
             /// </summary>
-            public List<string> Apis = new List<string>();
+            public Dictionary<string, List<string>> Apis = new Dictionary<string, List<string>>();
         }
 
         /// <summary>
         /// 所有运行时警告
         /// </summary>
-        private static readonly Dictionary<string, RuntimeWaringItem> WaringsTime = new Dictionary<string, RuntimeWaringItem>(StringComparer.OrdinalIgnoreCase);
+        internal static readonly Dictionary<string, RuntimeWaringItem> WaringsTime = new Dictionary<string, RuntimeWaringItem>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 运行时警告
@@ -227,7 +240,7 @@ namespace ZeroNet.Http.Route
                 else
                 {
                     item.LastTime = DateTime.Now;
-                    if ((DateTime.Now - item.MessageTime).TotalHours > AppConfig.Config.SmsConfig.CycleHours)
+                    if (item.MessageTime != DateTime.MinValue && (DateTime.Now - item.MessageTime).TotalHours > AppConfig.Config.SmsConfig.CycleHours)
                     {
                         item.SendCount = 0;
                         item.WaringCount = 1;
@@ -240,8 +253,10 @@ namespace ZeroNet.Http.Route
                     }
                 }
 
-                if (!item.Apis.Contains(api))
-                    item.Apis.Add(api);
+                if (!item.Apis.ContainsKey(api))
+                    item.Apis.Add(api, new List<string> { message });
+                else if (!item.Apis[api].Contains(message))
+                    item.Apis[api].Add(message);
                 //已到最多发送数量阀值
                 if (item.SendCount > AppConfig.Config.SmsConfig.CycleSendCount)
                     return;
@@ -341,4 +356,5 @@ namespace ZeroNet.Http.Route
 
         #endregion
     }
+
 }

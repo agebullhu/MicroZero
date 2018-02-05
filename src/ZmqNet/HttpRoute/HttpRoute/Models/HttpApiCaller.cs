@@ -71,28 +71,33 @@ namespace ZeroNet.Http.Route
             return builder.ToString();
         }
 
+        private string url;
+
         /// <summary>
         /// 生成请求对象
         /// </summary>
         /// <param name="apiName"></param>
         /// <param name="method"></param>
+        /// <param name="destRequest"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        public HttpWebRequest CreateRequest(string apiName, string method, HttpRequest destRequest)
+        public HttpWebRequest CreateRequest(string apiName, string method, HttpRequest destRequest, RouteData data)
         {
             ApiName = apiName;
             var auth = Bearer;
 
-            var url = $"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}";
+            url = $"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}";
 
 
             var req = (HttpWebRequest)WebRequest.Create(url);
-            req.Timeout = AppConfig.Config.SystemConfig.HttpTimeOut ;
+            req.Timeout = AppConfig.Config.SystemConfig.HttpTimeOut;
 
             req.Method = method;
             req.Headers.Add(HttpRequestHeader.Authorization, auth);
 
-            //if (method.ToUpper() != "POST")
-            //    return req;
+            if (destRequest.ContentLength == null)
+                return req;
+
             req.ContentType = destRequest.ContentType;
             if (destRequest.HasFormContentType)
             {
@@ -109,26 +114,32 @@ namespace ZeroNet.Http.Route
                     if (!string.IsNullOrEmpty(kvp.Value))
                         builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
                 }
-                var form =builder.ToString();
+                var form = builder.ToString();
                 using (var rs = req.GetRequestStream())
                 {
                     var formData = Encoding.UTF8.GetBytes(form);
                     rs.Write(formData, 0, formData.Length);
                 }
-                LogRecorder.MonitorTrace("Form:" + form);
+                LogRecorder.MonitorTrace($"Form:{form}");
             }
             else
             {
-                req.ContentType = "application/json; charset=utf-8";
-                if (destRequest.ContentLength != null)
+                req.ContentType = "application/json;charset=utf-8";
+                if (string.IsNullOrWhiteSpace(data.Context))
                 {
-                    var buffer = new byte[destRequest.ContentLength.Value];
-                    var vl = destRequest.Body.Read(buffer, 0, (int)destRequest.ContentLength.Value);
+                    using (var texter = new StreamReader(destRequest.Body))
+                    {
+                        data.Context = texter.ReadToEnd();
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(data.Context))
+                {
+                    var buffer = data.Context.ToUtf8Bytes();
                     using (var rs = req.GetRequestStream())
                     {
                         rs.Write(buffer, 0, buffer.Length);
                     }
-                    LogRecorder.MonitorTrace("Form:" + buffer.LinkToString());
+                    LogRecorder.MonitorTrace($"Context:{data.Context}");
                 }
             }
 
@@ -144,12 +155,7 @@ namespace ZeroNet.Http.Route
         private string ToErrorString(int code, string message, string message2 = null)
         {
             LogRecorder.MonitorTrace($"调用异常：{message}");
-            LogRecorder.EndStepMonitor();
-            if (code != 0)
-            {
-                RouteRuntime.RuntimeWaring(Host, ApiName, message);
-            }
-            return JsonConvert.SerializeObject(ApiResult.Error(code, message, message2));
+            return JsonConvert.SerializeObject(ApiResult.Error(code, url + message, message2));
         }
 
         /// <summary>
@@ -210,13 +216,12 @@ namespace ZeroNet.Http.Route
                                 return ToErrorString(ErrorCode.NetworkError, "页面不存在", "页面不存在");
                             case 503:
                                 return ToErrorString(ErrorCode.NetworkError, "拒绝访问", "页面不存在");
-                            //default:
-                            //    return ToErrorString(ErrorCode.NetworkError, $"错误{s}", exception.Message);
+                                //default:
+                                //    return ToErrorString(ErrorCode.NetworkError, $"错误{s}", exception.Message);
                         }
                     }
                 }
                 var msg = ReadResponse(exception.Response);
-                //LogRecorder.MonitorTrace(msg);
                 RouteRuntime.RuntimeWaring(Host, ApiName, msg);
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
