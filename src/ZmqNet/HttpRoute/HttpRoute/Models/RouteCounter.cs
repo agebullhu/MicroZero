@@ -55,14 +55,22 @@ namespace ZeroNet.Http.Route
                 Station.SetValue(tm, data);
                 if (string.IsNullOrWhiteSpace(data.HostName))
                     return;
-                if (!Station.Items.TryGetValue(data.HostName, out var host))
-                    Station.Items.Add(data.HostName, host = new CountItem());
+                CountItem host;
+                lock (Station)
+                {
+                    if (!Station.Items.TryGetValue(data.HostName, value: out host))
+                        Station.Items.Add(data.HostName, host = new CountItem());
+                }
                 host.SetValue(tm,data);
 
                 if (string.IsNullOrWhiteSpace(data.ApiName))
                     return;
-                if (!host.Items.TryGetValue(data.ApiName, out var api))
-                    host.Items.Add(data.ApiName, api = new CountItem());
+                CountItem api;
+                lock (host)
+                {
+                    if (!host.Items.TryGetValue(data.ApiName, out api))
+                        host.Items.Add(data.ApiName, api = new CountItem());
+                }
                 api.SetValue(tm, data);
             }
             catch (Exception e)

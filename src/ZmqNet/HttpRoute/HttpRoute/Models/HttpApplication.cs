@@ -206,6 +206,7 @@ namespace ZeroNet.Http.Route
                 var counter = RouteCounter.Begin();
                 if (!SecurityChecker.KillDenyHttpHeaders(context))
                 {
+                    router.Data.Status = RouteStatus.DenyAccess;
                     context.Response.WriteAsync(RouteRuntime.Inner2Error, Encoding.UTF8);
                 }
                 else
