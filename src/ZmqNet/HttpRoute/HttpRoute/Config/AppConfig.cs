@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
+#if ZERO
 using Agebull.ZeroNet.Core;
+#endif
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -15,7 +17,7 @@ namespace ZeroNet.Http.Route
     internal class AppConfig
     {
         internal static AppConfig Config { get; set; }
-
+#if ZERO
         /// <summary>
         /// 站点配置
         /// </summary>
@@ -25,7 +27,7 @@ namespace ZeroNet.Http.Route
             get => StationProgram.Config;
             set => StationProgram.Config = value;
         }
-
+#endif
         /// <summary>
         /// 运维短信配置
         /// </summary>
@@ -81,7 +83,24 @@ namespace ZeroNet.Http.Route
             LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
             Config.InitCache();
             Config.InitRoute();
+            Config.InitCheckApis();
+
             return HostConfig.DefaultHost != null;
+        }
+        /// <summary>
+        /// 初始化路由
+        /// </summary>
+        /// <returns></returns>
+        internal void InitCheckApis()
+        {
+            var map = Config.SystemConfig.CheckApis;
+            Config.SystemConfig.CheckApis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
+            if (map == null || map.Count == 0)
+                return;
+            foreach (var setting in map)
+            {
+                Config.SystemConfig.CheckApis.Add(setting.Key, setting.Value);
+            }
         }
 
         /// <summary>
@@ -121,8 +140,13 @@ namespace ZeroNet.Http.Route
                     HostConfig.DefaultHost = kv.Value;
                     continue;
                 }
+#if ZERO
                 if (!kv.Value.ByZero && (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0))
                     continue;
+#else
+                if (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0)
+                    continue;
+#endif
                 //Http负载
                 if (!RouteMap.ContainsKey(kv.Key))
                     RouteMap.Add(kv.Key, kv.Value);

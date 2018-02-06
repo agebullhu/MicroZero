@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Threading;
 using Agebull.Common.Base;
 using Agebull.Common.Logging;
+#if ZERO
 using Agebull.ZeroNet.Core;
+#endif
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -86,7 +89,11 @@ namespace ZeroNet.Http.Route
                 return;
             }
             // 4 远程调用
+#if ZERO
             Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
+#else
+            Data.ResultMessage = CallHttp();
+#endif
             // 5 结果检查
             Data.IsSucceed = RouteRuntime.CheckResult(Data);
         }
@@ -203,45 +210,46 @@ namespace ZeroNet.Http.Route
                     if (++Data.RouteHost.Next >= Data.RouteHost.Hosts.Length)
                         Data.RouteHost.Next = 0;
                 }
-            // 远程调用
-            var caller = new HttpApiCaller(httpHost)
-            {
-                Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
-            };
-            var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
-            LogRecorder.BeginStepMonitor("内部HTTP调用");
-            LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
-            LogRecorder.MonitorTrace($"Auth:{caller.Bearer}");
+                // 远程调用
+                var caller = new HttpApiCaller(httpHost)
+                {
+                    Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
+                };
+                var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
-            try
-            {
-                // 远程调用状态
-                Data.ResultMessage = caller.GetResult(req, out var _webStatus);
-                LogRecorder.MonitorTrace(_webStatus.ToString());
-                if (_webStatus != WebExceptionStatus.Success)
+                LogRecorder.BeginStepMonitor("内部HTTP调用");
+                LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
+                LogRecorder.MonitorTrace($"Auth:{caller.Bearer}");
+
+                try
+                {
+                    // 远程调用状态
+                    Data.ResultMessage = caller.GetResult(req, out var _webStatus);
+                    LogRecorder.MonitorTrace(_webStatus.ToString());
+                    if (_webStatus != WebExceptionStatus.Success)
+                        Data.Status = RouteStatus.RemoteError;
+                }
+                catch (Exception ex)
+                {
+                    LogRecorder.Exception(ex);
+                    LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
+                    Data.ResultMessage = RouteRuntime.NetworkError;
                     Data.Status = RouteStatus.RemoteError;
-            }
-            catch (Exception ex)
-            {
-                LogRecorder.Exception(ex);
-                LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
-                Data.ResultMessage = RouteRuntime.NetworkError;
-                Data.Status = RouteStatus.RemoteError;
-            }
-            finally
-            {
-                LogRecorder.MonitorTrace(Data.ResultMessage);
-                LogRecorder.EndStepMonitor();
-            }
-            return Data.ResultMessage;
+                }
+                finally
+                {
+                    LogRecorder.MonitorTrace(Data.ResultMessage);
+                    LogRecorder.EndStepMonitor();
+                }
+                return Data.ResultMessage;
         }
 
 
         #endregion
 
         #region Zero
-
+#if ZERO
         /// <summary>
         ///     远程调用
         /// </summary>
@@ -284,6 +292,7 @@ namespace ZeroNet.Http.Route
 
             return Data.ResultMessage;
         }
+#endif
 
         #endregion
     }

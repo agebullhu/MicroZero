@@ -14,7 +14,6 @@ namespace agebull
 #define STATION_TYPE_PUBLISH 5
 
 
-
 		/**
 		*\brief 广播内容
 		*/
@@ -231,10 +230,10 @@ namespace agebull
 
 		/**
 		 * \brief 生成ZMQ连接对象
-		 * \param addr 
-		 * \param type 
-		 * \param name 
-		 * \return 
+		 * \param addr
+		 * \param type
+		 * \param name
+		 * \return
 		 */
 		inline ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name)
 		{
@@ -476,9 +475,9 @@ namespace agebull
 					return check_zmq_error();
 				}
 				if (re == 0)
-					ls.push_back(sharp_char());
+					ls.emplace_back();
 				else
-					ls.push_back(sharp_char(msg));
+					ls.emplace_back(msg);
 				zmq_msg_close(&msg);
 				size_t size = sizeof(int);
 				zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &size);
@@ -827,6 +826,21 @@ namespace agebull
 			* \brief 消息内容
 			*/
 			vector<sharp_char> messages;
+
+			/**
+			 * \brief 
+			 */
+			Message()
+				: plan_id(0)
+				, plan_type(plan_date_type::None)
+				, plan_value(0)
+				, plan_repet(0)
+				, real_repet(0)
+				, request_id()
+				, request_caller()
+				, messages()
+			{
+			}
 		};
 	}
 }

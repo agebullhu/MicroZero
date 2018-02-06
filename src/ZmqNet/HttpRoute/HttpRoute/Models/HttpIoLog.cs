@@ -20,11 +20,13 @@ namespace ZeroNet.Http.Route
         /// <returns>如果返回内容不为空，直接返回,后续的处理不再继续</returns>
         public static int OnBegin(HttpRequest request, RouteData data)
         {
+#if ZERO
             if (AppConfig.Config.SystemConfig.FireZero)
                 Task.Factory.StartNew(() =>
                 {
                     Agebull.ZeroNet.Core.Publisher.Publish("RouteMonitor", "Call", request.GetUri().PathAndQuery);
                 });
+#endif
             if (!LogRecorder.LogMonitor)
                 return 0;
             try
@@ -69,11 +71,13 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public static void OnEnd(RouteStatus status, string result)
         {
+#if ZERO
             if (AppConfig.Config.SystemConfig.FireZero)
                 Task.Factory.StartNew(() =>
                 {
                     Agebull.ZeroNet.Core.Publisher.Publish("RouteMonitor", "Result", result);
                 });
+#endif
             if (!LogRecorder.LogMonitor)
                 return;
             

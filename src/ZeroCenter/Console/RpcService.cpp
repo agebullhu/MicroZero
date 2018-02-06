@@ -198,15 +198,15 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
 	return _AtlModule.WinMain(nShowCmd);
 }
 #else
-#include<winsock2.h>  
+#include "winsock2.h"  
 #pragma comment(lib,"ws2_32.lib") // ¾²Ì¬¿â  
-
+using namespace agebull;
 void getIPs()
 {
 	char hname[128];
 	gethostname(hname, sizeof(hname));
-	cout << "Host:" << hname << "  IP:";
-	struct addrinfo hint;
+	cout << "Host:" << hname << endl << "IPs:";
+	struct addrinfo hint {};
 	memset(&hint, 0, sizeof(hint));
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
@@ -216,10 +216,15 @@ void getIPs()
 	if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
 	{
 		addrinfo* now = info;
+		bool first = true;
 		do
 		{
-			inet_ntop(AF_INET, &(((struct sockaddr_in *)(now->ai_addr))->sin_addr), ipstr, 16);
-			cout << ipstr << " ";
+			inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
+			if (first)
+				first = false;
+			else
+				cout << ",";
+			cout << ipstr;
 			now = now->ai_next;
 		} while (now != nullptr);
 		freeaddrinfo(info);
@@ -230,29 +235,23 @@ void getIPs()
 int main(int argc, char *argv[])
 {
 	getIPs();
-	//WORD v = MAKEWORD(1, 1);
-	//WSADATA wsaData;
-	//WSAStartup(v, &wsaData); // ¼ÓÔØÌ×½Ó×Ö¿â    
-	//int i = 0;
-	//while (i < argc)
-	//	std::cout << argv[i++] << " ";
-	//std::cout << endl;
 	char buffer[MAX_PATH + 1];
 	char *p = _getcwd(buffer, MAX_PATH);
-	cout << p << endl;
-	
-	CRpcService::Initialize();
-	CRpcService::Start();
+	cout << "Curent folder:" << p << endl;
+
+	agebull::zmq_net::station_warehouse::clear();
+	rpc_service::initialize();
+	rpc_service::start();
 	while (get_net_state() == NET_STATE_RUNING)
 	{
-		std::cout << endl << "ÇëÊäÈë²Ù×÷ÃüÁî(exit):";
+		std::cout << endl << "Enter command:";
 		string line;
 		getline(cin, line);
 		if (line.length() == 0)
 			break;
-		if(line == "clear")
+		if (line == "clear")
 		{
-			agebull::zmq_net::StationWarehouse::clear();
+			agebull::zmq_net::station_warehouse::clear();
 			break;
 		}
 		std::vector<string> cmdline;
@@ -262,12 +261,12 @@ int main(int argc, char *argv[])
 			break;
 		std::vector<agebull::zmq_net::sharp_char> arguments;
 		for (size_t idx = 1; idx < cmdline.size(); idx++)
-			arguments.push_back(cmdline[idx]);
-		string result = agebull::zmq_net::NetDispatcher::exec_command(cmdline[0].c_str(), arguments);
+			arguments.emplace_back(cmdline[idx]);
+		string result = agebull::zmq_net::net_dispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
-	CRpcService::Stop();
-	std::cout << endl << "ÒÑ¹Ø±Õ";
+	rpc_service::stop();
+	std::cout << endl << "shutdown";
 	thread_sleep(200);
 	return 0;
 }

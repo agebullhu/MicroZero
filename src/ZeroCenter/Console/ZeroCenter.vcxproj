@@ -249,7 +249,6 @@
     <ClCompile Include="..\SharpCode\NetCommand\zmq_monitor.cpp" />
     <ClCompile Include="..\SharpCode\redis\TransRedis.cpp" />
     <ClCompile Include="..\SharpCode\SimpleEvent.cpp" />
-    <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -265,7 +264,6 @@
     <ClInclude Include="..\SharpCode\mydecimal.h" />
     <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\BalanceStation.h" />
-    <ClInclude Include="..\SharpCode\NetCommand\command_def.h" />
     <ClInclude Include="..\SharpCode\NetCommand\NetDispatcher.h" />
     <ClInclude Include="..\SharpCode\NetCommand\ZeroStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\StationWarehouse.h" />
@@ -273,14 +271,12 @@
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h" />
     <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h" />
     <ClInclude Include="..\SharpCode\NetCommand\zmq_extend.h" />
-    <ClInclude Include="..\SharpCode\redis\entity_redis.h" />
     <ClInclude Include="..\SharpCode\redis\redis.h" />
     <ClInclude Include="..\SharpCode\redis\TransRedis.h" />
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h" />
     <ClInclude Include="..\SharpCode\sharp_char.h" />
     <ClInclude Include="..\SharpCode\SimpleEvent.h" />
     <ClInclude Include="..\SharpCode\stdinc.h" />
-    <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h" />
     <ClInclude Include="..\SharpCode\tm_extend.h" />
     <ClInclude Include="..\SharpCode\Tson\tson_def.h" />
     <ClInclude Include="..\SharpCode\Tson\tson_deserializer.h" />

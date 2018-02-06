@@ -22,7 +22,13 @@ namespace ZeroNet.Http.Route
         ///     拒绝访问的Json字符串
         /// </summary>
         internal static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*拒绝访问*"));
-        
+
+
+        /// <summary>
+        ///     拒绝访问的Json字符串
+        /// </summary>
+        internal static readonly string ReTry = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ReTry, "*服务器忙，请稍后重试*"));
+
         /// <summary>
         ///     服务器无返回值的字符串
         /// </summary>

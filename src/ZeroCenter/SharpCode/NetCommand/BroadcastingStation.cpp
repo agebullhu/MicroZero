@@ -6,7 +6,7 @@
 
 #include "stdafx.h"
 #include "BroadcastingStation.h"
- #include <utility>
+#include <utility>
 #include "StationWarehouse.h"
 
 namespace agebull
@@ -16,12 +16,12 @@ namespace agebull
 		/**
 		 * \brief 单例
 		 */
-		SystemMonitorStation* SystemMonitorStation::example = nullptr;
+		system_monitor_station* system_monitor_station::example = nullptr;
 
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(const string& publiher, const string& title, const string& arg)
+		bool broadcasting_station_base::pub_data(const string& publiher, const string& title, const string& arg)
 		{
 			sharp_char data;
 			data.alloc(4 + publiher.length() + title.length() + arg.length());
@@ -33,7 +33,7 @@ namespace agebull
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(const string& publiher, const string& line)
+		bool broadcasting_station_base::pub_data(const string& publiher, const string& line)
 		{
 			_zmq_state = send_late(_inner_socket, line.c_str());
 			return _zmq_state == ZmqSocketState::Succeed;
@@ -42,7 +42,7 @@ namespace agebull
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& arg) const
+		bool broadcasting_station_base::publish(const string& publiher, const string& title, const string& arg) const
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
@@ -58,7 +58,7 @@ namespace agebull
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& plan, const string& arg) const
+		bool broadcasting_station_base::publish(const string& publiher, const string& title, const string& plan, const string& arg) const
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
@@ -75,101 +75,51 @@ namespace agebull
 		/**
 		* \brief 处理请求
 		*/
-		void BroadcastingStationBase::request(ZMQ_HANDLE socket)
+		void broadcasting_station_base::request(ZMQ_HANDLE socket)
 		{
 			vector<sharp_char> list;
-			//0 路由到的地址 1 空帧 2 标题 3时间 4 内容
+			//0 路由到的地址 1 空帧 2 标题 3内容
 			_zmq_state = recv(socket, list);
 			if (_zmq_state != ZmqSocketState::Succeed)
 			{
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			switch (list.size())
+			if (list[2][0] == '@')//计划类型
 			{
-			case 0:
-				return;
-			case 1:
-			case 2:
-			{
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "err");
+				save_plan(socket, list);
 				return;
 			}
+			switch (list.size())
+			{
 			case 3:
 			{
 				pub_data(list[0], list[2]);
 				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "ok");
+				_zmq_state = send_late(socket, "+pub");
 				return;
 			}
 			case 4:
-			{
 				pub_data(list[0], list[2], list[3]);
 				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "ok");
+				_zmq_state = send_late(socket, "+pub");
 				return;
-			}
 			default:
-				if (list[3].empty())
-				{
-					pub_data(list[0], list[2], list[3]);
-					_zmq_state = send_addr(socket, *list[0]);
-					_zmq_state = send_late(socket, "ok");
-					return;
-				}
+				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_late(socket, "-err");
 				break;
 			}
-			Message message;
-			if(list[3][0] == '{')
-			{
-				acl::json json;
-				json.update(*list[3]);
-				acl::json_node* iter = json.first_node();
-				while (iter)
-				{
-					int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
-					switch (idx)
-					{
-					case 0:
-						message.plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-						break;
-					case 1:
-						message.plan_value = static_cast<int>(*iter->get_int64());
-						break;
-					case 2:
-						message.plan_repet = static_cast<int>(*iter->get_int64());
-						break;
-					default: break;
-					}
-					iter = json.next_node();
-				}
-			}
-			message.request_caller = list[0];
-			message.messages.push_back(list[2]);
-			message.messages.push_back(list[4]);
-			plan_next(message, true);
-			_zmq_state = send_addr(socket, *list[0]);
-			_zmq_state = send_late(socket, "plan");
 		}
 
-		void BroadcastingStation::start(void* arg)
+		void broadcasting_station::launch(void* arg)
 		{
-			BroadcastingStation* station = static_cast<BroadcastingStation*>(arg);
-			if (!StationWarehouse::join(station))
+			broadcasting_station* station = static_cast<broadcasting_station*>(arg);
+			if (!station_warehouse::join(station))
 			{
 				return;
 			}
-			if (station->_zmq_state == ZmqSocketState::Succeed)
-				log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-			else
-				log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-			if (!station->initialize())
-			{
-				log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+			if (!station->do_initialize())
 				return;
-			}
-			log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 
 			zmq_threadstart(plan_poll, arg);
 			bool reStrart = station->poll();
@@ -178,17 +128,17 @@ namespace agebull
 				sleep(1);
 			}
 			//zmq_threadclose(t);
-			StationWarehouse::left(station);
+			station_warehouse::left(station);
 			station->destruct();
 			if (reStrart)
 			{
-				BroadcastingStation* station2 = new BroadcastingStation(station->_station_name);
+				broadcasting_station* station2 = new broadcasting_station(station->_station_name);
 				station2->_zmq_state = ZmqSocketState::Again;
-				zmq_threadstart(start, station2);
+				zmq_threadstart(launch, station2);
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				log_msg3("Station:%s(%d | %d) closed", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 			}
 			delete station;
 		}
@@ -196,32 +146,24 @@ namespace agebull
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStation::publish(string station, string publiher, string title, string arg)
+		bool broadcasting_station::publish(string station, string publiher, string title, string arg)
 		{
-			auto pub = StationWarehouse::find(std::move(station));
+			auto pub = station_warehouse::find(std::move(station));
 			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
 				return false;
-			return static_cast<BroadcastingStationBase*>(pub)->publish(std::move(publiher), std::move(title), std::move(arg));
+			return static_cast<broadcasting_station_base*>(pub)->publish(std::move(publiher), std::move(title), std::move(arg));
 		}
 
-		void SystemMonitorStation::start(void*)
+		void system_monitor_station::launch(void*)
 		{
-			example = new SystemMonitorStation();
-			if (!StationWarehouse::join(example))
+			example = new system_monitor_station();
+			if (!station_warehouse::join(example))
 			{
 				delete example;
 				return;
 			}
-			if (example->_zmq_state == ZmqSocketState::Succeed)
-				log_msg3("%s(%d | %d)正在启动", example->_station_name.c_str(), example->_out_port, example->_inner_port);
-			else
-				log_msg3("%s(%d | %d)正在重启", example->_station_name.c_str(), example->_out_port, example->_inner_port);
-			if (!example->initialize())
-			{
-				log_msg3("%s(%d | %d)无法启动", example->_station_name.c_str(), example->_out_port, example->_inner_port);
+			if (!example->do_initialize())
 				return;
-			}
-			log_msg3("%s(%d | %d)正在运行", example->_station_name.c_str(), example->_out_port, example->_inner_port);
 
 			zmq_threadstart(plan_poll, example);
 			const bool reStrart = example->poll();
@@ -239,11 +181,11 @@ namespace agebull
 			example->destruct();
 			if (reStrart)
 			{
-				zmq_threadstart(start, nullptr);
+				zmq_threadstart(launch, nullptr);
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", example->_station_name.c_str(), example->_out_port, example->_inner_port);
+				log_msg3("Station:%s(%d | %d) closed", example->_station_name.c_str(), example->_out_port, example->_inner_port);
 			}
 			delete example;
 			example = nullptr;

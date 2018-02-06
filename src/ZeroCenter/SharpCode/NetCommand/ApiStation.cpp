@@ -7,7 +7,7 @@ namespace agebull
 		/**
 		* \brief 开始执行一条命令
 		*/
-		sharp_char ApiStation::command(const char* caller, vector<sharp_char> lines)
+		sharp_char api_station::command(const char* caller, vector<sharp_char> lines)
 		{
 			vector<sharp_char> response;
 			RequestSocket<ZMQ_REQ,false> socket(caller, _station_name.c_str());
@@ -24,7 +24,7 @@ namespace agebull
 		/**
 		 * 当远程调用进入时的处理
 		 */
-		void ApiStation::request(ZMQ_HANDLE socket)
+		void api_station::request(ZMQ_HANDLE socket)
 		{
 			vector<sharp_char> list;
 			//0 请求地址 1 空帧 2命令 3请求标识 4上下文 5参数
@@ -38,12 +38,19 @@ namespace agebull
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			job_start(list);
+			if (list[2][0] == '@')//计划类型
+			{
+				save_plan(socket, list);
+			}
+			else
+			{
+				job_start(list);
+			}
 		}
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		bool ApiStation::job_start(vector<sharp_char>& list)
+		bool api_station::job_start(vector<sharp_char>& list)
 		{
 			//0 请求地址 1 空帧 2命令 3请求标识 4上下文 5参数
 			if (list.empty())
@@ -51,11 +58,12 @@ namespace agebull
 				return false;
 			}
 			const char* client_addr = *list[0];
+
 			if(list.size() < 4 || list[2].empty())
 			{
 				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, "Invalid");
+				_zmq_state = send_late(socket, "-Invalid");
 				return _zmq_state == ZmqSocketState::Succeed;
 			}
 			//心跳通知正常退出(有安全风险，即被外部调用)
@@ -71,7 +79,7 @@ namespace agebull
 			{
 				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, "NoWork");
+				_zmq_state = send_late(socket, "-NoWork");
 				return _zmq_state == ZmqSocketState::Succeed;
 			}
 
@@ -84,7 +92,7 @@ namespace agebull
 		/**
 		* \brief 工作结束(发送到请求者)
 		*/
-		bool ApiStation::job_end(vector<sharp_char>& list)
+		bool api_station::job_end(vector<sharp_char>& list)
 		{
 			assert(list.size() >= 3 && !list[2].empty());
 			
@@ -94,10 +102,25 @@ namespace agebull
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
+		void api_station::worker_join(const char* addr, const char* value, bool ready)
+		{
+			if (addr == nullptr || strlen(addr) == 0)
+				return;
+			if (ready)
+			{
+				_balance.join(addr);
+				balance_station<api_station, string, STATION_TYPE_API>::worker_join(addr, value, ready);
+			}
+			else
+			{
+				_balance.succees(addr);
+			}
+		}
+
 		/**
 		 * 当工作操作返回时的处理
 		 */
-		void ApiStation::response()
+		void api_station::response()
 		{
 			vector<sharp_char> list;
 			//0 worker地址 1空帧 2请求者地址 3请求标识 4返回结果

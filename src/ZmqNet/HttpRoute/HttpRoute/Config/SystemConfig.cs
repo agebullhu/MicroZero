@@ -46,6 +46,13 @@ namespace ZeroNet.Http.Route
         [JsonProperty]
         internal string ContextHost { get; set; }
 
+
+        /// <summary>
+        /// 最大等待队列
+        /// </summary>
+        [JsonProperty]
+        internal int MaxWaiting { get; set; }
+
         /// <summary>
         /// 记录跟踪日志
         /// </summary>
@@ -75,7 +82,37 @@ namespace ZeroNet.Http.Route
         /// </summary>
         [JsonProperty]
         internal List<DenyItem> DenyHttpHeaders { get; set; }
+
+        /// <summary>
+        /// 需要检查的Api
+        /// </summary>
+        [JsonProperty]
+        internal Dictionary<string, ApiItem> CheckApis { get; set; }
     }
+
+    /// <summary>
+    /// 阻止节点
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
+    public class ApiItem
+    {
+        /// <summary>
+        /// 头
+        /// </summary>
+        [JsonProperty]
+        public string Name { get; set; }
+        /// <summary>
+        /// 操作系统
+        /// </summary>
+        [JsonProperty]
+        public string Os { get; set; }
+        /// <summary>
+        /// 浏览器
+        /// </summary>
+        [JsonProperty]
+        public string Browser { get; set; }
+    }
+
     /// <summary>
     /// 阻止节点
     /// </summary>

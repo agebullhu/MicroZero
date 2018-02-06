@@ -16,49 +16,47 @@ namespace agebull
 		/**
 		 * \brief 活动实例集合
 		 */
-		map<string, ZeroStation*> StationWarehouse::examples_;
+		map<string, zero_station*> station_warehouse::examples_;
 
 		/**
 		* \brief 实例队列访问锁
 		*/
-		boost::mutex StationWarehouse::mutex_;
+		boost::mutex station_warehouse::mutex_;
 
 		/**
 		* \brief 还原服务
 		*/
-		bool StationWarehouse::restore(acl::string& value)
+		bool station_warehouse::restore(acl::string& value)
 		{
 			config cfg(value);
 			int type = cfg.number("station_type");
 			switch (type)
 			{
 			case STATION_TYPE_API:
-				ApiStation::run(cfg["station_name"]);
+				api_station::run(cfg["station_name"]);
 				return true;
 			case STATION_TYPE_VOTE:
-				VoteStation::run(cfg["station_name"]);
+				vote_station::run(cfg["station_name"]);
 				return true;
 			case STATION_TYPE_PUBLISH:
-				BroadcastingStation::run(cfg["station_name"]);
+				broadcasting_station::run(cfg["station_name"]);
 				return true;
 			default:
 				return false;
 			}
 		}
-
-
+		
 		/**
 		* \brief 还原服务
 		*/
-		int StationWarehouse::restore()
+		int station_warehouse::restore()
 		{
 			//assert(examples.size() == 0);
 			char pattern[] = "net:host:*";
 			int cnt = 0;
-			RedisLiveScope redis_live_scope;
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
-				RedisDbScope db_scope(REDIS_DB_NET_STATION);
-				TransRedis& redis = TransRedis::get_context();
+				trans_redis& redis = trans_redis::get_context();
 				int cursor = 0;
 				do
 				{
@@ -82,13 +80,12 @@ namespace agebull
 		/**
 		* \brief 清除所有服务
 		*/
-		void StationWarehouse::clear()
+		void station_warehouse::clear()
 		{
 			assert(examples_.empty());
-			RedisLiveScope redis_live_scope;
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
-				RedisDbScope db_scope(REDIS_DB_NET_STATION);
-				TransRedis& redis = TransRedis::get_context();
+				trans_redis& redis = trans_redis::get_context();
 				redis->flushdb();
 				redis->incrby(port_redis_key, config::get_int("baseHost"));
 			}
@@ -99,7 +96,7 @@ namespace agebull
 		/**
 		* \brief 初始化服务
 		*/
-		acl::string StationWarehouse::install(int station_type, const char* station_name)
+		acl::string station_warehouse::install(int station_type, const char* station_name)
 		{
 			char* key;
 			{
@@ -108,21 +105,20 @@ namespace agebull
 				key = _strdup(fmt.str().c_str());
 			}
 
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_NET_STATION);
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			acl::string val;
-			if (TransRedis::get_context()->get(key, val) && !val.empty())
+			if (trans_redis::get_context()->get(key, val) && !val.empty())
 			{
 				return val;
 			}
-			assert(TransRedis::get_context()->exists(port_redis_key));
+			assert(trans_redis::get_context()->exists(port_redis_key));
 			acl::json json;
 			acl::json_node& node = json.create_node();
 			node.add_text("station_name", station_name);
 			node.add_number("station_type", station_type);
 			long long port;
 			{
-				TransRedis::get_context()->incr(port_redis_key, &port);
+				trans_redis::get_context()->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("out_port", port);
@@ -130,7 +126,7 @@ namespace agebull
 			}
 			if (station_type >= STATION_TYPE_MONITOR)
 			{
-				TransRedis::get_context()->incr(port_redis_key, &port);
+				trans_redis::get_context()->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("inner_port", port);
@@ -138,14 +134,14 @@ namespace agebull
 			}
 			if (station_type > STATION_TYPE_MONITOR)
 			{
-				TransRedis::get_context()->incr(port_redis_key, &port);
+				trans_redis::get_context()->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("heart_port", port);
 				node.add_text("heart_addr", fmt1.str().c_str());
 			}
 			val = node.to_string();
-			TransRedis::get_context()->set(key, val);
+			trans_redis::get_context()->set(key, val);
 			monitor(station_name, "station_install", val.c_str());
 			delete[] key;
 			return val;
@@ -154,7 +150,7 @@ namespace agebull
 		/**
 		* \brief 加入服务
 		*/
-		bool StationWarehouse::join(ZeroStation* station)
+		bool station_warehouse::join(zero_station* station)
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
@@ -175,7 +171,7 @@ namespace agebull
 		/**
 		* \brief 退出服务
 		*/
-		bool StationWarehouse::left(ZeroStation* station)
+		bool station_warehouse::left(zero_station* station)
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
@@ -192,7 +188,7 @@ namespace agebull
 		/**
 		* \brief 加入服务
 		*/
-		ZeroStation* StationWarehouse::find(const string& name)
+		zero_station* station_warehouse::find(const string& name)
 		{
 			auto iter = examples_.find(name);
 			if (iter == examples_.end())

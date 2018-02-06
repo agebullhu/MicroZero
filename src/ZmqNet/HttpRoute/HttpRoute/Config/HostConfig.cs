@@ -14,12 +14,13 @@ namespace ZeroNet.Http.Route
         /// 默认主机
         /// </summary>
         internal static HostConfig DefaultHost;
-
+#if ZERO
         /// <summary>
         /// 使用ZeroNet通讯吗
         /// </summary>
         [DataMember, JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool ByZero { get; set; }
+#endif
 
         /// <summary>
         /// 下一次命中的主机

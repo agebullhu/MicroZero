@@ -14,7 +14,7 @@ namespace agebull
 		* \tparam NetType
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		class BalanceStation : public ZeroStation
+		class balance_station : public zero_station
 		{
 		protected:
 			/**
@@ -25,8 +25,8 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			BalanceStation(string name)
-				: ZeroStation(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
+			balance_station(string name)
+				: zero_station(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
 			{
 			}
 
@@ -57,7 +57,7 @@ namespace agebull
 		* \brief
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		void BalanceStation<TNetStation, TWorker, NetType>::heartbeat()
+		void balance_station<TNetStation, TWorker, NetType>::heartbeat()
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 服务器地址
@@ -81,7 +81,7 @@ namespace agebull
 		* \param addr
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		void BalanceStation<TNetStation, TWorker, NetType>::worker_left(const char* addr)
+		void balance_station<TNetStation, TWorker, NetType>::worker_left(const char* addr)
 		{
 			auto vote = _workers.find(addr);
 			if (vote != _workers.end())
@@ -103,7 +103,7 @@ namespace agebull
 		* \param ready
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		void BalanceStation<TNetStation, TWorker, NetType>::worker_join(const char* addr, const  char* value, bool ready)
+		void balance_station<TNetStation, TWorker, NetType>::worker_join(const char* addr, const  char* value, bool ready)
 		{
 			TWorker item = create_item(addr, value);
 			auto old = _workers.find(addr);

@@ -7,6 +7,7 @@ using Agebull.ZeroNet.ZeroApi;
 using Agebull.Common.DataModel.Redis;
 using Agebull.Common.Logging;
 using Agebull.Common.Redis;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace ZeroNet.Http.Route
 {
@@ -90,6 +91,31 @@ namespace ZeroNet.Http.Route
                 return true;
             }
         }
+
+        /// <summary>
+        /// 针对HttpHeader特征阻止不安全访问
+        /// </summary>
+        ///  <param name="api"></param>
+        /// <returns></returns>
+        internal bool CheckApis(string api)
+        {
+            if (AppConfig.Config.SystemConfig.CheckApis == null || string.IsNullOrWhiteSpace(api))
+                return true;
+            api = api.Trim(new[] {' ', '\\', '/'});
+            if (!AppConfig.Config.SystemConfig.CheckApis.TryGetValue(api, out var item))
+                return true;
+            if (!string.IsNullOrWhiteSpace(item.Os))
+            {
+                if (Bearer.IndexOf(item.Os, StringComparison.OrdinalIgnoreCase) < 0)
+                    return false;
+            }
+            if (!string.IsNullOrWhiteSpace(item.Browser))
+            {
+                if (Bearer.IndexOf(item.Browser, StringComparison.OrdinalIgnoreCase) < 0)
+                    return false;
+            }
+            return true;
+        }
         /// <summary>
         ///     执行检查
         /// </summary>
@@ -100,32 +126,43 @@ namespace ZeroNet.Http.Route
         /// </returns>
         public bool Check()
         {
-            //return true;
-            if (string.IsNullOrWhiteSpace(Bearer))
+            try
             {
-                return true;//Request.GetUri().LocalPath.Contains("/oauth/getdid");
-            }
+                //return true;
+                if (string.IsNullOrWhiteSpace(Bearer))
+                {
+                    return true;//Request.GetUri().LocalPath.Contains("/oauth/getdid");
+                }
 
-            if (AppConfig.Config.SystemConfig.DenyTokens != null &&
-                AppConfig.Config.SystemConfig.DenyTokens.ContainsKey(Bearer))
-            {
-                return false;
-            }
-            //var header = Request.Headers.Values.LinkToString(" ");
-            //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))
-            //    return false;
+                if (AppConfig.Config.SystemConfig.DenyTokens != null &&
+                    AppConfig.Config.SystemConfig.DenyTokens.ContainsKey(Bearer))
+                {
+                    return false;
+                }
 
-            switch (Bearer[0])
+                if (!CheckApis(Request.GetUri().LocalPath))
+                    return false;
+                //var header = Request.Headers.Values.LinkToString(" ");
+                //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))
+                //    return false;
+
+                switch (Bearer[0])
+                {
+                    default:
+                        return true;
+                    case '*':
+                        return CheckDeviceId();
+                    //case '{':
+                    //case '$':
+                    //    return true;
+                    case '#':
+                        return CheckAccessToken();
+                }
+            }
+            catch (Exception e)
             {
-                default:
-                    return true;
-                case '*':
-                    return CheckDeviceId();
-                //case '{':
-                //case '$':
-                //    return true;
-                case '#':
-                    return CheckAccessToken();
+                LogRecorder.Exception(e);
+                return true;
             }
         }
 

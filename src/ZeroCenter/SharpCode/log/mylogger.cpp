@@ -36,57 +36,60 @@ using namespace std;
 //	}
 //}
 
-///C端命令调用队列锁
-boost::mutex server_cmd_mutex;
+namespace agebull
+{
+	///C端命令调用队列锁
+	boost::mutex server_cmd_mutex;
 
-void log_acl_msg(const char* msg)
-{
+	void log_acl_msg(const char* msg)
 	{
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-		out_debug(msg);
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			out_debug(msg);
+		}
+		acl::log::msg1(msg);
 	}
-	acl::log::msg1(msg);
-}
-void log_acl_msg(const string& msg)
-{
+	void log_acl_msg(const string& msg)
 	{
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-		out_debug(msg);
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			out_debug(msg);
+		}
+		acl::log::msg1(msg.c_str());
 	}
-	acl::log::msg1(msg.c_str());
-}
-void log_acl_warn(const char* fname, int line, const char* func, const string& msg)
-{
-	out_debug(msg);
-	acl::log::warn4(fname, line, func, msg.c_str());
-}
-void log_acl_error(const char* fname, int line, const char* func, const string& msg)
-{
+	void log_acl_warn(const char* fname, int line, const char* func, const string& msg)
 	{
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 		out_debug(msg);
+		acl::log::warn4(fname, line, func, msg.c_str());
 	}
-	acl::log::error4(fname, line, func, msg.c_str());
-}
-void log_acl_fatal(const char* fname, int line, const char* func, const string& msg)
-{
-	acl::log::fatal4(fname, line, func, msg.c_str());
-}
-void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const std::string& msg)
-{
-	if (level < 2)
+	void log_acl_error(const char* fname, int line, const char* func, const string& msg)
 	{
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-		out_debug(msg);
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			out_debug(msg);
+		}
+		acl::log::error4(fname, line, func, msg.c_str());
 	}
-	acl::log::msg6(section, level, fname, line, func, msg.c_str());
-}
-void log_acl_trace(int section, int  level, const string& msg)
-{
-	if (level < 2)
+	void log_acl_fatal(const char* fname, int line, const char* func, const string& msg)
 	{
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-		out_debug(msg);
+		acl::log::fatal4(fname, line, func, msg.c_str());
 	}
-	acl::log::msg1(msg.c_str());
+	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const std::string& msg)
+	{
+		if (level < 2)
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			out_debug(msg);
+		}
+		acl::log::msg6(section, level, fname, line, func, msg.c_str());
+	}
+	void log_acl_trace(int section, int  level, const string& msg)
+	{
+		if (level < 2)
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			out_debug(msg);
+		}
+		acl::log::msg1(msg.c_str());
+	}
 }

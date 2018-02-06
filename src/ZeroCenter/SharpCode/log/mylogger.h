@@ -3,25 +3,27 @@
 #pragma once
 #include "stdinc.h"
 using namespace std;
-void log_acl_msg(const string& msg);
-void log_acl_msg(const char* msg);
-void log_acl_warn(const char* fname, int line, const char* func, const string& msg);
-void log_acl_error(const char* fname, int line, const char* func, const string& msg);
-void log_acl_fatal(const char* fname, int line, const char* func, const string& msg);
-void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const string& msg);
-void log_acl_trace(int section, int  level, const string& msg);
-
-/*
-* 输出到DEBUG窗口
-*/
-inline void out_debug(string msg)
+namespace agebull
 {
-	msg = "\r\n" + msg;
+	void log_acl_msg(const string& msg);
+	void log_acl_msg(const char* msg);
+	void log_acl_warn(const char* fname, int line, const char* func, const string& msg);
+	void log_acl_error(const char* fname, int line, const char* func, const string& msg);
+	void log_acl_fatal(const char* fname, int line, const char* func, const string& msg);
+	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const string& msg);
+	void log_acl_trace(int section, int  level, const string& msg);
+
+	/*
+	* 输出到DEBUG窗口
+	*/
+	inline void out_debug(string msg)
+	{
+		msg = "\r\n" + msg;
 #ifdef WIN32
-	OutputDebugStringA(msg.c_str());
+		OutputDebugStringA(msg.c_str());
 #endif
-	cout << msg.c_str();
-}
+		cout << msg.c_str();
+	}
 
 #define DEBUG_BASE			100
 #define DEBUG_TIMER		    (DEBUG_BASE + 1)
@@ -300,3 +302,4 @@ inline void out_debug(string msg)
 #endif
 
 #endif
+}

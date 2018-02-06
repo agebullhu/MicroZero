@@ -55,9 +55,6 @@
     <Filter Include="sys\net_cmd\dispatcher">
       <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\MQ">
-      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -83,9 +80,6 @@
     </ClCompile>
     <ClCompile Include="..\SharpCode\cfg\config.cpp">
       <Filter>sys\cfg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
-      <Filter>sys\net_cmd\MQ</Filter>
     </ClCompile>
     <ClCompile Include="RpcService.cpp">
       <Filter>源文件</Filter>
@@ -131,9 +125,6 @@
     <ClInclude Include="..\SharpCode\tm_extend.h">
       <Filter>sys</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\NetCommand\command_def.h">
-      <Filter>sys\net_cmd\sharp</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h">
       <Filter>sys\net_cmd\sharp</Filter>
     </ClInclude>
@@ -163,12 +154,6 @@
     </ClInclude>
     <ClInclude Include="..\SharpCode\cfg\config.h">
       <Filter>sys\cfg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\redis\entity_redis.h">
-      <Filter>sys\net_cmd\MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h">
-      <Filter>sys\net_cmd\MQ</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h">
       <Filter>sys\net_cmd</Filter>

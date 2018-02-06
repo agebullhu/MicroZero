@@ -8,12 +8,31 @@ namespace agebull
 	namespace zmq_net
 	{
 
+		/**
+		* \brief 初始化
+		*/
+		bool zero_station::do_initialize()
+		{
+			if (this->_zmq_state == ZmqSocketState::Succeed)
+				log_msg3("Station:%s(%d | %d) start...", this->_station_name.c_str(), this->_out_port, this->_inner_port);
+			else
+				log_msg3("Station:%s(%d | %d) restart...", this->_station_name.c_str(), this->_out_port, this->_inner_port);
+			if (!this->initialize())
+			{
+				log_msg3("Station:%s(%d | %d) conn`t start", this->_station_name.c_str(), this->_out_port, this->_inner_port);
+				return false;
+			}
+			log_msg3("Station:%s(%d | %d) ready", this->_station_name.c_str(), this->_out_port, this->_inner_port);
+			return true;
+		}
+
+
 
 		/**
 		* \brief 初始化
 		*/
-		
-		bool ZeroStation::initialize()
+
+		bool zero_station::initialize()
 		{
 			_station_state = station_state::Start;
 			_zmq_state = ZmqSocketState::Succeed;
@@ -92,8 +111,8 @@ namespace agebull
 		/**
 		* \brief 析构
 		*/
-		
-		bool ZeroStation::destruct()
+
+		bool zero_station::destruct()
 		{
 			if (_poll_items == nullptr)
 				return true;
@@ -121,8 +140,8 @@ namespace agebull
 		* \brief
 		* \return
 		*/
-		
-		bool ZeroStation::poll()
+
+		bool zero_station::poll()
 		{
 			set_command_thread_start(_station_name.c_str());
 			//登记线程开始
@@ -175,8 +194,8 @@ namespace agebull
 		/**
 		* \brief 暂停
 		*/
-		
-		bool ZeroStation::pause(bool waiting)
+
+		bool zero_station::pause(bool waiting)
 		{
 			if (station_state::Run != _station_state)
 				return false;
@@ -188,8 +207,8 @@ namespace agebull
 		/**
 		* \brief 继续
 		*/
-		
-		bool ZeroStation::resume(bool waiting)
+
+		bool zero_station::resume(bool waiting)
 		{
 			if (station_state::Pause != _station_state)
 				return false;
@@ -202,8 +221,8 @@ namespace agebull
 		/**
 		* \brief 结束
 		*/
-		
-		bool ZeroStation::close(bool waiting)
+
+		bool zero_station::close(bool waiting)
 		{
 			if (!can_do())
 				return false;

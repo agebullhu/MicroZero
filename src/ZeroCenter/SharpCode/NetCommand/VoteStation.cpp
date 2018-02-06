@@ -14,7 +14,7 @@ namespace agebull
 	{
 
 
-		bool VoteStation::get_voters(const char* client_addr, const char* request_token)
+		bool vote_station::get_voters(const char* client_addr, const char* request_token)
 		{
 			acl::string strs("[");
 			bool first = true;
@@ -31,95 +31,116 @@ namespace agebull
 				strs.append("\"");
 			}
 			strs.append("]");
-			return send_state(client_addr, request_token, "*", strs.c_str());
+			return send_state(client_addr, request_token, "&", strs.c_str());
 		}
 
-		void VoteStation::start(const shared_ptr<VoteStation>& arg)
+		void vote_station::launch(const shared_ptr<vote_station>& arg)
 		{
-			VoteStation* station = arg.get();
-			if (!StationWarehouse::join(station))
+			vote_station* station = arg.get();
+			if (!station_warehouse::join(station))
 			{
 				return;
 			}
-			if (station->_zmq_state == ZmqSocketState::Succeed)
-			log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-			else
-			log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-			if (!station->initialize())
-			{
-				log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+			if (!station->do_initialize())
 				return;
-			}
-			log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 			bool reStrart = station->poll();
-			StationWarehouse::left(station);
+			station_warehouse::left(station);
 			station->destruct();
 			if (reStrart)
 			{
-				VoteStation* station2 = new VoteStation(station->_station_name);
+				vote_station* station2 = new vote_station(station->_station_name);
 				station2->_zmq_state = ZmqSocketState::Again;
-				boost::thread thrds_s1(boost::bind(start, shared_ptr<VoteStation>(station2)));
+				boost::thread thrds_s1(boost::bind(launch, shared_ptr<vote_station>(station2)));
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				log_msg3("Station:%s(%d | %d) closed", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 			}
 		}
 
 		/**
 		* \brief 执行一条命令
 		*/
-		sharp_char VoteStation::command(const char* caller, vector<sharp_char> lines)
+		sharp_char vote_station::command(const char* caller, vector<sharp_char> lines)
 		{
-			if (send_state(caller,* lines[0],* lines[1],* lines[2]))
+			if (send_state(caller, *lines[0], *lines[1], *lines[2]))
 				return sharp_char("vote start");
 			return sharp_char("bad");
 		}
 
+
 		/**
 		* \brief 当远程调用进入时的处理
 		*/
-		void VoteStation::request(ZMQ_HANDLE socket)
+		void vote_station::request(ZMQ_HANDLE socket)
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 请求标识 3 命令 4 参数
 			_zmq_state = recv(_out_socket, list);
 
-			RedisLiveScope redis_live_scope;
+			if (list[2][0] == '@')//计划类型
+			{
+				save_plan(socket, list);
+				return;
+			}
+
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_VOTE);
+			char key[256];
+			sprintf(key, "vote:%s:%s", _station_name.c_str(), *list[2]);
+			trans_redis redis = trans_redis::get_context();
 			switch (list[3][0])
 			{
 			case '*': //请求投票者名单
 				get_voters(*list[0], *list[2]);
 				break;
-			case '@': //开始投票
-				TransRedis::get_context()->set(*list[2], "start");
-				TransRedis::get_context()->pexpire(*list[2], 3600000);//3600秒过期
-				if (start_vote(*list[0], *list[3], *list[4]))
-					send_state(*list[0], *list[2], "*", "start");
+			case '$': //取投票状态
+			{
+				std::map<acl::string, acl::string> values;
+				if (redis->hgetall(key, values))
+					send_state(*list[0], *list[2], values["*"].c_str(), values);
 				else
-					send_state(*list[0], *list[2], "*", "error");
+					send_state(*list[0], *list[2], "+error", values);
+				break;
+			}
+			case '@': //开始投票
+				if (start_vote(*list[0], *list[3], *list[4]))
+				{
+					std::map<acl::string, acl::string> values;
+					redis->hgetall(key, values);
+					send_state(*list[0], *list[2], values["*"].c_str(), values);
+				}
+				else
+					send_state(*list[0], *list[2], "*", "+error");
 				break;
 			case '%': //继续等待投票结束
-				TransRedis::get_context()->set(*list[2], "waiting");
-				TransRedis::get_context()->pexpire(*list[2], 3600000);//3600秒过期
-				send_state(*list[0], *list[2], "*", "waiting");
+				redis->hset(key, "*", "-waiting");
+				send_state(*list[0], *list[2], "*", "-waiting");
 				break;
 			case 'v': //结束投票
-				TransRedis::get_context()->set(*list[2], "end");
-				send_state(*list[0], *list[2], "*", "end");
+				redis->hset(key, "*", "-end");
+				send_state(*list[0], *list[2], "*", "-end");
 				break;
-			case 'x': //结束投票
-				TransRedis::get_context()->set(*list[2], "close");
-				send_state(*list[0], *list[2], "*", "close");
+			case 'x': //删除投票
+				redis->hset(key, "*", "-close");
+				redis->pexpire(key, 360000);//一小时后过期
+				send_state(*list[0], *list[2], "*", "-bye");
 				break;
 			default:
-				send_state(*list[0], *list[2], "*", "error");
+				send_state(*list[0], *list[2], "*", "+error");
 				break;
 			}
 		}
 
-		bool VoteStation::start_vote(const char* client_addr, const char* request_token, const char* request_argument)
+		bool vote_station::start_vote(const char* client_addr, const char* request_token, const char* request_argument)
 		{
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_VOTE);
+			trans_redis redis = trans_redis::get_context();
+			char key[256];
+			sprintf(key, "vote:%s", request_token);
+			redis->hset(key, "*", "-start");
+			redis->hset(key, "#", request_argument);
+			redis->hset(key, "@", client_addr);
+
 			//路由到所有工作对象
 			for (auto voter : _workers)
 			{
@@ -127,11 +148,57 @@ namespace agebull
 				_zmq_state = send_more(_inner_socket, client_addr);
 				_zmq_state = send_more(_inner_socket, request_token);
 				_zmq_state = send_late(_inner_socket, request_argument);
+				if (_zmq_state == ZmqSocketState::Succeed)
+					redis->hset(key, voter.second.flow_name.c_str(), "-send");
+				else
+					redis->hset(key, voter.second.flow_name.c_str(), "+error");
 			}
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
-		bool VoteStation::send_state(const char* client_addr, const char* request_token, const char* voter, const char* state)
+		bool vote_station::re_push_vote(const char* client_addr, const char* request_token)
+		{
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_VOTE);
+			trans_redis redis = trans_redis::get_context();
+			std::map<acl::string, acl::string> values;
+			char key[256];
+			sprintf(key, "vote:%s", request_token);
+			if (!redis->hgetall(key, values))
+			{
+				send_state(client_addr, request_token, "*", "+error");
+				return false;
+			}
+			redis->hset(key, "@", client_addr);
+			auto request_argument = values["#"];
+			//路由到所有未返回的工作对象
+			for (auto kv : values)
+			{
+				switch (kv.first[0])
+				{
+				case '*':
+				case '@':
+				case '#':
+					continue;
+				default:
+					switch (kv.second[0])
+					{
+					case '-':
+					case '+':
+						_zmq_state = send_addr(_inner_socket, kv.first.c_str());
+						_zmq_state = send_more(_inner_socket, client_addr);
+						_zmq_state = send_more(_inner_socket, request_token);
+						_zmq_state = send_late(_inner_socket, request_argument);
+						if (_zmq_state == ZmqSocketState::Succeed)
+							redis->hset(key, kv.first.c_str(), "-send");
+						break;
+					default:;
+					}
+				}
+			}
+			return _zmq_state == ZmqSocketState::Succeed;
+		}
+
+		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* voter, const char* state)
 		{
 			_zmq_state = send_addr(_out_socket, client_addr);
 			_zmq_state = send_more(_out_socket, request_token);
@@ -140,10 +207,27 @@ namespace agebull
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
+		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* state, std::map<acl::string, acl::string>& values)
+		{
+			_zmq_state = send_addr(_out_socket, client_addr);
+			_zmq_state = send_more(_out_socket, request_token);
+			_zmq_state = send_more(_out_socket, "$");
+			for (auto kv : values)
+			{
+				if (kv.first == "*" || kv.first == "#")
+					continue;
+				_zmq_state = send_more(_out_socket, kv.first.c_str());
+				_zmq_state = send_more(_out_socket, kv.second.c_str());
+			}
+			_zmq_state = send_more(_out_socket, "*");
+			_zmq_state = send_late(_out_socket, state);
+			return _zmq_state == ZmqSocketState::Succeed;
+		}
+
 		/**
 		* \brief 当工作操作返回时的处理
 		*/
-		void VoteStation::response()
+		void vote_station::response()
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 原始者请求地址 3 请求标识 4 结果
@@ -169,14 +253,15 @@ namespace agebull
 				return;
 			default: break;
 			}
-			RedisLiveScope redis_live_scope;
-			if (TransRedis::get_context()->exists(*list[3]))//如果投票还有效，返回结投票者
+			char key[256];
+			sprintf(key, "vote:%s", *list[3]);
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_VOTE);
+			trans_redis redis = trans_redis::get_context();
+			if (redis->exists(key))//如果投票还存在，返回结投票者
 			{
-				auto vote = _workers[*list[0]];
-				acl::string ver("|");
-				ver.append(vote.flow_name.c_str());
-				TransRedis::get_context()->append(*list[3], ver.c_str());
-				send_state(*list[0], *list[3], vote.flow_name.c_str(), *list[4]);
+				auto voter = _workers[*list[0]];
+				redis->hset(key, voter.flow_name.c_str(), *list[4]);
+				send_state(*list[2], *list[3], voter.flow_name.c_str(), *list[4]);
 			}
 		}
 	}

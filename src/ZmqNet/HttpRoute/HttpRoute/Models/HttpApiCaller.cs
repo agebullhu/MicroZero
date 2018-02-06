@@ -178,6 +178,7 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         private string GetResponse(HttpWebRequest req, out WebExceptionStatus status)
         {
+            req.KeepAlive = false;
             status = WebExceptionStatus.Success;
             try
             {
@@ -234,6 +235,7 @@ namespace ZeroNet.Http.Route
         }
         private string ResponseError(WebException e)
         {
+            LogRecorder.Exception(e);
             switch (e.Status)
             {
                 case WebExceptionStatus.CacheEntryNotFound:
@@ -279,19 +281,28 @@ namespace ZeroNet.Http.Route
 
         private string ReadResponse(WebResponse response)
         {
-            if (response.ContentLength == 0)
-                return RouteRuntime.RemoteEmptyError;
+            string result;
             using (response)
             {
-                var receivedStream = response.GetResponseStream();
-                if (receivedStream == null)
-                    return RouteRuntime.RemoteEmptyError;
-                using (receivedStream)
+                if (response.ContentLength == 0)
+                    result= RouteRuntime.RemoteEmptyError;
+                else
                 {
-                    var streamReader = new StreamReader(receivedStream);
-                    return streamReader.ReadToEnd();
+                    var receivedStream = response.GetResponseStream();
+                    if (receivedStream == null)
+                        result = RouteRuntime.RemoteEmptyError;
+                    else
+                    {
+                        using (receivedStream)
+                        {
+                            var streamReader = new StreamReader(receivedStream);
+                            result = streamReader.ReadToEnd();
+                        }
+                    }
                 }
+                response.Close();
             }
+            return result;
         }
 
         #endregion

@@ -6,7 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+#if ZERO
 using Agebull.ZeroNet.Core;
+#endif
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Newtonsoft.Json;
@@ -29,9 +31,13 @@ namespace ZeroNet.Http.Route
             //Agebull.Common.Logging.LogRecorder.GetRequestIdFunc = () => ApiContext.RequestContext.RequestId;.
             LogRecorder.Initialize();
             AppConfig.Initialize();
+#if ZERO
             StationProgram.Run();
+#endif
             RouteRuntime.Flush();
+#if ZERO
             ZeroFlush();
+#endif
             //Datas = new List<RouteData>();
 
         }
@@ -42,7 +48,9 @@ namespace ZeroNet.Http.Route
         {
             AppConfig.Initialize();
             RouteRuntime.Flush();
+#if ZERO
             ZeroFlush();
+#endif
             //Datas = new List<RouteData>();
 
         }
@@ -50,7 +58,7 @@ namespace ZeroNet.Http.Route
         #endregion
 
         #region ZeroNet
-
+#if ZERO
 
         /// <summary>
         /// 初始化
@@ -113,19 +121,42 @@ namespace ZeroNet.Http.Route
                     break;
             }
         }
-
+#endif
         #endregion
 
         #region 基本调用
 
+        private static volatile int HttpWaiting = 0;
+
         /// <summary>
         /// POST调用
         /// </summary>
-        /// <param name="h"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public static Task Call(HttpContext h)
+        public static Task Call(HttpContext context)
         {
-            return Task.Factory.StartNew(CallTask, h);
+            try
+            {
+                int cnt = 0;
+                while (HttpWaiting >= AppConfig.Config.SystemConfig.MaxWaiting)
+                {
+                    Thread.Sleep(5);
+                    if (++cnt >= 6)
+                    {
+                        return Task.Factory.StartNew(() =>
+                        {
+
+                            context.Response.WriteAsync(RouteRuntime.ReTry, Encoding.UTF8);
+                        });
+                    }
+                }
+                HttpWaiting++;
+                return Task.Factory.StartNew(CallTask, context);
+            }
+            finally
+            {
+                HttpWaiting--;
+            }
         }
 
         /// <summary>

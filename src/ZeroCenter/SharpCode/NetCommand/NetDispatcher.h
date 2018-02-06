@@ -10,25 +10,25 @@ namespace agebull
 		/**
 		 * \brief 表示一个广播站点
 		 */
-		class NetDispatcher :ZeroStation
+		class net_dispatcher :public zero_station
 		{
 			/**
 			* \brief 单例
 			*/
-			static NetDispatcher* instance;
+			static net_dispatcher* instance;
 		public:
 			/**
 			* \brief 构造
 			*/
-			NetDispatcher()
-				:ZeroStation("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
+			net_dispatcher()
+				:zero_station("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
 			{
 
 			}
 			/**
 			* \brief 析构
 			*/
-			~NetDispatcher() override {}
+			~net_dispatcher() override = default;
 			/**
 			* \brief 开始执行
 			*/
@@ -43,7 +43,7 @@ namespace agebull
 				{
 					return;
 				}
-				instance = new NetDispatcher();
+				instance = new net_dispatcher();
 				zmq_threadstart(start, nullptr);
 				//boost::thread thrds_s(boost::bind(start));
 			}

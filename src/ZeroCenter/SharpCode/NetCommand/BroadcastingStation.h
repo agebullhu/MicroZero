@@ -11,11 +11,11 @@ namespace agebull
 		/**
 		* \brief 表示一个广播站点
 		*/
-		class BroadcastingStationBase :public ZeroStation
+		class broadcasting_station_base :public zero_station
 		{
 		public:
-			BroadcastingStationBase(string name, int type)
-				: ZeroStation(std::move(name), type, ZMQ_ROUTER, ZMQ_PUB, -1)
+			broadcasting_station_base(string name, int type)
+				: zero_station(std::move(name), type, ZMQ_ROUTER, ZMQ_PUB, -1)
 			{
 			}
 
@@ -65,26 +65,26 @@ namespace agebull
 		/**
 		 * \brief 表示一个广播站点
 		 */
-		class BroadcastingStation :public BroadcastingStationBase
+		class broadcasting_station :public broadcasting_station_base
 		{
 		public:
-			BroadcastingStation(string name)
-				:BroadcastingStationBase(name, STATION_TYPE_PUBLISH)
+			broadcasting_station(string name)
+				:broadcasting_station_base(name, STATION_TYPE_PUBLISH)
 			{
 
 			}
-			virtual ~BroadcastingStation() {}
+			virtual ~broadcasting_station() = default;
 			/**
 			* 运行一个广播线程
 			*/
 			static void run(string publish_name)
 			{
-				zmq_threadstart(start, new BroadcastingStation(publish_name));
+				zmq_threadstart(launch, new broadcasting_station(publish_name));
 			}
 			/**
 			*消息泵
 			*/
-			static void start(void* arg);
+			static void launch(void* arg);
 			/**
 			*\brief 广播内容
 			*/
@@ -95,7 +95,7 @@ namespace agebull
 		/**
 		* \brief 表示一个广播站点
 		*/
-		class SystemMonitorStation :BroadcastingStationBase
+		class system_monitor_station :broadcasting_station_base
 		{
 			/**
 			* \brief 能否继续工作
@@ -104,14 +104,14 @@ namespace agebull
 			{
 				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() < NET_STATE_DISTORY;
 			}
-			static SystemMonitorStation* example;
+			static system_monitor_station* example;
 		public:
-			SystemMonitorStation()
-				:BroadcastingStationBase("SystemMonitor", STATION_TYPE_MONITOR)
+			system_monitor_station()
+				:broadcasting_station_base("SystemMonitor", STATION_TYPE_MONITOR)
 			{
 
 			}
-			virtual ~SystemMonitorStation() {}
+			virtual ~system_monitor_station() = default;
 
 			///**
 			//* \brief 暂停
@@ -143,12 +143,12 @@ namespace agebull
 			{
 				if (example != nullptr)
 					return;
-				zmq_threadstart(start, nullptr);
+				zmq_threadstart(launch, nullptr);
 			}
 			/**
 			*消息泵
 			*/
-			static void start(void*);
+			static void launch(void*);
 
 			/**
 			*\brief 广播内容

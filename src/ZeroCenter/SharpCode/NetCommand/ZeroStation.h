@@ -1,5 +1,5 @@
 #pragma once
-#ifndef C_ZMQ_NET_OBJECT
+#ifndef _ZERO_STATION_H
 #include <stdinc.h>
  #include <utility>
 #include "sharp_char.h"
@@ -12,9 +12,9 @@ namespace agebull
 		/**
 		* \brief 表示一个基于ZMQ的网络站点
 		*/
-		class ZeroStation
+		class zero_station
 		{
-			friend class StationWarehouse;
+			friend class station_warehouse;
 		protected:
 			bool _in_plan_poll;
 
@@ -133,7 +133,7 @@ namespace agebull
 			string get_out_address()const
 			{
 				string addr("tcp://*:");
-				addr += _out_port;
+				addr += std::to_string(_out_port);
 				return addr;
 			}
 
@@ -143,7 +143,7 @@ namespace agebull
 			string get_inner_address()const
 			{
 				string addr("tcp://*:");
-				addr += _inner_port;
+				addr += std::to_string(_inner_port);
 				return addr;
 			}
 
@@ -153,14 +153,14 @@ namespace agebull
 			string get_heart_address()const
 			{
 				string addr("tcp://*:");
-				addr += _heart_port;
+				addr += std::to_string(_heart_port);
 				return addr;
 			}
 
 			/**
 			* \brief 构造
 			*/
-			ZeroStation(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
+			zero_station(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
 				: _in_plan_poll(false)
 				, _state_semaphore(1)
 				, _station_name(std::move(name))
@@ -245,9 +245,9 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			virtual ~ZeroStation()
+			virtual ~zero_station()
 			{
-				ZeroStation::close(true);
+				zero_station::close(true);
 				_station_state = station_state::Destroy;
 			}
 			/**
@@ -275,6 +275,10 @@ namespace agebull
 			bool initialize();
 
 			/**
+			* \brief 启动
+			*/
+			bool do_initialize();
+			/**
 			* \brief 网络轮询
 			*/
 			bool poll();
@@ -301,14 +305,19 @@ namespace agebull
 			*/
 			static void plan_poll(void* arg)
 			{
-				ZeroStation* station = static_cast<ZeroStation*>(arg);
-				station->plan_poll_();
+				zero_station* station = static_cast<zero_station*>(arg);
+				station->plan_poll();
 			}
 		protected:
+
+			/**
+			* \brief 保存计划
+			*/
+			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list);
 			/**
 			* \brief 计划轮询
 			*/
-			void plan_poll_();
+			void plan_poll();
 
 			/**
 			* \brief 工作集合的响应
@@ -323,7 +332,6 @@ namespace agebull
 			*/
 			virtual void heartbeat(){}
 		};
-
 
 	}
 }

@@ -1,7 +1,7 @@
 #ifndef ZMQ_API_STATION_H
 #pragma once
 #include <stdinc.h>
- #include <utility>
+#include <utility>
 #include "ZeroStation.h"
 #include "BalanceStation.h"
 
@@ -12,7 +12,7 @@ namespace agebull
 		/**
 		* \brief 负载均衡处理类
 		*/
-		class HostBalance :private map<string, time_t>
+		class host_balance :private map<string, time_t>
 		{
 			/**
 			* \brief 当前工作者下标
@@ -21,7 +21,7 @@ namespace agebull
 			boost::mutex _mutex;
 			vector<string> list;
 		public:
-			HostBalance()
+			host_balance()
 				: _index(0)
 			{
 
@@ -37,7 +37,7 @@ namespace agebull
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
-					list.push_back(host);
+					list.emplace_back(host);
 				}
 				else
 				{
@@ -55,7 +55,7 @@ namespace agebull
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
-					list.push_back(host);
+					list.emplace_back(host);
 				}
 				else
 				{
@@ -99,7 +99,7 @@ namespace agebull
 				auto iter = list.begin();
 				while (iter != list.end())
 				{
-					if (iter->compare(host) == 0)
+					if (*iter == host)
 					{
 						list.erase(iter);
 						break;
@@ -112,7 +112,7 @@ namespace agebull
 			*/
 			const char* get_host_()
 			{
-				if (size->empty())
+				if (list.empty())
 					return nullptr;
 				if (size() == 1)
 				{
@@ -143,69 +143,60 @@ namespace agebull
 		/**
 		* \brief API站点
 		*/
-		class ApiStation :public BalanceStation<ApiStation, string, STATION_TYPE_API>
+		class api_station :public balance_station<api_station, string, STATION_TYPE_API>
 		{
 			/**
 			* \brief 发布消息队列访问锁
 			*/
-			HostBalance _balance;
+			host_balance _balance;
 		public:
 			/**
 			* \brief 构造
 			*/
-			ApiStation(string name)
-				: BalanceStation<ApiStation, string, STATION_TYPE_API>(std::move(name))
+			api_station(string name)
+				: balance_station<api_station, string, STATION_TYPE_API>(std::move(name))
 			{
 			}
 
 			/**
 			* \brief 析构
 			*/
-			virtual ~ApiStation()
-			{
-			}
+			virtual ~api_station() = default;
 
 			/**
 			*消息泵
 			*/
 			static void run(string name)
 			{
-				zmq_threadstart(start, new ApiStation(std::move(name)));
+				zmq_threadstart(launch, new api_station(std::move(name)));
 			}
 
 			/**
 			* \brief 执行
 			*/
-			static void start(void* arg)
+			static void launch(void* arg)
 			{
-				ApiStation* station = static_cast<ApiStation*>(arg);
-				if (!StationWarehouse::join(station))
+				api_station* station = static_cast<api_station*>(arg);
+				if (!station_warehouse::join(station))
 				{
 					return;
 				}
-				if (station->_zmq_state == ZmqSocketState::Succeed)
-					log_msg3("%s(%d | %d)正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-				else
-					log_msg3("%s(%d | %d)正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port);
-				if (!station->initialize())
-				{
-					log_msg3("%s(%d | %d)无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				if (!station->do_initialize())
 					return;
-				}
-				log_msg3("%s(%d | %d)正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+
 				bool reStrart = station->poll();
 
-				StationWarehouse::left(station);
+				station_warehouse::left(station);
 				station->destruct();
 				if (reStrart)
 				{
-					ApiStation* station2 = new ApiStation(station->_station_name);
+					api_station* station2 = new api_station(station->_station_name);
 					station2->_zmq_state = ZmqSocketState::Again;
-					zmq_threadstart(start, station2);
+					zmq_threadstart(launch, station2);
 				}
 				else
 				{
-					log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+					log_msg3("Station:%s(%d | %d) is closed", station->_station_name.c_str(), station->_out_port, station->_inner_port);
 				}
 				delete station;
 			}
@@ -246,26 +237,13 @@ namespace agebull
 			void worker_left(const char* addr) override
 			{
 				_balance.left(addr);
-				BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_left(addr);
+				balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr);
 			}
 
 			/**
 			* \brief 工作对象加入
 			*/
-			virtual void worker_join(const char* addr, const char* value, bool ready = false) override
-			{
-				if (addr == nullptr || strlen(addr) == 0)
-					return;
-				if (ready)
-				{
-					_balance.join(addr);
-					BalanceStation<ApiStation, string, STATION_TYPE_API>::worker_join(addr, value, ready);
-				}
-				else
-				{
-					_balance.succees(addr);
-				}
-			}
+			virtual void worker_join(const char* addr, const char* value, bool ready = false) override;
 		};
 	}
 }
