@@ -26,9 +26,14 @@ namespace ZeroNet.Http.Route
         NetError = 0x2,
 
         /// <summary>
-        /// 参数相同
+        /// 参数相同（Get与POST请求）
         /// </summary>
         QueryString = 0x4,
+
+        /// <summary>
+        /// 表单相同(POST请求）
+        /// </summary>
+        Form = 0x8
 
     }
     /// <summary>
@@ -50,7 +55,7 @@ namespace ZeroNet.Http.Route
         public string Bear { get; set; }
 
         /// <summary>
-        /// 缓存的秒数
+        /// 缓存更新的秒数
         /// </summary>
         [DataMember, JsonProperty]
         public int FlushSecond { get; set; }

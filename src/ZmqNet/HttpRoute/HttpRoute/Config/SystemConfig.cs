@@ -84,7 +84,7 @@ namespace ZeroNet.Http.Route
     }
 
     /// <summary>
-    /// 阻止节点
+    /// Api节点
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
     public class ApiItem

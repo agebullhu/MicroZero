@@ -98,14 +98,14 @@
   "smsConfig": {
     "CycleHours": -1, /*计数归零小时数，负数可关闭通知*/
     "CycleSendCount": 6, /*周期内一个地址最多短信数量*/
-    "AliTemplateCode": "SMS_123666001",
-    "AliSignName": "亿钻宝",
+    "AliTemplateCode": "SMS_1",
+    "AliSignName": "亿",
     "AliRegionId": "cn-hangzhou",
     "AliEndPointName": "cn-hangzhou",
-    "AliProduct": "Dysmsapi",
+    "AliProduct": "Dysm",
     "AliDomain": "dysmsapi.aliyuncs.com",
-    "AliAccessKeyId": "LTAI2tjhbAljDBla",
-    "AliAccessKeySecret": "XVXaG4D2JrcE9Nk5lPOyzleVGKb09Q",
-    "Phones": [ "15618965007", "18601763662", "13917111139" ]
+    "AliAccessKeyId": "LTA",
+    "AliAccessKeySecret": "XVX",
+    "Phones": [ "15618965007" ]
   }
 }
