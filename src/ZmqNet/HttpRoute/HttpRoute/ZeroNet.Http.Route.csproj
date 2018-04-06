@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\RouteCounter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
     <Content Remove="cache.json" />
@@ -46,11 +50,11 @@
     <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.2" />
     <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.2" />
     <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
@@ -60,8 +64,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\PerformanceMonitor\PerformanceCounter\Agebull.ZeroNet.PerformanceCounter.csproj" />
+    <ProjectReference Include="..\..\..\RemoteLog\LogRecorder\Agebull.ZeroNet.LogRecorder.csproj" />
     <ProjectReference Include="..\..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
   </ItemGroup>
 
 </Project>

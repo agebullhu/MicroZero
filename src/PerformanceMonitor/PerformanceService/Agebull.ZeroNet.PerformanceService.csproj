@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\HttpRoute\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+</Project>

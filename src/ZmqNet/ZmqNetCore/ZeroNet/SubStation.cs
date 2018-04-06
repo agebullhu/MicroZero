@@ -12,6 +12,11 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public class SubStation: ZeroStation
     {
+        /// <summary>
+        /// 订阅主题
+        /// </summary>
+        public string Subscribe { get; set; } = "";
+
         private SubscriberSocket socket;
         /// <summary>
         /// 执行
@@ -101,7 +106,7 @@ namespace Agebull.ZeroNet.Core
             {
                 socket.Options.Identity = RealName.ToAsciiBytes();
                 socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                socket.Subscribe("");
+                socket.Subscribe(Subscribe);
                 socket.Connect(Config.InnerAddress);
             }
             catch (Exception e)

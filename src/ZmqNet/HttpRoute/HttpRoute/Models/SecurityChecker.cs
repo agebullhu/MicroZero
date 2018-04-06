@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Agebull.ZeroNet.ZeroApi;
@@ -31,54 +30,69 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public int Status { get; set; }
 
+        #region 预检
+
+        /// <summary>
+        /// 验签
+        /// </summary>
+        /// <returns></returns>
+        internal bool CheckSign()
+        {
+            return true;
+        }
+        /// <summary>
+        /// 预检
+        /// </summary>
+        /// <returns></returns>
+        public  bool PreCheck()
+        {
+            return CheckSign() && KillDenyHttpHeaders();
+        }
         /// <summary>
         /// 针对HttpHeader特征阻止不安全访问
         /// </summary>
-        /// <param name="context"></param>
         /// <returns></returns>
-        internal static bool KillDenyHttpHeaders(HttpContext context)
+        internal  bool KillDenyHttpHeaders()
         {
-            if (AppConfig.Config.SystemConfig.DenyHttpHeaders == null)
-                return true;
             try
             {
-                foreach (var head in AppConfig.Config.SystemConfig.DenyHttpHeaders)
+                foreach (var head in AppConfig.Config.Security.DenyHttpHeaders)
                 {
-                    if (!context.Request.Headers.ContainsKey(head.Head))
+                    if (!Request.Headers.ContainsKey(head.Head))
                         continue;
                     switch (head.DenyType)
                     {
                         case DenyType.Hase:
-                            if (context.Request.Headers.ContainsKey(head.Head))
+                            if (Request.Headers.ContainsKey(head.Head))
                                 return false;
                             break;
                         case DenyType.NonHase:
-                            if (!context.Request.Headers.ContainsKey(head.Head))
+                            if (!Request.Headers.ContainsKey(head.Head))
                                 return false;
                             break;
                         case DenyType.Count:
-                            if (!context.Request.Headers.ContainsKey(head.Head))
+                            if (!Request.Headers.ContainsKey(head.Head))
                                 break;
-                            if (context.Request.Headers[head.Head].Count == int.Parse(head.Value))
+                            if (Request.Headers[head.Head].Count == int.Parse(head.Value))
                                 return false;
                             break;
                         case DenyType.Equals:
-                            if (!context.Request.Headers.ContainsKey(head.Head))
+                            if (!Request.Headers.ContainsKey(head.Head))
                                 break;
-                            if (string.Equals(context.Request.Headers[head.Head].ToString(), head.Value,StringComparison.OrdinalIgnoreCase))
+                            if (string.Equals(Request.Headers[head.Head].ToString(), head.Value,StringComparison.OrdinalIgnoreCase))
                                 return false;
                             break;
                         case DenyType.Like:
-                            if (!context.Request.Headers.ContainsKey(head.Head))
+                            if (!Request.Headers.ContainsKey(head.Head))
                                 break;
-                            if (context.Request.Headers[head.Head].ToString().Contains(head.Value))
+                            if (Request.Headers[head.Head].ToString().Contains(head.Value))
                                 return false;
                             break;
                         case DenyType.Regex:
-                            if (!context.Request.Headers.ContainsKey(head.Head))
+                            if (!Request.Headers.ContainsKey(head.Head))
                                 break;
                             var regx = new Regex(head.Value, RegexOptions.IgnoreCase | RegexOptions.ECMAScript | RegexOptions.Multiline);
-                            if (regx.IsMatch(context.Request.Headers[head.Head].ToString()))
+                            if (regx.IsMatch(Request.Headers[head.Head].ToString()))
                                 return false;
                             break;
                     }
@@ -91,6 +105,9 @@ namespace ZeroNet.Http.Route
                 return true;
             }
         }
+        
+
+        #endregion
 
         /// <summary>
         /// 针对HttpHeader特征阻止不安全访问
@@ -99,10 +116,19 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         internal bool CheckApis(string api)
         {
-            if (AppConfig.Config.SystemConfig.CheckApis == null || string.IsNullOrWhiteSpace(api))
+            return CheckApisInner(api.Trim(' ', '\\', '/'));
+        }
+
+        /// <summary>
+        /// 针对HttpHeader特征阻止不安全访问
+        /// </summary>
+        ///  <param name="api"></param>
+        /// <returns></returns>
+        private bool CheckApisInner(string api)
+        {
+            if (string.IsNullOrWhiteSpace(api))
                 return true;
-            api = api.Trim(new[] {' ', '\\', '/'});
-            if (!AppConfig.Config.SystemConfig.CheckApis.TryGetValue(api, out var item))
+            if (!AppConfig.Config.Security.CheckApis.TryGetValue(api, out var item))
                 return true;
             if (!string.IsNullOrWhiteSpace(item.Os))
             {
@@ -128,19 +154,19 @@ namespace ZeroNet.Http.Route
         {
             try
             {
-                //return true;
+                var api = Request.GetUri().LocalPath.Trim(' ', '\\', '/');
                 if (string.IsNullOrWhiteSpace(Bearer))
                 {
-                    return true;//Request.GetUri().LocalPath.Contains("/oauth/getdid");
+                    return AppConfig.Config.Security.CheckApis.TryGetValue(api, out var item) 
+                           && item.NoBearer;
                 }
 
-                if (AppConfig.Config.SystemConfig.DenyTokens != null &&
-                    AppConfig.Config.SystemConfig.DenyTokens.ContainsKey(Bearer))
+                if (AppConfig.Config.Security.DenyTokens.ContainsKey(Bearer))
                 {
                     return false;
                 }
 
-                if (!CheckApis(Request.GetUri().LocalPath))
+                if (!CheckApisInner(api))
                     return false;
                 //var header = Request.Headers.Values.LinkToString(" ");
                 //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))
@@ -149,7 +175,7 @@ namespace ZeroNet.Http.Route
                 switch (Bearer[0])
                 {
                     default:
-                        return true;
+                        return false;
                     case '*':
                         return CheckDeviceId();
                     //case '{':
@@ -186,7 +212,7 @@ namespace ZeroNet.Http.Route
                 Status = ErrorCode.Auth_Device_Unknow;
                 return false;
             }
-            if (!AppConfig.Config.SystemConfig.CheckBearerCache)
+            if (!AppConfig.Config.Security.CheckBearerCache)
                 return true;
             bool hase;
             lock (Keys)
@@ -226,7 +252,7 @@ namespace ZeroNet.Http.Route
                 Status = ErrorCode.Auth_AccessToken_Unknow;
                 return false;
             }
-            if (!AppConfig.Config.SystemConfig.CheckBearerCache)
+            if (!AppConfig.Config.Security.CheckBearerCache)
                 return true;
 
             bool hase;

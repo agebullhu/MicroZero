@@ -8,7 +8,7 @@ namespace ZeroNet.Http.Route
     /// 缓存特征
     /// </summary>
     [Flags]
-    internal enum CacheFeature : uint
+    public enum CacheFeature : uint
     {
         /// <summary>
         /// 无
@@ -40,7 +40,7 @@ namespace ZeroNet.Http.Route
     /// 缓存设置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    internal class CacheSetting
+    public class CacheSetting
     {
         /// <summary>
         /// API名称
@@ -99,7 +99,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 缓存数据
     /// </summary>
-    internal class CacheData
+    public class CacheData
     {
         /// <summary>
         /// 下次更新时间

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -71,7 +70,7 @@ namespace ZeroNet.Http.Route
             return builder.ToString();
         }
 
-        private string url;
+        private string _url;
 
         /// <summary>
         /// 生成请求对象
@@ -86,10 +85,10 @@ namespace ZeroNet.Http.Route
             ApiName = apiName;
             var auth = Bearer;
 
-            url = $"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}";
+            _url = $"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}";
 
 
-            var req = (HttpWebRequest)WebRequest.Create(url);
+            var req = (HttpWebRequest)WebRequest.Create(_url);
             req.Timeout = AppConfig.Config.SystemConfig.HttpTimeOut;
 
             req.Method = method;
@@ -155,7 +154,7 @@ namespace ZeroNet.Http.Route
         private string ToErrorString(int code, string message, string message2 = null)
         {
             LogRecorder.MonitorTrace($"调用异常：{message}");
-            return JsonConvert.SerializeObject(ApiResult.Error(code, url + message, message2));
+            return JsonConvert.SerializeObject(ApiResult.Error(code, _url + message, message2));
         }
 
         /// <summary>
@@ -222,7 +221,7 @@ namespace ZeroNet.Http.Route
                     }
                 }
                 var msg = ReadResponse(exception.Response);
-                RouteRuntime.RuntimeWaring(Host, ApiName, msg);
+                RuntimeWaring.Waring(Host, ApiName, msg);
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)

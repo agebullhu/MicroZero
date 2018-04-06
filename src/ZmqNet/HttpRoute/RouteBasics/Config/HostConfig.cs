@@ -8,12 +8,12 @@ namespace ZeroNet.Http.Route
     /// 路由主机
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    internal class HostConfig
+    public class HostConfig
     {
         /// <summary>
         /// 默认主机
         /// </summary>
-        internal static HostConfig DefaultHost;
+        public static HostConfig DefaultHost;
 
         /// <summary>
         /// 使用ZeroNet通讯吗

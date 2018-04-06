@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
-using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.ZeroApi
 {

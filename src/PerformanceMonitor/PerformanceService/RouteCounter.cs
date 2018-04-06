@@ -13,10 +13,28 @@ namespace ZeroNet.Http.Route
     internal class RouteCounter
     {
         /// <summary>
-        /// 开始时间
+        /// 记录
         /// </summary>
-        public DateTime Start { get; set; }
-
+        /// <param name="arg"></param>
+        public static void Record(string arg)
+        {
+            if (string.IsNullOrEmpty(arg))
+                return;
+            if(arg=="*Save")
+            {
+                Save();
+                return;
+            }
+            try
+            {
+                var data = JsonConvert.DeserializeObject<RouteData>(arg);
+                End(data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         /// <summary>
         /// 计数单元
         /// </summary>
@@ -26,30 +44,16 @@ namespace ZeroNet.Http.Route
         /// 计数根
         /// </summary>
         public static CountItem Station { get; set; } = new CountItem();
-
+        
         /// <summary>
         /// 开始计数
         /// </summary>
         /// <returns></returns>
-        public static RouteCounter OnBegin(RouteData data)
+        public static void End(RouteData data)
         {
-            data.Start = DateTime.Now;
-            return new RouteCounter
-            {
-                Start = DateTime.Now
-            };
-        }
-
-        /// <summary>
-        /// 开始计数
-        /// </summary>
-        /// <returns></returns>
-        public void End(RouteData data)
-        {
-            data.End = DateTime.Now;
             try
             {
-                var tm = (DateTime.Now - Start).TotalMilliseconds;
+                var tm = (data.End - data.Start).TotalMilliseconds;
                 if (tm > 200)
                     LogRecorder.Warning($"{data.HostName}/{data.ApiName}:执行时间异常({tm:F2}ms):");
 
