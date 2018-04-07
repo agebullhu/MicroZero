@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -10,30 +11,51 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 路由计数器
     /// </summary>
-    internal class RouteCounter
+    internal class PerformanceCounter : SubStation
     {
+        /// <summary>
+        /// 构造
+        /// </summary>
+        public PerformanceCounter()
+        {
+            StationName = "HealthCenter";
+            Subscribe = "PerformanceCounter";
+        }
+        /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public override void Handle(PublishItem args)
+        {
+            try
+            {
+                if (args.SubTitle == "Save")
+                {
+                    Save();
+                    return;
+                }
+                try
+                {
+                    var data = JsonConvert.DeserializeObject<RouteData>(args.Content);
+                    End(data);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+            }
+        }
         /// <summary>
         /// 记录
         /// </summary>
         /// <param name="arg"></param>
         public static void Record(string arg)
         {
-            if (string.IsNullOrEmpty(arg))
-                return;
-            if(arg=="*Save")
-            {
-                Save();
-                return;
-            }
-            try
-            {
-                var data = JsonConvert.DeserializeObject<RouteData>(arg);
-                End(data);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
         }
         /// <summary>
         /// 计数单元

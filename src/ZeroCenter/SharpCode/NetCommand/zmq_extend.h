@@ -12,8 +12,31 @@ namespace agebull
 #define STATION_TYPE_API 3
 #define STATION_TYPE_VOTE 4
 #define STATION_TYPE_PUBLISH 5
-
-
+		//正常状态
+		const char zero_status_success = '+';
+		//错误状态
+		const char zero_status_bad = '-';
+		//终止符号
+		const char zero_end = '?';
+		//执行计划
+		const char zero_plan = '@';
+		//参数
+		const char zero_arg = '$';
+		//请求ID
+		const char zero_request_id = ':';
+		//请求者/生产者
+		const char zero_requester = '>';
+		//发布者/生产者
+		const char zero_pub_publisher = zero_requester;
+		//回复者/浪费者
+		const char zero_responser = '<';
+		//订阅者/浪费者
+		const char zero_pub_subscriber = zero_responser;
+		//广播主题
+		const char zero_pub_title = '*';
+		//广播副题
+		const char zero_pub_sub = '&';
+		
 
 		/**
 		*\brief 广播内容
@@ -822,11 +845,116 @@ namespace agebull
 			* \brief 发起者
 			*/
 			string request_caller;
-
+			/**
+			* \brief 消息描述
+			*/
+			sharp_char messages_description;
+			
 			/**
 			* \brief 消息内容
 			*/
 			vector<sharp_char> messages;
+
+			/**
+			* \brief 从JSON中反序列化
+			*/
+			void read_plan(const char* plan)
+			{
+				acl::json json;
+				json.update(plan);
+				acl::json_node* iter = json.first_node();
+				while (iter)
+				{
+					int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
+					switch (idx)
+					{
+					case 0:
+						plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
+						break;
+					case 1:
+						plan_value = static_cast<int>(*iter->get_int64());
+						break;
+					case 2:
+						plan_repet = static_cast<int>(*iter->get_int64());
+						break;
+					default: break;
+					}
+					iter = json.next_node();
+				}
+			}
+			void read_json(acl::string& val)
+			{
+				acl::json json;
+				json.update(val);
+				acl::json_node* iter = json.first_node();
+				while (iter)
+				{
+					int idx = strmatchi(5, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "request_caller", "request_id", "messages_description", "messages");
+					switch (idx)
+					{
+					case 0:
+						plan_id = static_cast<int>(*iter->get_int64());
+						break;
+					case 1:
+						plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
+						break;
+					case 2:
+						plan_value = static_cast<int>(*iter->get_int64());
+						break;
+					case 3:
+						plan_repet = static_cast<int>(*iter->get_int64());
+						break;
+					case 4:
+						real_repet = static_cast<int>(*iter->get_int64());
+						break;
+					case 5:
+						request_caller = iter->get_string();
+						break;
+					case 6:
+						request_id = iter->get_string();
+						break;
+					case 7:
+						messages_description = iter->get_string();
+						break;
+					case 8:
+					{
+						acl::json arr = iter->get_json();
+						acl::json_node* iter_arr = arr.first_node();
+						while (iter_arr)
+						{
+							messages.push_back(iter_arr->get_string());
+							iter_arr = arr.next_node();
+						}
+					}
+					break;
+					default: break;
+					}
+					iter = json.next_node();
+				}
+			}
+			acl::string write_json()
+			{
+				acl::json json;
+				acl::json_node& node = json.create_node();
+				node.add_number("plan_id", plan_id);
+				if (plan_type > plan_date_type::None)
+				{
+					node.add_number("plan_type", static_cast<int>(plan_type));
+					node.add_number("plan_value", plan_value);
+					node.add_number("plan_repet", plan_repet);
+					node.add_number("real_repet", real_repet);
+				}
+				node.add_text("request_id", request_id.c_str());
+				node.add_text("request_caller", request_caller.c_str());
+				node.add_text("messages_description", messages_description.get_buffer());
+				acl::json_node& array = node.add_array(true);
+				array.set_tag("messages");
+				for (const auto line : messages)
+				{
+					array.add_array_text(*line);
+				}
+				return node.to_string();
+			}
 		};
 	}
 }

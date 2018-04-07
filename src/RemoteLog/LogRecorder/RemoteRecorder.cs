@@ -1,11 +1,6 @@
-﻿
-#region
-
-using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
+﻿using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
-
-#endregion
 
 namespace Agebull.ZeroNet.LogRecorder
 {
@@ -27,7 +22,7 @@ namespace Agebull.ZeroNet.LogRecorder
         public void Shutdown()
         {
         }
-        
+
         /// <summary>
         ///   记录日志
         /// </summary>
@@ -36,7 +31,7 @@ namespace Agebull.ZeroNet.LogRecorder
         {
             using (LogRecordingScope.CreateScope())
             {
-                Publisher.Publish("RemoteLog",info.TypeName,JsonConvert.SerializeObject( info ));
+                ZeroPublisher.Publish("RemoteLog", "Record", info.TypeName, JsonConvert.SerializeObject(info));
             }
         }
     }

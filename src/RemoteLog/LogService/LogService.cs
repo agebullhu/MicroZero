@@ -1,5 +1,6 @@
 ﻿using System;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.LogService
@@ -7,17 +8,27 @@ namespace Agebull.ZeroNet.LogService
     /// <summary>
     /// 日志服务
     /// </summary>
-    public class LogService
+    public class RemoteLogRecorder : SubStation
     {
         /// <summary>
-        ///   记录日志
+        /// 构造
         /// </summary>
-        /// <param name="arg"> 日志消息 </param>
-        internal static void RecordLog(string arg)
+        public RemoteLogRecorder()
+        {
+            StationName = "RemoteLog";
+            Subscribe = "Record";
+        }
+
+        /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public override void Handle(PublishItem args)
         {
             try
             {
-                var info = JsonConvert.DeserializeObject<RecordInfo>(arg);
+                var info = JsonConvert.DeserializeObject<RecordInfo>(args.Content);
                 LogRecorder.Push(info);
             }
             catch (Exception e)

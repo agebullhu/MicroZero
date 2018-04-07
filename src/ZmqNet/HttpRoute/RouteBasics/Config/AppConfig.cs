@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
@@ -97,6 +98,7 @@ namespace ZeroNet.Http.Route
             Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(FileName));
             if (Config == null)
                 return false;
+            Config.StationConfig.DataFolder = IOHelper.CheckPath(Path.GetDirectoryName(FileName),"Datas");
             LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
             Config.InitCache();
             Config.InitRoute();

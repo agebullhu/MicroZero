@@ -40,6 +40,12 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember, JsonProperty("managePort")]
         public int ZeroManagePort { get; set; }
+        
+        /// <summary>
+        /// 本地数据文件夹
+        /// </summary>
+        [DataMember, JsonProperty("dataFolder")]
+        public string DataFolder { get; set; }
 
     }
 }

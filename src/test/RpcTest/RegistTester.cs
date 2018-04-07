@@ -35,7 +35,7 @@ namespace RpcTest
                 }
                 else
                 {
-                    var action = method.CreateDelegate(typeof(ApiDelegate));
+                    var action = method.CreateDelegate(typeof(ApiDelegate1));
                     
                     var result =action.DynamicInvoke(new Argument<string> {Value = "test"}) as IApiResult;
                     //action.DynamicInvoke() as IApiResult;
@@ -44,7 +44,7 @@ namespace RpcTest
             }
         }
 
-        void abc()
+        private void abc()
         {
             
         }

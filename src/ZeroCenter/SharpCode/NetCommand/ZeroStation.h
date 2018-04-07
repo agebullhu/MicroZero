@@ -243,6 +243,14 @@ namespace agebull
 		public:
 
 			/**
+			*\brief 发送消息
+			*/
+			bool send_data(vector<sharp_char>& datas)
+			{
+				_zmq_state = send(_inner_socket, datas);
+				return _zmq_state == ZmqSocketState::Succeed;
+			}
+			/**
 			* \brief 析构
 			*/
 			virtual ~ZeroStation()

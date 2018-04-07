@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
 using Aliyun.Net.SDK.Core.Exceptions;
@@ -13,24 +14,31 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 运行时警告
     /// </summary>
-    public class RuntimeWaring
+    public class RuntimeWaring : SubStation
     {
         /// <summary>
-        /// 记录
+        /// 构造
         /// </summary>
-        /// <param name="arg"></param>
-        public static void Record(string arg)
+        public RuntimeWaring()
         {
-            if (string.IsNullOrEmpty(arg))
-                return;
-            if (arg == "*Flush")
+            StationName = "HealthCenter";
+            Subscribe = "RuntimeWaring";
+        }
+        /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public override void Handle(PublishItem args)
+        {
+            if (args.SubTitle == "Flush")
             {
                 Flush();
                 return;
             }
             try
             {
-                var data = JsonConvert.DeserializeObject<WaringItem>(arg);
+                var data = JsonConvert.DeserializeObject<WaringItem>(args.Content);
                 Waring(data.Host ,data.Api,data.Message);
             }
             catch (Exception e)

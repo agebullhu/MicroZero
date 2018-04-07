@@ -12,14 +12,38 @@ namespace Agebull.ZeroNet.Core
     public static class ZeroHelper
     {
 
+        //正常状态
+        public const byte zero_status_success = (byte)'+';
+        //错误状态
+        public const byte zero_status_bad = (byte)'-';
+        //终止符号
+        public const byte zero_end = (byte)'?';
+        //执行计划
+        public const byte zero_plan = (byte)'@';
+        //参数
+        public const byte zero_arg = (byte)'$';
+        //请求ID
+        public const byte zero_request_id = (byte)':';
+        //请求者/生产者
+        public const byte zero_requester = (byte)'>';
+        //发布者/生产者
+        public const byte zero_pub_publisher = zero_requester;
+        //回复者/浪费者
+        public const byte zero_responser = (byte)'<';
+        //订阅者/浪费者
+        public const byte zero_pub_subscriber = zero_responser;
+        //广播主题
+        public const byte zero_pub_title = (byte)'*';
+        //广播副题
+        public const byte zero_pub_sub = (byte)'&';
         /// <summary>
         ///     接收文本
         /// </summary>
         /// <param name="request"></param>
         /// <param name="datas"></param>
-        /// <param name="try_cnt"></param>
+        /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static bool ReceiveString(this RequestSocket request, out List<string> datas, int try_cnt = 3)
+        public static bool ReceiveString(this RequestSocket request, out List<string> datas, int tryCnt = 3)
         {
             datas = new List<string>();
 
@@ -28,10 +52,9 @@ namespace Agebull.ZeroNet.Core
             //收完消息
             while (more)
             {
-                string data;
-                if (!request.TryReceiveFrameString(new TimeSpan(0, 0, 3), out data, out more))
+                if (!request.TryReceiveFrameString(new TimeSpan(0, 0, 3), out var data, out more))
                 {
-                    if (++cnt >= try_cnt)
+                    if (++cnt >= tryCnt)
                         return false;
                     more = true;
                 }
@@ -44,12 +67,11 @@ namespace Agebull.ZeroNet.Core
         ///     接收文本
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="try_cnt"></param>
+        /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static string ReceiveString(RequestSocket request, int try_cnt = 3)
+        public static string ReceiveString(RequestSocket request, int tryCnt = 3)
         {
-            List<string> datas;
-            return ReceiveString(request, out datas) ? datas.FirstOrDefault() : null;
+            return ReceiveString(request, out var datas, tryCnt) ? datas.FirstOrDefault() : null;
         }
 
         /// <summary>
@@ -69,7 +91,7 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     接收文本
+        ///     发送文本
         /// </summary>
         /// <param name="request"></param>
         /// <param name="args"></param>
@@ -79,7 +101,7 @@ namespace Agebull.ZeroNet.Core
             if (args.Length == 0)
                 throw new ArgumentException("args 不能为空");
             if (!SendString(request, args))
-                return "";
+                throw new Exception("发送失败");
             return ReceiveString(request);
         }
 

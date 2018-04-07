@@ -137,26 +137,8 @@ namespace agebull
 				sprintf_s(key, "zero:identity:%s", _station_name.c_str());
 				message.plan_id = static_cast<uint32_t>(TransRedis::get_context().incr_redis(key)) + 1;
 			}
-			acl::json json;
-			acl::json_node& node = json.create_node();
-			node.add_number("plan_id", message.plan_id);
-			if (message.plan_type > plan_date_type::None)
-			{
-				node.add_number("plan_type", static_cast<int>(message.plan_type));
-				node.add_number("plan_value", message.plan_value);
-				node.add_number("plan_repet", message.plan_repet);
-				node.add_number("real_repet", message.real_repet);
-			}
-			node.add_text("request_id", message.request_id.c_str());
-			node.add_text("request_caller", message.request_caller.c_str());
-			acl::json_node& array = node.add_array(true);
-			array.set_tag("messages");
-			for (auto line : message.messages)
-			{
-				array.add_array_text(*line);
-			}
 			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), message.plan_id);
-			return TransRedis::get_context()->set(key, node.to_string().c_str());
+			return TransRedis::get_context()->set(key, message.write_json().c_str());
 		}
 
 		/**
@@ -174,51 +156,8 @@ namespace agebull
 			{
 				return false;
 			}
-
-			acl::json json;
-			json.update(val);
-			acl::json_node* iter = json.first_node();
-			while (iter)
-			{
-				int idx = strmatchi(5, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "request_caller", "request_id", "messages");
-				switch (idx)
-				{
-				case 0:
-					message.plan_id = static_cast<int>(*iter->get_int64());
-					break;
-				case 1:
-					message.plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-					break;
-				case 2:
-					message.plan_value = static_cast<int>(*iter->get_int64());
-					break;
-				case 3:
-					message.plan_repet = static_cast<int>(*iter->get_int64());
-					break;
-				case 4:
-					message.real_repet = static_cast<int>(*iter->get_int64());
-					break;
-				case 5:
-					message.request_caller = iter->get_string();
-					break;
-				case 6:
-					message.request_id = iter->get_string();
-					break;
-				case 7:
-				{
-					acl::json arr = iter->get_json();
-					acl::json_node* iter_arr = arr.first_node();
-					while (iter_arr)
-					{
-						message.messages.push_back(iter_arr->get_string());
-						iter_arr = arr.next_node();
-					}
-				}
-				break;
-				default: break;
-				}
-				iter = json.next_node();
-			}
+			message.read_json(val);
+			
 			return true;
 		}
 

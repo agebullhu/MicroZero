@@ -76,7 +76,7 @@ namespace ZeroNet.Http.Route
             if (!AppConfig.Config.SystemConfig.FireZero)
                 return;
 
-            StationProgram.StationEvent -= StationProgram_StationEvent;
+            SystemMonitor.StationEvent -= StationProgram_StationEvent;
 
             foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
                 AppConfig.Config.RouteMap.Remove(host.Key);
@@ -93,9 +93,9 @@ namespace ZeroNet.Http.Route
                     if (!AppConfig.Config.RouteMap.ContainsKey(name))
                         AppConfig.Config.RouteMap.Add(name, host);
             }
-            StationProgram.StationEvent += StationProgram_StationEvent;
+            SystemMonitor.StationEvent += StationProgram_StationEvent;
         }
-        private static void StationProgram_StationEvent(object sender, StationProgram.StationEventArgument e)
+        private static void StationProgram_StationEvent(object sender, SystemMonitor.StationEventArgument e)
         {
             switch (e.EventName)
             {

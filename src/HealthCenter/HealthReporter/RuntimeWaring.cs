@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -16,7 +17,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public static void Flush()
         {
-            Publisher.Publish("PerformanceCounter", "RuntimeWaring", "*Flush");
+            ZeroPublisher.Publish("HealthCenter", "RuntimeWaring", "Flush",null);
         }
         
         /// <summary>
@@ -29,7 +30,7 @@ namespace ZeroNet.Http.Route
         {
             if (AppConfig.Config.SmsConfig == null || AppConfig.Config.SmsConfig.CycleHours <= 0)
                 return;
-            Publisher.Publish("PerformanceCounter", "RuntimeWaring", JsonConvert.SerializeObject(
+            ZeroPublisher.Publish("HealthCenter", "RuntimeWaring", "Waring", JsonConvert.SerializeObject(
             new{
                 host,
                 api,

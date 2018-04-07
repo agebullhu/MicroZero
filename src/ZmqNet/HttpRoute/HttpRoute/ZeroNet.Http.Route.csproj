@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.2" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.3" />
+    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.6" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.4" />
     <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.2" />
     <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.2" />
     <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\PerformanceMonitor\PerformanceCounter\Agebull.ZeroNet.PerformanceCounter.csproj" />
+    <ProjectReference Include="..\..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
     <ProjectReference Include="..\..\..\RemoteLog\LogRecorder\Agebull.ZeroNet.LogRecorder.csproj" />
     <ProjectReference Include="..\..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />

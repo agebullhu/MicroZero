@@ -3,9 +3,9 @@ using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.ReadKey();
             var tester = new RegistTester();

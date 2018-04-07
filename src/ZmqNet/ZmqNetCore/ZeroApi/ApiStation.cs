@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common;
 using Agebull.Common.Logging;
 using NetMQ;
 using NetMQ.Sockets;
@@ -21,7 +23,7 @@ namespace Agebull.ZeroNet.Core
 
 
 
-        private readonly Dictionary<string, ApiAction> ApiActions =
+        private readonly Dictionary<string, ApiAction> _apiActions =
             new Dictionary<string, ApiAction>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
@@ -31,10 +33,10 @@ namespace Agebull.ZeroNet.Core
         /// <param name="action"></param>
         public void RegistAction(string name, ApiAction action)
         {
-            if (!ApiActions.ContainsKey(name))
+            if (!_apiActions.ContainsKey(name))
             {
                 action.Name = name;
-                ApiActions.Add(name, action);
+                _apiActions.Add(name, action);
                 StationProgram.WriteLine($"{StationName}:{name} is registed");
             }
         }
@@ -132,36 +134,36 @@ namespace Agebull.ZeroNet.Core
         /// 参数错误的Json文本
         /// </summary>
         /// <remarks>参数校验不通过</remarks>
-        private static readonly string ArgumentError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError));
+        public static readonly string ArgumentError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError));
 
         /// <summary>
         /// 拒绝访问的Json文本
         /// </summary>
         /// <remarks>权限校验不通过</remarks>
-        private static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.DenyAccess));
+        public static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.DenyAccess));
 
         /// <summary>
         /// 未知错误的Json文本
         /// </summary>
-        private static readonly string UnknowError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.UnknowError));
+        public static readonly string UnknowError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.UnknowError));
 
         /// <summary>
         /// 网络错误的Json文本
         /// </summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        private static readonly string NetworkError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NetworkError));
+        public static readonly string NetworkError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NetworkError));
 
         /// <summary>
         /// 内部错误的Json文本
         /// </summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
-        private static readonly string InnerError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.InnerError));
+        public static readonly string InnerError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.InnerError));
 
         /// <summary>
         /// 找不到方法的Json文本
         /// </summary>
         /// <remarks>方法未注册</remarks>
-        private static readonly string NoFind = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NoFind));
+        public static readonly string NoFind = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NoFind));
 
         /// <summary>
         /// 执行命令
@@ -188,7 +190,7 @@ namespace Agebull.ZeroNet.Core
             ApiAction action;
             try
             {
-                if (!ApiActions.TryGetValue(args[2], out action))
+                if (!_apiActions.TryGetValue(args[2], out action))
                 {
                     Console.WriteLine(args.LinkToString(" , "));
                     return NoFind;
@@ -210,8 +212,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     return ArgumentError;
                 }
-                string message;
-                if (!action.Validate(out message))
+                if (!action.Validate(out var message))
                 {
                     return JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError, message));
                 }
@@ -241,7 +242,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 使用的套接字
         /// </summary>
-        RequestSocket socket;
+        private RequestSocket _socket;
 
         /// <summary>
         /// 心跳与轮询的存活状态开关
@@ -284,6 +285,7 @@ namespace Agebull.ZeroNet.Core
             Thread.Sleep(1000);
             OnStop();
         }
+        /// <inheritdoc />
         /// <summary>
         /// 命令轮询
         /// </summary>
@@ -294,18 +296,18 @@ namespace Agebull.ZeroNet.Core
             {
                 if (RunState != StationState.Run)
                     RunState = StationState.Start;
-                if (socket != null)
+                if (_socket != null)
                     return false;
             }
             _inPoll = false;
             _inHeart = false;
 
-            socket = new RequestSocket();
+            _socket = new RequestSocket();
             try
             {
-                socket.Options.Identity = RealName.ToAsciiBytes();
-                socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                socket.Connect(Config.InnerAddress);
+                _socket.Options.Identity = RealName.ToAsciiBytes();
+                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                _socket.Connect(Config.InnerAddress);
             }
             catch (Exception e)
             {
@@ -317,7 +319,7 @@ namespace Agebull.ZeroNet.Core
             }
             try
             {
-                var word = socket.Request("@", JsonConvert.SerializeObject(Config));
+                var word = _socket.Request("@", JsonConvert.SerializeObject(Config));
                 if (word != "wecome")
                 {
                     CloseSocket();
@@ -336,6 +338,8 @@ namespace Agebull.ZeroNet.Core
             }
 
             RunState = StationState.Run;
+            _items = MulitToOneQueue<List<string>>.Load(CacheFileName);
+            Task.Factory.StartNew(CommandTask);
 
             var task1 = Task.Factory.StartNew(PollTask);
             task1.ContinueWith(OnTaskStop);
@@ -396,7 +400,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void PollTask()
         {
-            socket.SendString("*", "*");
+            _socket.SendString("*", "*");
             _inPoll = true;
             StationProgram.WriteLine($"【{StationName}】poll start");
             //var timeout = new TimeSpan(0, 0, 5);
@@ -413,15 +417,11 @@ namespace Agebull.ZeroNet.Core
                     //string argument = socket.ReceiveFrameString();
                     //string response = ExecCommand(command, argument);
                     //socket.SendMoreFrame(caller);
-                    List<string> arg;
-                    if (!socket.ReceiveString(out arg, 0))
+                    if (!_socket.ReceiveString(out var arg, 0))
                     {
                         continue;
                     }
-                    var response = ExecCommand(arg);
-                    socket.SendMoreFrame(arg[0]);
-                    socket.SendFrame(response);
-                    //StationProgram.WriteLine($"【{StationName}】call {arg.LinkToString(",")}=>{response}");
+                    _items.Push(arg);
                 }
             }
             catch (Exception e)
@@ -433,27 +433,62 @@ namespace Agebull.ZeroNet.Core
             _inPoll = false;
             StationProgram.WriteLine($"【{StationName}】poll stop");
 
+            _items.Save(CacheFileName);
             CloseSocket();
         }
         /// <summary>
         /// 关闭套接字
         /// </summary>
-        void CloseSocket()
+        private void CloseSocket()
         {
             lock (this)
             {
-                if (socket == null)
+                if (_socket == null)
                     return;
                 try
                 {
-                    socket.Disconnect(Config.InnerAddress);
+                    _socket.Disconnect(Config.InnerAddress);
                 }
                 catch (Exception)
                 {
                     //LogRecorder.Exception(e);//一般是无法连接服务器而出错
                 }
-                socket.Close();
-                socket = null;
+                _socket.Close();
+                _socket = null;
+            }
+        }
+
+        #endregion
+
+        #region 请求队列
+
+        /// <summary>
+        /// 缓存文件名称
+        /// </summary>
+        private string CacheFileName => Path.Combine(StationProgram.Config.DataFolder,
+            $"zero_sub_queue_{StationName}.json");
+
+        /// <summary>
+        /// 请求队列
+        /// </summary>
+        private static MulitToOneQueue<List<string>> _items = new MulitToOneQueue<List<string>>();
+
+
+        /// <summary>
+        /// 命令轮询
+        /// </summary>
+        /// <returns></returns>
+        private void CommandTask()
+        {
+            while (RunState == StationState.Run)
+            {
+                if (!_items.StartProcess(out var item, 1000))
+                    continue;
+                var response = ExecCommand(item);
+                _socket.SendMoreFrame(item[0]);
+                _socket.SendFrame(response);
+                //StationProgram.WriteLine($"【{StationName}】call {arg.LinkToString(",")}=>{response}");
+                _items.EndProcess();
             }
         }
 

@@ -24,18 +24,10 @@ namespace agebull
 			*/
 			sharp_char command(const char* caller, vector< sharp_char> lines) override
 			{
-				bool res = publish(caller, lines[0], lines[1]);
+				bool res = publish(caller, lines[0], lines[1], lines[1]);
 				return sharp_char(res ? "OK" : "Bad");
 			}
 
-			/**
-			*\brief 广播内容
-			*/
-			bool publish(const string& caller, const string& title, const string& arg) const;
-			/**
-			*\brief 广播内容
-			*/
-			bool publish(const string& caller, const string& title, const string& plan, const string& arg) const;
 
 			/**
 			* \brief 处理请求
@@ -54,12 +46,20 @@ namespace agebull
 			/**
 			*\brief 发送消息
 			*/
-			bool pub_data(const string& publiher, const string& title, const string& arg);
+			bool publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas);
 
 			/**
-			*\brief 发送消息
+			*\brief 发布消息
 			*/
-			bool pub_data(const string& publiher, const string& line);
+			bool publish(const string& publiher, const string& title, const string& arg);
+			/**
+			*\brief 广播内容
+			*/
+			bool publish(const string& caller, const string& title, const string& sub, const string& arg);
+			/**
+			*\brief 广播内容
+			*/
+			bool publish(const string& caller, const string& title, const string& plan, const string& sub, const string& arg) const;
 		};
 
 		/**
@@ -88,7 +88,7 @@ namespace agebull
 			/**
 			*\brief 广播内容
 			*/
-			static bool publish(string station, string publiher, string title, string arg);
+			static bool publish(string station, string publiher, string title, string sub, string arg);
 		};
 
 

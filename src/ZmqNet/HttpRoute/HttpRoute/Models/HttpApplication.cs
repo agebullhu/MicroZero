@@ -96,7 +96,7 @@ namespace ZeroNet.Http.Route
             var router = new HttpRouter(context);
             
             HttpIoLog.OnBegin(router.Data);
-            var counter = RouteCounter.OnBegin(router.Data);
+            var counter = PerformanceCounter.OnBegin(router.Data);
             try
             {
                 var checker = new SecurityChecker

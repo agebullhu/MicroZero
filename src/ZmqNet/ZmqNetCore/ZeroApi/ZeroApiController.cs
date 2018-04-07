@@ -23,13 +23,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// HTTP调用时的UserAgent
         /// </summary>
         public string UserAgent => ApiContext.RequestContext.UserAgent;
-
-        ///// <summary>
-        ///// 原始调用
-        ///// </summary>
-        ///// <param name="function">方法</param>
-        ///// <param name="argument">参数</param>
-        ///// <returns></returns>
-        //public abstract IApiResult Call(string function, string argument);
+        
     }
 }

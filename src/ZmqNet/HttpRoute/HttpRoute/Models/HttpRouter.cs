@@ -237,7 +237,7 @@ namespace ZeroNet.Http.Route
             string httpHost;
 
             // 当前请求调用的Api名称
-            string httpApi = Data.RouteHost == HostConfig.DefaultHost ? Data.Uri.PathAndQuery : $"{Data.ApiName}{Data.Uri.Query}";
+            var httpApi = Data.RouteHost == HostConfig.DefaultHost ? Data.Uri.PathAndQuery : $"{Data.ApiName}{Data.Uri.Query}";
 
             // 查找主机
             if (Data.RouteHost.Hosts.Length == 1)

@@ -3,18 +3,14 @@ using System;
 
 namespace Agebull.ZeroNet.LogService
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello ZeroNet");
-            
-            StationProgram.RegisteApiStation(new SubStation
-            {
-                StationName = "RemoteLog",
-                ExecFunc = LogService.RecordLog
-            });
 
+            StationProgram.RegisteStation(new RemoteLogRecorder());
+            StationProgram.Initialize();
             StationProgram.RunConsole();
         }
     }

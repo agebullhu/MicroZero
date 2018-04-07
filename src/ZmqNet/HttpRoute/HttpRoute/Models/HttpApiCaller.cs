@@ -102,7 +102,7 @@ namespace ZeroNet.Http.Route
             {
                 req.ContentType = "application/x-www-form-urlencoded";
                 var builder = new StringBuilder();
-                bool first = true;
+                var first = true;
                 foreach (var kvp in destRequest.Form)
                 {
                     if (first)

@@ -21,136 +21,197 @@ namespace agebull
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(const string& publiher, const string& title, const string& arg)
+		bool BroadcastingStationBase::publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas)
 		{
-			sharp_char data;
-			data.alloc(4 + publiher.length() + title.length() + arg.length());
-			sprintf_s(data.get_buffer(), data.size() + 1, "%s\r\n%s\r\n%s", title.c_str(), publiher.c_str(), arg.c_str());
-			_zmq_state = send_late(_inner_socket, *data);
+			send_more(_inner_socket, *title);
+			send_more(_inner_socket, *description);
+			_zmq_state = send(_inner_socket, datas);
 			return _zmq_state == ZmqSocketState::Succeed;
 		}
 
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::pub_data(const string& publiher, const string& line)
+		bool BroadcastingStation::publish(string station, string publiher, string title, string sub, string arg)
 		{
-			_zmq_state = send_late(_inner_socket, line.c_str());
-			return _zmq_state == ZmqSocketState::Succeed;
+			auto pub = StationWarehouse::find(std::move(station));
+			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
+				return false;
+			return static_cast<BroadcastingStationBase*>(pub)->publish(std::move(publiher), std::move(title), std::move(sub), std::move(arg));
 		}
 
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& arg) const
+		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& arg)
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
 				return false;
-			vector<sharp_char> result;
-			vector<string> argument;
-			argument.push_back(title);
-			argument.push_back(arg);
-			RequestSocket<ZMQ_REQ, false> socket(publiher.c_str(), _station_name.c_str());
-			return socket.request(argument, result);
+			sharp_char description;
+			description.alloc(6);
+			char* buf = description.get_buffer();
+			buf[0] = 2;
+			buf[1] = zero_pub_publisher;
+			buf[3] = zero_arg;
+			buf[4] = zero_end;
+			vector<sharp_char> datas;
+			datas.push_back(title.c_str());
+			datas.push_back(description);
+			datas.push_back(publiher.c_str());
+			datas.push_back(arg.c_str());
+			return send_data(datas);
+		}
+		/**
+		*\brief 发布消息
+		*/
+		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& sub, const string& arg) 
+		{
+			//boost::lock_guard<boost::mutex> guard(_mutex);
+			if (!can_do() || publiher.empty())
+				return false;
+			sharp_char description;
+			description.alloc(6);
+			char* buf = description.get_buffer();
+			buf[0] = 3;
+			buf[1] = zero_pub_publisher;
+			buf[2] = zero_pub_sub;
+			buf[3] = zero_arg;
+			buf[4] = zero_end;
+			vector<sharp_char> datas;
+			datas.push_back(title.c_str());
+			datas.push_back(description);
+			datas.push_back(publiher.c_str());
+			datas.push_back(sub.c_str());
+			datas.push_back(arg.c_str());
+			return send_data(datas);
 		}
 
 		/**
 		*\brief 发布消息
 		*/
-		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& plan, const string& arg) const
+		bool BroadcastingStationBase::publish(const string& publiher, const string& title, const string& sub, const string& plan, const string& arg) const
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
 				return false;
-			vector<sharp_char> result;
+			Message message;
+			message.request_caller = publiher;
+			vector<sharp_char> datas;
 			vector<string> argument;
-			argument.push_back(title);
-			argument.push_back(plan);
-			argument.push_back(arg);
-			RequestSocket<ZMQ_REQ, false> socket(publiher.c_str(), _station_name.c_str());
-			return socket.request(argument, result);
-		}
+			message.messages_description.alloc(6);
+			char* buf = message.messages_description.get_buffer();
+			buf[0] = 3;
+			buf[1] = zero_pub_publisher;
+			buf[2] = zero_pub_sub;
+			buf[3] = zero_arg;
+			buf[4] = zero_end;
+			message.messages.push_back(title.c_str());
+			datas.push_back(message.messages_description);
+			datas.push_back(publiher.c_str());
+			datas.push_back(sub.c_str());
+			datas.push_back(arg.c_str());
 
+			message.read_plan(plan.c_str());
+
+			return plan_next(message, true);
+		}
 		/**
 		* \brief 处理请求
 		*/
 		void BroadcastingStationBase::request(ZMQ_HANDLE socket)
 		{
 			vector<sharp_char> list;
-			//0 路由到的地址 1 空帧 2 标题 3时间 4 内容
+			//0 路由到的地址 1 空帧 2 标题 3内容标签 4..n 内容
 			_zmq_state = recv(socket, list);
 			if (_zmq_state != ZmqSocketState::Succeed)
 			{
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			switch (list.size())
+			const auto caller = list[0];
+			if(list.size() <= 3 || list[3][0] >= list[3].size() || list[3][0] - 4 >= list.size())
 			{
-			case 0:
-				return;
-			case 1:
-			case 2:
-			{
-				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_addr(socket, *caller);
 				_zmq_state = send_late(socket, "err");
 				return;
 			}
-			case 3:
+			auto title = list[2];
+			sharp_char description = list[3];
+			sharp_char plan,sub,arg, publisher,id;
+			const auto buf = description.get_buffer();
+			for(int idx = 1;idx <= buf[0];idx++)
 			{
-				pub_data(list[0], list[2]);
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "ok");
-				return;
-			}
-			case 4:
-			{
-				pub_data(list[0], list[2], list[3]);
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "ok");
-				return;
-			}
-			default:
-				if (list[3].empty())
+				const int idx2 = 1 + idx;
+				if(idx2 >= list.size())
 				{
-					pub_data(list[0], list[2], list[3]);
-					_zmq_state = send_addr(socket, *list[0]);
-					_zmq_state = send_late(socket, "ok");
+					_zmq_state = send_addr(socket, *caller);
+					_zmq_state = send_late(socket, "err");
 					return;
 				}
-				break;
-			}
-			Message message;
-			if(list[3][0] == '{')
-			{
-				acl::json json;
-				json.update(*list[3]);
-				acl::json_node* iter = json.first_node();
-				while (iter)
+				switch(buf[idx])
 				{
-					int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
-					switch (idx)
-					{
-					case 0:
-						message.plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-						break;
-					case 1:
-						message.plan_value = static_cast<int>(*iter->get_int64());
-						break;
-					case 2:
-						message.plan_repet = static_cast<int>(*iter->get_int64());
-						break;
-					default: break;
-					}
-					iter = json.next_node();
+				case zero_plan:
+					plan = list[idx2];
+					break;
+				case zero_pub_publisher:
+					publisher = list[idx2];
+					break;
+				case zero_pub_sub:
+					sub = list[idx2];
+					break;
+				case zero_arg:
+					arg = list[idx2];
+					break;
+				case zero_request_id:
+					id = list[idx2];
+					break;
 				}
 			}
-			message.request_caller = list[0];
-			message.messages.push_back(list[2]);
-			message.messages.push_back(list[4]);
-			plan_next(message, true);
-			_zmq_state = send_addr(socket, *list[0]);
-			_zmq_state = send_late(socket, "plan");
+			int cnt = 1;
+			vector<sharp_char> data;
+			buf[++cnt] = zero_pub_publisher;
+			data.push_back(caller);
+			if (!id.empty())
+			{
+				buf[++cnt] = zero_request_id;
+				data.push_back(id);
+			}
+			if (!sub.empty())
+			{
+				buf[++cnt] = zero_pub_sub;
+				data.push_back(sub);
+			}
+			if (!arg.empty())
+			{
+				buf[++cnt] = zero_arg;
+				data.push_back(arg);
+			}
+			buf[0] = cnt;
+			buf[++cnt] = zero_end;
+
+			Message message;
+			message.messages.push_back(title);
+			message.messages.push_back(description);
+			for (sharp_char& item : data)
+			{
+				message.messages.push_back(item);
+			}
+			if(!plan.empty())
+			{
+				_zmq_state = send_addr(socket, *caller);
+				_zmq_state = send_late(socket, "plan");
+				message.read_plan(plan.get_buffer());
+				message.request_caller = caller;
+				message.messages_description = description;
+				plan_next(message, true);
+			}
+			else
+			{
+				_zmq_state = send_addr(socket, *caller);
+				_zmq_state = send_late(socket, "ok");
+				send_data(message.messages);
+			}
 		}
 
 		void BroadcastingStation::start(void* arg)
@@ -193,16 +254,6 @@ namespace agebull
 			delete station;
 		}
 
-		/**
-		*\brief 发布消息
-		*/
-		bool BroadcastingStation::publish(string station, string publiher, string title, string arg)
-		{
-			auto pub = StationWarehouse::find(std::move(station));
-			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
-				return false;
-			return static_cast<BroadcastingStationBase*>(pub)->publish(std::move(publiher), std::move(title), std::move(arg));
-		}
 
 		void SystemMonitorStation::start(void*)
 		{

@@ -24,6 +24,7 @@ namespace agebull
 				if (_count != nullptr)
 					*_count += 1;
 			}
+
 			sharp_char(char* buffer, int len) : _count(new int()), _buffer(buffer), _size(len)
 			{
 				*_count = 1;
@@ -117,6 +118,7 @@ namespace agebull
 			{
 				free();
 				_buffer = new char[size + 1];
+				memset(_buffer, 0, size + 1);
 				_count = new int();
 				*_count = 1;
 				_size = size;
