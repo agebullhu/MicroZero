@@ -18,7 +18,7 @@ namespace agebull
 		/**
 		* \brief 当前活动的发布类
 		*/
-		net_dispatcher* net_dispatcher::instance = nullptr;
+		station_dispatcher* station_dispatcher::instance = nullptr;
 
 
 		/**
@@ -35,7 +35,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string net_dispatcher::pause_station(const string& arg)
+		string station_dispatcher::pause_station(const string& arg)
 		{
 			if (arg == "*")
 			{
@@ -56,7 +56,7 @@ namespace agebull
 		/**
 		* \brief 继续站点
 		*/
-		string net_dispatcher::resume_station(const string& arg)
+		string station_dispatcher::resume_station(const string& arg)
 		{
 			if (arg == "*")
 			{
@@ -77,7 +77,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string net_dispatcher::start_station(string stattion)
+		string station_dispatcher::start_station(string stattion)
 		{
 			zero_station* station = station_warehouse::find(stattion);
 			if (station != nullptr)
@@ -102,7 +102,7 @@ namespace agebull
 		/**
 		* \brief 执行一条命令
 		*/
-		sharp_char net_dispatcher::command(const char* caller, vector<sharp_char> lines)
+		sharp_char station_dispatcher::command(const char* caller, vector<sharp_char> lines)
 		{
 			string val = call_station(caller, lines[0], lines[1]);
 			return sharp_char(val);
@@ -111,7 +111,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string net_dispatcher::install_station(const string& type_name, const string& stattion)
+		string station_dispatcher::install_station(const string& type_name, const string& stattion)
 		{
 			int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
 			acl::string config;
@@ -132,7 +132,7 @@ namespace agebull
 		/**
 		* \brief 远程调用
 		*/
-		string net_dispatcher::call_station(string stattion, string command, string argument)
+		string station_dispatcher::call_station(string stattion, string command, string argument)
 		{
 			zero_station* station = station_warehouse::find(std::move(stattion));
 			if (station == nullptr)
@@ -149,7 +149,7 @@ namespace agebull
 		/**
 		* \brief 远程调用
 		*/
-		string net_dispatcher::call_station(const char* stattion, vector<sharp_char>& arguments)
+		string station_dispatcher::call_station(const char* stattion, vector<sharp_char>& arguments)
 		{
 			zero_station* station = station_warehouse::find(stattion);
 			if (station == nullptr)
@@ -177,7 +177,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string net_dispatcher::close_station(const string& stattion)
+		string station_dispatcher::close_station(const string& stattion)
 		{
 			if (stattion == "*")
 			{
@@ -198,7 +198,7 @@ namespace agebull
 		/**
 		* \brief 取机器信息
 		*/
-		string net_dispatcher::host_info(const string& stattion)
+		string station_dispatcher::host_info(const string& stattion)
 		{
 			if (stattion == "*")
 			{
@@ -222,7 +222,7 @@ namespace agebull
 		/**
 		* \brief 执行命令
 		*/
-		string net_dispatcher::exec_command(const char* command, vector<sharp_char> arguments)
+		string station_dispatcher::exec_command(const char* command, vector<sharp_char> arguments)
 		{
 			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit");
 			if (idx < 0)
@@ -279,7 +279,7 @@ namespace agebull
 		/**
 		* \brief 执行命令
 		*/
-		string net_dispatcher::exec_command(const char* command, const char* argument)
+		string station_dispatcher::exec_command(const char* command, const char* argument)
 		{
 			acl::string str = command;
 			return exec_command(command,{ sharp_char(argument) });
@@ -288,7 +288,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		void net_dispatcher::request(ZMQ_HANDLE socket)
+		void station_dispatcher::request(ZMQ_HANDLE socket)
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 参数
@@ -305,7 +305,7 @@ namespace agebull
 			send_late(socket, result.c_str());
 		}
 
-		void net_dispatcher::start(void*)
+		void station_dispatcher::start(void*)
 		{
 			if (!station_warehouse::join(instance))
 			{
@@ -321,7 +321,7 @@ namespace agebull
 			if (reStrart)
 			{
 				delete instance;
-				instance = new net_dispatcher();
+				instance = new station_dispatcher();
 				instance->_zmq_state = ZmqSocketState::Again;
 				zmq_threadstart(start, nullptr);
 			}

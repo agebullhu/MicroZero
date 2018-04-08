@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
-using NetMQ;
-using NetMQ.Sockets;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -44,8 +45,8 @@ namespace Agebull.ZeroNet.Core
             {
                 if (_config != null)
                     return _config;
-                if(!File.Exists("host.json"))
-                    return _config =new LocalStationConfig();
+                if (!File.Exists("host.json"))
+                    return _config = new LocalStationConfig();
                 var json = File.ReadAllText("host.json");
                 return _config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
             }
@@ -65,7 +66,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// </summary>
         /// <param name="station"></param>
-        public static void RegisteApiStation(ZeroStation station)
+        public static void RegisteStation(ZeroStation station)
         {
             if (Stations.ContainsKey(station.StationName))
             {
@@ -149,8 +150,12 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static StationConfig GetConfig(string stationName)
         {
-            if (Configs.ContainsKey(stationName))
-                return Configs[stationName];
+            lock (Configs)
+            {
+                if (Configs.ContainsKey(stationName))
+                    return Configs[stationName];
+            }
+
             lock (Configs)
             {
                 try
@@ -179,8 +184,13 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static StationConfig InstallApiStation(string stationName)
         {
-            if (Configs.ContainsKey(stationName))
-                return Configs[stationName];
+            StationConfig config;
+            lock (Configs)
+            {
+                if (Configs.TryGetValue(stationName, out config))
+                    return config;
+            }
+
             lock (Configs)
             {
                 try
@@ -191,7 +201,7 @@ namespace Agebull.ZeroNet.Core
                         WriteLine("无法获取消息中心的配置");
                         return null;
                     }
-                    var config = JsonConvert.DeserializeObject<StationConfig>(result);
+                    config = JsonConvert.DeserializeObject<StationConfig>(result);
                     Configs.Add(stationName, config);
                     return config;
                 }
@@ -223,7 +233,8 @@ namespace Agebull.ZeroNet.Core
 
         private static void ConsoleInput()
         {
-            while (true)
+            Console.CancelKeyPress += Console_CancelKeyPress;
+            while ( true)
             {
                 var cmd = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(cmd))
@@ -251,6 +262,35 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Exit();
+        }
+
+        /// <summary>
+        ///     初始化
+        /// </summary>
+        public static void Initialize()
+        {
+            var discover = new ZeroStationDiscover();
+            discover.FindApies(Assembly.GetCallingAssembly());
+            if (discover.ApiItems.Count == 0)
+                return;
+            var station = new ApiStation
+            {
+                Config = GetConfig(Config.StationName),
+                StationName = Config.StationName
+            };
+            foreach (var action in discover.ApiItems)
+            {
+                if (action.Value.HaseArgument)
+                    station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption >= ApiAccessOption.Customer);
+                else
+                    station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption >= ApiAccessOption.Customer);
+            }
+            Stations.Add(Config.StationName, station);
+        }
+
         /// <summary>
         ///     停止
         /// </summary>
@@ -276,7 +316,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Stop()
         {
-            Console.Write("Program Stop.");
+            WriteLine("Program Stop.");
             State = StationState.Closing;
             foreach (var stat in Stations)
                 stat.Value.Close();
@@ -285,6 +325,7 @@ namespace Agebull.ZeroNet.Core
                 Console.Write(".");
                 Thread.Sleep(100);
             }
+            ZeroPublisher.Stop();
             State = StationState.Closed;
             WriteLine("@");
         }
@@ -298,6 +339,7 @@ namespace Agebull.ZeroNet.Core
                 Stop();
             State = StationState.Destroy;
             WriteLine("Program Exit");
+            Process.GetCurrentProcess().Close();
         }
 
         /// <summary>
@@ -306,263 +348,10 @@ namespace Agebull.ZeroNet.Core
         public static void Run()
         {
             State = StationState.Run;
+            ZeroPublisher.Start();
             foreach (var station in Stations.Values)
                 ZeroStation.Run(station);
-            Task.Factory.StartNew(RunMonitor);
-        }
-
-        /// <summary>
-        ///     进入系统侦听
-        /// </summary>
-        private static void RunMonitor()
-        {
-            var timeout = new TimeSpan(0, 0, 1);
-            try
-            {
-                WriteLine("StationCache Runing...");
-                var subscriber = new SubscriberSocket();
-                subscriber.Options.Identity = Config.StationName.ToAsciiBytes();
-                subscriber.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                subscriber.Connect(ZeroMonitorAddress);
-                subscriber.Subscribe("");
-
-                while (State == StationState.Run)
-                {
-                    if (!subscriber.TryReceiveFrameString(timeout, out var result))
-                        continue;
-                    OnMessagePush(result);
-                }
-            }
-            catch (Exception e)
-            {
-                WriteLine(e.Message);
-                LogRecorder.Exception(e);
-            }
-            if (State == StationState.Run)
-                Task.Factory.StartNew(RunMonitor);
-        }
-
-        #endregion
-
-        #region System Monitor
-
-        /// <summary>
-        ///     收到信息的处理
-        /// </summary>
-        /// <param name="msg"></param>
-        public static void OnMessagePush(string msg)
-        {
-            if (string.IsNullOrEmpty(msg))
-                return;
-            var array = msg.Split(new[] { ' ' }, 3);
-            var cmd = array[0];
-            var station = array.Length > 1 ? array[1] : "*";
-            var content = array.Length > 2 ? array[2] : "{}";
-            switch (cmd)
-            {
-                case "system_start":
-                    system_start(content);
-                    break;
-                case "system_stop":
-                    system_stop(content);
-                    break;
-                case "station_join":
-                    station_join(station, content);
-                    break;
-                case "station_left":
-                    station_left(station);
-                    break;
-                case "station_pause":
-                    station_pause(station, content);
-                    break;
-                case "station_resume":
-                    station_resume(station, content);
-                    break;
-                case "station_closing":
-                    station_closing(station, content);
-                    break;
-                case "station_install":
-                    station_install(station, content);
-                    break;
-                case "worker_heat":
-                    station_heat(station, content);
-                    break;
-            }
-        }
-        /// <summary>
-        /// 站点事件参数
-        /// </summary>
-        public class StationEventArgument : EventArgs
-        {
-            /// <summary>
-            /// 构造
-            /// </summary>
-            /// <param name="eventName"></param>
-            /// <param name="config"></param>
-            public StationEventArgument(string eventName, StationConfig config)
-            {
-                EventConfig = config;
-                EventName = eventName;
-            }
-            /// <summary>
-            /// 站点名称
-            /// </summary>
-            public string EventName { get; }
-            /// <summary>
-            /// 配置
-            /// </summary>
-            public StationConfig EventConfig { get; }
-        }
-        /// <summary>
-        /// 站点事件发生
-        /// </summary>
-        public static event EventHandler<StationEventArgument> StationEvent;
-        private static void station_heat(string station, string content)
-        {
-            if (string.IsNullOrEmpty(content))
-                return;
-            StationConfig cfg;
-            try
-            {
-                cfg = JsonConvert.DeserializeObject<StationConfig>(content);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return;
-            }
-            cfg.State = StationState.None;
-            if (Configs.ContainsKey(station))
-                Configs[station] = cfg;
-            else
-                Configs.Add(station, cfg);
-
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_heat", cfg));
-        }
-
-        private static void station_install(string station, string content)
-        {
-            if (string.IsNullOrEmpty(content))
-                return;
-            StationConfig cfg;
-            try
-            {
-                cfg = JsonConvert.DeserializeObject<StationConfig>(content);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return;
-            }
-            cfg.State = StationState.None;
-            if (Configs.ContainsKey(station))
-                Configs[station] = cfg;
-            else
-                Configs.Add(station, cfg);
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_install", cfg));
-        }
-
-        private static void station_closing(string station, string content)
-        {
-            if (Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Closing;
-            if (Stations.ContainsKey(station))
-            {
-                WriteLine($"{station} is close");
-                Stations[station].Close();
-            }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_closing", cfg));
-        }
-
-        private static void station_resume(string station, string content)
-        {
-            if (Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Run;
-            if (Stations.ContainsKey(station))
-            {
-                WriteLine($"{station} is resume");
-                ZeroStation.Run(Stations[station]);
-            }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_resume", cfg));
-        }
-
-        private static void station_pause(string station, string content)
-        {
-            if (Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Pause;
-            if (Stations.ContainsKey(station))
-            {
-                WriteLine($"{station} is pause");
-                Stations[station].Close();
-            }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_pause", cfg));
-        }
-
-        private static void station_left(string station)
-        {
-            if (Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Closed;
-            if (Stations.ContainsKey(station))
-            {
-                WriteLine($"{station} is left");
-                Stations[station].Close();
-            }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_left", cfg));
-        }
-
-        private static void station_join(string station, string content)
-        {
-            if (string.IsNullOrEmpty(content))
-                return;
-            StationConfig cfg;
-            try
-            {
-                cfg = JsonConvert.DeserializeObject<StationConfig>(content);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return;
-            }
-            cfg.State = StationState.Run;
-            if (Configs.ContainsKey(station))
-                Configs[station] = cfg;
-            else
-                Configs.Add(station, cfg);
-            if (Stations.ContainsKey(station))
-            {
-                Stations[station].Config = cfg;
-                WriteLine($"{station} is join");
-                StationEvent?.Invoke(cfg, new StationEventArgument("station_join", cfg));
-                ZeroStation.Run(Stations[station]);
-            }
-        }
-
-        private static void system_stop(string content)
-        {
-            StationEvent?.Invoke(null, new StationEventArgument("system_stop", null));
-            WriteLine(content);
-            foreach (var sta in Stations.Values)
-            {
-                WriteLine($"Close {sta.StationName}");
-                sta.Close();
-                StationEvent?.Invoke(sta, new StationEventArgument("station_closing", sta.Config));
-            }
-            Configs.Clear();
-        }
-
-        private static void system_start(string content)
-        {
-            WriteLine(content);
-            Configs.Clear();
-
-            StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
-            foreach (var sta in Stations.Values)
-            {
-                WriteLine($"Restart {sta.StationName}");
-                ZeroStation.Run(sta);
-                StationEvent?.Invoke(sta, new StationEventArgument("station_join", sta.Config));
-            }
+            Task.Factory.StartNew(SystemMonitor.RunMonitor);
         }
 
         #endregion

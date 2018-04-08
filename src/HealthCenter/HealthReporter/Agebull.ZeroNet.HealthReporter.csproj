@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\HttpRoute\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+</Project>

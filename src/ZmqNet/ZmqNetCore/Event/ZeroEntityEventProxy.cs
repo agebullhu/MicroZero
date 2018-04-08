@@ -15,28 +15,28 @@ namespace ZeroApi
     /// </summary>
     public class ZeroEntityEventProxy : ScopeBase, IEntityEventProxy
     {
-        private readonly RequestSocket socket;
-        private readonly StationConfig config;
+        private readonly RequestSocket _socket;
+        private readonly StationConfig _config;
 
         /// <summary>
         /// 构造
         /// </summary>
         public ZeroEntityEventProxy()
         {
-            config = StationProgram.GetConfig("EntityEvent");
-            if (config == null)
+            _config = StationProgram.GetConfig("EntityEvent");
+            if (_config == null)
                 throw new Exception("无法拉取配置");
-            socket = new RequestSocket();
+            _socket = new RequestSocket();
             CreateSocket();
         }
 
-        void CreateSocket()
+        private void CreateSocket()
         {
             try
             {
-                socket.Options.Identity = StationProgram.Config.ServiceName.ToAsciiBytes();
-                socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                socket.Connect(config.OutAddress);
+                _socket.Options.Identity = StationProgram.Config.ServiceName.ToAsciiBytes();
+                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                _socket.Connect(_config.OutAddress);
             }
             catch (Exception e)
             {
@@ -47,7 +47,7 @@ namespace ZeroApi
 
         }
 
-        bool Request(string msg, ref int retry)
+        private bool Request(string msg, ref int retry)
         {
             if (++retry > 5)
             {
@@ -58,7 +58,7 @@ namespace ZeroApi
             {
                 lock (this)
                 {
-                    socket.Request(msg);
+                    _socket.Request(msg);
                 }
                 return true;
             }
@@ -72,15 +72,23 @@ namespace ZeroApi
                 return Request(msg, ref retry);
             }
         }
-        void Request(object arg)
+
+        private void Request(object arg)
         {
             var retry = 0;
             Request(arg.ToString(), ref retry);
         }
+
+        /// <summary>状态修改事件</summary>
+        /// <param name="entityType">实体类型Id</param>
+        /// <param name="type">状态类型</param>
+        /// <param name="data">对应实体</param>
         void IEntityEventProxy.OnStatusChanged(int entityType, EntitySubsist type, NotificationObject data)
         {
-            var msg = $@"state:{entityType}:{type}
+            var msg = $@"
 {StationProgram.Config.StationName}
+{data.GetType().FullName}
+{type}
 {(data == null ? "{}" : JsonConvert.SerializeObject(data))}";
             Task.Factory.StartNew(Request, msg);
         }
@@ -88,7 +96,7 @@ namespace ZeroApi
         /// <summary>清理资源</summary>
         protected override void OnDispose()
         {
-            socket.Dispose();
+            _socket.Dispose();
         }
     }
 }

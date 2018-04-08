@@ -1,23 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using Gboxt.Common.DataModel;
-using NetMQ;
-using NetMQ.Sockets;
-using Newtonsoft.Json;
-using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.ReadKey();
             var tester = new RegistTester();

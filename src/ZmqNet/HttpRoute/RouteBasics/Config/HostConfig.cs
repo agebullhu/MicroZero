@@ -8,19 +8,18 @@ namespace ZeroNet.Http.Route
     /// 路由主机
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    internal class HostConfig
+    public class HostConfig
     {
         /// <summary>
         /// 默认主机
         /// </summary>
-        internal static HostConfig DefaultHost;
-#if ZERO
+        public static HostConfig DefaultHost;
+
         /// <summary>
         /// 使用ZeroNet通讯吗
         /// </summary>
         [DataMember, JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool ByZero { get; set; }
-#endif
 
         /// <summary>
         /// 下一次命中的主机

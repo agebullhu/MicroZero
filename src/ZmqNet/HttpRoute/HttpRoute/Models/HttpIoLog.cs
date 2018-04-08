@@ -2,9 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Agebull.Common.Logging;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace ZeroNet.Http.Route
@@ -18,7 +16,7 @@ namespace ZeroNet.Http.Route
         ///     开始时的处理
         /// </summary>
         /// <returns>如果返回内容不为空，直接返回,后续的处理不再继续</returns>
-        public static int OnBegin(HttpRequest request, RouteData data)
+        public static int OnBegin(RouteData data)
         {
 #if ZERO
             if (AppConfig.Config.SystemConfig.FireZero)
@@ -31,27 +29,27 @@ namespace ZeroNet.Http.Route
                 return 0;
             try
             {
-                LogRecorder.BeginMonitor(request.Path.ToString());
+                LogRecorder.BeginMonitor(data.Uri.ToString());
                 LogRecorder.BeginStepMonitor("HTTP");
                 var args = new StringBuilder();
                 args.Append("Headers：");
-                foreach (var head in request.Headers)
+                foreach (var head in data.Headers)
+                {
                     args.Append($"【{head.Key}】{head.Value.LinkToString('|')}");
-                LogRecorder.MonitorTrace(args.ToString());
-                LogRecorder.MonitorTrace($"Method：{request.Method}");
-                if (request.QueryString.HasValue)
-                    LogRecorder.MonitorTrace($"Query：{request.QueryString}");
-                if (request.HasFormContentType)
-                {
-                    LogRecorder.MonitorTrace($"Form：{request.Form.LinkToString(p => $"{p.Key}={p.Value}", "&")}");
                 }
-                else if (request.ContentLength != null)
+                LogRecorder.MonitorTrace(args.ToString());
+                LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
+                if (!string.IsNullOrWhiteSpace(data.QueryString))
                 {
-                    using (var texter = new StreamReader(request.Body))
-                    {
-                        data.Context = texter.ReadToEnd();
-                        LogRecorder.MonitorTrace("Context:" + data.Context);
-                    }
+                    LogRecorder.MonitorTrace($"Query：{data.QueryString}");
+                }
+                if (!string.IsNullOrWhiteSpace(data.Form))
+                {
+                    LogRecorder.MonitorTrace($"Form：{data.Form}");
+                }
+                if (!string.IsNullOrWhiteSpace(data.Context))
+                {
+                    LogRecorder.MonitorTrace("Context:" + data.Context);
                 }
             }
             catch (Exception e)
@@ -69,7 +67,7 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     结束时的处理
         /// </summary>
-        public static void OnEnd(RouteStatus status, string result)
+        public static void OnEnd(RouteData data)
         {
 #if ZERO
             if (AppConfig.Config.SystemConfig.FireZero)
@@ -83,7 +81,7 @@ namespace ZeroNet.Http.Route
             
             try
             {
-                LogRecorder.MonitorTrace($"Result：{result}");
+                LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
             }
             catch (Exception e)
             {

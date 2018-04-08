@@ -97,13 +97,12 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.3" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.3" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.3" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.4" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.2" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
 

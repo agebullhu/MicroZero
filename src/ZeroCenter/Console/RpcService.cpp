@@ -198,50 +198,19 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
 	return _AtlModule.WinMain(nShowCmd);
 }
 #else
-#include "winsock2.h"  
-#pragma comment(lib,"ws2_32.lib") // ¾²Ì¬¿â  
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
 using namespace agebull;
-void getIPs()
-{
-	char hname[128];
-	gethostname(hname, sizeof(hname));
-	cout << "Host:" << hname << endl << "IPs:";
-	struct addrinfo hint {};
-	memset(&hint, 0, sizeof(hint));
-	hint.ai_family = AF_INET;
-	hint.ai_socktype = SOCK_STREAM;
-
-	addrinfo* info = nullptr;
-	char ipstr[16];
-	if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
-	{
-		addrinfo* now = info;
-		bool first = true;
-		do
-		{
-			inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
-			if (first)
-				first = false;
-			else
-				cout << ",";
-			cout << ipstr;
-			now = now->ai_next;
-		} while (now != nullptr);
-		freeaddrinfo(info);
-	}
-	cout << endl;
+void my_function(int sig) { // can be called asynchronously
+	boost::thread(boost::bind(agebull::distory_net_command));
 }
-
 int main(int argc, char *argv[])
 {
-	getIPs();
-	char buffer[MAX_PATH + 1];
-	char *p = _getcwd(buffer, MAX_PATH);
-	cout << "Curent folder:" << p << endl;
-
-	agebull::zmq_net::station_warehouse::clear();
 	rpc_service::initialize();
+	//agebull::zmq_net::station_warehouse::clear();
 	rpc_service::start();
+	signal(SIGINT, my_function);
 	while (get_net_state() == NET_STATE_RUNING)
 	{
 		std::cout << endl << "Enter command:";
@@ -249,6 +218,7 @@ int main(int argc, char *argv[])
 		getline(cin, line);
 		if (line.length() == 0)
 			break;
+		
 		if (line == "clear")
 		{
 			agebull::zmq_net::station_warehouse::clear();
@@ -262,7 +232,7 @@ int main(int argc, char *argv[])
 		std::vector<agebull::zmq_net::sharp_char> arguments;
 		for (size_t idx = 1; idx < cmdline.size(); idx++)
 			arguments.emplace_back(cmdline[idx]);
-		string result = agebull::zmq_net::net_dispatcher::exec_command(cmdline[0].c_str(), arguments);
+		string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
 	rpc_service::stop();

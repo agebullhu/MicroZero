@@ -8,7 +8,7 @@ namespace ZeroNet.Http.Route
     /// 缓存特征
     /// </summary>
     [Flags]
-    internal enum CacheFeature : uint
+    public enum CacheFeature : uint
     {
         /// <summary>
         /// 无
@@ -26,16 +26,21 @@ namespace ZeroNet.Http.Route
         NetError = 0x2,
 
         /// <summary>
-        /// 参数相同
+        /// 参数相同（Get与POST请求）
         /// </summary>
         QueryString = 0x4,
+
+        /// <summary>
+        /// 表单相同(POST请求）
+        /// </summary>
+        Form = 0x8
 
     }
     /// <summary>
     /// 缓存设置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    internal class CacheSetting
+    public class CacheSetting
     {
         /// <summary>
         /// API名称
@@ -50,7 +55,7 @@ namespace ZeroNet.Http.Route
         public string Bear { get; set; }
 
         /// <summary>
-        /// 缓存的秒数
+        /// 缓存更新的秒数
         /// </summary>
         [DataMember, JsonProperty]
         public int FlushSecond { get; set; }
@@ -94,7 +99,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 缓存数据
     /// </summary>
-    internal class CacheData
+    public class CacheData
     {
         /// <summary>
         /// 下次更新时间

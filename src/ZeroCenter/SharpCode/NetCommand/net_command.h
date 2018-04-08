@@ -26,9 +26,9 @@ namespace agebull
 	//void set_net_state(NET_STATE state);
 
 	//初始化网络命令环境
-	int init_net_command();
+	int config_zero_center();
 	//启动网络命令环境
-	int start_net_command();
+	int start_zero_center();
 	//销毁网络命令环境
 	void distory_net_command();
 	//关闭网络命令环境

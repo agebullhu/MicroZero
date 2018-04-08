@@ -18,11 +18,22 @@ namespace ZeroNet.Http.Route
         public DateTime Start { get; set; }
 
         /// <summary>
+        /// 计数单元
+        /// </summary>
+        public static long Unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
+
+        /// <summary>
+        /// 计数根
+        /// </summary>
+        public static CountItem Station { get; set; } = new CountItem();
+
+        /// <summary>
         /// 开始计数
         /// </summary>
         /// <returns></returns>
-        public static RouteCounter Begin()
+        public static RouteCounter OnBegin(RouteData data)
         {
+            data.Start = DateTime.Now;
             return new RouteCounter
             {
                 Start = DateTime.Now
@@ -35,6 +46,7 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         public void End(RouteData data)
         {
+            data.End = DateTime.Now;
             try
             {
                 var tm = (DateTime.Now - Start).TotalMilliseconds;
@@ -42,7 +54,7 @@ namespace ZeroNet.Http.Route
                     LogRecorder.Warning($"{data.HostName}/{data.ApiName}:执行时间异常({tm:F2}ms):");
 
                 if (tm > AppConfig.Config.SystemConfig.WaringTime)
-                    RouteRuntime.RuntimeWaring(data.HostName, data.ApiName, $"执行时间异常({tm:F0}ms)");
+                    RuntimeWaring.Waring(data.HostName, data.ApiName, $"执行时间异常({tm:F0}ms)");
 
                 long unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour ;
                 if (unit != Unit)
@@ -58,7 +70,7 @@ namespace ZeroNet.Http.Route
                 CountItem host;
                 lock (Station)
                 {
-                    if (!Station.Items.TryGetValue(data.HostName, value: out host))
+                    if (!Station.Items.TryGetValue(data.HostName, out host))
                         Station.Items.Add(data.HostName, host = new CountItem());
                 }
                 host.SetValue(tm,data);
@@ -89,19 +101,11 @@ namespace ZeroNet.Http.Route
             {
                 File.AppendAllText(Path.Combine(TxtRecorder.LogPath, $"{Unit}.count.log"), JsonConvert.SerializeObject(Station, Formatting.Indented));
             }
-            catch 
+            catch (Exception exception)
             {
+                Console.WriteLine(exception);
             }
         }
-        /// <summary>
-        /// 计数单元
-        /// </summary>
-        public static long Unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
-
-        /// <summary>
-        /// 计数根
-        /// </summary>
-        public static CountItem Station { get; set; } = new CountItem();
     }
 
     /// <summary>
@@ -110,31 +114,36 @@ namespace ZeroNet.Http.Route
     [JsonObject(MemberSerialization.OptIn), DataContract]
     internal class CountItem
     {
+        /// <summary>
+        /// 设置计数值
+        /// </summary>
+        /// <param name="tm"></param>
+        /// <param name="data"></param>
         public void SetValue(double tm, RouteData data)
         {
-            this.LastTime = tm;
-            this.Count += 1;
+            LastTime = tm;
+            Count += 1;
 
             if (data.Status == RouteStatus.DenyAccess)
             {
-                this.Deny += 1;
+                Deny += 1;
             }
             else if (data.Status >= RouteStatus.LocalError)
             {
-                this.Error += 1;
+                Error += 1;
             }
             else
             {
                 if (tm > AppConfig.Config.SystemConfig.WaringTime)
                 {
-                    this.TimeOut += 1;
+                    TimeOut += 1;
                 }
-                this.TotalTime += tm;
-                this.AvgTime = this.TotalTime / this.Count;
-                if (this.MaxTime < tm)
-                    this.MaxTime = tm;
-                if (this.MinTime > tm)
-                    this.MinTime = tm;
+                TotalTime += tm;
+                AvgTime = TotalTime / Count;
+                if (MaxTime < tm)
+                    MaxTime = tm;
+                if (MinTime > tm)
+                    MinTime = tm;
             }
         }
 

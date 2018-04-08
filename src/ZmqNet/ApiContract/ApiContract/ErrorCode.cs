@@ -40,9 +40,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 case InnerError:
                     return "服务器内部错误";
             }
-            
-            string result;
-            return Map.TryGetValue(eid, out result) ? result : "未知错误";
+
+            return Map.TryGetValue(eid, out string result) ? result : "未知错误";
         }
 
         #endregion

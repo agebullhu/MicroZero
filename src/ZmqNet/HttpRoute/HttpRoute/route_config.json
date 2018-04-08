@@ -13,16 +13,19 @@
     "HttpTimeOut": 30000,
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
-    /*是否校验Auth（不要改）*/
-    "CheckBearCache": false,
     /*校验Auth的Redis的地址*/
     "RedisConnectionString": "r-bp149a92e0e326e4138.redis.rds.aliyuncs.com:6379:Yizuanbao123",
-    /*黑洞地址（字母有错，不要介意）*/
-    "BlockHost": "https://code.jquery.com/jquery-3.3.1.js",
     /*内容页地址*/
-    "ContextHost": "http://api.yizuanbao.cn:8080/",
+    "ContextHost": "http://api.yizuanbao.cn:8080/"
+  },
+  /**/
+  "security": {
+    /*是否校验Auth（不要改）*/
+    "fireBearer": false,
+    /*黑洞地址（字母有错，不要介意）*/
+    "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
     /*拒绝使用的令牌，Key Value一样*/
-    "DenyTokens": {
+    "denyTokens": {
       "*41D0C3B57CD14E3CB24E50D646440DB6_PC_chrome": "*41D0C3B57CD14E3CB24E50D646440DB6_PC_chrome"
     },
     /*
@@ -35,7 +38,7 @@
         Like,// 内容包含
         Regex// 正则匹配
 	*/
-    "DenyHttpHeaders": [
+    "denyHttpHeaders": [
       {
         "Head": "X-Forwarded-For", /*Http头名称*/
         "Value": "3", /*比对内容*/
@@ -43,11 +46,11 @@
       }
     ],
     /*需要检查的Api*/
-    "CheckApis": {
+    "checkApis": {
       "GoodLin-OAuth-Api/v1/oauth/getdid": {
         "Name": "GoodLin-OAuth-Api/v1/oauth/getdid",
         "Browser": "_APP",
-        "Os": "" 
+        "Os": ""
       }
     }
   },
@@ -98,14 +101,14 @@
   "smsConfig": {
     "CycleHours": -1, /*计数归零小时数，负数可关闭通知*/
     "CycleSendCount": 6, /*周期内一个地址最多短信数量*/
-    "AliTemplateCode": "SMS_123666001",
-    "AliSignName": "亿钻宝",
+    "AliTemplateCode": "SMS_1",
+    "AliSignName": "亿",
     "AliRegionId": "cn-hangzhou",
     "AliEndPointName": "cn-hangzhou",
-    "AliProduct": "Dysmsapi",
+    "AliProduct": "Dysm",
     "AliDomain": "dysmsapi.aliyuncs.com",
-    "AliAccessKeyId": "LTAI2tjhbAljDBla",
-    "AliAccessKeySecret": "XVXaG4D2JrcE9Nk5lPOyzleVGKb09Q",
-    "Phones": [ "15618965007", "18601763662", "13917111139" ]
+    "AliAccessKeyId": "LTA",
+    "AliAccessKeySecret": "XVX",
+    "Phones": [ "15618965007" ]
   }
 }

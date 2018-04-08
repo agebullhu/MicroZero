@@ -16,12 +16,6 @@
     <Filter Include="sys">
       <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd">
-      <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sys\net_cmd\sharp">
-      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sys\tson">
       <UniqueIdentifier>{e756b97c-7436-4dff-a95d-28324bbb74f2}</UniqueIdentifier>
     </Filter>
@@ -40,20 +34,29 @@
     <Filter Include="sys\cfg">
       <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\api">
+    <Filter Include="net_cmd">
+      <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\sharp">
+      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\api">
       <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\notify">
+    <Filter Include="net_cmd\notify">
       <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\vote">
+    <Filter Include="net_cmd\vote">
       <UniqueIdentifier>{1313c213-b967-4e11-871c-1af7c5c93720}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\base">
+    <Filter Include="net_cmd\base">
       <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sys\net_cmd\dispatcher">
+    <Filter Include="net_cmd\dispatcher">
       <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\MQ">
+      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -61,13 +64,13 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\command_crc.cpp">
-      <Filter>sys\net_cmd\sharp</Filter>
+      <Filter>net_cmd\sharp</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\net_command.cpp">
-      <Filter>sys\net_cmd\sharp</Filter>
+      <Filter>net_cmd\sharp</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\zmq_monitor.cpp">
-      <Filter>sys\net_cmd\sharp</Filter>
+      <Filter>net_cmd\sharp</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\redis\TransRedis.cpp">
       <Filter>sys\redis</Filter>
@@ -81,29 +84,32 @@
     <ClCompile Include="..\SharpCode\cfg\config.cpp">
       <Filter>sys\cfg</Filter>
     </ClCompile>
+    <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
+      <Filter>net_cmd\MQ</Filter>
+    </ClCompile>
     <ClCompile Include="RpcService.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\VoteStation.cpp">
-      <Filter>sys\net_cmd\vote</Filter>
+      <Filter>net_cmd\vote</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\ApiStation.cpp">
-      <Filter>sys\net_cmd\api</Filter>
+      <Filter>net_cmd\api</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\NetDispatcher.cpp">
-      <Filter>sys\net_cmd\dispatcher</Filter>
+      <Filter>net_cmd\dispatcher</Filter>
     </ClCompile>
     <ClCompile Include="..\sharpcode\NetCommand\BroadcastingStation.cpp">
-      <Filter>sys\net_cmd\notify</Filter>
+      <Filter>net_cmd\notify</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\message_plan.cpp">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\StationWarehouse.cpp">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClCompile>
     <ClCompile Include="..\SharpCode\NetCommand\ZeroStation.cpp">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,8 +131,11 @@
     <ClInclude Include="..\SharpCode\tm_extend.h">
       <Filter>sys</Filter>
     </ClInclude>
+    <ClInclude Include="..\SharpCode\NetCommand\command_def.h">
+      <Filter>net_cmd\sharp</Filter>
+    </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h">
-      <Filter>sys\net_cmd\sharp</Filter>
+      <Filter>net_cmd\sharp</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\Tson\tson_def.h">
       <Filter>sys\tson</Filter>
@@ -155,35 +164,41 @@
     <ClInclude Include="..\SharpCode\cfg\config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
+    <ClInclude Include="..\SharpCode\redis\entity_redis.h">
+      <Filter>net_cmd\MQ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h">
+      <Filter>net_cmd\MQ</Filter>
+    </ClInclude>
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h">
-      <Filter>sys\net_cmd</Filter>
+      <Filter>net_cmd</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\VoteStation.h">
-      <Filter>sys\net_cmd\vote</Filter>
+      <Filter>net_cmd\vote</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h">
-      <Filter>sys\net_cmd\api</Filter>
+      <Filter>net_cmd\api</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\NetDispatcher.h">
-      <Filter>sys\net_cmd\dispatcher</Filter>
+      <Filter>net_cmd\dispatcher</Filter>
     </ClInclude>
     <ClInclude Include="..\sharpcode\NetCommand\BroadcastingStation.h">
-      <Filter>sys\net_cmd\notify</Filter>
+      <Filter>net_cmd\notify</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\BalanceStation.h">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\zmq_extend.h">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\sharp_char.h">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\StationWarehouse.h">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\ZeroStation.h">
-      <Filter>sys\net_cmd\base</Filter>
+      <Filter>net_cmd\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

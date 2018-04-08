@@ -7,7 +7,7 @@ namespace ZeroNet.Http.Route
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
-            RouteCounter.Save();
+            PerformanceCounter.Save();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

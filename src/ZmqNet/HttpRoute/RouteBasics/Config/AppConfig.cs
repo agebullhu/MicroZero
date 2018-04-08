@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using Agebull.Common;
 using Agebull.Common.Logging;
-#if ZERO
 using Agebull.ZeroNet.Core;
-#endif
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -13,11 +12,11 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 路由配置
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn),DataContract]
-    internal class AppConfig
+    [JsonObject(MemberSerialization.OptIn), DataContract]
+    public class AppConfig
     {
-        internal static AppConfig Config { get; set; }
-#if ZERO
+        public static AppConfig Config { get; set; }
+
         /// <summary>
         /// 站点配置
         /// </summary>
@@ -27,36 +26,36 @@ namespace ZeroNet.Http.Route
             get => StationProgram.Config;
             set => StationProgram.Config = value;
         }
-#endif
-        /// <summary>
-        /// 运维短信配置
-        /// </summary>
-        [DataMember, JsonProperty("smsConfig")] private SmsConfig smsConfig;
 
         /// <summary>
         /// 运维短信配置
         /// </summary>
-        public SmsConfig SmsConfig => smsConfig ?? (smsConfig = new SmsConfig());
+        [DataMember, JsonProperty("smsConfig")] private SmsConfig _smsConfig;
+
+        /// <summary>
+        /// 运维短信配置
+        /// </summary>
+        public SmsConfig SmsConfig => _smsConfig ?? (_smsConfig = new SmsConfig());
 
         /// <summary>
         /// 系统配置
         /// </summary>
-        [DataMember, JsonProperty("sysConfig")] private SystemConfig systemConfig;
+        [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
 
         /// <summary>
         /// 系统配置
         /// </summary>
-        internal SystemConfig SystemConfig => systemConfig ?? (systemConfig = new SystemConfig());
+        public SystemConfig SystemConfig => _systemConfig ?? (_systemConfig = new SystemConfig());
 
         /// <summary>
         /// 缓存配置
         /// </summary>
         [DataMember, JsonProperty("cache")] private List<CacheSetting> _cacheSettings;
-        
+
         /// <summary>
         /// 路由配置
         /// </summary>
-        internal Dictionary<string, CacheSetting> CacheMap { get; set; }
+        public Dictionary<string, CacheSetting> CacheMap { get; set; }
 
         /// <summary>
         /// 路由配置
@@ -66,7 +65,27 @@ namespace ZeroNet.Http.Route
         /// <summary>
         /// 缓存图
         /// </summary>
-        internal Dictionary<string, HostConfig> RouteMap { get; private set; }
+        public Dictionary<string, HostConfig> RouteMap { get; private set; }
+
+        /// <summary>
+        /// 文件名称
+        /// </summary>
+        public static string FileName { get; private set; }
+        /// <summary>
+        /// 安全设置
+        /// </summary>
+        [DataMember, JsonProperty("security")]
+        public SecurityConfig Security { get; set; }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <returns></returns>
+        public static bool Initialize(string file)
+        {
+            FileName = file;
+            return Initialize();
+        }
 
         /// <summary>
         /// 初始化
@@ -74,32 +93,33 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         public static bool Initialize()
         {
-            var file = Path.Combine(Startup.Configuration["contentRoot"], "route_config.json");
-            if (!File.Exists(file))
+            if (!File.Exists(FileName))
                 return false;
-            Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(file));
+            Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(FileName));
             if (Config == null)
                 return false;
+            Config.StationConfig.DataFolder = IOHelper.CheckPath(Path.GetDirectoryName(FileName),"Datas");
             LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
             Config.InitCache();
             Config.InitRoute();
             Config.InitCheckApis();
-
             return HostConfig.DefaultHost != null;
         }
         /// <summary>
         /// 初始化路由
         /// </summary>
         /// <returns></returns>
-        internal void InitCheckApis()
+        public void InitCheckApis()
         {
-            var map = Config.SystemConfig.CheckApis;
-            Config.SystemConfig.CheckApis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
-            if (map == null || map.Count == 0)
-                return;
-            foreach (var setting in map)
+            Config.Security.CheckApis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
+            foreach (var apiItem in Config.Security.checkApis)
             {
-                Config.SystemConfig.CheckApis.Add(setting.Key, setting.Value);
+                Config.Security.CheckApis.Add(apiItem.Key, apiItem.Value);
+            }
+            Config.Security.DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var apiItem in Config.Security.denyTokens)
+            {
+                Config.Security.DenyTokens.Add(apiItem.Key, apiItem.Value);
             }
         }
 
@@ -107,7 +127,7 @@ namespace ZeroNet.Http.Route
         /// 初始化路由
         /// </summary>
         /// <returns></returns>
-        internal Dictionary<string, CacheSetting> InitCache()
+        public Dictionary<string, CacheSetting> InitCache()
         {
             CacheMap = new Dictionary<string, CacheSetting>(StringComparer.OrdinalIgnoreCase);
             if (_cacheSettings == null)
@@ -127,7 +147,7 @@ namespace ZeroNet.Http.Route
         /// 初始化路由
         /// </summary>
         /// <returns></returns>
-        internal Dictionary<string, HostConfig> InitRoute()
+        public Dictionary<string, HostConfig> InitRoute()
         {
             RouteMap = new Dictionary<string, HostConfig>(StringComparer.OrdinalIgnoreCase);
             if (_routeConfig == null)
@@ -140,13 +160,8 @@ namespace ZeroNet.Http.Route
                     HostConfig.DefaultHost = kv.Value;
                     continue;
                 }
-#if ZERO
                 if (!kv.Value.ByZero && (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0))
                     continue;
-#else
-                if (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0)
-                    continue;
-#endif
                 //Http负载
                 if (!RouteMap.ContainsKey(kv.Key))
                     RouteMap.Add(kv.Key, kv.Value);

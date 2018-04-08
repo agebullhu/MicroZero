@@ -8,19 +8,19 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		 * \brief 表示一个广播站点
+		 * \brief 表示站点调度服务
 		 */
-		class net_dispatcher :public zero_station
+		class station_dispatcher :public zero_station
 		{
 			/**
 			* \brief 单例
 			*/
-			static net_dispatcher* instance;
+			static station_dispatcher* instance;
 		public:
 			/**
 			* \brief 构造
 			*/
-			net_dispatcher()
+			station_dispatcher()
 				:zero_station("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, -1, -1)
 			{
 
@@ -28,7 +28,7 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~net_dispatcher() override = default;
+			~station_dispatcher() override = default;
 			/**
 			* \brief 开始执行
 			*/
@@ -43,7 +43,7 @@ namespace agebull
 				{
 					return;
 				}
-				instance = new net_dispatcher();
+				instance = new station_dispatcher();
 				zmq_threadstart(start, nullptr);
 				//boost::thread thrds_s(boost::bind(start));
 			}

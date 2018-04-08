@@ -56,7 +56,7 @@ namespace agebull
 	//CommandProxy* proxy = new CommandProxy();
 	//#endif
 	//初始化网络命令环境
-	int init_net_command()
+	int config_zero_center()
 	{
 		log_msg("zero center initiate...");
 		net_state = NET_STATE_NONE;
@@ -65,8 +65,8 @@ namespace agebull
 		assert(net_context != nullptr);
 
 		zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 8192);
-		//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 16);
-		//zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 8192);
+		zmq_ctx_set(net_context, ZMQ_IO_THREADS, 16);
+		zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 8192);
 
 
 		//boost::thread smp(boost::bind(&server_message_pump));
@@ -76,7 +76,7 @@ namespace agebull
 		return net_state;
 	}
 	//启动网络命令环境
-	int start_net_command()
+	int start_zero_center()
 	{
 		log_msg("start system stations ...");
 		net_state = NET_STATE_RUNING;
@@ -90,7 +90,7 @@ namespace agebull
 		}
 		cout << endl;
 		//log_msg("start zero command");
-		agebull::zmq_net::net_dispatcher::run();
+		agebull::zmq_net::station_dispatcher::run();
 		while (zero_thread_count < 2)
 		{
 			cout << ".";
