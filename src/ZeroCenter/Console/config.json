@@ -1,4 +1,5 @@
 {
-  "baseHost": "7999",
-  "redis_add": "127.0.0.1:6379"
+	"base_tcp_port": "7999",
+	"use_ipc_protocol": "false",
+	"redis_add": "10.5.202.234:6379"
 }

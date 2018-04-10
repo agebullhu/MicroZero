@@ -11,12 +11,12 @@ namespace agebull
 		/**
 		 * \brief 取本机IP并显示在控制台
 		 */
-		static void get_local_ips();
+		static bool get_local_ips();
 	public:
 		/**
 		* \brief 初始化
 		*/
-		static void initialize()
+		static bool initialize()
 		{
 			// 在程序初始化时打开日志
 			acl::acl_cpp_init();
@@ -25,20 +25,24 @@ namespace agebull
 			auto log = path;
 			log.append(".log");
 			logger_open(log.c_str(), "mq_server", DEBUG_CONFIG);
-			if (!ping_redis())
 			{
-				std::cout << "Redis:failed";
+				redis_live_scope scope; 
+				if (!ping_redis())
+				{
+					std::cout << "Redis:failed" << endl;
+					return false;
+				}
+				std::cout << "Redis:ready" << endl;
 			}
-			else
+			if (!get_local_ips())
 			{
-				std::cout << "Redis:ready";
+				std::cout << "Ip:empty" << endl;
+				return false;
 			}
-
-			get_local_ips();
 			char buffer[MAX_PATH + 1];
 			char *p = _getcwd(buffer, MAX_PATH);
-			cout << "Curent folder:" << p << endl;
-
+			cout << "Current folder:" << p << endl;
+			return true;
 		}
 
 		/**
@@ -63,7 +67,7 @@ namespace agebull
 		}
 	};
 
-	inline void rpc_service::get_local_ips()
+	inline bool rpc_service::get_local_ips()
 	{
 		char hname[128];
 		gethostname(hname, sizeof(hname));
@@ -75,10 +79,10 @@ namespace agebull
 
 		addrinfo* info = nullptr;
 		char ipstr[16];
+		bool first = true;
 		if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
 		{
 			addrinfo* now = info;
-			bool first = true;
 			do
 			{
 				inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
@@ -93,6 +97,7 @@ namespace agebull
 			freeaddrinfo(info);
 		}
 		cout << endl;
+		return !first;
 	}
 }
 #endif AGEBULL_RPCSERVICE_H

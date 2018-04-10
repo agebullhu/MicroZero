@@ -24,13 +24,20 @@ namespace agebull
 		/**
 		*\brief 广播内容
 		*/
-		bool monitor(string publiher, string state, string content)
+		bool monitor_async(string publiher, string state, string content)
 		{
 			boost::thread thread_xxx(boost::bind(system_monitor_station::monitor, std::move(publiher), std::move(state), std::move(content)));
 			return true;
 		}
 
 
+		/**
+		*\brief 广播内容
+		*/
+		bool monitor_sync(string publiher, string state, string content)
+		{
+			return system_monitor_station::monitor(std::move(publiher), std::move(state), std::move(content));
+		}
 
 		/**
 		* 当远程调用进入时的处理
@@ -224,7 +231,7 @@ namespace agebull
 		*/
 		string station_dispatcher::exec_command(const char* command, vector<sharp_char> arguments)
 		{
-			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit");
+			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit", "ping");
 			if (idx < 0)
 				return ("NoSupper");
 			switch (idx)
@@ -269,10 +276,14 @@ namespace agebull
 			{
 				boost::thread(boost::bind(distory_net_command));
 				sleep(1);
-				return "OK";
+				return "ok";
+			}
+			case 8:
+			{
+				return "ok";
 			}
 			default:
-				return ("NoSupper");
+				return "NoSupper";
 			}
 		}
 
@@ -322,7 +333,7 @@ namespace agebull
 			{
 				delete instance;
 				instance = new station_dispatcher();
-				instance->_zmq_state = ZmqSocketState::Again;
+				instance->_zmq_state = zmq_socket_state::Again;
 				zmq_threadstart(start, nullptr);
 			}
 			else

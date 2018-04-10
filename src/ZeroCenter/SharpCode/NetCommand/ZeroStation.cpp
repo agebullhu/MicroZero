@@ -13,7 +13,7 @@ namespace agebull
 		*/
 		bool zero_station::do_initialize()
 		{
-			if (this->_zmq_state == ZmqSocketState::Succeed)
+			if (this->_zmq_state == zmq_socket_state::Succeed)
 				log_msg3("Station:%s(%d | %d) start...", this->_station_name.c_str(), this->_out_port, this->_inner_port);
 			else
 				log_msg3("Station:%s(%d | %d) restart...", this->_station_name.c_str(), this->_out_port, this->_inner_port);
@@ -35,7 +35,7 @@ namespace agebull
 		bool zero_station::initialize()
 		{
 			_station_state = station_state::Start;
-			_zmq_state = ZmqSocketState::Succeed;
+			_zmq_state = zmq_socket_state::Succeed;
 			_poll_count = 0;
 
 			if (_out_zmq_type >= 0 && _out_zmq_type != ZMQ_PUB)
@@ -56,7 +56,7 @@ namespace agebull
 
 			if (_out_zmq_type >= 0)
 			{
-				_out_socket = create_server_socket(_station_name.c_str(), _out_zmq_type, _out_port);
+				_out_socket = create_res_socket(_station_name.c_str(), _out_zmq_type, _out_port);
 				if (_out_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
@@ -64,7 +64,7 @@ namespace agebull
 					set_command_thread_bad(_station_name.c_str());
 					return false;
 				}
-				_out_socket_inproc = create_server_socket(_station_name.c_str(), _out_zmq_type);
+				_out_socket_inproc = create_res_socket_inproc(_station_name.c_str(), _out_zmq_type);
 				if (_out_socket_inproc == nullptr)
 				{
 					_station_state = station_state::Failed;
@@ -80,7 +80,7 @@ namespace agebull
 			}
 			if (_inner_zmq_type >= 0)
 			{
-				_inner_socket = create_server_socket(_station_name.c_str(), _inner_zmq_type, _inner_port);
+				_inner_socket = create_res_socket(_station_name.c_str(), _inner_zmq_type, _inner_port);
 				if (_inner_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
@@ -93,7 +93,7 @@ namespace agebull
 			}
 			if (_heart_zmq_type >= 0)
 			{
-				_heart_socket = create_server_socket(_station_name.c_str(), _heart_zmq_type, _heart_port);
+				_heart_socket = create_res_socket(_station_name.c_str(), _heart_zmq_type, _heart_port);
 				if (_heart_socket == nullptr)
 				{
 					_station_state = station_state::Failed;
@@ -121,15 +121,21 @@ namespace agebull
 			_station_state = station_state::Closing;
 			if (_out_socket != nullptr)
 			{
-				close_socket(_out_socket, get_out_address());
+				close_socket(_out_socket, get_out_address().c_str());
 			}
 			if (_inner_socket != nullptr)
 			{
-				close_socket(_inner_socket, get_inner_address());
+				close_socket(_inner_socket, get_inner_address().c_str());
 			}
 			if (_heart_socket != nullptr)
 			{
-				close_socket(_heart_socket, get_heart_address());
+				close_socket(_heart_socket, get_heart_address().c_str());
+			}
+			if (_out_socket_inproc != nullptr)
+			{
+				char host[MAX_PATH];
+				sprintf_s(host, "inproc://%s", _station_name.c_str());
+				close_socket(_out_socket_inproc, host);
 			}
 			//登记线程关闭
 			set_command_thread_end(_station_name.c_str());
@@ -149,14 +155,14 @@ namespace agebull
 			{
 				if (!can_do())
 				{
-					_zmq_state = ZmqSocketState::Intr;
+					_zmq_state = zmq_socket_state::Intr;
 					break;
 				}
 				if (check_pause())
 					continue;
 				if (!can_do())
 				{
-					_zmq_state = ZmqSocketState::Intr;
+					_zmq_state = zmq_socket_state::Intr;
 					break;
 				}
 
@@ -189,7 +195,7 @@ namespace agebull
 					}
 				}
 			}
-			return _zmq_state < ZmqSocketState::Term && _zmq_state > ZmqSocketState::Empty;
+			return _zmq_state < zmq_socket_state::Term && _zmq_state > zmq_socket_state::Empty;
 		}
 		/**
 		* \brief 暂停
@@ -200,7 +206,7 @@ namespace agebull
 			if (station_state::Run != _station_state)
 				return false;
 			_station_state = station_state::Pause;
-			monitor(_station_name, "station_pause", "");
+			monitor_async(_station_name, "station_pause", "");
 			return true;
 		}
 
@@ -214,7 +220,7 @@ namespace agebull
 				return false;
 			_station_state = station_state::Run;
 			_state_semaphore.post();
-			monitor(_station_name, "station_resume", "");
+			monitor_async(_station_name, "station_resume", "");
 			return true;
 		}
 
@@ -227,9 +233,9 @@ namespace agebull
 			if (!can_do())
 				return false;
 			_station_state = station_state::Closing;
+			monitor_async(_station_name, "station_closing", "");
 			while (waiting && _station_state == station_state::Closing)
 				thread_sleep(1000);
-			monitor(_station_name, "station_closing", "");
 			return true;
 		}
 

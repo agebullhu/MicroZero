@@ -12,29 +12,53 @@ namespace Agebull.ZeroNet.Core
     public static class ZeroHelper
     {
 
-        //正常状态
+        /// <summary>
+        /// 正常状态
+        /// </summary>
         public const byte zero_status_success = (byte)'+';
-        //错误状态
+        /// <summary>
+        /// 错误状态
+        /// </summary>
         public const byte zero_status_bad = (byte)'-';
-        //终止符号
+        /// <summary>
+        /// 终止符号
+        /// </summary>
         public const byte zero_end = (byte)'?';
-        //执行计划
+        /// <summary>
+        /// 执行计划
+        /// </summary>
         public const byte zero_plan = (byte)'@';
-        //参数
+        /// <summary>
+        /// 参数
+        /// </summary>
         public const byte zero_arg = (byte)'$';
-        //请求ID
+        /// <summary>
+        /// 请求ID
+        /// </summary>
         public const byte zero_request_id = (byte)':';
-        //请求者/生产者
+        /// <summary>
+        /// 请求者/生产者
+        /// </summary>
         public const byte zero_requester = (byte)'>';
-        //发布者/生产者
+        /// <summary>
+        /// 发布者/生产者
+        /// </summary>
         public const byte zero_pub_publisher = zero_requester;
-        //回复者/浪费者
+        /// <summary>
+        /// 回复者/浪费者
+        /// </summary>
         public const byte zero_responser = (byte)'<';
-        //订阅者/浪费者
+        /// <summary>
+        /// 订阅者/浪费者
+        /// </summary>
         public const byte zero_pub_subscriber = zero_responser;
-        //广播主题
+        /// <summary>
+        /// 广播主题
+        /// </summary>
         public const byte zero_pub_title = (byte)'*';
-        //广播副题
+        /// <summary>
+        /// 广播副题
+        /// </summary>
         public const byte zero_pub_sub = (byte)'&';
         /// <summary>
         ///     接收文本

@@ -1,8 +1,8 @@
 ﻿{
   "zeroAddr": "127.0.0.1",
   "monitorPort": 8001,
-  "managePort": 8000,
-  "stationName": "MessageCenter-1",
-  "serviceName": "MarkPoint",
-  "ServiceName": "MarkPoint-1"
+  "managePort": 8002,
+  "stationName": "HttpRoute-1",
+  "serviceName": "HttpRoute",
+  "ServiceName": "HttpRoute-1"
 }

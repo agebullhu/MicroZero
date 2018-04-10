@@ -6,7 +6,7 @@ namespace agebull
 	namespace zmq_net
 	{
 
-		void ZeroStation::plan_poll_()
+		void zero_station::plan_poll()
 		{
 			_in_plan_poll = true;
 			while (can_do())
@@ -23,12 +23,12 @@ namespace agebull
 				}
 				if (!doit)
 					break;
-				vector<Message> messages;
+				vector<plan_message> messages;
 				load_now(messages);
-				for (Message msg : messages)
+				for (plan_message msg : messages)
 				{
 					command(msg.request_caller.c_str(), msg.messages);
-					if (_zmq_state == ZmqSocketState::Succeed)
+					if (_zmq_state == zmq_socket_state::Succeed)
 					{
 						plan_next(msg, false);
 					}
@@ -38,19 +38,19 @@ namespace agebull
 		}
 
 
-		size_t ZeroStation::load_now(vector<Message>& messages) const
+		size_t zero_station::load_now(vector<plan_message>& messages) const
 		{
 			char zkey[100];
 			sprintf_s(zkey, "zero:plan:%s", _station_name.c_str());
 			vector<acl::string> keys;
 			{
-				RedisLiveScope redis_live_scope;
-				RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
-				TransRedis::get_context()->zrangebyscore(zkey, 0, static_cast<double>(time(nullptr)), &keys);
+				redis_live_scope redis_live_scope;
+				redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
+				trans_redis::get_context()->zrangebyscore(zkey, 0, static_cast<double>(time(nullptr)), &keys);
 			}
 			for (acl::string key : keys)
 			{
-				Message message;
+				plan_message message;
 				load_message(static_cast<uint>(acl_atoll(key.c_str())), message);
 				messages.push_back(message);
 			}
@@ -61,19 +61,19 @@ namespace agebull
 		* \brief 删除一个计划
 		*/
 
-		bool ZeroStation::remove_next(Message& message) const
+		bool zero_station::remove_next(plan_message& message) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			char zkey[MAX_PATH];
 			sprintf_s(zkey, "zero:plan:%s", _station_name.c_str());
 			char id[MAX_PATH];
 			_i64toa_s(message.plan_id, id, MAX_PATH, 10);
-			return TransRedis::get_context()->zrem(zkey, id) >= 0;
+			return trans_redis::get_context()->zrem(zkey, id) >= 0;
 		}
 
 
-		bool ZeroStation::plan_next(Message& message, bool first) const
+		bool zero_station::plan_next(plan_message& message, bool first) const
 		{
 			if (!first && message.plan_repet >= 0 && message.real_repet >= message.plan_repet)
 			{
@@ -89,7 +89,7 @@ namespace agebull
 		}
 
 
-		bool ZeroStation::save_next(Message& message) const
+		bool zero_station::save_next(plan_message& message) const
 		{
 			time_t t = time(nullptr);
 			switch (message.plan_type)
@@ -116,10 +116,10 @@ namespace agebull
 			map<acl::string, double> value;
 			value.insert(make_pair(id, static_cast<double>(t)));
 
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			{
-				return TransRedis::get_context()->zadd(zkey, value) >= 0;
+				return trans_redis::get_context()->zadd(zkey, value) >= 0;
 			}
 		}
 
@@ -127,32 +127,32 @@ namespace agebull
 		* \brief 保存消息
 		*/
 
-		bool ZeroStation::save_message(Message& message) const
+		bool zero_station::save_message(plan_message& message) const
 		{
 			char key[MAX_PATH];
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			if (message.plan_id == 0)
 			{
 				sprintf_s(key, "zero:identity:%s", _station_name.c_str());
-				message.plan_id = static_cast<uint32_t>(TransRedis::get_context().incr_redis(key)) + 1;
+				message.plan_id = static_cast<uint32_t>(trans_redis::get_context().incr_redis(key)) + 1;
 			}
 			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), message.plan_id);
-			return TransRedis::get_context()->set(key, message.write_json().c_str());
+			return trans_redis::get_context()->set(key, message.write_json().c_str());
 		}
 
 		/**
 		* \brief 读取消息
 		*/
 
-		bool ZeroStation::load_message(uint id, Message& message) const
+		bool zero_station::load_message(uint id, plan_message& message) const
 		{
 			char key[MAX_PATH];
 			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), id);
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			acl::string val;
-			if (!TransRedis::get_context()->get(key, val) || val.empty())
+			if (!trans_redis::get_context()->get(key, val) || val.empty())
 			{
 				return false;
 			}
@@ -166,11 +166,11 @@ namespace agebull
 		* \brief 删除一个消息
 		*/
 
-		bool ZeroStation::remove_message(Message& message) const
+		bool zero_station::remove_message(plan_message& message) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
-			TransRedis& redis = TransRedis::get_context();
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
+			trans_redis& redis = trans_redis::get_context();
 			char key[MAX_PATH];
 			char id[MAX_PATH];
 			_itoa_s(message.plan_id, id, MAX_PATH);
@@ -202,19 +202,19 @@ namespace agebull
 		* \brief 保存消息参与者
 		*/
 
-		bool ZeroStation::save_message_worker(uint msgid, vector<const char*>& workers) const
+		bool zero_station::save_message_worker(uint msgid, vector<const char*>& workers) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			char key[MAX_PATH];
 			sprintf_s(key, "zero:worker:%s:%8x", _station_name.c_str(), msgid);
-			TransRedis::get_context()->sadd(key, workers);
+			trans_redis::get_context()->sadd(key, workers);
 			char id[MAX_PATH];
 			_itoa_s(msgid, id, MAX_PATH);
 			for (auto work : workers)
 			{
 				sprintf_s(key, "zero:request:%s:%s", _station_name.c_str(), work);
-				TransRedis::get_context()->sadd(key, id);
+				trans_redis::get_context()->sadd(key, id);
 			}
 			return true;
 		}
@@ -223,22 +223,22 @@ namespace agebull
 		* \brief 保存消息参与者返回值
 		*/
 
-		bool ZeroStation::save_message_result(uint msgid, const string& worker, const string& response) const
+		bool zero_station::save_message_result(uint msgid, const string& worker, const string& response) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 
 			char key[MAX_PATH];
 			sprintf_s(key, "zero:worker:%s:%8x", _station_name.c_str(), msgid);
-			TransRedis::get_context()->srem(key, worker.c_str());
+			trans_redis::get_context()->srem(key, worker.c_str());
 
 			char id[MAX_PATH];
 			_itoa_s(msgid, id, MAX_PATH);
 			sprintf_s(key, "zero:request:%s:%s", _station_name.c_str(), worker.c_str());
-			TransRedis::get_context()->srem(key, id);
+			trans_redis::get_context()->srem(key, id);
 
 			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
-			TransRedis::get_context()->hset(key, worker.c_str(), response.c_str());
+			trans_redis::get_context()->hset(key, worker.c_str(), response.c_str());
 			return true;
 		}
 
@@ -246,16 +246,16 @@ namespace agebull
 		* \brief 取一个参与者的消息返回值
 		*/
 
-		acl::string ZeroStation::get_message_result(uint msgid, const char* worker) const
+		acl::string zero_station::get_message_result(uint msgid, const char* worker) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 
 			char key[MAX_PATH];
 
 			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
 			acl::string val;
-			TransRedis::get_context()->hget(key, worker, val);
+			trans_redis::get_context()->hget(key, worker, val);
 			return val;
 		}
 
@@ -263,15 +263,15 @@ namespace agebull
 		* \brief 取全部参与者消息返回值
 		*/
 
-		map<acl::string, acl::string> ZeroStation::get_message_result(uint msgid) const
+		map<acl::string, acl::string> zero_station::get_message_result(uint msgid) const
 		{
-			RedisLiveScope redis_live_scope;
-			RedisDbScope db_scope(REDIS_DB_ZERO_MESSAGE);
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 
 			char key[MAX_PATH];
 			map<acl::string, acl::string> result;
 			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
-			TransRedis::get_context()->hgetall(key, result);
+			trans_redis::get_context()->hgetall(key, result);
 			return result;
 		}
 	}

@@ -84,9 +84,6 @@
     <ClCompile Include="..\SharpCode\cfg\config.cpp">
       <Filter>sys\cfg</Filter>
     </ClCompile>
-    <ClCompile Include="..\SharpCode\SysCmdArg\StringArgument.cpp">
-      <Filter>net_cmd\MQ</Filter>
-    </ClCompile>
     <ClCompile Include="RpcService.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -131,9 +128,6 @@
     <ClInclude Include="..\SharpCode\tm_extend.h">
       <Filter>sys</Filter>
     </ClInclude>
-    <ClInclude Include="..\SharpCode\NetCommand\command_def.h">
-      <Filter>net_cmd\sharp</Filter>
-    </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\net_command.h">
       <Filter>net_cmd\sharp</Filter>
     </ClInclude>
@@ -163,12 +157,6 @@
     </ClInclude>
     <ClInclude Include="..\SharpCode\cfg\config.h">
       <Filter>sys\cfg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\redis\entity_redis.h">
-      <Filter>net_cmd\MQ</Filter>
-    </ClInclude>
-    <ClInclude Include="..\SharpCode\SysCmdArg\StringArgument.h">
-      <Filter>net_cmd\MQ</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h">
       <Filter>net_cmd</Filter>

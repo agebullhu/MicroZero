@@ -2,22 +2,22 @@
 
 #ifdef _MSC_VER
 
-SimpleEvent::SimpleEvent()
+simple_event::simple_event()
 {
 	cond = CreateEvent(nullptr, true, false, nullptr);
 }
 
-SimpleEvent::~SimpleEvent()
+simple_event::~simple_event()
 {
 	CloseHandle(cond);
 }
 
-void SimpleEvent::SignalEvent() const
+void simple_event::SignalEvent() const
 {
 	PulseEvent(cond);
 }
 
-void SimpleEvent::WaitEvent(DWORD time_out) const
+void simple_event::WaitEvent(DWORD time_out) const
 {
 	WaitForSingleObject(cond, time_out);
 }
@@ -29,21 +29,21 @@ void SimpleEvent::WaitEvent(DWORD time_out) const
 #ifdef __GNUC__	
 #include <errno.h>
 
-SimpleEvent::SimpleEvent()
+simple_event::simple_event()
 {
         bIsSignal = false;
 	pthread_cond_init( &cond, NULL);
 	pthread_mutex_init( &mutex, NULL);
 }
 
-SimpleEvent::~SimpleEvent()
+simple_event::~simple_event()
 {
 	pthread_cond_destroy( &cond);
 	pthread_mutex_destroy( &mutex);
 }
 
 
-void SimpleEvent::SignalEvent()
+void simple_event::SignalEvent()
 {
     pthread_mutex_lock(&mutex);
 	bIsSignal =true;
@@ -51,7 +51,7 @@ void SimpleEvent::SignalEvent()
     pthread_mutex_unlock(&mutex);
 }
 
-void SimpleEvent::WaitEvent()
+void simple_event::WaitEvent()
 {
     pthread_mutex_lock(&mutex);
     bIsSignal = false;

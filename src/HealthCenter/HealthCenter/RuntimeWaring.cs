@@ -17,60 +17,13 @@ namespace ZeroNet.Http.Route
     public class RuntimeWaring : SubStation
     {
         /// <summary>
-        /// 构造
-        /// </summary>
-        internal static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*拒绝访问*"));
-
-
-        /// <summary>
-        ///     拒绝访问的Json字符串
-        /// </summary>
-        internal static readonly string ReTry = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ReTry, "*服务器忙，请稍后重试*"));
-
-        /// <summary>
-        ///     服务器无返回值的字符串
-        /// </summary>
-        internal static readonly string RemoteEmptyError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError, "*服务器无返回值*"));
-
-        /// <summary>
-        ///     服务器访问异常
-        /// </summary>
-        internal static readonly string NetworkError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, "*服务器访问异常*"));
-
-        /// <summary>
-        ///     服务器访问异常
-        /// </summary>
-        internal static readonly string Inner2Error =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "**系统内部错误**"));
-
-        /// <summary>
-        ///     服务器访问异常
-        /// </summary>
-        internal static readonly string InnerError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "*系统内部错误*"));
-
-
-        #endregion
-
-        #region 缓存数据
-
-        /// <summary>
-        ///     缓存数据
-        /// </summary>
-        internal static Dictionary<string, CacheData> Cache =
-            new Dictionary<string, CacheData>(StringComparer.OrdinalIgnoreCase);
-
-
-        /// <summary>
         ///     刷新
         /// </summary>
-        internal static void Flush()
+        internal RuntimeWaring()
         {
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
-            }
+        }
         /// <summary>
         /// 执行命令
         /// </summary>

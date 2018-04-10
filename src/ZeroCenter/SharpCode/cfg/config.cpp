@@ -15,7 +15,7 @@ namespace agebull
 	{
 		if (m_machine_cfg.empty())
 		{
-			std::string path = "";
+			std::string path;
 			GetProcessFilePath(path);
 			path.append("\\config.json");
 			log_acl_trace(0, 3, path.c_str());
@@ -62,12 +62,18 @@ namespace agebull
 		auto vl = m_machine_cfg[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
+	bool config::get_bool(const char * name)
+	{
+		init();
+		auto vl = m_machine_cfg[name];
+		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
+	}
 
 	bool config::boolean(const char * name)
 	{
 		init();
-		auto vl = m_machine_cfg[name];
-		return !vl.empty() && strcasecmp(vl.c_str(), "true");
+		auto vl = m_cfg[name];
+		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
 	int config::number(const char * name)
 	{

@@ -9,6 +9,7 @@ namespace agebull
 		static void init();
 	public:
 		static int get_int(const char * name);
+		static bool get_bool(const char * name);
 		static std::string& get_config(const char * name);
 	private:
 		std::map<std::string, std::string> m_cfg;

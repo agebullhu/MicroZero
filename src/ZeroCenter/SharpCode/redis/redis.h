@@ -3,7 +3,7 @@
 #pragma once
 #ifndef CLIENT
 #include <stdinc.h>
-#include "TransRedis.h"
+#include "transredis.h"
 using namespace std;
 namespace agebull
 {

@@ -31,7 +31,7 @@ namespace Agebull.ZeroNet.PubSub
             station.Config = StationProgram.GetConfig(station.StationName);
             if (station.Config == null)
             {
-                StationProgram.WriteLine($"{station.StationName} not find,try install...");
+                StationProgram.WriteError($"{station.StationName} not find,try install...");
                 StationProgram.InstallApiStation(station.StationName);
                 return;
             }
@@ -59,42 +59,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <param name="args"></param>
         /// <returns></returns>
         public abstract void Handle(PublishItem args);
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        private void OnTaskStop(Task task)
-        {
-            if (StationProgram.State != StationState.Run)
-                return;
-            while (_inPoll)
-                Thread.Sleep(500);
-            OnStop();
-        }
 
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        private void OnStop()
-        {
-            if (StationProgram.State != StationState.Run)
-            {
-                return;
-            }
-            bool restart;
-            lock (this)
-            {
-                restart = RunState == StationState.Failed || RunState == StationState.Start;
-            }
-            if (!restart)
-                return;
-            StationProgram.WriteLine($"【{StationName}】restart...");
-            if (Run())
-                return;
-            Thread.Sleep(1000);
-            OnStop();
-        }
         /// <inheritdoc />
         /// <summary>
         /// 命令轮询
@@ -102,6 +67,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         public sealed override bool Run()
         {
+            StationProgram.WriteInfo($"【{StationName}:{RealName}】start...");
             lock (this)
             {
                 if (RunState != StationState.Run)
@@ -109,7 +75,7 @@ namespace Agebull.ZeroNet.PubSub
                 if (_socket != null)
                     return false;
             }
-            _inPoll = false;
+            InPoll = false;
 
             _socket = new SubscriberSocket();
             try
@@ -124,7 +90,7 @@ namespace Agebull.ZeroNet.PubSub
                 LogRecorder.Exception(e);
                 RunState = StationState.Failed;
                 CloseSocket();
-                StationProgram.WriteLine($"【{StationName}】connect error =>{e.Message}");
+                StationProgram.WriteError($"【{StationName}:{RealName}】connect error =>{e.Message}");
                 return false;
             }
             RunState = StationState.Run;
@@ -132,11 +98,12 @@ namespace Agebull.ZeroNet.PubSub
             _items = MulitToOneQueue<PublishItem>.Load(CacheFileName);
             Task.Factory.StartNew(CommandTask);
 
-            var task1 = Task.Factory.StartNew(PollTask);
+            var task1 = new Task(PollTask);
             task1.ContinueWith(OnTaskStop);
-            while (!_inPoll)
+            task1.Start();
+            while (!InPoll)
                 Thread.Sleep(50);
-            StationProgram.WriteLine($"【{StationName}:{RealName}】runing...");
+            StationProgram.WriteInfo($"【{StationName}:{RealName}】runing...");
             return true;
         }
 
@@ -152,19 +119,14 @@ namespace Agebull.ZeroNet.PubSub
         private static MulitToOneQueue<PublishItem> _items = new MulitToOneQueue<PublishItem>();
 
         /// <summary>
-        /// 正在侦听状态
-        /// </summary>
-        private bool _inPoll;
-
-        /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
         private void PollTask()
         {
-            StationProgram.WriteLine($"【{StationName}】poll start");
+            StationProgram.WriteLine($"【{StationName}:{RealName}】poll start...");
             var timeout = new TimeSpan(0, 0, 5);
-            _inPoll = true;
+            InPoll = true;
             while (RunState == StationState.Run)
             {
                 try
@@ -205,13 +167,13 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    StationProgram.WriteLine($"【{StationName}】poll error{e.Message}...");
+                    StationProgram.WriteError($"【{StationName}:{RealName}】poll error{e.Message}...");
                     LogRecorder.Exception(e);
                     RunState = StationState.Failed;
                 }
             }
-            _inPoll = false;
-            StationProgram.WriteLine($"【{StationName}】poll stop");
+            InPoll = false;
+            StationProgram.WriteLine($"【{StationName}:{RealName}】poll stop");
             _items.Save(CacheFileName);
             CloseSocket();
         }
@@ -228,9 +190,9 @@ namespace Agebull.ZeroNet.PubSub
                 {
                     _socket.Disconnect(Config.InnerAddress);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    //LogRecorder.Exception(e);//一般是无法连接服务器而出错
+                    LogRecorder.Exception(e);//一般是无法连接服务器而出错
                 }
                 _socket.Close();
                 _socket = null;

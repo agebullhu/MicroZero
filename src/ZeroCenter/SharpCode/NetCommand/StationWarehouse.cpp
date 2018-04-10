@@ -11,7 +11,7 @@ namespace agebull
 		* \brief 端口自动分配的Redis键名
 		*/
 #define port_redis_key "net:port:next"
-
+#define port_config_key "base_tcp_port"
 
 		/**
 		 * \brief 活动实例集合
@@ -29,7 +29,7 @@ namespace agebull
 		bool station_warehouse::restore(acl::string& value)
 		{
 			config cfg(value);
-			int type = cfg.number("station_type");
+			const int type = cfg.number("station_type");
 			switch (type)
 			{
 			case STATION_TYPE_API:
@@ -63,7 +63,7 @@ namespace agebull
 					size_t count = 10;
 					vector<acl::string> keys;
 					cursor = redis->scan(cursor, keys, pattern, &count);
-					for (acl::string key : keys)
+					for (const acl::string key : keys)
 					{
 						acl::string val;
 						if (redis->get(key, val))
@@ -82,12 +82,12 @@ namespace agebull
 		*/
 		void station_warehouse::clear()
 		{
-			assert(examples_.empty());
+			//assert(examples_.empty());
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
 				trans_redis& redis = trans_redis::get_context();
 				redis->flushdb();
-				redis->incrby(port_redis_key, config::get_int("baseHost"));
+				redis.set(port_redis_key, config::get_config(port_config_key).c_str());
 			}
 			install(STATION_TYPE_DISPATCHER, "SystemManage");
 			install(STATION_TYPE_MONITOR, "SystemMonitor");
@@ -98,27 +98,26 @@ namespace agebull
 		*/
 		acl::string station_warehouse::install(int station_type, const char* station_name)
 		{
-			char* key;
-			{
-				boost::format fmt("net:host:%1%");
-				fmt % station_name;
-				key = _strdup(fmt.str().c_str());
-			}
-
+			boost::format fmt("net:host:%1%");
+			fmt % station_name;
+			char* key = _strdup(fmt.str().c_str());
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+			trans_redis& redis = trans_redis::get_context();
 			acl::string val;
-			if (trans_redis::get_context()->get(key, val) && !val.empty())
+
+			if (redis->get(key, val) && !val.empty())
 			{
 				return val;
 			}
-			assert(trans_redis::get_context()->exists(port_redis_key));
+			if(!redis->exists(port_redis_key))
+				redis.set(port_redis_key,config::get_config(port_config_key).c_str());
 			acl::json json;
 			acl::json_node& node = json.create_node();
 			node.add_text("station_name", station_name);
 			node.add_number("station_type", station_type);
 			long long port;
 			{
-				trans_redis::get_context()->incr(port_redis_key, &port);
+				redis->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("out_port", port);
@@ -126,7 +125,7 @@ namespace agebull
 			}
 			if (station_type >= STATION_TYPE_MONITOR)
 			{
-				trans_redis::get_context()->incr(port_redis_key, &port);
+				redis->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("inner_port", port);
@@ -134,15 +133,15 @@ namespace agebull
 			}
 			if (station_type > STATION_TYPE_MONITOR)
 			{
-				trans_redis::get_context()->incr(port_redis_key, &port);
+				redis->incr(port_redis_key, &port);
 				boost::format fmt1("tcp://*:%1%");
 				fmt1 % port;
 				node.add_number("heart_port", port);
 				node.add_text("heart_addr", fmt1.str().c_str());
 			}
 			val = node.to_string();
-			trans_redis::get_context()->set(key, val);
-			monitor(station_name, "station_install", val.c_str());
+			redis->set(key, val);
+			monitor_async(station_name, "station_install", val.c_str());
 			delete[] key;
 			return val;
 		}
@@ -164,7 +163,7 @@ namespace agebull
 			station->_out_port = cfg.number("out_port");
 			station->_heart_port = cfg.number("heart_port");
 
-			monitor(station->_station_name, "station_join", station->_config.c_str());
+			monitor_async(station->_station_name, "station_join", station->_config.c_str());
 			return true;
 		}
 
@@ -175,12 +174,12 @@ namespace agebull
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto iter = examples_.find(station->_station_name);
+				const auto iter = examples_.find(station->_station_name);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
 				examples_.erase(station->_station_name);
 			}
-			monitor(station->_station_name, "station_left", "");
+			monitor_async(station->_station_name, "station_left", station->_station_name);
 
 			return true;
 		}
@@ -190,7 +189,7 @@ namespace agebull
 		*/
 		zero_station* station_warehouse::find(const string& name)
 		{
-			auto iter = examples_.find(name);
+			const auto iter = examples_.find(name);
 			if (iter == examples_.end())
 				return nullptr;
 			return iter->second;

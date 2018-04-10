@@ -6,7 +6,7 @@
 #include "BalanceStation.h"
 
 namespace agebull
-{
+{ 
 	namespace zmq_net
 	{
 		/**
@@ -17,12 +17,15 @@ namespace agebull
 			/**
 			* \brief 当前工作者下标
 			*/
-			size_t _index;
+			size_t index_;
+			/**
+			 * \brief 互斥量
+			 */
 			boost::mutex _mutex;
 			vector<string> list;
 		public:
 			host_balance()
-				: _index(0)
+				: index_(0)
 			{
 
 			}
@@ -33,7 +36,7 @@ namespace agebull
 			void join(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				auto iter = find(host);
+				const iterator iter = find(host);
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
@@ -51,7 +54,7 @@ namespace agebull
 			void succees(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				auto iter = find(host);
+				iterator iter = find(host);
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
@@ -124,12 +127,12 @@ namespace agebull
 					return nullptr;
 				}
 				{
-					if (++_index == size())
-						_index = 0;
-					auto iter = find(list[_index]);
+					if (++index_ == size())
+						index_ = 0;
+					auto iter = find(list[index_]);
 					if (iter == end())
 					{
-						left_(list[_index]);
+						left_(list[index_]);
 						return get_host_();
 					}
 					if (time(nullptr) < iter->second)
@@ -191,7 +194,7 @@ namespace agebull
 				if (reStrart)
 				{
 					api_station* station2 = new api_station(station->_station_name);
-					station2->_zmq_state = ZmqSocketState::Again;
+					station2->_zmq_state = zmq_socket_state::Again;
 					zmq_threadstart(launch, station2);
 				}
 				else

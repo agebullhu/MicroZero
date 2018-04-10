@@ -82,7 +82,7 @@ namespace agebull
 		net_state = NET_STATE_RUNING;
 
 		//log_msg("start zero monitor");
-		agebull::zmq_net::system_monitor_station::run();
+		zmq_net::system_monitor_station::run();
 		while (zero_thread_count < 1)
 		{
 			cout << ".";
@@ -90,7 +90,7 @@ namespace agebull
 		}
 		cout << endl;
 		//log_msg("start zero command");
-		agebull::zmq_net::station_dispatcher::run();
+		zmq_net::station_dispatcher::run();
 		while (zero_thread_count < 2)
 		{
 			cout << ".";
@@ -98,10 +98,11 @@ namespace agebull
 		}
 		cout << endl;
 
-		agebull::zmq_net::monitor("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
+		thread_sleep(5000);
+		zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
 
 		log_msg("start business stations...");
-		int cnt = agebull::zmq_net::station_warehouse::restore() + 2;
+		int cnt = zmq_net::station_warehouse::restore() + 2;
 		while (zero_thread_count < cnt)
 		{
 			cout << ".";
@@ -118,7 +119,7 @@ namespace agebull
 		if (net_state != NET_STATE_RUNING)
 			return;
 		log_msg("zero center closing...");
-		agebull::zmq_net::monitor("*", "system_stop", "*************ZeroNet is closed, see you late!*************");
+		zmq_net::monitor_async("*", "system_stop", "*************ZeroNet is closed, see you late!*************");
 		thread_sleep(10);
 
 		net_state = NET_STATE_CLOSING;

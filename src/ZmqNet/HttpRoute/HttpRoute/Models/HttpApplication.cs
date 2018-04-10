@@ -7,6 +7,7 @@ using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Agebull.ZeroNet.LogRecorder;
+using Agebull.ZeroNet.LogService;
 
 namespace ZeroNet.Http.Route
 {
@@ -22,15 +23,17 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public static void Initialize()
         {
+            AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
+            LogRecorder.Initialize(new RemoteRecorder());
+            StationProgram.Run();
             // 日志支持
             //Agebull.Common.Logging.LogRecorder.GetRequestIdFunc = () => ApiContext.RequestContext.RequestId;.
-            LogRecorder.Initialize(new RemoteRecorder());
-            AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-            StationProgram.Run();
+
             RouteChahe.Flush();
             RuntimeWaring.Flush();
             RouteCommand.ZeroFlush();
             //Datas = new List<RouteData>();
+
 
         }
         #endregion

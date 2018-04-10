@@ -123,8 +123,38 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteLine(string message)
         {
-            Console.WriteLine(message);
-            Console.Write("$ > ");
+            lock (Config)
+            {
+                //Console.CursorLeft = 0;
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(message);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        public static void WriteError(string message)
+        {
+            lock (Config)
+            {
+                //Console.CursorLeft = 0;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(message);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        public static void WriteInfo(string message)
+        {
+            lock (Config)
+            {
+                //Console.CursorLeft = 0;
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(message);
+            }
         }
         /// <summary>
         ///     执行管理命令
@@ -137,7 +167,7 @@ namespace Agebull.ZeroNet.Core
             var result = ZeroManageAddress.RequestNet(commmand, argument);
             if (string.IsNullOrWhiteSpace(result))
             {
-                WriteLine("*处理超时");
+                WriteError($"【{commmand}】{argument}\r\n处理超时");
                 return false;
             }
             WriteLine(result);
@@ -163,7 +193,7 @@ namespace Agebull.ZeroNet.Core
                     var result = ZeroManageAddress.RequestNet("host", stationName);
                     if (result == null)
                     {
-                        WriteLine("无法获取消息中心的配置");
+                        WriteError("无法获取消息中心的配置");
                         return null;
                     }
                     var config = JsonConvert.DeserializeObject<StationConfig>(result);
@@ -198,7 +228,7 @@ namespace Agebull.ZeroNet.Core
                     var result = ZeroManageAddress.RequestNet("install_api", stationName);
                     if (result == null)
                     {
-                        WriteLine("无法获取消息中心的配置");
+                        WriteError("无法获取消息中心的配置");
                         return null;
                     }
                     config = JsonConvert.DeserializeObject<StationConfig>(result);
@@ -272,6 +302,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Initialize()
         {
+            ZeroPublisher.Start();
+
             var discover = new ZeroStationDiscover();
             discover.FindApies(Assembly.GetCallingAssembly());
             if (discover.ApiItems.Count == 0)
@@ -288,7 +320,7 @@ namespace Agebull.ZeroNet.Core
                 else
                     station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption >= ApiAccessOption.Customer);
             }
-            Stations.Add(Config.StationName, station);
+            RegisteStation(station);
         }
 
         /// <summary>
@@ -299,13 +331,13 @@ namespace Agebull.ZeroNet.Core
             switch (State)
             {
                 case StationState.Run:
-                    WriteLine("*run...");
+                    WriteInfo("*run...");
                     return;
                 case StationState.Closing:
-                    WriteLine("*closing...");
+                    WriteInfo("*closing...");
                     return;
                 case StationState.Destroy:
-                    WriteLine("*destroy...");
+                    WriteInfo("*destroy...");
                     return;
             }
             Run();
@@ -316,7 +348,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Stop()
         {
-            WriteLine("Program Stop.");
+            WriteInfo("Program Stop.");
             State = StationState.Closing;
             foreach (var stat in Stations)
                 stat.Value.Close();
@@ -327,7 +359,7 @@ namespace Agebull.ZeroNet.Core
             }
             ZeroPublisher.Stop();
             State = StationState.Closed;
-            WriteLine("@");
+            WriteInfo("@");
         }
 
         /// <summary>
@@ -335,10 +367,11 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Exit()
         {
+            WriteInfo("Program Stop...");
             if (State == StationState.Run)
                 Stop();
             State = StationState.Destroy;
-            WriteLine("Program Exit");
+            WriteInfo("Program Exit");
             Process.GetCurrentProcess().Close();
         }
 
@@ -347,11 +380,26 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Run()
         {
+            WriteInfo("Program Start...");
             State = StationState.Run;
-            ZeroPublisher.Start();
-            foreach (var station in Stations.Values)
-                ZeroStation.Run(station);
             Task.Factory.StartNew(SystemMonitor.RunMonitor);
+            try
+            {
+                var res = ZeroManageAddress.RequestNet("ping");
+                if (res == null)
+                {
+                    WriteError("ZeroCenter can`t connection,waiting for monitor message..");
+                    return;
+                }
+                foreach (var station in Stations.Values)
+                    ZeroStation.Run(station);
+                WriteInfo("Program Run...");
+            }
+            catch (Exception e)
+            {
+                WriteError(e.Message);
+                State = StationState.Failed;
+            }
         }
 
         #endregion

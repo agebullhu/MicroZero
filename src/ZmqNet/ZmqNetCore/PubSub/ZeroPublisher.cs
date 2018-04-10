@@ -26,12 +26,12 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 请求队列
         /// </summary>
-        private static MulitToOneQueue<PublishItem> _items;// = new MulitToOneQueue<PublishItem>();
+        private static MulitToOneQueue<PublishItem> _items = new MulitToOneQueue<PublishItem>();
 
         /// <summary>
         ///     运行状态
         /// </summary>
-        private static int _state;
+        private static int _state = -1;
         /// <summary>
         /// 缓存文件名称
         /// </summary>
@@ -40,10 +40,20 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     启动
         /// </summary>
+        public static void Initialize()
+        {
+            _state = 0;
+            var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
+            if (old == null)
+                return;
+            foreach (var val in old.Queue)
+                _items.Push(val);
+        }
+        /// <summary>
+        ///     启动
+        /// </summary>
         public static void Start()
         {
-            _state = 1;
-            _items = MulitToOneQueue<PublishItem>.Load(CacheFileName);
             Task.Factory.StartNew(SendTask);
         }
 
@@ -55,8 +65,9 @@ namespace Agebull.ZeroNet.PubSub
             _state = 3;
             while (_state == 4)
                 Thread.Sleep(3);
-            _items.Save(CacheFileName);
             _state = 5;
+            Thread.Sleep(3);
+            _items.Save(CacheFileName);
         }
 
         /// <summary>
@@ -69,13 +80,14 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         public static void Publish(string station, string title, string sub, string value)
         {
-            _items.Push(new PublishItem
-            {
-                Station = station,
-                Title = title,
-                SubTitle=sub,
-                Content = value ?? "{}"
-            });
+            if (_state != 5)
+                _items.Push(new PublishItem
+                {
+                    Station = station,
+                    Title = title,
+                    SubTitle = sub,
+                    Content = value ?? "{}"
+                });
         }
 
         /// <summary>
@@ -120,8 +132,6 @@ namespace Agebull.ZeroNet.PubSub
             {
                 lock (socket)
                 {
-                    List< string> frames = new List<string> {item.Title};
-                    socket.SendMoreFrame(item.Title);
                     byte[] description = new byte[5];
                     description[0] = (byte)3;
                     description[1] = ZeroHelper.zero_pub_publisher;
@@ -134,14 +144,14 @@ namespace Agebull.ZeroNet.PubSub
                     socket.SendMoreFrame(item.SubTitle);
                     socket.SendFrame(item.Content);
                     var word = socket.ReceiveFrameString();
-                    StationProgram.WriteLine($"【{item.Station}-{item.Title}】{word}");
+                    //StationProgram.WriteLine($"【{item.Station}-{item.Title}】{word}");
                     return word == "ok";
                 }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteLine($"【{item.Station}-{item.Title}】request error =>{e.Message}");
+                StationProgram.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
             }
 
             lock (Publishers)
@@ -169,7 +179,7 @@ namespace Agebull.ZeroNet.PubSub
                     var config = StationProgram.GetConfig(type);
                     if (config == null)
                     {
-                        StationProgram.WriteLine($"【{type}】connect error =>无法拉取配置");
+                        StationProgram.WriteError($"【{type}】connect error =>无法拉取配置");
                         return false;
                     }
 
@@ -184,7 +194,7 @@ namespace Agebull.ZeroNet.PubSub
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteLine($"【{type}】connect error =>连接时发生异常：{e}");
+                StationProgram.WriteError($"【{type}】connect error =>连接时发生异常：{e}");
                 socket = null;
                 return false;
             }

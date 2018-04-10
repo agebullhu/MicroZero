@@ -1,4 +1,11 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.LogRecorder;
+using Agebull.ZeroNet.LogService;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
@@ -7,28 +14,47 @@ namespace RpcTest
     {
         private static void Main(string[] args)
         {
-            Console.ReadKey();
-            var tester = new RegistTester();
-            tester.RegistAction<VerificationApiController>();
-            Console.ReadKey();
-        }
-    }
 
-    /// <summary>
-    /// 身份验证服务API
-    /// </summary>
-    public class VerificationApiController
-    {
-        /// <summary>
-        ///     验证图片验证码:验证图片验证码:
-        /// </summary>
-        /// <param name="arg">验证码检查参数</param>
-        /// <returns>操作结果</returns>
-        [Route("v2/vc/img/valiadate")]
-        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Public | ApiAccessOption.Anymouse)]
-        public static IApiResult CheckImgVerificationCode(IApiArgument arg)
+            //LogRecorder.Initialize(new RemoteRecorder());
+            StationProgram.WriteLine("Hello ZeroNet");
+            StationProgram.Config.DataFolder = @"c:\data";
+            StationProgram.RegisteStation(new RemoteLogRecorder());
+            StationProgram.Initialize();
+            for (int i = 0; i < 4; i++)
+            {
+                Task.Factory.StartNew(TestTask);
+            }
+            StationProgram.RunConsole();
+
+
+            ConsoleKeyInfo key;
+            do
+            {
+                //LogRecorder.BeginMonitor("test");
+                //LogRecorder.BeginStepMonitor("f");
+                //LogRecorder.EndStepMonitor();
+                //LogRecorder.EndMonitor();
+                key = Console.ReadKey();
+            } while (key.Modifiers != ConsoleModifiers.Control || key.Key != ConsoleKey.C);
+        }
+
+
+        static void TestTask()
         {
-            return ApiResult.Error(-1,arg?.ToString());
+            StationProgram.WriteLine($"Test{Task.CurrentId}");
+            Random random = new Random((int)DateTime.Now.Ticks % int.MaxValue);
+            var recorder=new RemoteRecorder();
+            while (true)
+            {
+                Thread.Sleep(1);//random.Next(1, 5)
+                recorder.RecordLog(new RecordInfo
+                {
+                    gID = Guid.NewGuid(),
+                    Type = LogType.Trace,
+                    TypeName="Trace",
+                    Message= $"Test{Task.CurrentId}"
+                });
+            }
         }
     }
 }

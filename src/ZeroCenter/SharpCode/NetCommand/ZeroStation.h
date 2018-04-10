@@ -4,7 +4,7 @@
  #include <utility>
 #include "sharp_char.h"
 #include "zmq_extend.h"
-#include "StationWarehouse.h"
+#include "stationWarehouse.h"
 namespace agebull
 {
 	namespace zmq_net
@@ -88,7 +88,7 @@ namespace agebull
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
-			ZmqSocketState _zmq_state;
+			zmq_socket_state _zmq_state;
 			/**
 			* \brief 当前站点状态
 			*/
@@ -101,7 +101,7 @@ namespace agebull
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
-			ZmqSocketState get_zmq_state() const
+			zmq_socket_state get_zmq_state() const
 			{
 				return _zmq_state;
 			}
@@ -177,44 +177,44 @@ namespace agebull
 				, _out_socket_inproc(nullptr)
 				, _inner_socket(nullptr)
 				, _heart_socket(nullptr)
-				, _zmq_state(ZmqSocketState::Succeed)
+				, _zmq_state(zmq_socket_state::Succeed)
 				, _station_state(station_state::None)
 			{
 			}
 			/**
 			* \brief 载入现在到期的内容
 			*/
-			size_t load_now(vector<Message>& messages) const;
+			size_t load_now(vector<plan_message>& messages) const;
 
 			/**
 			* \brief 删除一个计划
 			*/
-			bool remove_next(Message& message) const;
+			bool remove_next(plan_message& message) const;
 
 			/**
 			* \brief 计划下一次执行时间
 			*/
-			bool plan_next(Message& message, bool first) const;
+			bool plan_next(plan_message& message, bool first) const;
 
 			/**
 			* \brief 保存下一次执行时间
 			*/
-			bool save_next(Message& message) const;
+			bool save_next(plan_message& message) const;
 
 			/**
 			* \brief 保存消息
 			*/
-			bool save_message(Message& message) const;
+			bool save_message(plan_message& message) const;
 
 			/**
 			* \brief 读取消息
 			*/
-			bool load_message(uint id, Message& message) const;
+			bool load_message(uint id, plan_message& message) const;
 
 			/**
 			* \brief 删除消息
 			*/
-			bool remove_message(Message& message) const;
+			bool remove_message(plan_message& message) const;
 
 			/**
 			* \brief 保存消息参与者
@@ -248,7 +248,7 @@ namespace agebull
 			bool send_data(vector<sharp_char>& datas)
 			{
 				_zmq_state = send(_inner_socket, datas);
-				return _zmq_state == ZmqSocketState::Succeed;
+				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			/**
 			* \brief 析构
@@ -321,7 +321,17 @@ namespace agebull
 			/**
 			* \brief 保存计划
 			*/
-			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list);
+			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list)
+			{
+				plan_message message;
+				message.request_caller = list[0];
+				for (size_t idx = 3;idx < list.size();idx++)
+				{
+					message.messages.push_back(list[idx]);
+				}
+				message.read_plan(list[0].get_buffer());
+				plan_next(message, true);
+			}
 			/**
 			* \brief 计划轮询
 			*/

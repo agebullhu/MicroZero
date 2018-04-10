@@ -10,12 +10,12 @@ namespace agebull
 		sharp_char api_station::command(const char* caller, vector<sharp_char> lines)
 		{
 			vector<sharp_char> response;
-			RequestSocket<ZMQ_REQ,false> socket(caller, _station_name.c_str());
+			inproc_request_socket<ZMQ_REQ> socket(caller, _station_name.c_str());
 			if(socket.request(lines, response))
 				return response.empty() ? "error" : response[0];
 			switch(socket.get_state())
 			{
-			case ZmqSocketState::TimedOut:
+			case zmq_socket_state::TimedOut:
 				return "time out";
 			default:
 				return "net error";
@@ -29,11 +29,11 @@ namespace agebull
 			vector<sharp_char> list;
 			//0 请求地址 1 空帧 2命令 3请求标识 4上下文 5参数
 			_zmq_state = recv(socket, list);
-			if (_zmq_state == ZmqSocketState::TimedOut)
+			if (_zmq_state == zmq_socket_state::TimedOut)
 			{
 				return;
 			}
-			if (_zmq_state != ZmqSocketState::Succeed)
+			if (_zmq_state != zmq_socket_state::Succeed)
 			{
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
@@ -41,6 +41,8 @@ namespace agebull
 			if (list[2][0] == '@')//计划类型
 			{
 				save_plan(socket, list);
+				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_late(socket, "plan");
 			}
 			else
 			{
@@ -61,17 +63,17 @@ namespace agebull
 
 			if(list.size() < 4 || list[2].empty())
 			{
-				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
+				const ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
 				_zmq_state = send_late(socket, "-Invalid");
-				return _zmq_state == ZmqSocketState::Succeed;
+				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			//心跳通知正常退出(有安全风险，即被外部调用)
 			if (list[2][0] == '#' && list[0][0] == '_')
 			{
 				_zmq_state = send_addr(_inner_socket, *list[3]);
 				_zmq_state = send_late(_inner_socket, "bye");
-				return _zmq_state == ZmqSocketState::Succeed;
+				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			//路由到其中一个工作对象
 			const char* worker = _balance.get_host();
@@ -80,13 +82,13 @@ namespace agebull
 				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
 				_zmq_state = send_late(socket, "-NoWork");
-				return _zmq_state == ZmqSocketState::Succeed;
+				return _zmq_state == zmq_socket_state::Succeed;
 			}
 
 			_zmq_state = send_addr(_inner_socket, worker);
 			//list.erase(++list.begin());
 			_zmq_state = send(_inner_socket, list);
-			return _zmq_state == ZmqSocketState::Succeed;
+			return _zmq_state == zmq_socket_state::Succeed;
 		}
 
 		/**
@@ -99,7 +101,7 @@ namespace agebull
 			//list.erase(b);
 			list[2].swap(list[1]);
 			_zmq_state = send(list[1][0] == '_' ? _out_socket_inproc : _out_socket, ++list.begin(), list.end());
-			return _zmq_state == ZmqSocketState::Succeed;
+			return _zmq_state == zmq_socket_state::Succeed;
 		}
 
 		void api_station::worker_join(const char* addr, const char* value, bool ready)
@@ -125,11 +127,11 @@ namespace agebull
 			vector<sharp_char> list;
 			//0 worker地址 1空帧 2请求者地址 3请求标识 4返回结果
 			_zmq_state = recv(_inner_socket, list);
-			if (_zmq_state == ZmqSocketState::TimedOut)
+			if (_zmq_state == zmq_socket_state::TimedOut)
 			{
 				return;
 			}
-			if (_zmq_state != ZmqSocketState::Succeed)
+			if (_zmq_state != zmq_socket_state::Succeed)
 			{
 				log_error3("接收结果失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;

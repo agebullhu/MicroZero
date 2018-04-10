@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Agebull.ZeroNet.Core
             var timeout = new TimeSpan(0, 0, 1);
             try
             {
-                StationProgram.WriteLine("System Monitor Runing...");
+                StationProgram.WriteInfo("System Monitor Runing...");
                 var subscriber = new SubscriberSocket();
                 subscriber.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
                 subscriber.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
@@ -29,14 +30,53 @@ namespace Agebull.ZeroNet.Core
 
                 while (StationProgram.State == StationState.Run)
                 {
-                    if (!subscriber.TryReceiveFrameString(timeout, out var result))
+                    if (!subscriber.TryReceiveFrameString(timeout, out var title, out var more) || !more)
+                    {
                         continue;
-                    OnMessagePush(result);
+                    }
+                    if (!subscriber.TryReceiveFrameBytes(out var description, out more) || !more)
+                    {
+                        continue;
+                    }
+                    PublishItem item = new PublishItem
+                    {
+                        Title = title
+                    };
+                    int idx = 1;
+                    while (more)
+                    {
+                        if (!subscriber.TryReceiveFrameString(out var val, out more))
+                        {
+                            continue;
+                        }
+                        switch (description[idx++])
+                        {
+                            case ZeroHelper.zero_pub_sub:
+                                item.SubTitle = val;
+                                break;
+                            case ZeroHelper.zero_pub_publisher:
+                                item.Station = val;
+                                break;
+                            case ZeroHelper.zero_arg:
+                                item.Content = val;
+                                break;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(title))
+                        continue;
+                    lock (StationProgram.Config)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.WriteLine($"【{item.Title}】{item.Station} \r\n{item.Content}");
+                        Console.ForegroundColor = ConsoleColor.Black;
+                    }
+                    OnMessagePush(item.Title,item.Station,item.Content);
                 }
             }
             catch (Exception e)
             {
-                StationProgram.WriteLine(e.Message);
+                StationProgram.WriteError(e.Message);
                 LogRecorder.Exception(e);
             }
             if (StationProgram.State == StationState.Run)
@@ -46,15 +86,8 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     收到信息的处理
         /// </summary>
-        /// <param name="msg"></param>
-        public static void OnMessagePush(string msg)
+        public static void OnMessagePush(string cmd,string station,string content)
         {
-            if (String.IsNullOrEmpty(msg))
-                return;
-            var array = msg.Split(new[] { ' ' }, 3);
-            var cmd = array[0];
-            var station = array.Length > 1 ? array[1] : "*";
-            var content = array.Length > 2 ? array[2] : "{}";
             switch (cmd)
             {
                 case "system_start":
@@ -230,10 +263,10 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
+                StationProgram.WriteLine($"{station} error : {e.Message}");
                 LogRecorder.Exception(e);
                 return;
             }
-            cfg.State = StationState.Run;
             if (StationProgram.Configs.ContainsKey(station))
                 StationProgram.Configs[station] = cfg;
             else
@@ -250,7 +283,6 @@ namespace Agebull.ZeroNet.Core
         private static void system_stop(string content)
         {
             StationEvent?.Invoke(null, new StationEventArgument("system_stop", null));
-            StationProgram.WriteLine(content);
             foreach (var sta in StationProgram.Stations.Values)
             {
                 StationProgram.WriteLine($"Close {sta.StationName}");
@@ -262,16 +294,14 @@ namespace Agebull.ZeroNet.Core
 
         private static void system_start(string content)
         {
-            StationProgram.WriteLine(content);
             StationProgram.Configs.Clear();
-
             StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
-            foreach (var sta in StationProgram.Stations.Values)
-            {
-                StationProgram.WriteLine($"Restart {sta.StationName}");
-                ZeroStation.Run(sta);
-                StationEvent?.Invoke(sta, new StationEventArgument("station_join", sta.Config));
-            }
+            //foreach (var sta in StationProgram.Stations.Values)
+            //{
+            //    StationProgram.WriteLine($"Restart {sta.StationName}");
+            //    ZeroStation.Run(sta);
+            //    StationEvent?.Invoke(sta, new StationEventArgument("station_join", sta.Config));
+            //}
         }
     }
 }

@@ -180,12 +180,12 @@ namespace agebull
 			}
 			void free()
 			{
-				if (_count == nullptr || _count == nullptr || _size == 0)
+				if (_count == nullptr || _size == 0)
 					return;
 				*_count -= 1;
 				if (*_count == 0)
 				{
-					delete[] _count;
+					delete _count;
 					delete[] _buffer;
 				}
 				_count = nullptr;

@@ -87,11 +87,11 @@ namespace agebull
 			if (vote != _workers.end())
 			{
 				_workers.erase(addr);
-				monitor(_station_name, "worker_left", addr);
+				monitor_async(_station_name, "worker_left", addr);
 
 				vector<sharp_char> result;
 				vector<string> argument{"@",addr };
-				RequestSocket<ZMQ_REQ, false> socket("_sys_", _station_name.c_str());
+				inproc_request_socket<ZMQ_REQ> socket("_sys_", _station_name.c_str());
 				socket.request(argument, result);
 			}
 		}
@@ -111,8 +111,8 @@ namespace agebull
 			{
 				_workers.insert(make_pair(addr, item));
 				log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
-				monitor(_station_name, "worker_join", addr);
-				monitor(_station_name, "worker_heat", value);
+				monitor_async(_station_name, "worker_join", addr);
+				monitor_async(_station_name, "worker_heat", value);
 			}
 			else
 			{

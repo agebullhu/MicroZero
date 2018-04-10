@@ -76,7 +76,10 @@ namespace ZeroNet.Http.Route
         /// </summary>
         [DataMember, JsonProperty("security")]
         public SecurityConfig Security { get; set; }
-
+        /// <summary>
+        /// 是否已初始化
+        /// </summary>
+        public static bool  IsInitialized { get; private set; }
         /// <summary>
         /// 初始化
         /// </summary>
@@ -103,6 +106,7 @@ namespace ZeroNet.Http.Route
             Config.InitCache();
             Config.InitRoute();
             Config.InitCheckApis();
+            IsInitialized = true;
             return HostConfig.DefaultHost != null;
         }
         /// <summary>

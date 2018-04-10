@@ -10,12 +10,12 @@
 #include <pthread.h>
 #endif //__GNUC__
 
-class SimpleEvent
+class simple_event
 {
 
 public:
-	SimpleEvent();
-	~SimpleEvent();
+	simple_event();
+	~simple_event();
 
 	void SignalEvent() const;
 	void WaitEvent(DWORD time_out = INFINITE) const;

@@ -1,0 +1,18 @@
+// ZeroNetService.idl : ZeroNetService的 IDL 源
+//
+
+// 此文件将由 MIDL 工具处理以
+// 产生类型库(ZeroNetService.tlb)和封送处理代码。
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(486A4169-880F-495F-8512-B97A82065B4B),
+	version(1.0),
+]
+library ZeroNetServiceLib
+{
+	importlib("stdole2.tlb");
+};
+

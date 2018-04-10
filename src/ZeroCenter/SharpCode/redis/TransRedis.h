@@ -17,11 +17,16 @@ namespace agebull
 #define REDIS_DB_ZERO_STATION 0x12
 	//系统
 #define REDIS_DB_ZERO_SYSTEM 0x11
+
+	class redis_db_scope;
+	class redis_trans_scope;
 	/**
 	* \brief 事务Redis 在没有启用时,与普通使用一样,启用时调用begin_trans,提交调用commit,回退调用rollback,且必须成对调用
 	*/
 	class trans_redis
 	{
+		friend class redis_db_scope;
+		friend class redis_trans_scope;
 		/**
 		* \brief 启用事务的次数
 		*/
@@ -31,13 +36,17 @@ namespace agebull
 		*/
 		bool m_failed;
 		/**
+		* \brief 最后一次操作是否成功
+		*/
+		bool m_last_status;
+		/**
 		* \brief acl的redis客户端对象
 		*/
-		acl::redis_client m_redis_client;
+		acl::redis_client* m_redis_client;
 		/**
 		* \brief acl的redis命令对象
 		*/
-		acl::redis m_redis_cmd;
+		acl::redis* m_redis_cmd;
 		/**
 		* \brief 事务中修改的内容
 		*/
@@ -68,7 +77,11 @@ namespace agebull
 		/**
 		* \brief 生成当前线程上下文的事务Redis对象
 		*/
-		static void open_context();
+		static bool open_context();
+		/**
+		* \brief 生成当前线程上下文的事务Redis对象
+		*/
+		static	bool open_context(int db);
 		/**
 		* \brief 关闭当前线程上下文的事务Redis对象
 		*/
@@ -87,19 +100,26 @@ namespace agebull
 		* \brief 设置出错
 		*/
 		static void set_failed();
+		/**
+		* \brief 最后一次操作是否成功
+		*/
+		bool last_status() const
+		{
+			return m_last_status;
+		}
 	private:
 		/**
 		* \brief 提交事务
 		*/
 		void trans_redis::commit_inner();
+	public:
 		bool get(const char*, acl::string&);
 		void set(const char*, const char*);
 		void set(const char*, const char*, size_t);
 		void set(const char*, acl::string&);
-	public:
-		acl::redis* operator->()
+		acl::redis* operator->() const
 		{
-			return &m_redis_cmd;
+			return m_redis_cmd;
 		}
 		acl::string read_str_from_redis(const char* key);
 		template<class TArg1>
@@ -343,47 +363,50 @@ namespace agebull
 	*/
 	class redis_live_scope
 	{
+		bool open_by_me;
 	public:
 		/**
 		* \brief 构造
 		*/
 		redis_live_scope()
 		{
-			trans_redis::open_context();
+			open_by_me = trans_redis::open_context();
 		}
 		/**
 		* \brief 构造
 		*/
 		explicit redis_live_scope(int db)
 		{
-			trans_redis::open_context();
-			trans_redis::get_context()->select(db);
+			open_by_me = trans_redis::open_context(db);
 		}
 		/**
 		* \brief 析构
 		*/
 		~redis_live_scope()
 		{
-			agebull::trans_redis::close_context();
+			if (open_by_me)
+				agebull::trans_redis::close_context();
 		}
 	};
 	/**
 	* \brief 自动恢复的数据ID范围
 	*/
-	class RedisDbScope
+	class redis_db_scope
 	{
+		trans_redis& redis;
 	public:
 		/**
 		* \brief 构造
 		*/
-		RedisDbScope(int db)
+		redis_db_scope(int db)
+			: redis(trans_redis::get_context())
 		{
-			trans_redis::get_context()->select(db);
+			redis->select(db);
 		}
 		/**
 		* \brief 析构
 		*/
-		~RedisDbScope();
+		~redis_db_scope();
 	};
 	/**
 	* \brief 自动开启和提交的事务范围
