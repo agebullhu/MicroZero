@@ -9,7 +9,7 @@ namespace Agebull.ZeroNet.LogService
         {
             Console.WriteLine("Hello ZeroNet");
 
-            StationProgram.RegisteStation(new RemoteLogRecorder());
+            StationProgram.RegisteStation(new RemoteLogStation());
             StationProgram.Initialize();
             StationProgram.RunConsole();
         }

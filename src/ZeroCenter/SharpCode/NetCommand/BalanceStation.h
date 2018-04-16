@@ -73,7 +73,7 @@ namespace agebull
 			default: break;
 			}
 			_zmq_state = send_addr(_heart_socket, *list[0]);
-			_zmq_state = send_late(_heart_socket, "OK");
+			_zmq_state = send_late(_heart_socket, zero_command_ok);
 		}
 
 		/**

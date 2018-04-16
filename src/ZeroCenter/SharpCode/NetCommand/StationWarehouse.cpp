@@ -24,7 +24,7 @@ namespace agebull
 		boost::mutex station_warehouse::mutex_;
 
 		/**
-		* \brief 还原服务
+		* \brief 还原站点
 		*/
 		bool station_warehouse::restore(acl::string& value)
 		{
@@ -47,12 +47,11 @@ namespace agebull
 		}
 		
 		/**
-		* \brief 还原服务
+		* \brief 还原站点
 		*/
 		int station_warehouse::restore()
 		{
 			//assert(examples.size() == 0);
-			char pattern[] = "net:host:*";
 			int cnt = 0;
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
@@ -62,8 +61,8 @@ namespace agebull
 				{
 					size_t count = 10;
 					vector<acl::string> keys;
-					cursor = redis->scan(cursor, keys, pattern, &count);
-					for (const acl::string key : keys)
+					cursor = redis->scan(cursor, keys, "net:host:*", &count);
+					for (const acl::string& key : keys)
 					{
 						acl::string val;
 						if (redis->get(key, val))
@@ -78,39 +77,37 @@ namespace agebull
 		}
 
 		/**
-		* \brief 清除所有服务
+		* \brief 清除所有站点
 		*/
 		void station_warehouse::clear()
 		{
 			//assert(examples_.empty());
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
+				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 				trans_redis& redis = trans_redis::get_context();
 				redis->flushdb();
 				redis.set(port_redis_key, config::get_config(port_config_key).c_str());
 			}
-			install(STATION_TYPE_DISPATCHER, "SystemManage");
-			install(STATION_TYPE_MONITOR, "SystemMonitor");
+			acl::string config;
+			install("SystemManage", STATION_TYPE_DISPATCHER, config);
+			install("SystemMonitor", STATION_TYPE_MONITOR, config);
 		}
 
 		/**
-		* \brief 初始化服务
+		* \brief 初始化站点
 		*/
-		acl::string station_warehouse::install(int station_type, const char* station_name)
+		bool station_warehouse::install(const char* station_name, int station_type, acl::string& config)
 		{
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
-			char* key = _strdup(fmt.str().c_str());
+			auto key = fmt.str();
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			trans_redis& redis = trans_redis::get_context();
-			acl::string val;
-
-			if (redis->get(key, val) && !val.empty())
+			
+			if (redis->get(key.c_str(), config) && !config.empty())
 			{
-				return val;
+				return false;
 			}
-			if(!redis->exists(port_redis_key))
-				redis.set(port_redis_key,config::get_config(port_config_key).c_str());
 			acl::json json;
 			acl::json_node& node = json.create_node();
 			node.add_text("station_name", station_name);
@@ -139,15 +136,14 @@ namespace agebull
 				node.add_number("heart_port", port);
 				node.add_text("heart_addr", fmt1.str().c_str());
 			}
-			val = node.to_string();
-			redis->set(key, val);
-			monitor_async(station_name, "station_install", val.c_str());
-			delete[] key;
-			return val;
+			config = node.to_string();
+			redis->set(key.c_str(), config);
+			monitor_async(station_name, "station_install", config.c_str());
+			return true;
 		}
 
 		/**
-		* \brief 加入服务
+		* \brief 加入站点
 		*/
 		bool station_warehouse::join(zero_station* station)
 		{
@@ -157,7 +153,7 @@ namespace agebull
 					return false;
 				examples_.insert(make_pair(station->_station_name, station));
 			}
-			station->_config = install(station->_station_type, station->_station_name.c_str());
+			install(station->_station_name.c_str(), station->_station_type, station->_config);
 			config cfg(station->_config);
 			station->_inner_port = cfg.number("inner_port");
 			station->_out_port = cfg.number("out_port");
@@ -168,7 +164,7 @@ namespace agebull
 		}
 
 		/**
-		* \brief 退出服务
+		* \brief 退出站点
 		*/
 		bool station_warehouse::left(zero_station* station)
 		{
@@ -185,9 +181,9 @@ namespace agebull
 		}
 
 		/**
-		* \brief 加入服务
+		* \brief 查找已运行站点
 		*/
-		zero_station* station_warehouse::find(const string& name)
+		zero_station* station_warehouse::instance(const string& name)
 		{
 			const auto iter = examples_.find(name);
 			if (iter == examples_.end())

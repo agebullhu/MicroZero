@@ -1,5 +1,4 @@
 ﻿using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.LogService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

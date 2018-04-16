@@ -12,13 +12,13 @@ namespace agebull
 			vector<sharp_char> response;
 			inproc_request_socket<ZMQ_REQ> socket(caller, _station_name.c_str());
 			if(socket.request(lines, response))
-				return response.empty() ? "error" : response[0];
+				return response.empty() ? zero_api_unknow_error : response[0];
 			switch(socket.get_state())
 			{
 			case zmq_socket_state::TimedOut:
-				return "time out";
+				return zero_command_timeout;
 			default:
-				return "net error";
+				return zero_command_net_error;
 			}
 		}
 		/**
@@ -42,7 +42,7 @@ namespace agebull
 			{
 				save_plan(socket, list);
 				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "plan");
+				_zmq_state = send_late(socket, zero_command_plan);
 			}
 			else
 			{
@@ -65,23 +65,23 @@ namespace agebull
 			{
 				const ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, "-Invalid");
+				_zmq_state = send_late(socket, zero_command_invalid);
 				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			//心跳通知正常退出(有安全风险，即被外部调用)
 			if (list[2][0] == '#' && list[0][0] == '_')
 			{
 				_zmq_state = send_addr(_inner_socket, *list[3]);
-				_zmq_state = send_late(_inner_socket, "bye");
+				_zmq_state = send_late(_inner_socket, zero_command_bye);
 				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			//路由到其中一个工作对象
 			const char* worker = _balance.get_host();
 			if (worker == nullptr)
 			{
-				ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
+				const ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
 				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, "-NoWork");
+				_zmq_state = send_late(socket, zero_api_not_worker);
 				return _zmq_state == zmq_socket_state::Succeed;
 			}
 
@@ -141,7 +141,7 @@ namespace agebull
 			case '@'://加入
 				worker_join(*list[0], *list[3], true);
 				send_addr(_inner_socket, *list[0]);
-				send_late(_inner_socket, "wecome");
+				send_late(_inner_socket, zero_command_wecome);
 				return;
 			case '*'://开始工作
 				return;

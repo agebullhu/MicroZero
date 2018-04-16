@@ -20,46 +20,41 @@ namespace Agebull.ZeroNet.Core
         /// 错误状态
         /// </summary>
         public const byte zero_status_bad = (byte)'-';
+
         /// <summary>
-        /// 终止符号
+        /// 成功
         /// </summary>
-        public const byte zero_end = (byte)'?';
+        public const string zero_command_ok = "+ok";
         /// <summary>
-        /// 执行计划
+        /// 计划执行
         /// </summary>
-        public const byte zero_plan = (byte)'@';
-        /// <summary>
-        /// 参数
-        /// </summary>
-        public const byte zero_arg = (byte)'$';
-        /// <summary>
-        /// 请求ID
-        /// </summary>
-        public const byte zero_request_id = (byte)':';
-        /// <summary>
-        /// 请求者/生产者
-        /// </summary>
-        public const byte zero_requester = (byte)'>';
-        /// <summary>
-        /// 发布者/生产者
-        /// </summary>
-        public const byte zero_pub_publisher = zero_requester;
-        /// <summary>
-        /// 回复者/浪费者
-        /// </summary>
-        public const byte zero_responser = (byte)'<';
-        /// <summary>
-        /// 订阅者/浪费者
-        /// </summary>
-        public const byte zero_pub_subscriber = zero_responser;
-        /// <summary>
-        /// 广播主题
-        /// </summary>
-        public const byte zero_pub_title = (byte)'*';
-        /// <summary>
-        /// 广播副题
-        /// </summary>
-        public const byte zero_pub_sub = (byte)'&';
+        public const string zero_command_plan = "+plan";
+        public const string zero_command_error = "-error";
+        public const string zero_command_runing = "+runing";
+        public const string zero_command_bye = "+bye";
+        public const string zero_command_wecome = "+wecome";
+        public const string zero_vote_sended = "+send";
+        public const string zero_vote_closed = "+close";
+        public const string zero_vote_bye = "+bye";
+        public const string zero_vote_waiting = "+waiting";
+        public const string zero_vote_start = "+start";
+
+        public const string zero_vote_end = "+end";
+        //正常状态
+        public const string zero_command_no_find = "-no find";
+
+        public const string zero_command_invalid = "-invalid";
+        //正常状态
+        public const string zero_command_no_support = "-no support";
+        public const string zero_command_failed = "-failes";
+        public const string zero_command_arg_error = "-ArgumentError! must like : call[name][command][argument]";
+        public const string zero_command_install_arg_error = "-ArgumentError! must like :install [type] [name]";
+        public const string zero_command_timeout = "-time out";
+        public const string zero_command_net_error = "-net error";
+        public const string zero_command_not_worker = "-not work";
+        public const string zero_api_unknow_error = "-error";
+        public const string zero_vote_unknow_error = "-error";
+
         /// <summary>
         ///     接收文本
         /// </summary>
@@ -145,7 +140,9 @@ namespace Agebull.ZeroNet.Core
                 request.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
                 request.Options.ReconnectInterval = new TimeSpan(0, 0, 3);
                 request.Connect(address);
-                return Request(request, args);
+                var res = Request(request, args);
+                request.Disconnect(address);
+                return res;
             }
         }
     }

@@ -72,7 +72,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(BOOST)\lib32-msvc-14.0;$(GitLib)\x86\Debug;$(LibraryPath);$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
-    <OutDir>..\publish</OutDir>
+    <OutDir>..\publish\x86</OutDir>
     <Linkage-czmq>
     </Linkage-czmq>
     <Linkage-libsodium>static</Linkage-libsodium>
@@ -83,6 +83,7 @@
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>$(BOOST)\lib64-msvc-14.0;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(GitLib)\x64\Debug</LibraryPath>
     <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <OutDir>..\publish\debug</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -98,12 +99,13 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(BOOST);$(IncludePath);..\OpenSource;..\SharpCode;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>$(BOOST)\lib64-msvc-14.0;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(GitLib)\x64\Release</LibraryPath>
+    <OutDir>..\publish\x64</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;TIMER;CONSOLE;WINDOWS_SERVICE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;TIMER;CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
@@ -129,18 +131,19 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>Psapi.lib;lib_acl_vc2015d.lib;lib_acl_cpp_vc2015d.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <RegisterOutput>false</RegisterOutput>
+      <AdditionalDependencies>Psapi.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <PerUserRedirection>false</PerUserRedirection>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;TIMER;CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -159,8 +162,9 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <RegisterOutput>true</RegisterOutput>
+      <SubSystem>Console</SubSystem>
+      <RegisterOutput>false</RegisterOutput>
+      <AdditionalDependencies>Psapi.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -229,7 +233,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <RegisterOutput>true</RegisterOutput>
+      <RegisterOutput>false</RegisterOutput>
       <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
@@ -260,6 +264,7 @@
   <ItemGroup>
     <ClInclude Include="..\SharpCode\boostinc.h" />
     <ClInclude Include="..\SharpCode\cfg\config.h" />
+    <ClInclude Include="..\SharpCode\command.h" />
     <ClInclude Include="..\SharpCode\log\mylogger.h" />
     <ClInclude Include="..\SharpCode\mydecimal.h" />
     <ClInclude Include="..\SharpCode\NetCommand\ApiStation.h" />
@@ -289,7 +294,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.json" />
+    <None Include="config.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ZeroCenter.idl" />

@@ -86,7 +86,7 @@ namespace agebull
 		while (zero_thread_count < 1)
 		{
 			cout << ".";
-			thread_sleep(50);
+			thread_sleep(10);
 		}
 		cout << endl;
 		//log_msg("start zero command");
@@ -94,11 +94,16 @@ namespace agebull
 		while (zero_thread_count < 2)
 		{
 			cout << ".";
-			thread_sleep(50);
+			thread_sleep(10);
+		}
+		cout << endl<<"waiting connect";
+
+		for (int i=0;i<30;i++)
+		{
+			cout << ".";
+			thread_sleep(100);
 		}
 		cout << endl;
-
-		thread_sleep(5000);
 		zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
 
 		log_msg("start business stations...");

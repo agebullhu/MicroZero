@@ -5,7 +5,7 @@
 #include "NetCommand/ZeroStation.h"
 #include "NetCommand/NetDispatcher.h"
 #include "NetCommand/BroadcastingStation.h"
-#ifdef WIN32
+#ifdef _WINDOWS
 #include <direct.h>
 #else
 #include <unistd.h>  
@@ -21,8 +21,6 @@ using namespace agebull;
 void my_function(int sig) { // can be called asynchronously
 	boost::thread(boost::bind(agebull::distory_net_command));
 }
-
-#include <stdio.h>
 
 int main(int argc, char *argv[])
 {

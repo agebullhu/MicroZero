@@ -22,33 +22,33 @@ namespace agebull
 			*/
 			static map<string, zero_station*> examples_;
 			/**
-			* \brief 清除所有服务
+			* \brief 清除所有站点
 			*/
 			static void clear();
 			/**
-			* \brief 还原服务
+			* \brief 还原站点
 			*/
 			static int restore();
 			/**
-			* \brief 初始化服务
+			* \brief 安装一个站点
 			*/
-			static acl::string install(int station_type, const char* station_name);
+			static bool install( const char* station_name,int station_type, acl::string& config);
 			/**
-			* \brief 还原服务
+			* \brief 还原站点
 			*/
 			static bool restore(acl::string& value);
 			/**
-			* \brief 加入服务
+			* \brief 加入站点
 			*/
 			static bool join(zero_station* station);
 			/**
-			* \brief 加入服务
+			* \brief 加入站点
 			*/
 			static bool left(zero_station* station);
 			/**
-			* \brief 加入服务
+			* \brief 查找已运行站点
 			*/
-			static zero_station* find(const string& name);
+			static zero_station* instance(const string& name);
 		};
 	}
 }

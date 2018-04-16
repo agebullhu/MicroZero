@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
@@ -197,7 +198,7 @@ namespace ZeroNet.Http.Route
                 LogRecorder.Exception(e);
                 return false;
             }
-            return sendSmsResponse.Message == "OK";
+            return sendSmsResponse.Message == ZeroHelper.zero_command_ok;
         }
 
     }

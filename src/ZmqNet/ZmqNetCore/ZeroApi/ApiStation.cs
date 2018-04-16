@@ -21,6 +21,10 @@ namespace Agebull.ZeroNet.Core
     {
         #region Api调用
 
+        /// <summary>
+        /// 类型
+        /// </summary>
+        public override int StationType => StationTypeApi;
 
 
         private readonly Dictionary<string, ApiAction> _apiActions =

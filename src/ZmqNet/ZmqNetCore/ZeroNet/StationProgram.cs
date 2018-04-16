@@ -78,8 +78,8 @@ namespace Agebull.ZeroNet.Core
                 Stations.Add(station.StationName, station);
             }
 
-            station.Config = GetConfig(station.StationName);
-            if (State == StationState.Run)
+            station.Config = GetConfig(station.StationName,out var status);
+            if (status == ZeroCommandStatus.Success && State == StationState.Run)
                 ZeroStation.Run(station);
         }
 
@@ -96,7 +96,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string Call(string station, string commmand, string argument)
         {
-            var config = GetConfig(station);
+            var config = GetConfig(station,out var status);
             if (config == null)
             {
                 return "{\"Result\":false,\"Message\":\"UnknowHost\",\"ErrorCode\":404}";
@@ -173,36 +173,57 @@ namespace Agebull.ZeroNet.Core
             WriteLine(result);
             return true;
         }
-
         /// <summary>
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig GetConfig(string stationName)
+        public static StationConfig GetConfig(string stationName,out ZeroCommandStatus status)
         {
             lock (Configs)
             {
                 if (Configs.ContainsKey(stationName))
+                {
+                    status = ZeroCommandStatus.Success;
                     return Configs[stationName];
+                }
             }
 
             lock (Configs)
             {
+                string result;
                 try
                 {
-                    var result = ZeroManageAddress.RequestNet("host", stationName);
+                     result = ZeroManageAddress.RequestNet("host", stationName);
                     if (result == null)
                     {
-                        WriteError("无法获取消息中心的配置");
+                        WriteError($"【{stationName}】无法获取配置");
+                        status = ZeroCommandStatus.Error;
                         return null;
                     }
+                    if (result == ZeroHelper.zero_command_no_find)
+                    {
+                        WriteError($"【{stationName}】未安装");
+                        status = ZeroCommandStatus.NoFind;
+                        return null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    status = ZeroCommandStatus.Exception;
+                    return null;
+                }
+                try
+                {
                     var config = JsonConvert.DeserializeObject<StationConfig>(result);
                     Configs.Add(stationName, config);
+                    status = ZeroCommandStatus.Success;
                     return config;
                 }
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
+                    status = ZeroCommandStatus.Error;
                     return null;
                 }
             }
@@ -212,32 +233,39 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig InstallApiStation(string stationName)
+        public static StationConfig InstallStation(string stationName,string type)
         {
-            StationConfig config;
             lock (Configs)
             {
-                if (Configs.TryGetValue(stationName, out config))
+                if (Configs.TryGetValue(stationName, out var config))
                     return config;
-            }
 
-            lock (Configs)
-            {
+                WriteInfo($"【{stationName}】auto regist...");
                 try
                 {
-                    var result = ZeroManageAddress.RequestNet("install_api", stationName);
-                    if (result == null)
+                    var result = ZeroManageAddress.RequestNet("install", type, stationName);
+
+                    switch (result)
                     {
-                        WriteError("无法获取消息中心的配置");
-                        return null;
+                        case null:
+                            WriteError($"【{stationName}】auto regist failed");
+                            return null;
+                        case ZeroHelper.zero_command_no_support:
+                            WriteError($"【{stationName}】auto regist failed:type no supper");
+                            return null;
+                        case ZeroHelper.zero_command_failed:
+                            WriteError($"【{stationName}】auto regist failed:config error");
+                            return null;
                     }
                     config = JsonConvert.DeserializeObject<StationConfig>(result);
                     Configs.Add(stationName, config);
+                    WriteError($"【{stationName}】auto regist succeed");
                     return config;
                 }
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
+                    WriteError($"【{stationName}】auto regist failed:{e.Message}");
                     return null;
                 }
             }
@@ -310,8 +338,8 @@ namespace Agebull.ZeroNet.Core
                 return;
             var station = new ApiStation
             {
-                Config = GetConfig(Config.StationName),
-                StationName = Config.StationName
+                Config = GetConfig(Config.StationName,out var status),
+                StationName = Config?.StationName
             };
             foreach (var action in discover.ApiItems)
             {
@@ -381,6 +409,7 @@ namespace Agebull.ZeroNet.Core
         public static void Run()
         {
             WriteInfo("Program Start...");
+            WriteLine(ZeroManageAddress);
             State = StationState.Run;
             Task.Factory.StartNew(SystemMonitor.RunMonitor);
             try
@@ -388,7 +417,7 @@ namespace Agebull.ZeroNet.Core
                 var res = ZeroManageAddress.RequestNet("ping");
                 if (res == null)
                 {
-                    WriteError("ZeroCenter can`t connection,waiting for monitor message..");
+                    WriteError("ZeroCenter can`t connection,waiting for monitor message.." );
                     return;
                 }
                 foreach (var station in Stations.Values)

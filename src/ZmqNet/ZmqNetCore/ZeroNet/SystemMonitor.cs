@@ -51,13 +51,13 @@ namespace Agebull.ZeroNet.Core
                         }
                         switch (description[idx++])
                         {
-                            case ZeroHelper.zero_pub_sub:
+                            case ZeroFrameType.SubTitle:
                                 item.SubTitle = val;
                                 break;
-                            case ZeroHelper.zero_pub_publisher:
+                            case ZeroFrameType.Publisher:
                                 item.Station = val;
                                 break;
-                            case ZeroHelper.zero_arg:
+                            case ZeroFrameType.Argument:
                                 item.Content = val;
                                 break;
                         }

@@ -83,7 +83,7 @@ static DWORD worker_task(LPVOID arg)
 		//封装消息
 		s_sendmore(worker, address);      //地址信封
 		s_sendmore(worker, "");              //空帧
-		s_send(worker, "OK");                //真实消息
+		s_send(worker, zero_command_ok);                //真实消息
 		free(address);
 	}
 	zmq_close(worker);

@@ -37,3 +37,4 @@ packages
 /src/ZmqNet/publish
 /src/publish
 /src/ZmqNet/PublishNuget
+/src/UpgradeLog.htm

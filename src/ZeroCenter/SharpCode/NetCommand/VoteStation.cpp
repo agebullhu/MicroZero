@@ -1,5 +1,5 @@
 /**
- * ZMQ广播代理类
+ * ZMQ投票代理类
  *
  *
  */
@@ -65,7 +65,7 @@ namespace agebull
 		{
 			if (send_state(caller, *lines[0], *lines[1], *lines[2]))
 				return sharp_char("vote start");
-			return sharp_char("bad");
+			return sharp_char(zero_command_failed);
 		}
 
 
@@ -82,7 +82,7 @@ namespace agebull
 			{
 				save_plan(socket, list);
 				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, "plan");
+				_zmq_state = send_late(socket, zero_command_plan);
 				return;
 			}
 
@@ -101,7 +101,7 @@ namespace agebull
 				if (redis->hgetall(key, values))
 					send_state(*list[0], *list[2], values["*"].c_str(), values);
 				else
-					send_state(*list[0], *list[2], "+error", values);
+					send_state(*list[0], *list[2], zero_vote_unknow_error, values);
 				break;
 			}
 			case '@': //开始投票
@@ -112,23 +112,23 @@ namespace agebull
 					send_state(*list[0], *list[2], values["*"].c_str(), values);
 				}
 				else
-					send_state(*list[0], *list[2], "*", "+error");
+					send_state(*list[0], *list[2], "*", zero_vote_unknow_error);
 				break;
 			case '%': //继续等待投票结束
-				redis->hset(key, "*", "-waiting");
-				send_state(*list[0], *list[2], "*", "-waiting");
+				redis->hset(key, "*", zero_vote_waiting);
+				send_state(*list[0], *list[2], "*", zero_vote_waiting);
 				break;
 			case 'v': //结束投票
 				redis->hset(key, "*", "-end");
-				send_state(*list[0], *list[2], "*", "-end");
+				send_state(*list[0], *list[2], "*", zero_vote_end);
 				break;
 			case 'x': //删除投票
-				redis->hset(key, "*", "-close");
+				redis->hset(key, "*", zero_vote_closed);
 				redis->pexpire(key, 360000);//一小时后过期
-				send_state(*list[0], *list[2], "*", "-bye");
+				send_state(*list[0], *list[2], "*", zero_vote_bye);
 				break;
 			default:
-				send_state(*list[0], *list[2], "*", "+error");
+				send_state(*list[0], *list[2], "*", zero_vote_unknow_error);
 				break;
 			}
 		}
@@ -139,7 +139,7 @@ namespace agebull
 			trans_redis& redis = trans_redis::get_context();
 			char key[256];
 			sprintf(key, "vote:%s", request_token);
-			redis->hset(key, "*", "-start");
+			redis->hset(key, "*", zero_vote_start);
 			redis->hset(key, "#", request_argument);
 			redis->hset(key, "@", client_addr);
 
@@ -151,9 +151,9 @@ namespace agebull
 				_zmq_state = send_more(_inner_socket, request_token);
 				_zmq_state = send_late(_inner_socket, request_argument);
 				if (_zmq_state == zmq_socket_state::Succeed)
-					redis->hset(key, voter.second.flow_name.c_str(), "-send");
+					redis->hset(key, voter.second.flow_name.c_str(), zero_vote_sended);
 				else
-					redis->hset(key, voter.second.flow_name.c_str(), "+error");
+					redis->hset(key, voter.second.flow_name.c_str(), zero_vote_unknow_error);
 			}
 			return _zmq_state == zmq_socket_state::Succeed;
 		}
@@ -167,7 +167,7 @@ namespace agebull
 			sprintf(key, "vote:%s", request_token);
 			if (!redis->hgetall(key, values))
 			{
-				send_state(client_addr, request_token, "*", "+error");
+				send_state(client_addr, request_token, "*", zero_vote_unknow_error);
 				return false;
 			}
 			redis->hset(key, "@", client_addr);
@@ -191,7 +191,7 @@ namespace agebull
 						_zmq_state = send_more(_inner_socket, request_token);
 						_zmq_state = send_late(_inner_socket, request_argument);
 						if (_zmq_state == zmq_socket_state::Succeed)
-							redis->hset(key, kv.first.c_str(), "-send");
+							redis->hset(key, kv.first.c_str(), zero_vote_sended);
 						break;
 					default:;
 					}
@@ -246,12 +246,12 @@ namespace agebull
 
 			switch (list[2][0])
 			{
-			case '@'://加入
+			case zero_command_name_worker_join://加入
 				worker_join(*list[0], *list[3], true);
 				send_addr(_inner_socket, *list[0]);
-				send_late(_inner_socket, "wecome");
+				send_late(_inner_socket, zero_command_wecome);
 				return;
-			case '*'://开始工作
+			case zero_command_name_start://开始工作
 				return;
 			default: break;
 			}

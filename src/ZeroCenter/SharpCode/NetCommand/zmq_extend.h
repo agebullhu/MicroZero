@@ -1,6 +1,7 @@
 #pragma once
 #ifndef _ZMQ_EXTEND_H_
 #include <stdinc.h>
+#include <command.h>
 
 namespace agebull
 {
@@ -12,30 +13,6 @@ namespace agebull
 #define STATION_TYPE_API 3
 #define STATION_TYPE_VOTE 4
 #define STATION_TYPE_PUBLISH 5
-		//正常状态
-		const char zero_status_success = '+';
-		//错误状态
-		const char zero_status_bad = '-';
-		//终止符号
-		const char zero_end = '?';
-		//执行计划
-		const char zero_plan = '@';
-		//参数
-		const char zero_arg = '$';
-		//请求ID
-		const char zero_request_id = ':';
-		//请求者/生产者
-		const char zero_requester = '>';
-		//发布者/生产者
-		const char zero_pub_publisher = zero_requester;
-		//回复者/浪费者
-		const char zero_responser = '<';
-		//订阅者/浪费者
-		const char zero_pub_subscriber = zero_responser;
-		//广播主题
-		const char zero_pub_title = '*';
-		//广播副题
-		const char zero_pub_sub = '&';
 
 
 		/**
@@ -609,9 +586,9 @@ namespace agebull
 		/**
 		* \brief 发送
 		*/
-		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls)
+		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
 		{
-			size_t idx = 0;
+			size_t idx = first_index;
 			for (; idx < ls.size() - 1; idx++)
 			{
 				int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
@@ -979,7 +956,7 @@ namespace agebull
 				node.add_text("messages_description", messages_description.get_buffer());
 				acl::json_node& array = node.add_array(true);
 				array.set_tag("messages");
-				for (const auto line : messages)
+				for (const auto& line : messages)
 				{
 					array.add_array_text(*line);
 				}

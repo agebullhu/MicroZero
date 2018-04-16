@@ -245,9 +245,9 @@ namespace agebull
 			/**
 			*\brief ·¢ËÍÏûÏ¢
 			*/
-			bool send_data(vector<sharp_char>& datas)
+			bool send_data(vector<sharp_char>& datas,int first_index=0)
 			{
-				_zmq_state = send(_inner_socket, datas);
+				_zmq_state = send(_inner_socket, datas, first_index);
 				return _zmq_state == zmq_socket_state::Succeed;
 			}
 			/**

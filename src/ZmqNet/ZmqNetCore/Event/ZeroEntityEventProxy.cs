@@ -23,7 +23,11 @@ namespace ZeroApi
         /// </summary>
         public ZeroEntityEventProxy()
         {
-            _config = StationProgram.GetConfig("EntityEvent");
+            _config = StationProgram.GetConfig("EntityEvent", out var status);
+            if (status == ZeroCommandStatus.NoFind)
+            {
+                return;
+            }
             if (_config == null)
                 throw new Exception("无法拉取配置");
             _socket = new RequestSocket();
@@ -49,6 +53,7 @@ namespace ZeroApi
 
         private bool Request(string msg, ref int retry)
         {
+
             if (++retry > 5)
             {
                 LogRecorder.Error($"数据事件服务(EntityEvent)无法连接!\r\n{msg}");
@@ -76,6 +81,8 @@ namespace ZeroApi
 
         private void Request(object arg)
         {
+            if (_socket == null)
+                return;
             var retry = 0;
             Request(arg.ToString(), ref retry);
         }
@@ -90,14 +97,14 @@ namespace ZeroApi
 {StationProgram.Config.StationName}
 {data.GetType().FullName}
 {type}
-{(data == null ? "{}" : JsonConvert.SerializeObject(data))}";
+{(JsonConvert.SerializeObject(data))}";
             Task.Factory.StartNew(Request, msg);
         }
 
         /// <summary>清理资源</summary>
         protected override void OnDispose()
         {
-            _socket.Dispose();
+            _socket?.Dispose();
         }
     }
 }

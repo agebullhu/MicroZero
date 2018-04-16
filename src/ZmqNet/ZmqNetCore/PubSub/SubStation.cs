@@ -16,6 +16,10 @@ namespace Agebull.ZeroNet.PubSub
     public abstract class SubStation : ZeroStation
     {
         /// <summary>
+        /// 类型
+        /// </summary>
+        public override int StationType => StationTypePublish;
+        /// <summary>
         /// 订阅主题
         /// </summary>
         public string Subscribe { get; set; } = "";
@@ -28,11 +32,14 @@ namespace Agebull.ZeroNet.PubSub
         public static void Run(SubStation station)
         {
             station.Close();
-            station.Config = StationProgram.GetConfig(station.StationName);
-            if (station.Config == null)
+            station.Config = StationProgram.GetConfig(station.StationName,out var status);
+            if (status == ZeroCommandStatus.NoFind)
             {
-                StationProgram.WriteError($"{station.StationName} not find,try install...");
-                StationProgram.InstallApiStation(station.StationName);
+                StationProgram.WriteError($"{station.StationName} NoFind");
+            }
+            else if (station.Config == null)
+            {
+                StationProgram.WriteError($"{station.StationName} No Find");
                 return;
             }
             station.Run();
@@ -95,7 +102,7 @@ namespace Agebull.ZeroNet.PubSub
             }
             RunState = StationState.Run;
 
-            _items = MulitToOneQueue<PublishItem>.Load(CacheFileName);
+            Items = SyncQueue<PublishItem>.Load(CacheFileName);
             Task.Factory.StartNew(CommandTask);
 
             var task1 = new Task(PollTask);
@@ -116,7 +123,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 请求队列
         /// </summary>
-        private static MulitToOneQueue<PublishItem> _items = new MulitToOneQueue<PublishItem>();
+        public  SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
         /// <summary>
         /// 命令轮询
@@ -152,18 +159,18 @@ namespace Agebull.ZeroNet.PubSub
                         }
                         switch (description[idx++])
                         {
-                            case ZeroHelper.zero_pub_sub:
+                            case ZeroFrameType.SubTitle:
                                 item.SubTitle = val;
                                 break;
-                            case ZeroHelper.zero_pub_publisher:
+                            case ZeroFrameType.Publisher:
                                 item.Station = val;
                                 break;
-                            case ZeroHelper.zero_arg:
+                            case ZeroFrameType.Argument:
                                 item.Content = val;
                                 break;
                         }
                     }
-                    _items.Push(item);
+                    Items.Push(item);
                 }
                 catch (Exception e)
                 {
@@ -174,9 +181,11 @@ namespace Agebull.ZeroNet.PubSub
             }
             InPoll = false;
             StationProgram.WriteLine($"【{StationName}:{RealName}】poll stop");
-            _items.Save(CacheFileName);
+            Items.Save(CacheFileName);
             CloseSocket();
+
         }
+
         /// <summary>
         /// 关闭套接字
         /// </summary>
@@ -206,10 +215,10 @@ namespace Agebull.ZeroNet.PubSub
         {
             while (RunState == StationState.Run)
             {
-                if (!_items.StartProcess(out var item, 1000))
+                if (!Items.StartProcess(out var item, 1000))
                     continue;
                 Handle(item);
-                _items.EndProcess();
+                Items.EndProcess();
             }
         }
     }

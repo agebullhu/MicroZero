@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.4" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

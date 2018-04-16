@@ -25,7 +25,7 @@ namespace agebull
 			sharp_char command(const char* caller, vector< sharp_char> lines) override
 			{
 				bool res = publish(caller, lines[0], lines[1], lines[1]);
-				return sharp_char(res ? "OK" : "Bad");
+				return sharp_char(res ? zero_command_ok : zero_command_failed);
 			}
 
 
@@ -60,6 +60,7 @@ namespace agebull
 			*\brief ¹ã²¥ÄÚÈİ
 			*/
 			bool publish(const string& caller, const string& title, const string& plan, const string& sub, const string& arg) const;
+		
 		};
 
 		/**
@@ -104,7 +105,7 @@ namespace agebull
 			{
 				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() < NET_STATE_DISTORY;
 			}
-			static system_monitor_station* example;
+			static system_monitor_station* example_;
 		public:
 			system_monitor_station()
 				:broadcasting_station_base("SystemMonitor", STATION_TYPE_MONITOR)
@@ -141,7 +142,7 @@ namespace agebull
 			*/
 			static void run()
 			{
-				if (example != nullptr)
+				if (example_ != nullptr)
 					return;
 				zmq_threadstart(launch, nullptr);
 			}
@@ -155,8 +156,8 @@ namespace agebull
 			*/
 			static bool monitor(string publiher, string state, string content)
 			{
-				if (example != nullptr)
-					return example->publish(publiher, state, content);
+				if (example_ != nullptr)
+					return example_->publish(publiher, state, content);
 				return false;
 			}
 		};

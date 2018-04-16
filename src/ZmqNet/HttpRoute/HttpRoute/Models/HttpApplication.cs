@@ -7,7 +7,6 @@ using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Agebull.ZeroNet.LogRecorder;
-using Agebull.ZeroNet.LogService;
 
 namespace ZeroNet.Http.Route
 {

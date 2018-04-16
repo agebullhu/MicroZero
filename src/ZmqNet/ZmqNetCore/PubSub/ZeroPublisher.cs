@@ -26,7 +26,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 请求队列
         /// </summary>
-        private static MulitToOneQueue<PublishItem> _items = new MulitToOneQueue<PublishItem>();
+        private static readonly SyncQueue<PublishItem> _items = new SyncQueue<PublishItem>();
 
         /// <summary>
         ///     运行状态
@@ -89,24 +89,38 @@ namespace Agebull.ZeroNet.PubSub
                     Content = value ?? "{}"
                 });
         }
-
+        /// <summary>
+        /// 广播总数
+        /// </summary>
+        public static ulong PubCount { get;private set; }
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
         private static void SendTask()
         {
+            
             _state = 2;
+            DateTime start = DateTime.Now;
+            RequestSocket socket = null;
             while (_state == 2)
             {
                 if (!_items.StartProcess(out var item, 100))
                     continue;
-                if (!GetSocket(item.Station, out var socket))
+                if (socket == null )
                 {
-                    LogRecorder.Trace(LogType.Error, "Publish",
-                        $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
+                    if (!GetSocket(item.Station, out socket, out var status))
+                    {
+                        if (status == ZeroCommandStatus.NoFind)
+                        {
+                            Thread.Sleep(50);
+                            continue;
+                        }
+                        LogRecorder.Trace(LogType.Error, "Publish",
+                            $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
 {item.Content}");
-                    _items.EndProcess();
-                    continue;
+                        _items.EndProcess();
+                        continue;
+                    }
                 }
                 if (!Send(socket, item))
                 {
@@ -115,7 +129,9 @@ namespace Agebull.ZeroNet.PubSub
 {item.Content}");
                     continue;
                 }
+
                 _items.EndProcess();
+                PubCount++;
             }
             _state = 4;
         }
@@ -128,24 +144,23 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private static bool Send(RequestSocket socket, PublishItem item)
         {
+            byte[] description = new byte[5];
+            description[0] = 3;
+            description[1] = ZeroFrameType.Publisher;
+            description[2] = ZeroFrameType.SubTitle;
+            description[3] = ZeroFrameType.Argument;
+            description[4] = ZeroFrameType.End;
             try
             {
                 lock (socket)
                 {
-                    byte[] description = new byte[5];
-                    description[0] = (byte)3;
-                    description[1] = ZeroHelper.zero_pub_publisher;
-                    description[2] = ZeroHelper.zero_pub_sub;
-                    description[3] = ZeroHelper.zero_arg;
-                    description[4] = ZeroHelper.zero_end;
                     socket.SendMoreFrame(item.Title);
                     socket.SendMoreFrame(description);
                     socket.SendMoreFrame(StationProgram.Config.StationName);
                     socket.SendMoreFrame(item.SubTitle);
                     socket.SendFrame(item.Content);
                     var word = socket.ReceiveFrameString();
-                    //StationProgram.WriteLine($"【{item.Station}-{item.Title}】{word}");
-                    return word == "ok";
+                    return word == ZeroHelper.zero_command_ok;
                 }
             }
             catch (Exception e)
@@ -162,22 +177,49 @@ namespace Agebull.ZeroNet.PubSub
             return false;
         }
 
+        static HashSet<string> registing = new HashSet<string>();
+
         /// <summary>
         ///     取得Socket对象
         /// </summary>
         /// <param name="type"></param>
         /// <param name="socket"></param>
+        /// <param name="status"></param>
         /// <returns></returns>
-        private static bool GetSocket(string type, out RequestSocket socket)
+        private static bool GetSocket(string type, out RequestSocket socket, out ZeroCommandStatus status)
         {
+            lock (registing)
+            {
+                if (registing.Contains(type))
+                {
+                    socket = null;
+                    status = ZeroCommandStatus.NoFind;
+                    return false;
+                }
+            }
             try
             {
                 lock (Publishers)
                 {
                     if (Publishers.TryGetValue(type, out socket))
+                    {
+                        status = ZeroCommandStatus.Success;
                         return true;
-                    var config = StationProgram.GetConfig(type);
-                    if (config == null)
+                    }
+                    var config = StationProgram.GetConfig(type,out status);
+                    if (status == ZeroCommandStatus.NoFind)
+                    {
+                        lock (registing)
+                        {
+                            registing.Add(type);
+                        }
+                        config = StationProgram.InstallStation(type, "pub");
+                        lock (registing)
+                        {
+                            registing.Remove(type);
+                        }
+                    }
+                    else if (config == null)
                     {
                         StationProgram.WriteError($"【{type}】connect error =>无法拉取配置");
                         return false;
@@ -196,6 +238,7 @@ namespace Agebull.ZeroNet.PubSub
                 LogRecorder.Exception(e);
                 StationProgram.WriteError($"【{type}】connect error =>连接时发生异常：{e}");
                 socket = null;
+                status = ZeroCommandStatus.Exception;
                 return false;
             }
 

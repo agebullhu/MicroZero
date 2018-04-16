@@ -55,9 +55,6 @@
     <Filter Include="net_cmd\dispatcher">
       <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net_cmd\MQ">
-      <UniqueIdentifier>{300914ce-f169-44bb-a1d2-cdc9485158d8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -186,6 +183,9 @@
       <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\NetCommand\ZeroStation.h">
+      <Filter>net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SharpCode\command.h">
       <Filter>net_cmd\base</Filter>
     </ClInclude>
   </ItemGroup>

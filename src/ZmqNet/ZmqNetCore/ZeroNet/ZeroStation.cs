@@ -11,6 +11,31 @@ namespace Agebull.ZeroNet.Core
     public abstract class ZeroStation
     {
         /// <summary>
+        /// 调度器
+        /// </summary>
+        public const int StationTypeDispatcher = 1;
+        /// <summary>
+        /// 监视器
+        /// </summary>
+        public const int StationTypeMonitor = 2;
+        /// <summary>
+        /// API
+        /// </summary>
+        public const int StationTypeApi = 3;
+        /// <summary>
+        /// 投票器
+        /// </summary>
+        public const int StationTypeVote = 4;
+        /// <summary>
+        /// 广播
+        /// </summary>
+        public const int StationTypePublish = 5;
+
+        /// <summary>
+        /// 类型
+        /// </summary>
+        public abstract int StationType { get;  }
+        /// <summary>
         /// 站点名称
         /// </summary>
         public string StationName { get; set; }
@@ -56,11 +81,32 @@ namespace Agebull.ZeroNet.Core
         public static void Run(ZeroStation station)
         {
             station.Close();
-            station.Config = StationProgram.GetConfig(station.StationName);
+            station.Config = StationProgram.GetConfig(station.StationName,out var status);
             if (station.Config == null)
             {
-                StationProgram.WriteError($"{station.StationName} not find,try install...");
-                StationProgram.InstallApiStation(station.StationName);
+                string type;
+                switch (station.StationType)
+                {
+                    case StationTypeApi:
+                        type = "api";
+                        break;
+                    case StationTypePublish:
+                        type = "pub";
+                        break;
+                    case StationTypeVote:
+                        type = "vote";
+                        break;
+                    default:
+                        StationProgram.WriteError($"【{station.StationName}】type no supper,failed!");
+                        return;
+                }
+                StationProgram.WriteError($"【{station.StationName}】not find,try install...");
+                StationProgram.InstallStation(station.StationName, type);
+                return;
+            }
+            if (station.Config == null)
+            {
+                StationProgram.WriteError($"【{station.StationName}】config cann`t get,failed!");
                 return;
             }
             station.Run();
@@ -69,7 +115,7 @@ namespace Agebull.ZeroNet.Core
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        protected void OnTaskStop(Task task)
+        protected virtual void OnTaskStop(Task task)
         {
             while (InPoll)
                 Thread.Sleep(50);
