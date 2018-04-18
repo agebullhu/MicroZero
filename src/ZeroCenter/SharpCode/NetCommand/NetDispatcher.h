@@ -75,7 +75,7 @@ namespace agebull
 			/**
 			* \brief 处理请求
 			*/
-			void request(ZMQ_HANDLE socket)override;
+			void request(ZMQ_HANDLE socket,bool inner)override;
 		public:
 			/**
 			* \brief 执行一条命令

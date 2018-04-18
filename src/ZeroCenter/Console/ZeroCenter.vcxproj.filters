@@ -186,7 +186,7 @@
       <Filter>net_cmd\base</Filter>
     </ClInclude>
     <ClInclude Include="..\SharpCode\command.h">
-      <Filter>net_cmd\base</Filter>
+      <Filter>net_cmd\sharp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

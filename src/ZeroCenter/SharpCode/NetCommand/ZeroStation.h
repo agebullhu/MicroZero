@@ -344,7 +344,7 @@ namespace agebull
 			/**
 			* \brief 调用集合的响应
 			*/
-			virtual void request(ZMQ_HANDLE socket) = 0;
+			virtual void request(ZMQ_HANDLE socket,bool inner) = 0;
 			/**
 			* 心跳的响应
 			*/

@@ -166,7 +166,7 @@ namespace agebull
 					break;
 				}
 
-				int state = zmq_poll(_poll_items, _poll_count, 1000);
+				const int state = zmq_poll(_poll_items, _poll_count, 1000);
 				if (state == 0)//³¬Ê±
 					continue;
 				if (_station_state == station_state::Pause)
@@ -180,8 +180,10 @@ namespace agebull
 				{
 					if (_poll_items[idx].revents & ZMQ_POLLIN)
 					{
-						if (_poll_items[idx].socket == _out_socket || _poll_items[idx].socket == _out_socket_inproc)
-							request(_poll_items[idx].socket);
+						if (_poll_items[idx].socket == _out_socket)
+							request(_poll_items[idx].socket,false);
+						else if (_poll_items[idx].socket == _out_socket_inproc)
+							request(_poll_items[idx].socket,true);
 						else if (_poll_items[idx].socket == _inner_socket)
 							response();
 						else if (_poll_items[idx].socket == _heart_socket)

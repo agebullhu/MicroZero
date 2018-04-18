@@ -12,19 +12,20 @@ namespace agebull
 			vector<sharp_char> response;
 			inproc_request_socket<ZMQ_REQ> socket(caller, _station_name.c_str());
 			if(socket.request(lines, response))
-				return response.empty() ? zero_api_unknow_error : response[0];
+				return response.empty() ? ZERO_STATUS_ERROR : response[0];
 			switch(socket.get_state())
 			{
 			case zmq_socket_state::TimedOut:
-				return zero_command_timeout;
+				return ZERO_STATUS_TIMEOUT;
 			default:
-				return zero_command_net_error;
+				return ZERO_STATUS_NET_ERROR;
 			}
 		}
+
 		/**
 		 * 当远程调用进入时的处理
 		 */
-		void api_station::request(ZMQ_HANDLE socket)
+		void api_station::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
 			//0 请求地址 1 空帧 2命令 3请求标识 4上下文 5参数
@@ -38,55 +39,189 @@ namespace agebull
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			if (list[2][0] == '@')//计划类型
+			const size_t list_size = list.size();
+			if (list_size <= 3)
 			{
-				save_plan(socket, list);
 				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, zero_command_plan);
+				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
+				return;
 			}
-			else
+			sharp_char& description = list[2];
+			//内部命令通知退出
+			if (inner && description[1] == 'B')
 			{
-				job_start(list);
+				worker_left(*list[3]);
+				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_late(socket, ZERO_STATUS_OK);
+				return;
 			}
+			const size_t frame_size = static_cast<size_t>(description[0]);
+			if(list_size <= 3 || frame_size >= description.size() || (frame_size + 4) != list_size)
+			{
+				_zmq_state = send_addr(socket, *list[0]);
+				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
+				return;
+			}
+
+			char* const buf = description.get_buffer();
+			for (size_t idx = 1; idx <= frame_size; idx++)
+			{
+				if (buf[idx] == ZERO_FRAME_PLAN)
+				{
+					job_plan(socket, list);
+					return;
+				}
+			}
+			job_start(socket, list);
+		}
+		/**
+		* \brief 工作进入计划
+		*/
+		bool api_station::job_plan(ZMQ_HANDLE socket,vector<sharp_char>& list)
+		{
+			const sharp_char& caller = list[0];
+			sharp_char& description = list[2];
+			char* const buf = description.get_buffer();
+			const size_t frame_size = static_cast<size_t>(buf[0]);
+
+			sharp_char plan, context, arg, command, requester, id;
+			for (size_t idx = 1; idx <= frame_size; idx++)
+			{
+				switch (buf[idx])
+				{
+				case ZERO_FRAME_PLAN:
+					plan = list[3 + idx];
+					break;
+				case ZERO_FRAME_REQUESTER:
+					requester = list[3 + idx];
+					break;
+				case ZERO_FRAME_CONTEXT:
+					context = list[3 + idx];
+					break;
+				case ZERO_FRAME_ARG:
+					arg = list[3 + idx];
+					break;
+				case ZERO_FRAME_REQUEST_ID:
+					id = list[3 + idx];
+					break;
+				case ZERO_FRAME_COMMAND:
+					command = list[3 + idx];
+					break;
+				}
+			}
+			int cnt = 0;
+			buf[++cnt] = ZERO_FRAME_PUBLISHER;
+			plan_message message;
+			message.messages.push_back(description);
+			message.messages.push_back(requester);
+			if (!id.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_REQUEST_ID;
+				message.messages.push_back(id);
+			}
+			if (!context.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_CONTEXT;
+				message.messages.push_back(context);
+			}
+			if (!command.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_COMMAND;
+				message.messages.push_back(command);
+			}
+			if (!arg.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_ARG;
+				message.messages.push_back(arg);
+			}
+			buf[0] = cnt;
+
+			message.read_plan(plan.get_buffer());
+			message.request_caller = caller;
+			message.messages_description = description;
+			plan_next(message, true);
+
+
+			_zmq_state = send_addr(socket, *caller);
+			_zmq_state = send_late(socket, ZERO_STATUS_PLAN);
+			return true;
+
 		}
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		bool api_station::job_start(vector<sharp_char>& list)
+		bool api_station::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)
 		{
-			//0 请求地址 1 空帧 2命令 3请求标识 4上下文 5参数
-			if (list.empty())
-			{
-				return false;
-			}
-			const char* client_addr = *list[0];
-
-			if(list.size() < 4 || list[2].empty())
-			{
-				const ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
-				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, zero_command_invalid);
-				return _zmq_state == zmq_socket_state::Succeed;
-			}
-			//心跳通知正常退出(有安全风险，即被外部调用)
-			if (list[2][0] == '#' && list[0][0] == '_')
-			{
-				_zmq_state = send_addr(_inner_socket, *list[3]);
-				_zmq_state = send_late(_inner_socket, zero_command_bye);
-				return _zmq_state == zmq_socket_state::Succeed;
-			}
+			const sharp_char& caller = list[0];
 			//路由到其中一个工作对象
 			const char* worker = _balance.get_host();
 			if (worker == nullptr)
 			{
-				const ZMQ_HANDLE socket = list[0][0] == '_' ? _out_socket_inproc : _out_socket;
-				_zmq_state = send_addr(socket, client_addr);
-				_zmq_state = send_late(socket, zero_api_not_worker);
+				_zmq_state = send_addr(socket, *caller);
+				_zmq_state = send_late(socket, ZERO_STATUS_API_NOT_WORKER);
 				return _zmq_state == zmq_socket_state::Succeed;
 			}
+			sharp_char& description = list[2];
+			char* const buf = description.get_buffer();
+			const size_t frame_size = static_cast<size_t>(buf[0]);
+
+			sharp_char plan, context, arg, command, requester, id;
+			for (size_t idx = 1; idx <= frame_size; idx++)
+			{
+				switch (buf[idx])
+				{
+				case ZERO_FRAME_PLAN:
+					plan = list[3 + idx];
+					break;
+				case ZERO_FRAME_REQUESTER:
+					requester = list[3 + idx];
+					break;
+				case ZERO_FRAME_CONTEXT:
+					context = list[3 + idx];
+					break;
+				case ZERO_FRAME_ARG:
+					arg = list[3 + idx];
+					break;
+				case ZERO_FRAME_REQUEST_ID:
+					id = list[3 + idx];
+					break;
+				case ZERO_FRAME_COMMAND:
+					command = list[3 + idx];
+					break;
+				}
+			}
+			int cnt = 0;
+			buf[++cnt] = ZERO_FRAME_PUBLISHER;
+			plan_message message;
+			message.messages.push_back(description);
+			message.messages.push_back(requester);
+			if (!id.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_REQUEST_ID;
+				message.messages.push_back(id);
+			}
+			if (!context.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_CONTEXT;
+				message.messages.push_back(context);
+			}
+			if (!command.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_COMMAND;
+				message.messages.push_back(command);
+			}
+			if (!arg.empty())
+			{
+				buf[++cnt] = ZERO_FRAME_ARG;
+				message.messages.push_back(arg);
+			}
+			buf[0] = cnt;
+
+			message.read_plan(plan.get_buffer());
+			message.request_caller = caller;
+			message.messages_description = description;
 
 			_zmq_state = send_addr(_inner_socket, worker);
-			//list.erase(++list.begin());
 			_zmq_state = send(_inner_socket, list);
 			return _zmq_state == zmq_socket_state::Succeed;
 		}
@@ -96,27 +231,8 @@ namespace agebull
 		*/
 		bool api_station::job_end(vector<sharp_char>& list)
 		{
-			assert(list.size() >= 3 && !list[2].empty());
-			
-			//list.erase(b);
-			list[2].swap(list[1]);
-			_zmq_state = send(list[1][0] == '_' ? _out_socket_inproc : _out_socket, ++list.begin(), list.end());
+			_zmq_state = send(list[1][0] == '_' ? _out_socket_inproc : _out_socket, list , 2);
 			return _zmq_state == zmq_socket_state::Succeed;
-		}
-
-		void api_station::worker_join(const char* addr, const char* value, bool ready)
-		{
-			if (addr == nullptr || strlen(addr) == 0)
-				return;
-			if (ready)
-			{
-				_balance.join(addr);
-				balance_station<api_station, string, STATION_TYPE_API>::worker_join(addr, value, ready);
-			}
-			else
-			{
-				_balance.succees(addr);
-			}
 		}
 
 		/**
@@ -125,7 +241,7 @@ namespace agebull
 		void api_station::response()
 		{
 			vector<sharp_char> list;
-			//0 worker地址 1空帧 2请求者地址 3请求标识 4返回结果
+			//0 worker地址 1空帧 2请求者地址
 			_zmq_state = recv(_inner_socket, list);
 			if (_zmq_state == zmq_socket_state::TimedOut)
 			{
@@ -136,19 +252,32 @@ namespace agebull
 				log_error3("接收结果失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
+			/*
+###### 状态标识
+- +：表示成功状态
+- -：表示失败状态
+- @：表示加入API或是Vote工作组 
+- $：表示继续等待回复  
+- !：表示退出API或是Vote工作组
+			 */
 			switch (list[2][0])
 			{
-			case '@'://加入
+			case ZERO_WORKER_JOIN:
 				worker_join(*list[0], *list[3], true);
 				send_addr(_inner_socket, *list[0]);
-				send_late(_inner_socket, zero_command_wecome);
+				send_late(_inner_socket, ZERO_STATUS_WECOME);
 				return;
-			case '*'://开始工作
+			case ZERO_WORKER_LEFT:
+				worker_left(*list[0]);
+				send_addr(_inner_socket, *list[0]);
+				send_late(_inner_socket, ZERO_STATUS_BYE);
+				return;
+			case ZERO_WORKER_LISTEN:
 				return;
 			default:
+				_zmq_state = send(list[1][0] == '_' ? _out_socket_inproc : _out_socket, list, 2);
 				break;
 			}
-			job_end(list);
 		}
 	}
 }

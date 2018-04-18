@@ -106,7 +106,7 @@ namespace agebull
 			/**
 			* \brief 调用集合的响应
 			*/
-			void request(ZMQ_HANDLE socket) override;
+			void request(ZMQ_HANDLE socket, bool inner) override;
 
 			/**
 			* \brief 执行一条命令

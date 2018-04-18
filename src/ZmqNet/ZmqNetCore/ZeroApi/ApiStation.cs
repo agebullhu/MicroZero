@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common;
 using Agebull.Common.Logging;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -19,12 +18,7 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public class ApiStation : ZeroStation
     {
-        #region Api调用
-
-        /// <summary>
-        /// 类型
-        /// </summary>
-        public override int StationType => StationTypeApi;
+        #region 注册方法
 
 
         private readonly Dictionary<string, ApiAction> _apiActions =
@@ -134,108 +128,100 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
-        /// <summary>
-        /// 参数错误的Json文本
-        /// </summary>
-        /// <remarks>参数校验不通过</remarks>
-        public static readonly string ArgumentError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError));
+        #endregion
 
+        #region Api调用
         /// <summary>
-        /// 拒绝访问的Json文本
+        /// 类型
         /// </summary>
-        /// <remarks>权限校验不通过</remarks>
-        public static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.DenyAccess));
-
-        /// <summary>
-        /// 未知错误的Json文本
-        /// </summary>
-        public static readonly string UnknowError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.UnknowError));
-
-        /// <summary>
-        /// 网络错误的Json文本
-        /// </summary>
-        /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static readonly string NetworkError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NetworkError));
-
-        /// <summary>
-        /// 内部错误的Json文本
-        /// </summary>
-        /// <remarks>执行方法时抛出未处理异常</remarks>
-        public static readonly string InnerError = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.InnerError));
-
-        /// <summary>
-        /// 找不到方法的Json文本
-        /// </summary>
-        /// <remarks>方法未注册</remarks>
-        public static readonly string NoFind = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NoFind));
+        public override int StationType => StationTypeApi;
 
         /// <summary>
         /// 执行命令
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="item"></param>
         /// <returns></returns>
-        public string ExecCommand(List<string> args)
+        public bool ExecCommand(ApiCallItem item)
         {
+            if (!_apiActions.TryGetValue(item.ApiName, out var action))
+            {
+                item.Result = ZeroNetStatus.NoFindJson;
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.NoFind;
+                return false;
+            }
             //1 还原调用上下文
             try
             {
-                var context = JsonConvert.DeserializeObject<ApiContext>(args[4]);
-                ApiContext.SetContext(context);
-                ApiContext.TryCheckByAnymouse();
-                ApiContext.RequestContext.ServiceKey = args[0];
-                ApiContext.RequestContext.RequestId = args[3];
+                if (!string.IsNullOrWhiteSpace(item.ContextJson))
+                {
+                    var context = JsonConvert.DeserializeObject<ApiContext>(item.ContextJson);
+                    ApiContext.SetContext(context);
+                }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                return DenyAccess;
+                item.Result = ZeroNetStatus.ArgumentErrorJson;
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.ArgumentError;
+                return false;
             }
-            // 确定调用方法及对应权限
-            ApiAction action;
+            ApiContext.RequestContext.ServiceKey = item.Requester;
+            ApiContext.RequestContext.RequestId = item.RequestId;
+            ApiContext.TryCheckByAnymouse();
+            //2 确定调用方法及对应权限
             try
             {
-                if (!_apiActions.TryGetValue(args[2], out action))
-                {
-                    Console.WriteLine(args.LinkToString(" , "));
-                    return NoFind;
-                }
                 if (action.NeedLogin && ApiContext.Customer.UserId <= 0)
                 {
-                    return DenyAccess;
+                    item.Result = ZeroNetStatus.DenyAccessJson;
+                    item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.DenyAccess;
+                    return false;
                 }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                return DenyAccess;
+                item.Result = ZeroNetStatus.ArgumentErrorJson;
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.InnerError;
+                return false;
             }
             //3 参数校验
             try
             {
-                if (!action.RestoreArgument(args[5]))
+                if (!action.RestoreArgument(item.Argument))
                 {
-                    return ArgumentError;
+                    item.Result = ZeroNetStatus.ArgumentErrorJson;
+                    item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.ArgumentError;
+                    return false;
                 }
                 if (!action.Validate(out var message))
                 {
-                    return JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError, message));
+                    item.Result = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError, message));
+                    item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.ArgumentError;
+                    return false;
                 }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                return ArgumentError;
+                item.Result = ZeroNetStatus.ArgumentErrorJson;
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.ArgumentError;
+                return false;
             }
             //4 方法执行
             try
             {
                 var result = action.Execute();
-                return JsonConvert.SerializeObject(result ?? ApiResult.Error(-3));
+                item.Result = result == null ? ZeroNetStatus.SucceesJson : JsonConvert.SerializeObject(result);
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.Success;
+                return true;
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                return InnerError;
+                item.Result = ZeroNetStatus.InnerErrorJson;
+                item.Status = Agebull.ZeroNet.ZeroApi.ErrorCode.InnerError;
+                return false;
             }
         }
 
@@ -243,11 +229,8 @@ namespace Agebull.ZeroNet.Core
 
         #region 网络与执行
 
-        /// <summary>
-        /// 使用的套接字
-        /// </summary>
-        private RequestSocket _socket;
-        
+        readonly Dictionary<string, ApiStationItem> items = new Dictionary<string, ApiStationItem>();
+
         /// <inheritdoc />
         /// <summary>
         /// 命令轮询
@@ -256,206 +239,322 @@ namespace Agebull.ZeroNet.Core
         public sealed override bool Run()
         {
             StationProgram.WriteLine($"【{StationName}:{RealName}】start...");
-            lock (this)
-            {
-                if (RunState != StationState.Run)
-                    RunState = StationState.Start;
-                if (_socket != null)
-                    return false;
-            }
+
+            if (RunState == StationState.Run)
+                return false;
+
             InPoll = false;
             InHeart = false;
-
-            _socket = new RequestSocket();
-            try
+            if (items.Count == 0)
             {
-                _socket.Options.Identity = RealName.ToAsciiBytes();
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                _socket.Connect(Config.InnerAddress);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                RunState = StationState.Failed;
-                CloseSocket();
-                StationProgram.WriteError($"【{StationName}:{RealName}】connect error =>{e.Message}");
-                return false;
-            }
-            try
-            {
-                var word = _socket.Request("@", JsonConvert.SerializeObject(Config));
-                if (word != "wecome")
+                for (int idx = 0; idx < 32; idx++)
                 {
-                    CloseSocket();
-                    RunState = StationState.Failed;
-                    StationProgram.WriteError($"【{StationName}:{RealName}】proto error");
-                    return false;
+                    var item = new ApiStationItem
+                    {
+                        Station = this,
+                        RealName = RandomOperate.Generate(8)
+                    };
+                    items.Add(item.RealName, item);
                 }
             }
-            catch (Exception e)
+            RunState = StationState.Run;
+            foreach (var item in items.Values)
             {
-                LogRecorder.Exception(e);
-                RunState = StationState.Failed;
-                CloseSocket();
-                StationProgram.WriteError($"【{StationName}:{RealName}】request error =>{e.Message}");
-                return false;
+                item.Run();
             }
 
-            RunState = StationState.Run;
-            _items = MulitToOneQueue<List<string>>.Load(CacheFileName);
-            Task.Factory.StartNew(CommandTask);
-
-            var task1 = Task.Factory.StartNew(PollTask);
-            task1.ContinueWith(OnTaskStop);
-
-            var task2 = Task.Factory.StartNew(HeartbeatTask);
-            task2.ContinueWith(OnTaskStop);
-
-            while (!InHeart || !InPoll)
+            while (items.Values.Any(item => !item.InHeart || !item.InPoll))
                 Thread.Sleep(50);
+
             StationProgram.WriteLine($"【{StationName}:{RealName}】runing...");
             return true;
         }
 
+        #endregion
+
         /// <summary>
-        /// 心跳
+        /// Api站点
         /// </summary>
-        /// <returns></returns>
-        private void HeartbeatTask()
+        public class ApiStationItem
         {
-            InHeart = true;
-            var errorCount = 0;
-            StationProgram.WriteLine($"【{StationName}:{RealName}】heartbeat start");
-            try
+            /// <summary>
+            /// 站点
+            /// </summary>
+            internal ApiStation Station
             {
-                while (RunState == StationState.Run)
+                private get;
+                set;
+            }
+            /// <summary>
+            /// 在心跳
+            /// </summary>
+            internal bool InHeart;
+            /// <summary>
+            /// 在侦听
+            /// </summary>
+            internal bool InPoll;
+            /// <summary>
+            /// 实名
+            /// </summary>
+            public string RealName { get; set; }
+            #region 网络与执行
+
+            /// <summary>
+            /// 使用的套接字
+            /// </summary>
+            private RequestSocket _socket;
+
+            /// <summary>
+            /// 运行状态
+            /// </summary>
+            public StationState RunState { get; set; }
+
+            /// <summary>
+            /// 尝试重启次数
+            /// </summary>
+            private int _tryCount;
+            /// <summary>
+            /// 尝试重启
+            /// </summary>
+            /// <returns></returns>
+            private bool TryRun()
+            {
+                if (++_tryCount > 9)
+                    return false;
+                CloseSocket();
+                Thread.Sleep(1000);
+                Task.Factory.StartNew(Run);
+                return true;
+            }
+            /// <summary>
+            /// 命令轮询
+            /// </summary>
+            /// <returns></returns>
+            public bool Run()
+            {
+                StationProgram.WriteLine($"【{Station.StationName}:{RealName}】start...");
+                InPoll = false;
+                InHeart = false;
+
+                _socket = new RequestSocket();
+                try
                 {
-                    Thread.Sleep(5000);
-                    var result = Config.HeartAddress.RequestNet("@", RealName);
-                    if (string.IsNullOrWhiteSpace(result))
+                    _socket.Options.Identity = RealName.ToAsciiBytes();
+                    _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                    _socket.Connect(Station.Config.InnerAddress);
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    StationProgram.WriteError($"【{Station.StationName}:{RealName}】connect error =>{e.Message}");
+                    return TryRun();
+                }
+                try
+                {
+                    var word = _socket.Request(ZeroByteCommand.WorkerJoin);
+                    if (word == null || word[0] != ZeroNetStatus.ZeroStatusSuccess)
                     {
-                        if (++errorCount > 3)
+                        StationProgram.WriteError($"【{Station.StationName}:{RealName}】 proto error");
+                        return TryRun();
+                    }
+                    word = Station.Config.HeartAddress.RequestNet(ZeroByteCommand.HeartJoin, RealName);
+                    if (word == null || word[0] != ZeroNetStatus.ZeroStatusSuccess)
+                    {
+                        return TryRun();
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    StationProgram.WriteError($"【{Station.StationName}:{RealName}】request error =>{e.Message}");
+                    return TryRun();
+                }
+
+                RunState = StationState.Run;
+
+                var task1 = Task.Factory.StartNew(PollTask);
+                task1.ContinueWith(Station.OnTaskStop);
+
+                var task2 = Task.Factory.StartNew(HeartbeatTask);
+                task2.ContinueWith(Station.OnTaskStop);
+
+                while (!InHeart || !InPoll)
+                    Thread.Sleep(50);
+                StationProgram.WriteLine($"【{Station.StationName}:{RealName}】runing...");
+                return true;
+            }
+
+            /// <summary>
+            /// 心跳
+            /// </summary>
+            /// <returns></returns>
+            private void HeartbeatTask()
+            {
+                InHeart = true;
+                var errorCount = 0;
+                StationProgram.WriteLine($"【{Station.StationName}:{RealName}】heartbeat start");
+                try
+                {
+                    while (Station.RunState == StationState.Run && RunState == StationState.Run)
+                    {
+                        Thread.Sleep(5000);
+                        var result = Station.Config.HeartAddress.RequestNet(ZeroByteCommand.HeartPitpat, RealName);
+                        if (string.IsNullOrWhiteSpace(result))
+                        {
+                            if (++errorCount > 3)
+                            {
+                                RunState = StationState.Failed;
+                            }
+                            StationProgram.WriteError($"【{Station.StationName}:{RealName}】heartbeat error {errorCount}...");
+                        }
+                        else if (result[0] == ZeroNetStatus.ZeroStatusBad)
                         {
                             RunState = StationState.Failed;
                         }
-                        StationProgram.WriteError($"【{StationName}:{RealName}】heartbeat error{errorCount}...");
+                        else if (errorCount > 0)
+                        {
+                            errorCount = 0;
+                            StationProgram.WriteInfo($"【{Station.StationName}:{RealName}】heartbeat resume...");
+                        }
                     }
-                    else if (errorCount > 0)
-                    {
-                        errorCount = 0;
-                        StationProgram.WriteInfo($"【{StationName}:{RealName}】heartbeat resume...");
-                    }
+                    //退出
+                    Station.Config.HeartAddress.RequestNet(ZeroByteCommand.HeartLeft, RealName);
                 }
-                //退出
-                Config.HeartAddress.RequestNet("-", RealName);
-            }
-            catch (Exception e)
-            {
-                StationProgram.WriteError($"【{StationName}:{RealName}】heartbeat error{e.Message}...");
-                RunState = StationState.Failed;
-                LogRecorder.Exception(e);
-            }
-            StationProgram.WriteLine($"【{StationName}:{RealName}】heartbeat stop");
-            InHeart = false;
-        }
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        private void PollTask()
-        {
-            _socket.SendString("*", "*");
-            InPoll = true;
-            StationProgram.WriteLine($"【{StationName}:{RealName}】poll start");
-            //var timeout = new TimeSpan(0, 0, 5);
-            try
-            {
-                while (RunState == StationState.Run)
+                catch (Exception e)
                 {
-                    //if (!socket.Poll(timeout))
-                    //    continue;
-                    //if (!socket.HasIn)
-                    //    continue;
-                    //string caller = socket.ReceiveFrameString();
-                    //string command = socket.ReceiveFrameString();
-                    //string argument = socket.ReceiveFrameString();
-                    //string response = ExecCommand(command, argument);
-                    //socket.SendMoreFrame(caller);
-                    if (!_socket.ReceiveString(out var arg, 0))
-                    {
-                        continue;
-                    }
-                    _items.Push(arg);
+                    StationProgram.WriteError($"【{Station.StationName}:{RealName}】heartbeat error{e.Message}...");
+                    RunState = StationState.Failed;
+                    LogRecorder.Exception(e);
                 }
+                StationProgram.WriteLine($"【{Station.StationName}:{RealName}】heartbeat stop");
+                InHeart = false;
             }
-            catch (Exception e)
-            {
-                StationProgram.WriteError($"【{StationName}:{RealName}】poll error{e.Message}...");
-                LogRecorder.Exception(e);
-                RunState = StationState.Failed;
-            }
-            InPoll = false;
-            StationProgram.WriteInfo($"【{StationName}:{RealName}】poll stop");
 
-            _items.Save(CacheFileName);
-            CloseSocket();
-        }
-        /// <summary>
-        /// 关闭套接字
-        /// </summary>
-        private void CloseSocket()
-        {
-            lock (this)
+            /// <summary>
+            /// 命令轮询
+            /// </summary>
+            /// <returns></returns>
+            private void PollTask()
             {
-                if (_socket == null)
-                    return;
+                StationProgram.WriteLine($"【{Station.StationName}:{RealName}】poll start");
+                var timeout = new TimeSpan(0, 0, 5);
                 try
                 {
-                    _socket.Disconnect(Config.InnerAddress);
+                    if (!_socket.TrySendFrame(timeout, ZeroByteCommand.WorkerListen))
+                    {
+                        RunState = StationState.Failed;
+                        return;
+                    }
+                    InPoll = true;
+                    while (RunState == StationState.Run)
+                    {
+
+                        if (!_socket.TryReceiveFrameBytes(timeout, out var description, out var more))
+                        {
+                            continue;
+                        }
+
+                        if (!more)
+                        {
+                            if (!_socket.TrySendFrame(timeout, ZeroByteCommand.WorkerListen))
+                            {
+                                RunState = StationState.Failed;
+                                break;
+                            }
+
+                            continue;
+                        }
+
+                        ApiCallItem item = new ApiCallItem();
+
+                        int idx = 1;
+                        while (more)
+                        {
+                            if (!_socket.TryReceiveFrameString(out var val, out more))
+                            {
+                                continue;
+                            }
+                            switch (description[idx++])
+                            {
+                                case ZeroFrameType.RequestId:
+                                    item.RequestId = val;
+                                    break;
+                                case ZeroFrameType.Requester:
+                                    item.Requester = val;
+                                    break;
+                                case ZeroFrameType.Context:
+                                    item.ContextJson = val;
+                                    break;
+                                case ZeroFrameType.Command:
+                                    item.ApiName = val;
+                                    break;
+                                case ZeroFrameType.Argument:
+                                    item.Argument = val;
+                                    break;
+                            }
+                        }
+                        var response = Station.ExecCommand(item);
+                        _socket.SendMoreFrame(item.Requester);
+                        _socket.SendMoreFrameEmpty();
+                        _socket.SendMoreFrame(response ? ZeroNetStatus.ZeroCommandOk : ZeroNetStatus.ZeroCommandError);
+                        description[0] = 1;
+                        description[1] = ZeroFrameType.JsonValue;
+                        _socket.SendMoreFrame(description);
+                        _socket.SendFrame(item.Result);
+                    }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    //LogRecorder.Exception(e);//一般是无法连接服务器而出错
+                    StationProgram.WriteError($"【{Station.StationName}:{RealName}】poll error{e.Message}...");
+                    LogRecorder.Exception(e);
+                    RunState = StationState.Failed;
                 }
-                _socket.Close();
-                _socket = null;
+                InPoll = false;
+                StationProgram.WriteInfo($"【{Station.StationName}:{RealName}】poll stop");
+                CloseSocket();
             }
-        }
-
-        #endregion
-
-        #region 请求队列
-
-        /// <summary>
-        /// 缓存文件名称
-        /// </summary>
-        private string CacheFileName => Path.Combine(StationProgram.Config.DataFolder,
-            $"zero_sub_queue_{StationName}.json");
-
-        /// <summary>
-        /// 请求队列
-        /// </summary>
-        private static MulitToOneQueue<List<string>> _items = new MulitToOneQueue<List<string>>();
-
-
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        private void CommandTask()
-        {
-            while (RunState == StationState.Run)
+            /// <summary>
+            /// 关闭套接字
+            /// </summary>
+            private void CloseSocket()
             {
-                if (!_items.StartProcess(out var item, 1000))
-                    continue;
-                var response = ExecCommand(item);
-                _socket.SendMoreFrame(item[0]);
-                _socket.SendFrame(response);
-                //StationProgram.WriteLine($"【{StationName}:{RealName}】call {arg.LinkToString(",")}=>{response}");
-                _items.EndProcess();
+                lock (this)
+                {
+                    if (_socket == null)
+                        return;
+                    try
+                    {
+                        _socket.Disconnect(Station.Config.InnerAddress);
+                    }
+                    catch (Exception)
+                    {
+                        //LogRecorder.Exception(e);//一般是无法连接服务器而出错
+                    }
+                    _socket.Close();
+                    _socket = null;
+                }
             }
-        }
 
-        #endregion
+            /// <summary>
+            /// 命令轮询
+            /// </summary>
+            /// <returns></returns>
+            protected virtual void OnTaskStop(Task task)
+            {
+                while (InPoll || InHeart)
+                    Thread.Sleep(50);
+                if (StationProgram.State == StationState.Run && (RunState == StationState.Failed || RunState == StationState.Start))
+                {
+                    StationProgram.WriteInfo($"【{Station.StationName}:{RealName}】restart...");
+                    _tryCount = 0;
+                    TryRun();
+                    return;
+                }
+                if (RunState == StationState.Closing)
+                    RunState = StationState.Closed;
+            }
+            #endregion
+
+        }
     }
 }

@@ -200,7 +200,7 @@ namespace Agebull.ZeroNet.Core
                         status = ZeroCommandStatus.Error;
                         return null;
                     }
-                    if (result == ZeroHelper.zero_command_no_find)
+                    if (result == ZeroNetStatus.ZeroCommandNoFind)
                     {
                         WriteError($"¡¾{stationName}¡¿Î´°²×°");
                         status = ZeroCommandStatus.NoFind;
@@ -250,10 +250,10 @@ namespace Agebull.ZeroNet.Core
                         case null:
                             WriteError($"¡¾{stationName}¡¿auto regist failed");
                             return null;
-                        case ZeroHelper.zero_command_no_support:
+                        case ZeroNetStatus.ZeroCommandNoSupport:
                             WriteError($"¡¾{stationName}¡¿auto regist failed:type no supper");
                             return null;
-                        case ZeroHelper.zero_command_failed:
+                        case ZeroNetStatus.ZeroCommandFailed:
                             WriteError($"¡¾{stationName}¡¿auto regist failed:config error");
                             return null;
                     }

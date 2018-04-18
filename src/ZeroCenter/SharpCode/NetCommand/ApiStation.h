@@ -211,7 +211,7 @@ namespace agebull
 			/**
 			* \brief 调用集合的响应
 			*/
-			void request(ZMQ_HANDLE socket) override;
+			void request(ZMQ_HANDLE socket, bool inner) override;
 			/**
 			* \brief 执行一条命令
 			*/
@@ -224,11 +224,15 @@ namespace agebull
 			{
 				return value;
 			}
-
+			
+			/**
+			* \brief 工作进入计划
+			*/
+			bool job_plan(ZMQ_HANDLE socket,vector<sharp_char>& list);
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			bool job_start(vector<sharp_char>& list);
+			bool job_start(ZMQ_HANDLE socket, vector<sharp_char>& list);
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
@@ -237,16 +241,37 @@ namespace agebull
 			/**
 			* \brief 工作对象退出
 			*/
-			void worker_left(const char* addr) override
+			bool worker_left(const char* addr) override
 			{
-				_balance.left(addr);
-				balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr);
+				if (!balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr))
+					return false;
+				return balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr);
 			}
 
 			/**
 			* \brief 工作对象加入
 			*/
-			virtual void worker_join(const char* addr, const char* value, bool ready = false) override;
+			bool worker_join(const char* addr) override
+			{
+				if (addr == nullptr || strlen(addr) == 0)
+					return false;
+				if (balance_station<api_station, string, STATION_TYPE_API>::worker_join(addr))
+				{
+					_balance.join(addr);
+					return true;
+				}
+				return false;
+			}
+			/**
+			* \brief 工作对象加入
+			*/
+			bool worker_heat(const char* addr) override
+			{
+				if (!balance_station<api_station, string, STATION_TYPE_API>::worker_heat(addr))
+					return false;
+				_balance.succees(addr);
+				return true;
+			}
 		};
 	}
 }

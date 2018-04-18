@@ -128,7 +128,7 @@ namespace Agebull.ZeroNet.LogRecorder
                     CreateSocket();
                     continue;
                 }
-                if (!success || result != ZeroHelper.zero_command_ok)
+                if (!success || result != ZeroNetStatus.ZeroCommandOk)
                 {
                     Common.Logging.LogRecorder.BaseRecorder.RecordLog(new RecordInfo
                     {

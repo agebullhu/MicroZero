@@ -47,5 +47,21 @@ namespace Agebull.ZeroNet.Core
         /// 网络上下文信息
         /// </summary>
         public const byte Context = (byte)'T';
+        /// <summary>
+        /// 网络上下文信息
+        /// </summary>
+        public const byte Command = (byte)'C';
+        /// <summary>
+        /// 广播副题
+        /// </summary>
+        public const byte TextValue = (byte)'T';
+        /// <summary>
+        /// 网络上下文信息
+        /// </summary>
+        public const byte JsonValue = (byte)'J';
+        /// <summary>
+        /// 网络上下文信息
+        /// </summary>
+        public const byte BinaryValue = (byte)'B';
     }
 }

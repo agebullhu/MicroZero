@@ -20,7 +20,7 @@ namespace agebull
 			/**
 			* \brief 参与者集合
 			*/
-			map<string, TWorker> _workers;
+			map<string, TWorker> workers_;
 		public:
 			/**
 			* \brief 构造
@@ -44,12 +44,17 @@ namespace agebull
 			/**
 			* \brief 工作对象退出
 			*/
-			virtual void worker_left(const char* addr);
+			virtual bool worker_left(const char* addr);
 
 			/**
 			* \brief 工作对象加入
 			*/
-			virtual void worker_join(const char* addr, const  char* value, bool ready = false);
+			virtual bool worker_join(const char* addr);
+
+			/**
+			* \brief 工作对象心跳
+			*/
+			virtual bool worker_heat(const char* addr);
 		};
 
 
@@ -62,18 +67,22 @@ namespace agebull
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 服务器地址
 			_zmq_state = recv(_heart_socket, list);
+			bool success = false;
 			switch (list[2][0])
 			{
-			case '@':
-				worker_join(*list[3], *list[3]);
+			case ZERO_HEART_JOIN:
+				success = worker_join(*list[3]);
 				break;
-			case '-':
-				worker_left(*list[3]);
+			case ZERO_HEART_LEFT:
+				success = worker_left(*list[3]);
+				break;
+			case ZERO_HEART_PITPAT:
+				success = worker_heat(*list[3]);
 				break;
 			default: break;
 			}
 			_zmq_state = send_addr(_heart_socket, *list[0]);
-			_zmq_state = send_late(_heart_socket, zero_command_ok);
+			_zmq_state = send_late(_heart_socket, success ? ZERO_STATUS_OK : ZERO_STATUS_ERROR);
 		}
 
 		/**
@@ -81,47 +90,55 @@ namespace agebull
 		* \param addr
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		void balance_station<TNetStation, TWorker, NetType>::worker_left(const char* addr)
+		bool balance_station<TNetStation, TWorker, NetType>::worker_left(const char* addr)
 		{
-			auto vote = _workers.find(addr);
-			if (vote != _workers.end())
-			{
-				_workers.erase(addr);
-				monitor_async(_station_name, "worker_left", addr);
+			auto vote = workers_.find(addr);
+			if (vote == workers_.end())
+				return false;
+			workers_.erase(addr);
+			monitor_async(_station_name, "worker_left", addr);
 
-				vector<sharp_char> result;
-				vector<string> argument{"@",addr };
-				inproc_request_socket<ZMQ_REQ> socket("_sys_", _station_name.c_str());
-				socket.request(argument, result);
-			}
+			vector<sharp_char> result;
+			vector<string> argument{"@", addr};
+			inproc_request_socket<ZMQ_REQ> socket("_sys_", _station_name.c_str());
+			socket.request(argument, result);
+			return true;
 		}
 
 		/**
 		* \brief
 		* \param addr
-		* \param value
-		* \param ready
 		*/
 		template <typename TNetStation, class TWorker, int NetType>
-		void balance_station<TNetStation, TWorker, NetType>::worker_join(const char* addr, const  char* value, bool ready)
+		bool balance_station<TNetStation, TWorker, NetType>::worker_join(const char* addr)
 		{
-			TWorker item = create_item(addr, value);
-			auto old = _workers.find(addr);
-			if (old == _workers.end())
-			{
-				_workers.insert(make_pair(addr, item));
-				log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
-				monitor_async(_station_name, "worker_join", addr);
-				monitor_async(_station_name, "worker_heat", value);
-			}
-			else
-			{
-				old->second = item;
-				log_trace2(DEBUG_BASE, 1, "station %s => %s heartbeat", _station_name, addr);
-				//monitor(_station_name, "worker_heart", addr);
-			}
+			TWorker item = create_item(addr, addr);
+			auto old = workers_.find(addr);
+			if (old != workers_.end())
+				return false;
+			workers_.insert(make_pair(addr, item));
+			log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
+			monitor_async(_station_name, "worker_join", addr);
+			return true;
 		}
 
+
+		/**
+		* \brief
+		* \param addr
+		*/
+		template <typename TNetStation, class TWorker, int NetType>
+		bool balance_station<TNetStation, TWorker, NetType>::worker_heat(const char* addr)
+		{
+			TWorker item = create_item(addr, addr);
+			auto old = workers_.find(addr);
+			if (old == workers_.end())
+			{
+				return false;
+			}
+			old->second = item;
+			monitor_async(_station_name, "worker_heat", addr);
+		}
 	}
 }
 #endif

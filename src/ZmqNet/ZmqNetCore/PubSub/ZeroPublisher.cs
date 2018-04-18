@@ -160,7 +160,7 @@ namespace Agebull.ZeroNet.PubSub
                     socket.SendMoreFrame(item.SubTitle);
                     socket.SendFrame(item.Content);
                     var word = socket.ReceiveFrameString();
-                    return word == ZeroHelper.zero_command_ok;
+                    return word == ZeroNetStatus.ZeroCommandOk;
                 }
             }
             catch (Exception e)

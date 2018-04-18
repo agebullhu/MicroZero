@@ -46,13 +46,13 @@ namespace agebull
 		{
 			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit", "ping");
 			if (idx < 0)
-				return (zero_command_no_support);
+				return (ZERO_STATUS_NO_SUPPORT);
 			switch (idx)
 			{
 			case 0:
 			{
 				if (arguments.size() < 2)
-					return zero_command_arg_error;
+					return ZERO_STATUS_FRAME_INVALID;
 
 				const auto host = *arguments[0];
 				arguments.erase(arguments.begin());
@@ -82,21 +82,21 @@ namespace agebull
 			case 6:
 			{
 				if (arguments.size() < 2)
-					return zero_command_install_arg_error;
+					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR;
 				return install_station(arguments[0], arguments[1]);
 			}
 			case 7:
 			{
 				boost::thread(boost::bind(distory_net_command));
 				sleep(1);
-				return zero_command_ok;
+				return ZERO_STATUS_OK;
 			}
 			case 8:
 			{
-				return zero_command_ok;
+				return ZERO_STATUS_OK;
 			}
 			default:
-				return zero_command_no_support;
+				return ZERO_STATUS_NO_SUPPORT;
 			}
 		}
 
@@ -121,14 +121,14 @@ namespace agebull
 				{
 					station.second->pause(true);
 				}
-				return zero_command_ok;
+				return ZERO_STATUS_OK;
 			}
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return zero_command_no_find;
+				return ZERO_STATUS_NO_FIND;
 			}
-			return station->pause(true) ? zero_command_ok : zero_command_failed;
+			return station->pause(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 		}
 
 		/**
@@ -143,14 +143,14 @@ namespace agebull
 				{
 					station.second->resume(true);
 				}
-				return zero_command_ok;
+				return ZERO_STATUS_OK;
 			}
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return (zero_command_no_find);
+				return (ZERO_STATUS_NO_FIND);
 			}
-			return station->resume(true) ? zero_command_ok : zero_command_failed;
+			return station->resume(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 		}
 
 		/**
@@ -161,7 +161,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station != nullptr)
 			{
-				return zero_command_runing;
+				return ZERO_STATUS_RUNING;
 			}
 			boost::format fmt("net:host:%1%");
 			fmt % stattion;
@@ -170,9 +170,9 @@ namespace agebull
 			acl::string val;
 			if (trans_redis::get_context()->get(key.c_str(), val) && !val.empty())
 			{
-				return station_warehouse::restore(val) ? zero_command_ok : zero_command_failed;
+				return station_warehouse::restore(val) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 			}
-			return zero_command_failed;
+			return ZERO_STATUS_FAILED;
 		}
 
 		/**
@@ -200,9 +200,9 @@ namespace agebull
 			case 2:
 				config = station_warehouse::install(stattion.c_str(), STATION_TYPE_VOTE, config); break;
 			default:
-				return zero_command_no_support;
+				return ZERO_STATUS_NO_SUPPORT;
 			}
-			return station_warehouse::restore(config) ? zero_command_ok : zero_command_failed;
+			return station_warehouse::restore(config) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 		}
 
 		/**
@@ -213,7 +213,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return zero_command_no_find;
+				return ZERO_STATUS_NO_FIND;
 			}
 			vector<sharp_char> lines;
 			lines.emplace_back(command);
@@ -230,7 +230,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return zero_command_no_find;
+				return ZERO_STATUS_NO_FIND;
 			}
 			const sharp_char empty;
 			if (arguments.size() == 1)
@@ -261,14 +261,14 @@ namespace agebull
 				{
 					station.second->close(true);
 				}
-				return zero_command_ok;
+				return ZERO_STATUS_OK;
 			}
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return (zero_command_no_find);
+				return (ZERO_STATUS_NO_FIND);
 			}
-			return station->close(true) ? zero_command_ok : zero_command_failed;
+			return station->close(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 		}
 
 		/**
@@ -290,7 +290,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return zero_command_no_find;
+				return ZERO_STATUS_NO_FIND;
 			}
 			return station->get_config();
 		}
@@ -298,7 +298,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		void station_dispatcher::request(ZMQ_HANDLE socket)
+		void station_dispatcher::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 参数

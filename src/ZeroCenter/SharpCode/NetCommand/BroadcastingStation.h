@@ -25,14 +25,14 @@ namespace agebull
 			sharp_char command(const char* caller, vector< sharp_char> lines) override
 			{
 				bool res = publish(caller, lines[0], lines[1], lines[1]);
-				return sharp_char(res ? zero_command_ok : zero_command_failed);
+				return sharp_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
 			}
 
 
 			/**
 			* \brief 处理请求
 			*/
-			void request(ZMQ_HANDLE socket)override;
+			void request(ZMQ_HANDLE socket, bool inner)override;
 
 			/**
 			* 心跳的响应

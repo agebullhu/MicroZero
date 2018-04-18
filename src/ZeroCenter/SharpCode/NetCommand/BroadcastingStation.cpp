@@ -19,7 +19,7 @@ namespace agebull
 		/**
 		* \brief 处理请求
 		*/
-		void broadcasting_station_base::request(ZMQ_HANDLE socket)
+		void broadcasting_station_base::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
 			_zmq_state = recv(socket, list);
@@ -28,28 +28,28 @@ namespace agebull
 				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
 				return;
 			}
-			const auto caller = list[0];
+			const sharp_char& caller = list[0];
 			if (list.size() <= 3)
 			{
 				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, zero_command_invalid);
+				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
 				return;
 			}
-			const auto title = list[2];
-			sharp_char description = list[3];
+			sharp_char& title = list[2];
+			sharp_char& description = list[3];
 			char* const buf = description.get_buffer();
 			const size_t list_size = list.size();
 			const size_t frame_size = static_cast<size_t>(buf[0]);
 			if (frame_size >= description.size() || (frame_size + 4) != list_size)
 			{
 				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, zero_command_invalid);
+				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
 				return;
 			}
 			bool hase_plan = false;
 			for (size_t idx = 1; idx <= frame_size; idx++)
 			{
-				if (buf[idx] == zero_frame_plan)
+				if (buf[idx] == ZERO_FRAME_PLAN)
 				{
 					hase_plan = true;
 					break;
@@ -58,12 +58,12 @@ namespace agebull
 			if (!hase_plan)
 			{
 				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, zero_command_ok);
+				_zmq_state = send_late(socket, ZERO_STATUS_OK);
 				send_data(list, 2);
 				return;
 			}
 			_zmq_state = send_addr(socket, *caller);
-			_zmq_state = send_late(socket, zero_command_plan);
+			_zmq_state = send_late(socket, ZERO_STATUS_PLAN);
 
 			plan_message message;
 			message.messages.push_back(title);
@@ -73,39 +73,39 @@ namespace agebull
 			{
 				switch (buf[idx])
 				{
-				case zero_frame_plan:
+				case ZERO_FRAME_PLAN:
 					plan = list[3 + idx];
 					break;
-				case zero_frame_publisher:
+				case ZERO_FRAME_PUBLISHER:
 					publisher = list[3 + idx];
 					break;
-				case zero_frame_subtitle:
+				case ZERO_FRAME_SUBTITLE:
 					sub = list[3 + idx];
 					break;
-				case zero_frame_arg:
+				case ZERO_FRAME_ARG:
 					arg = list[3 + idx];
 					break;
-				case zero_frame_request_id:
+				case ZERO_FRAME_REQUEST_ID:
 					id = list[3 + idx];
 					break;
 				}
 			}
 			int cnt = 0;
-			buf[++cnt] = zero_frame_publisher;
+			buf[++cnt] = ZERO_FRAME_PUBLISHER;
 			message.messages.push_back(publisher);
 			if (!id.empty())
 			{
-				buf[++cnt] = zero_frame_request_id;
+				buf[++cnt] = ZERO_FRAME_REQUEST_ID;
 				message.messages.push_back(id);
 			}
 			if (!sub.empty())
 			{
-				buf[++cnt] = zero_frame_subtitle;
+				buf[++cnt] = ZERO_FRAME_SUBTITLE;
 				message.messages.push_back(sub);
 			}
 			if (!arg.empty())
 			{
-				buf[++cnt] = zero_frame_arg;
+				buf[++cnt] = ZERO_FRAME_ARG;
 				message.messages.push_back(arg);
 			}
 			buf[0] = cnt;
@@ -152,9 +152,9 @@ namespace agebull
 			description.alloc(6);
 			char* buf = description.get_buffer();
 			buf[0] = 2;
-			buf[1] = zero_frame_publisher;
-			buf[2] = zero_frame_arg;
-			buf[3] = zero_frame_end;
+			buf[1] = ZERO_FRAME_PUBLISHER;
+			buf[2] = ZERO_FRAME_ARG;
+			buf[3] = ZERO_FRAME_END;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.push_back(description);
@@ -174,10 +174,10 @@ namespace agebull
 			description.alloc(6);
 			char* buf = description.get_buffer();
 			buf[0] = 3;
-			buf[1] = zero_frame_publisher;
-			buf[2] = zero_frame_subtitle;
-			buf[3] = zero_frame_arg;
-			buf[4] = zero_frame_end;
+			buf[1] = ZERO_FRAME_PUBLISHER;
+			buf[2] = ZERO_FRAME_SUBTITLE;
+			buf[3] = ZERO_FRAME_ARG;
+			buf[4] = ZERO_FRAME_END;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.push_back(description);
@@ -202,10 +202,10 @@ namespace agebull
 			message.messages_description.alloc(6);
 			char* buf = message.messages_description.get_buffer();
 			buf[0] = 3;
-			buf[1] = zero_frame_publisher;
-			buf[2] = zero_frame_subtitle;
-			buf[3] = zero_frame_arg;
-			buf[4] = zero_frame_end;
+			buf[1] = ZERO_FRAME_PUBLISHER;
+			buf[2] = ZERO_FRAME_SUBTITLE;
+			buf[3] = ZERO_FRAME_ARG;
+			buf[4] = ZERO_FRAME_END;
 			message.messages.emplace_back(title.c_str());
 			datas.push_back(message.messages_description);
 			datas.emplace_back(publiher.c_str());

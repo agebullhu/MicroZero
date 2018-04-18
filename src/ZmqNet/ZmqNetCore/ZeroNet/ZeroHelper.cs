@@ -11,50 +11,6 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class ZeroHelper
     {
-
-        /// <summary>
-        /// 正常状态
-        /// </summary>
-        public const byte zero_status_success = (byte)'+';
-        /// <summary>
-        /// 错误状态
-        /// </summary>
-        public const byte zero_status_bad = (byte)'-';
-
-        /// <summary>
-        /// 成功
-        /// </summary>
-        public const string zero_command_ok = "+ok";
-        /// <summary>
-        /// 计划执行
-        /// </summary>
-        public const string zero_command_plan = "+plan";
-        public const string zero_command_error = "-error";
-        public const string zero_command_runing = "+runing";
-        public const string zero_command_bye = "+bye";
-        public const string zero_command_wecome = "+wecome";
-        public const string zero_vote_sended = "+send";
-        public const string zero_vote_closed = "+close";
-        public const string zero_vote_bye = "+bye";
-        public const string zero_vote_waiting = "+waiting";
-        public const string zero_vote_start = "+start";
-
-        public const string zero_vote_end = "+end";
-        //正常状态
-        public const string zero_command_no_find = "-no find";
-
-        public const string zero_command_invalid = "-invalid";
-        //正常状态
-        public const string zero_command_no_support = "-no support";
-        public const string zero_command_failed = "-failes";
-        public const string zero_command_arg_error = "-ArgumentError! must like : call[name][command][argument]";
-        public const string zero_command_install_arg_error = "-ArgumentError! must like :install [type] [name]";
-        public const string zero_command_timeout = "-time out";
-        public const string zero_command_net_error = "-net error";
-        public const string zero_command_not_worker = "-not work";
-        public const string zero_api_unknow_error = "-error";
-        public const string zero_vote_unknow_error = "-error";
-
         /// <summary>
         ///     接收文本
         /// </summary>
@@ -68,10 +24,11 @@ namespace Agebull.ZeroNet.Core
 
             var more = true;
             var cnt = 0;
+            var ts = new TimeSpan(0, 0, 3);
             //收完消息
             while (more)
             {
-                if (!request.TryReceiveFrameString(new TimeSpan(0, 0, 3), out var data, out more))
+                if (!request.TryReceiveFrameString(ts, out var data, out more))
                 {
                     if (++cnt >= tryCnt)
                         return false;
@@ -126,10 +83,10 @@ namespace Agebull.ZeroNet.Core
 
 
         /// <summary>
-        ///     接收文本
+        ///     发起一次请求
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="args"></param>
+        /// <param name="address">请求地址</param>
+        /// <param name="args">请求参数</param>
         /// <returns></returns>
         public static string RequestNet(this string address, params string[] args)
         {
