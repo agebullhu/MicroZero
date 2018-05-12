@@ -55,7 +55,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationProgram.WriteInfo($"【{StationName}:{RealName}】start...");
+            StationConsole.WriteInfo($"【{StationName}:{RealName}】start...");
             RunState = StationState.Start;
             InPoll = false;
             _socket = new SubscriberSocket();
@@ -71,7 +71,7 @@ namespace Agebull.ZeroNet.PubSub
                 LogRecorder.Exception(e);
                 RunState = StationState.Failed;
                 CloseSocket();
-                StationProgram.WriteError($"【{StationName}:{RealName}】connect error =>{e.Message}");
+                StationConsole.WriteError($"【{StationName}:{RealName}】connect error =>{e.Message}");
                 return false;
             }
             RunState = StationState.Run;
@@ -81,7 +81,7 @@ namespace Agebull.ZeroNet.PubSub
             Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
             while (!InPoll)
                 Thread.Sleep(50);
-            StationProgram.WriteInfo($"【{StationName}:{RealName}】runing...");
+            StationConsole.WriteInfo($"【{StationName}:{RealName}】runing...");
             return true;
         }
 
@@ -102,7 +102,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private void PollTask()
         {
-            StationProgram.WriteLine($"【{StationName}:{RealName}】poll start...");
+            StationConsole.WriteLine($"【{StationName}:{RealName}】poll start...");
             var timeout = new TimeSpan(0, 0, 5);
             InPoll = true;
             while (RunState == StationState.Run)
@@ -145,13 +145,13 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    StationProgram.WriteError($"【{StationName}:{RealName}】poll error{e.Message}...");
+                    StationConsole.WriteError($"【{StationName}:{RealName}】poll error{e.Message}...");
                     LogRecorder.Exception(e);
                     RunState = StationState.Failed;
                 }
             }
             InPoll = false;
-            StationProgram.WriteLine($"【{StationName}:{RealName}】poll stop");
+            StationConsole.WriteLine($"【{StationName}:{RealName}】poll stop");
             Items.Save(CacheFileName);
             CloseSocket();
 

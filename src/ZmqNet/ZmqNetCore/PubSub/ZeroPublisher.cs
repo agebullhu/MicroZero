@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -19,8 +19,8 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     保持长连接的连接池
         /// </summary>
-        private static readonly Dictionary<string, RequestSocket> Publishers =
-            new Dictionary<string, RequestSocket>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, KeyValuePair<StationConfig, RequestSocket>> Publishers =
+            new Dictionary<string, KeyValuePair<StationConfig, RequestSocket>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 请求队列
@@ -30,7 +30,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     运行状态
         /// </summary>
-        private static int _state = -1;
+        public static StationState RunState { get; private set; }
         /// <summary>
         /// 缓存文件名称
         /// </summary>
@@ -41,7 +41,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public static void Initialize()
         {
-            _state = 0;
+            RunState = StationState.Start;
             var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
             if (old == null)
                 return;
@@ -51,24 +51,35 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     启动
         /// </summary>
-        public static void Start()
+        internal static void Start()
         {
             Task.Factory.StartNew(SendTask);
         }
-
         /// <summary>
-        ///     结束
+        /// 关闭
         /// </summary>
-        public static void Stop()
+        /// <returns></returns>
+        public static bool Stop()
         {
-            _state = 3;
-            while (_state == 4)
-                Thread.Sleep(3);
-            _state = 5;
-            Thread.Sleep(3);
-            Items.Save(CacheFileName);
+            lock (Publishers)
+            {
+                foreach (var vl in Publishers.Values)
+                    vl.Value.CloseSocket(vl.Key.OutAddress);
+                Publishers.Clear();
+            }
+            //未运行状态
+            if (RunState < StationState.Start || RunState > StationState.Failed)
+                return true;
+            StationConsole.WriteInfo("Publisher closing....");
+            RunState = StationState.Closing;
+            do
+            {
+                Thread.Sleep(20);
+            } while (RunState != StationState.Closed);
+            
+            StationConsole.WriteInfo("Publisher closed");
+            return true;
         }
-
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -79,47 +90,47 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         public static void Publish(string station, string title, string sub, string value)
         {
-            if (_state != 5)
-                Items.Push(new PublishItem
-                {
-                    Station = station,
-                    Title = title,
-                    SubTitle = sub,
-                    Content = value ?? "{}"
-                });
+            Items.Push(new PublishItem
+            {
+                Station = station,
+                Title = title,
+                SubTitle = sub,
+                Content = value ?? "{}"
+            });
+            if (RunState == StationState.Closed)
+                Items.Save(CacheFileName);
         }
         /// <summary>
         /// 广播总数
         /// </summary>
-        public static ulong PubCount { get;private set; }
+        public static ulong PubCount { get; private set; }
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
         private static void SendTask()
         {
-            
-            _state = 2;
-            DateTime start = DateTime.Now;
-            RequestSocket socket = null;
-            while (_state == 2)
+            RunState = StationState.Run;
+            while (StationProgram.State < StationState.Closing && RunState == StationState.Run)
             {
+                if (StationProgram.State != StationState.Run)
+                {
+                    Thread.Sleep(1000);
+                    continue;
+                }
                 if (!Items.StartProcess(out var item, 100))
                     continue;
-                if (socket == null )
+                if (!GetSocket(item.Station, out var socket, out var status))
                 {
-                    if (!GetSocket(item.Station, out socket, out var status))
+                    if (status == ZeroCommandStatus.NoRun)
                     {
-                        if (status == ZeroCommandStatus.NoFind)
-                        {
-                            Thread.Sleep(50);
-                            continue;
-                        }
-                        LogRecorder.Trace(LogType.Error, "Publish",
-                            $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
-{item.Content}");
-                        Items.EndProcess();
+                        Thread.Sleep(50);
                         continue;
                     }
+                    LogRecorder.Trace(LogType.Error, "Publish",
+                        $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
+{item.Content}");
+                    Items.EndProcess();
+                    continue;
                 }
                 if (!Send(socket, item))
                 {
@@ -132,7 +143,7 @@ namespace Agebull.ZeroNet.PubSub
                 Items.EndProcess();
                 PubCount++;
             }
-            _state = 4;
+            RunState = StationState.Closed;
         }
 
         /// <summary>
@@ -165,19 +176,17 @@ namespace Agebull.ZeroNet.PubSub
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
+                StationConsole.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
             }
-
             lock (Publishers)
             {
+                socket.CloseSocket(Publishers[item.Station].Key.OutAddress);
                 Publishers.Remove(item.Station);
             }
 
             return false;
         }
-
-        //static HashSet<string> registing = new HashSet<string>();
-
+        
         /// <summary>
         ///     取得Socket对象
         /// </summary>
@@ -187,59 +196,42 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private static bool GetSocket(string type, out RequestSocket socket, out ZeroCommandStatus status)
         {
-            //lock (registing)
-            //{
-            //    if (registing.Contains(type))
-            //    {
-            //        socket = null;
-            //        status = ZeroCommandStatus.NoFind;
-            //        return false;
-            //    }
-            //}
-            try
+            if (RunState >= StationState.Closing)
             {
-                lock (Publishers)
+                socket = null;
+                status = ZeroCommandStatus.NoRun;
+                return false;
+            }
+            lock (Publishers)
+            {
+                if (Publishers.TryGetValue(type, out var cs))
                 {
-                    if (Publishers.TryGetValue(type, out socket))
-                    {
-                        status = ZeroCommandStatus.Success;
-                        return true;
-                    }
-                    var config = StationProgram.GetConfig(type,out status);
-                    if (status == ZeroCommandStatus.NoFind)
-                    {
-                        StationProgram.WriteError($"【{type}】 => 不存在");
-                        //lock (registing)
-                        //{
-                        //    registing.Add(type);
-                        //}
-                        //config = StationProgram.InstallStation(type, "pub");
-                        //lock (registing)
-                        //{
-                        //    registing.Remove(type);
-                        //}
-                    }
-                    else if (config == null)
-                    {
-                        StationProgram.WriteError($"【{type}】connect error =>无法拉取配置");
-                        return false;
-                    }
-
+                    socket = cs.Value;
+                    status = ZeroCommandStatus.Success;
+                    return true;
+                }
+                var config = StationProgram.GetConfig(type, out status);
+                if (status == ZeroCommandStatus.NoFind || config == null)
+                {
+                    socket = null;
+                    return false;
+                }
+                try
+                {
                     socket = new RequestSocket();
-                    socket.Options.Identity =
-                        StationProgram.Config.StationName.ToAsciiBytes(); //RandomOperate.Generate(8).ToAsciiBytes();
+                    socket.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
                     socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
                     socket.Connect(config.OutAddress);
-                    Publishers.Add(type, socket);
                 }
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                StationProgram.WriteError($"【{type}】connect error =>连接时发生异常：{e}");
-                socket = null;
-                status = ZeroCommandStatus.Exception;
-                return false;
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    StationConsole.WriteError($"【{type}】connect error =>连接时发生异常：{e}");
+                    socket = null;
+                    status = ZeroCommandStatus.Exception;
+                    return false;
+                }
+                Publishers.Add(type, new KeyValuePair<StationConfig, RequestSocket>(config, socket));
             }
 
             return true;

@@ -55,9 +55,17 @@ namespace agebull
 	//#ifdef COMMANDPROXY
 	//CommandProxy* proxy = new CommandProxy();
 	//#endif
+
+	/**
+	* \brief 互斥量
+	*/
+	boost::mutex* mutex = nullptr;
+	boost::lock_guard<boost::mutex>* guard = nullptr;
 	//初始化网络命令环境
 	int config_zero_center()
 	{
+		mutex = new boost::mutex();
+		guard = new boost::lock_guard<boost::mutex>(*mutex);
 		log_msg("zero center initiate...");
 		net_state = NET_STATE_NONE;
 		net_context = zmq_ctx_new();
@@ -74,6 +82,14 @@ namespace agebull
 		//thread_sleep(50);
 		log_msg("zero center initiated");
 		return net_state;
+	}
+	//等待结束
+	void wait_zero()
+	{
+		{
+			boost::lock_guard<boost::mutex> g(*mutex);
+		}
+		delete mutex;
 	}
 	//启动网络命令环境
 	int start_zero_center()
@@ -142,5 +158,6 @@ namespace agebull
 		//zmq_ctx_term(net_context);
 		net_context = nullptr;
 		log_msg("zero center destoried");
+		delete guard;
 	}
 }

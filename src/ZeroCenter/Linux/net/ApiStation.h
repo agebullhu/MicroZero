@@ -35,6 +35,7 @@ namespace agebull
 			void join(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
+				
 				const iterator iter = find(host);
 				if (iter == end())
 				{

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -23,7 +22,6 @@
     <ProjectName>ZeroCenterL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
@@ -57,6 +55,9 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cfg\config.cpp" />
@@ -73,14 +74,13 @@
     <ClCompile Include="net\ZeroStation.cpp" />
     <ClCompile Include="net\zmq_monitor.cpp" />
     <ClCompile Include="redis\TransRedis.cpp" />
-    <ClCompile Include="stdafx.cpp"/>
+    <ClCompile Include="service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
     <ClInclude Include="cfg\config.h" />
     <ClInclude Include="command.h" />
     <ClInclude Include="log\mylogger.h" />
-    <ClInclude Include="mydecimal.h" />
     <ClInclude Include="net\ApiStation.h" />
     <ClInclude Include="net\BalanceStation.h" />
     <ClInclude Include="net\NetDispatcher.h" />
@@ -92,14 +92,16 @@
     <ClInclude Include="net\zmq_extend.h" />
     <ClInclude Include="redis\redis.h" />
     <ClInclude Include="redis\TransRedis.h" />
-    <ClInclude Include="rpc\CRpcService.h" />
+    <ClInclude Include="service.h" />
     <ClInclude Include="sharp_char.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="tm_extend.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.json" />
+    <None Include="config.json">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

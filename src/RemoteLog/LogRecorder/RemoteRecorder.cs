@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
@@ -59,10 +59,12 @@ namespace Agebull.ZeroNet.LogRecorder
         /// </summary>
         void ILogRecorder.Shutdown()
         {
-            _state = 3;
-            while (_state == 4)
+            if (_state != StationState.Run)
+                return;
+            _state = StationState.Closing;
+            while (_state == StationState.Closed)
                 Thread.Sleep(3);
-            _state = 5;
+            _state = StationState.Destroy;
         }
 
         #endregion
@@ -85,7 +87,7 @@ namespace Agebull.ZeroNet.LogRecorder
         /// <summary>
         ///     运行状态
         /// </summary>
-        private static int _state = -1;
+        private static StationState _state;
 
         /// <summary>
         /// 超时
@@ -95,7 +97,7 @@ namespace Agebull.ZeroNet.LogRecorder
         /// <summary>
         /// 广播内容说明
         /// </summary>
-        private static readonly byte[] Description = new byte[] { (byte)2, ZeroFrameType.Publisher, ZeroFrameType.Argument, ZeroFrameType.End };//ZeroFrameType.SubTitle, 
+        private static readonly byte[] Description = new byte[] { 2, ZeroFrameType.Publisher, ZeroFrameType.Argument, ZeroFrameType.End };//ZeroFrameType.SubTitle, 
         /// <summary>
         /// 广播总数
         /// </summary>
@@ -106,51 +108,28 @@ namespace Agebull.ZeroNet.LogRecorder
         public static long DataCount { get; private set; }
 
         #endregion
-        private bool InitSocket()
-        {
-            int tryCnt = 0;
-            while (true)
-            {
-                _config = StationProgram.GetConfig("RemoteLog", out var status);
-                if (status == ZeroCommandStatus.Success || _config == null)
-                {
-                    break;
-                }
-
-                if (++tryCnt > 5)
-                {
-                    StationProgram.WriteError("无法获取RemoteLog配置");
-                    return false;
-                }
-
-                Thread.Sleep(100);
-            }
-            return CreateSocket() == ZeroCommandStatus.Success;
-        }
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
         private void SendTask()
         {
-            while (StationProgram.State != StationState.Run)
+            _realName = $"{StationProgram.Config.StationName}-LogRecorder-{RandomOperate.Generate(4)}".ToAsciiBytes();
+            _state = StationState.Run;
+            while (StationProgram.State < StationState.Closing && _state == StationState.Run)
             {
-                Thread.Sleep(100);
-            }
-
-            if (!InitSocket())
-            {
-                _state = 6;
-                return;
-            }
-
-
-            _state = 2;
-
-            while (StationProgram.State == StationState.Run)
-            {
+                if (StationProgram.State != StationState.Run)
+                {
+                    Thread.Sleep(1000);
+                    continue;
+                }
                 if (!Items.StartProcess(out var title, out var items, 100))
                 {
-                    Thread.Sleep(5);
+                    Thread.Sleep(10);
+                    continue;
+                }
+                if (_socket == null && InitSocket())
+                {
+                    Thread.Sleep(10);
                     continue;
                 }
                 string result;
@@ -192,14 +171,24 @@ namespace Agebull.ZeroNet.LogRecorder
                 if (PubCount == long.MaxValue)
                     PubCount = 0;
             }
-            if (_socket != null)
-            {
-                _socket.Disconnect(_config.OutAddress);
-                _socket.Close();
-            }
-            _state = 4;
+            _state = StationState.Closed;
+            _socket.CloseSocket(_config.OutAddress);
         }
 
+        #region Remote
+
+
+        private bool InitSocket()
+        {
+            _config = StationProgram.GetConfig("RemoteLog", out var status);
+            if (status != ZeroCommandStatus.Success || _config == null)
+            {
+                return false;
+            }
+            return CreateSocket() == ZeroCommandStatus.Success;
+        }
+
+        private byte[] _realName;
         /// <summary>
         ///     取得Socket对象
         /// </summary>
@@ -208,15 +197,10 @@ namespace Agebull.ZeroNet.LogRecorder
         {
             try
             {
-                if (_socket != null)
-                {
-                    _socket.Disconnect(_config.OutAddress);
-                    _socket.Close();
-                }
+                _socket.CloseSocket(_config.OutAddress);
 
-                string realName = $"{StationProgram.Config.StationName}-{RandomOperate.Generate(8)}";
                 _socket = new RequestSocket();
-                _socket.Options.Identity = realName.ToAsciiBytes();
+                _socket.Options.Identity = _realName;
 
                 _socket.Options.DisableTimeWait = true;
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
@@ -235,5 +219,7 @@ namespace Agebull.ZeroNet.LogRecorder
                 return ZeroCommandStatus.Exception;
             }
         }
+
+        #endregion
     }
 }

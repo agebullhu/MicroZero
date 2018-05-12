@@ -1,4 +1,4 @@
-﻿{
+{
   /*系统设置*/
   "sysConfig": {
     /*是否开启ZMQ网络（不要改）*/
@@ -56,7 +56,7 @@
   },
   /*ZeroNet站点配置（不要改）*/
   "zeroConfig": {
-    "zeroAddr": "192.168.31.245",
+    "zeroAddr": "192.168.240.128",
     "monitorPort": 8002,
     "managePort": 8000,
     "stationName": "HttpRoute",

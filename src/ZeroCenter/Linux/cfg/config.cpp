@@ -1,9 +1,10 @@
 #include "config.h"
 #if WIN32
 #include "Psapi.h"
+#else
+#include <unistd.h>  
 #endif
 
-#include <unistd.h>  
 namespace agebull
 {
 	std::map<std::string, std::string> config::m_machine_cfg;
@@ -163,8 +164,9 @@ namespace agebull
 		delete[]pLogicDriveString;
 		delete[]pDosDriveName;
 #else
-		//sFilePath = getenv("HOME");
-		sFilePath = "/root/projects/ZeroCenterL/bin";
+		char buf[512];
+		getcwd(buf, 512);
+		sFilePath = buf;
 #endif
 	}
 }

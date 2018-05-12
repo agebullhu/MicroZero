@@ -27,6 +27,8 @@ namespace agebull
 
 	//初始化网络命令环境
 	int config_zero_center();
+	//等待结束
+	void wait_zero();
 	//启动网络命令环境
 	int start_zero_center();
 	//销毁网络命令环境

@@ -288,16 +288,17 @@ namespace agebull
 		*/
 		inline bool set_tcp_nodelay(ZMQ_HANDLE socket)
 		{
-#ifdef _WINDOWS
-			SOCKET fd;
-			size_t sz = sizeof(SOCKET);
-#else
-			int fd;
-			size_t sz = sizeof(int);
-#endif
-			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
-			int nodelay = 1;
-			return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int)) >= 0;
+//#ifdef _WINDOWS
+//			SOCKET fd;
+//			size_t sz = sizeof(SOCKET);
+//#else
+//			int fd;
+//			size_t sz = sizeof(int);
+//#endif
+//			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
+//			int nodelay = 1;
+//			return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int)) >= 0;
+			return true;
 		}
 
 		/**
@@ -313,7 +314,7 @@ namespace agebull
 				return nullptr;
 			}
 			if (!set_tcp_nodelay(socket))
-				log_error2("地址(%s)配置TCP_NODELAY失败:%s", host, zmq_strerror(zmq_errno()));
+				log_error2("socket(%s) option TCP_NODELAY bad:%s", host, zmq_strerror(zmq_errno()));
 			return socket;
 		}
 		/**
@@ -329,7 +330,7 @@ namespace agebull
 				return nullptr;
 			}
 			if (!set_tcp_nodelay(socket))
-				log_error2("地址(%s)配置TCP_NODELAY失败:%s", host, zmq_strerror(zmq_errno()));
+				log_error2("socket(%s) option TCP_NODELAY bad:%s", host, zmq_strerror(zmq_errno()));
 			return socket;
 		}
 		/**

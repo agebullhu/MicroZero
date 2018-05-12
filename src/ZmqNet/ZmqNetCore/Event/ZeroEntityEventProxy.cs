@@ -45,7 +45,7 @@ namespace ZeroApi
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteError($"【EntityEvent】connect error =>{e.Message}");
+                StationConsole.WriteError($"【EntityEvent】connect error =>{e.Message}");
                 throw;
             }
 
@@ -57,7 +57,7 @@ namespace ZeroApi
             if (++retry > 5)
             {
                 LogRecorder.Error($"数据事件服务(EntityEvent)无法连接!\r\n{msg}");
-                StationProgram.WriteError($"数据事件服务(EntityEvent)无法连接!\r\n{msg}");
+                StationConsole.WriteError($"数据事件服务(EntityEvent)无法连接!\r\n{msg}");
                 return false;
             }
             try
@@ -71,7 +71,7 @@ namespace ZeroApi
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteError($"【EntityEvent】publish error =>{e.Message}");
+                StationConsole.WriteError($"【EntityEvent】publish error =>{e.Message}");
                 retry++;
                 Thread.Sleep(10);
                 CreateSocket();

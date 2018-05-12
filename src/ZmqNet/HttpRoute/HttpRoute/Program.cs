@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore;
@@ -14,7 +14,7 @@ namespace ZeroNet.Http.Route
             //Thread.Sleep(11000);
             BuildWebHost(args).Run();
             PerformanceCounter.Save();
-            StationProgram.Close();
+            StationProgram.Exit();
         }
 
         public static IWebHost BuildWebHost(string[] args)

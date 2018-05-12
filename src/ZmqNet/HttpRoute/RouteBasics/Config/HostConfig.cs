@@ -5,36 +5,42 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// Â·ÓÉÖ÷»ú
+    /// è·¯ç”±ä¸»æœº
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
     public class HostConfig
     {
         /// <summary>
-        /// Ä¬ÈÏÖ÷»ú
+        /// é»˜è®¤ä¸»æœº
         /// </summary>
         public static HostConfig DefaultHost;
 
         /// <summary>
-        /// Ê¹ÓÃZeroNetÍ¨Ñ¶Âğ
+        /// ä½¿ç”¨ZeroNeté€šè®¯å—
         /// </summary>
         [DataMember, JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool ByZero { get; set; }
 
         /// <summary>
-        /// ÏÂÒ»´ÎÃüÖĞµÄÖ÷»ú
+        /// æ˜¯å¦å¼‚å¸¸
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public bool Failed { get; set; }
+
+        /// <summary>
+        /// ä¸‹ä¸€æ¬¡å‘½ä¸­çš„ä¸»æœº
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
         public int Next { get; set; }
 
         /// <summary>
-        /// Ö÷»úÁĞ±í
+        /// ä¸»æœºåˆ—è¡¨
         /// </summary>
         [DataMember, JsonProperty("hosts", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string[] Hosts { get; set; }
 
         /// <summary>
-        /// ±ğÃû
+        /// åˆ«å
         /// </summary>
         [DataMember, JsonProperty("alias", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string[] Alias { get; set; }

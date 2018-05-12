@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -166,7 +166,7 @@ namespace ZeroNet.Http.Route
         public string GetResult(HttpWebRequest req, out WebExceptionStatus status)
         {
             var jsonResult = GetResponse(req, out status);
-            return string.IsNullOrWhiteSpace(jsonResult) ? RouteRuntime.RemoteEmptyError : jsonResult;
+            return string.IsNullOrWhiteSpace(jsonResult) ? RouteRuntime.RemoteEmptyErrorJson : jsonResult;
         }
 
         /// <summary>
@@ -284,12 +284,12 @@ namespace ZeroNet.Http.Route
             using (response)
             {
                 if (response.ContentLength == 0)
-                    result= RouteRuntime.RemoteEmptyError;
+                    result= RouteRuntime.RemoteEmptyErrorJson;
                 else
                 {
                     var receivedStream = response.GetResponseStream();
                     if (receivedStream == null)
-                        result = RouteRuntime.RemoteEmptyError;
+                        result = RouteRuntime.RemoteEmptyErrorJson;
                     else
                     {
                         using (receivedStream)

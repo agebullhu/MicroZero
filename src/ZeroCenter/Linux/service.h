@@ -1,6 +1,6 @@
 #ifndef AGEBULL_RPCSERVICE_H
 #pragma once
-#include "../stdafx.h"
+#include "stdafx.h"
 namespace agebull
 {
 	class rpc_service
@@ -61,42 +61,12 @@ namespace agebull
 			thread_sleep(50);
 			acl::log::close();
 		}
+
 	};
 
 	/**
-	* \brief 取本机IP并显示在控制台
+	* \brief 系统信号处理
 	*/
-	inline bool rpc_service::get_local_ips()
-	{
-		char hname[128];
-		gethostname(hname, sizeof(hname));
-		cout << "Host:" << hname << endl << "IPs:";
-		struct addrinfo hint{};
-		memset(&hint, 0, sizeof(hint));
-		hint.ai_family = AF_INET;
-		hint.ai_socktype = SOCK_STREAM;
-
-		addrinfo* info = nullptr;
-		char ipstr[16];
-		bool first = true;
-		if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
-		{
-			addrinfo* now = info;
-			do
-			{
-				inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
-				if (first)
-					first = false;
-				else
-					cout << ",";
-				cout << ipstr;
-				now = now->ai_next;
-			}
-			while (now != nullptr);
-			freeaddrinfo(info);
-		}
-		cout << endl;
-		return !first;
-	}
+	void on_sig(int sig);
 }
 #endif AGEBULL_RPCSERVICE_H

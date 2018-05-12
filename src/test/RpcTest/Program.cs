@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
@@ -17,17 +17,13 @@ namespace RpcTest
         //private static Recorder recorder;
         private static void Main(string[] args)
         {
-            StationProgram.WriteLine("Hello ZeroNet");
+            StationConsole.WriteLine("Hello ZeroNet");
             StationProgram.Config.DataFolder = @"c:\data";
             //StationProgram.RegisteStation(new RemoteLogStation());
+            LogRecorder.Initialize(new RemoteRecorder());
             LogRecorder.LogByTask = true;
             LogRecorder.TraceToConsole = false;
-            StationProgram.Initialize();
-            StationProgram.Run();
-            //recorder = new Recorder();
-            //recorder.Initialize();
-            StationProgram.WriteLine("Run ZeroNet");
-            LogRecorder.Initialize(new RemoteRecorder());
+            StationProgram.Launch();
 
             Thread.Sleep(1000);
             start = DateTime.Now;

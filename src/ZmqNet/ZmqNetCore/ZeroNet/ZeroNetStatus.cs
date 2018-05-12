@@ -4,183 +4,183 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// Zmq°ïÖúÀà
+    /// Zmqå¸®åŠ©ç±»
     /// </summary>
     public static class ZeroNetStatus
     {
         /// <summary>
-        /// Õı³£×´Ì¬
+        /// æ­£å¸¸çŠ¶æ€
         /// </summary>
         public const byte ZeroStatusSuccess = (byte) '+';
 
         /// <summary>
-        /// ´íÎó×´Ì¬
+        /// é”™è¯¯çŠ¶æ€
         /// </summary>
         public const byte ZeroStatusBad = (byte) '-';
 
         /// <summary>
-        /// ³É¹¦
+        /// æˆåŠŸ
         /// </summary>
         public const string ZeroCommandOk = "+ok";
 
         /// <summary>
-        /// ¼Æ»®Ö´ĞĞ
+        /// è®¡åˆ’æ‰§è¡Œ
         /// </summary>
         public const string ZeroCommandPlan = "+plan";
 
         /// <summary>
-        /// ´íÎó
+        /// é”™è¯¯
         /// </summary>
         public const string ZeroCommandError = "-error";
 
         /// <summary>
-        /// ÕıÔÚÖ´ĞĞ
+        /// æ­£åœ¨æ‰§è¡Œ
         /// </summary>
         public const string ZeroCommandRuning = "+runing";
 
         /// <summary>
-        /// ³É¹¦ÍË³ö
+        /// æˆåŠŸé€€å‡º
         /// </summary>
         public const string ZeroCommandBye = "+bye";
 
         /// <summary>
-        /// ³É¹¦¼ÓÈë
+        /// æˆåŠŸåŠ å…¥
         /// </summary>
         public const string ZeroCommandWecome = "+wecome";
 
         /// <summary>
-        /// Í¶Æ±ÒÑ·¢³ö
+        /// æŠ•ç¥¨å·²å‘å‡º
         /// </summary>
         public const string ZeroVoteSended = "+send";
 
         /// <summary>
-        /// Í¶Æ±ÒÑ¹Ø±Õ
+        /// æŠ•ç¥¨å·²å…³é—­
         /// </summary>
         public const string ZeroVoteClosed = "+close";
 
         /// <summary>
-        /// ÒÑÍË³öÍ¶Æ±
+        /// å·²é€€å‡ºæŠ•ç¥¨
         /// </summary>
         public const string ZeroVoteBye = "+bye";
 
         /// <summary>
-        /// Í¶Æ±ÕıÔÚ½øĞĞÖĞ
+        /// æŠ•ç¥¨æ­£åœ¨è¿›è¡Œä¸­
         /// </summary>
         public const string ZeroVoteWaiting = "+waiting";
 
         /// <summary>
-        /// Í¶Æ±ÒÑ¿ªÊ¼
+        /// æŠ•ç¥¨å·²å¼€å§‹
         /// </summary>
         public const string ZeroVoteStart = "+start";
 
         /// <summary>
-        /// Í¶Æ±ÒÑÍê³É
+        /// æŠ•ç¥¨å·²å®Œæˆ
         /// </summary>
         public const string ZeroVoteEnd = "+end";
 
         /// <summary>
-        /// ÕÒ²»µ½Ö÷»ú
+        /// æ‰¾ä¸åˆ°ä¸»æœº
         /// </summary>
         public const string ZeroCommandNoFind = "-no find";
 
         /// <summary>
-        /// Ö¡´íÎó
+        /// å¸§é”™è¯¯
         /// </summary>
         public const string ZeroCommandInvalid = "-invalid";
 
         /// <summary>
-        /// ²»Ö§³ÖµÄ²Ù×÷
+        /// ä¸æ”¯æŒçš„æ“ä½œ
         /// </summary>
         public const string ZeroCommandNoSupport = "-no support";
 
         /// <summary>
-        /// Ö´ĞĞÊ§°Ü
+        /// æ‰§è¡Œå¤±è´¥
         /// </summary>
         public const string ZeroCommandFailed = "-failes";
 
         /// <summary>
-        /// ²ÎÊı´íÎó
+        /// å‚æ•°é”™è¯¯
         /// </summary>
         public const string ZeroCommandArgError = "-ArgumentError! must like : call[name][command][argument]";
 
         /// <summary>
-        /// °²×°Ê±²ÎÊı´íÎó
+        /// å®‰è£…æ—¶å‚æ•°é”™è¯¯
         /// </summary>
         public const string ZeroCommandInstallArgError = "-ArgumentError! must like :install [type] [name]";
 
         /// <summary>
-        /// Ö´ĞĞ³¬Ê±
+        /// æ‰§è¡Œè¶…æ—¶
         /// </summary>
         public const string ZeroCommandTimeout = "-time out";
 
         /// <summary>
-        /// ·¢ÉúÍøÂçÒì³£
+        /// å‘ç”Ÿç½‘ç»œå¼‚å¸¸
         /// </summary>
         public const string ZeroCommandNetError = "-net error";
 
         /// <summary>
-        /// ÕÒ²»µ½Êµ¼Ê´¦ÀíÕß
+        /// æ‰¾ä¸åˆ°å®é™…å¤„ç†è€…
         /// </summary>
         public const string ZeroCommandNotWorker = "-not work";
 
         /// <summary>
-        /// Î´Öª´íÎó
+        /// æœªçŸ¥é”™è¯¯
         /// </summary>
         public const string ZeroUnknowError = "-error";
 
         /// <summary>
-        /// ²ÎÊı´íÎóµÄJsonÎÄ±¾
+        /// å‚æ•°é”™è¯¯çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>²ÎÊıĞ£Ñé²»Í¨¹ı</remarks>
+        /// <remarks>å‚æ•°æ ¡éªŒä¸é€šè¿‡</remarks>
         public static readonly string SucceesJson = JsonConvert.SerializeObject(ApiResult.Succees());
 
 
         /// <summary>
-        /// ²ÎÊı´íÎóµÄJsonÎÄ±¾
+        /// å‚æ•°é”™è¯¯çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>²ÎÊıĞ£Ñé²»Í¨¹ı</remarks>
-        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError,"²ÎÊı´íÎó"));
+        /// <remarks>å‚æ•°æ ¡éªŒä¸é€šè¿‡</remarks>
+        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError,"å‚æ•°é”™è¯¯"));
 
         /// <summary>
-        /// ¾Ü¾ø·ÃÎÊµÄJsonÎÄ±¾
+        /// æ‹’ç»è®¿é—®çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>È¨ÏŞĞ£Ñé²»Í¨¹ı</remarks>
-        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess,"¾Ü¾ø·ÃÎÊ"));
+        /// <remarks>æƒé™æ ¡éªŒä¸é€šè¿‡</remarks>
+        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess,"æ‹’ç»è®¿é—®"));
 
         /// <summary>
-        /// Î´Öª´íÎóµÄJsonÎÄ±¾
+        /// æœªçŸ¥é”™è¯¯çš„Jsonæ–‡æœ¬
         /// </summary>
         public static readonly string UnknowErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError));
 
         /// <summary>
-        /// ÍøÂç´íÎóµÄJsonÎÄ±¾
+        /// ç½‘ç»œé”™è¯¯çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>µ÷ÓÃÆäËüApiÊ±Ê±Å×³öÎ´´¦ÀíÒì³£</remarks>
+        /// <remarks>è°ƒç”¨å…¶å®ƒApiæ—¶æ—¶æŠ›å‡ºæœªå¤„ç†å¼‚å¸¸</remarks>
         public static readonly string NetworkErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError));
 
         /// <summary>
-        /// ÍøÂç³¬Ê±µÄJsonÎÄ±¾
+        /// ç½‘ç»œè¶…æ—¶çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>µ÷ÓÃÆäËüApiÊ±Ê±Å×³öÎ´´¦ÀíÒì³£</remarks>
+        /// <remarks>è°ƒç”¨å…¶å®ƒApiæ—¶æ—¶æŠ›å‡ºæœªå¤„ç†å¼‚å¸¸</remarks>
         public static readonly string TimeOutJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.TimeOut));
 
         /// <summary>
-        /// ÄÚ²¿´íÎóµÄJsonÎÄ±¾
+        /// å†…éƒ¨é”™è¯¯çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>Ö´ĞĞ·½·¨Ê±Å×³öÎ´´¦ÀíÒì³£</remarks>
+        /// <remarks>æ‰§è¡Œæ–¹æ³•æ—¶æŠ›å‡ºæœªå¤„ç†å¼‚å¸¸</remarks>
         public static readonly string InnerErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError));
 
         /// <summary>
-        /// ÕÒ²»µ½·½·¨µÄJsonÎÄ±¾
+        /// é¡µé¢ä¸å­˜åœ¨çš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>·½·¨Î´×¢²á</remarks>
-        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "Ò³Ãæ²»´æÔÚ"));
+        /// <remarks>æ–¹æ³•æœªæ³¨å†Œ</remarks>
+        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "é¡µé¢ä¸å­˜åœ¨"));
 
         /// <summary>
-        /// ÕÒ²»µ½·½·¨µÄJsonÎÄ±¾
+        /// ç³»ç»Ÿæœªå°±ç»ªçš„Jsonæ–‡æœ¬
         /// </summary>
-        /// <remarks>·½·¨Î´×¢²á</remarks>
-        public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "ÏµÍ³Î´¾ÍĞ÷"));
+        /// <remarks>æ–¹æ³•æœªæ³¨å†Œ</remarks>
+        public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "ç³»ç»Ÿæœªå°±ç»ª"));
 
     }
 }

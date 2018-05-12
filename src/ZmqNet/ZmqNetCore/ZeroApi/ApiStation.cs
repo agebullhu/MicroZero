@@ -33,7 +33,7 @@ namespace Agebull.ZeroNet.Core
             {
                 action.Name = name;
                 _apiActions.Add(name, action);
-                StationProgram.WriteLine($"{StationName}:{name} is registed");
+                StationConsole.WriteLine($"{StationName}:{name} is registed");
             }
             else
             {
@@ -131,7 +131,7 @@ namespace Agebull.ZeroNet.Core
         private void ExecCommand(object arg)
         {
             var item = (ApiCallItem)arg;
-            StationProgram.WriteLine($"{item.Caller}=>{RealName}");
+            StationConsole.WriteLine($"{item.Caller}=>{RealName}");
             var response = ExecCommand(item);
             _socket.SendMoreFrame(item.Caller);
             _socket.SendMoreFrameEmpty();
@@ -263,7 +263,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationProgram.WriteLine($"【{StationName}】start...");
+            StationConsole.WriteLine($"【{StationName}】start...");
 
             InPoll = false;
             InHeart = false;
@@ -283,7 +283,7 @@ namespace Agebull.ZeroNet.Core
             while (!InHeart || !InPoll)
                 Thread.Sleep(50);
 
-            StationProgram.WriteLine($"【{StationName}】runing...");
+            StationConsole.WriteLine($"【{StationName}】runing...");
             return true;
         }
 
@@ -298,7 +298,7 @@ namespace Agebull.ZeroNet.Core
                 return;
             if (StationProgram.State == StationState.Run && RunState == StationState.Failed)
             {
-                StationProgram.WriteInfo($"【{RealName}】restart...");
+                StationConsole.WriteInfo($"【{RealName}】restart...");
                 TryRun();
                 return;
             }
@@ -315,7 +315,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void PollTask()
         {
-            StationProgram.WriteLine($"【{RealName}】poll start");
+            StationConsole.WriteLine($"【{RealName}】poll start");
             var timeout = new TimeSpan(0, 0, 5);
             InPoll = true;
             while (RunState == StationState.Run && RunState == StationState.Run)
@@ -359,14 +359,14 @@ namespace Agebull.ZeroNet.Core
                 }
                 catch (Exception e)
                 {
-                    StationProgram.WriteError($"【{RealName}】poll error{e.Message}...");
+                    StationConsole.WriteError($"【{RealName}】poll error{e.Message}...");
                     LogRecorder.Exception(e);
                     RunState = StationState.Failed;
                 }
             }
 
             InPoll = false;
-            StationProgram.WriteInfo($"【{RealName}】poll stop");
+            StationConsole.WriteInfo($"【{RealName}】poll stop");
             //_socket.TrySendFrame(timeout, ZeroByteCommand.WorkerLeft);
 
             _socket.CloseSocket(Config.InnerAddress);
@@ -393,7 +393,7 @@ namespace Agebull.ZeroNet.Core
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationProgram.WriteError($"【{RealName}】connect error =>{e.Message}");
+                StationConsole.WriteError($"【{RealName}】connect error =>{e.Message}");
                 return false;
             }
         }
@@ -412,7 +412,7 @@ namespace Agebull.ZeroNet.Core
         {
             InHeart = true;
             var errorCount = 0;
-            StationProgram.WriteLine($"【{RealName}】heartbeat start");
+            StationConsole.WriteLine($"【{RealName}】heartbeat start");
             //连接
             var socket = new DealerSocket();
             socket.Options.Identity = RealName.ToAsciiBytes();
@@ -437,7 +437,7 @@ namespace Agebull.ZeroNet.Core
                 if (!socket.ReceiveString(out result))
                 {
                     ++errorCount;
-                    StationProgram.WriteError($"【{RealName}】heartbeat timeout({errorCount})...");
+                    StationConsole.WriteError($"【{RealName}】heartbeat timeout({errorCount})...");
                     Thread.Sleep(100);
                 }
                 break;
@@ -452,7 +452,7 @@ namespace Agebull.ZeroNet.Core
                     if(!socket.ReceiveString(out result))
                     {
                         ++errorCount;
-                        StationProgram.WriteError($"【{RealName}】heartbeat timeout({errorCount})...");
+                        StationConsole.WriteError($"【{RealName}】heartbeat timeout({errorCount})...");
                         Thread.Sleep(100);
                         continue;
                     }
@@ -461,7 +461,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     LogRecorder.Exception(e);
                     ++errorCount;
-                    StationProgram.WriteError($"【{RealName}】heartbeat exception({errorCount}):{e.Message}...");
+                    StationConsole.WriteError($"【{RealName}】heartbeat exception({errorCount}):{e.Message}...");
                     Thread.Sleep(100);
                     continue;
                 }
@@ -469,7 +469,7 @@ namespace Agebull.ZeroNet.Core
                 if (str[0] == ZeroNetStatus.ZeroStatusBad)
                 {
                     ++errorCount;
-                    StationProgram.WriteError($"【{RealName}】heartbeat request failed({errorCount}):{result[0]}...");
+                    StationConsole.WriteError($"【{RealName}】heartbeat request failed({errorCount}):{result[0]}...");
                     Thread.Sleep(100);
                     continue;
                 }
@@ -477,7 +477,7 @@ namespace Agebull.ZeroNet.Core
                 if (errorCount > 0)
                 {
                     errorCount = 0;
-                    StationProgram.WriteInfo($"【{RealName}】heartbeat resume...");
+                    StationConsole.WriteInfo($"【{RealName}】heartbeat resume...");
                 }
                 for (int i = 0; i < 20 && RunState == StationState.Run && RunState == StationState.Run; i++)
                 {
@@ -505,7 +505,7 @@ namespace Agebull.ZeroNet.Core
             {
                 LogRecorder.Exception(e);
             }
-            StationProgram.WriteLine($"【{RealName}】heartbeat stop");
+            StationConsole.WriteLine($"【{RealName}】heartbeat stop");
             InHeart = false;
         }
 

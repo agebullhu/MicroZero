@@ -14,67 +14,29 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    ///     ’æµ„”¶”√
+    ///     Á´ôÁÇπÂ∫îÁî®
     /// </summary>
     public static class StationProgram
     {
-        #region IOC
-
-        //private static IServiceProvider _serviceProvider;
-
-        //static void InitIoc()
-        //{
-        //    _serviceProvider = new ServiceCollection().BuildServiceProvider();
-        //}
-
-        #endregion
-
-        #region Station & Configs
+        #region Station
 
         /// <summary>
-        ///     ’æµ„ºØ∫œ
-        /// </summary>
-        public static readonly Dictionary<string, StationConfig> Configs = new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        ///     ’æµ„ºØ∫œ
+        ///     Á´ôÁÇπÈõÜÂêà
         /// </summary>
         internal static readonly Dictionary<string, ZeroStation> Stations = new Dictionary<string, ZeroStation>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        ///     ’æµ„≈‰÷√
-        /// </summary>
-        private static LocalStationConfig _config;
-
-        /// <summary>
-        ///     ’æµ„≈‰÷√
-        /// </summary>
-        public static LocalStationConfig Config
-        {
-            get
-            {
-                if (_config != null)
-                    return _config;
-                if (!File.Exists("host.json"))
-                    return _config = new LocalStationConfig();
-                var json = File.ReadAllText("host.json");
-                return _config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
-            }
-            set => _config = value;
-        }
-
-        /// <summary>
-        ///     º‡≤‚÷––ƒπ„≤•µÿ÷∑
+        ///     ÁõëÊµã‰∏≠ÂøÉÂπøÊí≠Âú∞ÂùÄ
         /// </summary>
         public static string ZeroMonitorAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}";
 
         /// <summary>
-        ///     º‡≤‚÷––ƒπ‹¿Ìµÿ÷∑
+        ///     ÁõëÊµã‰∏≠ÂøÉÁÆ°ÁêÜÂú∞ÂùÄ
         /// </summary>
         public static string ZeroManageAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroManagePort}";
 
         /// <summary>
-        /// ◊¢≤·’æµ„
+        /// Ê≥®ÂÜåÁ´ôÁÇπ
         /// </summary>
         /// <param name="station"></param>
         public static void RegisteStation(ZeroStation station)
@@ -93,7 +55,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroStation.Run(station);
         }
         /// <summary>
-        /// ◊¢≤·’æµ„
+        /// Ê≥®ÂÜåÁ´ôÁÇπ
         /// </summary>
         public static void RegisteStation<TStation>() where TStation : ZeroStation, new()
         {
@@ -102,75 +64,46 @@ namespace Agebull.ZeroNet.Core
 
         #endregion
 
-        #region System Command
+        #region Config
+
         /// <summary>
-        /// À¯∂‘œÛ
+        ///     Á´ôÁÇπÈõÜÂêà
         /// </summary>
-        public static object lock_obj = new object();
+        public static readonly Dictionary<string, StationConfig> Configs = new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
-        /// 
+        ///     Á´ôÁÇπÈÖçÁΩÆ
         /// </summary>
-        /// <param name="message"></param>
-        public static void WriteLine(string message)
+        private static LocalStationConfig _config;
+
+        /// <summary>
+        ///     Á´ôÁÇπÈÖçÁΩÆ
+        /// </summary>
+        public static LocalStationConfig Config
         {
-            lock (lock_obj)
+            get
             {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(message);
+                if (_config != null)
+                    return _config;
+                if (!File.Exists("host.json"))
+                    return _config = new LocalStationConfig();
+                var json = File.ReadAllText("host.json");
+                return _config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
             }
+            set => _config = value;
         }
+
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        public static void WriteError(string message)
-        {
-            lock (lock_obj)
-            {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(message);
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        public static void WriteInfo(string message)
-        {
-            lock (lock_obj)
-            {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(message);
-                Console.ForegroundColor = ConsoleColor.White;
-            }
-        }
-        /// <summary>
-        ///     ÷¥––π‹¿Ì√¸¡Ó
-        /// </summary>
-        /// <param name="commmand"></param>
-        /// <param name="argument"></param>
-        /// <returns></returns>
-        public static bool Request(string commmand, string argument)
-        {
-            var result = ZeroManageAddress.RequestNet(commmand, argument);
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                WriteError($"°æ{commmand}°ø{argument}\r\n¥¶¿Ì≥¨ ±");
-                return false;
-            }
-            WriteLine(result);
-            return true;
-        }
-        /// <summary>
-        ///     ∂¡»°≈‰÷√
+        ///     ËØªÂèñÈÖçÁΩÆ
         /// </summary>
         /// <returns></returns>
         public static StationConfig GetConfig(string stationName, out ZeroCommandStatus status)
         {
+            if (State != StationState.Run)
+            {
+                status = ZeroCommandStatus.NoRun;
+                return null;
+            }
             StationConfig config;
             lock (Configs)
             {
@@ -194,11 +127,11 @@ namespace Agebull.ZeroNet.Core
             switch (result)
             {
                 case null:
-                    WriteError($"°æ{stationName}°øŒﬁ∑®ªÒ»°≈‰÷√");
+                    StationConsole.WriteError($"„Äê{stationName}„ÄëÊó†Ê≥ïËé∑ÂèñÈÖçÁΩÆ");
                     status = ZeroCommandStatus.Error;
                     return null;
                 case ZeroNetStatus.ZeroCommandNoFind:
-                    WriteError($"°æ{stationName}°øŒ¥∞≤◊∞");
+                    //WriteError($"„Äê{stationName}„ÄëÊú™ÂÆâË£Ö");
                     status = ZeroCommandStatus.NoFind;
                     return null;
             }
@@ -222,112 +155,66 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     ∂¡»°≈‰÷√
+        /// ÊûêÊûÑÈÖçÁΩÆ
         /// </summary>
-        /// <returns></returns>
-        public static StationConfig InstallStation(string stationName, string type)
+        internal static void ConfigsResume()
         {
-            StationConfig config;
             lock (Configs)
             {
-                if (Configs.TryGetValue(stationName, out config))
-                    return config;
-            }
-
-            WriteInfo($"°æ{stationName}°øauto regist...");
-            try
-            {
-                var result = ZeroManageAddress.RequestNet("install", type, stationName);
-
-                switch (result)
+                foreach (var config in Configs.Values)
                 {
-                    case null:
-                        WriteError($"°æ{stationName}°øauto regist failed");
-                        return null;
-                    case ZeroNetStatus.ZeroCommandNoSupport:
-                        WriteError($"°æ{stationName}°øauto regist failed:type no supper");
-                        return null;
-                    case ZeroNetStatus.ZeroCommandFailed:
-                        WriteError($"°æ{stationName}°øauto regist failed:config error");
-                        return null;
+                    config.Resume();
                 }
-                config = JsonConvert.DeserializeObject<StationConfig>(result);
             }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                WriteError($"°æ{stationName}°øauto regist failed:{e.Message}");
-                return null;
-            }
-            lock (Configs)
-            {
-                Configs.Add(stationName, config);
-            }
-            WriteError($"°æ{stationName}°øauto regist succeed");
-            return config;
         }
 
+        /// <summary>
+        /// ÊûêÊûÑÈÖçÁΩÆ
+        /// </summary>
+        internal static void ConfigsDispose()
+        {
+            lock (Configs)
+            {
+                foreach (var config in Configs.Values)
+                {
+                    config.Dispose();
+                }
+            }
+        }
         #endregion
 
-        #region Program Flow
+        #region Program
 
         /// <summary>
-        ///     ◊¥Ã¨
+        ///     Áä∂ÊÄÅ
         /// </summary>
-        public static StationState State { get; private set; }
+        public static StationState State { get; internal set; }
+
 
         /// <summary>
-        ///     ‘À––
+        ///     ÊâßË°å
         /// </summary>
-        public static void RunConsole()
+        public static void Launch()
         {
-            Run();
-            ConsoleInput();
-        }
-
-        private static void ConsoleInput()
-        {
-            Console.CancelKeyPress += Console_CancelKeyPress;
-            while (true)
-            {
-                var cmd = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(cmd))
-                    continue;
-                switch (cmd.Trim().ToLower())
-                {
-                    case "quit":
-                    case "exit":
-                        Exit();
-                        return;
-                    case "stop":
-                        Stop();
-                        continue;
-                    case "start":
-                        Start();
-                        continue;
-                }
-                var words = cmd.Split(' ', '\t', '\r', '\n');
-                if (words.Length == 0)
-                {
-                    WriteLine("«Î ‰»Î’˝»∑√¸¡Ó");
-                    continue;
-                }
-                Request(words[0], words.Length == 1 ? null : words[1]);
-            }
-        }
-
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            Exit();
+            if (State >= StationState.Run)
+                return;
+            Initialize();
+            Start();
         }
 
         /// <summary>
-        ///     ≥ı ºªØ
+        ///     ÂàùÂßãÂåñ
         /// </summary>
         public static void Initialize()
         {
-            ZeroPublisher.Start();
-
+            ZeroPublisher.Initialize();
+            Discove();
+        }
+        /// <summary>
+        /// ÂèëÁé∞
+        /// </summary>
+        static void Discove()
+        {
             var discover = new ZeroApiDiscover();
             discover.FindApies(Assembly.GetCallingAssembly());
             if (discover.ApiItems.Count == 0)
@@ -345,160 +232,111 @@ namespace Agebull.ZeroNet.Core
             }
             RegisteStation(station);
         }
-
         /// <summary>
-        ///     Õ£÷π
+        ///     ÂêØÂä®
         /// </summary>
-        public static void Start()
+        internal static void Start()
         {
             switch (State)
             {
                 case StationState.Run:
-                    WriteInfo("*run...");
+                    StationConsole.WriteInfo("*run...");
                     return;
                 case StationState.Closing:
-                    WriteInfo("*closing...");
+                    StationConsole.WriteInfo("*closing...");
                     return;
                 case StationState.Destroy:
-                    WriteInfo("*destroy...");
+                    StationConsole.WriteInfo("*destroy...");
                     return;
             }
-            Run();
+            StationConsole.WriteLine(ZeroManageAddress);
+            State = StationState.Start;
+            ZeroPublisher.Start();
+            Task.Factory.StartNew(SystemMonitor.Run);
+            SystemManager.Run();
         }
-
+        
         /// <summary>
-        ///     Õ£÷π
+        ///     ÂÖ≥Èó≠
         /// </summary>
-        public static void Stop()
+        internal static void Close()
         {
-            WriteInfo("Program Stop.");
+            if (State >= StationState.Closing)
+                return;
+            StationConsole.WriteInfo("Program Closing...");
             State = StationState.Closing;
+            ConfigsDispose();
+            ZeroPublisher.Stop();
             foreach (var stat in Stations)
                 stat.Value.Close();
-            while (Stations.Values.Any(p => p.RunState == StationState.Run))
-            {
-                Console.Write(".");
-                Thread.Sleep(100);
-            }
-            ZeroPublisher.Stop();
+            //while (Stations.Values.Any(p => p.RunState == StationState.Run))
+            //{
+            //    Console.Write(".");
+            //    Thread.Sleep(100);
+            //}
             State = StationState.Closed;
-            WriteInfo("@");
-        }
-
-        /// <summary>
-        ///     πÿ±’
-        /// </summary>
-        public static void Close()
-        {
-            ConfigsDispose();
-            WriteInfo("Program Stop...");
-            if (State == StationState.Run)
-                Stop();
-            State = StationState.Destroy;
-            WriteInfo("Program Exit");
+            StationConsole.WriteInfo("Program Closed");
         }
         /// <summary>
-        /// Œˆππ≈‰÷√
-        /// </summary>
-        internal static void ConfigsDispose()
-        {
-            lock (Configs)
-            {
-                foreach (var config in Configs.Values)
-                {
-                    config.Dispose();
-                }
-            }
-        }
-        /// <summary>
-        ///     πÿ±’
+        ///     ÂÖ≥Èó≠
         /// </summary>
         public static void Exit()
         {
             Close();
+            State = StationState.Destroy;
+            StationConsole.WriteInfo("Program Destroy");
             Process.GetCurrentProcess().Close();
         }
 
+        #endregion
+
+        #region Console
+
+
         /// <summary>
-        ///     Ω¯»ÎœµÕ≥’ÏÃ˝
+        ///     ËøêË°å
         /// </summary>
-        public static void Run()
+        public static void RunConsole()
         {
-            WriteInfo("Program Start...");
-            WriteLine(ZeroManageAddress);
-            int tryCnt = 0;
-            State = StationState.Start;
-            try
-            {
-                while (true)
-                {
-                    var res = ZeroManageAddress.RequestNet("ping");
-                    if (res != null)
-                        break;
-                    if (tryCnt > 12)
-                    {
-                        WriteError("ZeroCenter can`t connection,waiting for monitor message..");
-                        return;
-                    }
-                    tryCnt++;
-                    WriteError($"ZeroCenter can`t connection,try again in a second({tryCnt}).");
-                    Thread.Sleep(1000);
-                }
-                Task.Factory.StartNew(SystemMonitor.RunMonitor);
-
-                LoadAllConfig();
-
-                Thread.Sleep(50);
-                State = StationState.Run;
-                if (Stations.Count > 0)
-                {
-                    foreach (var station in Stations.Values)
-                        ZeroStation.Run(station);
-                }
-                WriteInfo("Program Run...");
-            }
-            catch (Exception e)
-            {
-                WriteError(e.Message);
-                State = StationState.Failed;
-            }
+            Launch();
+            ConsoleInput();
+            Exit();
         }
 
-        static void LoadAllConfig()
+        private static void ConsoleInput()
         {
-            string result;
-            int trycnt = 0;
+            Console.CancelKeyPress += Console_CancelKeyPress;
             while (true)
             {
-                result = ZeroManageAddress.RequestNet("Host", "*");
-                if (result != null)
+                var cmd = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(cmd))
+                    continue;
+                switch (cmd.Trim().ToLower())
                 {
-                    break;
+                    case "quit":
+                    case "exit":
+                        Exit();
+                        return;
+                    case "start":
+                        Start();
+                        continue;
                 }
-                if (++trycnt > 5)
-                    return;
-                Thread.Sleep(10);
-            }
-            try
-            {
-                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(result);
-                foreach (var config in configs)
+                var words = cmd.Split(' ', '\t', '\r', '\n');
+                if (words.Length == 0)
                 {
-                    lock (Configs)
-                    {
-                        if (Configs.ContainsKey(config.StationName))
-                            Configs[config.StationName].Copy(config);
-                        else
-                            Configs.Add(config.StationName, config);
-                    }
+                    StationConsole.WriteLine("ËØ∑ËæìÂÖ•Ê≠£Á°ÆÂëΩ‰ª§");
+                    continue;
                 }
-            }
-            catch (Exception e)
-            {
-                WriteError(e.Message);
-            }
 
+                SystemManager.Request(words[0], words.Length == 1 ? null : words[1]);
+            }
         }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Exit();
+        }
+
         #endregion
     }
 }

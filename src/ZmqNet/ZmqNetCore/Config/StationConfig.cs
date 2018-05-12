@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
-using Gboxt.Common.DataModel;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 
@@ -112,7 +111,7 @@ namespace Agebull.ZeroNet.Core
                     return Pools.Dequeue();
             }
             var socket = new RequestSocket();
-            socket.Options.Identity = $"{StationProgram.Config.RealName}-{Sockets.Count +1}".ToAsciiBytes();
+            socket.Options.Identity = $"{StationProgram.Config.RealName}-{Sockets.Count + 1}".ToAsciiBytes();
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
             socket.Options.DisableTimeWait = true;
             socket.Connect(OutAddress);
@@ -127,10 +126,8 @@ namespace Agebull.ZeroNet.Core
         {
             if (socket == null)
                 return;
-            socket.Disconnect(OutAddress);
-            socket.Close();
-            socket.Dispose();
             Sockets.Remove(socket);
+            socket.CloseSocket(OutAddress);
         }
         /// <summary>
         /// 释放一个连接对象
@@ -160,6 +157,17 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
         private bool _isDisposed;
+
+        /// <summary>
+        /// 释放一个连接对象
+        /// </summary>
+        /// <returns></returns>
+        public void Resume()
+        {
+            Dispose();
+            _isDisposed = false;
+        }
+
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
@@ -176,11 +184,9 @@ namespace Agebull.ZeroNet.Core
             lock (Pools)
             {
                 Pools.Clear();
-                foreach (var socket in Pools)
+                foreach (var socket in Sockets)
                 {
-                    socket.Disconnect(OutAddress);
-                    socket.Close();
-                    socket.Dispose();
+                    socket.CloseSocket(OutAddress);
                 }
                 Sockets.Clear();
             }

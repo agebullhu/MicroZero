@@ -113,7 +113,7 @@ namespace Agebull.ZeroNet.Core
                 if (station.Config == null)
                 {
                     station.RunState = StationState.ConfigError;
-                    StationProgram.WriteError($"¡¾{station.StationName}¡¿config cann`t get,failed!");
+                    StationConsole.WriteError($"¡¾{station.StationName}¡¿config cann`t get,failed!");
                     return false;
                 }
             }
@@ -129,9 +129,9 @@ namespace Agebull.ZeroNet.Core
                 Thread.Sleep(50);
             if (StationProgram.State == StationState.Run && RunState == StationState.Failed)
             {
-                StationProgram.WriteInfo($"¡¾{StationName}¡¿restart...");
+                StationConsole.WriteInfo($"¡¾{StationName}¡¿restart...");
                 Console.CursorLeft = 0;
-                StationProgram.WriteInfo("                       ");
+                StationConsole.WriteInfo("                       ");
                 for (int i = 1; i <= 3; i++)
                 {
                     Console.CursorLeft = 0;
@@ -154,14 +154,14 @@ namespace Agebull.ZeroNet.Core
             //Î´ÔËÐÐ×´Ì¬
             if (RunState < StationState.Start || RunState > StationState.Failed)
                 return true;
-            StationProgram.WriteInfo($"{StationName} closing....");
+            StationConsole.WriteInfo($"{StationName} closing....");
             RunState = StationState.Closing;
             do
             {
                 Thread.Sleep(20);
             } while (RunState != StationState.Closed);
 
-            StationProgram.WriteInfo($"{StationName} closed");
+            StationConsole.WriteInfo($"{StationName} closed");
             return true;
         }
 

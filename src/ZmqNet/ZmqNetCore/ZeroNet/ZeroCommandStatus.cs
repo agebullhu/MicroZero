@@ -1,33 +1,37 @@
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// ÃüÁî×´Ì¬
+    /// å‘½ä»¤çŠ¶æ€
     /// </summary>
     public enum ZeroCommandStatus
     {
         /// <summary>
-        /// ÎŞ×´Ì¬
+        /// æ— çŠ¶æ€
         /// </summary>
         None,
         /// <summary>
-        /// ³É¹¦
+        /// æˆåŠŸ
         /// </summary>
         Success,
         /// <summary>
-        /// ÕÒ²»µ½
+        /// æ‰¾ä¸åˆ°
         /// </summary>
         NoFind,
         /// <summary>
-        /// ²»Ö§³Ö
+        /// ä¸æ”¯æŒ
         /// </summary>
         NoSupper,
         /// <summary>
-        /// ³ö´í
+        /// å‡ºé”™
         /// </summary>
         Error,
         /// <summary>
-        /// ±¾µØÒì³£
+        /// æœ¬åœ°å¼‚å¸¸
         /// </summary>
-        Exception
+        Exception,
+        /// <summary>
+        /// æœ¬åœ°æœªå¯åŠ¨
+        /// </summary>
+        NoRun
     }
 }

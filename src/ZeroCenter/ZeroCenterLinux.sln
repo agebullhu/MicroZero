@@ -3,31 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroCenterL", "Linux\Linux.vcxproj", "{422ED610-E8DC-4287-8B27-52F4C04C9758}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZeroCenter", "Linux\Linux.vcxproj", "{422ED610-E8DC-4287-8B27-52F4C04C9758}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|ARM = Debug|ARM
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|ARM = Release|ARM
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Debug|ARM.ActiveCfg = Debug|x64
 		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Debug|x64.ActiveCfg = Debug|x64
 		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Debug|x64.Build.0 = Debug|x64
-		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Debug|x86.ActiveCfg = Debug|x64
-		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Release|ARM.ActiveCfg = Release|x64
 		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Release|x64.ActiveCfg = Release|x64
 		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Release|x64.Build.0 = Release|x64
-		{422ED610-E8DC-4287-8B27-52F4C04C9758}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2CED4031-2CFC-4D48-84DF-D296F00D68E1}
+		SolutionGuid = {3F792ECE-2648-445B-99CD-DCDB003843CB}
 	EndGlobalSection
 EndGlobal

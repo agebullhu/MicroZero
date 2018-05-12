@@ -13,39 +13,39 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    ///     µ÷ÓÃÓ³ÉäºËĞÄÀà
+    ///     è°ƒç”¨æ˜ å°„æ ¸å¿ƒç±»
     /// </summary>
     internal class HttpRouter : ScopeBase
     {
 
-        #region ±äÁ¿
+        #region å˜é‡
 
         /// <summary>
-        ///     HttpÉÏÏÂÎÄ
+        ///     Httpä¸Šä¸‹æ–‡
         /// </summary>
         public HttpContext HttpContext { get; }
 
         /// <summary>
-        ///     HttpÇëÇó
+        ///     Httpè¯·æ±‚
         /// </summary>
         public HttpRequest Request { get; }
 
         /// <summary>
-        ///     Http·µ»Ø
+        ///     Httpè¿”å›
         /// </summary>
         public HttpResponse Response { get; }
 
         /// <summary>
-        ///     Http·µ»Ø
+        ///     Httpè¿”å›
         /// </summary>
         public RouteData Data { get; }
         
         #endregion
 
-        #region Á÷³Ì
+        #region æµç¨‹
 
         /// <summary>
-        ///     ÄÚ²¿¹¹¼Ü
+        ///     å†…éƒ¨æ„æ¶
         /// </summary>
         /// <param name="context"></param>
         internal HttpRouter(HttpContext context)
@@ -65,38 +65,44 @@ namespace ZeroNet.Http.Route
         }
 
 
-        /// <summary>ÇåÀí×ÊÔ´</summary>
+        /// <summary>æ¸…ç†èµ„æº</summary>
         protected override void OnDispose()
         {
         }
 
         /// <summary>
-        /// µ÷ÓÃ
+        /// è°ƒç”¨
         /// </summary>
         internal void Call()
         {
             if (!CheckCall())
                 return;
-            // 1 °²È«¼ì²é
+            // 1 å®‰å…¨æ£€æŸ¥
             if (!SecurityCheck())
                 return;
-            // 2 ³õÊ¼»¯Â·ÓÉĞÅÏ¢
+            // 2 åˆå§‹åŒ–è·¯ç”±ä¿¡æ¯
             if (!InitializeContext())
                 return;
-            // 3 »º´æ¿ìËÙ´¦Àí
+            // 3 ç¼“å­˜å¿«é€Ÿå¤„ç†
             if (RouteChahe.LoadCache(Data.Uri, Data.Bearer, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
             {
-                //ÕÒµ½²¢·µ»Ø»º´æ
+                //æ‰¾åˆ°å¹¶è¿”å›ç¼“å­˜
                 Data.Status = RouteStatus.Cache;
                 return;
             }
-            // 4 Ô¶³Ìµ÷ÓÃ
+            // 4 è¿œç¨‹è°ƒç”¨
+            if (Data.RouteHost.Failed)
+            {
+                Data.IsSucceed = false;
+                Data.ResultMessage = RouteRuntime.NoFindJson;
+                return;
+            }
             Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
-            // 5 ½á¹û¼ì²é
+            // 5 ç»“æœæ£€æŸ¥
             Data.IsSucceed = CheckResult(Data);
         }
         /// <summary>
-        /// ¼ì²éµ÷ÓÃÄÚÈİ
+        /// æ£€æŸ¥è°ƒç”¨å†…å®¹
         /// </summary>
         /// <returns></returns>
         private bool CheckCall()
@@ -105,7 +111,7 @@ namespace ZeroNet.Http.Route
             if (words.Length <= 1)
             {
                 Data.Status = RouteStatus.FormalError;
-                Data.ResultMessage = RouteRuntime.DenyAccess;
+                Data.ResultMessage = RouteRuntime.DenyAccessJson;
                 return false;
             }
             Data.HostName = words[0];
@@ -113,7 +119,7 @@ namespace ZeroNet.Http.Route
             return true;
         }
         /// <summary>
-        ///     °²È«¼ì²é
+        ///     å®‰å…¨æ£€æŸ¥
         /// </summary>
         private bool SecurityCheck()
         {
@@ -147,22 +153,22 @@ namespace ZeroNet.Http.Route
 
 
         /// <summary>
-        ///     Ğ´Èë·µ»Ø
+        ///     å†™å…¥è¿”å›
         /// </summary>
         internal void WriteResult()
         {
             if (Data.Redirect)
                 return;
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.WriteAsync(Data.ResultMessage ?? RouteRuntime.RemoteEmptyError, Encoding.UTF8);
+            Response.WriteAsync(Data.ResultMessage ?? RouteRuntime.RemoteEmptyErrorJson, Encoding.UTF8);
         }
 
         #endregion
 
-        #region ¼ì²é·µ»ØÖµÊÇ·ñºÏÀí
+        #region æ£€æŸ¥è¿”å›å€¼æ˜¯å¦åˆç†
 
         /// <summary>
-        /// ¼ì²é·µ»ØÖµÊÇ·ñºÏÀí
+        /// æ£€æŸ¥è¿”å›å€¼æ˜¯å¦åˆç†
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
@@ -175,7 +181,7 @@ namespace ZeroNet.Http.Route
                 var result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
                 if (result == null)
                 {
-                    RuntimeWaring.Waring(data.HostName, data.ApiName, "·µ»ØÖµ·Ç·¨(¿ÕÄÚÈİ)");
+                    RuntimeWaring.Waring(data.HostName, data.ApiName, "è¿”å›å€¼éæ³•(ç©ºå†…å®¹)");
                     return false;
                 }
                 if (result.Status != null && !result.Result)
@@ -194,24 +200,24 @@ namespace ZeroNet.Http.Route
                         case ErrorCode.Auth_AccessToken_TimeOut:
                             return false;
                         default:
-                            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.Message ?? "´¦Àí´íÎóµ«ÎŞÏûÏ¢");
+                            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.Message ?? "å¤„ç†é”™è¯¯ä½†æ— æ¶ˆæ¯");
                             return false;
                     }
                 }
             }
             catch
             {
-                RuntimeWaring.Waring(data.HostName, data.ApiName, "·µ»ØÖµ·Ç·¨(²»ÊÇJson¸ñÊ½)");
+                RuntimeWaring.Waring(data.HostName, data.ApiName, "è¿”å›å€¼éæ³•(ä¸æ˜¯Jsonæ ¼å¼)");
                 return false;
             }
             return true;
         }
 
         #endregion
-        #region Â·ÓÉ
+        #region è·¯ç”±
 
         /// <summary>
-        ///     ³õÊ¼»¯»ù±¾ÉÏÏÂÎÄ
+        ///     åˆå§‹åŒ–åŸºæœ¬ä¸Šä¸‹æ–‡
         /// </summary>
         private bool InitializeContext()
         {
@@ -228,43 +234,43 @@ namespace ZeroNet.Http.Route
         #region Http
 
         /// <summary>
-        ///     Ô¶³Ìµ÷ÓÃ
+        ///     è¿œç¨‹è°ƒç”¨
         /// </summary>
         /// <returns></returns>
         private string CallHttp()
         {
-            // µ±Ç°ÇëÇóµ÷ÓÃµÄÄ£ĞÍ¶ÔÓ¦µÄÖ÷»úÃû³Æ
+            // å½“å‰è¯·æ±‚è°ƒç”¨çš„æ¨¡å‹å¯¹åº”çš„ä¸»æœºåç§°
             string httpHost;
 
-            // µ±Ç°ÇëÇóµ÷ÓÃµÄApiÃû³Æ
+            // å½“å‰è¯·æ±‚è°ƒç”¨çš„Apiåç§°
             var httpApi = Data.RouteHost == HostConfig.DefaultHost ? Data.Uri.PathAndQuery : $"{Data.ApiName}{Data.Uri.Query}";
 
-            // ²éÕÒÖ÷»ú
+            // æŸ¥æ‰¾ä¸»æœº
             if (Data.RouteHost.Hosts.Length == 1)
             {
                 httpHost = Data.RouteHost.Hosts[0];
             }
             else lock (Data.RouteHost)
                 {
-                    //Æ½¾ù·ÖÅä
+                    //å¹³å‡åˆ†é…
                     httpHost = Data.RouteHost.Hosts[Data.RouteHost.Next];
                     if (++Data.RouteHost.Next >= Data.RouteHost.Hosts.Length)
                         Data.RouteHost.Next = 0;
                 }
-            // Ô¶³Ìµ÷ÓÃ
+            // è¿œç¨‹è°ƒç”¨
             var caller = new HttpApiCaller(httpHost)
             {
                 Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
             };
             var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
-            LogRecorder.BeginStepMonitor("ÄÚ²¿HTTPµ÷ÓÃ");
+            LogRecorder.BeginStepMonitor("å†…éƒ¨HTTPè°ƒç”¨");
             LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
             LogRecorder.MonitorTrace($"Auth:{caller.Bearer}");
 
             try
             {
-                // Ô¶³Ìµ÷ÓÃ×´Ì¬
+                // è¿œç¨‹è°ƒç”¨çŠ¶æ€
                 Data.ResultMessage = caller.GetResult(req, out var webStatus);
                 LogRecorder.MonitorTrace(webStatus.ToString());
                 if (webStatus != WebExceptionStatus.Success)
@@ -273,8 +279,8 @@ namespace ZeroNet.Http.Route
             catch (Exception ex)
             {
                 LogRecorder.Exception(ex);
-                LogRecorder.MonitorTrace($"·¢ÉúÒì³££º{ex.Message}");
-                Data.ResultMessage = RouteRuntime.NetworkError;
+                LogRecorder.MonitorTrace($"å‘ç”Ÿå¼‚å¸¸ï¼š{ex.Message}");
+                Data.ResultMessage = RouteRuntime.NetworkErrorJson;
                 Data.Status = RouteStatus.RemoteError;
             }
             finally
@@ -291,13 +297,13 @@ namespace ZeroNet.Http.Route
         #region Zero
 
         /// <summary>
-        ///     Ô¶³Ìµ÷ÓÃ
+        ///     è¿œç¨‹è°ƒç”¨
         /// </summary>
         /// <returns></returns>
         private string CallZero()
         {
             var values = new Dictionary<string, string>();
-            //²ÎÊı½âÎö
+            //å‚æ•°è§£æ
             foreach (var query in Request.Query.Keys)
                 if (!values.ContainsKey(query))
                     values.Add(query, Request.Query[query]);
@@ -308,11 +314,11 @@ namespace ZeroNet.Http.Route
                         if (!values.ContainsKey(form))
                             values.Add(form, Request.Form[form]);
 
-            LogRecorder.BeginStepMonitor("ÄÚ²¿Zeroµ÷ÓÃ");
+            LogRecorder.BeginStepMonitor("å†…éƒ¨Zeroè°ƒç”¨");
             LogRecorder.MonitorTrace($"Station:{Data.HostName}");
             LogRecorder.MonitorTrace($"Command:{Data.ApiName}");
 
-            // Ô¶³Ìµ÷ÓÃ×´Ì¬
+            // è¿œç¨‹è°ƒç”¨çŠ¶æ€
             try
             {
                 Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values));
@@ -320,8 +326,8 @@ namespace ZeroNet.Http.Route
             catch (Exception ex)
             {
                 LogRecorder.Exception(ex);
-                LogRecorder.MonitorTrace($"·¢ÉúÒì³££º{ex.Message}");
-                Data.ResultMessage = RouteRuntime.NetworkError;
+                LogRecorder.MonitorTrace($"å‘ç”Ÿå¼‚å¸¸ï¼š{ex.Message}");
+                Data.ResultMessage = RouteRuntime.NetworkErrorJson;
                 Data.Status = RouteStatus.RemoteError;
             }
             finally

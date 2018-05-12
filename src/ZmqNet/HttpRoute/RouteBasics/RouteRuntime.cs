@@ -4,38 +4,43 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    ///     Â·ÓÉÔËĞĞÊ±Êı¾İÏà¹ØµÄÊı¾İ
+    ///     è·¯ç”±è¿è¡Œæ—¶æ•°æ®ç›¸å…³çš„æ•°æ®
     /// </summary>
     public class RouteRuntime
     {
         /// <summary>
-        ///     ¾Ü¾ø·ÃÎÊµÄJson×Ö·û´®
+        ///     é¡µé¢ä¸å­˜åœ¨çš„Jsonå­—ç¬¦ä¸²
         /// </summary>
-        public static readonly string DenyAccess = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*¾Ü¾ø·ÃÎÊ*"));
-        
-        /// <summary>
-        ///     ·şÎñÆ÷ÎŞ·µ»ØÖµµÄ×Ö·û´®
-        /// </summary>
-        public static readonly string RemoteEmptyError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError, "*·şÎñÆ÷ÎŞ·µ»ØÖµ*"));
+        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "*é¡µé¢ä¸å­˜åœ¨*"));
 
         /// <summary>
-        ///     ·şÎñÆ÷·ÃÎÊÒì³£
+        ///     æ‹’ç»è®¿é—®çš„Jsonå­—ç¬¦ä¸²
         /// </summary>
-        public static readonly string NetworkError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, "*·şÎñÆ÷·ÃÎÊÒì³£*"));
+        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*æ‹’ç»è®¿é—®*"));
 
         /// <summary>
-        ///     ·şÎñÆ÷·ÃÎÊÒì³£
+        ///     æœåŠ¡å™¨æ— è¿”å›å€¼çš„å­—ç¬¦ä¸²
         /// </summary>
-        public static readonly string Inner2Error =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "**ÏµÍ³ÄÚ²¿´íÎó**"));
+        public static readonly string RemoteEmptyErrorJson =
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError, "*æœåŠ¡å™¨æ— è¿”å›å€¼*"));
 
         /// <summary>
-        ///     ·şÎñÆ÷·ÃÎÊÒì³£
+        ///     æœåŠ¡å™¨è®¿é—®å¼‚å¸¸
         /// </summary>
-        public static readonly string InnerError =
-            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "*ÏµÍ³ÄÚ²¿´íÎó*"));
+        public static readonly string NetworkErrorJson =
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, "*æœåŠ¡å™¨è®¿é—®å¼‚å¸¸*"));
+
+        /// <summary>
+        ///     æœåŠ¡å™¨è®¿é—®å¼‚å¸¸
+        /// </summary>
+        public static readonly string Inner2ErrorJson =
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "**ç³»ç»Ÿå†…éƒ¨é”™è¯¯**"));
+
+        /// <summary>
+        ///     æœåŠ¡å™¨è®¿é—®å¼‚å¸¸
+        /// </summary>
+        public static readonly string InnerErrorJson =
+            JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError, "*ç³»ç»Ÿå†…éƒ¨é”™è¯¯*"));
     }
     
 }

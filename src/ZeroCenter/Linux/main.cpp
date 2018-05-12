@@ -1,15 +1,12 @@
 // WindowsService.cpp : WinMain 的实现
 
 #include "stdafx.h"
-#include "rpc/CRpcService.h"
+#include "service.h"
 #include "net/ZeroStation.h"
 #include "net/NetDispatcher.h"
 #include "net/BroadcastingStation.h"
 
 using namespace agebull;
-void my_function(int sig) { // can be called asynchronously
-	boost::thread(boost::bind(agebull::distory_net_command));
-}
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +14,8 @@ int main(int argc, char *argv[])
 		return 0;
 	//agebull::zmq_net::station_warehouse::clear();
 	rpc_service::start();
-	signal(SIGINT, my_function);
+	signal(SIGINT, on_sig);
+#ifdef _DEBUG
 	while (get_net_state() == NET_STATE_RUNING)
 	{
 		std::cout << endl << "Enter command:";
@@ -43,7 +41,10 @@ int main(int argc, char *argv[])
 		std::cout << result << endl;
 	}
 	rpc_service::stop();
-	std::cout << endl << "shutdown";
-	thread_sleep(200);
+#else
+	wait_zero();
+#endif
+	std::cout << endl << "byebye";
+	//thread_sleep(200);
 	return 0;
 }

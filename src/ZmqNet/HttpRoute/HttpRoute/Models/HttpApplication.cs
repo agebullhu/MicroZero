@@ -13,14 +13,14 @@ using Agebull.ZeroNet.ZeroApi;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// µ÷ÓÃÓ³ÉäºËĞÄÀà
+    /// è°ƒç”¨æ˜ å°„æ ¸å¿ƒç±»
     /// </summary>
     public class HttpApplication
     {
-        #region ³õÊ¼»¯
+        #region åˆå§‹åŒ–
 
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
         public static void Initialize()
         {
@@ -29,8 +29,7 @@ namespace ZeroNet.Http.Route
 
             if (AppConfig.Config.SystemConfig.FireZero)
             {
-                ZeroPublisher.Start();
-                StationProgram.Run();
+                StationProgram.Launch();
                 LogRecorder.Initialize(new RemoteRecorder());
                 RouteCommand.ZeroFlush();
             }
@@ -50,10 +49,10 @@ namespace ZeroNet.Http.Route
         #endregion
 
 
-        #region »ù±¾µ÷ÓÃ
+        #region åŸºæœ¬è°ƒç”¨
 
         /// <summary>
-        /// µ÷ÓÃ
+        /// è°ƒç”¨
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
@@ -63,7 +62,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// POSTµ÷ÓÃ
+        /// POSTè°ƒç”¨
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -73,7 +72,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// µ÷ÓÃ
+        /// è°ƒç”¨
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
@@ -83,19 +82,19 @@ namespace ZeroNet.Http.Route
             try
             {
                 HttpProtocol.FormatResponse(context.Response);
-                //ÄÚÈİÒ³×ªÏò
+                //å†…å®¹é¡µè½¬å‘
                 if (uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
                 {
                     context.Response.Redirect(AppConfig.Config.SystemConfig.ContextHost + uri.LocalPath.Trim('/'));
                     return;
                 }
-                //¿çÓòÖ§³Ö
+                //è·¨åŸŸæ”¯æŒ
                 if (context.Request.Method.ToUpper() == "OPTIONS")
                 {
                     HttpProtocol.Cros(context.Response);
                     return;
                 }
-                //ÃüÁî
+                //å‘½ä»¤
                 if (RouteCommand.InnerCommand(uri.LocalPath, context.Response))
                     return;
             }
@@ -103,7 +102,7 @@ namespace ZeroNet.Http.Route
             {
                 LogRecorder.Exception(e);
                 RuntimeWaring.Waring("Route", uri.LocalPath, e.Message);
-                context.Response.WriteAsync(RouteRuntime.InnerError, Encoding.UTF8);
+                context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
                 return;
             }
 
@@ -120,16 +119,16 @@ namespace ZeroNet.Http.Route
                 if (!checker.PreCheck())
                 {
                     router.Data.Status = RouteStatus.DenyAccess;
-                    context.Response.WriteAsync(RouteRuntime.Inner2Error, Encoding.UTF8);
+                    context.Response.WriteAsync(RouteRuntime.Inner2ErrorJson, Encoding.UTF8);
                 }
                 else
                 {
-                    // Õı³£µ÷ÓÃ
+                    // æ­£å¸¸è°ƒç”¨
                     router.Call();
                     LogRecorder.BeginStepMonitor("End");
-                    // Ğ´Èë·µ»Ø
+                    // å†™å…¥è¿”å›
                     router.WriteResult();
-                    // »º´æ
+                    // ç¼“å­˜
                     RouteChahe.CacheResult(router.Data);
                 }
             }
@@ -138,11 +137,11 @@ namespace ZeroNet.Http.Route
                 router.Data.Status = RouteStatus.LocalError;
                 LogRecorder.Exception(e);
                 RuntimeWaring.Waring("Route", uri.LocalPath, e.Message);
-                context.Response.WriteAsync(RouteRuntime.InnerError, Encoding.UTF8);
+                context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
             }
             finally
             {
-                //¼ÆÊ±
+                //è®¡æ—¶
                 counter.End(router.Data);
                 HttpIoLog.OnEnd(router.Data);
             }
@@ -150,17 +149,17 @@ namespace ZeroNet.Http.Route
 
         #endregion
 
-        #region µ÷ÓÃºó´¦Àí
+        #region è°ƒç”¨åå¤„ç†
         /*
         /// <summary>
-        /// Êı¾İ
+        /// æ•°æ®
         /// </summary>
         internal static List<RouteData> Datas = new List<RouteData>();
 
         public static Mutex Mutex = new Mutex();
 
         /// <summary>
-        /// Á÷³Ì½áÊøºóµÄ´¦Àí
+        /// æµç¨‹ç»“æŸåçš„å¤„ç†
         /// </summary>
         internal static void PushFlowExtend(RouteData data)
         {
@@ -169,7 +168,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// Á÷³Ì½áÊøºóµÄ´¦Àí
+        /// æµç¨‹ç»“æŸåçš„å¤„ç†
         /// </summary>
         internal static void FlowExtendTask()
         {
@@ -182,7 +181,7 @@ namespace ZeroNet.Http.Route
                 var datas = Datas;
                 Datas = new List<RouteData>();
                 Mutex.ReleaseMutex();
-                //×î¶à´¦Àíºó50ĞĞ
+                //æœ€å¤šå¤„ç†å50è¡Œ
                 var index = 0;
                 if (datas.Count > 50)
                 {

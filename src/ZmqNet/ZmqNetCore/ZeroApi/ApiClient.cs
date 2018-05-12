@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.ZeroApi;
@@ -47,6 +47,10 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 socket = config.GetSocket();
+                if (socket == null)
+                {
+                    return ZeroNetStatus.NoReadyJson;
+                }
                 try
                 {
                     socket.SendMoreFrame(Description);
@@ -59,6 +63,7 @@ namespace Agebull.ZeroNet.Core
                 catch (Exception ex)
                 {
                     config.Close(socket);
+                    socket = null;
                     LogRecorder.Exception(ex);
                     return ZeroNetStatus.NetworkErrorJson;
                 }
@@ -69,6 +74,7 @@ namespace Agebull.ZeroNet.Core
                 catch (Exception ex)
                 {
                     config.Close(socket);
+                    socket = null;
                     LogRecorder.Exception(ex);
                     return ZeroNetStatus.UnknowErrorJson;
                 }

@@ -7,12 +7,12 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// ÄÚ²¿ÃüÁî
+    /// å†…éƒ¨å‘½ä»¤
     /// </summary>
     public class RouteCommand
     {
         /// <summary>
-        /// ÄÚ²¿ÃüÁî´¦Àí
+        /// å†…éƒ¨å‘½ä»¤å¤„ç†
         /// </summary>
         /// <param name="url"></param>
         /// <param name="response"></param>
@@ -20,7 +20,7 @@ namespace ZeroNet.Http.Route
         public static bool InnerCommand(string url, HttpResponse response)
         {
 
-            //ÃüÁî
+            //å‘½ä»¤
             switch (url)
             {
                 case "/":
@@ -53,7 +53,7 @@ namespace ZeroNet.Http.Route
 
 
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
         public static void Flush()
         {
@@ -61,15 +61,13 @@ namespace ZeroNet.Http.Route
             RouteChahe.Flush();
             RuntimeWaring.Flush();
             ZeroFlush();
-            //Datas = new List<RouteData>();
-
         }
 
         #region ZeroNet
 
 
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
         public static void ZeroFlush()
         {
@@ -77,44 +75,74 @@ namespace ZeroNet.Http.Route
                 return;
 
             SystemMonitor.StationEvent -= StationProgram_StationEvent;
-
-            foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
-                AppConfig.Config.RouteMap.Remove(host.Key);
-
-            foreach (var station in StationProgram.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi))
-            {
-                ApiStationJoin(station);
-            }
+            BindZero();
             SystemMonitor.StationEvent += StationProgram_StationEvent;
         }
 
-        static void ApiStationJoin(StationConfig station)
+        static void BindZero()
         {
-            StationProgram.WriteInfo($"Zero Station:{station.StationName}");
-            var host = new HostConfig
+            if (StationProgram.State != StationState.Run)
+                return;
+            foreach (var station in StationProgram.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi).ToArray())
             {
-                ByZero = true
-            };
-            if (!AppConfig.Config.RouteMap.ContainsKey(station.StationName))
-                AppConfig.Config.RouteMap.Add(station.StationName, host);
+                ApiStationJoin(station);
+            }
+        }
+
+        private static void ApiStationJoin(StationConfig station)
+        {
+            StationConsole.WriteInfo($"Zero Station:{station.StationName}");
+
+            if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host))
+            {
+                host.Failed = false;
+                host.ByZero = true;
+            }
             else
-                AppConfig.Config.RouteMap[station.StationName] = host;
+            {
+                lock (AppConfig.Config.RouteMap)
+                    AppConfig.Config.RouteMap.Add(station.StationName, host = new HostConfig
+                    {
+                        ByZero = true
+                    });
+            }
             if (station.StationAlias == null)
                 return;
             foreach (var name in station.StationAlias)
-                if (!AppConfig.Config.RouteMap.ContainsKey(name))
-                    AppConfig.Config.RouteMap.Add(name, host);
+            {
+                if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host2))
+                {
+                    if (host2 != host)
+                    {
+                        AppConfig.Config.RouteMap[name] = host;
+                    }
+                }
+                else
+                {
+                    lock (AppConfig.Config.RouteMap)
+                        AppConfig.Config.RouteMap.Add(station.StationName, host);
+                }
+            }
         }
 
         private static void StationProgram_StationEvent(object sender, SystemMonitor.StationEventArgument e)
         {
             switch (e.EventName)
             {
+                case "program_run":
+                    BindZero();
+                    break;
                 case "system_start":
+                    {
+                        foreach (var host in AppConfig.Config.RouteMap.Values.Where(p => p.ByZero).ToArray())
+                            host.Failed = false;
+                    }
                     break;
                 case "system_stop":
-                    foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
-                        AppConfig.Config.RouteMap.Remove(host.Key);
+                    {
+                        foreach (var host in AppConfig.Config.RouteMap.Values.Where(p => p.ByZero).ToArray())
+                            host.Failed = true;
+                    }
                     break;
                 case "worker_heat":
                 case "station_resume":
@@ -123,12 +151,12 @@ namespace ZeroNet.Http.Route
                     ApiStationJoin(e.EventConfig);
                     break;
                 case "station_left":
-                    break;
                 case "station_pause":
                 case "station_closing":
-                    AppConfig.Config.RouteMap.Remove(e.EventConfig.StationName);
-                    foreach (var name in e.EventConfig.StationAlias)
-                        AppConfig.Config.RouteMap.Remove(name);
+                    {
+                        if (AppConfig.Config.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
+                            host.Failed = true;
+                    }
                     break;
             }
         }

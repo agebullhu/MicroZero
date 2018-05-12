@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
@@ -12,10 +12,8 @@ namespace ApiTest
         static void Main(string[] args)
         {
             //Thread.Sleep(9000);
-            StationProgram.WriteLine("Hello ZeroNet");
-            StationProgram.Initialize();
-            StationProgram.Run();
-            StationProgram.WriteLine("Run ZeroNet");
+            StationConsole.WriteLine("Hello ZeroNet");
+            StationProgram.Launch();
             Console.TreatControlCAsInput = true;
             ConsoleKeyInfo key;
             do
