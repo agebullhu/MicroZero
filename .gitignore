@@ -39,3 +39,4 @@ packages
 /src/ZmqNet/PublishNuget
 /src/UpgradeLog.htm
 /src/Release
+/src/ZeroCenter/Console/Release
