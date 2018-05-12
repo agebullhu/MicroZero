@@ -7,7 +7,6 @@ using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -56,6 +55,13 @@ namespace ZeroNet.Http.Route
             Response = context.Response;
             Data = new RouteData();
             Data.Prepare(context.Request);
+
+            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
+            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
+            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
+            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
+            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
         }
 
 
@@ -211,12 +217,6 @@ namespace ZeroNet.Http.Route
         {
 
             ApiContext.Current.Request.Bear = Data.Bearer;
-            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
-            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
-            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
-            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
-            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
 
             if (!AppConfig.Config.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
                 Data.RouteHost = HostConfig.DefaultHost;
@@ -315,7 +315,7 @@ namespace ZeroNet.Http.Route
             // Ô¶³Ìµ÷ÓÃ×´Ì¬
             try
             {
-                Data.ResultMessage = StationProgram.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values));
+                Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values));
             }
             catch (Exception ex)
             {

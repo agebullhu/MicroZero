@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -47,5 +48,14 @@ namespace Agebull.ZeroNet.Core
         [DataMember, JsonProperty("dataFolder")]
         public string DataFolder { get; set; }
 
+
+        private byte[] _realName;
+
+        /// <summary>
+        /// 实例名称，注意唯一性
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public byte[] RealName => _realName ??
+                                  (_realName = ($"{StationName}-{RandomOperate.Generate(6)}").ToAsciiBytes());
     }
 }

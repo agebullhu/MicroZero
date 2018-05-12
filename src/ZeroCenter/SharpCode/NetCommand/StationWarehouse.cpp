@@ -94,6 +94,23 @@ namespace agebull
 		}
 
 		/**
+		* \brief 站点卸载
+		*/
+		bool station_warehouse::uninstall_station(const string& name)
+		{
+			auto station = instance(name);
+			if (station == nullptr)
+				return false;
+			station->close(true);
+			boost::format fmt("net:host:%1%");
+			fmt % name;
+			auto key = fmt.str();
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+			trans_redis& redis = trans_redis::get_context();
+
+			return redis->del(key.c_str()) > 0;
+		}
+		/**
 		* \brief 初始化站点
 		*/
 		bool station_warehouse::install(const char* station_name, int station_type, acl::string& config)
@@ -149,17 +166,17 @@ namespace agebull
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
-				if (examples_.find(station->_station_name) != examples_.end())
+				if (examples_.find(station->station_name_) != examples_.end())
 					return false;
-				examples_.insert(make_pair(station->_station_name, station));
+				examples_.insert(make_pair(station->station_name_, station));
 			}
-			install(station->_station_name.c_str(), station->_station_type, station->_config);
-			config cfg(station->_config);
-			station->_inner_port = cfg.number("inner_port");
-			station->_out_port = cfg.number("out_port");
-			station->_heart_port = cfg.number("heart_port");
+			install(station->station_name_.c_str(), station->station_type_, station->config_);
+			config cfg(station->config_);
+			station->response_port_ = cfg.number("inner_port");
+			station->request_port_ = cfg.number("out_port");
+			station->heart_port_ = cfg.number("heart_port");
 
-			monitor_async(station->_station_name, "station_join", station->_config.c_str());
+			monitor_async(station->station_name_, "station_join", station->config_.c_str());
 			return true;
 		}
 
@@ -170,12 +187,12 @@ namespace agebull
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
-				const auto iter = examples_.find(station->_station_name);
+				const auto iter = examples_.find(station->station_name_);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
-				examples_.erase(station->_station_name);
+				examples_.erase(station->station_name_);
 			}
-			monitor_async(station->_station_name, "station_left", station->_station_name);
+			monitor_async(station->station_name_, "station_left", station->station_name_);
 
 			return true;
 		}

@@ -32,7 +32,7 @@ namespace agebull
 			/**
 			* \brief 开始执行
 			*/
-			static void start(void*);
+			static void launch(void*);
 
 			/**
 			*  \brief 执行
@@ -44,7 +44,7 @@ namespace agebull
 					return;
 				}
 				instance = new station_dispatcher();
-				zmq_threadstart(start, nullptr);
+				zmq_threadstart(launch, nullptr);
 				//boost::thread thrds_s(boost::bind(start));
 			}
 		private:
@@ -86,6 +86,10 @@ namespace agebull
 			*/
 			static string install_station(const string& type_name, const string& stattion);
 			/**
+			* \brief 站点卸载
+			*/
+			static bool station_dispatcher::uninstall_station(const string& stattion);
+			/**
 			* \brief 取机器信息
 			*/
 			static string host_info(const string& stattion);
@@ -108,7 +112,7 @@ namespace agebull
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(string stattion, string command, string argument);
+			static string call_station(const string& stattion, const string& command, const string& argument);
 			/**
 			* \brief 远程调用
 			*/

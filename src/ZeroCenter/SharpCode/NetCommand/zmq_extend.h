@@ -202,9 +202,9 @@ namespace agebull
 		};
 
 #define check_zmq_state()\
-	if (_zmq_state > zmq_socket_state::Succeed)\
+	if (zmq_state_ > zmq_socket_state::Succeed)\
 	{\
-		if (_zmq_state < zmq_socket_state::Again)\
+		if (zmq_state_ < zmq_socket_state::Again)\
 			continue;\
 		break;\
 	}
@@ -251,7 +251,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name)
 		{
-			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+			const ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
 				return nullptr;
@@ -308,7 +308,7 @@ namespace agebull
 		{
 			char host[MAX_PATH];
 			sprintf_s(host, "tcp://*:%d", port);
-			ZMQ_HANDLE socket = create_res_socket(host, type, name);
+			const ZMQ_HANDLE socket = create_res_socket(host, type, name);
 			if (socket == nullptr)
 			{
 				return nullptr;
@@ -498,6 +498,7 @@ namespace agebull
 		*/
 		inline zmq_socket_state recv(ZMQ_HANDLE socket, vector<sharp_char>& ls, int flag = 0)
 		{
+			size_t size = sizeof(int);
 			int more;
 			do
 			{
@@ -517,7 +518,6 @@ namespace agebull
 				else
 					ls.emplace_back(msg);
 				zmq_msg_close(&msg);
-				size_t size = sizeof(int);
 				zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &size);
 			} while (more != 0);
 			return zmq_socket_state::Succeed;
@@ -565,22 +565,45 @@ namespace agebull
 			}
 			return zmq_socket_state::Succeed;
 		}
-
+		/**
+		* \brief 发送帧
+		*/
+		inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr,const char* status)
+		{
+			sharp_char d(3);
+			char buf[3];
+			buf[0] = 1;
+			buf[1] = ZERO_FRAME_STATUS;
+			buf[2] = ZERO_FRAME_END;
+			int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
+			state = zmq_send(socket, "", 0, ZMQ_SNDMORE);
+			state = zmq_send(socket, buf, 3, ZMQ_SNDMORE);
+			state = zmq_send(socket, status, strlen(status), ZMQ_DONTWAIT);
+			if (state < 0)
+			{
+				return check_zmq_error();
+			}
+			return zmq_socket_state::Succeed;
+		}
+		 
 		/**
 		* \brief 发送
 		*/
 		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>::iterator iter, const vector<sharp_char>::iterator& end)
 		{
 			size_t idx = 0;
+			//cout << "send :";
 			while (iter != end)
 			{
-				int state = zmq_send(socket, iter->operator*(), iter->size(), ZMQ_SNDMORE);
+				//cout << iter->operator*() << "," ;
+				const int state = zmq_send(socket, iter->operator*(), iter->size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
 				}
 				++iter;
 			}
+			//cout << endl;
 			return send_late(socket, "");
 		}
 		/**
@@ -589,14 +612,17 @@ namespace agebull
 		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
 		{
 			size_t idx = first_index;
+			//cout << "send :" ;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
+				//cout << *ls[idx] << ",";
+				const int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
 				}
 			}
+			//cout << *ls[idx] << endl;
 			return send_late(socket, *ls[idx]);
 		}
 		/**
@@ -607,7 +633,7 @@ namespace agebull
 			size_t idx = 0;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				int state = zmq_send(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
+				const int state = zmq_send(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
@@ -619,14 +645,13 @@ namespace agebull
 		/**
 		 * \brief 连接的SOCKET简单封装
 		 */
-		template<int zmq_type = ZMQ_REQ>
-		class inproc_request_socket
+		template<int zmq_type = ZMQ_REQ> class inproc_request_socket
 		{
-			char _address[MAX_PATH];
-			ZMQ_HANDLE _socket;
-			zmq_socket_state _state;
+			char address_[MAX_PATH];
+			ZMQ_HANDLE socket_;
+			zmq_socket_state state_;
 #ifdef TIMER
-			char _station[MAX_PATH];
+			char station_[MAX_PATH];
 #endif
 		public:
 			/**
@@ -638,19 +663,19 @@ namespace agebull
 
 			~inproc_request_socket()
 			{
-				zmq_disconnect(_socket, _address);
-				zmq_close(_socket);
+				zmq_disconnect(socket_, address_);
+				zmq_close(socket_);
 			}
 			zmq_socket_state get_state() const
 			{
-				return _state;
+				return state_;
 			}
 			/**
 			* \brief 接收
 			*/
 			zmq_socket_state recv(sharp_char& data, int flag = 0) const
 			{
-				return agebull::zmq_net::recv(_socket, data, flag);
+				return agebull::zmq_net::recv(socket_, data, flag);
 			}
 
 			/**
@@ -658,7 +683,7 @@ namespace agebull
 			*/
 			zmq_socket_state recv(vector<sharp_char>& ls, int flag = 0) const
 			{
-				return agebull::zmq_net::recv(_socket, ls, flag);
+				return agebull::zmq_net::recv(socket_, ls, flag);
 			}
 
 			/**
@@ -666,7 +691,7 @@ namespace agebull
 			*/
 			zmq_socket_state send_late(const char* string) const
 			{
-				return agebull::zmq_net::send_late(_socket, string);
+				return agebull::zmq_net::send_late(socket_, string);
 			}
 
 			/**
@@ -674,21 +699,21 @@ namespace agebull
 			*/
 			zmq_socket_state send_more(const char* string) const
 			{
-				return agebull::zmq_net::send_more(_socket, string);
+				return agebull::zmq_net::send_more(socket_, string);
 			}
 			/**
 			* \brief 发送
 			*/
 			zmq_socket_state send(vector<sharp_char>& ls) const
 			{
-				return agebull::zmq_net::send(_socket, ls);
+				return agebull::zmq_net::send(socket_, ls);
 			}
 			/**
 			* \brief 发送
 			*/
 			zmq_socket_state send(vector<string>& ls) const
 			{
-				return agebull::zmq_net::send(_socket, ls);
+				return agebull::zmq_net::send(socket_, ls);
 			}
 			/**
 			* \brief 进行一次请求
@@ -699,13 +724,13 @@ namespace agebull
 #ifdef TIMER
 				boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 #endif
-				_state = send(arguments);
+				state_ = send(arguments);
 
 #ifdef TIMER
-				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 
-				if (_state != zmq_socket_state::Succeed)
+				if (state_ != zmq_socket_state::Succeed)
 					return false;
 
 #ifdef TIMER
@@ -714,17 +739,17 @@ namespace agebull
 				int cnt = 0;
 				do
 				{
-					_state = recv(result);
-					if (_state == zmq_socket_state::Succeed)
+					state_ = recv(result);
+					if (state_ == zmq_socket_state::Succeed)
 					{
 						break;
 					}
-				} while (_state == zmq_socket_state::TimedOut && ++cnt < retry);
+				} while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
-				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
-				return _state == zmq_socket_state::Succeed;
+				return state_ == zmq_socket_state::Succeed;
 			}
 			/**
 			* \brief 进行一次请求
@@ -735,13 +760,13 @@ namespace agebull
 #ifdef TIMER
 				boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 #endif
-				_state = send(arguments);
+				state_ = send(arguments);
 
 #ifdef TIMER
-				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				log_debug2(DEBUG_TIMER, 3, "【%s】 send-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 
-				if (_state != zmq_socket_state::Succeed)
+				if (state_ != zmq_socket_state::Succeed)
 					return false;
 
 #ifdef TIMER
@@ -750,28 +775,29 @@ namespace agebull
 				int cnt = 0;
 				do
 				{
-					_state = recv(result);
-					if (_state == zmq_socket_state::Succeed)
+					state_ = recv(result);
+					if (state_ == zmq_socket_state::Succeed)
 					{
 						break;
 					}
-				} while (_state == zmq_socket_state::TimedOut && ++cnt < retry);
+				} while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
-				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", _station, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
+				log_debug2(DEBUG_TIMER, 3, "【%s】 recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
-				return _state == zmq_socket_state::Succeed;
+				return state_ == zmq_socket_state::Succeed;
 			}
 		};
 
 		template <int zmq_type>
 		inproc_request_socket<zmq_type>::inproc_request_socket(const char* name, const char* station)
-			: _state(zmq_socket_state::Succeed)
+			: state_(zmq_socket_state::Succeed)
 		{
-			sprintf_s(_address, "inproc://%s", station);
+			sprintf_s(address_, "inproc://%s", station);
 #ifdef TIMER
-			strcpy(_station, station);
+			strcpy(station_, station);
 #endif
+			socket_ = create_req_socket_inproc(name, station);
 		}
 
 
@@ -783,35 +809,35 @@ namespace agebull
 			/**
 			* \brief 无计划，立即发送
 			*/
-			None,
+			none,
 			/**
 			* \brief 在指定的时间发送
 			*/
-			Time,
+			time,
 			/**
 			* \brief 分钟间隔后发送
 			*/
-			Minute,
+			minute,
 			/**
 			* \brief 小时间隔后发送
 			*/
-			Hour,
+			hour,
 			/**
 			* \brief 日间隔后发送
 			*/
-			Day,
+			day,
 			/**
 			* \brief 周间隔后发送
 			*/
-			Week,
+			week,
 			/**
 			* \brief 月间隔后发送
 			*/
-			Month,
+			month,
 			/**
 			* \brief 年间隔后发送
 			*/
-			Year
+			year
 		};
 		/**
 		* \brief 消息
@@ -896,7 +922,7 @@ namespace agebull
 				acl::json_node* iter = json.first_node();
 				while (iter)
 				{
-					int idx = strmatchi(5, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "request_caller", "request_id", "messages_description", "messages");
+					const int idx = strmatchi(10, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "request_caller", "request_id", "messages_description", "messages");
 					switch (idx)
 					{
 					case 0:
@@ -944,7 +970,7 @@ namespace agebull
 				acl::json json;
 				acl::json_node& node = json.create_node();
 				node.add_number("plan_id", plan_id);
-				if (plan_type > plan_date_type::None)
+				if (plan_type > plan_date_type::none)
 				{
 					node.add_number("plan_type", static_cast<int>(plan_type));
 					node.add_number("plan_value", plan_value);

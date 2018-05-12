@@ -43,19 +43,22 @@ namespace agebull
 			}
 			if (!station->do_initialize())
 				return;
-			bool reStrart = station->poll();
+			zmq_threadstart(plan_poll, nullptr);
+			const bool re_strart = station->poll();
 			station_warehouse::left(station);
 			station->destruct();
-			if (reStrart)
+			if (re_strart)
 			{
-				vote_station* station2 = new vote_station(station->_station_name);
-				station2->_zmq_state = zmq_socket_state::Again;
+				vote_station* station2 = new vote_station(station->station_name_);
+				station2->zmq_state_ = zmq_socket_state::Again;
 				boost::thread thrds_s1(boost::bind(launch, shared_ptr<vote_station>(station2)));
 			}
 			else
 			{
-				log_msg3("Station:%s(%d | %d) closed", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				log_msg3("Station:%s(%d | %d) closed", station->station_name_.c_str(), station->request_port_, station->response_port_);
 			}
+			sleep(1);
+			delete station;
 		}
 
 		/**
@@ -76,19 +79,19 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 请求标识 3 命令 4 参数
-			_zmq_state = recv(_out_socket, list);
+			zmq_state_ = recv(request_scoket_, list);
 
 			if (list[2][0] == '@')//计划类型
 			{
 				save_plan(socket, list);
-				_zmq_state = send_addr(socket, *list[0]);
-				_zmq_state = send_late(socket, ZERO_STATUS_PLAN);
+				zmq_state_ = send_addr(socket, *list[0]);
+				zmq_state_ = send_late(socket, ZERO_STATUS_PLAN);
 				return;
 			}
 
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_VOTE);
 			char key[256];
-			sprintf(key, "vote:%s:%s", _station_name.c_str(), *list[2]);
+			sprintf(key, "vote:%s:%s", station_name_.c_str(), *list[2]);
 			trans_redis& redis = trans_redis::get_context();
 			switch (list[3][0])
 			{
@@ -146,16 +149,16 @@ namespace agebull
 			//路由到所有工作对象
 			for (auto voter : workers_)
 			{
-				_zmq_state = send_addr(_inner_socket, voter.second.net_name.c_str());
-				_zmq_state = send_more(_inner_socket, client_addr);
-				_zmq_state = send_more(_inner_socket, request_token);
-				_zmq_state = send_late(_inner_socket, request_argument);
-				if (_zmq_state == zmq_socket_state::Succeed)
+				zmq_state_ = send_addr(response_socket_, voter.second.net_name.c_str());
+				zmq_state_ = send_more(response_socket_, client_addr);
+				zmq_state_ = send_more(response_socket_, request_token);
+				zmq_state_ = send_late(response_socket_, request_argument);
+				if (zmq_state_ == zmq_socket_state::Succeed)
 					redis->hset(key, voter.second.flow_name.c_str(), ZERO_STATUS_VOTE_SENDED);
 				else
 					redis->hset(key, voter.second.flow_name.c_str(), ZERO_STATUS_ERROR);
 			}
-			return _zmq_state == zmq_socket_state::Succeed;
+			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		bool vote_station::re_push_vote(const char* client_addr, const char* request_token)
@@ -171,7 +174,7 @@ namespace agebull
 				return false;
 			}
 			redis->hset(key, "@", client_addr);
-			auto request_argument = values["#"];
+			const auto request_argument = values["#"];
 			//路由到所有未返回的工作对象
 			for (auto kv : values)
 			{
@@ -186,44 +189,44 @@ namespace agebull
 					{
 					case '-':
 					case '+':
-						_zmq_state = send_addr(_inner_socket, kv.first.c_str());
-						_zmq_state = send_more(_inner_socket, client_addr);
-						_zmq_state = send_more(_inner_socket, request_token);
-						_zmq_state = send_late(_inner_socket, request_argument);
-						if (_zmq_state == zmq_socket_state::Succeed)
+						zmq_state_ = send_addr(response_socket_, kv.first.c_str());
+						zmq_state_ = send_more(response_socket_, client_addr);
+						zmq_state_ = send_more(response_socket_, request_token);
+						zmq_state_ = send_late(response_socket_, request_argument);
+						if (zmq_state_ == zmq_socket_state::Succeed)
 							redis->hset(key, kv.first.c_str(), ZERO_STATUS_VOTE_SENDED);
 						break;
 					default:;
 					}
 				}
 			}
-			return _zmq_state == zmq_socket_state::Succeed;
+			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* voter, const char* state)
 		{
-			_zmq_state = send_addr(_out_socket, client_addr);
-			_zmq_state = send_more(_out_socket, request_token);
-			_zmq_state = send_more(_out_socket, voter);
-			_zmq_state = send_late(_out_socket, state);
-			return _zmq_state == zmq_socket_state::Succeed;
+			zmq_state_ = send_addr(request_scoket_, client_addr);
+			zmq_state_ = send_more(request_scoket_, request_token);
+			zmq_state_ = send_more(request_scoket_, voter);
+			zmq_state_ = send_late(request_scoket_, state);
+			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* state, std::map<acl::string, acl::string>& values)
 		{
-			_zmq_state = send_addr(_out_socket, client_addr);
-			_zmq_state = send_more(_out_socket, request_token);
-			_zmq_state = send_more(_out_socket, "$");
+			zmq_state_ = send_addr(request_scoket_, client_addr);
+			zmq_state_ = send_more(request_scoket_, request_token);
+			zmq_state_ = send_more(request_scoket_, "$");
 			for (auto kv : values)
 			{
 				if (kv.first == "*" || kv.first == "#")
 					continue;
-				_zmq_state = send_more(_out_socket, kv.first.c_str());
-				_zmq_state = send_more(_out_socket, kv.second.c_str());
+				zmq_state_ = send_more(request_scoket_, kv.first.c_str());
+				zmq_state_ = send_more(request_scoket_, kv.second.c_str());
 			}
-			_zmq_state = send_more(_out_socket, "*");
-			_zmq_state = send_late(_out_socket, state);
-			return _zmq_state == zmq_socket_state::Succeed;
+			zmq_state_ = send_more(request_scoket_, "*");
+			zmq_state_ = send_late(request_scoket_, state);
+			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		/**
@@ -233,23 +236,23 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 原始者请求地址 3 请求标识 4 结果
-			_zmq_state = recv(_inner_socket, list);
-			if (_zmq_state == zmq_socket_state::TimedOut)
+			zmq_state_ = recv(response_socket_, list);
+			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
 				return;
 			}
-			if (_zmq_state != zmq_socket_state::Succeed)
+			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
-				log_error3("接收结果失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				log_error3("接收结果失败%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
 				return;
 			}
 
 			switch (list[2][0])
 			{
 			case ZERO_WORKER_JOIN://加入
-				worker_join(*list[0], *list[3], true);
-				send_addr(_inner_socket, *list[0]);
-				send_late(_inner_socket, ZERO_STATUS_WECOME);
+				worker_join(*list[0]/*, *list[3], true*/);
+				send_addr(response_socket_, *list[0]);
+				send_late(response_socket_, ZERO_STATUS_WECOME);
 				return;
 			case ZERO_WORKER_LISTEN://开始工作
 				return;

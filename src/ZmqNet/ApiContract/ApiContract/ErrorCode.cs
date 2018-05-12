@@ -92,6 +92,17 @@ namespace Agebull.ZeroNet.ZeroApi
         public const int NoFind = 404;
 
         /// <summary>
+        /// 访问超时
+        /// </summary>
+        public const int TimeOut = -8;
+
+
+        /// <summary>
+        /// 系统未就绪
+        /// </summary>
+        public const int NoReady = -9;
+
+        /// <summary>
         /// 未知的RefreshToken
         /// </summary>
         public const int Auth_RefreshToken_Unknow = 40083;

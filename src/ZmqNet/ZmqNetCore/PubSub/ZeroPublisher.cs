@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
@@ -26,7 +25,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 请求队列
         /// </summary>
-        private static readonly SyncQueue<PublishItem> _items = new SyncQueue<PublishItem>();
+        private static readonly SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
         /// <summary>
         ///     运行状态
@@ -47,7 +46,7 @@ namespace Agebull.ZeroNet.PubSub
             if (old == null)
                 return;
             foreach (var val in old.Queue)
-                _items.Push(val);
+                Items.Push(val);
         }
         /// <summary>
         ///     启动
@@ -67,7 +66,7 @@ namespace Agebull.ZeroNet.PubSub
                 Thread.Sleep(3);
             _state = 5;
             Thread.Sleep(3);
-            _items.Save(CacheFileName);
+            Items.Save(CacheFileName);
         }
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace Agebull.ZeroNet.PubSub
         public static void Publish(string station, string title, string sub, string value)
         {
             if (_state != 5)
-                _items.Push(new PublishItem
+                Items.Push(new PublishItem
                 {
                     Station = station,
                     Title = title,
@@ -104,7 +103,7 @@ namespace Agebull.ZeroNet.PubSub
             RequestSocket socket = null;
             while (_state == 2)
             {
-                if (!_items.StartProcess(out var item, 100))
+                if (!Items.StartProcess(out var item, 100))
                     continue;
                 if (socket == null )
                 {
@@ -118,7 +117,7 @@ namespace Agebull.ZeroNet.PubSub
                         LogRecorder.Trace(LogType.Error, "Publish",
                             $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
 {item.Content}");
-                        _items.EndProcess();
+                        Items.EndProcess();
                         continue;
                     }
                 }
@@ -130,7 +129,7 @@ namespace Agebull.ZeroNet.PubSub
                     continue;
                 }
 
-                _items.EndProcess();
+                Items.EndProcess();
                 PubCount++;
             }
             _state = 4;
@@ -177,7 +176,7 @@ namespace Agebull.ZeroNet.PubSub
             return false;
         }
 
-        static HashSet<string> registing = new HashSet<string>();
+        //static HashSet<string> registing = new HashSet<string>();
 
         /// <summary>
         ///     取得Socket对象
@@ -188,15 +187,15 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private static bool GetSocket(string type, out RequestSocket socket, out ZeroCommandStatus status)
         {
-            lock (registing)
-            {
-                if (registing.Contains(type))
-                {
-                    socket = null;
-                    status = ZeroCommandStatus.NoFind;
-                    return false;
-                }
-            }
+            //lock (registing)
+            //{
+            //    if (registing.Contains(type))
+            //    {
+            //        socket = null;
+            //        status = ZeroCommandStatus.NoFind;
+            //        return false;
+            //    }
+            //}
             try
             {
                 lock (Publishers)
@@ -209,15 +208,16 @@ namespace Agebull.ZeroNet.PubSub
                     var config = StationProgram.GetConfig(type,out status);
                     if (status == ZeroCommandStatus.NoFind)
                     {
-                        lock (registing)
-                        {
-                            registing.Add(type);
-                        }
-                        config = StationProgram.InstallStation(type, "pub");
-                        lock (registing)
-                        {
-                            registing.Remove(type);
-                        }
+                        StationProgram.WriteError($"【{type}】 => 不存在");
+                        //lock (registing)
+                        //{
+                        //    registing.Add(type);
+                        //}
+                        //config = StationProgram.InstallStation(type, "pub");
+                        //lock (registing)
+                        //{
+                        //    registing.Remove(type);
+                        //}
                     }
                     else if (config == null)
                     {

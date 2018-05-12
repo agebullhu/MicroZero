@@ -21,14 +21,14 @@ namespace Agebull.ZeroNet.Core
             var timeout = new TimeSpan(0, 0, 1);
             try
             {
-                StationProgram.WriteInfo("System Monitor Runing...");
                 var subscriber = new SubscriberSocket();
                 subscriber.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
                 subscriber.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
                 subscriber.Connect(StationProgram.ZeroMonitorAddress);
                 subscriber.Subscribe("");
 
-                while (StationProgram.State == StationState.Run)
+                StationProgram.WriteInfo("System Monitor Runing...");
+                while (StationProgram.State == StationState.Start || StationProgram.State == StationState.Run)
                 {
                     if (!subscriber.TryReceiveFrameString(timeout, out var title, out var more) || !more)
                     {
@@ -65,13 +65,7 @@ namespace Agebull.ZeroNet.Core
 
                     if (string.IsNullOrEmpty(title))
                         continue;
-                    lock (StationProgram.Config)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"【{item.Title}】{item.Station} \r\n{item.Content}");
-                        Console.ForegroundColor = ConsoleColor.Black;
-                    }
-                    OnMessagePush(item.Title,item.Station,item.Content);
+                    OnMessagePush(item.Title, item.Station, item.Content);
                 }
             }
             catch (Exception e)
@@ -86,7 +80,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     收到信息的处理
         /// </summary>
-        public static void OnMessagePush(string cmd,string station,string content)
+        public static void OnMessagePush(string cmd, string station, string content)
         {
             switch (cmd)
             {
@@ -169,17 +163,19 @@ namespace Agebull.ZeroNet.Core
                 LogRecorder.Exception(e);
                 return;
             }
-            cfg.State = StationState.None;
+
             if (StationProgram.Configs.ContainsKey(station))
-                StationProgram.Configs[station] = cfg;
+                StationProgram.Configs[station].Copy(cfg);
             else
-                StationProgram.Configs.Add(station, cfg);
+                lock (StationProgram.Configs)
+                    StationProgram.Configs.Add(station, cfg);
 
             StationEvent?.Invoke(cfg, new StationEventArgument("station_heat", cfg));
         }
 
-        private static void station_install(string station, string content)
+        private static void station_install(string name, string content)
         {
+            Console.WriteLine($"【station_install】{name}\r\n{content}");
             if (String.IsNullOrEmpty(content))
                 return;
             StationConfig cfg;
@@ -193,67 +189,69 @@ namespace Agebull.ZeroNet.Core
                 return;
             }
             cfg.State = StationState.None;
-            if (StationProgram.Configs.ContainsKey(station))
-                StationProgram.Configs[station] = cfg;
-            else
-                StationProgram.Configs.Add(station, cfg);
+            if (StationProgram.Configs.ContainsKey(name))
+                StationProgram.Configs[name].Copy(cfg);
+            else lock (StationProgram.Configs)
+                    StationProgram.Configs.Add(name, cfg);
+
             StationEvent?.Invoke(cfg, new StationEventArgument("station_install", cfg));
         }
 
-        private static void station_closing(string station, string content)
+        private static void station_closing(string name, string content)
         {
-            if (StationProgram.Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Closing;
-            if (StationProgram.Stations.ContainsKey(station))
+            if (!StationProgram.Configs.TryGetValue(name, out var cfg))
+                return;
+            Console.WriteLine($"【station_closing】{name}\r\n{content}");
+            if (StationProgram.State == StationState.Run && StationProgram.Stations.TryGetValue(name, out var station))
             {
-                StationProgram.WriteLine($"{station} is close");
-                StationProgram.Stations[station].Close();
+                station.Close();
             }
-
             StationEvent?.Invoke(cfg, new StationEventArgument("station_closing", cfg));
         }
 
-        private static void station_resume(string station, string content)
+        private static void station_resume(string name, string content)
         {
-            if (StationProgram.Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Run;
-            if (StationProgram.Stations.ContainsKey(station))
+            if (!StationProgram.Configs.TryGetValue(name, out var cfg))
+                return;
+            Console.WriteLine($"【station_resume】{name}\r\n{content}");
+            if (StationProgram.State == StationState.Run && StationProgram.Stations.TryGetValue(name, out var station) && station.RunState == StationState.Pause)
             {
-                StationProgram.WriteLine($"{station} is resume");
-                ZeroStation.Run(StationProgram.Stations[station]);
+                station.RunState = StationState.Run;
+                StationProgram.WriteLine($"{name} is resume");
             }
-
             StationEvent?.Invoke(cfg, new StationEventArgument("station_resume", cfg));
         }
 
-        private static void station_pause(string station, string content)
+        private static void station_pause(string name, string content)
         {
-            if (StationProgram.Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Pause;
-            if (StationProgram.Stations.ContainsKey(station))
+            if (!StationProgram.Configs.TryGetValue(name, out var cfg))
+                return;
+            Console.WriteLine($"【station_pause】{name}\r\n{content}");
+            if (StationProgram.State == StationState.Run && StationProgram.Stations.TryGetValue(name, out var station) && station.RunState == StationState.Run)
             {
-                StationProgram.WriteLine($"{station} is pause");
-                StationProgram.Stations[station].Close();
+                station.RunState = StationState.Pause;
+                StationProgram.WriteLine($"{name} is pause");
             }
-
             StationEvent?.Invoke(cfg, new StationEventArgument("station_pause", cfg));
         }
 
-        private static void station_left(string station)
+        private static void station_left(string name)
         {
-            if (StationProgram.Configs.TryGetValue(station, out var cfg))
-                cfg.State = StationState.Closed;
-            if (StationProgram.Stations.ContainsKey(station))
+            Console.WriteLine($"【station_left】{name}");
+            if (!StationProgram.Configs.TryGetValue(name, out var cfg))
+                return;
+            if (StationProgram.Stations.ContainsKey(name))
             {
-                StationProgram.WriteLine($"{station} is left");
-                StationProgram.Stations[station].Close();
+                StationProgram.WriteLine($"{name} is left");
+                StationProgram.Stations[name].Close();
             }
 
             StationEvent?.Invoke(cfg, new StationEventArgument("station_left", cfg));
         }
 
-        private static void station_join(string station, string content)
+        private static void station_join(string name, string content)
         {
+            Console.WriteLine($"【station_join】{name}\r\n{content}");
             if (String.IsNullOrEmpty(content))
                 return;
             StationConfig cfg;
@@ -263,38 +261,54 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                StationProgram.WriteLine($"{station} error : {e.Message}");
+                StationProgram.WriteLine($"{name} error : {e.Message}");
                 LogRecorder.Exception(e);
                 return;
             }
-            if (StationProgram.Configs.ContainsKey(station))
-                StationProgram.Configs[station] = cfg;
-            else
-                StationProgram.Configs.Add(station, cfg);
-            if (StationProgram.Stations.ContainsKey(station))
-            {
-                StationProgram.Stations[station].Config = cfg;
-                StationProgram.WriteLine($"{station} is join");
-                StationEvent?.Invoke(cfg, new StationEventArgument("station_join", cfg));
-                ZeroStation.Run(StationProgram.Stations[station]);
-            }
+            if (StationProgram.Configs.ContainsKey(name))
+                StationProgram.Configs[name].Copy(cfg);
+            else lock (StationProgram.Configs)
+                    StationProgram.Configs.Add(name, cfg);
+            if (!StationProgram.Stations.ContainsKey(name))
+                return;
+            StationProgram.Stations[name].Config= cfg;
+            StationProgram.WriteLine($"{name} is join");
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_join", cfg));
+            if (StationProgram.State != StationState.Run)
+                return;
+            var s = StationProgram.Stations[name];
+            if (s.RunState != StationState.Run)
+                ZeroStation.Run(s);
         }
 
         private static void system_stop(string content)
         {
+            lock (StationProgram.Config)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"【system_stop】\r\n{content}");
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
             StationEvent?.Invoke(null, new StationEventArgument("system_stop", null));
             foreach (var sta in StationProgram.Stations.Values)
             {
                 StationProgram.WriteLine($"Close {sta.StationName}");
                 sta.Close();
-                StationEvent?.Invoke(sta, new StationEventArgument("station_closing", sta.Config));
+                StationEvent?.Invoke(sta, new StationEventArgument("system_stop", sta.Config));
             }
-            StationProgram.Configs.Clear();
+            StationProgram.ConfigsDispose();
         }
 
         private static void system_start(string content)
         {
-            StationProgram.Configs.Clear();
+            lock (StationProgram.Config)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"【system_start】\r\n{content}");
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+
+            StationProgram.ConfigsDispose();
             StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
             //foreach (var sta in StationProgram.Stations.Values)
             //{

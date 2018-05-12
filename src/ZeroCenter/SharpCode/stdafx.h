@@ -8,13 +8,14 @@
 
 #include <cfg/config.h>
 #include "redis/redis.h"
-#include "NetCommand/command_serve.h"
 #include "debug/TraceStack.h"
 
 #define WIN32_LEAN_AND_MEAN             // 从 Windows 头中排除极少使用的资料
 // Windows 头文件: 
 #include <windows.h>
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // 某些 CString 构造函数将是显式的
-
-//#include <atlbase.h>
-//#include <atlstr.h>
+#ifdef WINDOWS_SERVICE
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
+#endif

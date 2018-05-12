@@ -2,7 +2,7 @@
   /*系统设置*/
   "sysConfig": {
     /*是否开启ZMQ网络（不要改）*/
-    "FireZero": false,
+    "FireZero": true,
     /*机器名称*/
     "ServiceKey": "HttpRoute-1",
     /*是否记录跟踪日志*/
@@ -56,12 +56,12 @@
   },
   /*ZeroNet站点配置（不要改）*/
   "zeroConfig": {
-    "zeroAddr": "127.0.0.1",
-    "monitorPort": 8001,
-    "managePort": 8002,
-    "stationName": "HttpRoute-1",
+    "zeroAddr": "192.168.31.245",
+    "monitorPort": 8002,
+    "managePort": 8000,
+    "stationName": "HttpRoute",
     "serviceName": "HttpRoute",
-    "ServiceName": "HttpRoute-1"
+    "ServiceName": "HttpRoute"
   },
   /*路由信息，缺省地址必须要有，即找不到时使用的地址*/
   "route": {

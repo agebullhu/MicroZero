@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="sys">
+      <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\model">
+      <UniqueIdentifier>{6ebfb74e-f77f-415a-802d-6e860219ac51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\redis">
+      <UniqueIdentifier>{74d6ab0d-ffc5-4b5b-aecc-2f702db1d183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\log">
+      <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\cfg">
+      <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd">
+      <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\sharp">
+      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\api">
+      <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\notify">
+      <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\vote">
+      <UniqueIdentifier>{1313c213-b967-4e11-871c-1af7c5c93720}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\base">
+      <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net_cmd\dispatcher">
+      <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="net\command_crc.cpp">
+      <Filter>net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="net\net_command.cpp">
+      <Filter>net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="net\zmq_monitor.cpp">
+      <Filter>net_cmd\sharp</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\TransRedis.cpp">
+      <Filter>sys\redis</Filter>
+    </ClCompile>
+    <ClCompile Include="log\mylogger.cpp">
+      <Filter>sys\log</Filter>
+    </ClCompile>
+    <ClCompile Include="cfg\config.cpp">
+      <Filter>sys\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="net\VoteStation.cpp">
+      <Filter>net_cmd\vote</Filter>
+    </ClCompile>
+    <ClCompile Include="net\ApiStation.cpp">
+      <Filter>net_cmd\api</Filter>
+    </ClCompile>
+    <ClCompile Include="net\NetDispatcher.cpp">
+      <Filter>net_cmd\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="net\BroadcastingStation.cpp">
+      <Filter>net_cmd\notify</Filter>
+    </ClCompile>
+    <ClCompile Include="net\message_plan.cpp">
+      <Filter>net_cmd\base</Filter>
+    </ClCompile>
+    <ClCompile Include="net\StationWarehouse.cpp">
+      <Filter>net_cmd\base</Filter>
+    </ClCompile>
+    <ClCompile Include="net\ZeroStation.cpp">
+      <Filter>net_cmd\base</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="boostinc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stdinc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="tm_extend.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="net\net_command.h">
+      <Filter>net_cmd\sharp</Filter>
+    </ClInclude>
+    <ClInclude Include="mydecimal.h">
+      <Filter>sys\model</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\redis.h">
+      <Filter>sys\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\TransRedis.h">
+      <Filter>sys\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="log\mylogger.h">
+      <Filter>sys\log</Filter>
+    </ClInclude>
+    <ClInclude Include="cfg\config.h">
+      <Filter>sys\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="net\VoteStation.h">
+      <Filter>net_cmd\vote</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ApiStation.h">
+      <Filter>net_cmd\api</Filter>
+    </ClInclude>
+    <ClInclude Include="net\NetDispatcher.h">
+      <Filter>net_cmd\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="net\BroadcastingStation.h">
+      <Filter>net_cmd\notify</Filter>
+    </ClInclude>
+    <ClInclude Include="net\BalanceStation.h">
+      <Filter>net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\zmq_extend.h">
+      <Filter>net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\StationWarehouse.h">
+      <Filter>net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ZeroStation.h">
+      <Filter>net_cmd\base</Filter>
+    </ClInclude>
+    <ClInclude Include="command.h">
+      <Filter>net_cmd\sharp</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\CRpcService.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sharp_char.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Console\config.json" />
+  </ItemGroup>
+</Project>

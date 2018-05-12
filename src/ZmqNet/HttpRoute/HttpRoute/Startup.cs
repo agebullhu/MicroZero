@@ -11,7 +11,6 @@ namespace ZeroNet.Http.Route
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-
         }
 
         public static IConfiguration Configuration { get; set; }

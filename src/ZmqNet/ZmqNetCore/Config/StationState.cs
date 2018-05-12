@@ -10,13 +10,13 @@
         /// </summary>
         None,
         /// <summary>
+        /// 配置错误
+        /// </summary>
+        ConfigError,
+        /// <summary>
         /// 正在启动
         /// </summary>
         Start,
-        /// <summary>
-        /// 错误状态
-        /// </summary>
-        Failed,
         /// <summary>
         /// 正在运行
         /// </summary>
@@ -25,6 +25,10 @@
         /// 已暂停
         /// </summary>
         Pause,
+        /// <summary>
+        /// 错误状态
+        /// </summary>
+        Failed,
         /// <summary>
         /// 将要关闭
         /// </summary>

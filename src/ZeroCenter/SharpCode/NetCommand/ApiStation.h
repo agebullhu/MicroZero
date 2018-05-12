@@ -4,9 +4,8 @@
 #include <utility>
 #include "ZeroStation.h"
 #include "BalanceStation.h"
-
 namespace agebull
-{ 
+{
 	namespace zmq_net
 	{
 		/**
@@ -22,7 +21,7 @@ namespace agebull
 			 * \brief 互斥量
 			 */
 			boost::mutex _mutex;
-			vector<string> list;
+			vector<const char*> list;
 		public:
 			host_balance()
 				: index_(0)
@@ -40,7 +39,7 @@ namespace agebull
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
-					list.emplace_back(host);
+					list.push_back(host);
 				}
 				else
 				{
@@ -54,11 +53,11 @@ namespace agebull
 			void succees(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				iterator iter = find(host);
+				const iterator iter = find(host);
 				if (iter == end())
 				{
 					insert(make_pair(host, time(nullptr) + 10LL));
-					list.emplace_back(host);
+					list.push_back(host);
 				}
 				else
 				{
@@ -72,7 +71,7 @@ namespace agebull
 			void bad(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				left_(host);
+				left_inner(host);
 			}
 
 			/**
@@ -81,65 +80,68 @@ namespace agebull
 			void left(const char* host)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				left_(host);
+				left_inner(host);
 			}
 
 			/**
 			* \brief 取一个可用的主机
 			*/
-			const char* get_host()
+			bool get_host(const char*& worker)
 			{
 				boost::lock_guard<boost::mutex> guard(_mutex);
-				return get_host_();
+				return get_next_host(worker);
 			}
 		private:
 			/**
 			* \brief 退出集群
 			*/
-			void left_(const string& host)
+			void left_inner(const char* host)
 			{
 				erase(host);
-				auto iter = list.begin();
-				while (iter != list.end())
+				for (auto i = list.begin();i<list.end();++i)
 				{
-					if (*iter == host)
+					if (_stricmp(*i,host) == 0)
 					{
-						list.erase(iter);
+						list.erase(i);
 						break;
 					}
-					++iter;
 				}
 			}
 			/**
 			* \brief 取一个可用的主机
 			*/
-			const char* get_host_()
+			bool get_next_host(const char*& worker)
 			{
 				if (list.empty())
-					return nullptr;
+				{
+					worker = nullptr;
+					return true;
+				}
 				if (size() == 1)
 				{
-					auto iter = begin();
+					const auto iter = begin();
 					if (time(nullptr) < iter->second)
-						return iter->first.c_str();
+					{
+						worker = iter->first.c_str();
+						return true;
+					}
 					clear();
 					list.clear();
-					return nullptr;
+					worker = nullptr;
+					return true;
 				}
+				if (++index_ == size())
+					index_ = 0;
+				const auto iter = find(list[index_]);
+				if (iter == end())
 				{
-					if (++index_ == size())
-						index_ = 0;
-					auto iter = find(list[index_]);
-					if (iter == end())
-					{
-						left_(list[index_]);
-						return get_host_();
-					}
-					if (time(nullptr) < iter->second)
-						return iter->first.c_str();
-					erase(iter);
+					auto i = list.begin();
+					i += index_;
+					list.erase(i);
+					return get_next_host(worker);
 				}
-				return get_host_();
+				worker = list[index_];
+				return time(nullptr) < iter->second;
 			}
 		};
 
@@ -179,28 +181,29 @@ namespace agebull
 			*/
 			static void launch(void* arg)
 			{
-				api_station* station = static_cast<api_station*>(arg);
+				auto station = static_cast<api_station*>(arg);
 				if (!station_warehouse::join(station))
 				{
 					return;
 				}
 				if (!station->do_initialize())
 					return;
-
-				bool reStrart = station->poll();
+				zmq_threadstart(plan_poll, arg);
+				const bool re_strart = station->poll();
 
 				station_warehouse::left(station);
 				station->destruct();
-				if (reStrart)
+				if (re_strart)
 				{
-					api_station* station2 = new api_station(station->_station_name);
-					station2->_zmq_state = zmq_socket_state::Again;
+					api_station* station2 = new api_station(station->station_name_);
+					station2->zmq_state_ = zmq_socket_state::Again;
 					zmq_threadstart(launch, station2);
 				}
 				else
 				{
-					log_msg3("Station:%s(%d | %d) is closed", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+					log_msg3("Station:%s(%d | %d) is closed", station->station_name_.c_str(), station->request_port_, station->response_port_);
 				}
+				sleep(1);
 				delete station;
 			}
 		private:
@@ -224,11 +227,11 @@ namespace agebull
 			{
 				return value;
 			}
-			
+
 			/**
 			* \brief 工作进入计划
 			*/
-			bool job_plan(ZMQ_HANDLE socket,vector<sharp_char>& list);
+			bool job_plan(ZMQ_HANDLE socket, vector<sharp_char>& list);
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
@@ -243,9 +246,12 @@ namespace agebull
 			*/
 			bool worker_left(const char* addr) override
 			{
+				if (addr == nullptr || strlen(addr) == 0)
+					return false;
 				if (!balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr))
 					return false;
-				return balance_station<api_station, string, STATION_TYPE_API>::worker_left(addr);
+				_balance.left(addr);
+				return true;
 			}
 
 			/**
@@ -255,12 +261,10 @@ namespace agebull
 			{
 				if (addr == nullptr || strlen(addr) == 0)
 					return false;
-				if (balance_station<api_station, string, STATION_TYPE_API>::worker_join(addr))
-				{
-					_balance.join(addr);
-					return true;
-				}
-				return false;
+				if (!balance_station<api_station, string, STATION_TYPE_API>::worker_join(addr))
+					return false;
+				_balance.join(addr);
+				return true;
 			}
 			/**
 			* \brief 工作对象加入

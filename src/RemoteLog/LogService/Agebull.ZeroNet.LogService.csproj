@@ -5,6 +5,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="LogService - 复制.cs" />
   </ItemGroup>

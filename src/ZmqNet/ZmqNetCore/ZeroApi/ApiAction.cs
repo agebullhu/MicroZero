@@ -37,7 +37,12 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 访问设置
         /// </summary>
         public Func<IApiArgument, IApiResult> ArgumentAction { get; set; }
-        
+
+        /// <summary>
+        /// 参数类型
+        /// </summary>
+        public Type ArgumenType { get; set; }
+
     }
     /// <summary>
     /// Api站点
@@ -49,13 +54,22 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public string Name { get; set; }
         /// <summary>
+        /// 访问控制
+        /// </summary>
+        public ApiAccessOption Access { get; set; }
+
+        /// <summary>
         /// 需要登录
         /// </summary>
-        public bool NeedLogin { get; set; }
+        public bool NeedLogin => Access.HasFlag(ApiAccessOption.Anymouse);
         /// <summary>
         /// 是否公开接口
         /// </summary>
-        public bool IsPublic { get; set; }
+        public bool IsPublic => Access.HasFlag(ApiAccessOption.Public);
+        /// <summary>
+        /// 参数类型
+        /// </summary>
+        public Type ArgumenType { get; set; }
         /// <summary>
         /// 还原参数
         /// </summary>
@@ -132,10 +146,8 @@ namespace Agebull.ZeroNet.ZeroApi
         where TControler : class, new()
     {
         /// <summary>
-        /// 参数类型
+        /// 参数
         /// </summary>
-        public Type ArgumenType { get; set; }
-
         private IApiArgument _argument;
         /// <summary>
         /// 还原参数
@@ -201,12 +213,28 @@ namespace Agebull.ZeroNet.ZeroApi
         where TArgument : class, IApiArgument
         where TResult : IApiResult
     {
+        /// <summary>
+        /// 参数
+        /// </summary>
         private TArgument _argument;
         /// <summary>
         /// 还原参数
         /// </summary>
         public override bool RestoreArgument(string argument)
         {
+            if (ArgumenType != null)
+            {
+                try
+                {
+                    _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as TArgument;
+                    return _argument != null;
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    return false;
+                }
+            }
             try
             {
                 _argument = JsonConvert.DeserializeObject<TArgument>(argument);

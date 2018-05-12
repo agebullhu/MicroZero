@@ -28,6 +28,6 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// ±æµÿ“Ï≥£
         /// </summary>
-        Exception,
+        Exception
     }
 }

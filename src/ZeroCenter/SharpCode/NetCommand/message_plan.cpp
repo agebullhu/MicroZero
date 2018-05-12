@@ -6,9 +6,12 @@ namespace agebull
 	namespace zmq_net
 	{
 
+		/**
+		* \brief 计划轮询
+		*/
 		void zero_station::plan_poll()
 		{
-			_in_plan_poll = true;
+			in_plan_poll_ = true;
 			while (can_do())
 			{
 				bool doit = true;
@@ -28,33 +31,33 @@ namespace agebull
 				for (plan_message msg : messages)
 				{
 					command(msg.request_caller.c_str(), msg.messages);
-					if (_zmq_state == zmq_socket_state::Succeed)
+					if (zmq_state_ == zmq_socket_state::Succeed)
 					{
 						plan_next(msg, false);
 					}
 				}
 			}
-			_in_plan_poll = false;
+			in_plan_poll_ = false;
 		}
 
 
-		size_t zero_station::load_now(vector<plan_message>& messages) const
+		/**
+		* \brief 载入现在到期的内容
+		*/
+		void zero_station::load_now(vector<plan_message>& messages) const
 		{
 			char zkey[100];
-			sprintf_s(zkey, "zero:plan:%s", _station_name.c_str());
+			sprintf_s(zkey, "zero:plan:%s", station_name_.c_str());
 			vector<acl::string> keys;
-			{
-				redis_live_scope redis_live_scope;
-				redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
-				trans_redis::get_context()->zrangebyscore(zkey, 0, static_cast<double>(time(nullptr)), &keys);
-			}
-			for (acl::string key : keys)
+			redis_live_scope redis_live_scope;
+			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
+			trans_redis::get_context()->zrangebyscore(zkey, 0, static_cast<double>(time(nullptr)), &keys);
+			for (const acl::string& key : keys)
 			{
 				plan_message message;
 				load_message(static_cast<uint>(acl_atoll(key.c_str())), message);
 				messages.push_back(message);
 			}
-			return messages.size();
 		}
 
 		/**
@@ -66,14 +69,20 @@ namespace agebull
 			redis_live_scope redis_live_scope;
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			char zkey[MAX_PATH];
-			sprintf_s(zkey, "zero:plan:%s", _station_name.c_str());
+			sprintf_s(zkey, "zero:plan:%s", station_name_.c_str());
 			char id[MAX_PATH];
 			_i64toa_s(message.plan_id, id, MAX_PATH, 10);
 			return trans_redis::get_context()->zrem(zkey, id) >= 0;
 		}
 
 
-		bool zero_station::plan_next(plan_message& message, bool first) const
+		/**
+		 * \brief 计划下一次执行时间
+		 * \param message 
+		 * \param first 
+		 * \return 
+		 */
+		bool zero_station::plan_next(plan_message& message, const bool first) const
 		{
 			if (!first && message.plan_repet >= 0 && message.real_repet >= message.plan_repet)
 			{
@@ -89,27 +98,30 @@ namespace agebull
 		}
 
 
+		/**
+		* \brief 保存下一次执行时间
+		*/
 		bool zero_station::save_next(plan_message& message) const
 		{
 			time_t t = time(nullptr);
 			switch (message.plan_type)
 			{
-			case plan_date_type::Time:
+			case plan_date_type::time:
 				t = message.plan_value;
 				break;
-			case plan_date_type::Minute:
+			case plan_date_type::minute:
 				t += message.plan_value * 60;
 				break;
-			case plan_date_type::Hour:
+			case plan_date_type::hour:
 				t += message.plan_value * 3600;
 				break;
-			case plan_date_type::Day:
+			case plan_date_type::day:
 				t += message.plan_value * 24 * 3600;
 				break;
 			default: return false;
 			}
 			char zkey[MAX_PATH];
-			sprintf_s(zkey, "msg:time:%s", _station_name.c_str());
+			sprintf_s(zkey, "msg:time:%s", station_name_.c_str());
 
 			char id[MAX_PATH];
 			_i64toa_s(message.plan_id, id, MAX_PATH,10);
@@ -134,10 +146,10 @@ namespace agebull
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			if (message.plan_id == 0)
 			{
-				sprintf_s(key, "zero:identity:%s", _station_name.c_str());
+				sprintf_s(key, "zero:identity:%s", station_name_.c_str());
 				message.plan_id = static_cast<uint32_t>(trans_redis::get_context().incr_redis(key)) + 1;
 			}
-			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), message.plan_id);
+			sprintf_s(key, "zero:message:%s:%8x", station_name_.c_str(), message.plan_id);
 			return trans_redis::get_context()->set(key, message.write_json().c_str());
 		}
 
@@ -148,7 +160,7 @@ namespace agebull
 		bool zero_station::load_message(uint id, plan_message& message) const
 		{
 			char key[MAX_PATH];
-			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), id);
+			sprintf_s(key, "zero:message:%s:%8x", station_name_.c_str(), id);
 			redis_live_scope redis_live_scope;
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			acl::string val;
@@ -175,25 +187,25 @@ namespace agebull
 			char id[MAX_PATH];
 			_itoa_s(message.plan_id, id, MAX_PATH);
 			//1 删除消息
-			sprintf_s(key, "zero:message:%s:%8x", _station_name.c_str(), message.plan_id);
+			sprintf_s(key, "zero:message:%s:%8x", station_name_.c_str(), message.plan_id);
 			redis->del(key);
 			//2 删除计划
-			if (message.plan_type > plan_date_type::None)
+			if (message.plan_type > plan_date_type::none)
 			{
-				sprintf_s(key, "zero:plan:%s", _station_name.c_str());
+				sprintf_s(key, "zero:plan:%s", station_name_.c_str());
 				redis->zrem(key, id);
 			}
 			//3 删除参与者
-			sprintf_s(key, "zero:worker:%s:%8x", _station_name.c_str(), message.plan_id);
+			sprintf_s(key, "zero:worker:%s:%8x", station_name_.c_str(), message.plan_id);
 			acl::string val;
 			while (redis->spop(key, val))
 			{
-				sprintf_s(key, "zero:request:%s:%s", _station_name.c_str(), val.c_str());
+				sprintf_s(key, "zero:request:%s:%s", station_name_.c_str(), val.c_str());
 				redis->srem(key, id);
 			}
 			redis->del(key);
 			//4 删除返回值
-			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), message.plan_id);
+			sprintf_s(key, "zero:result:%s:%8x", station_name_.c_str(), message.plan_id);
 			redis->del(key);
 			return true;
 		}
@@ -207,13 +219,13 @@ namespace agebull
 			redis_live_scope redis_live_scope;
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 			char key[MAX_PATH];
-			sprintf_s(key, "zero:worker:%s:%8x", _station_name.c_str(), msgid);
+			sprintf_s(key, "zero:worker:%s:%8x", station_name_.c_str(), msgid);
 			trans_redis::get_context()->sadd(key, workers);
 			char id[MAX_PATH];
 			_itoa_s(msgid, id, MAX_PATH);
 			for (auto work : workers)
 			{
-				sprintf_s(key, "zero:request:%s:%s", _station_name.c_str(), work);
+				sprintf_s(key, "zero:request:%s:%s", station_name_.c_str(), work);
 				trans_redis::get_context()->sadd(key, id);
 			}
 			return true;
@@ -229,15 +241,15 @@ namespace agebull
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
 
 			char key[MAX_PATH];
-			sprintf_s(key, "zero:worker:%s:%8x", _station_name.c_str(), msgid);
+			sprintf_s(key, "zero:worker:%s:%8x", station_name_.c_str(), msgid);
 			trans_redis::get_context()->srem(key, worker.c_str());
 
 			char id[MAX_PATH];
 			_itoa_s(msgid, id, MAX_PATH);
-			sprintf_s(key, "zero:request:%s:%s", _station_name.c_str(), worker.c_str());
+			sprintf_s(key, "zero:request:%s:%s", station_name_.c_str(), worker.c_str());
 			trans_redis::get_context()->srem(key, id);
 
-			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
+			sprintf_s(key, "zero:result:%s:%8x", station_name_.c_str(), msgid);
 			trans_redis::get_context()->hset(key, worker.c_str(), response.c_str());
 			return true;
 		}
@@ -253,7 +265,7 @@ namespace agebull
 
 			char key[MAX_PATH];
 
-			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
+			sprintf_s(key, "zero:result:%s:%8x", station_name_.c_str(), msgid);
 			acl::string val;
 			trans_redis::get_context()->hget(key, worker, val);
 			return val;
@@ -270,7 +282,7 @@ namespace agebull
 
 			char key[MAX_PATH];
 			map<acl::string, acl::string> result;
-			sprintf_s(key, "zero:result:%s:%8x", _station_name.c_str(), msgid);
+			sprintf_s(key, "zero:result:%s:%8x", station_name_.c_str(), msgid);
 			trans_redis::get_context()->hgetall(key, result);
 			return result;
 		}

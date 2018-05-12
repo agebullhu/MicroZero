@@ -24,7 +24,7 @@ namespace agebull
 			*/
 			sharp_char command(const char* caller, vector< sharp_char> lines) override
 			{
-				bool res = publish(caller, lines[0], lines[1], lines[1]);
+				const bool res = publish(caller, lines[0], lines[1], lines[1]);
 				return sharp_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
 			}
 
@@ -55,11 +55,11 @@ namespace agebull
 			/**
 			*\brief 广播内容
 			*/
-			bool publish(const string& caller, const string& title, const string& sub, const string& arg);
+			bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
 			/**
 			*\brief 广播内容
 			*/
-			bool publish(const string& caller, const string& title, const string& plan, const string& sub, const string& arg) const;
+			bool publish(const string& publiher, const string& title, const string& sub, const string& plan, const string& arg) const;
 		
 		};
 
@@ -76,25 +76,25 @@ namespace agebull
 			}
 			virtual ~broadcasting_station() = default;
 			/**
-			* 运行一个广播线程
+			* \brief 运行一个广播线程
 			*/
 			static void run(string publish_name)
 			{
 				zmq_threadstart(launch, new broadcasting_station(publish_name));
 			}
 			/**
-			*消息泵
+			*\brief 运行一个广播线程
 			*/
 			static void launch(void* arg);
 			/**
 			*\brief 广播内容
 			*/
-			static bool publish(string station, string publiher, string title, string sub, string arg);
+			static bool publish(const string& station, const string& publiher, const string& title, const string& sub, const string& arg);
 		};
 
 
 		/**
-		* \brief 表示一个广播站点
+		* \brief 系统监视站点
 		*/
 		class system_monitor_station :broadcasting_station_base
 		{
@@ -103,8 +103,12 @@ namespace agebull
 			*/
 			bool can_do() const override
 			{
-				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() < NET_STATE_DISTORY;
+				return (station_state_ == station_state::Run || station_state_ == station_state::Pause) && get_net_state() < NET_STATE_DISTORY;
 			}
+
+			/**
+			* \brief 单例
+			*/
 			static system_monitor_station* example_;
 		public:
 			system_monitor_station()
@@ -114,31 +118,8 @@ namespace agebull
 			}
 			virtual ~system_monitor_station() = default;
 
-			///**
-			//* \brief 暂停
-			//*/
-			//bool pause(bool waiting) override
-			//{
-			//	return false;
-			//}
-
-			///**
-			//* \brief 继续
-			//*/
-			//bool resume(bool waiting)override
-			//{
-			//	return false;
-			//}
-
-			///**
-			//* \brief 结束
-			//*/
-			//bool close(bool waiting)override
-			//{
-			//	return false;
-			//}
 			/**
-			* 运行一个广播线程
+			* \brief 运行一个广播线程
 			*/
 			static void run()
 			{
@@ -147,14 +128,14 @@ namespace agebull
 				zmq_threadstart(launch, nullptr);
 			}
 			/**
-			*消息泵
+			* \brief 消息泵
 			*/
 			static void launch(void*);
 
 			/**
 			*\brief 广播内容
 			*/
-			static bool monitor(string publiher, string state, string content)
+			static bool monitor(const string& publiher, const string& state, const string& content)
 			{
 				if (example_ != nullptr)
 					return example_->publish(publiher, state, content);

@@ -6,6 +6,10 @@
     public class ApiCallItem
     {
         /// <summary>
+        /// 请求者
+        /// </summary>
+        public string Caller { get; set; }
+        /// <summary>
         /// 请求标识
         /// </summary>
         public string RequestId { get; set; }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -39,7 +36,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 内部员工
         /// </summary>
-        Employe = 0x20,
+        Employe = 0x20
     }
 
     /// <summary>

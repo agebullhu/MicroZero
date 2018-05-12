@@ -18,6 +18,16 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class StationProgram
     {
+        #region IOC
+
+        //private static IServiceProvider _serviceProvider;
+
+        //static void InitIoc()
+        //{
+        //    _serviceProvider = new ServiceCollection().BuildServiceProvider();
+        //}
+
+        #endregion
 
         #region Station & Configs
 
@@ -64,6 +74,7 @@ namespace Agebull.ZeroNet.Core
         public static string ZeroManageAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroManagePort}";
 
         /// <summary>
+        /// 注册站点
         /// </summary>
         /// <param name="station"></param>
         public static void RegisteStation(ZeroStation station)
@@ -78,52 +89,31 @@ namespace Agebull.ZeroNet.Core
                 Stations.Add(station.StationName, station);
             }
 
-            station.Config = GetConfig(station.StationName,out var status);
-            if (status == ZeroCommandStatus.Success && State == StationState.Run)
+            if (State == StationState.Run)
                 ZeroStation.Run(station);
+        }
+        /// <summary>
+        /// 注册站点
+        /// </summary>
+        public static void RegisteStation<TStation>() where TStation : ZeroStation, new()
+        {
+            RegisteStation(new TStation());
         }
 
         #endregion
 
         #region System Command
-
         /// <summary>
-        /// 远程调用
+        /// 锁对象
         /// </summary>
-        /// <param name="station"></param>
-        /// <param name="commmand"></param>
-        /// <param name="argument"></param>
-        /// <returns></returns>
-        public static string Call(string station, string commmand, string argument)
-        {
-            var config = GetConfig(station,out var status);
-            if (config == null)
-            {
-                return "{\"Result\":false,\"Message\":\"UnknowHost\",\"ErrorCode\":404}";
-            }
-            var result = config.OutAddress.RequestNet(commmand, ApiContext.RequestContext.RequestId, JsonConvert.SerializeObject(ApiContext.Current), argument);
-            if (string.IsNullOrEmpty(result))
-                return "{\"Result\":false,\"Message\":\"UnknowHost\",\"ErrorCode\":500}";
-            if (result[0] == '{')
-                return result;
-            switch (result)
-            {
-                case "Invalid":
-                    return "{\"Result\":false,\"Message\":\"参数错误\",\"ErrorCode\":-2}";
-                case "NoWork":
-                    return "{\"Result\":false,\"Message\":\"服务器正忙\",\"ErrorCode\":503}";
-                default:
-                    return result;
-            }
-        }
-
+        public static object lock_obj = new object();
         /// <summary>
         /// 
         /// </summary>
         /// <param name="message"></param>
         public static void WriteLine(string message)
         {
-            lock (Config)
+            lock (lock_obj)
             {
                 //Console.CursorLeft = 0;
                 Console.ForegroundColor = ConsoleColor.White;
@@ -136,11 +126,12 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteError(string message)
         {
-            lock (Config)
+            lock (lock_obj)
             {
                 //Console.CursorLeft = 0;
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(message);
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
         /// <summary>
@@ -149,11 +140,12 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteInfo(string message)
         {
-            lock (Config)
+            lock (lock_obj)
             {
                 //Console.CursorLeft = 0;
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(message);
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
         /// <summary>
@@ -177,98 +169,102 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig GetConfig(string stationName,out ZeroCommandStatus status)
+        public static StationConfig GetConfig(string stationName, out ZeroCommandStatus status)
         {
+            StationConfig config;
             lock (Configs)
             {
-                if (Configs.ContainsKey(stationName))
+                if (Configs.TryGetValue(stationName, out config))
                 {
                     status = ZeroCommandStatus.Success;
-                    return Configs[stationName];
+                    return config;
                 }
+            }
+            string result;
+            try
+            {
+                result = ZeroManageAddress.RequestNet("host", stationName);
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                status = ZeroCommandStatus.Exception;
+                return null;
+            }
+            switch (result)
+            {
+                case null:
+                    WriteError($"【{stationName}】无法获取配置");
+                    status = ZeroCommandStatus.Error;
+                    return null;
+                case ZeroNetStatus.ZeroCommandNoFind:
+                    WriteError($"【{stationName}】未安装");
+                    status = ZeroCommandStatus.NoFind;
+                    return null;
+            }
+            try
+            {
+                config = JsonConvert.DeserializeObject<StationConfig>(result);
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                status = ZeroCommandStatus.Error;
+                return null;
             }
 
             lock (Configs)
             {
-                string result;
-                try
-                {
-                     result = ZeroManageAddress.RequestNet("host", stationName);
-                    if (result == null)
-                    {
-                        WriteError($"【{stationName}】无法获取配置");
-                        status = ZeroCommandStatus.Error;
-                        return null;
-                    }
-                    if (result == ZeroNetStatus.ZeroCommandNoFind)
-                    {
-                        WriteError($"【{stationName}】未安装");
-                        status = ZeroCommandStatus.NoFind;
-                        return null;
-                    }
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    status = ZeroCommandStatus.Exception;
-                    return null;
-                }
-                try
-                {
-                    var config = JsonConvert.DeserializeObject<StationConfig>(result);
-                    Configs.Add(stationName, config);
-                    status = ZeroCommandStatus.Success;
-                    return config;
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    status = ZeroCommandStatus.Error;
-                    return null;
-                }
+                Configs.Add(stationName, config);
             }
+            status = ZeroCommandStatus.Success;
+            return config;
         }
 
         /// <summary>
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig InstallStation(string stationName,string type)
+        public static StationConfig InstallStation(string stationName, string type)
         {
+            StationConfig config;
             lock (Configs)
             {
-                if (Configs.TryGetValue(stationName, out var config))
+                if (Configs.TryGetValue(stationName, out config))
                     return config;
-
-                WriteInfo($"【{stationName}】auto regist...");
-                try
-                {
-                    var result = ZeroManageAddress.RequestNet("install", type, stationName);
-
-                    switch (result)
-                    {
-                        case null:
-                            WriteError($"【{stationName}】auto regist failed");
-                            return null;
-                        case ZeroNetStatus.ZeroCommandNoSupport:
-                            WriteError($"【{stationName}】auto regist failed:type no supper");
-                            return null;
-                        case ZeroNetStatus.ZeroCommandFailed:
-                            WriteError($"【{stationName}】auto regist failed:config error");
-                            return null;
-                    }
-                    config = JsonConvert.DeserializeObject<StationConfig>(result);
-                    Configs.Add(stationName, config);
-                    WriteError($"【{stationName}】auto regist succeed");
-                    return config;
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    WriteError($"【{stationName}】auto regist failed:{e.Message}");
-                    return null;
-                }
             }
+
+            WriteInfo($"【{stationName}】auto regist...");
+            try
+            {
+                var result = ZeroManageAddress.RequestNet("install", type, stationName);
+
+                switch (result)
+                {
+                    case null:
+                        WriteError($"【{stationName}】auto regist failed");
+                        return null;
+                    case ZeroNetStatus.ZeroCommandNoSupport:
+                        WriteError($"【{stationName}】auto regist failed:type no supper");
+                        return null;
+                    case ZeroNetStatus.ZeroCommandFailed:
+                        WriteError($"【{stationName}】auto regist failed:config error");
+                        return null;
+                }
+                config = JsonConvert.DeserializeObject<StationConfig>(result);
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                WriteError($"【{stationName}】auto regist failed:{e.Message}");
+                return null;
+            }
+            lock (Configs)
+            {
+                Configs.Add(stationName, config);
+            }
+            WriteError($"【{stationName}】auto regist succeed");
+            return config;
         }
 
         #endregion
@@ -292,7 +288,7 @@ namespace Agebull.ZeroNet.Core
         private static void ConsoleInput()
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
-            while ( true)
+            while (true)
             {
                 var cmd = Console.ReadLine();
                 if (string.IsNullOrWhiteSpace(cmd))
@@ -332,21 +328,20 @@ namespace Agebull.ZeroNet.Core
         {
             ZeroPublisher.Start();
 
-            var discover = new ZeroStationDiscover();
+            var discover = new ZeroApiDiscover();
             discover.FindApies(Assembly.GetCallingAssembly());
             if (discover.ApiItems.Count == 0)
                 return;
             var station = new ApiStation
             {
-                Config = GetConfig(Config.StationName,out var status),
-                StationName = Config?.StationName
+                StationName = Config.StationName
             };
             foreach (var action in discover.ApiItems)
             {
-                if (action.Value.HaseArgument)
-                    station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption >= ApiAccessOption.Customer);
-                else
-                    station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption >= ApiAccessOption.Customer);
+                var a = action.Value.HaseArgument
+                    ? station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption)
+                    : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
+                a.ArgumenType = action.Value.ArgumenType;
             }
             RegisteStation(station);
         }
@@ -393,13 +388,34 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     关闭
         /// </summary>
-        public static void Exit()
+        public static void Close()
         {
+            ConfigsDispose();
             WriteInfo("Program Stop...");
             if (State == StationState.Run)
                 Stop();
             State = StationState.Destroy;
             WriteInfo("Program Exit");
+        }
+        /// <summary>
+        /// 析构配置
+        /// </summary>
+        internal static void ConfigsDispose()
+        {
+            lock (Configs)
+            {
+                foreach (var config in Configs.Values)
+                {
+                    config.Dispose();
+                }
+            }
+        }
+        /// <summary>
+        ///     关闭
+        /// </summary>
+        public static void Exit()
+        {
+            Close();
             Process.GetCurrentProcess().Close();
         }
 
@@ -410,18 +426,35 @@ namespace Agebull.ZeroNet.Core
         {
             WriteInfo("Program Start...");
             WriteLine(ZeroManageAddress);
-            State = StationState.Run;
-            Task.Factory.StartNew(SystemMonitor.RunMonitor);
+            int tryCnt = 0;
+            State = StationState.Start;
             try
             {
-                var res = ZeroManageAddress.RequestNet("ping");
-                if (res == null)
+                while (true)
                 {
-                    WriteError("ZeroCenter can`t connection,waiting for monitor message.." );
-                    return;
+                    var res = ZeroManageAddress.RequestNet("ping");
+                    if (res != null)
+                        break;
+                    if (tryCnt > 12)
+                    {
+                        WriteError("ZeroCenter can`t connection,waiting for monitor message..");
+                        return;
+                    }
+                    tryCnt++;
+                    WriteError($"ZeroCenter can`t connection,try again in a second({tryCnt}).");
+                    Thread.Sleep(1000);
                 }
-                foreach (var station in Stations.Values)
-                    ZeroStation.Run(station);
+                Task.Factory.StartNew(SystemMonitor.RunMonitor);
+
+                LoadAllConfig();
+
+                Thread.Sleep(50);
+                State = StationState.Run;
+                if (Stations.Count > 0)
+                {
+                    foreach (var station in Stations.Values)
+                        ZeroStation.Run(station);
+                }
                 WriteInfo("Program Run...");
             }
             catch (Exception e)
@@ -431,6 +464,41 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
+        static void LoadAllConfig()
+        {
+            string result;
+            int trycnt = 0;
+            while (true)
+            {
+                result = ZeroManageAddress.RequestNet("Host", "*");
+                if (result != null)
+                {
+                    break;
+                }
+                if (++trycnt > 5)
+                    return;
+                Thread.Sleep(10);
+            }
+            try
+            {
+                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(result);
+                foreach (var config in configs)
+                {
+                    lock (Configs)
+                    {
+                        if (Configs.ContainsKey(config.StationName))
+                            Configs[config.StationName].Copy(config);
+                        else
+                            Configs.Add(config.StationName, config);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                WriteError(e.Message);
+            }
+
+        }
         #endregion
     }
 }

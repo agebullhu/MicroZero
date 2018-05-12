@@ -6,7 +6,9 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
   <PropertyGroup>
     <Description>实现消息队列功能：
 1 Api站点
@@ -44,6 +46,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DefineConstants>RELEASE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Entity\**" />
     <Compile Remove="Rpc\**" />
@@ -58,6 +65,7 @@
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="ZeroApi\ApiStationItem.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -88,7 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.7" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.8" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.10" />
     <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.7" />
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
     <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.7" />

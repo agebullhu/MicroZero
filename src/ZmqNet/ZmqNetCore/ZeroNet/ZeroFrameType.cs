@@ -36,13 +36,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 订阅者/浪费者
         /// </summary>
-        public const byte Subscriber = (byte)Responser;
+        public const byte Subscriber = Responser;
         //广播主题
         //#define zero_pub_title  '*'
         /// <summary>
         /// 广播副题
         /// </summary>
         public const byte SubTitle = (byte)'S';
+        /// <summary>
+        /// 广播副题
+        /// </summary>
+        public const byte Status = (byte)'S';
         /// <summary>
         /// 网络上下文信息
         /// </summary>

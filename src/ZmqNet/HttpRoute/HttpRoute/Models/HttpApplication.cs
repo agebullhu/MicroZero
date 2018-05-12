@@ -7,6 +7,8 @@ using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Agebull.ZeroNet.LogRecorder;
+using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace ZeroNet.Http.Route
 {
@@ -23,14 +25,24 @@ namespace ZeroNet.Http.Route
         public static void Initialize()
         {
             AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-            LogRecorder.Initialize(new RemoteRecorder());
-            StationProgram.Run();
-            // 日志支持
-            //Agebull.Common.Logging.LogRecorder.GetRequestIdFunc = () => ApiContext.RequestContext.RequestId;.
+
+
+            if (AppConfig.Config.SystemConfig.FireZero)
+            {
+                ZeroPublisher.Start();
+                StationProgram.Run();
+                LogRecorder.Initialize(new RemoteRecorder());
+                RouteCommand.ZeroFlush();
+            }
+
+            LogRecorder.GetRequestIdFunc = () =>
+                ApiContext.Current == null || ApiContext.Current.Request == null
+                    ? Guid.Empty.ToString()
+                    : ApiContext.RequestContext.RequestId;
+
 
             RouteChahe.Flush();
             RuntimeWaring.Flush();
-            RouteCommand.ZeroFlush();
             //Datas = new List<RouteData>();
 
 
@@ -96,7 +108,7 @@ namespace ZeroNet.Http.Route
             }
 
             var router = new HttpRouter(context);
-            
+
             HttpIoLog.OnBegin(router.Data);
             var counter = PerformanceCounter.OnBegin(router.Data);
             try

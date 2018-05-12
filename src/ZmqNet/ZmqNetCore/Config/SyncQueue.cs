@@ -53,6 +53,7 @@ namespace Agebull.Common
             string json;
             lock (this)
                 json = JsonConvert.SerializeObject(this);
+            IOHelper.CheckPath(Path.GetDirectoryName(file));
             File.WriteAllText(file, json);
         }
 

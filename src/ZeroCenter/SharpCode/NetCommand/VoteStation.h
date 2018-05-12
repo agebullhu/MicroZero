@@ -69,7 +69,7 @@ namespace agebull
 			/**
 			* \brief ππ‘Ï
 			*/
-			explicit vote_station(string name)
+			vote_station(string name)
 				: balance_station<vote_station, voter, STATION_TYPE_VOTE>(std::move(name))
 			{
 			}

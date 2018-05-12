@@ -139,36 +139,48 @@ namespace Agebull.ZeroNet.Core
         /// 参数错误的Json文本
         /// </summary>
         /// <remarks>参数校验不通过</remarks>
-        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.ArgumentError));
+        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError,"参数错误"));
 
         /// <summary>
         /// 拒绝访问的Json文本
         /// </summary>
         /// <remarks>权限校验不通过</remarks>
-        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.DenyAccess));
+        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess,"拒绝访问"));
 
         /// <summary>
         /// 未知错误的Json文本
         /// </summary>
-        public static readonly string UnknowErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.UnknowError));
+        public static readonly string UnknowErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError));
 
         /// <summary>
         /// 网络错误的Json文本
         /// </summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static readonly string NetworkErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NetworkError));
+        public static readonly string NetworkErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError));
+
+        /// <summary>
+        /// 网络超时的Json文本
+        /// </summary>
+        /// <remarks>调用其它Api时时抛出未处理异常</remarks>
+        public static readonly string TimeOutJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.TimeOut));
 
         /// <summary>
         /// 内部错误的Json文本
         /// </summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
-        public static readonly string InnerErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.InnerError));
+        public static readonly string InnerErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError));
 
         /// <summary>
         /// 找不到方法的Json文本
         /// </summary>
         /// <remarks>方法未注册</remarks>
-        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ZeroApi.ErrorCode.NoFind));
+        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "页面不存在"));
+
+        /// <summary>
+        /// 找不到方法的Json文本
+        /// </summary>
+        /// <remarks>方法未注册</remarks>
+        public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "系统未就绪"));
 
     }
 }

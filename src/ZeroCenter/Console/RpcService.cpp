@@ -1,19 +1,12 @@
-// WindowsService.cpp : WinMain µÄÊµÏÖ
+// WindowsService.cpp : WinMain çš„å®ç°
 
 #include "stdafx.h"
 #include "rpc/crpcservice.h"
 #include "NetCommand/ZeroStation.h"
 #include "NetCommand/NetDispatcher.h"
 #include "NetCommand/BroadcastingStation.h"
-#ifdef _WINDOWS
-#include <direct.h>
-#else
+
 #include <unistd.h>  
-#endif
-
-#include "resource.h"
-#include "WindowsService_i.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -43,14 +36,14 @@ int main(int argc, char *argv[])
 			break;
 		}
 		std::vector<string> cmdline;
-		// boost::is_any_ofÕâÀïÏàµ±ÓÚ·Ö¸î¹æÔòÁË  
+		// boost::is_any_ofè¿™é‡Œç›¸å½“äºåˆ†å‰²è§„åˆ™äº†  
 		boost::split(cmdline, line, boost::is_any_of(" \n\r\t"));
 		if (cmdline.empty())
 			break;
 		std::vector<agebull::zmq_net::sharp_char> arguments;
 		for (size_t idx = 1; idx < cmdline.size(); idx++)
 			arguments.emplace_back(cmdline[idx]);
-		string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);
+		const string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
 	rpc_service::stop();

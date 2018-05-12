@@ -10,7 +10,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// ZeroStation发现工具
     /// </summary>
-    public class ZeroStationDiscover
+    public class ZeroApiDiscover
     {
         #region API发现
 
@@ -59,7 +59,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 else if (method.GetParameters().Length == 1)
                 {
                     info.HaseArgument = true;
+                    
                     info.ArgumentAction = TypeExtend.CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(), method.Name,pars[0].ParameterType.GetTypeInfo(), method.ReturnType.GetTypeInfo());
+                    info.ArgumenType = pars[0].ParameterType;
                 }
                 else
                 {

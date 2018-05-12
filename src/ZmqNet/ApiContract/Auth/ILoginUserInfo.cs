@@ -107,7 +107,7 @@ namespace Agebull.Common.OAuth
         /// <remarks>
         /// Í·Ïñ
         /// </remarks>
-        [JsonProperty("id")]
+        [JsonProperty("av")]
         public string AvatarUrl
         {
             get;

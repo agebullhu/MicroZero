@@ -40,12 +40,12 @@ namespace ZeroNet.Http.Route
                 case "/_1_config_1_":
                     response.WriteAsync(JsonConvert.SerializeObject(AppConfig.Config, Formatting.Indented), Encoding.UTF8);
                     return true;
-                //case "/_1_warings_1_":
-                //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
-                //    return true;
-                //case "/_1_cache_1_":
-                //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
-                //    return true;
+                    //case "/_1_warings_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
+                    //case "/_1_cache_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
             }
 
             return false;
@@ -81,20 +81,31 @@ namespace ZeroNet.Http.Route
             foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
                 AppConfig.Config.RouteMap.Remove(host.Key);
 
-            foreach (var station in StationProgram.Configs.Values.Where(p => p.StationType == 2))
+            foreach (var station in StationProgram.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi))
             {
-                var host = new HostConfig
-                {
-                    ByZero = true
-                };
-                if (!AppConfig.Config.RouteMap.ContainsKey(station.StationName))
-                    AppConfig.Config.RouteMap.Add(station.StationName, host);
-                foreach (var name in station.StationAlias)
-                    if (!AppConfig.Config.RouteMap.ContainsKey(name))
-                        AppConfig.Config.RouteMap.Add(name, host);
+                ApiStationJoin(station);
             }
             SystemMonitor.StationEvent += StationProgram_StationEvent;
         }
+
+        static void ApiStationJoin(StationConfig station)
+        {
+            StationProgram.WriteInfo($"Zero Station:{station.StationName}");
+            var host = new HostConfig
+            {
+                ByZero = true
+            };
+            if (!AppConfig.Config.RouteMap.ContainsKey(station.StationName))
+                AppConfig.Config.RouteMap.Add(station.StationName, host);
+            else
+                AppConfig.Config.RouteMap[station.StationName] = host;
+            if (station.StationAlias == null)
+                return;
+            foreach (var name in station.StationAlias)
+                if (!AppConfig.Config.RouteMap.ContainsKey(name))
+                    AppConfig.Config.RouteMap.Add(name, host);
+        }
+
         private static void StationProgram_StationEvent(object sender, SystemMonitor.StationEventArgument e)
         {
             switch (e.EventName)
@@ -109,15 +120,7 @@ namespace ZeroNet.Http.Route
                 case "station_resume":
                 case "station_install":
                 case "station_join":
-                    var route = new HostConfig
-                    {
-                        ByZero = true
-                    };
-                    if (!AppConfig.Config.RouteMap.ContainsKey(e.EventConfig.StationName))
-                        AppConfig.Config.RouteMap.Add(e.EventConfig.StationName, route);
-                    foreach (var name in e.EventConfig.StationAlias)
-                        if (!AppConfig.Config.RouteMap.ContainsKey(name))
-                            AppConfig.Config.RouteMap.Add(name, route);
+                    ApiStationJoin(e.EventConfig);
                     break;
                 case "station_left":
                     break;

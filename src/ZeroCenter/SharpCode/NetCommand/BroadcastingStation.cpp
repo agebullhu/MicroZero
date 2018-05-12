@@ -5,7 +5,7 @@
  */
 
 #include "stdafx.h"
-#include "NetCommand/broadcastingstation.h"
+#include <NetCommand/BroadcastingStation.h>
 #include <NetCommand/StationWarehouse.h>
 
 namespace agebull
@@ -22,28 +22,28 @@ namespace agebull
 		void broadcasting_station_base::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
-			_zmq_state = recv(socket, list);
-			if (_zmq_state != zmq_socket_state::Succeed)
+			zmq_state_ = recv(socket, list);
+			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
-				log_error3("接收消息失败%s(%d)%s", _station_name.c_str(), _inner_port, state_str(_zmq_state));
+				log_error3("接收消息失败%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
 				return;
 			}
 			const sharp_char& caller = list[0];
 			if (list.size() <= 3)
 			{
-				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
+				zmq_state_ = send_addr(socket, *caller);
+				zmq_state_ = send_late(socket, ZERO_STATUS_FRAME_INVALID);
 				return;
 			}
 			sharp_char& title = list[2];
 			sharp_char& description = list[3];
 			char* const buf = description.get_buffer();
 			const size_t list_size = list.size();
-			const size_t frame_size = static_cast<size_t>(buf[0]);
+			const auto frame_size = static_cast<size_t>(buf[0]);
 			if (frame_size >= description.size() || (frame_size + 4) != list_size)
 			{
-				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, ZERO_STATUS_FRAME_INVALID);
+				zmq_state_ = send_addr(socket, *caller);
+				zmq_state_ = send_late(socket, ZERO_STATUS_FRAME_INVALID);
 				return;
 			}
 			bool hase_plan = false;
@@ -57,13 +57,14 @@ namespace agebull
 			}
 			if (!hase_plan)
 			{
-				_zmq_state = send_addr(socket, *caller);
-				_zmq_state = send_late(socket, ZERO_STATUS_OK);
+				zmq_state_ = send_addr(socket, *caller);
+				zmq_state_ = send_late(socket, ZERO_STATUS_OK);
 				send_data(list, 2);
+				//cout << *caller << endl;
 				return;
 			}
-			_zmq_state = send_addr(socket, *caller);
-			_zmq_state = send_late(socket, ZERO_STATUS_PLAN);
+			zmq_state_ = send_addr(socket, *caller);
+			zmq_state_ = send_late(socket, ZERO_STATUS_PLAN);
 
 			plan_message message;
 			message.messages.push_back(title);
@@ -123,16 +124,17 @@ namespace agebull
 		*/
 		bool broadcasting_station_base::publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas)
 		{
-			send_more(_inner_socket, *title);
-			send_more(_inner_socket, *description);
-			_zmq_state = send(_inner_socket, datas);
-			return _zmq_state == zmq_socket_state::Succeed;
+			send_more(response_socket_, *title);
+			send_more(response_socket_, *description);
+			zmq_state_ = send(response_socket_, datas);
+			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		/**
 		*\brief 发布消息
 		*/
-		bool broadcasting_station::publish(string station, string publiher, string title, string sub, string arg)
+		bool broadcasting_station::publish(const string& station, const string& publiher, 
+			const string& title, const string& sub, const string& arg)
 		{
 			const auto pub = station_warehouse::instance(station);
 			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
@@ -157,7 +159,7 @@ namespace agebull
 			buf[3] = ZERO_FRAME_END;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
-			datas.push_back(description);
+			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
 			return send_data(datas);
@@ -184,6 +186,7 @@ namespace agebull
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(sub.c_str());
 			datas.emplace_back(arg.c_str());
+
 			return send_data(datas);
 		}
 
@@ -207,7 +210,7 @@ namespace agebull
 			buf[3] = ZERO_FRAME_ARG;
 			buf[4] = ZERO_FRAME_END;
 			message.messages.emplace_back(title.c_str());
-			datas.push_back(message.messages_description);
+			datas.emplace_back(message.messages_description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(sub.c_str());
 			datas.emplace_back(arg.c_str());
@@ -216,43 +219,46 @@ namespace agebull
 
 			return plan_next(message, true);
 		}
-		
+
+		/**
+		*\brief 运行一个广播线程
+		*/
 		void broadcasting_station::launch(void* arg)
 		{
-			broadcasting_station* station = static_cast<broadcasting_station*>(arg);
+			auto station = static_cast<broadcasting_station*>(arg);
 			if (!station_warehouse::join(station))
 			{
 				return;
 			}
-			if (station->_zmq_state == zmq_socket_state::Succeed)
-				log_msg4("%s(%d | %d) %d 正在启动", station->_station_name.c_str(), station->_out_port, station->_inner_port, station->_station_type);
+			if (station->zmq_state_ == zmq_socket_state::Succeed)
+				log_msg4("%s(%d | %d) %d start.", station->station_name_.c_str(), station->request_port_, station->response_port_, station->station_type_);
 			else
-				log_msg4("%s(%d | %d) %d 正在重启", station->_station_name.c_str(), station->_out_port, station->_inner_port, station->_station_type);
+				log_msg4("%s(%d | %d) %d restart", station->station_name_.c_str(), station->request_port_, station->response_port_, station->station_type_);
 			if (!station->initialize())
 			{
-				log_msg4("%s(%d | %d) %d 无法启动", station->_station_name.c_str(), station->_out_port, station->_inner_port, station->_station_type);
+				log_msg4("%s(%d | %d) %d con`t launch.", station->station_name_.c_str(), station->request_port_, station->response_port_, station->station_type_);
 				return;
 			}
-			log_msg4("%s(%d | %d) %d 正在运行", station->_station_name.c_str(), station->_out_port, station->_inner_port, station->_station_type);
+			log_msg4("%s(%d | %d) %d runing", station->station_name_.c_str(), station->request_port_, station->response_port_, station->station_type_);
 
 			zmq_threadstart(plan_poll, arg);
-			const bool reStrart = station->poll();
-			while (station->_in_plan_poll)
+			const bool re_strart = station->poll();
+			while (station->in_plan_poll_)
 			{
 				sleep(1);
 			}
 			//zmq_threadclose(t);
 			station_warehouse::left(station);
 			station->destruct();
-			if (reStrart)
+			if (re_strart)
 			{
-				broadcasting_station* station2 = new broadcasting_station(station->_station_name);
-				station2->_zmq_state = zmq_socket_state::Again;
+				broadcasting_station* station2 = new broadcasting_station(station->station_name_);
+				station2->zmq_state_ = zmq_socket_state::Again;
 				zmq_threadstart(launch, station2);
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", station->_station_name.c_str(), station->_out_port, station->_inner_port);
+				log_msg3("%s(%d | %d) closed", station->station_name_.c_str(), station->request_port_, station->response_port_);
 			}
 			delete station;
 		}
@@ -266,40 +272,41 @@ namespace agebull
 				delete example_;
 				return;
 			}
-			if (example_->_zmq_state == zmq_socket_state::Succeed)
-				log_msg4("%s(%d | %d) %d 正在启动", example_->_station_name.c_str(), example_->_out_port, example_->_inner_port, example_->_station_type);
+			if (example_->zmq_state_ == zmq_socket_state::Succeed)
+				log_msg4("%s(%d | %d) %d start.", example_->station_name_.c_str(), example_->request_port_, example_->response_port_, example_->station_type_);
 			else
-				log_msg4("%s(%d | %d) %d 正在重启", example_->_station_name.c_str(), example_->_out_port, example_->_inner_port, example_->_station_type);
+				log_msg4("%s(%d | %d) %d restart.", example_->station_name_.c_str(), example_->request_port_, example_->response_port_, example_->station_type_);
 			if (!example_->initialize())
 			{
-				log_msg4("%s(%d | %d) %d 无法启动", example_->_station_name.c_str(), example_->_out_port, example_->_inner_port, example_->_station_type);
+				log_msg4("%s(%d | %d) %d con`t launch.", example_->station_name_.c_str(), example_->request_port_, example_->response_port_, example_->station_type_);
 				return;
 			}
-			log_msg4("%s(%d | %d) %d 正在运行", example_->_station_name.c_str(), example_->_out_port, example_->_inner_port, example_->_station_type);
+			log_msg4("%s(%d | %d) %d runing", example_->station_name_.c_str(), example_->request_port_, example_->response_port_, example_->station_type_);
 			zmq_threadstart(plan_poll, example_);
-			const bool reStrart = example_->poll();
-			while (example_->_in_plan_poll)
+			const bool re_strart = example_->poll();
+			while (example_->in_plan_poll_)
 			{
 				sleep(1);
 			}
 			//发送关闭消息
-			{
-				acl::string msg;
-				msg.format("station_end\r\n%s\r\n%d\r\n", example_->_station_name.c_str(), example_->_inner_port);
-				send_late(example_->_inner_socket, msg.c_str());
-				thread_sleep(100);
-			}
+			acl::string msg;
+			msg.format("station_end\r\n%s\r\n%d\r\n", example_->station_name_.c_str(), example_->response_port_);
+			send_late(example_->response_socket_, msg.c_str());
+			thread_sleep(100);
 			example_->destruct();
-			if (reStrart)
+			if (re_strart)
 			{
+				delete example_;
+				example_ = nullptr;
 				zmq_threadstart(launch, nullptr);
 			}
 			else
 			{
-				log_msg3("%s(%d | %d)已关闭", example_->_station_name.c_str(), example_->_out_port, example_->_inner_port);
+				log_msg3("%s(%d | %d)closed", example_->station_name_.c_str(), example_->request_port_, example_->response_port_);
+
+				delete example_;
+				example_ = nullptr;
 			}
-			delete example_;
-			example_ = nullptr;
 		}
 	}
 }

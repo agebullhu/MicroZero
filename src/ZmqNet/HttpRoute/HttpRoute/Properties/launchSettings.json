@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://10.5.206.218:5000/",
+      "applicationUrl": "http://localhost:5000/",
       "sslPort": 0
     }
   },
@@ -13,7 +13,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development**"
       },
-      "applicationUrl": "http://10.5.206.218:5000/"
+      "applicationUrl": "http://localhost:5000/"
     },
     "ExternalStation": {
       "commandName": "Project",

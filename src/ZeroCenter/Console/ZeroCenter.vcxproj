@@ -48,6 +48,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -212,6 +213,10 @@
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -235,7 +240,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalDependencies>Psapi.lib;libzmq.lib;lib_acl_vc2015.lib;lib_acl_cpp_vc2015.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -281,13 +287,13 @@
     <ClInclude Include="..\SharpCode\rpc\CRpcService.h" />
     <ClInclude Include="..\SharpCode\sharp_char.h" />
     <ClInclude Include="..\SharpCode\SimpleEvent.h" />
+    <ClInclude Include="..\SharpCode\stdafx.h" />
     <ClInclude Include="..\SharpCode\stdinc.h" />
     <ClInclude Include="..\SharpCode\tm_extend.h" />
     <ClInclude Include="..\SharpCode\Tson\tson_def.h" />
     <ClInclude Include="..\SharpCode\Tson\tson_deserializer.h" />
     <ClInclude Include="..\SharpCode\Tson\tson_serializer.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>

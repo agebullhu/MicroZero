@@ -34,7 +34,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 类型
         /// </summary>
-        public abstract int StationType { get;  }
+        public abstract int StationType { get; }
         /// <summary>
         /// 站点名称
         /// </summary>
@@ -72,54 +72,62 @@ namespace Agebull.ZeroNet.Core
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        public abstract bool Run();
+        protected abstract bool Run();
 
         /// <summary>
         /// 执行
         /// </summary>
         /// <param name="station"></param>
-        public static void Run(ZeroStation station)
+        public static bool Run(ZeroStation station)
         {
-            station.Close();
-            station.Config = StationProgram.GetConfig(station.StationName,out var status);
+            //执行状态，会自动处理
+            if (station.RunState >= StationState.Start && station.RunState <= StationState.Failed)
+            {
+                return false;
+            }
             if (station.Config == null)
             {
-                string type;
-                switch (station.StationType)
+                station.Config = StationProgram.GetConfig(station.StationName, out _);
+                //if (station.Config == null)
+                //{
+                //    string type;
+                //    switch (station.StationType)
+                //    {
+                //        case StationTypeApi:
+                //            type = "api";
+                //            break;
+                //        case StationTypePublish:
+                //            type = "pub";
+                //            break;
+                //        case StationTypeVote:
+                //            type = "vote";
+                //            break;
+                //        default:
+                //            StationProgram.WriteError($"【{station.StationName}】type no supper,failed!");
+                //            return;
+                //    }
+                //    StationProgram.WriteError($"【{station.StationName}】not find,try install...");
+                //    StationProgram.InstallStation(station.StationName, type);
+                //    return;
+                //}
+                if (station.Config == null)
                 {
-                    case StationTypeApi:
-                        type = "api";
-                        break;
-                    case StationTypePublish:
-                        type = "pub";
-                        break;
-                    case StationTypeVote:
-                        type = "vote";
-                        break;
-                    default:
-                        StationProgram.WriteError($"【{station.StationName}】type no supper,failed!");
-                        return;
+                    station.RunState = StationState.ConfigError;
+                    StationProgram.WriteError($"【{station.StationName}】config cann`t get,failed!");
+                    return false;
                 }
-                StationProgram.WriteError($"【{station.StationName}】not find,try install...");
-                StationProgram.InstallStation(station.StationName, type);
-                return;
             }
-            if (station.Config == null)
-            {
-                StationProgram.WriteError($"【{station.StationName}】config cann`t get,failed!");
-                return;
-            }
-            station.Run();
+            return station.Run();
         }
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        protected virtual void OnTaskStop(Task task)
+        protected virtual void OnTaskStop()
         {
             while (InPoll)
                 Thread.Sleep(50);
-            if (StationProgram.State == StationState.Run && (RunState == StationState.Failed || RunState == StationState.Start))
+            if (StationProgram.State == StationState.Run && RunState == StationState.Failed)
             {
                 StationProgram.WriteInfo($"【{StationName}】restart...");
                 Console.CursorLeft = 0;
@@ -130,6 +138,7 @@ namespace Agebull.ZeroNet.Core
                     Console.Write($"{i}s");
                     Thread.Sleep(1000);
                 }
+                RunState = StationState.None;
                 Run();
                 return;
             }
@@ -142,7 +151,8 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public bool Close()
         {
-            if (RunState != StationState.Run)
+            //未运行状态
+            if (RunState < StationState.Start || RunState > StationState.Failed)
                 return true;
             StationProgram.WriteInfo($"{StationName} closing....");
             RunState = StationState.Closing;
@@ -150,7 +160,7 @@ namespace Agebull.ZeroNet.Core
             {
                 Thread.Sleep(20);
             } while (RunState != StationState.Closed);
-            RunState = StationState.Closed;
+
             StationProgram.WriteInfo($"{StationName} closed");
             return true;
         }

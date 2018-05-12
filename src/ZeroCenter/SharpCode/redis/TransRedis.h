@@ -27,6 +27,7 @@ namespace agebull
 	{
 		friend class redis_db_scope;
 		friend class redis_trans_scope;
+
 		/**
 		* \brief 启用事务的次数
 		*/
@@ -103,306 +104,158 @@ namespace agebull
 		/**
 		* \brief 最后一次操作是否成功
 		*/
-		bool last_status() const
-		{
-			return m_last_status;
-		}
+		bool last_status() const;
 	private:
 		/**
 		* \brief 提交事务
 		*/
-		void trans_redis::commit_inner();
+		void commit_inner();
 	public:
 		bool get(const char*, acl::string&);
 		void set(const char*, const char*);
 		void set(const char*, const char*, size_t);
 		void set(const char*, acl::string&);
-		acl::redis* operator->() const
-		{
-			return m_redis_cmd;
-		}
+		acl::redis* operator->() const;
 		acl::string read_str_from_redis(const char* key);
 		template<class TArg1>
-		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return read_str_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return read_str_from_redis(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return read_str_from_redis(key);
-		}
+		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg);
 
-		std::vector<acl::string> find_redis_keys(const char* key);
-		template<class TArg1>
-		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return find_redis_keys(key);
-		}
 		template<class TArg1, class TArg2>
-		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return find_redis_keys(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return find_redis_keys(key);
-		}
+		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
 
-		std::vector<acl::string*> find_from_redis(const char* key);
-		template<class TArg1>
-		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return find_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return find_from_redis(key);
-		}
 		template<class TArg1, class TArg2, class TArg3>
-		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return find_from_redis(key);
-		}
+		acl::string read_str_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		std::vector<acl::string> find_redis_keys(const char* find_key) const;
+		template<class TArg1>
+		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg);
+
+		template<class TArg1, class TArg2>
+		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		std::vector<acl::string> find_redis_keys(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		std::vector<acl::string*> find_from_redis(const char* find_key);
+		template<class TArg1>
+		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg);
+
+		template<class TArg1, class TArg2>
+		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		std::vector<acl::string*> find_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
 		acl::string read_from_redis(const char* key);
 		template<class TArg1>
-		acl::string read_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return read_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		acl::string read_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return read_from_redis(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		acl::string read_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return read_from_redis(key);
-		}
+		acl::string read_from_redis(const char* key_fmt, TArg1 arg);
 
-		void delete_from_redis(const char* key);
+		template<class TArg1, class TArg2>
+		acl::string read_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		acl::string read_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		void delete_from_redis(const char* find_key) const;
 
 		template<class TArg1>
-		void delete_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			delete_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		void delete_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			delete_from_redis(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		void delete_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			delete_from_redis(key);
-		}
+		void delete_from_redis(const char* key_fmt, TArg1 arg);
 
-		size_t incr_redis(const char* key);
-		template<class TArg1>
-		size_t incr_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return incr_redis(key);
-		}
 		template<class TArg1, class TArg2>
-		size_t incr_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return incr_redis(key);
-		}
+		void delete_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
 		template<class TArg1, class TArg2, class TArg3>
-		size_t incr_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return incr_redis(key);
-		}
+		void delete_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		size_t incr_redis(const char* key) const;
+		template<class TArg1>
+		size_t incr_redis(const char* key_fmt, TArg1 arg);
+
+		template<class TArg1, class TArg2>
+		size_t incr_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		size_t incr_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
 		void write_to_redis(const char* key, const char* bin, size_t len);
 		void write_json_to_redis(const char* key, const char* json);
 		template<class TArg1>
-		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			write_to_redis(key, bin, len);
-		}
+		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg);
+
 		template<class TArg1, class TArg2>
-		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			write_to_redis(key, bin, len);
-		}
+		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
 		template<class TArg1, class TArg2, class TArg3>
-		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			write_to_redis(key, bin, len);
-		}
+		void write_to_redis(const char* bin, size_t len, const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
 
 
 		acl::string read_first_from_redis(const char* key);
 		template<class TArg1>
-		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return read_first_from_redis(key);
-		}
+		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg);
+
 		template<class TArg1, class TArg2>
-		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return read_first_from_redis(key);
-		}
+		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
 		template<class TArg1, class TArg2, class TArg3>
-		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return read_first_from_redis(key);
-		}
+		acl::string read_first_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
 
 
-		bool unlock_from_redis(const char* key);
+		bool unlock_from_redis(const char* key) const;
 		template<class TArg1>
-		bool unlock_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return unlock_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		bool unlock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return unlock_from_redis(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		bool unlock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return unlock_from_redis(key);
-		}
+		bool unlock_from_redis(const char* key_fmt, TArg1 arg);
 
-		bool lock_from_redis(const char* key);
+		template<class TArg1, class TArg2>
+		bool unlock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		bool unlock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		bool lock_from_redis(const char* key) const;
 		template<class TArg1>
-		bool lock_from_redis(const char* key_fmt, TArg1 arg)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg);
-			return lock_from_redis(key);
-		}
-		template<class TArg1, class TArg2>
-		bool lock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2);
-			return lock_from_redis(key);
-		}
-		template<class TArg1, class TArg2, class TArg3>
-		bool lock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3)
-		{
-			char key[256];
-			sprintf_s(key, key_fmt, arg1, arg2, arg3);
-			return lock_from_redis(key);
-		}
+		bool lock_from_redis(const char* key_fmt, TArg1 arg);
 
-		bool get_hash(const char* key, const char* sub_key, acl::string& vl);
-		bool set_hash(const char* key, const char* sub_key, const char* vl);
-		bool del_hash(const char* key, const char* sub_key);
-		bool get_hash(const char* key, std::map<acl::string, acl::string>& vl);
+		template<class TArg1, class TArg2>
+		bool lock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2);
+
+		template<class TArg1, class TArg2, class TArg3>
+		bool lock_from_redis(const char* key_fmt, TArg1 arg1, TArg2 arg2, TArg3 arg3);
+
+		bool get_hash(const char* key, const char* sub_key, acl::string& vl) const;
+		bool set_hash(const char* key, const char* sub_key, const char* vl) const;
+		bool del_hash(const char* key, const char* sub_key) const;
+		bool get_hash(const char* key, std::map<acl::string, acl::string>& vl) const;
 	};
 	/**
 	* \brief Redis当前上下文对象生存范围
 	*/
 	class redis_live_scope
 	{
-		bool open_by_me;
+		bool open_by_me_;
 	public:
 		/**
 		* \brief 构造
 		*/
-		redis_live_scope()
-		{
-			open_by_me = trans_redis::open_context();
-		}
+		redis_live_scope();
+
 		/**
 		* \brief 构造
 		*/
-		explicit redis_live_scope(int db)
-		{
-			open_by_me = trans_redis::open_context(db);
-		}
+		redis_live_scope(int db);
+
 		/**
 		* \brief 析构
 		*/
-		~redis_live_scope()
-		{
-			if (open_by_me)
-				agebull::trans_redis::close_context();
-		}
+		~redis_live_scope();
 	};
 	/**
 	* \brief 自动恢复的数据ID范围
 	*/
 	class redis_db_scope
 	{
-		trans_redis& redis;
+		trans_redis& redis_;
 	public:
 		/**
 		* \brief 构造
 		*/
-		redis_db_scope(int db)
-			: redis(trans_redis::get_context())
-		{
-			redis->select(db);
-		}
+		redis_db_scope(int db);
 		/**
 		* \brief 析构
 		*/
@@ -417,19 +270,12 @@ namespace agebull
 		/**
 		* \brief 构造
 		*/
-		redis_trans_scope()
-		{
-			trans_redis::get_context().begin_trans();
-		}
+		redis_trans_scope();
+
 		/**
 		* \brief 析构
 		*/
-		~redis_trans_scope()
-		{
-			trans_redis* context = trans_redis::get_current();
-			if (context != nullptr)
-				trans_redis::end_trans();
-		}
+		~redis_trans_scope();
 	};
 }
 #endif

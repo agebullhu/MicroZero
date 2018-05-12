@@ -30,7 +30,6 @@
 
 #include <cfg/config.h>
 #include "redis/redis.h"
-#include "NetCommand/command_serve.h"
 
 #ifdef WINDOWS_SERVICE
 #include <atlbase.h>

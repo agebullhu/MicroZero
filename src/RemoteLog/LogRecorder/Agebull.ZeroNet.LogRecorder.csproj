@@ -4,8 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.8" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

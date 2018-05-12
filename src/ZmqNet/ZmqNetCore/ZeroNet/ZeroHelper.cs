@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Agebull.Common.Logging;
 using NetMQ;
 using NetMQ.Sockets;
 
@@ -12,13 +13,32 @@ namespace Agebull.ZeroNet.Core
     public static class ZeroHelper
     {
         /// <summary>
+        ///     关闭套接字
+        /// </summary>
+        public static void CloseSocket(this NetMQSocket socket,string address)
+        {
+            if (socket == null)
+                return;
+            try
+            {
+                socket.Disconnect(address);
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e); //一般是无法连接服务器而出错
+            }
+            socket.Close();
+            socket.Dispose();
+            socket = null;
+        }
+        /// <summary>
         ///     接收文本
         /// </summary>
         /// <param name="request"></param>
         /// <param name="datas"></param>
         /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static bool ReceiveString(this RequestSocket request, out List<string> datas, int tryCnt = 3)
+        public static bool ReceiveString(this NetMQSocket request, out List<string> datas, int tryCnt = 3)
         {
             datas = new List<string>();
 
@@ -45,7 +65,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="request"></param>
         /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static string ReceiveString(RequestSocket request, int tryCnt = 3)
+        public static string ReceiveString(NetMQSocket request, int tryCnt = 3)
         {
             return ReceiveString(request, out var datas, tryCnt) ? datas.FirstOrDefault() : null;
         }
@@ -56,23 +76,33 @@ namespace Agebull.ZeroNet.Core
         /// <param name="request"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static bool SendString(this RequestSocket request, params string[] args)
+        public static bool SendString(this NetMQSocket request, params string[] args)
         {
             if (args.Length == 0)
                 throw new ArgumentException("args 不能为空");
+            return SendStringInner(request,args);
+        }
+
+        /// <summary>
+        ///     接收文本
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private static bool SendStringInner(NetMQSocket request, params string[] args)
+        {
             var i = 0;
             for (; i < args.Length - 1; i++)
                 request.SendFrame(args[i] ?? "", true);
             return request.TrySendFrame(args[i] ?? "");
         }
-
         /// <summary>
         ///     发送文本
         /// </summary>
         /// <param name="request"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static string Request(this RequestSocket request, params string[] args)
+        public static string Request(this NetMQSocket request, params string[] args)
         {
             if (args.Length == 0)
                 throw new ArgumentException("args 不能为空");
@@ -94,10 +124,14 @@ namespace Agebull.ZeroNet.Core
                 throw new ArgumentException("args 不能为空");
             using (var request = new RequestSocket())
             {
-                request.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
-                request.Options.ReconnectInterval = new TimeSpan(0, 0, 3);
+                request.Options.Identity = StationProgram.Config.RealName;
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
+                request.Options.DisableTimeWait = true;
                 request.Connect(address);
-                var res = Request(request, args);
+
+                if (!SendStringInner(request, args))
+                    throw new Exception($"{address}:发送失败");
+                var res = ReceiveString(request, out var datas, 1) ? datas.FirstOrDefault() : null;
                 request.Disconnect(address);
                 return res;
             }

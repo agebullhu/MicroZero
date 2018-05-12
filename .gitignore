@@ -38,3 +38,4 @@ packages
 /src/publish
 /src/ZmqNet/PublishNuget
 /src/UpgradeLog.htm
+/src/Release

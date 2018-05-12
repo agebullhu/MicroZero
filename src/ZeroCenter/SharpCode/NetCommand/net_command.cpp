@@ -64,9 +64,9 @@ namespace agebull
 
 		assert(net_context != nullptr);
 
-		zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 8192);
-		zmq_ctx_set(net_context, ZMQ_IO_THREADS, 16);
-		zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 8192);
+		zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 32767);
+		zmq_ctx_set(net_context, ZMQ_IO_THREADS, 1024);
+		zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 32767);
 
 
 		//boost::thread smp(boost::bind(&server_message_pump));
@@ -81,16 +81,15 @@ namespace agebull
 		log_msg("start system stations ...");
 		net_state = NET_STATE_RUNING;
 
-		//log_msg("start zero monitor");
-		zmq_net::system_monitor_station::run();
+		zmq_net::station_dispatcher::run();
 		while (zero_thread_count < 1)
 		{
 			cout << ".";
 			thread_sleep(10);
 		}
 		cout << endl;
-		//log_msg("start zero command");
-		zmq_net::station_dispatcher::run();
+
+		zmq_net::system_monitor_station::run();
 		while (zero_thread_count < 2)
 		{
 			cout << ".";
@@ -140,6 +139,8 @@ namespace agebull
 			close_net_command();
 		net_state = NET_STATE_DISTORY;
 		zmq_ctx_shutdown(net_context);
+		//zmq_ctx_term(net_context);
+		net_context = nullptr;
 		log_msg("zero center destoried");
 	}
 }

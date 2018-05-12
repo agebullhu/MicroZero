@@ -6,9 +6,8 @@
 
 #include "stdafx.h"
 #include "NetDispatcher.h"
- #include <utility>
+#include <utility>
 #include "ApiStation.h"
-#include "VoteStation.h"
 #include "BroadcastingStation.h"
 
 namespace agebull
@@ -44,7 +43,7 @@ namespace agebull
 		*/
 		string station_dispatcher::exec_command(const char* command, vector<sharp_char> arguments)
 		{
-			int idx = strmatchi(9, command, "call", "pause", "resume", "start", "close", "host", "install", "exit", "ping");
+			const int idx = strmatchi(11, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall", "exit", "ping");
 			if (idx < 0)
 				return (ZERO_STATUS_NO_SUPPORT);
 			switch (idx)
@@ -87,11 +86,17 @@ namespace agebull
 			}
 			case 7:
 			{
-				boost::thread(boost::bind(distory_net_command));
+				if (arguments.empty())
+					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR;
+				return uninstall_station(arguments[0]) ? ZERO_STATUS_OK: ZERO_STATUS_ERROR;
+			}
+			case 8:
+			{
+				boost::thread give_me_a_name(boost::bind(distory_net_command));
 				sleep(1);
 				return ZERO_STATUS_OK;
 			}
-			case 8:
+			case 9:
 			{
 				return ZERO_STATUS_OK;
 			}
@@ -183,32 +188,40 @@ namespace agebull
 			string val = call_station(caller, lines[0], lines[1]);
 			return sharp_char(val);
 		}
-		
+
 		/**
 		* 当远程调用进入时的处理
 		*/
 		string station_dispatcher::install_station(const string& type_name, const string& stattion)
 		{
-			int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
+			const int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
 			acl::string config;
-			switch(type)
+			switch (type)
 			{
 			case 0:
-				config = station_warehouse::install( stattion.c_str(), STATION_TYPE_API,config); break;
+				station_warehouse::install(stattion.c_str(), STATION_TYPE_API, config); break;
 			case 1:
-				config = station_warehouse::install(stattion.c_str(), STATION_TYPE_PUBLISH, config); break;
+				station_warehouse::install(stattion.c_str(), STATION_TYPE_PUBLISH, config); break;
 			case 2:
-				config = station_warehouse::install(stattion.c_str(), STATION_TYPE_VOTE, config); break;
+				station_warehouse::install(stattion.c_str(), STATION_TYPE_VOTE, config); break;
 			default:
 				return ZERO_STATUS_NO_SUPPORT;
 			}
 			return station_warehouse::restore(config) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
 		}
 
+
+		/**
+		* \brief 站点卸载
+		*/
+		bool station_dispatcher::uninstall_station(const string& stattion)
+		{
+			return station_warehouse::uninstall_station(stattion);
+		}
 		/**
 		* \brief 远程调用
 		*/
-		string station_dispatcher::call_station(string stattion, string command, string argument)
+		string station_dispatcher::call_station(const string& stattion, const string& command, const string& argument)
 		{
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
@@ -221,6 +234,7 @@ namespace agebull
 			auto result = station->command("_sys_", lines);
 			return result;
 		}
+
 
 		/**
 		* \brief 远程调用
@@ -239,11 +253,11 @@ namespace agebull
 				arguments.push_back(empty);
 				arguments.push_back(empty);
 			}
-			else if(arguments.size() == 2)
+			else if (arguments.size() == 2)
 			{
 				auto last = arguments.begin();
 				++last;
-				arguments.insert(last,2, empty);
+				arguments.insert(last, 2, empty);
 			}
 			auto result = station->command("_sys_", arguments);
 			return result;
@@ -279,10 +293,14 @@ namespace agebull
 			if (stattion == "*")
 			{
 				string result = "[";
+				bool first = true;
 				for (const map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
+					if (first)
+						first = false;
+					else
+						result += ",";
 					result += station.second->get_config();
-					result += ",";
 				}
 				result += "]";
 				return result;
@@ -302,9 +320,9 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 参数
-			_zmq_state = recv(_out_socket, list);
-			sharp_char caller = list[0];
-			sharp_char cmd = list[2];
+			zmq_state_ = recv(request_scoket_, list);
+			const sharp_char caller = list[0];
+			const sharp_char cmd = list[2];
 
 			list.erase(list.begin());
 			list.erase(list.begin());
@@ -315,7 +333,7 @@ namespace agebull
 			send_late(socket, result.c_str());
 		}
 
-		void station_dispatcher::start(void*)
+		void station_dispatcher::launch(void*)
 		{
 			if (!station_warehouse::join(instance))
 			{
@@ -325,19 +343,19 @@ namespace agebull
 			if (!instance->do_initialize())
 				return;
 
-			bool reStrart = instance->poll();
+			const bool reStrart = instance->poll();
 			station_warehouse::left(instance);
 			instance->destruct();
 			if (reStrart)
 			{
 				delete instance;
 				instance = new station_dispatcher();
-				instance->_zmq_state = zmq_socket_state::Again;
-				zmq_threadstart(start, nullptr);
+				instance->zmq_state_ = zmq_socket_state::Again;
+				zmq_threadstart(launch, nullptr);
 			}
 			else
 			{
-				log_msg3("Station:%s(%d | %d) closed", instance->_station_name.c_str(), instance->_out_port, instance->_inner_port);
+				log_msg3("Station:%s(%d | %d) closed", instance->station_name_.c_str(), instance->request_port_, instance->response_port_);
 				delete instance;
 				instance = nullptr;
 			}

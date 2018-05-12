@@ -25,25 +25,6 @@ namespace Agebull.ZeroNet.PubSub
         public string Subscribe { get; set; } = "";
 
         private SubscriberSocket _socket;
-        /// <summary>
-        /// 执行
-        /// </summary>
-        /// <param name="station"></param>
-        public static void Run(SubStation station)
-        {
-            station.Close();
-            station.Config = StationProgram.GetConfig(station.StationName,out var status);
-            if (status == ZeroCommandStatus.NoFind)
-            {
-                StationProgram.WriteError($"{station.StationName} NoFind");
-            }
-            else if (station.Config == null)
-            {
-                StationProgram.WriteError($"{station.StationName} No Find");
-                return;
-            }
-            station.Run();
-        }
 
         /*// <summary>
         /// 命令处理方法 
@@ -72,18 +53,11 @@ namespace Agebull.ZeroNet.PubSub
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        public sealed override bool Run()
+        protected sealed override bool Run()
         {
             StationProgram.WriteInfo($"【{StationName}:{RealName}】start...");
-            lock (this)
-            {
-                if (RunState != StationState.Run)
-                    RunState = StationState.Start;
-                if (_socket != null)
-                    return false;
-            }
+            RunState = StationState.Start;
             InPoll = false;
-
             _socket = new SubscriberSocket();
             try
             {
@@ -104,10 +78,7 @@ namespace Agebull.ZeroNet.PubSub
 
             Items = SyncQueue<PublishItem>.Load(CacheFileName);
             Task.Factory.StartNew(CommandTask);
-
-            var task1 = new Task(PollTask);
-            task1.ContinueWith(OnTaskStop);
-            task1.Start();
+            Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
             while (!InPoll)
                 Thread.Sleep(50);
             StationProgram.WriteInfo($"【{StationName}:{RealName}】runing...");

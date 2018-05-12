@@ -44,7 +44,7 @@ namespace Agebull.ZeroNet.LogService
 
         private long point;
         private Dictionary<string, StreamWriter > writers = new Dictionary<string, StreamWriter>( StringComparer.OrdinalIgnoreCase);
-        protected override void OnTaskStop(Task task)
+        protected override void OnTaskStop()
         {
             foreach (var writer in writers.Values)
             {
@@ -53,7 +53,7 @@ namespace Agebull.ZeroNet.LogService
             }
 
             writers.Clear();
-            base.OnTaskStop(task);
+            base.OnTaskStop();
         }
 
         /// <summary>

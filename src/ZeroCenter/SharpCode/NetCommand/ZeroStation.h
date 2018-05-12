@@ -1,10 +1,11 @@
 #pragma once
 #ifndef _ZERO_STATION_H
 #include <stdinc.h>
- #include <utility>
+#include <utility>
 #include "sharp_char.h"
 #include "zmq_extend.h"
-#include "stationWarehouse.h"
+#include "StationWarehouse.h"
+
 namespace agebull
 {
 	namespace zmq_net
@@ -16,115 +17,124 @@ namespace agebull
 		{
 			friend class station_warehouse;
 		protected:
-			bool _in_plan_poll;
+			/**
+			* \brief 任务计划轮询状态
+			*/
+			bool in_plan_poll_;
 
-			acl::string _config;
+			/**
+			* \brief 配置
+			*/
+			acl::string config_;
 			/**
 			* \brief 状态信号量
 			*/
-			boost::interprocess::interprocess_semaphore _state_semaphore;
+			boost::interprocess::interprocess_semaphore state_semaphore_;
 			/**
 			* \brief API服务名称
 			*/
-			string _station_name;
+			string station_name_;
 
 			/**
 			* \brief 站点类型
 			*/
-			int _station_type;
+			int station_type_;
 
 			/**
 			* \brief 外部地址
 			*/
-			int _out_port;
+			int request_port_;
 
 			/**
 			* \brief 工作地址
 			*/
-			int _inner_port;
+			int response_port_;
 
 			/**
 			* \brief 心跳地址
 			*/
-			int _heart_port;
+			int heart_port_;
 			/**
 			* \brief 外部SOCKET类型
 			*/
-			int _out_zmq_type;
+			int request_zmq_type_;
 
 			/**
 			* \brief 工作SOCKET类型
 			*/
-			int _inner_zmq_type;
+			int response_zmq_type_;
 
 			/**
 			* \brief 心跳SOCKET类型
 			*/
-			int _heart_zmq_type;
+			int heart_zmq_type_;
 			/*
 			*\brief 轮询节点
 			*/
-			zmq_pollitem_t* _poll_items;
+			zmq_pollitem_t* poll_items_;
 			/*
 			*\brief 节点数量
 			*/
-			int _poll_count;
+			int poll_count_;
 			/**
 			* \brief 调用句柄
 			*/
-			void* _out_socket;
+			void* request_scoket_;
 			/**
 			* \brief 调用句柄
 			*/
-			void* _out_socket_inproc;
+			void* request_socket_inproc_;
 			/**
 			* \brief 工作句柄
 			*/
-			void* _inner_socket;
+			void* response_socket_;
 			/**
 			* \brief 心跳句柄
 			*/
-			void* _heart_socket;
+			void* heart_socket_;
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
-			zmq_socket_state _zmq_state;
+			zmq_socket_state zmq_state_;
 			/**
 			* \brief 当前站点状态
 			*/
-			station_state _station_state;
+			station_state station_state_;
 		public:
+			/**
+			* \brief 取得配置内容
+			*/
 			const char* get_config() const
 			{
-				return _config.c_str();
+				return config_.c_str();
 			}
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
 			zmq_socket_state get_zmq_state() const
 			{
-				return _zmq_state;
+				return zmq_state_;
 			}
 			/**
 			* \brief API服务名称
 			*/
 			int get_station_type() const
 			{
-				return _station_type;
+				return station_type_;
 			}
 			/**
 			* \brief 当前站点状态
 			*/
 			station_state get_station_state() const
 			{
-				return _station_state;
+				return station_state_;
 			}
 			/**
 			* \brief API服务名称
 			*/
 			const string& get_station_name() const
 			{
-				return _station_name;
+				return station_name_;
 			}
 
 			/**
@@ -133,7 +143,7 @@ namespace agebull
 			string get_out_address()const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(_out_port);
+				addr += std::to_string(request_port_);
 				return addr;
 			}
 
@@ -143,7 +153,7 @@ namespace agebull
 			string get_inner_address()const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(_inner_port);
+				addr += std::to_string(response_port_);
 				return addr;
 			}
 
@@ -153,38 +163,38 @@ namespace agebull
 			string get_heart_address()const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(_heart_port);
+				addr += std::to_string(heart_port_);
 				return addr;
 			}
 
 			/**
 			* \brief 构造
 			*/
-			zero_station(string name, int type, int out_zmq_type, int inner_zmq_type, int heart_zmq_type)
-				: _in_plan_poll(false)
-				, _state_semaphore(1)
-				, _station_name(std::move(name))
-				, _station_type(type)
-				, _out_port(0)
-				, _inner_port(0)
-				, _heart_port(0)
-				, _out_zmq_type(out_zmq_type)
-				, _inner_zmq_type(inner_zmq_type)
-				, _heart_zmq_type(heart_zmq_type)
-				, _poll_items(nullptr)
-				, _poll_count(0)
-				, _out_socket(nullptr)
-				, _out_socket_inproc(nullptr)
-				, _inner_socket(nullptr)
-				, _heart_socket(nullptr)
-				, _zmq_state(zmq_socket_state::Succeed)
-				, _station_state(station_state::None)
+			zero_station(string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type)
+				: in_plan_poll_(false)
+				, state_semaphore_(1)
+				, station_name_(std::move(name))
+				, station_type_(type)
+				, request_port_(0)
+				, response_port_(0)
+				, heart_port_(0)
+				, request_zmq_type_(request_zmq_type)
+				, response_zmq_type_(response_zmq_type)
+				, heart_zmq_type_(heart_zmq_type)
+				, poll_items_(nullptr)
+				, poll_count_(0)
+				, request_scoket_(nullptr)
+				, request_socket_inproc_(nullptr)
+				, response_socket_(nullptr)
+				, heart_socket_(nullptr)
+				, zmq_state_(zmq_socket_state::Succeed)
+				, station_state_(station_state::None)
 			{
 			}
 			/**
 			* \brief 载入现在到期的内容
 			*/
-			size_t load_now(vector<plan_message>& messages) const;
+			void load_now(vector<plan_message>& messages) const;
 
 			/**
 			* \brief 删除一个计划
@@ -247,8 +257,8 @@ namespace agebull
 			*/
 			bool send_data(vector<sharp_char>& datas,int first_index=0)
 			{
-				_zmq_state = send(_inner_socket, datas, first_index);
-				return _zmq_state == zmq_socket_state::Succeed;
+				zmq_state_ = send(response_socket_, datas, first_index);
+				return zmq_state_ == zmq_socket_state::Succeed;
 			}
 			/**
 			* \brief 析构
@@ -256,24 +266,24 @@ namespace agebull
 			virtual ~zero_station()
 			{
 				zero_station::close(true);
-				_station_state = station_state::Destroy;
+				station_state_ = station_state::Destroy;
 			}
 			/**
 			* \brief 能否继续工作
 			*/
 			virtual bool can_do() const
 			{
-				return (_station_state == station_state::Run || _station_state == station_state::Pause) && get_net_state() == NET_STATE_RUNING;
+				return (station_state_ == station_state::Run || station_state_ == station_state::Pause) && get_net_state() == NET_STATE_RUNING;
 			}
 			/**
 			* \brief 检查是否暂停
 			*/
 			bool check_pause()
 			{
-				if (_station_state == station_state::Pause)
+				if (station_state_ == station_state::Pause)
 				{
-					_state_semaphore.timed_wait(time_span(1000));
-					return _station_state == station_state::Pause;
+					state_semaphore_.timed_wait(time_span(1000));
+					return station_state_ == station_state::Pause;
 				}
 				return false;
 			}
@@ -313,7 +323,7 @@ namespace agebull
 			*/
 			static void plan_poll(void* arg)
 			{
-				zero_station* station = static_cast<zero_station*>(arg);
+				auto station = static_cast<zero_station*>(arg);
 				station->plan_poll();
 			}
 		protected:
@@ -321,7 +331,7 @@ namespace agebull
 			/**
 			* \brief 保存计划
 			*/
-			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list)
+			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list) const
 			{
 				plan_message message;
 				message.request_caller = list[0];

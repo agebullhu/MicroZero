@@ -1,22 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|ARM">
-      <Configuration>Debug</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM">
-      <Configuration>Release</Configuration>
-      <Platform>ARM</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x86">
-      <Configuration>Debug</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x86">
-      <Configuration>Release</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
+    
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -35,20 +20,10 @@
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
     <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
     <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+    <ProjectName>ZeroCenterL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
@@ -60,12 +35,72 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>/user/local/lib;/user/lib</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>
+    </LibraryPath>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+    <Link>
+      <AdditionalOptions>-lboost_system -lboost_filesystem -lboost_thread thread -lpthread /usr/local/lib/libacl.a   /usr/local/lib/libprotocol.a /usr/local/lib/libacl_cpp.a /usr/local/lib/libzmq-static.a -pthread %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;%(LibraryDependencies)</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cfg\config.cpp" />
+    <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="net\ApiStation.cpp" />
+    <ClCompile Include="net\command_crc.cpp" />
+    <ClCompile Include="net\message_plan.cpp" />
+    <ClCompile Include="net\NetDispatcher.cpp" />
+    <ClCompile Include="net\StationWarehouse.cpp" />
+    <ClCompile Include="net\VoteStation.cpp" />
+    <ClCompile Include="net\net_command.cpp" />
+    <ClCompile Include="net\BroadcastingStation.cpp" />
+    <ClCompile Include="net\ZeroStation.cpp" />
+    <ClCompile Include="net\zmq_monitor.cpp" />
+    <ClCompile Include="redis\TransRedis.cpp" />
+    <ClCompile Include="stdafx.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="boostinc.h" />
+    <ClInclude Include="cfg\config.h" />
+    <ClInclude Include="command.h" />
+    <ClInclude Include="log\mylogger.h" />
+    <ClInclude Include="mydecimal.h" />
+    <ClInclude Include="net\ApiStation.h" />
+    <ClInclude Include="net\BalanceStation.h" />
+    <ClInclude Include="net\NetDispatcher.h" />
+    <ClInclude Include="net\ZeroStation.h" />
+    <ClInclude Include="net\StationWarehouse.h" />
+    <ClInclude Include="net\VoteStation.h" />
+    <ClInclude Include="net\net_command.h" />
+    <ClInclude Include="net\BroadcastingStation.h" />
+    <ClInclude Include="net\zmq_extend.h" />
+    <ClInclude Include="redis\redis.h" />
+    <ClInclude Include="redis\TransRedis.h" />
+    <ClInclude Include="rpc\CRpcService.h" />
+    <ClInclude Include="sharp_char.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stdinc.h" />
+    <ClInclude Include="tm_extend.h" />
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemGroup>
+    <None Include="config.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

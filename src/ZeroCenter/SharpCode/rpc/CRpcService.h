@@ -63,10 +63,14 @@ namespace agebull
 		{
 			close_net_command();
 			distory_net_command();
+			thread_sleep(50);
 			acl::log::close();
 		}
 	};
 
+	/**
+	* \brief 取本机IP并显示在控制台
+	*/
 	inline bool rpc_service::get_local_ips()
 	{
 		char hname[128];

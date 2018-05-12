@@ -29,6 +29,7 @@ namespace agebull
 			{
 				*_count = 1;
 			}
+
 			sharp_char(const char* buffer)
 			{
 				if (buffer == nullptr)
@@ -45,6 +46,7 @@ namespace agebull
 				_count = new int();
 				*_count = 1;
 			}
+
 			sharp_char(zmq_msg_t& msg)
 			{
 				_size = zmq_msg_size(&msg);
@@ -60,7 +62,8 @@ namespace agebull
 				memcpy(_buffer, zmq_msg_data(&msg), _size);
 				_buffer[_size] = 0;
 			}
-			sharp_char(std::string& msg)
+
+			sharp_char(const std::string& msg)
 			{
 				_size = msg.length();
 				if (_size == 0)
@@ -75,7 +78,21 @@ namespace agebull
 				memcpy(_buffer, msg.c_str(), _size);
 				_buffer[_size] = 0;
 			}
-			sharp_char(acl::string& msg)
+			sharp_char(size_t size)
+			{
+				_size = size;
+				if (_size == 0)
+				{
+					_buffer = nullptr;
+					_count = nullptr;
+					return;
+				}
+				_buffer = new char[_size + 1];
+				_count = new int();
+				*_count = 1;
+				memset(_buffer,0, _size + 1);
+			}
+			sharp_char(const acl::string& msg)
 			{
 				_size = msg.length();
 				if (_size == 0)
@@ -217,7 +234,7 @@ namespace agebull
 					fri._count = tmp;
 				}
 				{
-					size_t tmp = _size;
+					const size_t tmp = _size;
 					_size = fri._size;
 					fri._size = tmp;
 				}

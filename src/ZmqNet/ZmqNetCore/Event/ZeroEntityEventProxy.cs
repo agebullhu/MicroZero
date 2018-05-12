@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Base;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
 using Gboxt.Common.DataModel;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
-using Agebull.ZeroNet.Core;
 
 namespace ZeroApi
 {
@@ -16,19 +16,19 @@ namespace ZeroApi
     public class ZeroEntityEventProxy : ScopeBase, IEntityEventProxy
     {
         private readonly RequestSocket _socket;
-        private readonly StationConfig _config;
+        private readonly StationConfig config_;
 
         /// <summary>
         /// 构造
         /// </summary>
         public ZeroEntityEventProxy()
         {
-            _config = StationProgram.GetConfig("EntityEvent", out var status);
+            config_ = StationProgram.GetConfig("EntityEvent", out var status);
             if (status == ZeroCommandStatus.NoFind)
             {
                 return;
             }
-            if (_config == null)
+            if (config_ == null)
                 throw new Exception("无法拉取配置");
             _socket = new RequestSocket();
             CreateSocket();
@@ -40,7 +40,7 @@ namespace ZeroApi
             {
                 _socket.Options.Identity = StationProgram.Config.ServiceName.ToAsciiBytes();
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                _socket.Connect(_config.OutAddress);
+                _socket.Connect(config_.OutAddress);
             }
             catch (Exception e)
             {

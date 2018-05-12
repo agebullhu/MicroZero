@@ -5,6 +5,9 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>RELEASE;NETCOREAPP2_0</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
@@ -15,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RemoteRecorder.cs" />
     <Compile Remove="StationTester.cs" />
   </ItemGroup>
 

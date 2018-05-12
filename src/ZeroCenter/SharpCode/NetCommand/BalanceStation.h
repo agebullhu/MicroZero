@@ -26,7 +26,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			balance_station(string name)
-				: zero_station(name, NetType, ZMQ_ROUTER, ZMQ_ROUTER, ZMQ_ROUTER)
+				: zero_station(name, NetType, ZMQ_ROUTER, ZMQ_DEALER, ZMQ_ROUTER)
 			{
 			}
 
@@ -66,23 +66,28 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 服务器地址
-			_zmq_state = recv(_heart_socket, list);
+			zmq_state_ = recv(heart_socket_, list);
 			bool success = false;
-			switch (list[2][0])
+			const char* status;
+			switch (list[1][0])
 			{
 			case ZERO_HEART_JOIN:
-				success = worker_join(*list[3]);
+				success = worker_join(*list[2]);
+				status = ZERO_STATUS_OK;
 				break;
 			case ZERO_HEART_LEFT:
-				success = worker_left(*list[3]);
+				success = worker_left(*list[2]);
+				status = success ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
 				break;
 			case ZERO_HEART_PITPAT:
-				success = worker_heat(*list[3]);
+				success = worker_heat(*list[2]);
+				status = success ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
 				break;
-			default: break;
+			default:
+				status = ZERO_STATUS_NO_SUPPORT; break;
 			}
-			_zmq_state = send_addr(_heart_socket, *list[0]);
-			_zmq_state = send_late(_heart_socket, success ? ZERO_STATUS_OK : ZERO_STATUS_ERROR);
+			zmq_state_ = send_addr(heart_socket_, *list[0]);
+			zmq_state_ = send_late(heart_socket_, status);
 		}
 
 		/**
@@ -92,16 +97,16 @@ namespace agebull
 		template <typename TNetStation, class TWorker, int NetType>
 		bool balance_station<TNetStation, TWorker, NetType>::worker_left(const char* addr)
 		{
-			auto vote = workers_.find(addr);
-			if (vote == workers_.end())
+			if (workers_.find(addr) == workers_.end())
 				return false;
 			workers_.erase(addr);
-			monitor_async(_station_name, "worker_left", addr);
+			log_trace2(DEBUG_BASE, 1, "station %s => %s left", station_name_, addr);
+			monitor_async(station_name_, "worker_left", addr);
 
-			vector<sharp_char> result;
-			vector<string> argument{"@", addr};
-			inproc_request_socket<ZMQ_REQ> socket("_sys_", _station_name.c_str());
-			socket.request(argument, result);
+			//vector<sharp_char> result;
+			//vector<string> argument{"@", addr};
+			//inproc_request_socket<ZMQ_REQ> socket("_sys_", station_name_.c_str());
+			//socket.request(argument, result);
 			return true;
 		}
 
@@ -117,8 +122,8 @@ namespace agebull
 			if (old != workers_.end())
 				return false;
 			workers_.insert(make_pair(addr, item));
-			log_trace2(DEBUG_BASE, 1, "station %s => %s join", _station_name, addr);
-			monitor_async(_station_name, "worker_join", addr);
+			log_trace2(DEBUG_BASE, 1, "station %s => %s join", station_name_, addr);
+			monitor_async(station_name_, "worker_join", addr);
 			return true;
 		}
 
@@ -137,7 +142,8 @@ namespace agebull
 				return false;
 			}
 			old->second = item;
-			monitor_async(_station_name, "worker_heat", addr);
+			monitor_async(station_name_, "worker_heat", addr);
+			return true;
 		}
 	}
 }

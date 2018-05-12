@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
@@ -20,11 +19,12 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     刷新
         /// </summary>
-        internal RuntimeWaring()
+        public RuntimeWaring()
         {
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
         }
+        /// <inheritdoc />
         /// <summary>
         /// 执行命令
         /// </summary>
@@ -40,13 +40,13 @@ namespace ZeroNet.Http.Route
             try
             {
                 var data = JsonConvert.DeserializeObject<WaringItem>(args.Content);
-                Waring(data.Host ,data.Api,data.Message);
-                }
+                Waring(data.Host, data.Api, data.Message);
+            }
             catch (Exception e)
-                {
+            {
                 Console.WriteLine(e);
-                    }
-                }
+            }
+        }
         /// <summary>
         ///     刷新
         /// </summary>
@@ -198,39 +198,8 @@ namespace ZeroNet.Http.Route
                 LogRecorder.Exception(e);
                 return false;
             }
-            return sendSmsResponse.Message == ZeroHelper.zero_command_ok;
+            return sendSmsResponse.Message == ZeroNetStatus.ZeroCommandOk;
         }
 
-    }
-
-    /// <summary>
-    /// 运行时警告节点
-    /// </summary>
-    public class RuntimeWaringItem
-    {
-        /*起止时间*/
-        public DateTime StartTime, LastTime;
-        /// <summary>
-        /// 最后一次发短信时间
-        /// </summary>
-        public DateTime MessageTime;
-        /// <summary>
-        /// 发生次数，发送次数，发送后发生次数
-        /// </summary>
-        public int WaringCount, SendCount, LastCount;
-        /// <summary>
-        /// 发生问题的API
-        /// </summary>
-        public Dictionary<string, List<string>> Apis = new Dictionary<string, List<string>>();
-    }
-
-    [JsonObject(MemberSerialization.OptIn), DataContract]
-    public class WaringItem
-    {
-        [DataMember, JsonProperty("host")] public string Host;
-        [DataMember, JsonProperty("api")]
-        public string Api;
-        [DataMember, JsonProperty("message")]
-        public string Message;
     }
 }

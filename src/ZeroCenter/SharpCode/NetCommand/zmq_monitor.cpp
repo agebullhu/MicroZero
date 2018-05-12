@@ -49,13 +49,12 @@ namespace agebull
 	{
 #endif
 		zmq_event_t event;
-		int rc;
 		printf("starting monitor...\n");
 		void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 		assert(inproc);
 		int iRcvTimeout = 1000;
 		zmq_setsockopt(inproc, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(iRcvTimeout));
-		rc = zmq_connect(inproc, address);
+		int rc = zmq_connect(inproc, address);
 		assert(rc == 0);
 		while (get_net_state() == NET_STATE_RUNING)
 		{

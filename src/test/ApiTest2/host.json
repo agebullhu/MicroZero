@@ -1,0 +1,9 @@
+﻿{
+  "zeroAddr": "127.0.0.1",
+  "monitorPort": 8002,
+  "managePort": 8000,
+  "stationName": "User",
+  "serviceName": "User",
+  "ServiceName": "User",
+  "dataFolder": "z:\\data"
+}
