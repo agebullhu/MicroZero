@@ -139,6 +139,9 @@ namespace Agebull.ZeroNet.PubSub
                             case ZeroFrameType.Argument:
                                 item.Content = val;
                                 break;
+                            case ZeroFrameType.RequestId:
+                                item.RequestId = val;
+                                break;
                         }
                     }
                     Items.Push(item);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
@@ -32,7 +32,7 @@ namespace ZeroNet.Http.Route
         /// 黑名单令牌
         /// </summary>
         [JsonProperty("denyTokens")]
-        public Dictionary<string, string> denyTokens { get; set; }
+        public List<string> denyTokens { get; set; }
 
         /// <summary>
         /// 黑名单令牌

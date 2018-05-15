@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -12,7 +12,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 请求ID
         /// </summary>
         [JsonProperty]
-        public string RequetId { get; set; }
+        public string RequestId { get; set; }
 
         /// <summary>
         ///     分类（即站点）

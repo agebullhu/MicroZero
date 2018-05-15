@@ -30,15 +30,13 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 全局请求标识（源头为用户请求）
         /// </summary>
-        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,NullValueHandling = NullValueHandling.Ignore)]
         internal string requestId;
 
         /// <summary>
         /// 全局请求标识（源头为用户请求）
         /// </summary>
-        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore)]
+        [JsonIgnore]
         public string RequestId => requestId;
 
         /// <summary>

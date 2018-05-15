@@ -8,7 +8,7 @@
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.11" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.12" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

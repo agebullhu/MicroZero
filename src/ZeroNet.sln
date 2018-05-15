@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.ZeroNet.LogRecorder
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RemoteLog", "RemoteLog", "{76B86567-6D46-40F7-A37C-0A4C2D59BA97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.ZeroNet.LogService", "RemoteLog\LogService\Agebull.ZeroNet.LogService.csproj", "{959006C6-2A1C-4282-964B-81969E396EA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroNet.LogService", "RemoteLog\LogService\ZeroNet.LogService.csproj", "{959006C6-2A1C-4282-964B-81969E396EA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HealthCenter", "HealthCenter", "{6C7BE6AC-ACC9-4805-80CA-34031549861F}"
 EndProject

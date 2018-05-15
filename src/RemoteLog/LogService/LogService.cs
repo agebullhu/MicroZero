@@ -5,6 +5,7 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.LogService
 {
@@ -30,7 +31,7 @@ namespace Agebull.ZeroNet.LogService
         public RemoteLogStation()
         {
             StationName = "RemoteLog";
-            Subscribe = "Record";
+            Subscribe = "";
             Station = this;
             _logPath = ApiContext.Configuration["logPath"] ??
                        IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "Logs");
@@ -89,41 +90,62 @@ namespace Agebull.ZeroNet.LogService
         /// <returns></returns>
         public override void Handle(PublishItem args)
         {
-            var now = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 +
-                      (DateTime.Now.Hour / 2);
-            if (now != _recordTimePoint)
-            {
-                foreach (var w in _writers.Values)
-                {
-                    w.Flush();
-                    w.Dispose();
-                }
-
-                _writers.Clear();
-                _recordTimePoint = now;
-            }
-
             try
             {
-                if (!_writers.TryGetValue(args.SubTitle, out var writer))
+                CheckTimePoint();
+                List<RecordInfo> items = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
+                foreach (var info in items)
                 {
-                    string ph = Path.Combine(_logPath, $"{_recordTimePoint}.{args.SubTitle}.log");
-                    var file = new FileStream(ph, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-
-                    writer = new StreamWriter(file) {AutoFlush = true};
-
-                    _writers.Add(args.SubTitle, writer);
+                    string sub = info.Type.ToString();
+                    StreamWriter writer = GetWriter(sub);
+                    writer.WriteLine($@"
+Date:{DateTime.Now}({info.Time})
+Machine:{info.Machine}
+ThreadId:{info.ThreadID}
+User:{info.User}
+RequestId:{info.RequestID}
+Index:{info.Index}
+Type:{info.TypeName},
+{info.Message}
+");
+                    Console.WriteLine(info.Message);
+                    RecorderCount++;
+                    if (RecorderCount == ulong.MaxValue)
+                        RecorderCount = 0;
                 }
-
-                writer.WriteLine(args.Content);
-                RecorderCount++;
-                if (RecorderCount == ulong.MaxValue)
-                    RecorderCount = 0;
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
             }
+        }
+
+        private void CheckTimePoint()
+        {
+            var now = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 +
+                                  (DateTime.Now.Hour / 2);
+            if (now == _recordTimePoint) return;
+            foreach (var w in _writers.Values)
+            {
+                w.Flush();
+                w.Dispose();
+            }
+            _writers.Clear();
+            _recordTimePoint = now;
+        }
+
+        private StreamWriter GetWriter(string sub)
+        {
+            if (_writers.TryGetValue(sub, out var writer))
+                return writer;
+            string ph = Path.Combine(_logPath, $"{_recordTimePoint}.{sub}.log");
+            var file = new FileStream(ph, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+
+            writer = new StreamWriter(file) { AutoFlush = true };
+
+            _writers.Add(sub, writer);
+
+            return writer;
         }
     }
 }

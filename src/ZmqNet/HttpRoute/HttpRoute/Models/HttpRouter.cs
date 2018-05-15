@@ -6,7 +6,6 @@ using Agebull.Common.Base;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -317,29 +316,9 @@ namespace ZeroNet.Http.Route
                     foreach (var form in Request.Form.Keys)
                         if (!values.ContainsKey(form))
                             values.Add(form, Request.Form[form]);
+            
 
-            LogRecorder.BeginStepMonitor("内部Zero调用");
-            LogRecorder.MonitorTrace($"Station:{Data.HostName}");
-            LogRecorder.MonitorTrace($"Command:{Data.ApiName}");
-
-            // 远程调用状态
-            try
-            {
-                Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values));
-            }
-            catch (Exception ex)
-            {
-                LogRecorder.Exception(ex);
-                LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
-                Data.ResultMessage = RouteRuntime.NetworkErrorJson;
-                Data.Status = RouteStatus.RemoteError;
-            }
-            finally
-            {
-                LogRecorder.MonitorTrace(Data.ResultMessage);
-                LogRecorder.EndStepMonitor();
-            }
-
+            Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values)); 
             return Data.ResultMessage;
         }
 

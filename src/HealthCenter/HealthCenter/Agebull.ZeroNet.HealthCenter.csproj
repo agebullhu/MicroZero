@@ -8,6 +8,16 @@
   <PropertyGroup>
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="sms.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="sms.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
   </ItemGroup>

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
 using Aliyun.Net.SDK.Core.Exceptions;
@@ -12,21 +14,36 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// ÔËĞĞÊ±¾¯¸æ
+    /// è¿è¡Œæ—¶è­¦å‘Š
     /// </summary>
     public class RuntimeWaring : SubStation
     {
         /// <summary>
-        ///     Ë¢ĞÂ
+        /// å®ä¾‹
+        /// </summary>
+        public static RuntimeWaring Instance { get; private set; }
+        public SmsConfig SmsConfig { get; set; }
+        /// <summary>
+        ///     åˆ·æ–°
         /// </summary>
         public RuntimeWaring()
         {
+            Instance = this;
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
+            string file = Path.Combine(ApiContext.Configuration["contentRoot"],"sms.json");
+            try
+            {
+                SmsConfig = JsonConvert.DeserializeObject<SmsConfig>(File.ReadAllText(file));
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+            }
         }
         /// <inheritdoc />
         /// <summary>
-        /// Ö´ĞĞÃüÁî
+        /// æ‰§è¡Œå‘½ä»¤
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -48,7 +65,7 @@ namespace ZeroNet.Http.Route
             }
         }
         /// <summary>
-        ///     Ë¢ĞÂ
+        ///     åˆ·æ–°
         /// </summary>
         internal static void Flush()
         {
@@ -58,19 +75,19 @@ namespace ZeroNet.Http.Route
 
 
         /// <summary>
-        /// ËùÓĞÔËĞĞÊ±¾¯¸æ
+        /// æ‰€æœ‰è¿è¡Œæ—¶è­¦å‘Š
         /// </summary>
         internal static readonly Dictionary<string, RuntimeWaringItem> WaringsTime = new Dictionary<string, RuntimeWaringItem>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// ÔËĞĞÊ±¾¯¸æ
+        /// è¿è¡Œæ—¶è­¦å‘Š
         /// </summary>
         /// <param name="host"></param>
         /// <param name="api"></param>
         /// <param name="message"></param>
-        public static void Waring(string host, string api, string message)
+        public void Waring(string host, string api, string message)
         {
-            if (AppConfig.Config.SmsConfig == null || AppConfig.Config.SmsConfig.CycleHours <= 0)
+            if (SmsConfig == null || SmsConfig.CycleHours <= 0)
                 return;
             RuntimeWaringItem item;
             lock (WaringsTime)
@@ -88,7 +105,7 @@ namespace ZeroNet.Http.Route
                 else
                 {
                     item.LastTime = DateTime.Now;
-                    if (item.MessageTime != DateTime.MinValue && (DateTime.Now - item.MessageTime).TotalHours > AppConfig.Config.SmsConfig.CycleHours)
+                    if (item.MessageTime != DateTime.MinValue && (DateTime.Now - item.MessageTime).TotalHours > SmsConfig.CycleHours)
                     {
                         item.SendCount = 0;
                         item.WaringCount = 1;
@@ -105,10 +122,10 @@ namespace ZeroNet.Http.Route
                     item.Apis.Add(api, new List<string> { message });
                 else if (!item.Apis[api].Contains(message))
                     item.Apis[api].Add(message);
-                //ÒÑµ½×î¶à·¢ËÍÊıÁ¿·§Öµ
-                if (item.SendCount > AppConfig.Config.SmsConfig.CycleSendCount)
+                //å·²åˆ°æœ€å¤šå‘é€æ•°é‡é˜€å€¼
+                if (item.SendCount > SmsConfig.CycleSendCount)
                     return;
-                //·¢ËÍÆµÂÊÉèÖÃ
+                //å‘é€é¢‘ç‡è®¾ç½®
                 if (item.SendCount > 0)
                 {
                     if (item.LastCount <= 10)
@@ -136,9 +153,9 @@ namespace ZeroNet.Http.Route
                 api = api.Substring(api.Length - 19, 19);
             if (message.Length >= 20)
                 message = message.Substring(20);
-            //·¢ËÍ¶ÌĞÅ
-            Console.WriteLine($"·şÎñÆ÷{host}µÄ{api}·¢Éú${message}´íÎó{item.LastCount}´Î£¬ÇëÁ¢¼´´¦Àí");
-            foreach (var phone in AppConfig.Config.SmsConfig.Phones)
+            //å‘é€çŸ­ä¿¡
+            Console.WriteLine($"æœåŠ¡å™¨{host}çš„{api}å‘ç”Ÿ${message}é”™è¯¯{item.LastCount}æ¬¡ï¼Œè¯·ç«‹å³å¤„ç†");
+            foreach (var phone in SmsConfig.Phones)
             {
                 if (!SendSmsByAli(host, phone, api, message, item.WaringCount))
                     continue;
@@ -149,7 +166,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// °¢Àï¶ÌĞÅ·¢ËÍ
+        /// é˜¿é‡ŒçŸ­ä¿¡å‘é€
         /// </summary>
         /// <param name="server"></param>
         /// <param name="phoneNumber"></param>
@@ -157,17 +174,17 @@ namespace ZeroNet.Http.Route
         /// <param name="message"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        private static bool SendSmsByAli(string server, string phoneNumber, string api, string message, int count)
+        private bool SendSmsByAli(string server, string phoneNumber, string api, string message, int count)
         {
-            IClientProfile profile = DefaultProfile.GetProfile(AppConfig.Config.SmsConfig.AliRegionId, AppConfig.Config.SmsConfig.AliAccessKeyId, AppConfig.Config.SmsConfig.AliAccessKeySecret);
-            DefaultProfile.AddEndpoint(AppConfig.Config.SmsConfig.AliEndPointName, AppConfig.Config.SmsConfig.AliRegionId, AppConfig.Config.SmsConfig.AliProduct, AppConfig.Config.SmsConfig.AliDomain);
+            IClientProfile profile = DefaultProfile.GetProfile(SmsConfig.AliRegionId, SmsConfig.AliAccessKeyId, SmsConfig.AliAccessKeySecret);
+            DefaultProfile.AddEndpoint(SmsConfig.AliEndPointName, SmsConfig.AliRegionId, SmsConfig.AliProduct, SmsConfig.AliDomain);
             IAcsClient acsClient = new DefaultAcsClient(profile);
             var request = new SendSmsRequest
             {
                 PhoneNumbers = phoneNumber,
-                SignName = AppConfig.Config.SmsConfig.AliSignName,
-                TemplateCode = AppConfig.Config.SmsConfig.AliTemplateCode,
-                //·şÎñÆ÷${server}µÄ${url}·¢Éú${message}´íÎó${count}´Î£¬ÇëÁ¢¼´´¦Àí
+                SignName = SmsConfig.AliSignName,
+                TemplateCode = SmsConfig.AliTemplateCode,
+                //æœåŠ¡å™¨${server}çš„${url}å‘ç”Ÿ${message}é”™è¯¯${count}æ¬¡ï¼Œè¯·ç«‹å³å¤„ç†
                 TemplateParam = JsonConvert.SerializeObject(new
                 {
                     server,
@@ -180,7 +197,7 @@ namespace ZeroNet.Http.Route
             SendSmsResponse sendSmsResponse;
             try
             {
-                //ÇëÇóÊ§°ÜÕâÀï»áÅ×ClientExceptionÒì³£
+                //è¯·æ±‚å¤±è´¥è¿™é‡Œä¼šæŠ›ClientExceptionå¼‚å¸¸
                 sendSmsResponse = acsClient.GetAcsResponse(request);
             }
             catch (ServerException e)

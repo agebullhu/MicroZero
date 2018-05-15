@@ -198,11 +198,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void RunAwaite()
         {
-            Assembly = Assembly.GetCallingAssembly();
-            Initialize();
-            Console.CancelKeyPress += OnCancelKeyPress;
-
             StationConsole.WriteLine(ZeroManageAddress);
+            Console.CancelKeyPress += OnCancelKeyPress;
             State = StationState.Start;
             ZeroPublisher.Start();
             SystemManager.Run();
@@ -242,7 +239,10 @@ namespace Agebull.ZeroNet.Core
             ApiContext.SetLogRecorderDependency();
             ZeroPublisher.Initialize();
             if (discove)
+            {
+                Assembly = Assembly.GetCallingAssembly();
                 Discove();
+            }
         }
 
         static void InitializeConfig()

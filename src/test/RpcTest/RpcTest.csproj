@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\RemoteLog\LogRecorder\Agebull.ZeroNet.LogRecorder.csproj" />
-    <ProjectReference Include="..\..\RemoteLog\LogService\Agebull.ZeroNet.LogService.csproj" />
+    <ProjectReference Include="..\..\RemoteLog\LogService\ZeroNet.LogService.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 

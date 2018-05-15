@@ -29,16 +29,6 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// 运维短信配置
-        /// </summary>
-        [DataMember, JsonProperty("smsConfig")] private SmsConfig _smsConfig;
-
-        /// <summary>
-        /// 运维短信配置
-        /// </summary>
-        public SmsConfig SmsConfig => _smsConfig ?? (_smsConfig = new SmsConfig());
-
-        /// <summary>
         /// 系统配置
         /// </summary>
         [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
@@ -80,7 +70,7 @@ namespace ZeroNet.Http.Route
         /// <summary>
         /// 是否已初始化
         /// </summary>
-        public static bool  IsInitialized { get; private set; }
+        public static bool IsInitialized { get; private set; }
         /// <summary>
         /// 初始化
         /// </summary>
@@ -102,7 +92,7 @@ namespace ZeroNet.Http.Route
             Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(FileName));
             if (Config == null)
                 return false;
-            Config.StationConfig.DataFolder = IOHelper.CheckPath(Path.GetDirectoryName(FileName),"Datas");
+            Config.StationConfig.DataFolder = IOHelper.CheckPath(Path.GetDirectoryName(FileName), "Datas");
             LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
             TxtRecorder.LogPath = Config.SystemConfig.LogPath;
             Config.InitCache();
@@ -123,10 +113,11 @@ namespace ZeroNet.Http.Route
                 Config.Security.CheckApis.Add(apiItem.Key, apiItem.Value);
             }
             Config.Security.DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var apiItem in Config.Security.denyTokens)
-            {
-                Config.Security.DenyTokens.Add(apiItem.Key, apiItem.Value);
-            }
+            if (Config.Security.denyTokens != null)
+                foreach (var apiItem in Config.Security.denyTokens)
+                {
+                    Config.Security.DenyTokens.Add(apiItem, apiItem);
+                }
         }
 
         /// <summary>
@@ -187,6 +178,6 @@ namespace ZeroNet.Http.Route
 
             return RouteMap;
         }
-        
+
     }
 }

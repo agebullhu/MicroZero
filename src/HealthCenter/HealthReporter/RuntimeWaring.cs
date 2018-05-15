@@ -24,8 +24,6 @@ namespace ZeroNet.Http.Route
         /// <param name="message"></param>
         public static void Waring(string host, string api, string message)
         {
-            if (AppConfig.Config.SmsConfig == null || AppConfig.Config.SmsConfig.CycleHours <= 0)
-                return;
             ZeroPublisher.Publish("HealthCenter", "RuntimeWaring", "Waring", JsonConvert.SerializeObject(
             new{
                 host,

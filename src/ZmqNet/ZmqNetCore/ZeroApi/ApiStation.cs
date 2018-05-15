@@ -114,33 +114,41 @@ namespace Agebull.ZeroNet.Core
             RegistAction(name, a);
             return a;
         }
-        
+
         #endregion
 
         #region Api调用
 
+        /// <inheritdoc />
         /// <summary>
         ///     类型
         /// </summary>
         public override int StationType => StationTypeApi;
-
+        /// <summary>
+        /// 返回值说明
+        /// </summary>
         private readonly byte[] _responseDescription = new byte[] { 2, ZeroFrameType.Status, ZeroFrameType.JsonValue };
         /// <summary>
         ///     执行命令
         /// </summary>
         private void ExecCommand(object arg)
         {
-            var item = (ApiCallItem)arg;
-            //StationConsole.WriteLine($"{item.Caller}=>{RealName}");
-            var response = ExecCommand(item);
-            _socket.SendMoreFrame(item.Caller);
-            _socket.SendMoreFrameEmpty();
-
-
-            _socket.SendMoreFrame(_responseDescription);
-            _socket.SendMoreFrame(response ? ZeroNetStatus.ZeroCommandOk : ZeroNetStatus.ZeroCommandError);
-            _socket.SendFrame(item.Result);
+            using (MonitorScope.CreateScope("ExecCommand"))
+            {
+                var item = (ApiCallItem)arg;
+                using (MonitorStepScope.CreateScope("Argument"))
+                    LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                var response = ExecCommand(item);
+                using (MonitorStepScope.CreateScope("Result"))
+                    LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                _socket.SendMoreFrame(item.Caller);
+                _socket.SendMoreFrameEmpty();
+                _socket.SendMoreFrame(_responseDescription);
+                _socket.SendMoreFrame(response ? ZeroNetStatus.ZeroCommandOk : ZeroNetStatus.ZeroCommandError);
+                _socket.SendFrame(item.Result);
+            }
         }
+
         /// <summary>
         ///     执行命令
         /// </summary>
@@ -245,7 +253,7 @@ namespace Agebull.ZeroNet.Core
         ///     尝试重启次数
         /// </summary>
         private int _tryCount;
-        
+
         /// <summary>
         ///     尝试重启
         /// </summary>
@@ -373,7 +381,7 @@ namespace Agebull.ZeroNet.Core
 
             _socket.CloseSocket(Config.WorkerAddress);
         }
-       
+
 
         /// <summary>
         ///     使用的套接字
@@ -443,15 +451,15 @@ namespace Agebull.ZeroNet.Core
                     Thread.Sleep(100);
                 }
                 break;
-            } 
+            }
             //正常跳
             while (RunState == StationState.Run && RunState == StationState.Run)
             {
                 try
                 {
-                    socket.SendFrame(ZeroByteCommand.HeartPitpat,true);
+                    socket.SendFrame(ZeroByteCommand.HeartPitpat, true);
                     socket.SendFrame(RealName);
-                    if(!socket.ReceiveString(out result))
+                    if (!socket.ReceiveString(out result))
                     {
                         ++errorCount;
                         StationConsole.WriteError($"【{RealName}】heartbeat timeout({errorCount})...");
@@ -467,8 +475,8 @@ namespace Agebull.ZeroNet.Core
                     Thread.Sleep(100);
                     continue;
                 }
-                var str = result.FirstOrDefault(p=>!string.IsNullOrEmpty(p));
-                if (str==null || str[0] == ZeroNetStatus.ZeroStatusBad)
+                var str = result.FirstOrDefault(p => !string.IsNullOrEmpty(p));
+                if (str == null || str[0] == ZeroNetStatus.ZeroStatusBad)
                 {
                     ++errorCount;
                     StationConsole.WriteError($"【{RealName}】heartbeat request failed({errorCount}):{result[0]}...");

@@ -14,7 +14,7 @@
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
     /*校验Auth的Redis的地址*/
-    "RedisConnectionString": "r-bp149a92e0e326e4138.redis.rds.aliyuncs.com:6379:Yizuanbao123",
+    "RedisConnectionString": "127.0.0.1:6379",
     /*内容页地址*/
     "ContextHost": "http://api.yizuanbao.cn:8080/"
   },
@@ -25,9 +25,7 @@
     /*黑洞地址（字母有错，不要介意）*/
     "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
     /*拒绝使用的令牌，Key Value一样*/
-    "denyTokens": {
-      "*41D0C3B57CD14E3CB24E50D646440DB6_PC_chrome": "*41D0C3B57CD14E3CB24E50D646440DB6_PC_chrome"
-    },
+    "denyTokens": [ "*41D0C3B57CD14E3CB24E50D646440DB6_PC_chrome" ],
     /*
 	Http头拒绝的规则：其中DenyType枚举如下    
         None,// 不阻止
@@ -56,12 +54,11 @@
   },
   /*ZeroNet站点配置（不要改）*/
   "zeroConfig": {
-    "zeroAddr": "192.168.240.128",
+    "zeroAddr": "192.168.240.131",
     "monitorPort": 8002,
     "managePort": 8000,
     "stationName": "HttpRoute",
-    "serviceName": "HttpRoute",
-    "ServiceName": "HttpRoute"
+    "serviceName": "HttpRoute"
   },
   /*路由信息，缺省地址必须要有，即找不到时使用的地址*/
   "route": {
@@ -96,19 +93,5 @@
 		"Api": "/Yizuan-ForcedUpdating-External-Api/v2/activty/getconfig",
 		"OnlyName": true
 	  }*/
-  ],
-  /*运维短信通知*/
-  "smsConfig": {
-    "CycleHours": -1, /*计数归零小时数，负数可关闭通知*/
-    "CycleSendCount": 6, /*周期内一个地址最多短信数量*/
-    "AliTemplateCode": "SMS_1",
-    "AliSignName": "亿",
-    "AliRegionId": "cn-hangzhou",
-    "AliEndPointName": "cn-hangzhou",
-    "AliProduct": "Dysm",
-    "AliDomain": "dysmsapi.aliyuncs.com",
-    "AliAccessKeyId": "LTA",
-    "AliAccessKeySecret": "XVX",
-    "Phones": [ "15618965007" ]
-  }
+  ]
 }

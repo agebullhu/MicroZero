@@ -1,0 +1,9 @@
+[
+  {
+    "RequetId": null,
+    "Station": "HttpRoute",
+    "Title": "Record",
+    "SubTitle": "Exception",
+    "Content": "{\"Time\":\"2018-05-15T08:22:25.7269725-07:00\",\"Index\":4122,\"ThreadID\":6,\"RequestID\":\"e35530a3-a637-46ba-b8da-64ce90f2f5c4\",\"Machine\":null,\"Name\":\"异常\",\"Message\":\"<ExceptionInfomation>\\n  <ID>2fa453d8-6dc5-449d-9b62-27b997b67484</ID>\\n  <Tag>未知错误</Tag>\\n  <RecordType>Exception</RecordType>\\n  <OutMessage>发生未知错误,系统标识:bf241950-9e9f-4c29-a12c-4d73f36d90bd</OutMessage>\\n  <ExceptionMessage>Unexpected character encountered while parsing value: U. Path '', line 0, position 0.</ExceptionMessage>\\n  <Exception>\\n    <Type>Newtonsoft.Json.JsonReaderException</Type>\\n    <Source>Newtonsoft.Json</Source>\\n    <StackTrace>   at Newtonsoft.Json.JsonTextReader.ParseValue()\\n   at Newtonsoft.Json.JsonReader.ReadForType(JsonContract contract, Boolean hasConverter)\\n   at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.Deserialize(JsonReader reader, Type objectType, Boolean checkAdditionalContent)\\n   at Newtonsoft.Json.JsonSerializer.DeserializeInternal(JsonReader reader, Type objectType)\\n   at Newtonsoft.Json.JsonConvert.DeserializeObject(String value, Type type, JsonSerializerSettings settings)\\n   at Newtonsoft.Json.JsonConvert.DeserializeObject[T](String value, JsonSerializerSettings settings)\\n   at Agebull.ZeroNet.Core.SystemMonitor.station_heat(String station, String content) in C:\\\\Projects\\\\Agebull\\\\ZeroNet\\\\src\\\\ZmqNet\\\\ZmqNetCore\\\\ZeroNet\\\\SystemMonitor.cs:line 244</StackTrace>\\n  </Exception>\\n</ExceptionInfomation>\",\"Type\":12,\"TypeName\":\"Exception\",\"User\":null}"
+  }
+]

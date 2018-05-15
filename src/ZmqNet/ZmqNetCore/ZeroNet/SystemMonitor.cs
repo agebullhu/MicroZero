@@ -52,7 +52,7 @@ namespace Agebull.ZeroNet.Core
             {
                 Task.Factory.StartNew(SystemManager.Run);
             }
-            if(async)
+            if (async)
                 Task.Factory.StartNew(Run2);
             else
                 Run();
@@ -243,26 +243,10 @@ namespace Agebull.ZeroNet.Core
         /// <param name="content"></param>
         private static void station_heat(string station, string content)
         {
-            if (String.IsNullOrEmpty(content))
+            if (String.IsNullOrEmpty(station))
                 return;
-            StationConfig cfg;
-            try
-            {
-                cfg = JsonConvert.DeserializeObject<StationConfig>(content);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return;
-            }
-
-            if (ZeroApplication.Configs.ContainsKey(station))
-                ZeroApplication.Configs[station].Copy(cfg);
-            else
-                lock (ZeroApplication.Configs)
-                    ZeroApplication.Configs.Add(station, cfg);
-
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_heat", cfg));
+            if (ZeroApplication.Configs.TryGetValue(station, out var cfg))
+                StationEvent?.Invoke(ZeroApplication.Config, new StationEventArgument("station_heat", cfg));
         }
 
         private static void station_uninstall(string name)
@@ -304,7 +288,7 @@ namespace Agebull.ZeroNet.Core
             if (ZeroApplication.Configs.ContainsKey(name))
                 ZeroApplication.Configs[name].Copy(cfg);
             else lock (ZeroApplication.Configs)
-                ZeroApplication.Configs.Add(name, cfg);
+                    ZeroApplication.Configs.Add(name, cfg);
 
             StationEvent?.Invoke(cfg, new StationEventArgument("station_install", cfg));
         }
@@ -380,7 +364,7 @@ namespace Agebull.ZeroNet.Core
             if (ZeroApplication.Configs.ContainsKey(name))
                 ZeroApplication.Configs[name].Copy(cfg);
             else lock (ZeroApplication.Configs)
-                ZeroApplication.Configs.Add(name, cfg);
+                    ZeroApplication.Configs.Add(name, cfg);
             if (!ZeroApplication.Stations.ContainsKey(name))
                 return;
             ZeroApplication.Stations[name].Config = cfg;

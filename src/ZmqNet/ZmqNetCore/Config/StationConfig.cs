@@ -114,7 +114,6 @@ namespace Agebull.ZeroNet.Core
             var socket = new RequestSocket();
             socket.Options.Identity = ZeroApplication.Config.ToZeroIdentity(StationName, RandomOperate.Generate(6));
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
-            socket.Options.DisableTimeWait = true;
             socket.Connect(RequestAddress);
             Sockets.Add(socket);
             return socket;

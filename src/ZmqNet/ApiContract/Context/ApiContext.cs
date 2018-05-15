@@ -159,12 +159,9 @@ namespace Agebull.ZeroNet.ZeroApi
             if (_current == context)
                 return;
             var local = new AsyncLocal<ApiContext>();
-            if (local.Value != context)
-            {
-                context.Request.requestId = local.Value.Request.requestId;
-                local.Value?.Dispose();
-                local.Value = context;
-            }
+            if (local.Value == context) return;
+            local.Value?.Dispose();
+            local.Value = context;
             _current = context;
         }
         

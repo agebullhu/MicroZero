@@ -126,7 +126,6 @@ namespace ZeroNet.Http.Route
                 {
                     // 正常调用
                     router.Call();
-                    LogRecorder.BeginStepMonitor("End");
                     // 写入返回
                     router.WriteResult();
                     // 缓存

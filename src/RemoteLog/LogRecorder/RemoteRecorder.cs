@@ -1,10 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
@@ -52,18 +50,13 @@ namespace Agebull.ZeroNet.LogRecorder
         /// <param name="info"> 日志消息 </param>
         void ILogRecorder.RecordLog(RecordInfo info)
         {
-            info.User = ApiContext.Customer.Account;
+            info.User = $"{ApiContext.Customer.Account}({ApiContext.RequestContext.Ip}:{ApiContext.RequestContext.Port})";
+            info.Machine = ZeroApplication.Config.RealName;
             using (LogRecordingScope.CreateScope())
             {
                 if (ZeroApplication.State < StationState.Failed && ZeroApplication.State > StationState.Start)
                 {
-                    Items.Push(new PublishItem
-                    {
-                        Station = ZeroApplication.Config.StationName,
-                        Title = "Record",
-                        SubTitle = info.TypeName,
-                        Content = JsonConvert.SerializeObject(info)
-                    });
+                    Items.Push(info);
                 }
                 else
                 {
@@ -87,7 +80,7 @@ namespace Agebull.ZeroNet.LogRecorder
         /// <summary>
         /// 请求队列
         /// </summary>
-        public static readonly PublishQueue Items = new PublishQueue();
+        public static readonly LogQueue Items = new LogQueue();
 
         /// <summary>
         ///     运行状态
@@ -102,7 +95,13 @@ namespace Agebull.ZeroNet.LogRecorder
         /// <summary>
         /// 广播内容说明
         /// </summary>
-        private static readonly byte[] Description = new byte[] { 2, ZeroFrameType.Publisher, ZeroFrameType.Argument, ZeroFrameType.End };//ZeroFrameType.SubTitle, 
+        private static readonly byte[] Description = new byte[]
+        {
+            2,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.Argument,
+            ZeroFrameType.End
+        };//ZeroFrameType.SubTitle, 
         /// <summary>
         /// 广播总数
         /// </summary>
@@ -144,7 +143,7 @@ namespace Agebull.ZeroNet.LogRecorder
                 bool success;
                 try
                 {
-                    _socket.SendMoreFrame(title);
+                    _socket.SendMoreFrame(title.ToString());
                     _socket.SendMoreFrame(Description);
                     _socket.SendMoreFrame(ZeroApplication.Config.StationName);
                     _socket.SendFrame(JsonConvert.SerializeObject(items));
@@ -182,7 +181,7 @@ namespace Agebull.ZeroNet.LogRecorder
             _state = StationState.Closed;
             _socket.CloseSocket(_config.RequestAddress);
         }
-        
+
 
         #endregion
 

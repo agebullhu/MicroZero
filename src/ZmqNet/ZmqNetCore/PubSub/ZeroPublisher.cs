@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
 
@@ -95,6 +96,7 @@ namespace Agebull.ZeroNet.PubSub
                 Station = station,
                 Title = title,
                 SubTitle = sub,
+                RequestId = ApiContext.RequestContext.RequestId,
                 Content = value ?? "{}"
             });
             if (RunState == StationState.Closed)
@@ -119,27 +121,41 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 if (!Items.StartProcess(out var item, 100))
                     continue;
-                if (!GetSocket(item.Station, out var socket, out var status))
+
+                if (!ZeroApplication.Configs.TryGetValue(item.Station, out var config))
                 {
-                    if (status == ZeroCommandStatus.NoRun)
-                    {
-                        Thread.Sleep(50);
-                        continue;
-                    }
                     LogRecorder.Trace(LogType.Error, "Publish",
                         $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
 {item.Content}");
                     Items.EndProcess();
                     continue;
                 }
-                if (!Send(socket, item))
+                var socket = config.GetSocket();
+                if (socket == null)
                 {
-                    LogRecorder.Trace(LogType.Warning, "Publish",
-                        $@"向【{item.Station}】广播的主题为【{item.Title}】的消息发送失败，内容为：
-{item.Content}");
+                    Thread.Sleep(100);
                     continue;
                 }
-
+                try
+                {
+                    if (!Send(socket, item))
+                    {
+                        LogRecorder.Trace(LogType.Warning, "Publish",
+                            $@"向【{item.Station}】广播的主题为【{item.Title}】的消息发送失败，内容为：
+{item.Content}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    StationConsole.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
+                    config.Close(socket);
+                    socket = null;
+                }
+                finally
+                {
+                    config.Free(socket);
+                }
                 Items.EndProcess();
                 PubCount++;
             }
@@ -160,81 +176,15 @@ namespace Agebull.ZeroNet.PubSub
             description[2] = ZeroFrameType.SubTitle;
             description[3] = ZeroFrameType.Argument;
             description[4] = ZeroFrameType.End;
-            try
-            {
-                lock (socket)
-                {
-                    socket.SendMoreFrame(item.Title);
-                    socket.SendMoreFrame(description);
-                    socket.SendMoreFrame(ZeroApplication.Config.StationName);
-                    socket.SendMoreFrame(item.SubTitle);
-                    socket.SendFrame(item.Content);
-                    var word = socket.ReceiveFrameString();
-                    return word == ZeroNetStatus.ZeroCommandOk;
-                }
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                StationConsole.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
-            }
-            lock (Publishers)
-            {
-                socket.CloseSocket(Publishers[item.Station].Key.RequestAddress);
-                Publishers.Remove(item.Station);
-            }
 
-            return false;
+            socket.SendMoreFrame(item.Title);
+            socket.SendMoreFrame(description);
+            socket.SendMoreFrame(ZeroApplication.Config.StationName);
+            socket.SendMoreFrame(item.SubTitle);
+            socket.SendFrame(item.Content);
+            var word = socket.ReceiveFrameString();
+            return word == ZeroNetStatus.ZeroCommandOk;
         }
         
-        /// <summary>
-        ///     取得Socket对象
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="socket"></param>
-        /// <param name="status"></param>
-        /// <returns></returns>
-        private static bool GetSocket(string type, out RequestSocket socket, out ZeroCommandStatus status)
-        {
-            if (RunState >= StationState.Closing)
-            {
-                socket = null;
-                status = ZeroCommandStatus.NoRun;
-                return false;
-            }
-            lock (Publishers)
-            {
-                if (Publishers.TryGetValue(type, out var cs))
-                {
-                    socket = cs.Value;
-                    status = ZeroCommandStatus.Success;
-                    return true;
-                }
-                var config = ZeroApplication.GetConfig(type, out status);
-                if (status == ZeroCommandStatus.NoFind || config == null)
-                {
-                    socket = null;
-                    return false;
-                }
-                try
-                {
-                    socket = new RequestSocket();
-                    socket.Options.Identity = ZeroApplication.Config.Identity;
-                    socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                    socket.Connect(config.RequestAddress);
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    StationConsole.WriteError($"【{type}】connect error =>连接时发生异常：{e}");
-                    socket = null;
-                    status = ZeroCommandStatus.Exception;
-                    return false;
-                }
-                Publishers.Add(type, new KeyValuePair<StationConfig, RequestSocket>(config, socket));
-            }
-
-            return true;
-        }
     }
 }

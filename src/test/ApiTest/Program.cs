@@ -8,6 +8,7 @@ namespace ApiTest
         static void Main(string[] args)
         {
             StationConsole.WriteLine("Hello ZeroNet");
+            ZeroApplication.Initialize();
             ZeroApplication.RunAwaite();
         }
     }

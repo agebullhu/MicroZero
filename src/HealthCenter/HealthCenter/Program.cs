@@ -10,6 +10,7 @@ namespace PerformanceService
         {
             Console.WriteLine("Hello ZeroNet");
 
+            ZeroApplication.Initialize();
             ZeroApplication.RegisteStation<PerformanceCounter>();
             ZeroApplication.RegisteStation<RuntimeWaring>();
             ZeroApplication.RunAwaite();

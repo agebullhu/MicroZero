@@ -7,12 +7,12 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// Â·ÓÉ¼ÆÊıÆ÷
+    /// è·¯ç”±è®¡æ•°å™¨
     /// </summary>
     internal class PerformanceCounter : SubStation
     {
         /// <summary>
-        /// ¹¹ÔìÂ·ÓÉ¼ÆÊıÆ÷
+        /// æ„é€ è·¯ç”±è®¡æ•°å™¨
         /// </summary>
         public PerformanceCounter()
         {
@@ -20,7 +20,7 @@ namespace ZeroNet.Http.Route
             Subscribe = "PerformanceCounter";
         }
         /// <summary>
-        /// Ö´ĞĞÃüÁî
+        /// æ‰§è¡Œå‘½ä»¤
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -49,24 +49,24 @@ namespace ZeroNet.Http.Route
             }
         }
         /// <summary>
-        /// ¼ÇÂ¼
+        /// è®°å½•
         /// </summary>
         /// <param name="arg"></param>
         public static void Record(string arg)
         {
         }
         /// <summary>
-        /// ¼ÆÊıµ¥Ôª
+        /// è®¡æ•°å•å…ƒ
         /// </summary>
         public static long Unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
 
         /// <summary>
-        /// ¼ÆÊı¸ù
+        /// è®¡æ•°æ ¹
         /// </summary>
         public static CountItem Station { get; set; } = new CountItem();
-        
+
         /// <summary>
-        /// ¿ªÊ¼¼ÆÊı
+        /// å¼€å§‹è®¡æ•°
         /// </summary>
         /// <returns></returns>
         public static void End(RouteData data)
@@ -75,12 +75,12 @@ namespace ZeroNet.Http.Route
             {
                 var tm = (data.End - data.Start).TotalMilliseconds;
                 if (tm > 200)
-                    LogRecorder.Warning($"{data.HostName}/{data.ApiName}:Ö´ĞĞÊ±¼äÒì³£({tm:F2}ms):");
+                    LogRecorder.Warning($"{data.HostName}/{data.ApiName}:æ‰§è¡Œæ—¶é—´å¼‚å¸¸({tm:F2}ms):");
 
                 if (tm > AppConfig.Config.SystemConfig.WaringTime)
-                    RuntimeWaring.Waring(data.HostName, data.ApiName, $"Ö´ĞĞÊ±¼äÒì³£({tm:F0}ms)");
+                    RuntimeWaring.Instance.Waring(data.HostName, data.ApiName, $"æ‰§è¡Œæ—¶é—´å¼‚å¸¸({tm:F0}ms)");
 
-                long unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour ;
+                long unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
                 if (unit != Unit)
                 {
                     Unit = unit;
@@ -97,7 +97,7 @@ namespace ZeroNet.Http.Route
                     if (!Station.Items.TryGetValue(data.HostName, out host))
                         Station.Items.Add(data.HostName, host = new CountItem());
                 }
-                host.SetValue(tm,data);
+                host.SetValue(tm, data);
 
                 if (string.IsNullOrWhiteSpace(data.ApiName))
                     return;
@@ -111,13 +111,13 @@ namespace ZeroNet.Http.Route
             }
             catch (Exception e)
             {
-                LogRecorder.Exception( e);
+                LogRecorder.Exception(e);
             }
         }
 
 
         /// <summary>
-        /// ±£´æÎªĞÔÄÜÈÕÖ¾
+        /// ä¿å­˜ä¸ºæ€§èƒ½æ—¥å¿—
         /// </summary>
         public static void Save()
         {

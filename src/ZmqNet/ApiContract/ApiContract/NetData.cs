@@ -32,3 +32,4 @@ namespace Agebull.ZeroNet.ZeroApi
         [DataMember, JsonProperty("requestId")]
         public String RequestId { get; set; }
     }
+}

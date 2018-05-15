@@ -96,7 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.11" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.11" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.12" />
     <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />
