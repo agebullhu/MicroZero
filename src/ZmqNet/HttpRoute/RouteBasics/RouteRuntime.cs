@@ -14,6 +14,11 @@ namespace ZeroNet.Http.Route
         public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "*页面不存在*"));
 
         /// <summary>
+        ///     页面不存在的Json字符串
+        /// </summary>
+        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError));
+
+        /// <summary>
         ///     拒绝访问的Json字符串
         /// </summary>
         public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess, "*拒绝访问*"));

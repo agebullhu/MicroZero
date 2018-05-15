@@ -1,72 +1,77 @@
 #ifndef AGEBULL_RPCSERVICE_H
 #pragma once
 #include "stdafx.h"
+#include "net/StationWarehouse.h"
+
 namespace agebull
 {
-	class rpc_service
+	namespace zmq_net
 	{
-		/**
-		 * \brief 取本机IP并显示在控制台
-		 */
-		static bool get_local_ips();
-	public:
-		/**
-		* \brief 初始化
-		*/
-		static bool initialize()
+		class rpc_service
 		{
-			// 在程序初始化时打开日志
-			acl::acl_cpp_init();
-			string path;
-			GetProcessFilePath(path);
-			cout << "Current folder:" << path << endl;
-			auto log = path;
-			log.append("/zero.log");
-			logger_open(log.c_str(), "zero_center", DEBUG_CONFIG);
+			/**
+			 * \brief 取本机IP并显示在控制台
+			 */
+			static bool get_local_ips();
+		public:
+			/**
+			* \brief 初始化
+			*/
+			static bool initialize()
 			{
-				redis_live_scope scope; 
-				if (!ping_redis())
+				// 在程序初始化时打开日志
+				acl::acl_cpp_init();
+				string path;
+				get_process_file_path(path);
+				cout << "Current folder:" << path << endl;
+				auto log = path;
+				log.append("/zero.log");
+				logger_open(log.c_str(), "zero_center", DEBUG_CONFIG);
 				{
-					std::cout << "Redis:failed" << endl;
+					redis_live_scope scope;
+					if (!ping_redis())
+					{
+						std::cout << "Redis:failed" << endl;
+						return false;
+					}
+					std::cout << "Redis:ready" << endl;
+				}
+				if (!get_local_ips())
+				{
+					std::cout << "Ip:empty" << endl;
 					return false;
 				}
-				std::cout << "Redis:ready" << endl;
+				return station_warehouse::initialize();
 			}
-			if (!get_local_ips())
+
+			/**
+			* \brief
+			*/
+			static void start()
 			{
-				std::cout << "Ip:empty" << endl;
-				return false;
+				config_zero_center();
+				start_zero_center();
+
+				log_msg("zero center in service");
 			}
-			return true;
-		}
+
+			/**
+			* \brief 中止
+			*/
+			static void stop()
+			{
+				close_net_command();
+				distory_net_command();
+				thread_sleep(50);
+				acl::log::close();
+			}
+
+		};
 
 		/**
-		* \brief
+		* \brief 系统信号处理
 		*/
-		static void start()
-		{
-			config_zero_center();
-			start_zero_center();
-
-			log_msg("zero center in service");
-		}
-
-		/**
-		* \brief 中止
-		*/
-		static void stop()
-		{
-			close_net_command();
-			distory_net_command();
-			thread_sleep(50);
-			acl::log::close();
-		}
-
-	};
-
-	/**
-	* \brief 系统信号处理
-	*/
-	void on_sig(int sig);
+		void on_sig(int sig);
+	}
 }
-#endif AGEBULL_RPCSERVICE_H
+#endif //!AGEBULL_RPCSERVICE_H

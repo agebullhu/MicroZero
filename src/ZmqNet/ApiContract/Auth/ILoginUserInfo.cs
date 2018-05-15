@@ -7,31 +7,31 @@ using Agebull.ZeroNet.ZeroApi;
 namespace Agebull.Common.OAuth
 {
     /// <summary>
-    /// µ±Ç°µÇÂ¼µÄÓÃ»§ĞÅÏ¢
+    /// å½“å‰ç™»å½•çš„ç”¨æˆ·ä¿¡æ¯
     /// </summary>
     public interface IUser : IStateData
     {
         /// <summary>
-        /// ÓÃ»§Êı×Ö±êÊ¶
+        /// ç”¨æˆ·æ•°å­—æ ‡è¯†
         /// </summary>
         long UserId { get; set; }
     }
 
     /// <summary>
-    /// µ±Ç°µÇÂ¼µÄÓÃ»§ĞÅÏ¢
+    /// å½“å‰ç™»å½•çš„ç”¨æˆ·ä¿¡æ¯
     /// </summary>
     public interface IPerson : IUser
     {
         /// <summary>
-        /// ÓÃ»§êÇ³Æ
+        /// ç”¨æˆ·æ˜µç§°
         /// </summary>
         string NickName { get; set; }
 
         /// <summary>
-        /// Í·Ïñ
+        /// å¤´åƒ
         /// </summary>
         /// <remarks>
-        /// Í·Ïñ
+        /// å¤´åƒ
         /// </remarks>
         string AvatarUrl
         {
@@ -42,70 +42,70 @@ namespace Agebull.Common.OAuth
     }
 
     /// <summary>
-    /// µ±Ç°µÇÂ¼µÄÓÃ»§ĞÅÏ¢
+    /// å½“å‰ç™»å½•çš„ç”¨æˆ·ä¿¡æ¯
     /// </summary>
     public interface ILoginUserInfo : IPerson, IApiResultData
     {
         /// <summary>
-        /// µ±Ç°ÓÃ»§µÇÂ¼µ½ÄÄ¸öÏµÍ³£¨Ô¤ÏÈ¶¨ÒåµÄÏµÍ³±êÊ¶£©
+        /// å½“å‰ç”¨æˆ·ç™»å½•åˆ°å“ªä¸ªç³»ç»Ÿï¼ˆé¢„å…ˆå®šä¹‰çš„ç³»ç»Ÿæ ‡è¯†ï¼‰
         /// </summary>
         string LoginSystem { get; set; }
 
         /// <summary>
-        /// µ±Ç°ÓÃ»§µÇÂ¼·½Ê½
+        /// å½“å‰ç”¨æˆ·ç™»å½•æ–¹å¼
         /// </summary>
         int LoginType { get; set; }
 
         /// <summary>
-        /// µÇÂ¼ÕßµÄÊÖ»úºÅ
+        /// ç™»å½•è€…çš„æ‰‹æœºå·
         /// </summary>
         string Phone { get; set; }
 
         /// <summary>
-        /// µÇÂ¼ÕßµÄÕËºÅ
+        /// ç™»å½•è€…çš„è´¦å·
         /// </summary>
         string Account { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄ±êÊ¶
+        /// ç™»å½•è®¾å¤‡çš„æ ‡è¯†
         /// </summary>
         string DeviceId { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄ²Ù×÷ÏµÍ³
+        /// ç™»å½•è®¾å¤‡çš„æ“ä½œç³»ç»Ÿ
         /// </summary>
         string Os { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄä¯ÀÀÆ÷
+        /// ç™»å½•è®¾å¤‡çš„æµè§ˆå™¨
         /// </summary>
         string Browser { get; set; }
     }
 
     /// <summary>
-    /// µ±Ç°µÇÂ¼µÄÓÃ»§ĞÅÏ¢
+    /// å½“å‰ç™»å½•çš„ç”¨æˆ·ä¿¡æ¯
     /// </summary>
     [Serializable]
     [DataContract, JsonObject(MemberSerialization.OptIn)]
     public class LoginUserInfo : ILoginUserInfo
     {
         /// <summary>
-        /// ÓÃ»§Êı×Ö±êÊ¶
+        /// ç”¨æˆ·æ•°å­—æ ‡è¯†
         /// </summary>
         [JsonProperty("id")]
         public long UserId { get; set; }
 
         /// <summary>
-        /// ÓÃ»§êÇ³Æ
+        /// ç”¨æˆ·æ˜µç§°
         /// </summary>
         [JsonProperty("nn")]
         public string NickName { get; set; }
 
         /// <summary>
-        /// Í·Ïñ
+        /// å¤´åƒ
         /// </summary>
         /// <remarks>
-        /// Í·Ïñ
+        /// å¤´åƒ
         /// </remarks>
         [JsonProperty("av")]
         public string AvatarUrl
@@ -114,65 +114,65 @@ namespace Agebull.Common.OAuth
             set;
         }
         /// <summary>
-        /// µ±Ç°ÓÃ»§µÇÂ¼µ½ÄÄ¸öÏµÍ³£¨Ô¤ÏÈ¶¨ÒåµÄÏµÍ³±êÊ¶£©
+        /// å½“å‰ç”¨æˆ·ç™»å½•åˆ°å“ªä¸ªç³»ç»Ÿï¼ˆé¢„å…ˆå®šä¹‰çš„ç³»ç»Ÿæ ‡è¯†ï¼‰
         /// </summary>
         [JsonProperty("ls")]
         public string LoginSystem { get; set; }
 
         /// <summary>
-        /// µ±Ç°ÓÃ»§µÇÂ¼·½Ê½
+        /// å½“å‰ç”¨æˆ·ç™»å½•æ–¹å¼
         /// </summary>
         [JsonProperty("lt")]
         public int LoginType { get; set; }
 
         /// <summary>
-        /// µÇÂ¼ÕßµÄÊÖ»úºÅ
+        /// ç™»å½•è€…çš„æ‰‹æœºå·
         /// </summary>
         [JsonProperty("p")]
         public string Phone { get; set; }
 
 
         /// <summary>
-        /// µÇÂ¼ÕßµÄÕËºÅ
+        /// ç™»å½•è€…çš„è´¦å·
         /// </summary>
         [JsonProperty("a")]
         public string Account { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄ±êÊ¶
+        /// ç™»å½•è®¾å¤‡çš„æ ‡è¯†
         /// </summary>
         [JsonProperty("d")]
         public string DeviceId { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄ²Ù×÷ÏµÍ³
+        /// ç™»å½•è®¾å¤‡çš„æ“ä½œç³»ç»Ÿ
         /// </summary>
         [JsonProperty("os")]
         public string Os { get; set; }
 
         /// <summary>
-        /// µÇÂ¼Éè±¸µÄä¯ÀÀÆ÷
+        /// ç™»å½•è®¾å¤‡çš„æµè§ˆå™¨
         /// </summary>
         [JsonProperty("br")]
         public string Browser { get; set; }
 
         /// <summary>
-        ///     Êı¾İ×´Ì¬
+        ///     æ•°æ®çŠ¶æ€
         /// </summary>
         [JsonProperty("ds")]
         public DataStateType DataState { get; set; }
 
         /// <summary>
-        ///     Êı¾İÊÇ·ñÒÑ¶³½á£¬Èç¹ûÊÇ£¬ÔòÎªÖ»¶ÁÊı¾İ
+        ///     æ•°æ®æ˜¯å¦å·²å†»ç»“ï¼Œå¦‚æœæ˜¯ï¼Œåˆ™ä¸ºåªè¯»æ•°æ®
         /// </summary>
         /// <value>bool</value>
         [JsonProperty("df")]
         public bool IsFreeze { get; set; }
 
-        #region Ô¤¶¨Òå
+        #region é¢„å®šä¹‰
 
         /// <summary>
-        /// ÄäÃûÓÃ»§
+        /// åŒ¿åç”¨æˆ·
         /// </summary>
         public static LoginUserInfo CreateAnymouse(string did, string br, string os)
         {
@@ -182,12 +182,13 @@ namespace Agebull.Common.OAuth
                 Account = "anymouse",
                 Browser = br,
                 Os = os,
+                DeviceId= did,
                 DataState = DataStateType.Discard
             };
         }
 
         /// <summary>
-        /// ÏµÍ³ÓÃ»§
+        /// ç³»ç»Ÿç”¨æˆ·
         /// </summary>
         private static readonly LoginUserInfo _system = new LoginUserInfo
         {
@@ -201,7 +202,7 @@ namespace Agebull.Common.OAuth
             DataState = DataStateType.Enable
         };
         /// <summary>
-        /// ÏµÍ³ÓÃ»§
+        /// ç³»ç»Ÿç”¨æˆ·
         /// </summary>
         public static LoginUserInfo System => _system;
 

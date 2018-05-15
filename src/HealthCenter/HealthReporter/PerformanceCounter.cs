@@ -1,31 +1,35 @@
 using System;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// ĞÔÄÜ¼ÆÊıÆ÷
+    /// æ€§èƒ½è®¡æ•°å™¨
     /// </summary>
     public class PerformanceCounter
     {
         /// <summary>
-        /// ¿ªÊ¼Ê±¼ä
+        /// å¼€å§‹æ—¶é—´
         /// </summary>
         public DateTime Start { get; set; }
         
         /// <summary>
-        /// ¿ªÊ¼¼ÆÊı
+        /// å¼€å§‹è®¡æ•°
         /// </summary>
         /// <returns></returns>
         public static PerformanceCounter OnBegin(RouteData data)
         {
+            data.Machine = ApiContext.MyServiceName;
+            data.User = ApiContext.Customer?.Account ?? "Unknow";
+            data.RequestId = ApiContext.RequestContext.RequestId;
             data.Start = DateTime.Now;
             return new PerformanceCounter();
         }
 
         /// <summary>
-        /// ¿ªÊ¼¼ÆÊı
+        /// å¼€å§‹è®¡æ•°
         /// </summary>
         /// <returns></returns>
         public void End(RouteData data)
@@ -36,7 +40,7 @@ namespace ZeroNet.Http.Route
 
 
         /// <summary>
-        /// ±£´æÎªĞÔÄÜÈÕÖ¾
+        /// ä¿å­˜ä¸ºæ€§èƒ½æ—¥å¿—
         /// </summary>
         public static void Save()
         {

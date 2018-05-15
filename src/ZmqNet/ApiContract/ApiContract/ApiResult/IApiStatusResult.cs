@@ -1,27 +1,27 @@
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// API×´Ì¬·µ»Ø£¨Ò»°ãÔÚ³ö´íÊ±·¢Éú£©
+    /// APIçŠ¶æ€è¿”å›ï¼ˆä¸€èˆ¬åœ¨å‡ºé”™æ—¶å‘ç”Ÿï¼‰
     /// </summary>
     public interface IApiStatusResult
     {
         /// <summary>
-        /// ´íÎóÂë£¨ÏµÍ³¶¨Òå£©
+        /// é”™è¯¯ç ï¼ˆç³»ç»Ÿå®šä¹‰ï¼‰
         /// </summary>
         int ErrorCode { get; set; }
 
         /// <summary>
-        /// ¶ÔÓ¦HTTP´íÎóÂë£¨²Î¿¼£©
+        /// å¯¹åº”HTTPé”™è¯¯ç ï¼ˆå‚è€ƒï¼‰
         /// </summary>
         string HttpCode { get; set; }
 
         /// <summary>
-        /// ÌáÊ¾ĞÅÏ¢
+        /// å®¢æˆ·ç«¯ä¿¡æ¯
         /// </summary>
-        string Message { get; set; }
+        string ClientMessage { get; set; }
 
         /// <summary>
-        /// ÄÚ²¿ÌáÊ¾ĞÅÏ¢
+        /// å†…éƒ¨ä¿¡æ¯
         /// </summary>
         string InnerMessage { get; set; }
     }

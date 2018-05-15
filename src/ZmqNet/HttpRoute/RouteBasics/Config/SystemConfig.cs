@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
@@ -49,7 +49,7 @@ namespace ZeroNet.Http.Route
         /// 记录跟踪日志
         /// </summary>
         [JsonProperty]
-        public string LogPath { get => TxtRecorder.LogPath; set => TxtRecorder.LogPath = value; }
+        public string LogPath { get; set; }
 
     }
 }

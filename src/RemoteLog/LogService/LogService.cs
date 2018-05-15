@@ -1,23 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Agebull.Common.Frame;
+using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
-using Newtonsoft.Json;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.LogService
 {
+    /// <inheritdoc />
     /// <summary>
     /// 日志服务
     /// </summary>
     public class RemoteLogStation : SubStation
     {
+        /// <summary>
+        /// 实例
+        /// </summary>
         public static RemoteLogStation Station { get; set; }
-        private string LogPath;
+
+        /// <summary>
+        /// 日志地址
+        /// </summary>
+        private readonly string _logPath;
+
         /// <summary>
         /// 构造
         /// </summary>
@@ -26,36 +32,56 @@ namespace Agebull.ZeroNet.LogService
             StationName = "RemoteLog";
             Subscribe = "Record";
             Station = this;
-            if (string.IsNullOrWhiteSpace(LogPath))
-            {
-                LogPath = ConfigurationManager.AppSettings["LogPath"];
-            }
-            if (LogPath != null && !Directory.Exists(LogPath))
-            {
-                Directory.CreateDirectory(LogPath);
-            }
-            Console.WriteLine($"LogPath:{LogPath}");
+            _logPath = ApiContext.Configuration["logPath"] ??
+                       IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "Logs");
 
+            try
+            {
+                if (!Directory.Exists(_logPath))
+                {
+                    Directory.CreateDirectory(_logPath);
+                }
+            }
+            catch
+            {
+                _logPath = IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "Logs");
+            }
+
+            Console.WriteLine($"LogPath:{_logPath}");
         }
+
         /// <summary>
         /// 记录的总数
         /// </summary>
         public static ulong RecorderCount { get; set; }
 
-        private long point;
-        private Dictionary<string, StreamWriter > writers = new Dictionary<string, StreamWriter>( StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// 当前记录的时间点
+        /// </summary>
+        private long _recordTimePoint;
+
+        /// <summary>
+        /// 所有写入的文件句柄
+        /// </summary>
+        private readonly Dictionary<string, StreamWriter> _writers =
+            new Dictionary<string, StreamWriter>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 任务结束,环境销毁
+        /// </summary>
         protected override void OnTaskStop()
         {
-            foreach (var writer in writers.Values)
+            foreach (var writer in _writers.Values)
             {
                 writer.Flush();
                 writer.Dispose();
             }
 
-            writers.Clear();
+            _writers.Clear();
             base.OnTaskStop();
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// 执行命令
         /// </summary>
@@ -63,34 +89,36 @@ namespace Agebull.ZeroNet.LogService
         /// <returns></returns>
         public override void Handle(PublishItem args)
         {
-            var now = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + (DateTime.Now.Hour / 2);
-            if (now != point)
+            var now = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 +
+                      (DateTime.Now.Hour / 2);
+            if (now != _recordTimePoint)
             {
-                foreach (var w in writers.Values)
+                foreach (var w in _writers.Values)
                 {
                     w.Flush();
                     w.Dispose();
                 }
 
-                writers.Clear();
-                point = now;
-                
+                _writers.Clear();
+                _recordTimePoint = now;
             }
 
             try
             {
-                //var record = JsonConvert.DeserializeObject<RecordInfo>(args.Content);
-                if (!writers.TryGetValue(args.SubTitle, out var writer))
+                if (!_writers.TryGetValue(args.SubTitle, out var writer))
                 {
-                    string ph = Path.Combine(LogPath, $"{point}.{args.SubTitle}.log");
-                    var file = new FileStream(ph, FileMode.Append, FileAccess.Write, FileShare.Read);
-                    
+                    string ph = Path.Combine(_logPath, $"{_recordTimePoint}.{args.SubTitle}.log");
+                    var file = new FileStream(ph, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+
                     writer = new StreamWriter(file) {AutoFlush = true};
-                    
-                    writers.Add(args.SubTitle, writer);
+
+                    _writers.Add(args.SubTitle, writer);
                 }
+
                 writer.WriteLine(args.Content);
                 RecorderCount++;
+                if (RecorderCount == ulong.MaxValue)
+                    RecorderCount = 0;
             }
             catch (Exception e)
             {

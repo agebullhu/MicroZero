@@ -88,7 +88,7 @@ namespace agebull
 			/**
 			* \brief 站点卸载
 			*/
-			static bool unstall_station(const string& stattion);
+			static bool uninstall(const string& stattion);
 			/**
 			* \brief 取机器信息
 			*/

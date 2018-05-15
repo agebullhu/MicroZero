@@ -18,12 +18,10 @@ namespace RpcTest
         private static void Main(string[] args)
         {
             StationConsole.WriteLine("Hello ZeroNet");
-            StationProgram.Config.DataFolder = @"c:\data";
+            ZeroApplication.Config.DataFolder = @"c:\data";
             //StationProgram.RegisteStation(new RemoteLogStation());
             LogRecorder.Initialize(new RemoteRecorder());
-            LogRecorder.LogByTask = true;
-            LogRecorder.TraceToConsole = false;
-            StationProgram.Launch();
+            ZeroApplication.Launch();
 
             Thread.Sleep(1000);
             start = DateTime.Now;
@@ -44,7 +42,7 @@ namespace RpcTest
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             LogRecorder.Shutdown();
-            StationProgram.Exit();
+            ZeroApplication.Exit();
         }
 
         private static long count = 0;
@@ -55,7 +53,7 @@ namespace RpcTest
         {
             Random random = new Random((int)DateTime.Now.Ticks % int.MaxValue);
 
-            while (StationProgram.State < StationState.Closing)
+            while (ZeroApplication.State < StationState.Closing)
             {
                 if (count - RemoteRecorder.DataCount > 9999)
                     Thread.Sleep(10);

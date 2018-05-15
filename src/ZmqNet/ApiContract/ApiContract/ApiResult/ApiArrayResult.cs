@@ -4,13 +4,13 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// ±íÊ¾API·µ»ØµÄÁĞ±í
+    /// è¡¨ç¤ºAPIè¿”å›çš„åˆ—è¡¨
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     public class ApiList<TData> : List<TData>, IApiResultData
     {
         /// <summary>
-        /// ¹¹Ôì
+        /// æ„é€ 
         /// </summary>
         /// <param name="list"></param>
         public ApiList(IList<TData> list)
@@ -22,27 +22,27 @@ namespace Agebull.ZeroNet.ZeroApi
     }
 
     /// <summary>
-    /// API·µ»ØÊı×é·ºĞÍÀà
+    /// APIè¿”å›æ•°ç»„æ³›å‹ç±»
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiArrayResult<TData> : IApiResult<ApiList<TData>>
     {
         /// <summary>
-        /// ³É¹¦»òÊ§°Ü±ê¼Ç
+        /// æˆåŠŸæˆ–å¤±è´¥æ ‡è®°
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool Result { get; set; }
+        [JsonProperty("success", NullValueHandling = NullValueHandling.Ignore)]
+        public bool Success { get; set; }
 
         /// <summary>
-        /// APIÖ´ĞĞ×´Ì¬£¨Îª¿Õ±íÊ¾×´Ì¬Õı³££©
+        /// APIæ‰§è¡ŒçŠ¶æ€ï¼ˆä¸ºç©ºè¡¨ç¤ºçŠ¶æ€æ­£å¸¸ï¼‰
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
         public IApiStatusResult Status { get; set; }
 
         private ApiList<TData> _datas;
 
         /// <summary>
-        /// ·µ»ØÖµ
+        /// è¿”å›å€¼
         /// </summary>
         [JsonIgnore]
         ApiList<TData> IApiResult<ApiList<TData>>.ResultData
@@ -56,13 +56,13 @@ namespace Agebull.ZeroNet.ZeroApi
                     return _datas;
                 return _datas = new ApiList<TData>(ResultData);
             }
-            set { ResultData = value; }
+            set => ResultData = value;
         }
 
         /// <summary>
-        /// ·µ»ØÖµ
+        /// è¿”å›å€¼
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("data",NullValueHandling = NullValueHandling.Ignore)]
         public List<TData> ResultData { get; set; }
 
     }

@@ -1,18 +1,12 @@
 #pragma once
+#include "net_default.h"
+#include "net_command.h"
 #ifndef _ZMQ_EXTEND_H_
-#include "../stdafx.h"
 
 namespace agebull
 {
 	namespace zmq_net
 	{
-
-#define STATION_TYPE_DISPATCHER 1
-#define STATION_TYPE_MONITOR 2
-#define STATION_TYPE_API 3
-#define STATION_TYPE_VOTE 4
-#define STATION_TYPE_PUBLISH 5
-
 
 		/**
 		*\brief 广播内容
@@ -209,15 +203,31 @@ namespace agebull
 	}
 
 
-		inline void close_socket(ZMQ_HANDLE& socket, const char*  addr)
+		/**
+		* \brief 关闭套接字
+		* \param socket
+		* \param addr
+		* \return
+		*/
+		inline void close_res_socket(ZMQ_HANDLE& socket, const char*  addr)
 		{
 			zmq_unbind(socket, addr);
 			zmq_close(socket);
 			socket = nullptr;
 		}
 
-
-
+		/**
+		* \brief 关闭套接字
+		* \param socket
+		* \param addr
+		* \return
+		*/
+		inline void close_req_socket(ZMQ_HANDLE& socket, const char*  addr)
+		{
+			zmq_disconnect(socket, addr);
+			zmq_close(socket);
+			socket = nullptr;
+		}
 
 		/**
 		* \brief 配置ZMQ连接对象
@@ -225,7 +235,7 @@ namespace agebull
 		* \param name
 		* \return
 		*/
-		inline void setsockopt(ZMQ_HANDLE socket, const char* name = nullptr)
+		inline void setsockopt(const ZMQ_HANDLE& socket, const char* name = nullptr)
 		{
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
@@ -271,7 +281,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_res_socket(const char* addr, int type, const char* name)
 		{
-			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+			const ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
 				return nullptr;
@@ -288,16 +298,16 @@ namespace agebull
 		*/
 		inline bool set_tcp_nodelay(ZMQ_HANDLE socket)
 		{
-//#ifdef _WINDOWS
-//			SOCKET fd;
-//			size_t sz = sizeof(SOCKET);
-//#else
-//			int fd;
-//			size_t sz = sizeof(int);
-//#endif
-//			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
-//			int nodelay = 1;
-//			return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int)) >= 0;
+			//#ifdef _WINDOWS
+			//			SOCKET fd;
+			//			size_t sz = sizeof(SOCKET);
+			//#else
+			//			int fd;
+			//			size_t sz = sizeof(int);
+			//#endif
+			//			zmq_getsockopt(socket, ZMQ_FD, &fd, &sz);
+			//			int nodelay = 1;
+			//			return setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&nodelay), sizeof(int)) >= 0;
 			return true;
 		}
 
@@ -324,7 +334,7 @@ namespace agebull
 		{
 			char host[MAX_PATH];
 			sprintf(host, "tcp://*:%d", port);
-			ZMQ_HANDLE socket = create_req_socket(host, type, name);
+			const ZMQ_HANDLE socket = create_req_socket(host, type, name);
 			if (socket == nullptr)
 			{
 				return nullptr;
@@ -334,37 +344,29 @@ namespace agebull
 			return socket;
 		}
 		/**
-		* \brief 生成用于INPROC调用的套接字
+		* \brief 生成用于本机调用的套接字
 		*/
-		inline ZMQ_HANDLE create_req_socket_inproc(const char* name, const char* host)
+		inline ZMQ_HANDLE create_req_socket_ipc(const char* name, int type = ZMQ_REQ)
 		{
 			char address[MAX_PATH];
-			sprintf(address, "inproc://%s", host);
-			return create_req_socket(address, ZMQ_REQ, name);
+			if (config::get_global_bool("use_ipc_protocol"))
+				sprintf(address, "ipc:///tmp/zero_%s", name);
+			else
+				sprintf(address, "inproc://%s", name);
+			return create_req_socket(address, type, name);
 		}
-		//生成ZMQ连接对象(inproc)
-		inline ZMQ_HANDLE create_res_socket_inproc(const char* name, int type)
-		{
-			char host[MAX_PATH];
-			sprintf(host, "inproc://%s", name);
-			return create_res_socket(host, type, name);
-		}
-
-
 		/**
-		* \brief 生成的套接字
+		* \brief 生成用于本机调用的套接字
 		*/
-		inline ZMQ_HANDLE create_res_socket(const char* name, int type, int port)
+		inline ZMQ_HANDLE create_res_socket_ipc(const char* name, int type = ZMQ_REQ)
 		{
-			if (config::get_bool("use_ipc_protocol"))
-			{
-				char host[MAX_PATH];
-				sprintf(host, "ipc:///%s/%d", name, port);
-				return create_res_socket(host, type, name);
-			}
-			return create_res_socket_tcp(name, type, port);
+			char address[MAX_PATH];
+			if (config::get_global_bool("use_ipc_protocol"))
+				sprintf(address, "ipc:///tmp/zero_%s", name);
+			else
+				sprintf(address, "inproc://%s", name);
+			return create_res_socket(address, type, name);
 		}
-
 		/**
 		* \brief 检查ZMQ错误状态
 		* \return 状态
@@ -528,7 +530,7 @@ namespace agebull
 		*/
 		inline zmq_socket_state send_late(ZMQ_HANDLE socket, const char* string)
 		{
-			int state = zmq_send(socket, string, strlen(string), ZMQ_DONTWAIT);
+			const int state = zmq_send(socket, string, strlen(string), ZMQ_DONTWAIT);
 			if (state < 0)
 			{
 				return check_zmq_error();
@@ -541,7 +543,7 @@ namespace agebull
 		*/
 		inline zmq_socket_state send_more(ZMQ_HANDLE socket, const char* string)
 		{
-			int state = zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
+			const int state = zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
 			if (state < 0)
 			{
 				return check_zmq_error();
@@ -568,7 +570,7 @@ namespace agebull
 		/**
 		* \brief 发送帧
 		*/
-		inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr,const char* status)
+		inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, const char* status)
 		{
 			sharp_char d(3);
 			char buf[3];
@@ -576,8 +578,20 @@ namespace agebull
 			buf[1] = ZERO_FRAME_STATUS;
 			buf[2] = ZERO_FRAME_END;
 			int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
+			if (state < 0)
+			{
+				return check_zmq_error();
+			}
 			state = zmq_send(socket, "", 0, ZMQ_SNDMORE);
+			if (state < 0)
+			{
+				return check_zmq_error();
+			}
 			state = zmq_send(socket, buf, 3, ZMQ_SNDMORE);
+			if (state < 0)
+			{
+				return check_zmq_error();
+			}
 			state = zmq_send(socket, status, strlen(status), ZMQ_DONTWAIT);
 			if (state < 0)
 			{
@@ -585,17 +599,14 @@ namespace agebull
 			}
 			return zmq_socket_state::Succeed;
 		}
-		 
+
 		/**
 		* \brief 发送
 		*/
-		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>::iterator iter, const vector<sharp_char>::iterator& end)
+		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>::iterator& iter, const vector<sharp_char>::iterator& end)
 		{
-			size_t idx = 0;
-			//cout << "send :";
 			while (iter != end)
 			{
-				//cout << iter->operator*() << "," ;
 				const int state = zmq_send(socket, iter->operator*(), iter->size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
@@ -603,7 +614,6 @@ namespace agebull
 				}
 				++iter;
 			}
-			//cout << endl;
 			return send_late(socket, "");
 		}
 		/**
@@ -612,25 +622,22 @@ namespace agebull
 		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
 		{
 			size_t idx = first_index;
-			//cout << "send :" ;
 			for (; idx < ls.size() - 1; idx++)
 			{
-				//cout << *ls[idx] << ",";
 				const int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
 				}
 			}
-			//cout << *ls[idx] << endl;
 			return send_late(socket, *ls[idx]);
 		}
 		/**
 		* \brief 发送
 		*/
-		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls)
+		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls, int first_index = 0)
 		{
-			size_t idx = 0;
+			size_t idx = first_index;
 			for (; idx < ls.size() - 1; idx++)
 			{
 				const int state = zmq_send(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
@@ -645,7 +652,7 @@ namespace agebull
 		/**
 		 * \brief 连接的SOCKET简单封装
 		 */
-		template<int zmq_type = ZMQ_REQ> class inproc_request_socket
+		template<int zmq_type = ZMQ_REQ> class ipc_request_socket
 		{
 			char address_[MAX_PATH];
 			ZMQ_HANDLE socket_;
@@ -655,17 +662,34 @@ namespace agebull
 #endif
 		public:
 			/**
-			 * \brief
+			 * \brief 构造
 			 * \param name
 			 * \param station
 			 */
-			inproc_request_socket(const char* name, const char* station);
+			ipc_request_socket(const char* name, const char* station) : state_(zmq_socket_state::Succeed)
+			{
+				if (config::get_global_bool("use_ipc_protocol"))
+					sprintf(address_, "ipc:///tmp/zero_%s", station);
+				else
+					sprintf(address_, "inproc://%s", station);
+#ifdef TIMER
+				strcpy(station_, station);
+#endif
+				socket_ = create_req_socket(address_, ZMQ_REQ, name);
+			}
 
-			~inproc_request_socket()
+
+			/**
+			* \brief 析构
+			*/
+			~ipc_request_socket()
 			{
 				zmq_disconnect(socket_, address_);
 				zmq_close(socket_);
 			}
+			/**
+			* \brief 状态
+			*/
 			zmq_socket_state get_state() const
 			{
 				return state_;
@@ -788,18 +812,6 @@ namespace agebull
 				return state_ == zmq_socket_state::Succeed;
 			}
 		};
-
-		template <int zmq_type>
-		inproc_request_socket<zmq_type>::inproc_request_socket(const char* name, const char* station)
-			: state_(zmq_socket_state::Succeed)
-		{
-			sprintf(address_, "inproc://%s", station);
-#ifdef TIMER
-			strcpy(station_, station);
-#endif
-			socket_ = create_req_socket_inproc(name, station);
-		}
-
 
 		/**
 		* \brief 计划类型

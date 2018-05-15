@@ -1,15 +1,35 @@
 #pragma once
-#ifndef AGEBULL_COMMAND_H_
-#define  AGEBULL_COMMAND_H_
+#ifndef ZERO_DEFAULT_H_
+#define  ZERO_DEFAULT_H_
 namespace agebull
 {
 	namespace zmq_net
 	{
-		//Õı³£×´Ì¬
+		typedef void* ZMQ_HANDLE;
+
+		typedef char* TSON_BUFFER;
+
+		//ç«™ç‚¹ç±»å‹
+		typedef int STATION_TYPE;
+		const STATION_TYPE STATION_TYPE_DISPATCHER = 1;
+		const STATION_TYPE STATION_TYPE_MONITOR = 2;
+		const STATION_TYPE STATION_TYPE_API = 3;
+		const STATION_TYPE STATION_TYPE_VOTE = 4;
+		const STATION_TYPE STATION_TYPE_PUBLISH = 5;
+
+		//ç½‘ç»œçŠ¶æ€
+		typedef int NET_STATE;
+		const NET_STATE NET_STATE_NONE = 0;
+		const NET_STATE NET_STATE_RUNING = 1;
+		const NET_STATE NET_STATE_CLOSING = 2;
+		const NET_STATE NET_STATE_CLOSED = 3;
+		const NET_STATE NET_STATE_DISTORY = 4;
+
+		//æ­£å¸¸çŠ¶æ€
 #define  ZERO_STATUS_SUCCESS '+'
-		//´íÎó×´Ì¬
+		//é”™è¯¯çŠ¶æ€
 #define ZERO_STATUS_BAD  '-'
-//Õı³£×´Ì¬
+//æ­£å¸¸çŠ¶æ€
 #define ZERO_STATUS_OK  "+ok"
 #define ZERO_STATUS_PLAN  "+plan"
 #define ZERO_STATUS_RUNING  "+runing"
@@ -35,61 +55,61 @@ namespace agebull
 #define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
 
 
-//ÖÕÖ¹·ûºÅ
+//ç»ˆæ­¢ç¬¦å·
 #define ZERO_FRAME_END  'E'
-//Ö´ĞĞ¼Æ»®
+//æ‰§è¡Œè®¡åˆ’
 #define ZERO_FRAME_PLAN  'P'
-//²ÎÊı
+//å‚æ•°
 #define ZERO_FRAME_ARG  'A'
-//²ÎÊı
+//å‚æ•°
 #define ZERO_FRAME_COMMAND  'C'
-//ÇëÇóID
+//è¯·æ±‚ID
 #define ZERO_FRAME_REQUEST_ID  'I'
-//ÇëÇóÕß/Éú²úÕß
+//è¯·æ±‚è€…/ç”Ÿäº§è€…
 #define ZERO_FRAME_REQUESTER  'R'
-//·¢²¼Õß/Éú²úÕß
+//å‘å¸ƒè€…/ç”Ÿäº§è€…
 #define ZERO_FRAME_PUBLISHER  ZERO_FRAME_REQUESTER
-//»Ø¸´Õß/ÀË·ÑÕß
+//å›å¤è€…/æµªè´¹è€…
 #define ZERO_FRAME_RESPONSER  'G'
-//¶©ÔÄÕß/ÀË·ÑÕß
+//è®¢é˜…è€…/æµªè´¹è€…
 #define ZERO_FRAME_SUBSCRIBER  zero_responser
-//¹ã²¥Ö÷Ìâ
+//å¹¿æ’­ä¸»é¢˜
 //#define zero_pub_title  '*'
-//¹ã²¥¸±Ìâ
+//å¹¿æ’­å‰¯é¢˜
 #define ZERO_FRAME_SUBTITLE  'S'
-//ÍøÂçÉÏÏÂÎÄĞÅÏ¢
+//ç½‘ç»œä¸Šä¸‹æ–‡ä¿¡æ¯
 #define ZERO_FRAME_CONTEXT  'T'
-//×´Ì¬
+//çŠ¶æ€
 #define ZERO_FRAME_STATUS  'S'
 
 
 
 
 /**
-* \brief ¹¤×÷Õ¾µã¼ÓÈë
+* \brief å·¥ä½œç«™ç‚¹åŠ å…¥
 */
 #define  ZERO_WORKER_JOIN  '@' 
 /**
-* \brief ¹¤×÷Õ¾µã¼ÓÈë
+* \brief å·¥ä½œç«™ç‚¹åŠ å…¥
 */
 #define  ZERO_WORKER_LEFT  '!' 
 /**
-* \brief ¹¤×÷Õ¾µãµÈ´ı¹¤×÷
+* \brief å·¥ä½œç«™ç‚¹ç­‰å¾…å·¥ä½œ
 */
 #define  ZERO_WORKER_LISTEN  '$' 
 
 /**
-* \brief ĞÄÌø¼ÓÈë
+* \brief å¿ƒè·³åŠ å…¥
 */
 #define  ZERO_HEART_JOIN  '@' 
 
 /**
-* \brief ĞÄÌø½øĞĞ
+* \brief å¿ƒè·³è¿›è¡Œ
 */
 #define  ZERO_HEART_PITPAT  '$' 
 
 /**
-* \brief ĞÄÌøÍË³ö
+* \brief å¿ƒè·³é€€å‡º
 */
 #define  ZERO_HEART_LEFT  '!' 
 

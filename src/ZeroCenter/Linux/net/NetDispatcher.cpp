@@ -88,7 +88,7 @@ namespace agebull
 			{
 				if (arguments.empty())
 					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR;
-				return unstall_station(arguments[0]) ? ZERO_STATUS_OK: ZERO_STATUS_ERROR;
+				return uninstall(arguments[0]) ? ZERO_STATUS_OK: ZERO_STATUS_ERROR;
 			}
 			case 8:
 			{
@@ -214,9 +214,9 @@ namespace agebull
 		/**
 		* \brief 站点卸载
 		*/
-		bool station_dispatcher::unstall_station(const string& stattion)
+		bool station_dispatcher::uninstall(const string& stattion)
 		{
-			return station_warehouse::unstall_station(stattion);
+			return station_warehouse::uninstall(stattion);
 		}
 		/**
 		* \brief 远程调用
@@ -231,7 +231,7 @@ namespace agebull
 			vector<sharp_char> lines;
 			lines.emplace_back(command);
 			lines.emplace_back(argument);
-			auto result = station->command("_sys_", lines);
+			auto result = station->command("-system", lines);
 			return result;
 		}
 
@@ -259,7 +259,7 @@ namespace agebull
 				++last;
 				arguments.insert(last, 2, empty);
 			}
-			auto result = station->command("_sys_", arguments);
+			auto result = station->command("-system", arguments);
 			return result;
 		}
 
@@ -320,7 +320,7 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 参数
-			zmq_state_ = recv(request_scoket_, list);
+			zmq_state_ = recv(request_scoket_tcp_, list);
 			const sharp_char caller = list[0];
 			const sharp_char cmd = list[2];
 

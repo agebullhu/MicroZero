@@ -169,7 +169,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
         public static readonly string InnerErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError));
-
+        
         /// <summary>
         /// 页面不存在的Json文本
         /// </summary>

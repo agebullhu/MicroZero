@@ -1,7 +1,4 @@
-using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
@@ -11,18 +8,8 @@ namespace ApiTest
     {
         static void Main(string[] args)
         {
-            //Thread.Sleep(9000);
             StationConsole.WriteLine("Hello ZeroNet");
-            StationProgram.Launch();
-            Console.TreatControlCAsInput = true;
-            ConsoleKeyInfo key;
-            do
-            {
-                key = Console.ReadKey();
-            } while (key.Modifiers != ConsoleModifiers.Control || key.Key != ConsoleKey.C);
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine();
-            StationProgram.Exit();
+            ZeroApplication.RunAwaite();
         }
 
         public class LoginControler : ZeroApiController
@@ -36,10 +23,10 @@ namespace ApiTest
             {
                 return new ApiResult
                 {
-                    Result = true,
+                    Success = true,
                     Status = new ApiStatsResult
                     {
-                        Message = $"Api2 --- {Task.CurrentId}"
+                        ClientMessage = $"Api2 --- {Task.CurrentId}"
                     }
                 };
             }

@@ -1,4 +1,4 @@
-﻿using Agebull.ZeroNet.ZeroApi;
+using Agebull.ZeroNet.ZeroApi;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace RpcTest
                     
                     var result =action.DynamicInvoke(new Argument<string> {Value = "test"}) as IApiResult;
                     //action.DynamicInvoke() as IApiResult;
-                    Debug.WriteLine(result.Result);
+                    Debug.WriteLine(result.Success);
                 }
             }
         }

@@ -101,7 +101,7 @@ namespace agebull
 				erase(host);
 				for (auto i = list.begin();i<list.end();++i)
 				{
-					if (stricmp(*i,host) == 0)
+					if (strcasecmp(*i,host) == 0)
 					{
 						list.erase(i);
 						break;

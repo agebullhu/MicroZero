@@ -5,12 +5,12 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* \brief ¿ªÊ¼Ö´ĞĞÒ»ÌõÃüÁî
+		* \brief å¼€å§‹æ‰§è¡Œä¸€æ¡å‘½ä»¤
 		*/
 		sharp_char api_station::command(const char* caller, vector<sharp_char> lines)
 		{
 			vector<sharp_char> response;
-			inproc_request_socket<ZMQ_REQ> socket(caller, station_name_.c_str());
+			ipc_request_socket<ZMQ_REQ> socket(caller, station_name_.c_str());
 			if(socket.request(lines, response))
 				return response.empty() ? ZERO_STATUS_ERROR : response[0];
 			switch(socket.get_state())
@@ -23,50 +23,50 @@ namespace agebull
 		}
 
 		/**
-		* \brief ¹¤×÷¼¯ºÏµÄÏìÓ¦
+		* \brief å·¥ä½œé›†åˆçš„å“åº”
 		*/
 		void api_station::response()
 		{
 			vector<sharp_char> list;
-			//0 workerµØÖ· 1¿ÕÖ¡ 2ÇëÇóÕßµØÖ·
-			zmq_state_ = recv(response_socket_, list);
+			//0 workeråœ°å€ 1ç©ºå¸§ 2è¯·æ±‚è€…åœ°å€
+			zmq_state_ = recv(response_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
 				return;
 			}
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
-				log_error3("½ÓÊÕ½á¹ûÊ§°Ü%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
+				log_error3("æ¥æ”¶ç»“æœå¤±è´¥%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
 				return;
 			}
 			/*switch (list[2][0])
 			{
 			case ZERO_WORKER_JOIN:
 				worker_join(*list[0]);
-				send_addr(response_socket_, *list[0]);
-				send_late(response_socket_, ZERO_STATUS_WECOME);
+				send_addr(response_socket_tcp_, *list[0]);
+				send_late(response_socket_tcp_, ZERO_STATUS_WECOME);
 				return;
 			case ZERO_WORKER_LEFT:
 				worker_left(*list[0]);
-				send_addr(response_socket_, *list[0]);
-				send_late(response_socket_, ZERO_STATUS_BYE);
+				send_addr(response_socket_tcp_, *list[0]);
+				send_late(response_socket_tcp_, ZERO_STATUS_BYE);
 				return;
 			case ZERO_WORKER_LISTEN:
 				return;
 			default:
-				zmq_state_ = send(list[1][0] == '_' ? request_socket_inproc_ : request_scoket_, list, 2);
+				zmq_state_ = send(list[1][0] == '_' ? request_socket_ipc_ : request_scoket_tcp_, list, 2);
 				break;
 			}*/
 
-			zmq_state_ = send(list[0][0] == '_' ? request_socket_inproc_ : request_scoket_, list);
+			zmq_state_ = send(list[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, list);
 		}
 		/**
-		* \brief µ÷ÓÃ¼¯ºÏµÄÏìÓ¦
+		* \brief è°ƒç”¨é›†åˆçš„å“åº”
 		*/
 		void api_station::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
-			//0 ÇëÇóµØÖ· 1 ¿ÕÖ¡ 2ÃüÁî 3ÇëÇó±êÊ¶ 4ÉÏÏÂÎÄ 5²ÎÊı
+			//0 è¯·æ±‚åœ°å€ 1 ç©ºå¸§ 2å‘½ä»¤ 3è¯·æ±‚æ ‡è¯† 4ä¸Šä¸‹æ–‡ 5å‚æ•°
 			zmq_state_ = recv(socket, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
@@ -74,7 +74,7 @@ namespace agebull
 			}
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
-				log_error3("½ÓÊÕÏûÏ¢Ê§°Ü%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
+				log_error3("æ¥æ”¶æ¶ˆæ¯å¤±è´¥%s(%d)%s", station_name_.c_str(), response_port_, state_str(zmq_state_));
 				return;
 			}
 			const size_t list_size = list.size();
@@ -84,7 +84,7 @@ namespace agebull
 				return;
 			}
 			sharp_char& description = list[2];
-			//ÄÚ²¿ÃüÁîÍ¨ÖªÍË³ö
+			//å†…éƒ¨å‘½ä»¤é€šçŸ¥é€€å‡º
 			if (inner && description[1] == 'B')
 			{
 				worker_left(*list[3]);
@@ -113,7 +113,7 @@ namespace agebull
 			}
 		}
 		/**
-		* \brief ¹¤×÷½øÈë¼Æ»®
+		* \brief å·¥ä½œè¿›å…¥è®¡åˆ’
 		*/
 		bool api_station::job_plan(ZMQ_HANDLE socket,vector<sharp_char>& list)
 		{
@@ -172,7 +172,7 @@ namespace agebull
 				buf[++cnt] = ZERO_FRAME_ARG;
 				message.messages.push_back(arg);
 			}
-			buf[0] = cnt;
+			buf[0] = static_cast<char>(cnt);
 
 			message.read_plan(plan.get_buffer());
 			message.request_caller = caller;
@@ -186,12 +186,12 @@ namespace agebull
 
 		}
 		/**
-		* \brief ¹¤×÷¿ªÊ¼£¨·¢ËÍµ½¹¤×÷Õß£©
+		* \brief å·¥ä½œå¼€å§‹ï¼ˆå‘é€åˆ°å·¥ä½œè€…ï¼‰
 		*/
 		bool api_station::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)
 		{
 			const sharp_char& caller = list[0];
-			//Â·ÓÉµ½ÆäÖĞÒ»¸ö¹¤×÷¶ÔÏó
+			//è·¯ç”±åˆ°å…¶ä¸­ä¸€ä¸ªå·¥ä½œå¯¹è±¡
 			//const char* worker;
 			//while(!_balance.get_host(worker))
 			//{
@@ -202,20 +202,20 @@ namespace agebull
 			//	zmq_state_ = send_status(socket, *caller, ZERO_STATUS_API_NOT_WORKER);
 			//	return zmq_state_ == zmq_socket_state::Succeed;
 			//}
-			//zmq_state_ = send_addr(response_socket_, worker);
-			zmq_state_ = send_more(response_socket_, *caller);
+			//zmq_state_ = send_addr(response_socket_tcp_, worker);
+			zmq_state_ = send_more(response_socket_tcp_, *caller);
 			if (zmq_state_ != zmq_socket_state::Succeed)
 				return false;
-			zmq_state_ = send(response_socket_, list, 2);
+			zmq_state_ = send(response_socket_tcp_, list, 2);
 			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		/**
-		* \brief ¹¤×÷½áÊø(·¢ËÍµ½ÇëÇóÕß)
+		* \brief å·¥ä½œç»“æŸ(å‘é€åˆ°è¯·æ±‚è€…)
 		*/
 		bool api_station::job_end(vector<sharp_char>& list)
 		{
-			zmq_state_ = send(list[1][0] == '_' ? request_socket_inproc_ : request_scoket_, list , 2);
+			zmq_state_ = send(list[1][0] == '_' ? request_socket_ipc_ : request_scoket_tcp_, list , 2);
 			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 

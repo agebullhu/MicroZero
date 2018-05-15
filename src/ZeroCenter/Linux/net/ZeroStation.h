@@ -78,19 +78,19 @@ namespace agebull
 			/**
 			* \brief 调用句柄
 			*/
-			void* request_scoket_;
+			void* request_scoket_tcp_;
 			/**
 			* \brief 调用句柄
 			*/
-			void* request_socket_inproc_;
+			void* request_socket_ipc_;
 			/**
 			* \brief 工作句柄
 			*/
-			void* response_socket_;
+			void* response_socket_tcp_;
 			/**
 			* \brief 心跳句柄
 			*/
-			void* heart_socket_;
+			void* heart_socket_tcp_;
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
@@ -107,6 +107,7 @@ namespace agebull
 			{
 				return config_.c_str();
 			}
+
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
@@ -114,6 +115,7 @@ namespace agebull
 			{
 				return zmq_state_;
 			}
+
 			/**
 			* \brief API服务名称
 			*/
@@ -121,6 +123,7 @@ namespace agebull
 			{
 				return station_type_;
 			}
+
 			/**
 			* \brief 当前站点状态
 			*/
@@ -128,6 +131,7 @@ namespace agebull
 			{
 				return station_state_;
 			}
+
 			/**
 			* \brief API服务名称
 			*/
@@ -139,7 +143,7 @@ namespace agebull
 			/**
 			* \brief 外部地址
 			*/
-			string get_out_address()const
+			string get_out_address() const
 			{
 				string addr("tcp://*:");
 				addr += std::to_string(request_port_);
@@ -149,7 +153,7 @@ namespace agebull
 			/**
 			* \brief 工作地址
 			*/
-			string get_inner_address()const
+			string get_inner_address() const
 			{
 				string addr("tcp://*:");
 				addr += std::to_string(response_port_);
@@ -159,7 +163,7 @@ namespace agebull
 			/**
 			* \brief 心跳地址
 			*/
-			string get_heart_address()const
+			string get_heart_address() const
 			{
 				string addr("tcp://*:");
 				addr += std::to_string(heart_port_);
@@ -171,6 +175,7 @@ namespace agebull
 			*/
 			zero_station(string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type)
 				: in_plan_poll_(false)
+				, config_(128)
 				, state_semaphore_(1)
 				, station_name_(std::move(name))
 				, station_type_(type)
@@ -182,15 +187,15 @@ namespace agebull
 				, heart_zmq_type_(heart_zmq_type)
 				, poll_items_(nullptr)
 				, poll_count_(0)
-				, request_scoket_(nullptr)
-				, request_socket_inproc_(nullptr)
-				, response_socket_(nullptr)
-				, heart_socket_(nullptr)
+				, request_scoket_tcp_(nullptr)
+				, request_socket_ipc_(nullptr)
+				, response_socket_tcp_(nullptr)
+				, heart_socket_tcp_(nullptr)
 				, zmq_state_(zmq_socket_state::Succeed)
 				, station_state_(station_state::None)
-				, config_(128)
 			{
 			}
+
 			/**
 			* \brief 载入现在到期的内容
 			*/
@@ -255,11 +260,12 @@ namespace agebull
 			/**
 			*\brief 发送消息
 			*/
-			bool send_data(vector<sharp_char>& datas,int first_index=0)
+			bool send_data(vector<sharp_char>& datas, int first_index = 0)
 			{
-				zmq_state_ = send(response_socket_, datas, first_index);
+				zmq_state_ = send(response_socket_tcp_, datas, first_index);
 				return zmq_state_ == zmq_socket_state::Succeed;
 			}
+
 			/**
 			* \brief 析构
 			*/
@@ -268,13 +274,16 @@ namespace agebull
 				zero_station::close(true);
 				station_state_ = station_state::Destroy;
 			}
+
 			/**
 			* \brief 能否继续工作
 			*/
 			virtual bool can_do() const
 			{
-				return (station_state_ == station_state::Run || station_state_ == station_state::Pause) && get_net_state() == NET_STATE_RUNING;
+				return (station_state_ == station_state::Run || station_state_ == station_state::Pause) && get_net_state() ==
+					NET_STATE_RUNING;
 			}
+
 			/**
 			* \brief 检查是否暂停
 			*/
@@ -287,6 +296,7 @@ namespace agebull
 				}
 				return false;
 			}
+
 			/**
 			* \brief 初始化
 			*/
@@ -318,6 +328,7 @@ namespace agebull
 			* \brief 结束
 			*/
 			virtual bool close(bool waiting);
+
 			/**
 			* \brief 计划轮询
 			*/
@@ -326,6 +337,7 @@ namespace agebull
 				auto station = static_cast<zero_station*>(arg);
 				station->plan_poll();
 			}
+
 		protected:
 
 			/**
@@ -335,13 +347,14 @@ namespace agebull
 			{
 				plan_message message;
 				message.request_caller = list[0];
-				for (size_t idx = 3;idx < list.size();idx++)
+				for (size_t idx = 3; idx < list.size(); idx++)
 				{
 					message.messages.push_back(list[idx]);
 				}
 				message.read_plan(list[0].get_buffer());
 				plan_next(message, true);
 			}
+
 			/**
 			* \brief 计划轮询
 			*/
@@ -350,17 +363,22 @@ namespace agebull
 			/**
 			* \brief 工作集合的响应
 			*/
-			virtual void response() {}
+			virtual void response()
+			{
+			}
+
 			/**
 			* \brief 调用集合的响应
 			*/
-			virtual void request(ZMQ_HANDLE socket,bool inner) = 0;
+			virtual void request(ZMQ_HANDLE socket, bool inner) = 0;
+
 			/**
 			* 心跳的响应
 			*/
-			virtual void heartbeat(){}
+			virtual void heartbeat()
+			{
+			}
 		};
-
 	}
 }
 #endif

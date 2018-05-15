@@ -14,7 +14,7 @@ namespace ZeroNet.Http.Route
             //Thread.Sleep(11000);
             BuildWebHost(args).Run();
             PerformanceCounter.Save();
-            StationProgram.Exit();
+            ZeroApplication.Exit();
         }
 
         public static IWebHost BuildWebHost(string[] args)

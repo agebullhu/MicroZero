@@ -9,11 +9,11 @@ namespace agebull
 	/**
 	* \brief 配置文件中的redis的地址
 	*/
-	string redis_ip = config::get_config("redis_add");
+	string redis_ip = config::get_global_string("redis_addr");
 	/**
 	* \brief 配置文件中的redis的db
 	*/
-	int redis_db = config::get_int("redis_defdb");
+	int redis_db = config::get_global_int("redis_defdb");
 
 	redis_db_scope::redis_db_scope(int db): redis_(trans_redis::get_context())
 	{
@@ -46,8 +46,8 @@ namespace agebull
 		const bool is_new = context == nullptr;
 		if (is_new)
 		{
-			redis_ip = config::get_config("redis_add");
-			redis_db = config::get_int("redis_defdb");
+			redis_ip = config::get_global_string("redis_addr");
+			redis_db = config::get_global_int("redis_defdb");
 			context = new trans_redis();
 #if _DEBUG
 			context->m_last_status = context->m_redis_cmd->ping();
@@ -70,8 +70,8 @@ namespace agebull
 		const bool is_new = context == nullptr;
 		if (is_new)
 		{
-			redis_ip = config::get_config("redis_add");
-			redis_db = config::get_int("redis_defdb");
+			redis_ip = config::get_global_string("redis_addr");
+			redis_db = config::get_global_int("redis_defdb");
 			context = new trans_redis();
 #if _DEBUG
 			context->m_last_status = context->m_redis_cmd->ping();

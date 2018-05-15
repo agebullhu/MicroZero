@@ -64,7 +64,7 @@
     <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="net\ApiStation.cpp" />
-    <ClCompile Include="net\command_crc.cpp" />
+    <ClCompile Include="net\net_crc.cpp" />
     <ClCompile Include="net\message_plan.cpp" />
     <ClCompile Include="net\NetDispatcher.cpp" />
     <ClCompile Include="net\StationWarehouse.cpp" />
@@ -72,18 +72,18 @@
     <ClCompile Include="net\net_command.cpp" />
     <ClCompile Include="net\BroadcastingStation.cpp" />
     <ClCompile Include="net\ZeroStation.cpp" />
-    <ClCompile Include="net\zmq_monitor.cpp" />
+    <ClCompile Include="net\net_monitor.cpp" />
     <ClCompile Include="redis\TransRedis.cpp" />
     <ClCompile Include="service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
     <ClInclude Include="cfg\config.h" />
-    <ClInclude Include="command.h" />
     <ClInclude Include="log\mylogger.h" />
     <ClInclude Include="net\ApiStation.h" />
     <ClInclude Include="net\BalanceStation.h" />
     <ClInclude Include="net\NetDispatcher.h" />
+    <ClInclude Include="net\net_default.h" />
     <ClInclude Include="net\ZeroStation.h" />
     <ClInclude Include="net\StationWarehouse.h" />
     <ClInclude Include="net\VoteStation.h" />

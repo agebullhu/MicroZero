@@ -1,4 +1,4 @@
-﻿using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core;
 using System;
 
 namespace Agebull.ZeroNet.LogService
@@ -9,9 +9,9 @@ namespace Agebull.ZeroNet.LogService
         {
             Console.WriteLine("Hello ZeroNet");
 
-            StationProgram.RegisteStation(new RemoteLogStation());
-            StationProgram.Initialize();
-            StationProgram.RunConsole();
+            ZeroApplication.RegisteStation(new RemoteLogStation());
+            ZeroApplication.Initialize(false);
+            ZeroApplication.RunAwaite();
         }
     }
 }

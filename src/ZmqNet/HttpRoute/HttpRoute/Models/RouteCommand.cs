@@ -81,9 +81,9 @@ namespace ZeroNet.Http.Route
 
         static void BindZero()
         {
-            if (StationProgram.State != StationState.Run)
+            if (ZeroApplication.State != StationState.Run)
                 return;
-            foreach (var station in StationProgram.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi).ToArray())
+            foreach (var station in ZeroApplication.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi).ToArray())
             {
                 ApiStationJoin(station);
             }
@@ -149,6 +149,9 @@ namespace ZeroNet.Http.Route
                 case "station_install":
                 case "station_join":
                     ApiStationJoin(e.EventConfig);
+                    break;
+                case "station_uninstall":
+                    AppConfig.Config.RouteMap.Remove(e.EventConfig.StationName);
                     break;
                 case "station_left":
                 case "station_pause":

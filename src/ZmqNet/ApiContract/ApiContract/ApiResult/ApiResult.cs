@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -14,8 +14,8 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 成功或失败标记
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public bool Result { get; set; }
+        [JsonProperty("success", NullValueHandling = NullValueHandling.Ignore)]
+        public bool Success { get; set; }
 
         
 
@@ -28,7 +28,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// API执行状态（为空表示状态正常）
         /// </summary>
-        [JsonProperty("ResponseStatus", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
         public ApiStatsResult Status { get; set; }
 
         /// <summary>
@@ -40,11 +40,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = ErrorCode.GetMessage(errCode)
+                    ClientMessage = ErrorCode.GetMessage(errCode)
                 }
             };
         }
@@ -59,11 +59,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message
+                    ClientMessage = message
                 }
             };
         }
@@ -78,11 +78,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message,
+                    ClientMessage = message,
                     InnerMessage = innerMessage
                 }
             };
@@ -95,7 +95,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult
             {
-                Result = true
+                Success = true
             };
         }
     }
@@ -111,7 +111,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 返回值
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("data",NullValueHandling = NullValueHandling.Ignore)]
         public TData ResultData { get; set; }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult<TData>
             {
-                Result = true,
+                Success = true,
                 ResultData = data
             };
         }
@@ -135,11 +135,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult<TData>
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = ErrorCode.GetMessage(errCode)
+                    ClientMessage = ErrorCode.GetMessage(errCode)
                 }
             };
         }
@@ -153,11 +153,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiResult<TData>
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message
+                    ClientMessage = message
                 }
             };
         }

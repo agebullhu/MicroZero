@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.ZeroApi;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -10,90 +11,90 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// Â·ÓÉÊı¾İ
+    /// è·¯ç”±æ•°æ®
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    public class RouteData
+    public class RouteData : NetData
     {
         /// <summary>
-        /// ¿ªÊ¼Ê±¼ä
+        /// å¼€å§‹æ—¶é—´
         /// </summary>
         [DataMember, JsonProperty("start")]
         public DateTime Start { get; set; }
 
         /// <summary>
-        /// ½áÊøÊ±¼ä
+        /// ç»“æŸæ—¶é—´
         /// </summary>
         [DataMember, JsonProperty("end")]
         public DateTime End { get; set; }
 
         /// <summary>
-        /// ÇëÇóµØÖ·
+        /// è¯·æ±‚åœ°å€
         /// </summary>
         [DataMember, JsonProperty("uri")]
         public Uri Uri;
         /// <summary>
-        ///     µ±Ç°ÊÊÓÃµÄ»º´æÉèÖÃ¶ÔÏó
+        ///     å½“å‰é€‚ç”¨çš„ç¼“å­˜è®¾ç½®å¯¹è±¡
         /// </summary>
         public CacheSetting CacheSetting;
         /// <summary>
-        ///     »º´æ¼ü
+        ///     ç¼“å­˜é”®
         /// </summary>
         public string CacheKey;
         /// <summary>
-        /// Ö´ĞĞ×´Ì¬
+        /// æ‰§è¡ŒçŠ¶æ€
         /// </summary>
         [DataMember, JsonProperty("status")]
         public RouteStatus Status;
         /// <summary>
-        /// Ö´ĞĞHTTPÖØĞ´ÏòÂğ
+        /// æ‰§è¡ŒHTTPé‡å†™å‘å—
         /// </summary>
         [DataMember, JsonProperty("redirect")]
         public bool Redirect;
         /// <summary>
-        ///     ·µ»ØÖµ
+        ///     è¿”å›å€¼
         /// </summary>
         [DataMember, JsonProperty("result")]
         public string ResultMessage;
 
         /// <summary>
-        ///     Http HeaderÖĞµÄAuthorizationĞÅÏ¢
+        ///     Http Headerä¸­çš„Authorizationä¿¡æ¯
         /// </summary>
         [DataMember, JsonProperty("bear")]
         public string Bearer;
 
         /// <summary>
-        ///     µ±Ç°ÇëÇóµ÷ÓÃµÄÖ÷»úÃû³Æ
+        ///     å½“å‰è¯·æ±‚è°ƒç”¨çš„ä¸»æœºåç§°
         /// </summary>
         [DataMember, JsonProperty("host")]
         public string HostName;
 
         /// <summary>
-        ///     µ±Ç°ÇëÇóµ÷ÓÃµÄAPIÃû³Æ
+        ///     å½“å‰è¯·æ±‚è°ƒç”¨çš„APIåç§°
         /// </summary>
         [DataMember, JsonProperty("apiName")]
         public string ApiName;
 
         /// <summary>
-        ///     ÇëÇóµÄÄÚÈİ
+        ///     è¯·æ±‚çš„å†…å®¹
         /// </summary>
         [DataMember, JsonProperty("context")]
         public string Context;
 
         /// <summary>
-        ///     ÇëÇóµÄ²ÎÊı
+        ///     è¯·æ±‚çš„å‚æ•°
         /// </summary>
         [DataMember, JsonProperty("queryString")]
         public string QueryString;
 
         /// <summary>
-        ///     ÇëÇóµÄ±íµ¥
+        ///     è¯·æ±‚çš„è¡¨å•
         /// </summary>
         [DataMember, JsonProperty("headers")]
         public Dictionary< string,List<string>> Headers = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        ///     ÇëÇóµÄ±íµ¥
+        ///     è¯·æ±‚çš„è¡¨å•
         /// </summary>
         [DataMember, JsonProperty("form")]
         public string Form;
@@ -104,18 +105,18 @@ namespace ZeroNet.Http.Route
         [DataMember, JsonProperty("method")]
         public string HttpMethod;
         /// <summary>
-        ///     Â·ÓÉÖ÷»úĞÅÏ¢
+        ///     è·¯ç”±ä¸»æœºä¿¡æ¯
         /// </summary>
         public HostConfig RouteHost;
 
         /// <summary>
-        /// ÊÇ·ñÕı³£
+        /// æ˜¯å¦æ­£å¸¸
         /// </summary>
         [DataMember, JsonProperty("succeed")]
         public bool IsSucceed { get; set; }
 
         /// <summary>
-        /// ×¼±¸
+        /// å‡†å¤‡
         /// </summary>
         /// <param name="request"></param>
         public void Prepare(HttpRequest request)

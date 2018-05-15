@@ -3,29 +3,6 @@
 #include <acl/acl_cpp/stdlib/string.hpp>
 #include <zeromq/zmq.h>
 
-inline int stricmp(const char* p1, const char* p2)
-{
-	while (*p1)
-	{ 
-		char c1 = *p1;
-		char c2 = *p2;
-		if (c1 >= 'A' && c1 <= 'Z')
-		{
-			c1 += 'a' - 'A';
-		}
-		if (c2 >= 'A' && c2 <= 'Z')
-		{
-			c2 += 'a' - 'A';
-		}
-		if (c1 != c2)
-		{
-			return c1 - c2;
-		}
-		p1++;
-		p2++;
-	}
-	return *p1 - *p2;
-}
 namespace agebull
 {
 	namespace zmq_net
@@ -113,7 +90,7 @@ namespace agebull
 				_buffer = new char[_size + 1];
 				_count = new int();
 				*_count = 1;
-				memset(_buffer,0, _size + 1);
+				memset(_buffer, 0, _size + 1);
 			}
 			sharp_char(const acl::string& msg)
 			{

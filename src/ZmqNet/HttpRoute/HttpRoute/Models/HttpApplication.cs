@@ -7,7 +7,6 @@ using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Agebull.ZeroNet.LogRecorder;
-using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace ZeroNet.Http.Route
@@ -25,15 +24,17 @@ namespace ZeroNet.Http.Route
         public static void Initialize()
         {
             AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-
-
+            
             if (AppConfig.Config.SystemConfig.FireZero)
             {
-                StationProgram.Launch();
                 LogRecorder.Initialize(new RemoteRecorder());
+                ZeroApplication.Launch();
                 RouteCommand.ZeroFlush();
             }
-
+            else
+            {
+                LogRecorder.Initialize();
+            }
             LogRecorder.GetRequestIdFunc = () =>
                 ApiContext.Current == null || ApiContext.Current.Request == null
                     ? Guid.Empty.ToString()
@@ -101,7 +102,7 @@ namespace ZeroNet.Http.Route
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                RuntimeWaring.Waring("Route", uri.LocalPath, e.Message);
+                RuntimeWaring.Waring("Route", uri.LocalPath, e.ToString());
                 context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
                 return;
             }
@@ -136,7 +137,7 @@ namespace ZeroNet.Http.Route
             {
                 router.Data.Status = RouteStatus.LocalError;
                 LogRecorder.Exception(e);
-                RuntimeWaring.Waring("Route", uri.LocalPath, e.Message);
+                RuntimeWaring.Waring("Route", uri.LocalPath, e.ToString());
                 context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
             }
             finally

@@ -40,3 +40,4 @@ packages
 /src/UpgradeLog.htm
 /src/Release
 /src/ZeroCenter/Console/Release
+*.TMP

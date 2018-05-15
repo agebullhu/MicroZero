@@ -56,53 +56,53 @@ namespace agebull
 
 			if (request_zmq_type_ >= 0)
 			{
-				request_scoket_ = create_res_socket(station_name_.c_str(), request_zmq_type_, request_port_);
-				if (request_scoket_ == nullptr)
+				request_scoket_tcp_ = create_res_socket_tcp(station_name_.c_str(), request_zmq_type_, request_port_);
+				if (request_scoket_tcp_ == nullptr)
 				{
 					station_state_ = station_state::Failed;
-					log_error2("%s initialize error(out) %s", station_name_, zmq_strerror(zmq_errno()));
+					log_error2("%s initialize error(out) %s", station_name_.c_str(), zmq_strerror(zmq_errno()));
 					set_command_thread_bad(station_name_.c_str());
 					return false;
 				}
-				request_socket_inproc_ = create_res_socket_inproc(station_name_.c_str(), request_zmq_type_);
-				if (request_socket_inproc_ == nullptr)
+				request_socket_ipc_ = create_res_socket_ipc(station_name_.c_str(), request_zmq_type_);
+				if (request_socket_ipc_ == nullptr)
 				{
 					station_state_ = station_state::Failed;
-					log_error2("%s initialize error(inproc) %s", station_name_, zmq_strerror(zmq_errno()));
+					log_error2("%s initialize error(ipc) %s", station_name_.c_str(), zmq_strerror(zmq_errno()));
 					set_command_thread_bad(station_name_.c_str());
 					return false;
 				}
 				if (request_zmq_type_ != ZMQ_PUB)
 				{
-					poll_items_[cnt++] = { request_scoket_, 0, ZMQ_POLLIN, 0 };
-					poll_items_[cnt++] = { request_socket_inproc_, 0, ZMQ_POLLIN, 0 };
+					poll_items_[cnt++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
+					poll_items_[cnt++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
 				}
 			}
 			if (response_zmq_type_ >= 0)
 			{
-				response_socket_ = create_res_socket(station_name_.c_str(), response_zmq_type_, response_port_);
-				if (response_socket_ == nullptr)
+				response_socket_tcp_ = create_res_socket_tcp(station_name_.c_str(), response_zmq_type_, response_port_);
+				if (response_socket_tcp_ == nullptr)
 				{
 					station_state_ = station_state::Failed;
-					log_error2("%s initialize error(inner) %s", station_name_, zmq_strerror(zmq_errno()));
+					log_error2("%s initialize error(inner) %s", station_name_.c_str(), zmq_strerror(zmq_errno()));
 					set_command_thread_bad(station_name_.c_str());
 					return false;
 				}
 				if (response_zmq_type_ != ZMQ_PUB)
-					poll_items_[cnt++] = { response_socket_, 0, ZMQ_POLLIN, 0 };
+					poll_items_[cnt++] = { response_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
 			if (heart_zmq_type_ >= 0)
 			{
-				heart_socket_ = create_res_socket(station_name_.c_str(), heart_zmq_type_, heart_port_);
-				if (heart_socket_ == nullptr)
+				heart_socket_tcp_ = create_res_socket_tcp(station_name_.c_str(), heart_zmq_type_, heart_port_);
+				if (heart_socket_tcp_ == nullptr)
 				{
 					station_state_ = station_state::Failed;
-					log_error2("%s initialize error(heart) %s", station_name_, zmq_strerror(zmq_errno()));
+					log_error2("%s initialize error(heart) %s", station_name_.c_str(), zmq_strerror(zmq_errno()));
 					set_command_thread_bad(station_name_.c_str());
 					return false;
 				}
 				if (heart_zmq_type_ != ZMQ_PUB)
-					poll_items_[cnt] = { heart_socket_, 0, ZMQ_POLLIN, 0 };
+					poll_items_[cnt] = { heart_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
 			station_state_ = station_state::Run;
 			return true;
@@ -119,23 +119,26 @@ namespace agebull
 			delete[]poll_items_;
 			poll_items_ = nullptr;
 			station_state_ = station_state::Closing;
-			if (request_scoket_ != nullptr)
+			if (request_scoket_tcp_ != nullptr)
 			{
-				close_socket(request_scoket_, get_out_address().c_str());
+				close_res_socket(request_scoket_tcp_, get_out_address().c_str());
 			}
-			if (response_socket_ != nullptr)
+			if (response_socket_tcp_ != nullptr)
 			{
-				close_socket(response_socket_, get_inner_address().c_str());
+				close_res_socket(response_socket_tcp_, get_inner_address().c_str());
 			}
-			if (heart_socket_ != nullptr)
+			if (heart_socket_tcp_ != nullptr)
 			{
-				close_socket(heart_socket_, get_heart_address().c_str());
+				close_res_socket(heart_socket_tcp_, get_heart_address().c_str());
 			}
-			if (request_socket_inproc_ != nullptr)
+			if (request_socket_ipc_ != nullptr)
 			{
-				char host[MAX_PATH];
-				sprintf(host, "inproc://%s", station_name_.c_str());
-				close_socket(request_socket_inproc_, host);
+				char address[MAX_PATH];
+				if (config::get_global_bool("use_ipc_protocol"))
+					sprintf(address, "ipc://%s.ipc", station_name_.c_str());
+				else
+					sprintf(address, "inproc://%s", station_name_.c_str());
+				close_res_socket(request_socket_ipc_, address);
 			}
 			//登记线程关闭
 			set_command_thread_end(station_name_.c_str());
@@ -180,13 +183,13 @@ namespace agebull
 				{
 					if (poll_items_[idx].revents & ZMQ_POLLIN)
 					{
-						if (poll_items_[idx].socket == request_scoket_)
+						if (poll_items_[idx].socket == request_scoket_tcp_)
 							request(poll_items_[idx].socket,false);
-						else if (poll_items_[idx].socket == request_socket_inproc_)
+						else if (poll_items_[idx].socket == request_socket_ipc_)
 							request(poll_items_[idx].socket,true);
-						else if (poll_items_[idx].socket == response_socket_)
+						else if (poll_items_[idx].socket == response_socket_tcp_)
 							response();
-						else if (poll_items_[idx].socket == heart_socket_)
+						else if (poll_items_[idx].socket == heart_socket_tcp_)
 							heartbeat();
 						check_zmq_state()
 					}

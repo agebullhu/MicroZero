@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,10 +61,10 @@ namespace Agebull.ZeroNet.PubSub
             _socket = new SubscriberSocket();
             try
             {
-                _socket.Options.Identity = RealName.ToAsciiBytes();
+                _socket.Options.Identity = Identity;
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
                 _socket.Subscribe(Subscribe);
-                _socket.Connect(Config.InnerAddress);
+                _socket.Connect(Config.WorkerAddress);
             }
             catch (Exception e)
             {
@@ -88,7 +88,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 缓存文件名称
         /// </summary>
-        private string CacheFileName => Path.Combine(StationProgram.Config.DataFolder,
+        private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
             $"zero_sub_queue_{StationName}.json");
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Agebull.ZeroNet.PubSub
                     return;
                 try
                 {
-                    _socket.Disconnect(Config.InnerAddress);
+                    _socket.Disconnect(Config.WorkerAddress);
                 }
                 catch (Exception e)
                 {

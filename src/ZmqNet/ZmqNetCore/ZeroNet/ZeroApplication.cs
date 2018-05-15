@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -16,7 +15,7 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     ///     站点应用
     /// </summary>
-    public static class StationProgram
+    public static class ZeroApplication
     {
         #region Station
 
@@ -28,12 +27,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     监测中心广播地址
         /// </summary>
-        public static string ZeroMonitorAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}";
+        public static string ZeroMonitorAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}";//Config.GetRemoteAddress("SystemMonitor", Config.ZeroMonitorPort);
 
         /// <summary>
         ///     监测中心管理地址
         /// </summary>
-        public static string ZeroManageAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroManagePort}";
+        public static string ZeroManageAddress => Config.GetRemoteAddress("SystemManage", Config.ZeroManagePort);
 
         /// <summary>
         /// 注册站点
@@ -183,40 +182,91 @@ namespace Agebull.ZeroNet.Core
         }
         #endregion
 
+        #region Run
+
+        /// <summary>
+        ///     执行(无挂起操作)
+        /// </summary>
+        public static void Launch()
+        {
+            Initialize(false);
+            Start();
+        }
+
+        /// <summary>
+        ///     执行并等待
+        /// </summary>
+        public static void RunAwaite()
+        {
+            Assembly = Assembly.GetCallingAssembly();
+            Initialize();
+            Console.CancelKeyPress += OnCancelKeyPress;
+
+            StationConsole.WriteLine(ZeroManageAddress);
+            State = StationState.Start;
+            ZeroPublisher.Start();
+            SystemManager.Run();
+            StationConsole.WriteLine("Application started. Press Ctrl+C to shut down.");
+            Task.Factory.StartNew(SystemMonitor.Run).GetAwaiter().GetResult();
+            StationConsole.WriteLine("Application shut down.");
+            while (State < StationState.Destroy)
+            {
+                Thread.Sleep(1000);
+            }
+        }
+        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine();
+            Exit();
+        }
+        #endregion
+
         #region Program
 
         /// <summary>
         ///     状态
         /// </summary>
         public static StationState State { get; internal set; }
-
-
         /// <summary>
-        ///     执行
+        /// 主调用程序集
         /// </summary>
-        public static void Launch()
-        {
-            if (State >= StationState.Run)
-                return;
-            Initialize();
-            Start();
-        }
+        public static Assembly Assembly;
 
         /// <summary>
         ///     初始化
         /// </summary>
-        public static void Initialize()
+        /// <param name="discove">是否自动发现</param>
+        public static void Initialize(bool discove = true)
         {
+            InitializeConfig();
+            ApiContext.SetLogRecorderDependency();
             ZeroPublisher.Initialize();
-            Discove();
+            if (discove)
+                Discove();
+        }
+
+        static void InitializeConfig()
+        {
+            if (ApiContext.Configuration == null)
+            {
+                ApiContext.SetConfiguration(new ConfigurationBuilder().AddJsonFile("host.json").Build());
+                ApiContext.Configuration["contentRoot"] = Environment.CurrentDirectory;
+            }
+
+            ApiContext.MyServiceKey = Config.StationName;
+            ApiContext.MyServiceName = Config.ServiceName;
+            ApiContext.MyRealName = Config.RealName;
+
         }
         /// <summary>
         /// 发现
         /// </summary>
         static void Discove()
         {
+            if (Assembly == null)
+                return;
             var discover = new ZeroApiDiscover();
-            discover.FindApies(Assembly.GetCallingAssembly());
+            discover.FindApies(Assembly);
             if (discover.ApiItems.Count == 0)
                 return;
             var station = new ApiStation
@@ -235,27 +285,15 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     启动
         /// </summary>
-        internal static void Start()
+        public static void Start()
         {
-            switch (State)
-            {
-                case StationState.Run:
-                    StationConsole.WriteInfo("*run...");
-                    return;
-                case StationState.Closing:
-                    StationConsole.WriteInfo("*closing...");
-                    return;
-                case StationState.Destroy:
-                    StationConsole.WriteInfo("*destroy...");
-                    return;
-            }
             StationConsole.WriteLine(ZeroManageAddress);
             State = StationState.Start;
             ZeroPublisher.Start();
-            Task.Factory.StartNew(SystemMonitor.Run);
+            Task.Factory.StartNew(SystemMonitor.Run2);
             SystemManager.Run();
         }
-        
+
         /// <summary>
         ///     关闭
         /// </summary>
@@ -285,7 +323,6 @@ namespace Agebull.ZeroNet.Core
             Close();
             State = StationState.Destroy;
             StationConsole.WriteInfo("Program Destroy");
-            Process.GetCurrentProcess().Close();
         }
 
         #endregion
@@ -305,7 +342,6 @@ namespace Agebull.ZeroNet.Core
 
         private static void ConsoleInput()
         {
-            Console.CancelKeyPress += Console_CancelKeyPress;
             while (true)
             {
                 var cmd = Console.ReadLine();
@@ -332,10 +368,6 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            Exit();
-        }
 
         #endregion
     }

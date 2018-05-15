@@ -8,19 +8,19 @@ using Agebull.ZeroNet.PubSub;
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// ZeroStation·¢ÏÖ¹¤¾ß
+    /// ZeroStationå‘ç°å·¥å…·
     /// </summary>
     public class ZeroApiDiscover
     {
-        #region API·¢ÏÖ
+        #region APIå‘ç°
 
         /// <summary>
-        /// ËùÓĞAPI·½·¨µÄ»ù±¾ĞÅÏ¢
+        /// æ‰€æœ‰APIæ–¹æ³•çš„åŸºæœ¬ä¿¡æ¯
         /// </summary>
         public Dictionary<string, ApiActionInfo> ApiItems = new Dictionary<string, ApiActionInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// ²éÕÒAPI
+        /// æŸ¥æ‰¾API
         /// </summary>
         /// <param name="assembly"></param>
         public void FindApies(Assembly assembly)
@@ -32,7 +32,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
         }
         /// <summary>
-        /// ²éÕÒAPI
+        /// æŸ¥æ‰¾API
         /// </summary>
         /// <param name="type"></param>
         private void FindApi(Type  type)
@@ -76,15 +76,15 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #endregion
 
-        #region API·¢ÏÖ
+        #region APIå‘ç°
 
         /// <summary>
-        /// ËùÓĞAPI·½·¨µÄ»ù±¾ĞÅÏ¢
+        /// æ‰€æœ‰APIæ–¹æ³•çš„åŸºæœ¬ä¿¡æ¯
         /// </summary>
         public Dictionary<string, TypeInfo> SubItems = new Dictionary<string, TypeInfo>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// ²éÕÒAPI
+        /// æŸ¥æ‰¾API
         /// </summary>
         /// <param name="assembly"></param>
         public void FindSubs(Assembly assembly)
@@ -92,7 +92,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var types = assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(SubStation))).ToArray();
             foreach (var type in types)
             {
-                StationProgram.RegisteStation(type.CreateObject() as SubStation);
+                ZeroApplication.RegisteStation(type.CreateObject() as SubStation);
             }
         }
 

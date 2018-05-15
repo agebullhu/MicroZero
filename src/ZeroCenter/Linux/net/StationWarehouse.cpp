@@ -8,23 +8,23 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* \brief ¶Ë¿Ú×Ô¶¯·ÖÅäµÄRedis¼üÃû
+		* \brief ç«¯å£è‡ªåŠ¨åˆ†é…çš„Redisé”®å
 		*/
 #define port_redis_key "net:port:next"
 #define port_config_key "base_tcp_port"
 
 		/**
-		 * \brief »î¶¯ÊµÀı¼¯ºÏ
+		 * \brief æ´»åŠ¨å®ä¾‹é›†åˆ
 		 */
 		map<string, zero_station*> station_warehouse::examples_;
 
 		/**
-		* \brief ÊµÀı¶ÓÁĞ·ÃÎÊËø
+		* \brief å®ä¾‹é˜Ÿåˆ—è®¿é—®é”
 		*/
 		boost::mutex station_warehouse::mutex_;
 
 		/**
-		* \brief »¹Ô­Õ¾µã
+		* \brief è¿˜åŸç«™ç‚¹
 		*/
 		bool station_warehouse::restore(acl::string& value)
 		{
@@ -45,9 +45,28 @@ namespace agebull
 				return false;
 			}
 		}
-		
+
 		/**
-		* \brief »¹Ô­Õ¾µã
+		* \brief åˆå§‹åŒ–
+		*/
+		bool station_warehouse::initialize()
+		{
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+			trans_redis& redis = trans_redis::get_context();
+			acl::string val;
+			auto port = config::get_global_string(port_config_key);
+			if (redis.get(port_redis_key, val) && atoi(val.c_str()) >= atoi(port.c_str()))
+			{
+				return true;
+			}
+			redis.set(port_redis_key, port.c_str());
+			acl::string config;
+			install("SystemManage", STATION_TYPE_DISPATCHER, config);
+			install("SystemMonitor", STATION_TYPE_MONITOR, config);
+			return true;
+		}
+		/**
+		* \brief è¿˜åŸç«™ç‚¹
 		*/
 		int station_warehouse::restore()
 		{
@@ -56,6 +75,7 @@ namespace agebull
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			{
 				trans_redis& redis = trans_redis::get_context();
+				acl::string val;
 				int cursor = 0;
 				do
 				{
@@ -64,7 +84,6 @@ namespace agebull
 					cursor = redis->scan(cursor, keys, "net:host:*", &count);
 					for (const acl::string& key : keys)
 					{
-						acl::string val(128);
 						if (redis->get(key, val))
 						{
 							if (restore(val))
@@ -77,7 +96,7 @@ namespace agebull
 		}
 
 		/**
-		* \brief Çå³ıËùÓĞÕ¾µã
+		* \brief æ¸…é™¤æ‰€æœ‰ç«™ç‚¹
 		*/
 		void station_warehouse::clear()
 		{
@@ -86,7 +105,7 @@ namespace agebull
 				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 				trans_redis& redis = trans_redis::get_context();
 				redis->flushdb();
-				redis.set(port_redis_key, config::get_config(port_config_key).c_str());
+				redis.set(port_redis_key, config::get_global_string(port_config_key).c_str());
 			}
 			acl::string config;
 			install("SystemManage", STATION_TYPE_DISPATCHER, config);
@@ -94,24 +113,27 @@ namespace agebull
 		}
 
 		/**
-		* \brief Õ¾µãĞ¶ÔØ
+		* \brief ç«™ç‚¹å¸è½½
 		*/
-		bool station_warehouse::unstall_station(const string& name)
+		bool station_warehouse::uninstall(const string& station_name)
 		{
-			auto station = instance(name);
-			if (station == nullptr)
-				return false;
-			station->close(true);
+			auto station = instance(station_name);
+			if (station != nullptr)
+				station->close(true);
 			boost::format fmt("net:host:%1%");
-			fmt % name;
+			fmt % station_name;
 			auto key = fmt.str();
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			trans_redis& redis = trans_redis::get_context();
-
-			return redis->del(key.c_str()) > 0;
+			if(redis->del(key.c_str()) > 0)
+			{
+				monitor_async(station_name, "station_uninstall", station_name);
+				return true;
+			}
+			return false;
 		}
 		/**
-		* \brief ³õÊ¼»¯Õ¾µã
+		* \brief åˆå§‹åŒ–ç«™ç‚¹
 		*/
 		bool station_warehouse::install(const char* station_name, int station_type, acl::string& config)
 		{
@@ -120,7 +142,7 @@ namespace agebull
 			auto key = fmt.str();
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			trans_redis& redis = trans_redis::get_context();
-			
+
 			if (redis->get(key.c_str(), config) && !config.empty())
 			{
 				return false;
@@ -160,7 +182,7 @@ namespace agebull
 		}
 
 		/**
-		* \brief ¼ÓÈëÕ¾µã
+		* \brief åŠ å…¥ç«™ç‚¹
 		*/
 		bool station_warehouse::join(zero_station* station)
 		{
@@ -181,7 +203,7 @@ namespace agebull
 		}
 
 		/**
-		* \brief ÍË³öÕ¾µã
+		* \brief é€€å‡ºç«™ç‚¹
 		*/
 		bool station_warehouse::left(zero_station* station)
 		{
@@ -198,7 +220,7 @@ namespace agebull
 		}
 
 		/**
-		* \brief ²éÕÒÒÑÔËĞĞÕ¾µã
+		* \brief æŸ¥æ‰¾å·²è¿è¡Œç«™ç‚¹
 		*/
 		zero_station* station_warehouse::instance(const string& name)
 		{

@@ -1,20 +1,14 @@
-// WindowsService.cpp : WinMain 的实现
-
 #include "stdafx.h"
 #include "service.h"
 #include "net/ZeroStation.h"
-#include "net/NetDispatcher.h"
-#include "net/BroadcastingStation.h"
-
-using namespace agebull;
 
 int main(int argc, char *argv[])
 {
-	if (!rpc_service::initialize())
+	if (!agebull::zmq_net::rpc_service::initialize())
 		return 0;
 	//agebull::zmq_net::station_warehouse::clear();
-	rpc_service::start();
-	signal(SIGINT, on_sig);
+	agebull::zmq_net::rpc_service::start();
+	signal(SIGINT, agebull::zmq_net::on_sig);
 #ifdef _DEBUG
 	while (get_net_state() == NET_STATE_RUNING)
 	{
@@ -42,7 +36,7 @@ int main(int argc, char *argv[])
 	}
 	rpc_service::stop();
 #else
-	wait_zero();
+	agebull::zmq_net::wait_zero();
 #endif
 	std::cout << endl << "byebye";
 	//thread_sleep(200);

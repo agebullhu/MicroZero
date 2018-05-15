@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
+using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 
@@ -11,7 +13,7 @@ namespace Agebull.ZeroNet.Core
     /// 站点配置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    public class StationConfig : IDisposable
+    public class StationConfig : IDisposable, IApiResultData
     {
         /// <summary>
         /// 站点名称
@@ -32,25 +34,25 @@ namespace Agebull.ZeroNet.Core
         /// 入站端口
         /// </summary>
         [DataMember, JsonProperty("out_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int OutPort { get; set; }
+        public int RequestPort { get; set; }
 
         /// <summary>
         /// 入站地址
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public string OutAddress => $"tcp://{StationProgram.Config.ZeroAddress}:{OutPort}";
+        public string RequestAddress => ZeroApplication.Config.GetRemoteAddress(StationName, RequestPort);
 
         /// <summary>
         /// 入站端口
         /// </summary>
         [DataMember, JsonProperty("inner_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int InnerPort { get; set; }
+        public int WorkerPort { get; set; }
 
         /// <summary>
         /// 出站地址
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public string InnerAddress => $"tcp://{StationProgram.Config.ZeroAddress}:{InnerPort}";
+        public string WorkerAddress => ZeroApplication.Config.GetRemoteAddress(StationName, WorkerPort);
 
         /// <summary>
         /// 心跳端口
@@ -62,7 +64,7 @@ namespace Agebull.ZeroNet.Core
         /// 心跳地址
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public string HeartAddress => $"tcp://{StationProgram.Config.ZeroAddress}:{HeartPort}";
+        public string HeartAddress => ZeroApplication.Config.GetRemoteAddress(StationName, HeartPort);
 
         /// <summary>
         /// 复制
@@ -73,10 +75,9 @@ namespace Agebull.ZeroNet.Core
             StationName = src.StationName;
             StationAlias = src.StationAlias;
             StationType = src.StationType;
-            OutPort = src.OutPort;
-            InnerPort = src.InnerPort;
+            RequestPort = src.RequestPort;
+            WorkerPort = src.WorkerPort;
             HeartPort = src.HeartPort;
-
         }
 
         /// <summary>
@@ -111,10 +112,10 @@ namespace Agebull.ZeroNet.Core
                     return Pools.Dequeue();
             }
             var socket = new RequestSocket();
-            socket.Options.Identity = $"{StationProgram.Config.RealName}-{Sockets.Count + 1}".ToAsciiBytes();
+            socket.Options.Identity = ZeroApplication.Config.ToZeroIdentity(StationName, RandomOperate.Generate(6));
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
             socket.Options.DisableTimeWait = true;
-            socket.Connect(OutAddress);
+            socket.Connect(RequestAddress);
             Sockets.Add(socket);
             return socket;
         }
@@ -127,7 +128,7 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             Sockets.Remove(socket);
-            socket.CloseSocket(OutAddress);
+            socket.CloseSocket(RequestAddress);
         }
         /// <summary>
         /// 释放一个连接对象
@@ -141,7 +142,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (_isDisposed || Pools.Count > 99)
                 {
-                    socket.Disconnect(OutAddress);
+                    socket.Disconnect(RequestAddress);
                     socket.Close();
                     socket.Dispose();
                     Sockets.Remove(socket);
@@ -168,6 +169,7 @@ namespace Agebull.ZeroNet.Core
             _isDisposed = false;
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
@@ -184,12 +186,12 @@ namespace Agebull.ZeroNet.Core
             lock (Pools)
             {
                 Pools.Clear();
-                foreach (var socket in Sockets)
-                {
-                    socket.CloseSocket(OutAddress);
-                }
-                Sockets.Clear();
             }
+            foreach (var socket in Sockets)
+            {
+                socket.CloseSocket(RequestAddress);
+            }
+            Sockets.Clear();
         }
     }
 }

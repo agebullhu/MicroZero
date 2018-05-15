@@ -34,7 +34,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 缓存文件名称
         /// </summary>
-        private static string CacheFileName => Path.Combine(StationProgram.Config.DataFolder,
+        private static string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
             "zero_publish_queue.json");
         /// <summary>
         ///     启动
@@ -64,7 +64,7 @@ namespace Agebull.ZeroNet.PubSub
             lock (Publishers)
             {
                 foreach (var vl in Publishers.Values)
-                    vl.Value.CloseSocket(vl.Key.OutAddress);
+                    vl.Value.CloseSocket(vl.Key.RequestAddress);
                 Publishers.Clear();
             }
             //未运行状态
@@ -110,9 +110,9 @@ namespace Agebull.ZeroNet.PubSub
         private static void SendTask()
         {
             RunState = StationState.Run;
-            while (StationProgram.State < StationState.Closing && RunState == StationState.Run)
+            while (ZeroApplication.State < StationState.Closing && RunState == StationState.Run)
             {
-                if (StationProgram.State != StationState.Run)
+                if (ZeroApplication.State != StationState.Run)
                 {
                     Thread.Sleep(1000);
                     continue;
@@ -166,7 +166,7 @@ namespace Agebull.ZeroNet.PubSub
                 {
                     socket.SendMoreFrame(item.Title);
                     socket.SendMoreFrame(description);
-                    socket.SendMoreFrame(StationProgram.Config.StationName);
+                    socket.SendMoreFrame(ZeroApplication.Config.StationName);
                     socket.SendMoreFrame(item.SubTitle);
                     socket.SendFrame(item.Content);
                     var word = socket.ReceiveFrameString();
@@ -180,7 +180,7 @@ namespace Agebull.ZeroNet.PubSub
             }
             lock (Publishers)
             {
-                socket.CloseSocket(Publishers[item.Station].Key.OutAddress);
+                socket.CloseSocket(Publishers[item.Station].Key.RequestAddress);
                 Publishers.Remove(item.Station);
             }
 
@@ -210,7 +210,7 @@ namespace Agebull.ZeroNet.PubSub
                     status = ZeroCommandStatus.Success;
                     return true;
                 }
-                var config = StationProgram.GetConfig(type, out status);
+                var config = ZeroApplication.GetConfig(type, out status);
                 if (status == ZeroCommandStatus.NoFind || config == null)
                 {
                     socket = null;
@@ -219,9 +219,9 @@ namespace Agebull.ZeroNet.PubSub
                 try
                 {
                     socket = new RequestSocket();
-                    socket.Options.Identity = StationProgram.Config.StationName.ToAsciiBytes();
+                    socket.Options.Identity = ZeroApplication.Config.Identity;
                     socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                    socket.Connect(config.OutAddress);
+                    socket.Connect(config.RequestAddress);
                 }
                 catch (Exception e)
                 {

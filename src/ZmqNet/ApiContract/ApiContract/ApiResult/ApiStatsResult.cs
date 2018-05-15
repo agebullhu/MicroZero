@@ -3,51 +3,47 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// API×´Ì¬·µ»Ø½Ó¿ÚÊµÏÖ
+    /// APIçŠ¶æ€è¿”å›æ¥å£å®ç°
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiStatsResult : IApiStatusResult
     {
         /// <summary>
-        /// Ä¬ÈÏ¹¹Ôì
+        /// é»˜è®¤æ„é€ 
         /// </summary>
         public ApiStatsResult()
         {
 
         }
         /// <summary>
-        /// Ä¬ÈÏ¹¹Ôì
+        /// é»˜è®¤æ„é€ 
         /// </summary>
         public ApiStatsResult(int code, string messgae)
         {
             ErrorCode = code;
-            Message = messgae;
+            ClientMessage = messgae;
         }
         /// <summary>
-        /// ´íÎóÂë
+        /// é”™è¯¯ç 
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("errorCode", NullValueHandling = NullValueHandling.Ignore)]
         public int ErrorCode { get; set; }
 
         /// <summary>
-        /// ¶ÔÓ¦HTTP´íÎóÂë£¨²Î¿¼£©
+        /// å¯¹åº”HTTPé”™è¯¯ç ï¼ˆå‚è€ƒï¼‰
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("httpCode", NullValueHandling = NullValueHandling.Ignore)]
         public string HttpCode { get; set; }
 
         /// <summary>
-        /// ÌáÊ¾ĞÅÏ¢
+        /// æç¤ºä¿¡æ¯
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string Message { get; set; }
+        [JsonProperty("msg", NullValueHandling = NullValueHandling.Ignore)]
+        public string ClientMessage { get; set; }
         /// <summary>
-        /// ÄÚ²¿ÌáÊ¾ĞÅÏ¢
-        /// </summary>
-#if DEBUG
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-#else
+        /// å†…éƒ¨æç¤ºä¿¡æ¯
+        /// </summary>        
         [JsonIgnore]
-#endif
         public string InnerMessage { get; set; }
     }
 }

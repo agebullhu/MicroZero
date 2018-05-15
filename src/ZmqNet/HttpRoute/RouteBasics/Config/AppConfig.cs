@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// Â·ÓÉÅäÖÃ
+    /// è·¯ç”±é…ç½®
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
     public class AppConfig
@@ -19,70 +19,70 @@ namespace ZeroNet.Http.Route
         public static AppConfig Config { get; set; }
 
         /// <summary>
-        /// Õ¾µãÅäÖÃ
+        /// ç«™ç‚¹é…ç½®
         /// </summary>
         [DataMember, JsonProperty("zeroConfig")]
         public LocalStationConfig StationConfig
         {
-            get => StationProgram.Config;
-            set => StationProgram.Config = value;
+            get => ZeroApplication.Config;
+            set => ZeroApplication.Config = value;
         }
 
         /// <summary>
-        /// ÔËÎ¬¶ÌĞÅÅäÖÃ
+        /// è¿ç»´çŸ­ä¿¡é…ç½®
         /// </summary>
         [DataMember, JsonProperty("smsConfig")] private SmsConfig _smsConfig;
 
         /// <summary>
-        /// ÔËÎ¬¶ÌĞÅÅäÖÃ
+        /// è¿ç»´çŸ­ä¿¡é…ç½®
         /// </summary>
         public SmsConfig SmsConfig => _smsConfig ?? (_smsConfig = new SmsConfig());
 
         /// <summary>
-        /// ÏµÍ³ÅäÖÃ
+        /// ç³»ç»Ÿé…ç½®
         /// </summary>
         [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
 
         /// <summary>
-        /// ÏµÍ³ÅäÖÃ
+        /// ç³»ç»Ÿé…ç½®
         /// </summary>
         public SystemConfig SystemConfig => _systemConfig ?? (_systemConfig = new SystemConfig());
 
         /// <summary>
-        /// »º´æÅäÖÃ
+        /// ç¼“å­˜é…ç½®
         /// </summary>
         [DataMember, JsonProperty("cache")] private List<CacheSetting> _cacheSettings;
 
         /// <summary>
-        /// Â·ÓÉÅäÖÃ
+        /// è·¯ç”±é…ç½®
         /// </summary>
         public Dictionary<string, CacheSetting> CacheMap { get; set; }
 
         /// <summary>
-        /// Â·ÓÉÅäÖÃ
+        /// è·¯ç”±é…ç½®
         /// </summary>
         [DataMember, JsonProperty("route")] private Dictionary<string, HostConfig> _routeConfig;
 
         /// <summary>
-        /// »º´æÍ¼
+        /// ç¼“å­˜å›¾
         /// </summary>
         public Dictionary<string, HostConfig> RouteMap { get; private set; }
 
         /// <summary>
-        /// ÎÄ¼şÃû³Æ
+        /// æ–‡ä»¶åç§°
         /// </summary>
         public static string FileName { get; private set; }
         /// <summary>
-        /// °²È«ÉèÖÃ
+        /// å®‰å…¨è®¾ç½®
         /// </summary>
         [DataMember, JsonProperty("security")]
         public SecurityConfig Security { get; set; }
         /// <summary>
-        /// ÊÇ·ñÒÑ³õÊ¼»¯
+        /// æ˜¯å¦å·²åˆå§‹åŒ–
         /// </summary>
         public static bool  IsInitialized { get; private set; }
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
         /// <returns></returns>
         public static bool Initialize(string file)
@@ -92,7 +92,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
         /// <returns></returns>
         public static bool Initialize()
@@ -104,6 +104,7 @@ namespace ZeroNet.Http.Route
                 return false;
             Config.StationConfig.DataFolder = IOHelper.CheckPath(Path.GetDirectoryName(FileName),"Datas");
             LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
+            TxtRecorder.LogPath = Config.SystemConfig.LogPath;
             Config.InitCache();
             Config.InitRoute();
             Config.InitCheckApis();
@@ -111,7 +112,7 @@ namespace ZeroNet.Http.Route
             return HostConfig.DefaultHost != null;
         }
         /// <summary>
-        /// ³õÊ¼»¯Â·ÓÉ
+        /// åˆå§‹åŒ–è·¯ç”±
         /// </summary>
         /// <returns></returns>
         public void InitCheckApis()
@@ -129,7 +130,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// ³õÊ¼»¯Â·ÓÉ
+        /// åˆå§‹åŒ–è·¯ç”±
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, CacheSetting> InitCache()
@@ -149,7 +150,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// ³õÊ¼»¯Â·ÓÉ
+        /// åˆå§‹åŒ–è·¯ç”±
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, HostConfig> InitRoute()
@@ -167,12 +168,12 @@ namespace ZeroNet.Http.Route
                 }
                 if (!kv.Value.ByZero && (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0))
                     continue;
-                //Http¸ºÔØ
+                //Httpè´Ÿè½½
                 if (!RouteMap.ContainsKey(kv.Key))
                     RouteMap.Add(kv.Key, kv.Value);
                 else
                     RouteMap[kv.Key] = kv.Value;
-                //±ğÃû
+                //åˆ«å
                 if (kv.Value.Alias == null)
                     continue;
                 foreach (var name in kv.Value.Alias)

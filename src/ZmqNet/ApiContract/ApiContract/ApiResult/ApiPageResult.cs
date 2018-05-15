@@ -5,57 +5,57 @@ namespace Agebull.ZeroNet.ZeroApi
 {
 
     /// <summary>
-    /// API·µ»ØÊı×é·ºĞÍÀà
+    /// APIè¿”å›æ•°ç»„æ³›å‹ç±»
     /// </summary>
     public class ApiPageResult<TData> : ApiResult<ApiPageData<TData>>
     {
     }
 
     /// <summary>
-    /// API·µ»Ø·ÖÒ³ĞÅÏ¢
+    /// APIè¿”å›åˆ†é¡µä¿¡æ¯
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiPage : IApiResultData
     {
         /// <summary>
-        /// µ±Ç°Ò³ºÅ£¨´Ó1¿ªÊ¼£©
+        /// å½“å‰é¡µå·ï¼ˆä»1å¼€å§‹ï¼‰
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("page",NullValueHandling = NullValueHandling.Ignore)]
         public int PageIndex { get; set; }
 
         /// <summary>
-        /// Ò³ĞĞÊı
+        /// é¡µè¡Œæ•°
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("pageSize", NullValueHandling = NullValueHandling.Ignore)]
         public int PageSize { get; set; }
 
         /// <summary>
-        /// ×ÜÒ³Êı
+        /// æ€»é¡µæ•°
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("pageCount", NullValueHandling = NullValueHandling.Ignore)]
         public int PageCount { get; set; }
 
         /// <summary>
-        /// ×ÜĞĞÊı
+        /// æ€»è¡Œæ•°
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("rowCount", NullValueHandling = NullValueHandling.Ignore)]
         public int RowCount { get; set; }
     }
 
     /// <summary>
-    /// API·µ»Ø·Ö²¼Ò³Êı¾İ
+    /// APIè¿”å›åˆ†å¸ƒé¡µæ•°æ®
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiPageData<TData> : ApiPage
     {
         /// <summary>
-        /// ·µ»ØÖµ
+        /// è¿”å›å€¼
         /// </summary>
-        [JsonProperty("Rows", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("rows", NullValueHandling = NullValueHandling.Ignore)]
         public List<TData> Rows { get; set; }
     }
     /// <summary>
-    /// API·µ»ØÊı×é·ºĞÍÀà
+    /// APIè¿”å›æ•°ç»„æ³›å‹ç±»
     /// </summary>
     public class ApiPageResult : ApiResult<ApiPage>
     {

@@ -5,7 +5,7 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
-using Gboxt.Common.DataModel;
+using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
@@ -20,36 +20,14 @@ namespace Agebull.ZeroNet.LogRecorder
         #region Override
 
 
-        /// <summary>
-        ///   记录日志
-        /// </summary>
-        /// <param name="info"> 日志消息 </param>
-        void ILogRecorder.RecordLog(RecordInfo info)
-        {
-            using (LogRecordingScope.CreateScope())
-            {
-                if (StationProgram.State < StationState.Closing)
-                {
-                    Items.Push(new PublishItem
-                    {
-                        Station = StationProgram.Config.StationName,
-                        Title = "Record",
-                        SubTitle = info.TypeName,
-                        Content = JsonConvert.SerializeObject(info)
-                    });
-                }
-                else
-                {
-                    Common.Logging.LogRecorder.BaseRecorder.RecordLog(info);
-                }
-            }
-        }
-
+        /// <inheritdoc />
         /// <summary>
         ///     启动
         /// </summary>
         void ILogRecorder.Initialize()
         {
+            Common.Logging.LogRecorder.LogByTask = true;
+            Common.Logging.LogRecorder.TraceToConsole = false;
             _state = 0;
             Task.Factory.StartNew(SendTask);
         }
@@ -65,6 +43,33 @@ namespace Agebull.ZeroNet.LogRecorder
             while (_state == StationState.Closed)
                 Thread.Sleep(3);
             _state = StationState.Destroy;
+        }
+
+
+        /// <summary>
+        ///   记录日志
+        /// </summary>
+        /// <param name="info"> 日志消息 </param>
+        void ILogRecorder.RecordLog(RecordInfo info)
+        {
+            info.User = ApiContext.Customer.Account;
+            using (LogRecordingScope.CreateScope())
+            {
+                if (ZeroApplication.State < StationState.Failed && ZeroApplication.State > StationState.Start)
+                {
+                    Items.Push(new PublishItem
+                    {
+                        Station = ZeroApplication.Config.StationName,
+                        Title = "Record",
+                        SubTitle = info.TypeName,
+                        Content = JsonConvert.SerializeObject(info)
+                    });
+                }
+                else
+                {
+                    Common.Logging.LogRecorder.BaseRecorder.RecordLog(info);
+                }
+            }
         }
 
         #endregion
@@ -108,16 +113,19 @@ namespace Agebull.ZeroNet.LogRecorder
         public static long DataCount { get; private set; }
 
         #endregion
+
+        #region Task
+
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
         private void SendTask()
         {
-            _realName = $"{StationProgram.Config.StationName}-LogRecorder-{RandomOperate.Generate(4)}".ToAsciiBytes();
+            _identity = ZeroApplication.Config.ToZeroIdentity("LogRecorder");
             _state = StationState.Run;
-            while (StationProgram.State < StationState.Closing && _state == StationState.Run)
+            while (ZeroApplication.State < StationState.Closing && _state == StationState.Run)
             {
-                if (StationProgram.State != StationState.Run)
+                if (ZeroApplication.State != StationState.Run)
                 {
                     Thread.Sleep(1000);
                     continue;
@@ -138,7 +146,7 @@ namespace Agebull.ZeroNet.LogRecorder
                 {
                     _socket.SendMoreFrame(title);
                     _socket.SendMoreFrame(Description);
-                    _socket.SendMoreFrame(StationProgram.Config.StationName);
+                    _socket.SendMoreFrame(ZeroApplication.Config.StationName);
                     _socket.SendFrame(JsonConvert.SerializeObject(items));
                     success = _socket.TryReceiveFrameString(TimeWaite, out result);
                 }
@@ -172,23 +180,26 @@ namespace Agebull.ZeroNet.LogRecorder
                     PubCount = 0;
             }
             _state = StationState.Closed;
-            _socket.CloseSocket(_config.OutAddress);
+            _socket.CloseSocket(_config.RequestAddress);
         }
+        
 
-        #region Remote
+        #endregion
 
+        #region Socket
+
+
+        private byte[] _identity;
 
         private bool InitSocket()
         {
-            _config = StationProgram.GetConfig("RemoteLog", out var status);
+            _config = ZeroApplication.GetConfig("RemoteLog", out var status);
             if (status != ZeroCommandStatus.Success || _config == null)
             {
                 return false;
             }
             return CreateSocket() == ZeroCommandStatus.Success;
         }
-
-        private byte[] _realName;
         /// <summary>
         ///     取得Socket对象
         /// </summary>
@@ -197,14 +208,14 @@ namespace Agebull.ZeroNet.LogRecorder
         {
             try
             {
-                _socket.CloseSocket(_config.OutAddress);
+                _socket.CloseSocket(_config.RequestAddress);
 
                 _socket = new RequestSocket();
-                _socket.Options.Identity = _realName;
+                _socket.Options.Identity = _identity;
 
                 _socket.Options.DisableTimeWait = true;
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                _socket.Connect(_config.OutAddress);
+                _socket.Connect(_config.RequestAddress);
                 return ZeroCommandStatus.Success;
             }
             catch (Exception e)

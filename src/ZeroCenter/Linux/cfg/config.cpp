@@ -7,15 +7,15 @@
 
 namespace agebull
 {
-	std::map<std::string, std::string> config::m_machine_cfg;
+	std::map<std::string, std::string> config::global_cfg_;
 
 
 	void config::init()
 	{
-		if (m_machine_cfg.empty())
+		if (global_cfg_.empty())
 		{
 			std::string path;
-			GetProcessFilePath(path);
+			get_process_file_path(path);
 			path.append("/config.json");
 			//log_acl_trace(0, 3, path.c_str());
 
@@ -30,7 +30,7 @@ namespace agebull
 				cfg += buf;
 			}
 			acl_vstream_fclose(fp);
-			read(cfg, m_machine_cfg);
+			read(cfg, global_cfg_);
 		}
 	}
 
@@ -49,22 +49,37 @@ namespace agebull
 			iter = json.next_node();
 		}
 	}
-	std::string& config::get_config(const char * name)
+	/**
+	* \brief 取全局配置
+	* \param name 名称
+	* \return 值
+	*/
+	std::string& config::get_global_string(const char * name)
 	{
 		init();
-		return m_machine_cfg[name];
+		return global_cfg_[name];
 	}
 
-	int config::get_int(const char * name)
+	/**
+	* \brief 取全局配置
+	* \param name 名称
+	* \return 值
+	*/
+	int config::get_global_int(const char * name)
 	{
 		init();
-		auto vl = m_machine_cfg[name];
+		auto vl = global_cfg_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
-	bool config::get_bool(const char * name)
+	/**
+	* \brief 取全局配置
+	* \param name 名称
+	* \return 值
+	*/
+	bool config::get_global_bool(const char * name)
 	{
 		init();
-		auto vl = m_machine_cfg[name];
+		auto vl = global_cfg_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
 
@@ -95,7 +110,7 @@ namespace agebull
 	*         sFilePath - 进程句柄hProcess所对应的可执行文件路径
 	* 返回值：
 	*/
-	void GetProcessFilePath(string& sFilePath)
+	void get_process_file_path(string& sFilePath)
 	{
 #if WIN32
 

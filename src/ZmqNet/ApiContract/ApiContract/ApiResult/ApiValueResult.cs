@@ -3,69 +3,69 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// API·µ»ØÊı¾İ·ºĞÍÀà
+    /// APIè¿”å›æ•°æ®æ³›å‹ç±»
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiValueResult : ApiResult
     {
         /// <summary>
-        /// ·µ»ØÖµ
+        /// è¿”å›å€¼
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("data",NullValueHandling = NullValueHandling.Ignore)]
         public string ResultData { get; set; }
 
         /// <summary>
-        /// Éú³ÉÒ»¸ö³É¹¦µÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªæˆåŠŸçš„æ ‡å‡†è¿”å›
         /// </summary>
         /// <returns></returns>
         public static ApiValueResult Succees(string data)
         {
             return new ApiValueResult
             {
-                Result = true,
+                Success = true,
                 ResultData = data
             };
         }
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <returns></returns>
         public static ApiValueResult ErrorResult(int errCode)
         {
             return new ApiValueResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = ErrorCode.GetMessage(errCode)
+                    ClientMessage = ErrorCode.GetMessage(errCode)
                 }
             };
         }
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <param name="message"></param>
         /// <returns></returns>
         public static ApiValueResult ErrorResult(int errCode, string message)
         {
             return new ApiValueResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message
+                    ClientMessage = message
                 }
             };
         }
 
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <param name="message"></param>
         /// <param name="innerMessage"></param>
         /// <returns></returns>
@@ -73,11 +73,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiValueResult
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message,
+                    ClientMessage = message,
                     InnerMessage = innerMessage
                 }
             };
@@ -86,69 +86,69 @@ namespace Agebull.ZeroNet.ZeroApi
 
 
     /// <summary>
-    /// API·µ»Øµ¥Êı¾İÊı¾İ·ºĞÍÀà
+    /// APIè¿”å›å•æ•°æ®æ•°æ®æ³›å‹ç±»
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiValueResult<TData> : ApiResult
     {
         /// <summary>
-        /// ·µ»ØÖµ
+        /// è¿”å›å€¼
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("data",NullValueHandling = NullValueHandling.Ignore)]
         public TData ResultData { get; set; }
 
         /// <summary>
-        /// Éú³ÉÒ»¸ö³É¹¦µÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªæˆåŠŸçš„æ ‡å‡†è¿”å›
         /// </summary>
         /// <returns></returns>
         public static ApiValueResult<TData> Succees(TData data)
         {
             return new ApiValueResult<TData>
             {
-                Result = true,
+                Success = true,
                 ResultData = data
             };
         }
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <returns></returns>
         public static ApiValueResult<TData> ErrorResult(int errCode)
         {
             return new ApiValueResult<TData>
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = ErrorCode.GetMessage(errCode)
+                    ClientMessage = ErrorCode.GetMessage(errCode)
                 }
             };
         }
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <param name="message"></param>
         /// <returns></returns>
         public static ApiValueResult<TData> ErrorResult(int errCode, string message)
         {
             return new ApiValueResult<TData>
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message
+                    ClientMessage = message
                 }
             };
         }
 
         /// <summary>
-        /// Éú³ÉÒ»¸ö°üº¬´íÎóÂëµÄ±ê×¼·µ»Ø
+        /// ç”Ÿæˆä¸€ä¸ªåŒ…å«é”™è¯¯ç çš„æ ‡å‡†è¿”å›
         /// </summary>
-        /// <param name="errCode">´íÎóÂë</param>
+        /// <param name="errCode">é”™è¯¯ç </param>
         /// <param name="message"></param>
         /// <param name="innerMessage"></param>
         /// <returns></returns>
@@ -156,11 +156,11 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             return new ApiValueResult<TData>
             {
-                Result = false,
+                Success = false,
                 Status = new ApiStatsResult
                 {
                     ErrorCode = errCode,
-                    Message = message,
+                    ClientMessage = message,
                     InnerMessage = innerMessage
                 }
             };

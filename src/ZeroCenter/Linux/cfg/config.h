@@ -5,17 +5,41 @@ namespace agebull
 {
 	class config
 	{
-		static std::map<std::string, std::string> m_machine_cfg;
+		
+		/**
+		 * \brief 全局配置
+		 */
+		static std::map<std::string, std::string> global_cfg_;
+
+		/**
+		* \brief 全局配置初始化
+		*/
 		static void init();
 	public:
-		static int get_int(const char * name);
-		static bool get_bool(const char * name);
-		static std::string& get_config(const char * name);
+		/**
+		 * \brief 取全局配置
+		 * \param name 名称
+		 * \return 值
+		 */
+		static int get_global_int(const char * name);
+		/**
+		* \brief 取全局配置
+		* \param name 名称
+		* \return 值
+		*/
+		static bool get_global_bool(const char * name);
+		/**
+		* \brief 取全局配置
+		* \param name 名称
+		* \return 值
+		*/
+		static std::string& get_global_string(const char * name);
 	private:
 		std::map<std::string, std::string> m_cfg;
 		static void read(acl::string str, std::map<std::string, std::string>& cfg);
 	public:
 		config(const char* json);
+		
 		int number(const char * name);
 		bool boolean(const char * name);
 		std::string& operator[](const char * name);
@@ -27,7 +51,7 @@ namespace agebull
 	*         sFilePath - 进程句柄hProcess所对应的可执行文件路径
 	* 返回值：
 	*/
-	void GetProcessFilePath(string& sFilePath);
+	void get_process_file_path(string& sFilePath);
 
 	/**
 	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）

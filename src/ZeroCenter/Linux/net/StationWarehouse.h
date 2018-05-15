@@ -35,9 +35,13 @@ namespace agebull
 			static bool install( const char* station_name,int station_type, acl::string& config);
 
 			/**
+			* \brief 初始化
+			*/
+			static bool initialize();
+			/**
 			* \brief 站点卸载
 			*/
-			static	bool unstall_station(const string& stattion);
+			static	bool uninstall(const string& station_name);
 
 			/**
 			* \brief 还原站点

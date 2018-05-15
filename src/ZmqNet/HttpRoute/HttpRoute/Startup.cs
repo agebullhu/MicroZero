@@ -1,4 +1,5 @@
-﻿using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.ZeroApi;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,7 @@ namespace ZeroNet.Http.Route
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ApiContext.SetConfiguration(configuration);
         }
 
         public static IConfiguration Configuration { get; set; }

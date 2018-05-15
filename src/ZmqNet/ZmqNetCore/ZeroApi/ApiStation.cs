@@ -131,7 +131,7 @@ namespace Agebull.ZeroNet.Core
         private void ExecCommand(object arg)
         {
             var item = (ApiCallItem)arg;
-            StationConsole.WriteLine($"{item.Caller}=>{RealName}");
+            //StationConsole.WriteLine($"{item.Caller}=>{RealName}");
             var response = ExecCommand(item);
             _socket.SendMoreFrame(item.Caller);
             _socket.SendMoreFrameEmpty();
@@ -163,6 +163,11 @@ namespace Agebull.ZeroNet.Core
                     var context = JsonConvert.DeserializeObject<ApiContext>(item.ContextJson);
                     ApiContext.SetContext(context);
                 }
+                else
+                {
+                    ApiContext.TryCheckByAnymouse();
+                    ApiContext.RequestContext.SetValue(item.Requester, item.RequestId);
+                }
             }
             catch (Exception e)
             {
@@ -172,9 +177,6 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
 
-            ApiContext.RequestContext.ServiceKey = item.Requester;
-            ApiContext.RequestContext.RequestId = item.RequestId;
-            ApiContext.TryCheckByAnymouse();
             //2 确定调用方法及对应权限
             try
             {
@@ -278,7 +280,7 @@ namespace Agebull.ZeroNet.Core
             _tryCount = 0;
 
             Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
-            Task.Factory.StartNew(HeartbeatTask).ContinueWith(task => OnTaskStop());
+            //Task.Factory.StartNew(HeartbeatTask).ContinueWith(task => OnTaskStop());
 
             while (!InHeart || !InPoll)
                 Thread.Sleep(50);
@@ -296,7 +298,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (InPoll || InHeart)
                 return;
-            if (StationProgram.State == StationState.Run && RunState == StationState.Failed)
+            if (ZeroApplication.State == StationState.Run && RunState == StationState.Failed)
             {
                 StationConsole.WriteInfo($"【{RealName}】restart...");
                 TryRun();
@@ -369,7 +371,7 @@ namespace Agebull.ZeroNet.Core
             StationConsole.WriteInfo($"【{RealName}】poll stop");
             //_socket.TrySendFrame(timeout, ZeroByteCommand.WorkerLeft);
 
-            _socket.CloseSocket(Config.InnerAddress);
+            _socket.CloseSocket(Config.WorkerAddress);
         }
        
 
@@ -380,14 +382,14 @@ namespace Agebull.ZeroNet.Core
 
         private bool CreateSocket()
         {
-            _socket.CloseSocket(Config.InnerAddress);
+            _socket.CloseSocket(Config.WorkerAddress);
             _socket = new DealerSocket();
             try
             {
-                _socket.Options.Identity = RealName.ToAsciiBytes();
+                _socket.Options.Identity = Identity;
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
                 _socket.Options.DisableTimeWait = true;
-                _socket.Connect(Config.InnerAddress);
+                _socket.Connect(Config.WorkerAddress);
                 return true;
             }
             catch (Exception e)
@@ -415,7 +417,7 @@ namespace Agebull.ZeroNet.Core
             StationConsole.WriteLine($"【{RealName}】heartbeat start");
             //连接
             var socket = new DealerSocket();
-            socket.Options.Identity = RealName.ToAsciiBytes();
+            socket.Options.Identity = Identity;
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
             socket.Options.DisableTimeWait = true;
             socket.Connect(Config.HeartAddress);
@@ -466,7 +468,7 @@ namespace Agebull.ZeroNet.Core
                     continue;
                 }
                 var str = result.FirstOrDefault(p=>!string.IsNullOrEmpty(p));
-                if (str[0] == ZeroNetStatus.ZeroStatusBad)
+                if (str==null || str[0] == ZeroNetStatus.ZeroStatusBad)
                 {
                     ++errorCount;
                     StationConsole.WriteError($"【{RealName}】heartbeat request failed({errorCount}):{result[0]}...");

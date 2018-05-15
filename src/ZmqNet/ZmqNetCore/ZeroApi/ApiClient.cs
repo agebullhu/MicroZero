@@ -35,14 +35,14 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string Call(string station, string commmand, string argument)
         {
-            if (StationProgram.State != StationState.Run)
+            if (ZeroApplication.State != StationState.Run)
                 return ZeroNetStatus.NoReadyJson;
-            if (!StationProgram.Configs.TryGetValue(station, out var config))
+            if (!ZeroApplication.Configs.TryGetValue(station, out var config))
             {
                 return ZeroNetStatus.NoFindJson;
             }
 
-            List<string> result;
+            List<byte[]> result;
             RequestSocket socket = null;
             try
             {
@@ -55,7 +55,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     socket.SendMoreFrame(Description);
                     socket.SendMoreFrame(commmand);
-                    socket.SendMoreFrame(StationProgram.Config.StationName);
+                    socket.SendMoreFrame(ZeroApplication.Config.StationName);
                     socket.SendMoreFrame(ApiContext.RequestContext.RequestId);
                     socket.SendMoreFrame(JsonConvert.SerializeObject(ApiContext.Current));
                     socket.SendFrame(argument);
@@ -69,7 +69,7 @@ namespace Agebull.ZeroNet.Core
                 }
                 try
                 {
-                    socket.ReceiveString(out result, 1);
+                    socket.Receive(out result, 1);
                 }
                 catch (Exception ex)
                 {
@@ -85,15 +85,34 @@ namespace Agebull.ZeroNet.Core
             }
             if (result.Count == 0)
                 return ZeroNetStatus.TimeOutJson;
-            switch (result[1])
+            int size = result[0][0];
+            string value = null;
+            for (int i = 1; i <= size && i < result[0].Length; i++)
             {
-                case ZeroNetStatus.ZeroCommandInvalid:
-                    return ZeroNetStatus.ArgumentErrorJson;
-                case ZeroNetStatus.ZeroCommandNotWorker:
-                    return ZeroNetStatus.NoFindJson;
-                default:
-                    return result[2];
+                switch (result[0][i])
+                {
+                    case ZeroFrameType.JsonValue:
+                        value = result[i].FromAsciBytes();
+                        continue;
+                    case ZeroFrameType.Status:
+                        if (result[i][0] == ZeroNetStatus.ZeroStatusBad)
+                        {
+                            switch (result[i].FromAsciBytes())
+                            {
+                                case ZeroNetStatus.ZeroCommandInvalid:
+                                    return ZeroNetStatus.ArgumentErrorJson;
+                                case ZeroNetStatus.ZeroCommandNotWorker:
+                                    return ZeroNetStatus.NoFindJson;
+                                default:
+                                    return ZeroNetStatus.InnerErrorJson;
+                            }
+                        }
+                        continue;
+                    case ZeroFrameType.End:
+                        return value ?? ZeroNetStatus.SucceesJson;
+                }
             }
+            return value;
         }
 
     }

@@ -1,21 +1,20 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Gboxt.Common.DataModel;
 
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// Õ¾µã
+    /// ç«™ç‚¹
     /// </summary>
     public abstract class ZeroStation
     {
         /// <summary>
-        /// µ÷¶ÈÆ÷
+        /// è°ƒåº¦å™¨
         /// </summary>
         public const int StationTypeDispatcher = 1;
         /// <summary>
-        /// ¼àÊÓÆ÷
+        /// ç›‘è§†å™¨
         /// </summary>
         public const int StationTypeMonitor = 2;
         /// <summary>
@@ -23,71 +22,75 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public const int StationTypeApi = 3;
         /// <summary>
-        /// Í¶Æ±Æ÷
+        /// æŠ•ç¥¨å™¨
         /// </summary>
         public const int StationTypeVote = 4;
         /// <summary>
-        /// ¹ã²¥
+        /// å¹¿æ’­
         /// </summary>
         public const int StationTypePublish = 5;
 
         /// <summary>
-        /// ÀàĞÍ
+        /// ç±»å‹
         /// </summary>
         public abstract int StationType { get; }
         /// <summary>
-        /// Õ¾µãÃû³Æ
+        /// ç«™ç‚¹åç§°
         /// </summary>
         public string StationName { get; set; }
         /// <summary>
-        /// ÊµÀıÃû³Æ
+        /// å®ä¾‹åç§°
         /// </summary>
         private string _realName;
 
         /// <summary>
-        /// ÊµÀıÃû³Æ
+        /// å®ä¾‹åç§°
         /// </summary>
         public string RealName => _realName ?? (_realName = StationName + "-" + RandomOperate.Generate(5));
-
         /// <summary>
-        /// Õ¾µãÅäÖÃ
+        /// å®ä¾‹åç§°
+        /// </summary>
+        public byte[] Identity => ZeroApplication.Config.ToZeroIdentity(RealName);
+        
+        /// <summary>
+        /// ç«™ç‚¹é…ç½®
         /// </summary>
         public StationConfig Config { get; set; }
 
         /// <summary>
-        /// ÔËĞĞ×´Ì¬
+        /// è¿è¡ŒçŠ¶æ€
         /// </summary>
         public StationState RunState;
 
         /// <summary>
-        /// ÕıÔÚÕìÌıµÄ×´Ì¬¿ª¹Ø
+        /// æ­£åœ¨ä¾¦å¬çš„çŠ¶æ€å¼€å…³
         /// </summary>
         protected bool InPoll { get; set; }
 
         /// <summary>
-        /// ĞÄÌøµÄ´æ»î×´Ì¬¿ª¹Ø
+        /// å¿ƒè·³çš„å­˜æ´»çŠ¶æ€å¼€å…³
         /// </summary>
         protected bool InHeart { get; set; }
         /// <summary>
-        /// ÃüÁîÂÖÑ¯
+        /// å‘½ä»¤è½®è¯¢
         /// </summary>
         /// <returns></returns>
         protected abstract bool Run();
 
         /// <summary>
-        /// Ö´ĞĞ
+        /// æ‰§è¡Œ
         /// </summary>
         /// <param name="station"></param>
         public static bool Run(ZeroStation station)
         {
-            //Ö´ĞĞ×´Ì¬£¬»á×Ô¶¯´¦Àí
+            //æ‰§è¡ŒçŠ¶æ€ï¼Œä¼šè‡ªåŠ¨å¤„ç†
             if (station.RunState >= StationState.Start && station.RunState <= StationState.Failed)
             {
                 return false;
             }
             if (station.Config == null)
             {
-                station.Config = StationProgram.GetConfig(station.StationName, out _);
+                station.Config = ZeroApplication.GetConfig(station.StationName, out _);
                 //if (station.Config == null)
                 //{
                 //    string type;
@@ -103,33 +106,33 @@ namespace Agebull.ZeroNet.Core
                 //            type = "vote";
                 //            break;
                 //        default:
-                //            StationProgram.WriteError($"¡¾{station.StationName}¡¿type no supper,failed!");
+                //            StationProgram.WriteError($"ã€{station.StationName}ã€‘type no supper,failed!");
                 //            return;
                 //    }
-                //    StationProgram.WriteError($"¡¾{station.StationName}¡¿not find,try install...");
+                //    StationProgram.WriteError($"ã€{station.StationName}ã€‘not find,try install...");
                 //    StationProgram.InstallStation(station.StationName, type);
                 //    return;
                 //}
                 if (station.Config == null)
                 {
                     station.RunState = StationState.ConfigError;
-                    StationConsole.WriteError($"¡¾{station.StationName}¡¿config cann`t get,failed!");
+                    StationConsole.WriteError($"ã€{station.StationName}ã€‘config cann`t get,failed!");
                     return false;
                 }
             }
             return station.Run();
         }
         /// <summary>
-        /// ÃüÁîÂÖÑ¯
+        /// å‘½ä»¤è½®è¯¢
         /// </summary>
         /// <returns></returns>
         protected virtual void OnTaskStop()
         {
             while (InPoll)
                 Thread.Sleep(50);
-            if (StationProgram.State == StationState.Run && RunState == StationState.Failed)
+            if (ZeroApplication.State == StationState.Run && RunState == StationState.Failed)
             {
-                StationConsole.WriteInfo($"¡¾{StationName}¡¿restart...");
+                StationConsole.WriteInfo($"ã€{StationName}ã€‘restart...");
                 Console.CursorLeft = 0;
                 StationConsole.WriteInfo("                       ");
                 for (int i = 1; i <= 3; i++)
@@ -146,12 +149,12 @@ namespace Agebull.ZeroNet.Core
                 RunState = StationState.Closed;
         }
         /// <summary>
-        /// ¹Ø±Õ
+        /// å…³é—­
         /// </summary>
         /// <returns></returns>
         public bool Close()
         {
-            //Î´ÔËĞĞ×´Ì¬
+            //æœªè¿è¡ŒçŠ¶æ€
             if (RunState < StationState.Start || RunState > StationState.Failed)
                 return true;
             StationConsole.WriteInfo($"{StationName} closing....");

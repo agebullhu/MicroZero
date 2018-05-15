@@ -78,7 +78,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Filter\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 
@@ -104,8 +103,9 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.10" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.7" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.11" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.2" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
 

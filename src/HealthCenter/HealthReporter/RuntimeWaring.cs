@@ -1,19 +1,15 @@
-using System;
-using System.Collections.Generic;
-using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// ÔËĞĞÊ±¾¯¸æ
+    /// è¿è¡Œæ—¶è­¦å‘Š
     /// </summary>
     public class RuntimeWaring
     {
         /// <summary>
-        ///     Ë¢ĞÂ
+        ///     åˆ·æ–°
         /// </summary>
         public static void Flush()
         {
@@ -21,7 +17,7 @@ namespace ZeroNet.Http.Route
         }
         
         /// <summary>
-        /// ÔËĞĞÊ±¾¯¸æ
+        /// è¿è¡Œæ—¶è­¦å‘Š
         /// </summary>
         /// <param name="host"></param>
         /// <param name="api"></param>

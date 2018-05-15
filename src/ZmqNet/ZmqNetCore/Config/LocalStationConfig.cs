@@ -1,61 +1,119 @@
 using System;
 using System.Runtime.Serialization;
+using System.Text;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// ±¾µØÕ¾µãÅäÖÃ
+    /// æœ¬åœ°ç«™ç‚¹é…ç½®
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
     public class LocalStationConfig
     {
         /// <summary>
-        /// ·şÎñÃû³Æ
+        /// æœåŠ¡åç§°
         /// </summary>
         [DataMember, JsonProperty("serviceName")]
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// Õ¾µãÃû³Æ£¬×¢ÒâÎ¨Ò»ĞÔ
+        /// ç«™ç‚¹åç§°ï¼Œæ³¨æ„å”¯ä¸€æ€§
         /// </summary>
         [DataMember, JsonProperty("stationName")]
         public string StationName { get; set; }
 
         /// <summary>
-        /// ZeroNetÏûÏ¢ÖĞĞÄÖ÷»úIPµØÖ·
+        /// ZeroNetæ¶ˆæ¯ä¸­å¿ƒä¸»æœºIPåœ°å€
         /// </summary>
         [DataMember, JsonProperty("zeroAddr")]
         public string ZeroAddress { get; set; }
 
         /// <summary>
-        /// ZeroNetÏûÏ¢ÖĞĞÄ¼à²âÕ¾¶Ë¿ÚºÅ
+        /// ZeroNetæ¶ˆæ¯ä¸­å¿ƒç›‘æµ‹ç«™ç«¯å£å·
         /// </summary>
         [DataMember, JsonProperty("monitorPort")]
         public int ZeroMonitorPort { get; set; }
 
         /// <summary>
-        /// ZeroNetÏûÏ¢ÖĞĞÄ¹ÜÀíÕ¾¶Ë¿ÚºÅ
+        /// ZeroNetæ¶ˆæ¯ä¸­å¿ƒç®¡ç†ç«™ç«¯å£å·
         /// </summary>
         [DataMember, JsonProperty("managePort")]
         public int ZeroManagePort { get; set; }
-        
+
         /// <summary>
-        /// ±¾µØÊı¾İÎÄ¼ş¼Ğ
+        /// æœ¬åœ°æ•°æ®æ–‡ä»¶å¤¹
         /// </summary>
         [DataMember, JsonProperty("dataFolder")]
         public string DataFolder { get; set; }
 
-
-        private byte[] _realName;
+        /// <summary>
+        /// å®ä¾‹åç§°
+        /// </summary>
+        [DataMember, JsonProperty("realName")]
+        private string _realName;
 
         /// <summary>
-        /// ÊµÀıÃû³Æ£¬×¢ÒâÎ¨Ò»ĞÔ
+        /// å®ä¾‹åç§°
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public byte[] RealName => _realName ??
-                                  (_realName = ($"{StationName}-{RandomOperate.Generate(6)}").ToAsciiBytes());
+        public string RealName
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_realName))
+                    return _realName;
+                return _realName = $"{StationName}-{RandomOperate.Generate(6)}";
+            }
+        }
+
+        private byte[] _identity;
+
+        /// <summary>
+        /// å®ä¾‹åç§°
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public byte[] Identity => _identity ?? (_identity = ToZeroIdentity());
+
+        /// <summary>
+        /// æ˜¯å¦æœ¬æœº
+        /// </summary>
+        /// <returns></returns>
+        public bool IsLocalhost => string.IsNullOrWhiteSpace(ZeroAddress) ||
+                                   ZeroAddress == "127.0.0.1" ||
+                                   ZeroAddress == "::1" ||
+                                   ZeroAddress.Equals("localhost", StringComparison.OrdinalIgnoreCase);
+        /// <summary>
+        /// æ ¼å¼åŒ–åœ°å€
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public string GetRemoteAddress(string station, int port)
+        {
+            return /*IsLocalhost
+                ? $"ipc:///tmp/zero_{station}"
+                :*/ $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
+        }
+
+        /// <summary>
+        /// æ ¼å¼åŒ–èº«ä»½åç§°
+        /// </summary>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public byte[] ToZeroIdentity(params string[] ranges)
+        {
+            StringBuilder sb = new StringBuilder();
+            //sb.Append(IsLocalhost ? "-" : "+");
+            sb.Append(RealName);
+            foreach (var range in ranges)
+            {
+                sb.Append("-");
+                sb.Append(range);
+            }
+            return sb.ToString().ToAsciiBytes();
+        }
     }
 }

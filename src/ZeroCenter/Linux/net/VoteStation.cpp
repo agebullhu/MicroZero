@@ -79,7 +79,7 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 请求标识 3 命令 4 参数
-			zmq_state_ = recv(request_scoket_, list);
+			zmq_state_ = recv(request_scoket_tcp_, list);
 
 			if (list[2][0] == '@')//计划类型
 			{
@@ -149,10 +149,10 @@ namespace agebull
 			//路由到所有工作对象
 			for (auto voter : workers_)
 			{
-				zmq_state_ = send_addr(response_socket_, voter.second.net_name.c_str());
-				zmq_state_ = send_more(response_socket_, client_addr);
-				zmq_state_ = send_more(response_socket_, request_token);
-				zmq_state_ = send_late(response_socket_, request_argument);
+				zmq_state_ = send_addr(response_socket_tcp_, voter.second.net_name.c_str());
+				zmq_state_ = send_more(response_socket_tcp_, client_addr);
+				zmq_state_ = send_more(response_socket_tcp_, request_token);
+				zmq_state_ = send_late(response_socket_tcp_, request_argument);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					redis->hset(key, voter.second.flow_name.c_str(), ZERO_STATUS_VOTE_SENDED);
 				else
@@ -189,10 +189,10 @@ namespace agebull
 					{
 					case '-':
 					case '+':
-						zmq_state_ = send_addr(response_socket_, kv.first.c_str());
-						zmq_state_ = send_more(response_socket_, client_addr);
-						zmq_state_ = send_more(response_socket_, request_token);
-						zmq_state_ = send_late(response_socket_, request_argument);
+						zmq_state_ = send_addr(response_socket_tcp_, kv.first.c_str());
+						zmq_state_ = send_more(response_socket_tcp_, client_addr);
+						zmq_state_ = send_more(response_socket_tcp_, request_token);
+						zmq_state_ = send_late(response_socket_tcp_, request_argument);
 						if (zmq_state_ == zmq_socket_state::Succeed)
 							redis->hset(key, kv.first.c_str(), ZERO_STATUS_VOTE_SENDED);
 						break;
@@ -205,27 +205,27 @@ namespace agebull
 
 		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* voter, const char* state)
 		{
-			zmq_state_ = send_addr(request_scoket_, client_addr);
-			zmq_state_ = send_more(request_scoket_, request_token);
-			zmq_state_ = send_more(request_scoket_, voter);
-			zmq_state_ = send_late(request_scoket_, state);
+			zmq_state_ = send_addr(request_scoket_tcp_, client_addr);
+			zmq_state_ = send_more(request_scoket_tcp_, request_token);
+			zmq_state_ = send_more(request_scoket_tcp_, voter);
+			zmq_state_ = send_late(request_scoket_tcp_, state);
 			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
 		bool vote_station::send_state(const char* client_addr, const char* request_token, const char* state, std::map<acl::string, acl::string>& values)
 		{
-			zmq_state_ = send_addr(request_scoket_, client_addr);
-			zmq_state_ = send_more(request_scoket_, request_token);
-			zmq_state_ = send_more(request_scoket_, "$");
+			zmq_state_ = send_addr(request_scoket_tcp_, client_addr);
+			zmq_state_ = send_more(request_scoket_tcp_, request_token);
+			zmq_state_ = send_more(request_scoket_tcp_, "$");
 			for (auto kv : values)
 			{
 				if (kv.first == "*" || kv.first == "#")
 					continue;
-				zmq_state_ = send_more(request_scoket_, kv.first.c_str());
-				zmq_state_ = send_more(request_scoket_, kv.second.c_str());
+				zmq_state_ = send_more(request_scoket_tcp_, kv.first.c_str());
+				zmq_state_ = send_more(request_scoket_tcp_, kv.second.c_str());
 			}
-			zmq_state_ = send_more(request_scoket_, "*");
-			zmq_state_ = send_late(request_scoket_, state);
+			zmq_state_ = send_more(request_scoket_tcp_, "*");
+			zmq_state_ = send_late(request_scoket_tcp_, state);
 			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
@@ -236,7 +236,7 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 原始者请求地址 3 请求标识 4 结果
-			zmq_state_ = recv(response_socket_, list);
+			zmq_state_ = recv(response_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
 				return;
@@ -251,8 +251,8 @@ namespace agebull
 			{
 			case ZERO_WORKER_JOIN://加入
 				worker_join(*list[0]/*, *list[3], true*/);
-				send_addr(response_socket_, *list[0]);
-				send_late(response_socket_, ZERO_STATUS_WECOME);
+				send_addr(response_socket_tcp_, *list[0]);
+				send_late(response_socket_tcp_, ZERO_STATUS_WECOME);
 				return;
 			case ZERO_WORKER_LISTEN://开始工作
 				return;

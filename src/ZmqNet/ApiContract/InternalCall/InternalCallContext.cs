@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -10,17 +10,36 @@ namespace Agebull.ZeroNet.ZeroApi
     [JsonObject(MemberSerialization.OptIn)]
     public class CallContext
     {
+        public void SetValue(string sk, string ri)
+        {
+            serviceKey = sk;
+            requestId = ri;
+        }
         /// <summary>
         /// 请求服务身份
         /// </summary>
-        [JsonProperty("sk", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string ServiceKey { get; set; }
+        [JsonProperty("sk", DefaultValueHandling = DefaultValueHandling.Ignore,NullValueHandling = NullValueHandling.Ignore)]
+        internal string serviceKey;
+
+        /// <summary>
+        /// 请求服务身份
+        /// </summary>
+        [JsonIgnore]
+        public string ServiceKey => serviceKey;
 
         /// <summary>
         /// 全局请求标识（源头为用户请求）
         /// </summary>
-        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string RequestId { get; set; }
+        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore)]
+        internal string requestId;
+
+        /// <summary>
+        /// 全局请求标识（源头为用户请求）
+        /// </summary>
+        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string RequestId => requestId;
 
         /// <summary>
         /// 当前请求的Http Authorizaition

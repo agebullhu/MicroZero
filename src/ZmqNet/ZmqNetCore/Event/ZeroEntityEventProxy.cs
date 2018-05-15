@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Base;
@@ -23,7 +23,7 @@ namespace ZeroApi
         /// </summary>
         public ZeroEntityEventProxy()
         {
-            config_ = StationProgram.GetConfig("EntityEvent", out var status);
+            config_ = ZeroApplication.GetConfig("EntityEvent", out var status);
             if (status == ZeroCommandStatus.NoFind)
             {
                 return;
@@ -38,9 +38,9 @@ namespace ZeroApi
         {
             try
             {
-                _socket.Options.Identity = StationProgram.Config.ServiceName.ToAsciiBytes();
+                _socket.Options.Identity = ZeroApplication.Config.Identity;
                 _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                _socket.Connect(config_.OutAddress);
+                _socket.Connect(config_.RequestAddress);
             }
             catch (Exception e)
             {
@@ -94,7 +94,7 @@ namespace ZeroApi
         void IEntityEventProxy.OnStatusChanged(int entityType, EntitySubsist type, NotificationObject data)
         {
             var msg = $@"
-{StationProgram.Config.StationName}
+{ZeroApplication.Config.StationName}
 {data.GetType().FullName}
 {type}
 {(JsonConvert.SerializeObject(data))}";

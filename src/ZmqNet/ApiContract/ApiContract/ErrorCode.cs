@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 // ReSharper disable All
 
 
@@ -13,6 +13,17 @@ namespace Agebull.ZeroNet.ZeroApi
 
         static readonly Dictionary<int, string> Map = new Dictionary<int, string>
         {
+            {Success,"操作成功" },
+            {UnknowError,"未知错误" },
+            {ArgumentError,"参数错误" },
+            {NetworkError,"网络异常" },
+            {InnerError,"服务器内部错误" },
+            {DenyAccess,"拒绝访问" },
+            {ReTry,"客户端应重新请求" },
+            {Ignore,"客户端应中止请求" },
+            {NoFind,"页面不存在" },
+            {TimeOut,"访问超时" },
+            {NoReady,"系统未就绪" },
             {Auth_ServiceKey_Unknow,"未知的ServiceKey" },
             {Auth_RefreshToken_Unknow,"未知的RefreshToken" },
             {Auth_AccessToken_Unknow,"未知的AccessToken" },
@@ -27,21 +38,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns>消息文本</returns>
         public static string GetMessage(int eid)
         {
-            switch (eid)
-            {
-                case 0:
-                    return "操作成功";
-                case -1:
-                    return "未知错误";
-                case ArgumentError:
-                    return "参数错误";
-                case NetworkError:
-                    return "网络异常";
-                case InnerError:
-                    return "服务器内部错误";
-            }
-
-            return Map.TryGetValue(eid, out string result) ? result : "未知错误";
+            return Map.TryGetValue(eid, out string result) ? result : "发生未知错误";
         }
 
         #endregion

@@ -8,14 +8,14 @@ using NetMQ.Sockets;
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// Zmq°ïÖúÀà
+    /// Zmqå¸®åŠ©ç±»
     /// </summary>
     public static class ZeroHelper
     {
         /// <summary>
-        ///     ¹Ø±ÕÌ×½Ó×Ö
+        ///     å…³é—­å¥—æ¥å­—
         /// </summary>
-        public static void CloseSocket(this NetMQSocket socket,string address)
+        public static void CloseSocket(this NetMQSocket socket, string address)
         {
             if (socket == null)
                 return;
@@ -25,14 +25,13 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e); //Ò»°ãÊÇÎŞ·¨Á¬½Ó·şÎñÆ÷¶ø³ö´í
+                LogRecorder.Exception(e); //ä¸€èˆ¬æ˜¯æ— æ³•è¿æ¥æœåŠ¡å™¨è€Œå‡ºé”™
             }
             socket.Close();
             socket.Dispose();
-            socket = null;
         }
         /// <summary>
-        ///     ½ÓÊÕÎÄ±¾
+        ///     æ¥æ”¶æ–‡æœ¬
         /// </summary>
         /// <param name="request"></param>
         /// <param name="datas"></param>
@@ -45,7 +44,7 @@ namespace Agebull.ZeroNet.Core
             var more = true;
             var cnt = 0;
             var ts = new TimeSpan(0, 0, 3);
-            //ÊÕÍêÏûÏ¢
+            //æ”¶å®Œæ¶ˆæ¯
             while (more)
             {
                 if (!request.TryReceiveFrameString(ts, out var data, out more))
@@ -60,7 +59,39 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     ½ÓÊÕÎÄ±¾
+        ///     æ¥æ”¶æ–‡æœ¬
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="datas"></param>
+        /// <param name="tryCnt"></param>
+        /// <returns></returns>
+        public static bool Receive(this NetMQSocket request, out List<byte[]> datas, int tryCnt = 3)
+        {
+            datas = new List<byte[]>();
+
+            var more = true;
+            var cnt = 0;
+            var ts = new TimeSpan(0, 0, 30);
+            //æ”¶å®Œæ¶ˆæ¯
+            while (more)
+            {
+                Msg msg = new Msg();
+                msg.InitDelimiter();
+                if (!request.TryReceiveFrameBytes(ts, out var bytes, out more))
+                {
+                    if (++cnt >= tryCnt)
+                        return false;
+                    more = true;
+                }
+                else
+                {
+                    datas.Add(bytes);
+                }
+            }
+            return true;
+        }
+        /// <summary>
+        ///     æ¥æ”¶æ–‡æœ¬
         /// </summary>
         /// <param name="request"></param>
         /// <param name="tryCnt"></param>
@@ -71,7 +102,7 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     ½ÓÊÕÎÄ±¾
+        ///     æ¥æ”¶æ–‡æœ¬
         /// </summary>
         /// <param name="request"></param>
         /// <param name="args"></param>
@@ -79,12 +110,12 @@ namespace Agebull.ZeroNet.Core
         public static bool SendString(this NetMQSocket request, params string[] args)
         {
             if (args.Length == 0)
-                throw new ArgumentException("args ²»ÄÜÎª¿Õ");
-            return SendStringInner(request,args);
+                throw new ArgumentException("args ä¸èƒ½ä¸ºç©º");
+            return SendStringInner(request, args);
         }
 
         /// <summary>
-        ///     ½ÓÊÕÎÄ±¾
+        ///     æ¥æ”¶æ–‡æœ¬
         /// </summary>
         /// <param name="request"></param>
         /// <param name="args"></param>
@@ -97,7 +128,7 @@ namespace Agebull.ZeroNet.Core
             return request.TrySendFrame(args[i] ?? "");
         }
         /// <summary>
-        ///     ·¢ËÍÎÄ±¾
+        ///     å‘é€æ–‡æœ¬
         /// </summary>
         /// <param name="request"></param>
         /// <param name="args"></param>
@@ -105,35 +136,60 @@ namespace Agebull.ZeroNet.Core
         public static string Request(this NetMQSocket request, params string[] args)
         {
             if (args.Length == 0)
-                throw new ArgumentException("args ²»ÄÜÎª¿Õ");
+                throw new ArgumentException("args ä¸èƒ½ä¸ºç©º");
             if (!SendString(request, args))
-                throw new Exception("·¢ËÍÊ§°Ü");
+                throw new Exception("å‘é€å¤±è´¥");
             return ReceiveString(request);
         }
 
 
         /// <summary>
-        ///     ·¢ÆğÒ»´ÎÇëÇó
+        ///     å‘èµ·ä¸€æ¬¡è¯·æ±‚
         /// </summary>
-        /// <param name="address">ÇëÇóµØÖ·</param>
-        /// <param name="args">ÇëÇó²ÎÊı</param>
+        /// <param name="address">è¯·æ±‚åœ°å€</param>
+        /// <param name="args">è¯·æ±‚å‚æ•°</param>
         /// <returns></returns>
         public static string RequestNet(this string address, params string[] args)
         {
             if (args.Length == 0)
-                throw new ArgumentException("args ²»ÄÜÎª¿Õ");
+                throw new ArgumentException("args ä¸èƒ½ä¸ºç©º");
             using (var request = new RequestSocket())
             {
-                request.Options.Identity = StationProgram.Config.RealName;
+                request.Options.Identity = ZeroApplication.Config.Identity;
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
+                request.Options.DisableTimeWait = true;
+                request.Connect(address);
+                
+                if (!SendStringInner(request, args))
+                    throw new Exception($"{address}:å‘é€å¤±è´¥");
+                var res = ReceiveString(request, out var datas, 1) ? datas.FirstOrDefault() : null;
+                request.Disconnect(address);
+                return res;
+            }
+        }
+
+        /// <summary>
+        ///     å‘èµ·ä¸€æ¬¡è¯·æ±‚
+        /// </summary>
+        /// <param name="address">è¯·æ±‚åœ°å€</param>
+        /// <param name="args">è¯·æ±‚å‚æ•°</param>
+        /// <returns>è¿”å›çš„æ‰€æœ‰æ•°æ®</returns>
+        public static List<string> MulitRequestNet(this string address, params string[] args)
+        {
+            if (args.Length == 0)
+                throw new ArgumentException("args ä¸èƒ½ä¸ºç©º");
+            using (var request = new RequestSocket())
+            {
+                request.Options.Identity = ZeroApplication.Config.Identity;
                 request.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
                 request.Options.DisableTimeWait = true;
                 request.Connect(address);
 
                 if (!SendStringInner(request, args))
-                    throw new Exception($"{address}:·¢ËÍÊ§°Ü");
-                var res = ReceiveString(request, out var datas, 1) ? datas.FirstOrDefault() : null;
+                    throw new Exception($"{address}:å‘é€å¤±è´¥");
+                ReceiveString(request, out var datas, 1);
                 request.Disconnect(address);
-                return res;
+                return datas;
             }
         }
     }

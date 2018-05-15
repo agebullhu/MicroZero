@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (State != StationState.Run)
                 return false;
-            var result = StationProgram.ZeroManageAddress.RequestNet(commmand, argument);
+            var result = ZeroApplication.ZeroManageAddress.RequestNet(commmand, argument);
             if (String.IsNullOrWhiteSpace(result))
             {
                 StationConsole.WriteError($"【{commmand}】{argument}\r\n处理超时");
@@ -43,9 +43,9 @@ namespace Agebull.ZeroNet.Core
         public static StationConfig InstallStation(string stationName, string type)
         {
             StationConfig config;
-            lock (StationProgram.Configs)
+            lock (ZeroApplication.Configs)
             {
-                if (StationProgram.Configs.TryGetValue(stationName, out config))
+                if (ZeroApplication.Configs.TryGetValue(stationName, out config))
                     return config;
             }
 
@@ -54,7 +54,7 @@ namespace Agebull.ZeroNet.Core
             StationConsole.WriteInfo($"【{stationName}】auto regist...");
             try
             {
-                var result = StationProgram.ZeroManageAddress.RequestNet("install", type, stationName);
+                var result = ZeroApplication.ZeroManageAddress.RequestNet("install", type, stationName);
 
                 switch (result)
                 {
@@ -76,9 +76,9 @@ namespace Agebull.ZeroNet.Core
                 StationConsole.WriteError($"【{stationName}】auto regist failed:{e.Message}");
                 return null;
             }
-            lock (StationProgram.Configs)
+            lock (ZeroApplication.Configs)
             {
-                StationProgram.Configs.Add(stationName, config);
+                ZeroApplication.Configs.Add(stationName, config);
             }
 
             StationConsole.WriteError($"【{stationName}】auto regist succeed");
@@ -91,31 +91,31 @@ namespace Agebull.ZeroNet.Core
         internal static void Run()
         {
             State = StationState.Start;
-            StationConsole.WriteInfo("Program Start...");
-            StationProgram.State = StationState.Start;
+            StationConsole.WriteInfo($"System Manage({ZeroApplication.ZeroManageAddress}) Start...");
+            
             if (!PingCenter())
             {
-                StationProgram.State = StationState.Failed;
+                State = StationState.Failed;
                 StationConsole.WriteError("ZeroCenter can`t connection.");
                 return;
             }
             if (!LoadAllConfig())
             {
-                StationProgram.State = StationState.Failed;
+                State = StationState.Failed;
                 StationConsole.WriteError("ZeroCenter configs can`t load.");
                 return;
             }
             State = StationState.Run;
             Thread.Sleep(50);
-            StationProgram.State = StationState.Run;
-            if (StationProgram.Stations.Count > 0)
+            ZeroApplication.State = StationState.Run;
+            if (ZeroApplication.Stations.Count > 0)
             {
-                foreach (var station in StationProgram.Stations.Values)
+                foreach (var station in ZeroApplication.Stations.Values)
                     ZeroStation.Run(station);
             }
 
-            SystemMonitor.RaiseEvent(StationProgram.Config,"program_run");
-            StationConsole.WriteInfo("Program Run...");
+            SystemMonitor.RaiseEvent(ZeroApplication.Config,"program_run");
+            StationConsole.WriteInfo("System Manage Run...");
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Agebull.ZeroNet.Core
         {
             try
             {
-                return StationProgram.ZeroManageAddress.RequestNet("ping") != null;
+                return ZeroApplication.ZeroManageAddress.RequestNet("ping") != null;
             }
             catch (Exception e)
             {
@@ -140,7 +140,7 @@ namespace Agebull.ZeroNet.Core
             int trycnt = 0;
             while (true)
             {
-                result = StationProgram.ZeroManageAddress.RequestNet("Host", "*");
+                result = ZeroApplication.ZeroManageAddress.RequestNet("Host", "*");
                 if (result != null)
                 {
                     break;
@@ -154,12 +154,12 @@ namespace Agebull.ZeroNet.Core
                 var configs = JsonConvert.DeserializeObject<List<StationConfig>>(result);
                 foreach (var config in configs)
                 {
-                    lock (StationProgram.Configs)
+                    lock (ZeroApplication.Configs)
                     {
-                        if (StationProgram.Configs.ContainsKey(config.StationName))
-                            StationProgram.Configs[config.StationName].Copy(config);
+                        if (ZeroApplication.Configs.ContainsKey(config.StationName))
+                            ZeroApplication.Configs[config.StationName].Copy(config);
                         else
-                            StationProgram.Configs.Add(config.StationName, config);
+                            ZeroApplication.Configs.Add(config.StationName, config);
                     }
                 }
                 return true;

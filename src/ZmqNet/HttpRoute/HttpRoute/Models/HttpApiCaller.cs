@@ -186,6 +186,7 @@ namespace ZeroNet.Http.Route
             catch (WebException e)
             {
                 status = e.Status;
+                LogRecorder.Exception(e);
                 return e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e, ref status) : ResponseError(e);
             }
             catch (Exception e)
@@ -222,7 +223,7 @@ namespace ZeroNet.Http.Route
                     }
                 }
                 var msg = ReadResponse(exception.Response);
-                RuntimeWaring.Waring(Host, ApiName, msg);
+                LogRecorder.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)
@@ -234,7 +235,6 @@ namespace ZeroNet.Http.Route
         }
         private string ResponseError(WebException e)
         {
-            LogRecorder.Exception(e);
             switch (e.Status)
             {
                 case WebExceptionStatus.CacheEntryNotFound:
@@ -277,8 +277,12 @@ namespace ZeroNet.Http.Route
                     return ToErrorString(ErrorCode.NetworkError, "内部服务器异常(未知错误)");
             }
         }
-
-        private string ReadResponse(WebResponse response)
+        /// <summary>
+        /// 读取返回消息
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        private static string ReadResponse(WebResponse response)
         {
             string result;
             using (response)

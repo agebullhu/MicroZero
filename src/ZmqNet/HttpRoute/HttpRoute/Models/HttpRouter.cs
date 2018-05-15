@@ -55,11 +55,9 @@ namespace ZeroNet.Http.Route
             Response = context.Response;
             Data = new RouteData();
             Data.Prepare(context.Request);
-
-            ApiContext.Current.Request.RequestId = RandomOperate.Generate(8);
+            
             ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
             ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
-            ApiContext.Current.Request.ServiceKey = ApiContext.MyServiceKey;
             ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
             ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
         }
@@ -77,6 +75,12 @@ namespace ZeroNet.Http.Route
         {
             if (!CheckCall())
                 return;
+            if (Data.HostName.Equals("Zero", StringComparison.OrdinalIgnoreCase))
+            {
+                var manager = new ZeroManager();
+                manager.Command(Data);
+                return;
+            }
             // 1 安全检查
             if (!SecurityCheck())
                 return;
@@ -184,7 +188,7 @@ namespace ZeroNet.Http.Route
                     RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                     return false;
                 }
-                if (result.Status != null && !result.Result)
+                if (result.Status != null && !result.Success)
                 {
                     switch (result.Status.ErrorCode)
                     {
@@ -200,7 +204,7 @@ namespace ZeroNet.Http.Route
                         case ErrorCode.Auth_AccessToken_TimeOut:
                             return false;
                         default:
-                            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.Message ?? "处理错误但无消息");
+                            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
                             return false;
                     }
                 }

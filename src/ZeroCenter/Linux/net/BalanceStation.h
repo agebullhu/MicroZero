@@ -66,7 +66,7 @@ namespace agebull
 		{
 			vector<sharp_char> list;
 			//0 路由到的地址 1 空帧 2 命令 3 服务器地址
-			zmq_state_ = recv(heart_socket_, list);
+			zmq_state_ = recv(heart_socket_tcp_, list);
 			bool success = false;
 			const char* status;
 			switch (list[1][0])
@@ -86,8 +86,8 @@ namespace agebull
 			default:
 				status = ZERO_STATUS_NO_SUPPORT; break;
 			}
-			zmq_state_ = send_addr(heart_socket_, *list[0]);
-			zmq_state_ = send_late(heart_socket_, status);
+			zmq_state_ = send_addr(heart_socket_tcp_, *list[0]);
+			zmq_state_ = send_late(heart_socket_tcp_, status);
 		}
 
 		/**

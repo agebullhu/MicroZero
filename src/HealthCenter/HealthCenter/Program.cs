@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
-using Microsoft.Extensions.DependencyInjection;
 using ZeroNet.Http.Route;
 
 namespace PerformanceService
@@ -12,10 +10,9 @@ namespace PerformanceService
         {
             Console.WriteLine("Hello ZeroNet");
 
-            StationProgram.RegisteStation<PerformanceCounter>();
-            StationProgram.RegisteStation<RuntimeWaring>();
-            StationProgram.Initialize();
-            StationProgram.RunConsole();
+            ZeroApplication.RegisteStation<PerformanceCounter>();
+            ZeroApplication.RegisteStation<RuntimeWaring>();
+            ZeroApplication.RunAwaite();
         }
     }
 }

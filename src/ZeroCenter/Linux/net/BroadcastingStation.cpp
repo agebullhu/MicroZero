@@ -109,7 +109,7 @@ namespace agebull
 				buf[++cnt] = ZERO_FRAME_ARG;
 				message.messages.push_back(arg);
 			}
-			buf[0] = cnt;
+			buf[0] = static_cast<char>(cnt);
 
 			message.read_plan(plan.get_buffer());
 			message.request_caller = caller;
@@ -124,9 +124,9 @@ namespace agebull
 		*/
 		bool broadcasting_station_base::publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas)
 		{
-			send_more(response_socket_, *title);
-			send_more(response_socket_, *description);
-			zmq_state_ = send(response_socket_, datas);
+			send_more(response_socket_tcp_, *title);
+			send_more(response_socket_tcp_, *description);
+			zmq_state_ = send(response_socket_tcp_, datas);
 			return zmq_state_ == zmq_socket_state::Succeed;
 		}
 
@@ -291,7 +291,7 @@ namespace agebull
 			//发送关闭消息
 			acl::string msg(128);
 			msg.format("station_end\r\n%s\r\n%d\r\n", example_->station_name_.c_str(), example_->response_port_);
-			send_late(example_->response_socket_, msg.c_str());
+			send_late(example_->response_socket_tcp_, msg.c_str());
 			thread_sleep(100);
 			example_->destruct();
 			if (re_strart)
