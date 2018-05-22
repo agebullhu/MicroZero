@@ -6,7 +6,7 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.LogRecorder
+namespace Agebull.ZeroNet.Log
 {
     /// <summary>
     /// 多生产者单消费者的同步列表（线程安全）

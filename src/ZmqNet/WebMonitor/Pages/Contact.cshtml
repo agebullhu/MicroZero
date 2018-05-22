@@ -1,0 +1,40 @@
+@page
+@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@{
+    ViewData["Title"] = "实时警告";
+}
+@section Scripts{
+<script src="js/JSMQ.js"></script>
+<script>
+    var data = {
+        host: [@(Html.Raw(JsonConvert.SerializeObject(HealthSubscribe.Root)))]
+    };
+    var vm = new Vue({
+        el: '#vue',
+        data: data
+    });
+    var subscriber = new JSMQ.Subscriber();
+    var index = 0;
+    subscriber.connect("ws://" + location.hostname + ":81");
+    subscriber.subscribe("Health");
+    subscriber.onMessage = function (message) {
+        message.popString();
+        var bytes = message.popBuffer();
+        var reader = new FileReader();
+        reader.readAsText(new Blob([bytes]), 'utf-8');
+        reader.onload = function (evt) {
+            data.host = eval('([' + reader.result + '])');
+        }
+    };
+</script>
+}
+<div id="vue">
+    <el-tree
+        :data="host"
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current>
+    </el-tree>
+</div>

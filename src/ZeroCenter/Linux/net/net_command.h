@@ -34,8 +34,6 @@ namespace agebull
 		//登记线程关闭
 		void set_command_thread_end(const char* name);
 
-		//网络监控
-		DWORD zmq_monitor(const char * address);
 		//生成CRC校验码
 		ushort get_crc(const char *msg, size_t len);
 	}

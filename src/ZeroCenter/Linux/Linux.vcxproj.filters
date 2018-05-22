@@ -30,9 +30,6 @@
     <Filter Include="rpc\notify">
       <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rpc\vote">
-      <UniqueIdentifier>{1313c213-b967-4e11-871c-1af7c5c93720}</UniqueIdentifier>
-    </Filter>
     <Filter Include="rpc\base">
       <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
     </Filter>
@@ -56,27 +53,6 @@
     <ClCompile Include="cfg\config.cpp">
       <Filter>sys\cfg</Filter>
     </ClCompile>
-    <ClCompile Include="net\VoteStation.cpp">
-      <Filter>rpc\vote</Filter>
-    </ClCompile>
-    <ClCompile Include="net\ApiStation.cpp">
-      <Filter>rpc\api</Filter>
-    </ClCompile>
-    <ClCompile Include="net\NetDispatcher.cpp">
-      <Filter>rpc\dispatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="net\BroadcastingStation.cpp">
-      <Filter>rpc\notify</Filter>
-    </ClCompile>
-    <ClCompile Include="net\message_plan.cpp">
-      <Filter>rpc\base</Filter>
-    </ClCompile>
-    <ClCompile Include="net\StationWarehouse.cpp">
-      <Filter>rpc\base</Filter>
-    </ClCompile>
-    <ClCompile Include="net\ZeroStation.cpp">
-      <Filter>rpc\base</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>main</Filter>
     </ClCompile>
@@ -86,8 +62,23 @@
     <ClCompile Include="net\net_crc.cpp">
       <Filter>rpc\net</Filter>
     </ClCompile>
-    <ClCompile Include="net\net_monitor.cpp">
+    <ClCompile Include="net\zmq_extend.cpp">
       <Filter>rpc\net</Filter>
+    </ClCompile>
+    <ClCompile Include="net\station_dispatcher.cpp">
+      <Filter>rpc\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="net\broadcasting_station.cpp">
+      <Filter>rpc\notify</Filter>
+    </ClCompile>
+    <ClCompile Include="net\zero_station.cpp">
+      <Filter>rpc\base</Filter>
+    </ClCompile>
+    <ClCompile Include="net\api_station.cpp">
+      <Filter>rpc\api</Filter>
+    </ClCompile>
+    <ClCompile Include="net\station_warehouse.cpp">
+      <Filter>rpc\dispatcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,27 +103,6 @@
     <ClInclude Include="cfg\config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
-    <ClInclude Include="net\VoteStation.h">
-      <Filter>rpc\vote</Filter>
-    </ClInclude>
-    <ClInclude Include="net\ApiStation.h">
-      <Filter>rpc\api</Filter>
-    </ClInclude>
-    <ClInclude Include="net\NetDispatcher.h">
-      <Filter>rpc\dispatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="net\BroadcastingStation.h">
-      <Filter>rpc\notify</Filter>
-    </ClInclude>
-    <ClInclude Include="net\BalanceStation.h">
-      <Filter>rpc\base</Filter>
-    </ClInclude>
-    <ClInclude Include="net\StationWarehouse.h">
-      <Filter>rpc\base</Filter>
-    </ClInclude>
-    <ClInclude Include="net\ZeroStation.h">
-      <Filter>rpc\base</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>std</Filter>
     </ClInclude>
@@ -150,6 +120,30 @@
     </ClInclude>
     <ClInclude Include="net\zmq_extend.h">
       <Filter>rpc\net</Filter>
+    </ClInclude>
+    <ClInclude Include="net\station_dispatcher.h">
+      <Filter>rpc\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="net\broadcasting_station.h">
+      <Filter>rpc\notify</Filter>
+    </ClInclude>
+    <ClInclude Include="net\zero_station.h">
+      <Filter>rpc\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\api_station.h">
+      <Filter>rpc\api</Filter>
+    </ClInclude>
+    <ClInclude Include="net\station_warehouse.h">
+      <Filter>rpc\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ipc_request_socket.h">
+      <Filter>rpc\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\zero_config.h">
+      <Filter>rpc\base</Filter>
+    </ClInclude>
+    <ClInclude Include="net\zero_plan.h">
+      <Filter>rpc\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

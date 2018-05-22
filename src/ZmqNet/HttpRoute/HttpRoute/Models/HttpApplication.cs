@@ -6,7 +6,7 @@ using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
-using Agebull.ZeroNet.LogRecorder;
+using Agebull.ZeroNet.Log;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace ZeroNet.Http.Route
@@ -24,7 +24,8 @@ namespace ZeroNet.Http.Route
         public static void Initialize()
         {
             AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-            
+
+            ApiContext.SetLogRecorderDependency();
             if (AppConfig.Config.SystemConfig.FireZero)
             {
                 LogRecorder.Initialize(new RemoteRecorder());
@@ -35,17 +36,8 @@ namespace ZeroNet.Http.Route
             {
                 LogRecorder.Initialize();
             }
-            LogRecorder.GetRequestIdFunc = () =>
-                ApiContext.Current == null || ApiContext.Current.Request == null
-                    ? Guid.Empty.ToString()
-                    : ApiContext.RequestContext.RequestId;
-
 
             RouteChahe.Flush();
-            RuntimeWaring.Flush();
-            //Datas = new List<RouteData>();
-
-
         }
         #endregion
 
@@ -110,7 +102,6 @@ namespace ZeroNet.Http.Route
             var router = new HttpRouter(context);
 
             HttpIoLog.OnBegin(router.Data);
-            var counter = PerformanceCounter.OnBegin(router.Data);
             try
             {
                 var checker = new SecurityChecker
@@ -141,8 +132,6 @@ namespace ZeroNet.Http.Route
             }
             finally
             {
-                //计时
-                counter.End(router.Data);
                 HttpIoLog.OnEnd(router.Data);
             }
         }

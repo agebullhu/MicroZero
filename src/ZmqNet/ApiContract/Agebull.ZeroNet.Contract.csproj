@@ -20,16 +20,16 @@
     <PackageLicenseUrl>https://github.com/agebullhu/ZmqNet/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.0.4</PackageVersion>
-    <Version>1.0.0.4</Version>
+    <PackageVersion>1.0.0.2</PackageVersion>
+    <Version>1.0.0.2</Version>
     <Authors>Agebull</Authors>
-    <Company>Yizuanbao &amp; agebull</Company>
+    <Company>agebull</Company>
     <Description>ZeroNet中调用契约定义</Description>
     <PackageReleaseNotes>ZeroNet中调用契约定义</PackageReleaseNotes>
     <PackageId>Agebull.ZeroNet.Contract</PackageId>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.0.4</AssemblyVersion>
-    <FileVersion>1.0.0.4</FileVersion>
+    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.0.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -103,8 +103,9 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.12" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.11" />
+    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.14" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.14" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.14" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.2" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>

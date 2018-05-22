@@ -1,9 +1,13 @@
-﻿{
-  "zeroAddr": "127.0.0.1",
-  "monitorPort": 8002,
-  "managePort": 8000,
-  "stationName": "User",
-  "serviceName": "User",
-  "ServiceName": "User",
-  "dataFolder": "z:\\data"
+{
+  "caption": "远程日志",
+  "description": "远程日志",
+  "station_alias": ["log","inner_log"],
+  "station_name": "RemoteLog",
+  "station_type": 5,
+  "out_port": 8015,
+  "out_addr": "tcp://*:8015",
+  "inner_port": 8016,
+  "inner_addr": "tcp://*:8016",
+  "heart_port": 8017,
+  "heart_addr": "tcp://*:8017"
 }

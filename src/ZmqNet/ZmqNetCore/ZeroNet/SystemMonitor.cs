@@ -31,7 +31,10 @@ namespace Agebull.ZeroNet.Core
             {
                 _subscriber = new SubscriberSocket();
                 _subscriber.Options.Identity = ZeroApplication.Config.Identity;
-                _subscriber.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                _subscriber.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
+                _subscriber.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
+                _subscriber.Options.TcpKeepalive = true;
+                _subscriber.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
                 _subscriber.Connect(ZeroApplication.ZeroMonitorAddress);
                 _subscriber.Subscribe("");
                 return true;
@@ -43,12 +46,19 @@ namespace Agebull.ZeroNet.Core
             }
         }
         /// <summary>
+        ///     状态
+        /// </summary>
+        public static StationState State { get; internal set; }
+
+        /// <summary>
         ///     重启
         /// </summary>
         public static void ReStart(bool async)
         {
+            if (ZeroApplication.State >= StationState.Closing)
+                return;
             Thread.Sleep(1000);
-            if (ZeroApplication.State == StationState.Failed)
+            if (State == StationState.Failed)
             {
                 Task.Factory.StartNew(SystemManager.Run);
             }
@@ -67,6 +77,7 @@ namespace Agebull.ZeroNet.Core
                 ReStart(true);
                 return;
             }
+            State = StationState.Start;
             Monitor();
             if (ZeroApplication.State < StationState.Closing)
                 ReStart(true);
@@ -81,6 +92,7 @@ namespace Agebull.ZeroNet.Core
                 ReStart(false);
                 return;
             }
+            State = StationState.Start;
             Monitor();
             if (ZeroApplication.State < StationState.Closing)
                 ReStart(false);
@@ -94,7 +106,9 @@ namespace Agebull.ZeroNet.Core
 
             StationConsole.WriteInfo($"System Monitor({ZeroApplication.ZeroMonitorAddress}) Runing...");
 
-            while (ZeroApplication.State < StationState.Closing)
+            Heartbeat(false);
+            State = StationState.Run;
+            while (ZeroApplication.State < StationState.Destroy)
             {
                 PublishItem item;
                 try
@@ -137,6 +151,7 @@ namespace Agebull.ZeroNet.Core
                     StationConsole.WriteError(e.Message);
                     LogRecorder.Exception(e);
                     //退出,自动重启
+                    State = StationState.Failed;
                     break;
                 }
 
@@ -144,6 +159,9 @@ namespace Agebull.ZeroNet.Core
                     continue;
                 OnMessagePush(item.Title, item.Station, item.Content);
             }
+            if (State != StationState.Failed)
+                State = StationState.Closed;
+            Heartbeat(true);
             if (_subscriber == null)
                 return;
             _subscriber.CloseSocket(ZeroApplication.ZeroMonitorAddress);
@@ -173,7 +191,10 @@ namespace Agebull.ZeroNet.Core
                     system_start(content);
                     return;
                 case "system_stop":
-                    system_stop(content);
+                    system_stop();
+                    return;
+                case "system_distory":
+                    system_distory(content);
                     return;
                 case "station_join":
                     station_join(station, content);
@@ -196,8 +217,12 @@ namespace Agebull.ZeroNet.Core
                 case "station_uninstall":
                     station_uninstall(station);
                     break;
-                case "worker_heat":
-                    station_heat(station, content);
+                case "station_state":
+                    station_state(station, content);
+                    break;
+                case "worker_sound_off":
+                    Heartbeat(false);
+                    StationEvent?.Invoke(ZeroApplication.Config, new StationEventArgument("worker_sound_off", null));
                     break;
             }
             if (SystemManager.State != StationState.Run)
@@ -235,43 +260,42 @@ namespace Agebull.ZeroNet.Core
         /// 站点事件发生
         /// </summary>
         public static event EventHandler<StationEventArgument> StationEvent;
-
         /// <summary>
         /// 站点心跳
         /// </summary>
         /// <param name="station"></param>
         /// <param name="content"></param>
-        private static void station_heat(string station, string content)
+        private static void station_state(string station, string content)
         {
             if (String.IsNullOrEmpty(station))
                 return;
-            if (ZeroApplication.Configs.TryGetValue(station, out var cfg))
-                StationEvent?.Invoke(ZeroApplication.Config, new StationEventArgument("station_heat", cfg));
+            try
+            {
+                var cfg = JsonConvert.DeserializeObject<StationConfig>(content);
+                StationEvent?.Invoke(ZeroApplication.Config, new StationEventArgument("station_state", cfg));
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                StationConsole.WriteError($"{e.Message}\r\n{content}");
+            }
         }
 
         private static void station_uninstall(string name)
         {
-            StationConsole.WriteInfo($"【station_uninstall】{name}");
+            StationConsole.WriteInfo($"[station_uninstall]{name}");
             if (String.IsNullOrEmpty(name))
                 return;
             if (!ZeroApplication.Configs.TryGetValue(name, out var cfg))
-            {
-                cfg = new StationConfig
-                {
-                    StationName = name
-                };
-            }
-            else
-            {
-                cfg.Dispose();
-                ZeroApplication.Configs.Remove(name);
-            }
+                return;
             StationEvent?.Invoke(cfg, new StationEventArgument("station_uninstall", cfg));
+            cfg.Dispose();
+            ZeroApplication.Configs.Remove(name);
         }
 
         private static void station_install(string name, string content)
         {
-            StationConsole.WriteInfo($"【station_install】{name}\r\n{content}");
+            StationConsole.WriteInfo($"[station_install]{name}\r\n{content}");
             if (String.IsNullOrEmpty(content))
                 return;
             StationConfig cfg;
@@ -282,6 +306,7 @@ namespace Agebull.ZeroNet.Core
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
+                StationConsole.WriteError($"{e.Message}\r\n{content}");
                 return;
             }
             cfg.State = StationState.None;
@@ -297,57 +322,56 @@ namespace Agebull.ZeroNet.Core
         {
             if (!ZeroApplication.Configs.TryGetValue(name, out var cfg))
                 return;
-            StationConsole.WriteInfo($"【station_closing】{name}\r\n{content}");
+            StationConsole.WriteInfo($"[station_closing]{name}\r\n{content}");
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_closing", cfg));
             if (ZeroApplication.State == StationState.Run && ZeroApplication.Stations.TryGetValue(name, out var station))
             {
                 station.Close();
             }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_closing", cfg));
         }
 
         private static void station_resume(string name, string content)
         {
             if (!ZeroApplication.Configs.TryGetValue(name, out var cfg))
                 return;
-            StationConsole.WriteInfo($"【station_resume】{name}\r\n{content}");
-            if (ZeroApplication.State == StationState.Run && ZeroApplication.Stations.TryGetValue(name, out var station) && station.RunState == StationState.Pause)
-            {
-                station.RunState = StationState.Run;
-                StationConsole.WriteLine($"{name} is resume");
-            }
+            StationConsole.WriteInfo($"[station_resume]{name}\r\n{content}");
             StationEvent?.Invoke(cfg, new StationEventArgument("station_resume", cfg));
+            if (ZeroApplication.State != StationState.Run ||
+                !ZeroApplication.Stations.TryGetValue(name, out var station) ||
+                station.RunState != StationState.Pause) return;
+            station.RunState = StationState.Run;
+            StationConsole.WriteLine($"{name} is resume");
         }
 
         private static void station_pause(string name, string content)
         {
             if (!ZeroApplication.Configs.TryGetValue(name, out var cfg))
                 return;
-            StationConsole.WriteInfo($"【station_pause】name\r\n{content}");
+            StationConsole.WriteInfo($"[station_pause]{name}\r\n{content}");
+            StationEvent?.Invoke(cfg, new StationEventArgument("station_pause", cfg));
             if (ZeroApplication.State == StationState.Run && ZeroApplication.Stations.TryGetValue(name, out var station) && station.RunState == StationState.Run)
             {
                 station.RunState = StationState.Pause;
                 StationConsole.WriteLine($"{name} is pause");
             }
-            StationEvent?.Invoke(cfg, new StationEventArgument("station_pause", cfg));
         }
 
         private static void station_left(string name)
         {
-            StationConsole.WriteInfo($"【station_left】{name}");
+            StationConsole.WriteInfo($"[station_left]{name}");
             if (!ZeroApplication.Configs.TryGetValue(name, out var cfg))
                 return;
-            if (ZeroApplication.Stations.ContainsKey(name))
-            {
-                StationConsole.WriteLine($"{name} is left");
-                ZeroApplication.Stations[name].Close();
-            }
-
             StationEvent?.Invoke(cfg, new StationEventArgument("station_left", cfg));
+            if (!ZeroApplication.Stations.ContainsKey(name))
+                return;
+            ZeroApplication.Stations[name].Close();
+            StationConsole.WriteLine($"{name} is left");
+
         }
 
         private static void station_join(string name, string content)
         {
-            StationConsole.WriteInfo($"【station_join】name\r\n{content}");
+            StationConsole.WriteLine($"[station_join]{name}\r\n{content}");
             if (String.IsNullOrEmpty(content))
                 return;
             StationConfig cfg;
@@ -357,7 +381,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                StationConsole.WriteLine($"{name} error : {e.Message}");
+                StationConsole.WriteLine($"{name} error : {e.Message}\r\n{content}");
                 LogRecorder.Exception(e);
                 return;
             }
@@ -368,38 +392,53 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Stations.ContainsKey(name))
                 return;
             ZeroApplication.Stations[name].Config = cfg;
-            StationConsole.WriteLine($"{name} is join");
+            if (ZeroApplication.State == StationState.Run)
+            {
+                var s = ZeroApplication.Stations[name];
+                if (s.RunState != StationState.Run)
+                    ZeroStation.Run(s);
+            }
             StationEvent?.Invoke(cfg, new StationEventArgument("station_join", cfg));
-            if (ZeroApplication.State != StationState.Run)
-                return;
-            var s = ZeroApplication.Stations[name];
-            if (s.RunState != StationState.Run)
-                ZeroStation.Run(s);
+        }
+        private static void system_distory(string content)
+        {
+            SystemManager.State = StationState.Destroy;
+            StationEvent?.Invoke(null, new StationEventArgument("system_distory", null));
+            StationConsole.WriteInfo($"[system_distory]\r\n{content}");
         }
 
-        private static void system_stop(string content)
+        private static void system_stop()
         {
             SystemManager.State = StationState.Closed;
-            StationConsole.WriteInfo($"【system_stop】\r\n{content}");
+            StationConsole.WriteInfo("[system_stop]");
             StationEvent?.Invoke(null, new StationEventArgument("system_stop", null));
             foreach (var sta in ZeroApplication.Stations.Values)
             {
                 StationConsole.WriteLine($"Close {sta.StationName}");
-                sta.Close();
                 StationEvent?.Invoke(sta, new StationEventArgument("system_stop", sta.Config));
+                sta.Close();
             }
             ZeroApplication.ConfigsDispose();
         }
 
         private static void system_start(string content)
         {
-            StationConsole.WriteInfo($"【system_start】\r\n{content}");
-
+            StationConsole.WriteInfo($"[system_start]\r\n{content}");
             ZeroApplication.ConfigsResume();
-            StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
             SystemManager.Run();
+            StationEvent?.Invoke(null, new StationEventArgument("system_start", null));
         }
 
+        /// <summary>
+        /// 心跳
+        /// </summary>
+        private static void Heartbeat(bool left)
+        {
+            if (left)
+                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartLeft, "SystemManage", ZeroApplication.Config.RealName);
+            else
+                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartPitpat, "SystemManage", ZeroApplication.Config.RealName, ZeroApplication.Address);
+        }
         #endregion
     }
 }

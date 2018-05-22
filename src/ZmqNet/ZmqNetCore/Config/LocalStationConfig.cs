@@ -54,6 +54,25 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember, JsonProperty("realName")]
         private string _realName;
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        [DataMember, JsonProperty("serviceKey")]
+        private string _serviceKey;
+
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public string ServiceKey
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_serviceKey))
+                    return _serviceKey;
+                return _serviceKey = RandomOperate.Generate(8);
+            }
+        }
 
         /// <summary>
         /// 实例名称
@@ -65,7 +84,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!string.IsNullOrEmpty(_realName))
                     return _realName;
-                return _realName = $"{StationName}-{RandomOperate.Generate(6)}";
+                return _realName = $"{StationName}-{ServiceName}-{ServiceKey}";
             }
         }
 
@@ -94,8 +113,8 @@ namespace Agebull.ZeroNet.Core
         public string GetRemoteAddress(string station, int port)
         {
             return /*IsLocalhost
-                ? $"ipc:///tmp/zero_{station}"
-                :*/ $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
+                ? $"ipc:///usr/zero/{station}.ipc"
+                : */$"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
         }
 
         /// <summary>
@@ -106,7 +125,7 @@ namespace Agebull.ZeroNet.Core
         public byte[] ToZeroIdentity(params string[] ranges)
         {
             StringBuilder sb = new StringBuilder();
-            //sb.Append(IsLocalhost ? "-" : "+");
+            sb.Append('+');//IsLocalhost ? "-" : "+"
             sb.Append(RealName);
             foreach (var range in ranges)
             {

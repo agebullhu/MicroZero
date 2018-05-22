@@ -156,15 +156,14 @@ namespace Agebull.ZeroNet.Core
             using (var request = new RequestSocket())
             {
                 request.Options.Identity = ZeroApplication.Config.Identity;
-                request.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
-                request.Options.DisableTimeWait = true;
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0,0, 200);
                 request.Connect(address);
-                
+
                 if (!SendStringInner(request, args))
                     throw new Exception($"{address}:发送失败");
-                var res = ReceiveString(request, out var datas, 1) ? datas.FirstOrDefault() : null;
+                ReceiveString(request, out var datas, 1);
                 request.Disconnect(address);
-                return res;
+                return datas.Count < 2 ? null : datas[1];
             }
         }
 
@@ -181,7 +180,8 @@ namespace Agebull.ZeroNet.Core
             using (var request = new RequestSocket())
             {
                 request.Options.Identity = ZeroApplication.Config.Identity;
-                request.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
+                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
+                request.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
                 request.Options.DisableTimeWait = true;
                 request.Connect(address);
 

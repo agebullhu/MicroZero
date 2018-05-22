@@ -3,37 +3,37 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Agebull.ZeroNet.ZeroApi;
-using Agebull.Common.DataModel.Redis;
+//using Agebull.Common.DataModel.Redis;
 using Agebull.Common.Logging;
-using Agebull.Common.Redis;
+//using Agebull.Common.Redis;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// °²È«¼ì²éÔ±
+    /// å®‰å…¨æ£€æŸ¥å‘˜
     /// </summary>
     public class SecurityChecker
     {
         /// <summary>
-        /// Httpµ÷ÓÃ
+        /// Httpè°ƒç”¨
         /// </summary>
         public HttpRequest Request { get; set; }
 
         /// <summary>
-        /// AuthÍ·
+        /// Authå¤´
         /// </summary>
         public string Bearer { get; set; }
 
         /// <summary>
-        /// ´íÎó´úÂë
+        /// é”™è¯¯ä»£ç 
         /// </summary>
         public int Status { get; set; }
 
-        #region Ô¤¼ì
+        #region é¢„æ£€
 
         /// <summary>
-        /// ÑéÇ©
+        /// éªŒç­¾
         /// </summary>
         /// <returns></returns>
         internal bool CheckSign()
@@ -41,7 +41,7 @@ namespace ZeroNet.Http.Route
             return true;
         }
         /// <summary>
-        /// Ô¤¼ì
+        /// é¢„æ£€
         /// </summary>
         /// <returns></returns>
         public  bool PreCheck()
@@ -49,7 +49,7 @@ namespace ZeroNet.Http.Route
             return CheckSign() && KillDenyHttpHeaders();
         }
         /// <summary>
-        /// Õë¶ÔHttpHeaderÌØÕ÷×èÖ¹²»°²È«·ÃÎÊ
+        /// é’ˆå¯¹HttpHeaderç‰¹å¾é˜»æ­¢ä¸å®‰å…¨è®¿é—®
         /// </summary>
         /// <returns></returns>
         internal  bool KillDenyHttpHeaders()
@@ -110,7 +110,7 @@ namespace ZeroNet.Http.Route
         #endregion
 
         /// <summary>
-        /// Õë¶ÔHttpHeaderÌØÕ÷×èÖ¹²»°²È«·ÃÎÊ
+        /// é’ˆå¯¹HttpHeaderç‰¹å¾é˜»æ­¢ä¸å®‰å…¨è®¿é—®
         /// </summary>
         ///  <param name="api"></param>
         /// <returns></returns>
@@ -120,7 +120,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// Õë¶ÔHttpHeaderÌØÕ÷×èÖ¹²»°²È«·ÃÎÊ
+        /// é’ˆå¯¹HttpHeaderç‰¹å¾é˜»æ­¢ä¸å®‰å…¨è®¿é—®
         /// </summary>
         ///  <param name="api"></param>
         /// <returns></returns>
@@ -143,12 +143,12 @@ namespace ZeroNet.Http.Route
             return true;
         }
         /// <summary>
-        ///     Ö´ĞĞ¼ì²é
+        ///     æ‰§è¡Œæ£€æŸ¥
         /// </summary>
         /// <returns>
-        ///     0:±íÊ¾Í¨¹ıÑéÖ¤£¬¿ÉÒÔ¼ÌĞø
-        ///     1£ºÁîÅÆÎª¿Õ»ò²»ºÏ¸ñ
-        ///     2£ºÁîÅÆÊÇÎ±ÔìµÄ
+        ///     0:è¡¨ç¤ºé€šè¿‡éªŒè¯ï¼Œå¯ä»¥ç»§ç»­
+        ///     1ï¼šä»¤ç‰Œä¸ºç©ºæˆ–ä¸åˆæ ¼
+        ///     2ï¼šä»¤ç‰Œæ˜¯ä¼ªé€ çš„
         /// </returns>
         public bool Check()
         {
@@ -195,12 +195,12 @@ namespace ZeroNet.Http.Route
         private static readonly Dictionary<string, bool> Keys = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        ///     ¼ì²éÉè±¸±êÊ¶
+        ///     æ£€æŸ¥è®¾å¤‡æ ‡è¯†
         /// </summary>
         /// <returns>
-        ///     0:±íÊ¾Í¨¹ıÑéÖ¤£¬¿ÉÒÔ¼ÌĞø
-        ///     1£ºÁîÅÆÎª¿Õ
-        ///     2£ºÁîÅÆÊÇÎ±ÔìµÄ
+        ///     0:è¡¨ç¤ºé€šè¿‡éªŒè¯ï¼Œå¯ä»¥ç»§ç»­
+        ///     1ï¼šä»¤ç‰Œä¸ºç©º
+        ///     2ï¼šä»¤ç‰Œæ˜¯ä¼ªé€ çš„
         /// </returns>
         private bool CheckDeviceId()
         {
@@ -212,33 +212,35 @@ namespace ZeroNet.Http.Route
                 Status = ErrorCode.Auth_Device_Unknow;
                 return false;
             }
-            if (!AppConfig.Config.Security.CheckBearerCache)
-                return true;
-            bool hase;
-            lock (Keys)
-            {
-                if (Keys.TryGetValue(Bearer, out hase))
-                    return hase;
-            }
-            using (var proxy = new RedisProxy(RedisProxy.DbAuthority))
-            {
-                hase = proxy.Client.KeyExists(RedisKeyBuilder.ToAuthKey("token", "did", Bearer));
-            }
-            lock (Keys)
-            {
-                if (!Keys.ContainsKey(Bearer))
-                    Keys.Add(Bearer, hase);
-            }
-            return hase;
+            return true;
+            
+            //if (!AppConfig.Config.Security.CheckBearerCache)
+            //    return true;
+            //bool hase;
+            //lock (Keys)
+            //{
+            //    if (Keys.TryGetValue(Bearer, out hase))
+            //        return hase;
+            //}
+            //using (var proxy = new RedisProxy(RedisProxy.DbAuthority))
+            //{
+            //    hase = proxy.Client.KeyExists(RedisKeyBuilder.ToAuthKey("token", "did", Bearer));
+            //}
+            //lock (Keys)
+            //{
+            //    if (!Keys.ContainsKey(Bearer))
+            //        Keys.Add(Bearer, hase);
+            //}
+            //return hase;
         }
 
         /// <summary>
-        ///     ¼ì²éAccessToken
+        ///     æ£€æŸ¥AccessToken
         /// </summary>
         /// <returns>
-        ///     0:±íÊ¾Í¨¹ıÑéÖ¤£¬¿ÉÒÔ¼ÌĞø
-        ///     1£ºÁîÅÆÎª¿Õ
-        ///     2£ºÁîÅÆÊÇÎ±ÔìµÄ
+        ///     0:è¡¨ç¤ºé€šè¿‡éªŒè¯ï¼Œå¯ä»¥ç»§ç»­
+        ///     1ï¼šä»¤ç‰Œä¸ºç©º
+        ///     2ï¼šä»¤ç‰Œæ˜¯ä¼ªé€ çš„
         /// </returns>
         private bool CheckAccessToken()
         {
@@ -252,25 +254,26 @@ namespace ZeroNet.Http.Route
                 Status = ErrorCode.Auth_AccessToken_Unknow;
                 return false;
             }
-            if (!AppConfig.Config.Security.CheckBearerCache)
-                return true;
+            return true;
+            //if (!AppConfig.Config.Security.CheckBearerCache)
+            //    return true;
 
-            bool hase;
-            lock (Keys)
-            {
-                if (Keys.TryGetValue(Bearer, out hase))
-                    return hase;
-            }
-            using (var proxy = new RedisProxy(RedisProxy.DbAuthority))
-            {
-                hase = proxy.Client.KeyExists(RedisKeyBuilder.ToAuthKey("at", Bearer));
-            }
-            lock (Keys)
-            {
-                if (!Keys.ContainsKey(Bearer))
-                    Keys.Add(Bearer, hase);
-            }
-            return hase;
+            //bool hase;
+            //lock (Keys)
+            //{
+            //    if (Keys.TryGetValue(Bearer, out hase))
+            //        return hase;
+            //}
+            //using (var proxy = new RedisProxy(RedisProxy.DbAuthority))
+            //{
+            //    hase = proxy.Client.KeyExists(RedisKeyBuilder.ToAuthKey("at", Bearer));
+            //}
+            //lock (Keys)
+            //{
+            //    if (!Keys.ContainsKey(Bearer))
+            //        Keys.Add(Bearer, hase);
+            //}
+            //return hase;
         }
     }
 }

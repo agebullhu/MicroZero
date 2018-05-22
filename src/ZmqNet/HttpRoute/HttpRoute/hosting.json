@@ -1,4 +1,4 @@
-﻿{
-  "server.urls": "http://*:5000"
+{
+  "server.urls": "http://*:5050"
 }
 

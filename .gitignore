@@ -41,3 +41,4 @@ packages
 /src/Release
 /src/ZeroCenter/Console/Release
 *.TMP
+/src/ZeroMonitor

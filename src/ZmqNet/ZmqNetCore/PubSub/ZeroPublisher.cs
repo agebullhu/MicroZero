@@ -13,9 +13,9 @@ using NetMQ.Sockets;
 namespace Agebull.ZeroNet.PubSub
 {
     /// <summary>
-    ///     消息发布
-    /// </summary>
-    public class ZeroPublisher
+        ///     消息发布
+        /// </summary>
+        public class ZeroPublisher
     {
         /// <summary>
         ///     保持长连接的连接池
@@ -43,11 +43,17 @@ namespace Agebull.ZeroNet.PubSub
         public static void Initialize()
         {
             RunState = StationState.Start;
-            var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
-            if (old == null)
-                return;
-            foreach (var val in old.Queue)
-                Items.Push(val);
+            try
+            {
+                var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
+                if (old == null)
+                    return;
+                foreach (var val in old.Queue)
+                    Items.Push(val);
+            }
+            catch
+            {
+            }
         }
         /// <summary>
         ///     启动
@@ -125,7 +131,7 @@ namespace Agebull.ZeroNet.PubSub
                 if (!ZeroApplication.Configs.TryGetValue(item.Station, out var config))
                 {
                     LogRecorder.Trace(LogType.Error, "Publish",
-                        $@"因为无法找到站点而导致向【{item.Station}】广播的主题为【{item.Title}】的消息被遗弃，内容为：
+                        $@"因为无法找到站点而导致向[{item.Station}]广播的主题为[{item.Title}]的消息被遗弃，内容为：
 {item.Content}");
                     Items.EndProcess();
                     continue;
@@ -141,14 +147,14 @@ namespace Agebull.ZeroNet.PubSub
                     if (!Send(socket, item))
                     {
                         LogRecorder.Trace(LogType.Warning, "Publish",
-                            $@"向【{item.Station}】广播的主题为【{item.Title}】的消息发送失败，内容为：
+                            $@"向[{item.Station}]广播的主题为[{item.Title}]的消息发送失败，内容为：
 {item.Content}");
                     }
                 }
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
-                    StationConsole.WriteError($"【{item.Station}-{item.Title}】request error =>{e.Message}");
+                    StationConsole.WriteError($"[{item.Station}-{item.Title}]request error =>{e.Message}");
                     config.Close(socket);
                     socket = null;
                 }

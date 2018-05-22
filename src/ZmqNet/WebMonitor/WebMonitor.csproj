@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <UserSecretsId>2eaf5a70-faab-43c4-8875-8975adfe10af</UserSecretsId>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="datas\**" />
+    <Compile Remove="logs\**" />
+    <Content Remove="datas\**" />
+    <Content Remove="logs\**" />
+    <EmbeddedResource Remove="datas\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <None Remove="datas\**" />
+    <None Remove="logs\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="host.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+</Project>

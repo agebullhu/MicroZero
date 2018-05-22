@@ -8,7 +8,7 @@ using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.LogRecorder
+namespace Agebull.ZeroNet.Log
 {
     /// <summary>
     ///   远程记录器
@@ -24,7 +24,7 @@ namespace Agebull.ZeroNet.LogRecorder
         /// </summary>
         void ILogRecorder.Initialize()
         {
-            Common.Logging.LogRecorder.LogByTask = true;
+            LogRecorder.LogByTask = true;
             Common.Logging.LogRecorder.TraceToConsole = false;
             _state = 0;
             Task.Factory.StartNew(SendTask);
@@ -147,6 +147,7 @@ namespace Agebull.ZeroNet.LogRecorder
                     _socket.SendMoreFrame(Description);
                     _socket.SendMoreFrame(ZeroApplication.Config.StationName);
                     _socket.SendFrame(JsonConvert.SerializeObject(items));
+                    _socket.TrySkipFrame(TimeWaite);
                     success = _socket.TryReceiveFrameString(TimeWaite, out result);
                 }
                 catch (Exception e)
@@ -211,9 +212,10 @@ namespace Agebull.ZeroNet.LogRecorder
 
                 _socket = new RequestSocket();
                 _socket.Options.Identity = _identity;
-
-                _socket.Options.DisableTimeWait = true;
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
+                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
+                _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
+                _socket.Options.TcpKeepalive = true;
+                _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
                 _socket.Connect(_config.RequestAddress);
                 return ZeroCommandStatus.Success;
             }

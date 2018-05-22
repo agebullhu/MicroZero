@@ -1,21 +1,42 @@
+using System.Runtime.Serialization;
 using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// 运行时警告
+    /// 报警节点
     /// </summary>
-    public class RuntimeWaring
+    [JsonObject(MemberSerialization.OptIn), DataContract]
+    public class WaringItem : IPublishData
     {
         /// <summary>
-        ///     刷新
+        /// API对象
         /// </summary>
-        public static void Flush()
+        [DataMember, JsonProperty("host")]
+        public string Host;
+        [DataMember, JsonProperty("api")]
+        public string Api;
+
+        /// <summary>
+        /// 消息
+        /// </summary>
+        [DataMember, JsonProperty("message")]
+        public string Message;
+
+        string IPublishData.Title => "RuntimeWaring";
+    }
+    /// <summary>
+    /// 运行时警告
+    /// </summary>
+    public class RuntimeWaring : Publisher<WaringItem>
+    {
+        private static readonly RuntimeWaring Instance = new RuntimeWaring
         {
-            ZeroPublisher.Publish("HealthCenter", "RuntimeWaring", "Flush",null);
-        }
-        
+            Name = "RuntimeWaring",
+            StationName = "HealthCenter"
+        };
+
         /// <summary>
         /// 运行时警告
         /// </summary>
@@ -24,14 +45,13 @@ namespace ZeroNet.Http.Route
         /// <param name="message"></param>
         public static void Waring(string host, string api, string message)
         {
-            ZeroPublisher.Publish("HealthCenter", "RuntimeWaring", "Waring", JsonConvert.SerializeObject(
-            new{
-                host,
-                api,
-                message
-            }));
+            Instance.Publish(new WaringItem
+            {
+                Host = host,
+                Api = api,
+                Message = message
+            });
         }
-        
     }
 
 }

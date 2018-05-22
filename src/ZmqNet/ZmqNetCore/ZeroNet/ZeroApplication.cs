@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
@@ -73,24 +76,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     站点配置
         /// </summary>
-        private static LocalStationConfig _config;
-
-        /// <summary>
-        ///     站点配置
-        /// </summary>
-        public static LocalStationConfig Config
-        {
-            get
-            {
-                if (_config != null)
-                    return _config;
-                if (!File.Exists("host.json"))
-                    return _config = new LocalStationConfig();
-                var json = File.ReadAllText("host.json");
-                return _config = JsonConvert.DeserializeObject<LocalStationConfig>(json);
-            }
-            set => _config = value;
-        }
+        public static LocalStationConfig Config { get; set; }
 
         /// <summary>
         ///     读取配置
@@ -126,11 +112,11 @@ namespace Agebull.ZeroNet.Core
             switch (result)
             {
                 case null:
-                    StationConsole.WriteError($"【{stationName}】无法获取配置");
+                    StationConsole.WriteError($"[{stationName}]无法获取配置");
                     status = ZeroCommandStatus.Error;
                     return null;
                 case ZeroNetStatus.ZeroCommandNoFind:
-                    //WriteError($"【{stationName}】未安装");
+                    //WriteError($"[{stationName}]未安装");
                     status = ZeroCommandStatus.NoFind;
                     return null;
             }
@@ -141,6 +127,7 @@ namespace Agebull.ZeroNet.Core
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
+                StationConsole.WriteError($"{e.Message}\r\n{result}");
                 status = ZeroCommandStatus.Error;
                 return null;
             }
@@ -180,6 +167,10 @@ namespace Agebull.ZeroNet.Core
                 }
             }
         }
+        /// <summary>
+        /// 本机IP地址
+        /// </summary>
+        public static string Address { get; private set; }
         #endregion
 
         #region Run
@@ -189,7 +180,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Launch()
         {
-            Initialize(false);
+            Initialize();
             Start();
         }
 
@@ -214,7 +205,7 @@ namespace Agebull.ZeroNet.Core
         private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
             Console.WriteLine();
-            Exit();
+            Destroy();
         }
         #endregion
 
@@ -224,64 +215,85 @@ namespace Agebull.ZeroNet.Core
         ///     状态
         /// </summary>
         public static StationState State { get; internal set; }
-        /// <summary>
-        /// 主调用程序集
-        /// </summary>
-        public static Assembly Assembly;
+
 
         /// <summary>
         ///     初始化
         /// </summary>
-        /// <param name="discove">是否自动发现</param>
-        public static void Initialize(bool discove = true)
+        public static void Initialize()
         {
-            InitializeConfig();
+            LogRecorder.Initialize();
             ApiContext.SetLogRecorderDependency();
+            InitializeConfig();
             ZeroPublisher.Initialize();
-            if (discove)
-            {
-                Assembly = Assembly.GetCallingAssembly();
-                Discove();
-            }
         }
 
         static void InitializeConfig()
         {
+
             if (ApiContext.Configuration == null)
             {
                 ApiContext.SetConfiguration(new ConfigurationBuilder().AddJsonFile("host.json").Build());
                 ApiContext.Configuration["contentRoot"] = Environment.CurrentDirectory;
+
             }
 
-            ApiContext.MyServiceKey = Config.StationName;
-            ApiContext.MyServiceName = Config.ServiceName;
-            ApiContext.MyRealName = Config.RealName;
+            bool isnew = false;
+            var file = Path.Combine(ApiContext.Configuration["contentRoot"], "host.json");
+            if (Config == null)
+            {
+                isnew = true;
+                if (File.Exists(file))
+                {
+                    Config = JsonConvert.DeserializeObject<LocalStationConfig>(File.ReadAllText(file)) ?? new LocalStationConfig();
+                }
+                else
+                {
+                    Config = new LocalStationConfig();
+                }
+            }
+            Config.DataFolder = string.IsNullOrWhiteSpace(Config.DataFolder)
+                ? IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "datas")
+                : IOHelper.CheckPath(Config.DataFolder);
 
+            ApiContext.MyRealName = Config.RealName;
+            ApiContext.MyServiceKey = Config.ServiceKey;
+            ApiContext.MyServiceName = Config.ServiceName;
+
+            Config.ServiceName = Dns.GetHostName();
+            StringBuilder ips = new StringBuilder();
+            bool first = true;
+            foreach (var address in Dns.GetHostAddresses(Config.ServiceName))
+            {
+                if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
+                    address.IsIPv6SiteLocal || address.IsIPv6Teredo)
+                    continue;
+                string ip = address.ToString();
+                if (ip == "127.0.0.1" || ip == "::1" || ip == "-1")
+                    continue;
+                if (first)
+                    first = false;
+                else
+                    ips.Append(" , ");
+                ips.Append(ip);
+            }
+            Address = ips.ToString();
+
+            if (isnew)
+                File.WriteAllText(file, JsonConvert.SerializeObject(Config));
+            if (string.IsNullOrWhiteSpace(Config.ZeroAddress))
+                Config.ZeroAddress = "127.0.0.1";
         }
         /// <summary>
         /// 发现
         /// </summary>
-        static void Discove()
+        public static void Discove(Assembly assembly = null)
         {
-            if (Assembly == null)
-                return;
-            var discover = new ZeroApiDiscover();
-            discover.FindApies(Assembly);
-            if (discover.ApiItems.Count == 0)
-                return;
-            var station = new ApiStation
-            {
-                StationName = Config.StationName
-            };
-            foreach (var action in discover.ApiItems)
-            {
-                var a = action.Value.HaseArgument
-                    ? station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption)
-                    : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
-                a.ArgumenType = action.Value.ArgumenType;
-            }
-            RegisteStation(station);
+            var discover = new ZeroApiDiscover { Assembly = assembly ?? Assembly.GetCallingAssembly() };
+            discover.FindApies();
+            discover.FindSubs();
         }
+
         /// <summary>
         ///     启动
         /// </summary>
@@ -318,11 +330,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     关闭
         /// </summary>
-        public static void Exit()
+        public static void Destroy()
         {
             Close();
             State = StationState.Destroy;
             StationConsole.WriteInfo("Program Destroy");
+            LogRecorder.Shutdown();
         }
 
         #endregion
@@ -337,7 +350,7 @@ namespace Agebull.ZeroNet.Core
         {
             Launch();
             ConsoleInput();
-            Exit();
+            Destroy();
         }
 
         private static void ConsoleInput()
@@ -351,7 +364,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     case "quit":
                     case "exit":
-                        Exit();
+                        Destroy();
                         return;
                     case "start":
                         Start();

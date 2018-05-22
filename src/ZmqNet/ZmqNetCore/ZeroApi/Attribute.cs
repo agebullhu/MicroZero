@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -36,7 +36,12 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 内部员工
         /// </summary>
-        Employe = 0x20
+        Employe = 0x20,
+
+        /// <summary>
+        /// 参数可以为null
+        /// </summary>
+        ArgumentCanNil = 0x1000
     }
 
     /// <summary>

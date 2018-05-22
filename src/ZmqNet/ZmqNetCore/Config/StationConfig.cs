@@ -13,59 +13,123 @@ namespace Agebull.ZeroNet.Core
     /// 站点配置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    public class StationConfig : IDisposable, IApiResultData
+    public class StationConfig : SimpleConfig, IDisposable, IApiResultData
     {
         /// <summary>
         /// 站点名称
         /// </summary>
-        [DataMember, JsonProperty("station_name", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public string StationName { get; set; }
+        [DataMember, JsonProperty("station_name")]
+        public string StationName { get => _name; set => _name = value; }
         /// <summary>
         /// 站点别名
         /// </summary>
-        [DataMember, JsonProperty("station_alias", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DataMember, JsonProperty("station_alias")]
         public List<string> StationAlias { get; set; }
         /// <summary>
         /// 站点类型
         /// </summary>
-        [DataMember, JsonProperty("station_type", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DataMember, JsonProperty("station_type")]
         public int StationType { get; set; }
         /// <summary>
         /// 入站端口
         /// </summary>
-        [DataMember, JsonProperty("out_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DataMember, JsonProperty("request_port")]
         public int RequestPort { get; set; }
 
         /// <summary>
         /// 入站地址
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
+        [DataMember, JsonProperty]
         public string RequestAddress => ZeroApplication.Config.GetRemoteAddress(StationName, RequestPort);
 
         /// <summary>
         /// 入站端口
         /// </summary>
-        [DataMember, JsonProperty("inner_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [DataMember, JsonProperty("worker_port")]
         public int WorkerPort { get; set; }
 
         /// <summary>
         /// 出站地址
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
+        [DataMember, JsonProperty]
         public string WorkerAddress => ZeroApplication.Config.GetRemoteAddress(StationName, WorkerPort);
 
         /// <summary>
-        /// 心跳端口
+        /// 请求入
         /// </summary>
-        [DataMember, JsonProperty("heart_port", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int HeartPort { get; set; }
+        [DataMember, JsonProperty("request_in")]
+        public long RequestIn { get; set; }
+        /// <summary>
+        /// 请求出
+        /// </summary>
+        [DataMember, JsonProperty("request_out")]
+        public long RequestOut { get; set; }
+        /// <summary>
+        /// 请求错误
+        /// </summary>
+        [DataMember, JsonProperty("request_err")]
+        public long RequestErr { get; set; }
+        
+        /// <summary>
+        /// 调用回
+        /// </summary>
+        [DataMember, JsonProperty("worker_in")]
+        public long WorkerIn { get; set; }
+        /// <summary>
+        /// 调用出
+        /// </summary>
+        [DataMember, JsonProperty("worker_out")]
+        public long WorkerOut { get; set; }
+        /// <summary>
+        /// 调用错
+        /// </summary>
+        [DataMember, JsonProperty("worker_err")]
+        public long WorkerErr { get; set; }
 
         /// <summary>
-        /// 心跳地址
+        /// 状态
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        public string HeartAddress => ZeroApplication.Config.GetRemoteAddress(StationName, HeartPort);
+        [DataMember, JsonProperty("station_state")]
+        public StationState State { get; set; }
 
+        /// <summary>
+        /// 状态
+        /// </summary>
+        [DataMember, JsonProperty("state")]
+        public string __ => State.ToString();
+
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        [DataMember, JsonProperty("workers")]
+        public List<string> Workers { get; set; }
+
+        /// <summary>
+        /// 站点类型
+        /// </summary>
+        [DataMember, JsonProperty]
+        public string TypeName
+        {
+            get
+            {
+                switch (StationType)
+                {
+                    default:
+                        return "Error";
+                    case ZeroStation.StationTypeApi:
+                        return "API";
+                    case ZeroStation.StationTypeDispatcher:
+                        return "Dispatcher";
+                    case ZeroStation.StationTypeMonitor:
+                        return "Monitor";
+                    case ZeroStation.StationTypePublish:
+                        return "Publish";
+                    case ZeroStation.StationTypeVote:
+                        return "Vote";
+                }
+            }
+        }
         /// <summary>
         /// 复制
         /// </summary>
@@ -77,26 +141,30 @@ namespace Agebull.ZeroNet.Core
             StationType = src.StationType;
             RequestPort = src.RequestPort;
             WorkerPort = src.WorkerPort;
-            HeartPort = src.HeartPort;
+            State = src.State;
+            RequestIn = src.RequestIn;
+            RequestOut = src.RequestOut;
+            RequestErr = src.RequestErr;
+            WorkerIn = src.WorkerIn;
+            WorkerOut = src.WorkerOut;
+            WorkerErr = src.WorkerErr;
+            Workers = src.Workers;
+            Sockets = src.Sockets;
+            Pools = src.Pools;
         }
 
-        /// <summary>
-        /// 状态
-        /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        public StationState State { get; set; }
 
         /// <summary>
         /// 所有连接
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public readonly List<RequestSocket> Sockets = new List<RequestSocket>();
+        List<RequestSocket> Sockets = new List<RequestSocket>();
 
         /// <summary>
         /// 连接池
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public readonly Queue<RequestSocket> Pools = new Queue<RequestSocket>();
+        Queue<RequestSocket> Pools = new Queue<RequestSocket>();
 
         /// <summary>
         /// 取得一个连接对象
@@ -112,8 +180,11 @@ namespace Agebull.ZeroNet.Core
                     return Pools.Dequeue();
             }
             var socket = new RequestSocket();
-            socket.Options.Identity = ZeroApplication.Config.ToZeroIdentity(StationName, RandomOperate.Generate(6));
-            socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
+            socket.Options.Identity = ZeroApplication.Config.ToZeroIdentity(StationName);
+            socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
+            socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
+            socket.Options.TcpKeepalive = true;
+            socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
             socket.Connect(RequestAddress);
             Sockets.Add(socket);
             return socket;

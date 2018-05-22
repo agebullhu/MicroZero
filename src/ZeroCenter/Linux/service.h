@@ -1,7 +1,8 @@
 #ifndef AGEBULL_RPCSERVICE_H
+#define AGEBULL_RPCSERVICE_H
 #pragma once
 #include "stdafx.h"
-#include "net/StationWarehouse.h"
+#include "net/station_warehouse.h"
 
 namespace agebull
 {

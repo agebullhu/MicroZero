@@ -110,22 +110,27 @@ namespace Agebull.ZeroNet.Core
                 switch (result[0][i])
                 {
                     case ZeroFrameType.JsonValue:
-                        value = result[i].FromAsciBytes();
-                        continue;
+                        value = SendReceiveConstants.DefaultEncoding.GetString(result[i]);
+                        break;
                     case ZeroFrameType.Status:
-                        if (result[i][0] == ZeroNetStatus.ZeroStatusBad)
+                        if (result[i][0] == ZeroNetStatus.ZeroStatusSuccess)
                         {
-                            switch (result[i].FromAsciBytes())
-                            {
-                                case ZeroNetStatus.ZeroCommandInvalid:
-                                    return ZeroNetStatus.ArgumentErrorJson;
-                                case ZeroNetStatus.ZeroCommandNotWorker:
-                                    return ZeroNetStatus.NoFindJson;
-                                default:
-                                    return ZeroNetStatus.InnerErrorJson;
-                            }
+                            value = ZeroNetStatus.SucceesJson;
+                            break;
                         }
-                        continue;
+                        switch (SendReceiveConstants.DefaultEncoding.GetString(result[i]))
+                        {
+                            case ZeroNetStatus.ZeroCommandInvalid:
+                                value = ZeroNetStatus.ArgumentErrorJson;
+                                break;
+                            case ZeroNetStatus.ZeroCommandNotWorker:
+                                value = ZeroNetStatus.NoFindJson;
+                                break;
+                            default:
+                                value = ZeroNetStatus.InnerErrorJson;
+                                break;
+                        }
+                        break;
                     case ZeroFrameType.End:
                         return value ?? ZeroNetStatus.SucceesJson;
                 }

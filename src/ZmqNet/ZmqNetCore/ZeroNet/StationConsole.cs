@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -18,12 +19,14 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteLine(string message)
         {
-            lock (lock_obj)
+            Task.Factory.StartNew(() =>
             {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(message);
-            }
+                lock (lock_obj)
+                {
+                    //Console.CursorLeft = 0;
+                    Console.WriteLine(message);
+                }
+            });
         }
 
         /// <summary>
@@ -32,13 +35,16 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteError(string message)
         {
-            lock (lock_obj)
+            Task.Factory.StartNew(() =>
             {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(message);
-                Console.ForegroundColor = ConsoleColor.White;
-            }
+                lock (lock_obj)
+                {
+                    //Console.CursorLeft = 0;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(message);
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            });
         }
 
         /// <summary>
@@ -47,13 +53,17 @@ namespace Agebull.ZeroNet.Core
         /// <param name="message"></param>
         public static void WriteInfo(string message)
         {
-            lock (lock_obj)
+            Task.Factory.StartNew(() =>
             {
-                //Console.CursorLeft = 0;
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(message);
-                Console.ForegroundColor = ConsoleColor.White;
-            }
+                lock (lock_obj)
+                {
+                    //Console.CursorLeft = 0;
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(message);
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            });
         }
+
     }
 }

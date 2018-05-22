@@ -34,7 +34,9 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>/user/local/lib;/user/lib</LibraryPath>
+    <LibraryPath>
+    </LibraryPath>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>
@@ -44,8 +46,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
-      <AdditionalOptions>-lboost_system -lboost_filesystem -lboost_thread thread -lpthread /usr/local/lib/libacl.a   /usr/local/lib/libprotocol.a /usr/local/lib/libacl_cpp.a /usr/local/lib/libzmq-static.a -pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
       <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -63,16 +67,14 @@
     <ClCompile Include="cfg\config.cpp" />
     <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="net\ApiStation.cpp" />
+    <ClCompile Include="net\api_station.cpp" />
     <ClCompile Include="net\net_crc.cpp" />
-    <ClCompile Include="net\message_plan.cpp" />
-    <ClCompile Include="net\NetDispatcher.cpp" />
-    <ClCompile Include="net\StationWarehouse.cpp" />
-    <ClCompile Include="net\VoteStation.cpp" />
+    <ClCompile Include="net\station_dispatcher.cpp" />
+    <ClCompile Include="net\station_warehouse.cpp" />
     <ClCompile Include="net\net_command.cpp" />
-    <ClCompile Include="net\BroadcastingStation.cpp" />
-    <ClCompile Include="net\ZeroStation.cpp" />
-    <ClCompile Include="net\net_monitor.cpp" />
+    <ClCompile Include="net\broadcasting_station.cpp" />
+    <ClCompile Include="net\zero_station.cpp" />
+    <ClCompile Include="net\zmq_extend.cpp" />
     <ClCompile Include="redis\TransRedis.cpp" />
     <ClCompile Include="service.cpp" />
   </ItemGroup>
@@ -80,15 +82,16 @@
     <ClInclude Include="boostinc.h" />
     <ClInclude Include="cfg\config.h" />
     <ClInclude Include="log\mylogger.h" />
-    <ClInclude Include="net\ApiStation.h" />
-    <ClInclude Include="net\BalanceStation.h" />
-    <ClInclude Include="net\NetDispatcher.h" />
+    <ClInclude Include="net\api_station.h" />
+    <ClInclude Include="net\ipc_request_socket.h" />
+    <ClInclude Include="net\station_dispatcher.h" />
     <ClInclude Include="net\net_default.h" />
-    <ClInclude Include="net\ZeroStation.h" />
-    <ClInclude Include="net\StationWarehouse.h" />
-    <ClInclude Include="net\VoteStation.h" />
+    <ClInclude Include="net\zero_station.h" />
+    <ClInclude Include="net\station_warehouse.h" />
     <ClInclude Include="net\net_command.h" />
-    <ClInclude Include="net\BroadcastingStation.h" />
+    <ClInclude Include="net\broadcasting_station.h" />
+    <ClInclude Include="net\zero_config.h" />
+    <ClInclude Include="net\zero_plan.h" />
     <ClInclude Include="net\zmq_extend.h" />
     <ClInclude Include="redis\redis.h" />
     <ClInclude Include="redis\TransRedis.h" />

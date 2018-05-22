@@ -1,0 +1,79 @@
+@page
+@using Agebull.ZeroNet.Core
+@using Newtonsoft.Json
+@model IndexModel
+@{
+    ViewData["Title"] = "基本信息";
+}
+@section Scripts{
+
+<script>
+        var data ={
+            configs: @(Html.Raw(JsonConvert.SerializeObject(ZeroApplication.Configs.Values.OrderBy(p=>p.StationType).ToArray())))
+        };
+        var vm = new Vue({
+            el: '#vue',
+            data: data
+        });
+        var subscriber = new JSMQ.Subscriber();
+        var index = 0;
+        subscriber.connect("ws://" + location.hostname + ":81");
+        subscriber.subscribe("config");
+        subscriber.onMessage = function (message) {
+            message.popString();
+            var bytes = message.popBuffer();
+            var reader = new FileReader();
+            reader.readAsText(new Blob([bytes]), 'utf-8');
+            reader.onload = function (evt) {
+                var config = eval('(' + reader.result + ')');
+                for (var idx = 0; idx < data.configs.length; idx++) {
+                    var cfg = data.configs[idx];
+                    if (cfg.station_name === config.station_name) {
+                        Vue.set(data.configs, idx, config);
+                        return;
+                    }
+                }
+                data.configs.push(config);
+            }
+        };
+
+
+</script>
+}
+<div id="vue" class="row">
+    <template v-for="config in configs">
+        <div class="col-md-3">
+            <el-tooltip v-bind:content="config._description" placement="top" effect="light">
+                <h2>{{config.station_name}}</h2>
+            </el-tooltip>
+            <ul>
+                <li>Alias</li>
+                <template v-for="alia in config.station_alias">
+                    {{alia}}
+                </template>
+                <li>Type:{{config.TypeName}}</li>
+                <li>State:{{config.state}}</li>
+                <li>ClientAddress</li>{{config.RequestAddress}}
+                <li>WorkerAddress</li>{{config.WorkerAddress}}
+                <li>Client</li>call: {{config.request_in}}
+                <template v-if="config.request_out > 0">
+                    result: {{config.request_out}}
+                </template>
+                <template v-if="config.request_err > 0">
+                    err: {{config.request_err}}
+                </template>
+                <li>Wroker</li>call: {{config.worker_out}}
+                <template v-if="config.worker_in > 0">
+                    result: {{config.worker_in}}
+                </template>
+                <template v-if="config.worker_err > 0">
+                    err: {{config.worker_err}}
+                </template>
+                <li>Workers</li>
+                <template v-for="worker in config.workers">
+                    {{worker}}<br/>
+                </template>
+            </ul>
+        </div>
+    </template>
+</div>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using Agebull.Common.Base;
@@ -38,7 +39,7 @@ namespace ZeroNet.Http.Route
         ///     Http返回
         /// </summary>
         public RouteData Data { get; }
-        
+
         #endregion
 
         #region 流程
@@ -54,7 +55,7 @@ namespace ZeroNet.Http.Route
             Response = context.Response;
             Data = new RouteData();
             Data.Prepare(context.Request);
-            
+
             ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
             ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
             ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
@@ -179,41 +180,58 @@ namespace ZeroNet.Http.Route
         {
             if (data.Status != RouteStatus.None || data.HostName == null)// "".Equals(data.HostName,StringComparison.OrdinalIgnoreCase))
                 return false;
+            if (string.IsNullOrWhiteSpace(data.ResultMessage))
+            {
+                RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                return false;
+            }
+
+            var json = data.ResultMessage.Trim();
+            switch (json[0])
+            {
+                case '{':
+                case '[':
+                    break;
+                default:
+                    RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                    return true;
+            }
+            ApiResult result;
             try
             {
-                var result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
+                result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
                 if (result == null)
                 {
                     RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                     return false;
                 }
-                if (result.Status != null && !result.Success)
-                {
-                    switch (result.Status.ErrorCode)
-                    {
-                        case ErrorCode.ReTry:
-                        case ErrorCode.DenyAccess:
-                        case ErrorCode.Ignore:
-                        case ErrorCode.ArgumentError:
-                        case ErrorCode.Auth_RefreshToken_Unknow:
-                        case ErrorCode.Auth_ServiceKey_Unknow:
-                        case ErrorCode.Auth_AccessToken_Unknow:
-                        case ErrorCode.Auth_User_Unknow:
-                        case ErrorCode.Auth_Device_Unknow:
-                        case ErrorCode.Auth_AccessToken_TimeOut:
-                            return false;
-                        default:
-                            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
-                            return false;
-                    }
-                }
             }
             catch
             {
-                RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(不是Json格式)");
+                RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                 return false;
             }
-            return true;
+            if (result.Status == null || result.Success)
+            {
+                return true;
+            }
+            switch (result.Status.ErrorCode)
+            {
+                case ErrorCode.ReTry:
+                case ErrorCode.DenyAccess:
+                case ErrorCode.Ignore:
+                case ErrorCode.ArgumentError:
+                case ErrorCode.Auth_RefreshToken_Unknow:
+                case ErrorCode.Auth_ServiceKey_Unknow:
+                case ErrorCode.Auth_AccessToken_Unknow:
+                case ErrorCode.Auth_User_Unknow:
+                case ErrorCode.Auth_Device_Unknow:
+                case ErrorCode.Auth_AccessToken_TimeOut:
+                    return false;
+            }
+
+            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
+            return false;
         }
 
         #endregion
@@ -305,20 +323,31 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         private string CallZero()
         {
-            var values = new Dictionary<string, string>();
+            string context;
             //参数解析
-            foreach (var query in Request.Query.Keys)
-                if (!values.ContainsKey(query))
-                    values.Add(query, Request.Query[query]);
+            if (Request.HasFormContentType)
+            {
+                var values = new Dictionary<string, string>();
+                foreach (var form in Request.Form.Keys)
+                    values.TryAdd(form, Request.Form[form]);
+                context = JsonConvert.SerializeObject(values);
+            }
+            else if(Request.ContentLength > 0)
+            {
+                using (var texter = new StreamReader(Request.Body))
+                {
+                    context = texter.ReadToEnd();
+                }
+            }
+            else
+            {
+                var values = new Dictionary<string, string>();
+                foreach (var query in Request.Query.Keys)
+                    values.TryAdd(query, Request.Query[query]);
+                context = JsonConvert.SerializeObject(values);
+            }
 
-            if (Data.HttpMethod == "POST")
-                if (Request.ContentLength > 0)
-                    foreach (var form in Request.Form.Keys)
-                        if (!values.ContainsKey(form))
-                            values.Add(form, Request.Form[form]);
-            
-
-            Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, JsonConvert.SerializeObject(values)); 
+            Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, context);
             return Data.ResultMessage;
         }
 

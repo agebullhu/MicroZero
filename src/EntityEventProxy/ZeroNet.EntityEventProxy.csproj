@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+</Project>

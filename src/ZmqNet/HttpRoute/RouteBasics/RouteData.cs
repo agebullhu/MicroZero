@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -14,8 +15,14 @@ namespace ZeroNet.Http.Route
     /// 路由数据
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    public class RouteData : NetData
+    public class RouteData : NetData,IPublishData
     {
+        /// <summary>
+        /// 开始时间
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore ]
+        public string Title { get; set; }
+
         /// <summary>
         /// 开始时间
         /// </summary>

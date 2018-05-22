@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
+using System;
 using System.Linq;
 using System.Text;
 using Agebull.Common.Logging;
-using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
 {
@@ -18,6 +17,7 @@ namespace ZeroNet.Http.Route
         /// <returns>如果返回内容不为空，直接返回,后续的处理不再继续</returns>
         public static int OnBegin(RouteData data)
         {
+            ApiCounter.OnBegin(data);
 #if ZERO
             if (AppConfig.Config.SystemConfig.FireZero)
                 Task.Factory.StartNew(() =>
@@ -33,10 +33,7 @@ namespace ZeroNet.Http.Route
                 LogRecorder.BeginStepMonitor("HTTP");
                 var args = new StringBuilder();
                 args.Append("Headers：");
-                foreach (var head in data.Headers)
-                {
-                    args.Append($"【{head.Key}】{head.Value.LinkToString('|')}");
-                }
+                args.Append(JsonConvert.SerializeObject(data.Headers));
                 LogRecorder.MonitorTrace(args.ToString());
                 LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
                 if (!string.IsNullOrWhiteSpace(data.QueryString))
@@ -76,22 +73,23 @@ namespace ZeroNet.Http.Route
                     Agebull.ZeroNet.Core.Publisher.Publish("RouteMonitor", "Result", result);
                 });
 #endif
-            if (!LogRecorder.LogMonitor)
-                return;
-            
-            try
+            if (LogRecorder.LogMonitor)
             {
-                LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
+                try
+                {
+                    LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.MonitorTrace(e.Message);
+                    LogRecorder.Exception(e);
+                }
+                finally
+                {
+                    LogRecorder.EndMonitor();
+                }
             }
-            catch (Exception e)
-            {
-                LogRecorder.MonitorTrace(e.Message);
-                LogRecorder.Exception(e);
-            }
-            finally
-            {
-                LogRecorder.EndMonitor();
-            }
+            ApiCounter.End(data);
         }
 
     }

@@ -1,8 +1,5 @@
 {
-  "zeroAddr": "192.168.240.131",
-  "monitorPort": 8002,
   "managePort": 8000,
-  "stationName": "User",
-  "serviceName": "User",
-  "dataFolder": "/etc/dotnet/data"
+  "monitorPort": 8001,
+  "stationName": "User"
 }

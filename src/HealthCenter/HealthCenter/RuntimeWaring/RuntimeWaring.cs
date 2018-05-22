@@ -31,13 +31,26 @@ namespace ZeroNet.Http.Route
             Instance = this;
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
-            string file = Path.Combine(ApiContext.Configuration["contentRoot"],"sms.json");
+            string file = Path.Combine(ApiContext.Configuration["contentRoot"], "sms.json");
+            if (!File.Exists(file))
+                return;
+            string json;
             try
             {
-                SmsConfig = JsonConvert.DeserializeObject<SmsConfig>(File.ReadAllText(file));
+                json = File.ReadAllText(file);
             }
             catch (Exception e)
             {
+                LogRecorder.Exception(e);
+                return;
+            }
+            try
+            {
+                SmsConfig = JsonConvert.DeserializeObject<SmsConfig>(json);
+            }
+            catch (Exception e)
+            {
+                StationConsole.WriteError($"{e.Message}\r\n{json}");
                 LogRecorder.Exception(e);
             }
         }
@@ -61,6 +74,7 @@ namespace ZeroNet.Http.Route
             }
             catch (Exception e)
             {
+                StationConsole.WriteError($"{e.Message}\r\n{args.Content}");
                 Console.WriteLine(e);
             }
         }
@@ -155,6 +169,8 @@ namespace ZeroNet.Http.Route
                 message = message.Substring(20);
             //发送短信
             Console.WriteLine($"服务器{host}的{api}发生${message}错误{item.LastCount}次，请立即处理");
+            if (SmsConfig?.Phones == null)
+                return;
             foreach (var phone in SmsConfig.Phones)
             {
                 if (!SendSmsByAli(host, phone, api, message, item.WaringCount))

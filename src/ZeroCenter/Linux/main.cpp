@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "service.h"
-#include "net/ZeroStation.h"
+#include "net/zero_station.h"
+#include "net/station_dispatcher.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +11,7 @@ int main(int argc, char *argv[])
 	agebull::zmq_net::rpc_service::start();
 	signal(SIGINT, agebull::zmq_net::on_sig);
 #ifdef _DEBUG
-	while (get_net_state() == NET_STATE_RUNING)
+	while (agebull::zmq_net::get_net_state() == agebull::zmq_net::NET_STATE_RUNING)
 	{
 		std::cout << endl << "Enter command:";
 		string line;
@@ -34,11 +35,10 @@ int main(int argc, char *argv[])
 		const string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
-	rpc_service::stop();
+	/*agebull::zmq_net::rpc_service::stop();*/
+	thread_sleep(200);
 #else
 	agebull::zmq_net::wait_zero();
 #endif
-	std::cout << endl << "byebye";
-	//thread_sleep(200);
 	return 0;
 }

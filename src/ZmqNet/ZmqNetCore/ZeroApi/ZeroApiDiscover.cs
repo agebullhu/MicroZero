@@ -13,19 +13,17 @@ namespace Agebull.ZeroNet.ZeroApi
     public class ZeroApiDiscover
     {
         #region API发现
-
         /// <summary>
-        /// 所有API方法的基本信息
+        /// 主调用程序集
         /// </summary>
-        public Dictionary<string, ApiActionInfo> ApiItems = new Dictionary<string, ApiActionInfo>(StringComparer.OrdinalIgnoreCase);
-
+        public Assembly Assembly;
+        
         /// <summary>
         /// 查找API
         /// </summary>
-        /// <param name="assembly"></param>
-        public void FindApies(Assembly assembly)
+        public void FindApies()
         {
-            var types = assembly.GetTypes().Where( p=>p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
+            var types = Assembly.GetTypes().Where( p=>p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
             foreach (var type in types)
             {
                 FindApi(type);
@@ -40,6 +38,8 @@ namespace Agebull.ZeroNet.ZeroApi
             var methods = type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance 
                                                                     | BindingFlags.Public 
                                                                     | BindingFlags.NonPublic);
+            var apiItems = new Dictionary<string, ApiActionInfo>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var method in methods)
             {
                 var route = method.GetCustomAttribute<RouteAttribute>();
@@ -70,26 +70,34 @@ namespace Agebull.ZeroNet.ZeroApi
                 var accessOption = method.GetCustomAttribute<ApiAccessOptionFilterAttribute>();
                 if (accessOption != null)
                     info.AccessOption = accessOption.Option;
-                ApiItems.Add(info.RouteName, info);
+                apiItems.Add(info.RouteName, info);
             }
+            if (apiItems.Count == 0)
+                return;
+            var station = new ApiStation
+            {
+                StationName = ZeroApplication.Config.StationName
+            };
+            foreach (var action in apiItems)
+            {
+                var a = action.Value.HaseArgument
+                    ? station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption)
+                    : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
+                a.ArgumenType = action.Value.ArgumenType;
+            }
+            ZeroApplication.RegisteStation(station);
         }
 
         #endregion
 
-        #region API发现
-
-        /// <summary>
-        /// 所有API方法的基本信息
-        /// </summary>
-        public Dictionary<string, TypeInfo> SubItems = new Dictionary<string, TypeInfo>(StringComparer.OrdinalIgnoreCase);
-
+        #region 订阅器发现
+        
         /// <summary>
         /// 查找API
         /// </summary>
-        /// <param name="assembly"></param>
-        public void FindSubs(Assembly assembly)
+        public void FindSubs()
         {
-            var types = assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(SubStation))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(SubStation))).ToArray();
             foreach (var type in types)
             {
                 ZeroApplication.RegisteStation(type.CreateObject() as SubStation);
@@ -97,5 +105,6 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         #endregion
+        
     }
 }

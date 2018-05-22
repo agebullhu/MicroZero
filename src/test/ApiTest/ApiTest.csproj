@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\RemoteLog\LogRecorder\ZeroNet.LogRecorder.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>

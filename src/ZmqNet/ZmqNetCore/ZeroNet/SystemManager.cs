@@ -14,7 +14,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 系统状态
         /// </summary>
-        public static StationState State {get; internal set; }
+        public static StationState State { get; internal set; }
         /// <summary>
         ///     执行管理命令
         /// </summary>
@@ -28,71 +28,24 @@ namespace Agebull.ZeroNet.Core
             var result = ZeroApplication.ZeroManageAddress.RequestNet(commmand, argument);
             if (String.IsNullOrWhiteSpace(result))
             {
-                StationConsole.WriteError($"【{commmand}】{argument}\r\n处理超时");
+                StationConsole.WriteError($"[{commmand}]{argument}\r\n处理超时");
                 return false;
             }
 
             StationConsole.WriteLine(result);
             return true;
         }
-
-        /// <summary>
-        ///     安装站点
-        /// </summary>
-        /// <returns></returns>
-        public static StationConfig InstallStation(string stationName, string type)
-        {
-            StationConfig config;
-            lock (ZeroApplication.Configs)
-            {
-                if (ZeroApplication.Configs.TryGetValue(stationName, out config))
-                    return config;
-            }
-
-            if (State != StationState.Run)
-                return null;
-            StationConsole.WriteInfo($"【{stationName}】auto regist...");
-            try
-            {
-                var result = ZeroApplication.ZeroManageAddress.RequestNet("install", type, stationName);
-
-                switch (result)
-                {
-                    case null:
-                        StationConsole.WriteError($"【{stationName}】auto regist failed");
-                        return null;
-                    case ZeroNetStatus.ZeroCommandNoSupport:
-                        StationConsole.WriteError($"【{stationName}】auto regist failed:type no supper");
-                        return null;
-                    case ZeroNetStatus.ZeroCommandFailed:
-                        StationConsole.WriteError($"【{stationName}】auto regist failed:config error");
-                        return null;
-                }
-                config = JsonConvert.DeserializeObject<StationConfig>(result);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                StationConsole.WriteError($"【{stationName}】auto regist failed:{e.Message}");
-                return null;
-            }
-            lock (ZeroApplication.Configs)
-            {
-                ZeroApplication.Configs.Add(stationName, config);
-            }
-
-            StationConsole.WriteError($"【{stationName}】auto regist succeed");
-            return config;
-        }
-
+        
         /// <summary>
         ///     进入系统侦听
         /// </summary>
         internal static void Run()
         {
+            if (ZeroApplication.State >= StationState.Closing)
+                return;
             State = StationState.Start;
             StationConsole.WriteInfo($"System Manage({ZeroApplication.ZeroManageAddress}) Start...");
-            
+
             if (!PingCenter())
             {
                 State = StationState.Failed;
@@ -114,7 +67,7 @@ namespace Agebull.ZeroNet.Core
                     ZeroStation.Run(station);
             }
 
-            SystemMonitor.RaiseEvent(ZeroApplication.Config,"program_run");
+            SystemMonitor.RaiseEvent(ZeroApplication.Config, "program_run");
             StationConsole.WriteInfo("System Manage Run...");
         }
 
@@ -167,7 +120,7 @@ namespace Agebull.ZeroNet.Core
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationConsole.WriteError(e.Message);
+                StationConsole.WriteError($"{e.Message}\r\n{result}");
                 return false;
             }
 

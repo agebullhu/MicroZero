@@ -19,12 +19,16 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\**" />
+    <Compile Remove="Datas\**" />
     <Compile Remove="wwwroot\**" />
     <Content Remove="Controllers\**" />
+    <Content Remove="Datas\**" />
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Datas\**" />
     <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="Controllers\**" />
+    <None Remove="Datas\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 
@@ -33,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="appsettings.Development.json" />
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
     <Content Remove="cache.json" />
@@ -44,10 +49,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.11" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.12" />
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.11" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.11" />
     <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
@@ -63,7 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
-    <ProjectReference Include="..\..\..\RemoteLog\LogRecorder\Agebull.ZeroNet.LogRecorder.csproj" />
+    <ProjectReference Include="..\..\..\RemoteLog\LogRecorder\ZeroNet.LogRecorder.csproj" />
     <ProjectReference Include="..\..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
     <ProjectReference Include="..\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />

@@ -4,20 +4,21 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// 报警节点
+    /// 鎶ヨ鑺傜偣
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
     public class WaringItem
     {
         /// <summary>
-        /// API对象
+        /// API瀵硅薄
         /// </summary>
-        [DataMember, JsonProperty("host")] public string Host;
+        [DataMember, JsonProperty("host")]
+        public string Host;
         [DataMember, JsonProperty("api")]
         public string Api;
 
         /// <summary>
-        /// 消息
+        /// 娑堟伅
         /// </summary>
         [DataMember, JsonProperty("message")]
         public string Message;

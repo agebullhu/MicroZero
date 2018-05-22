@@ -14,7 +14,7 @@
 1 Api站点
 2 消息发布与订阅
 3 网络投票（并行工作流）</Description>
-    <Version>1.0.0.7</Version>
+    <Version>1.0.3.1</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -23,18 +23,18 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.0.7</PackageVersion>
+    <PackageVersion>1.0.3.1</PackageVersion>
 	<IncludeSymbols>true</IncludeSymbols> 
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Agebull</Authors>
-    <Company>Yizuanbao &amp; Agebull</Company>
+    <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.0.7</AssemblyVersion>
-    <FileVersion>1.0.0.7</FileVersion>
+    <AssemblyVersion>1.0.3.1</AssemblyVersion>
+    <FileVersion>1.0.3.1</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -65,6 +65,8 @@
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="PubSub\LogQueue.cs" />
+    <Compile Remove="WebSocket\Message.cs" />
     <Compile Remove="ZeroApi\ApiStationItem.cs" />
   </ItemGroup>
 
@@ -95,13 +97,9 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.Common.Extend" Version="2.0.0.11" />
-    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.0.0.12" />
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.0.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />
     <PackageReference Include="NetMQ" Version="4.0.0.1" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.0.0.11" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>

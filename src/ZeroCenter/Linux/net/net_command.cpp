@@ -1,7 +1,7 @@
 #include "../stdafx.h"
 #include "net_command.h"
-#include "BroadcastingStation.h"
-#include "NetDispatcher.h"
+#include "broadcasting_station.h"
+#include "station_dispatcher.h"
 using namespace std;
 namespace agebull
 {
@@ -29,19 +29,19 @@ namespace agebull
 		void set_command_thread_start(const char* name)
 		{
 			zero_thread_count++;
-			log_msg2("zero thread join 【%s】(%d)", name, zero_thread_count);
+			log_msg2("zero thread join [%s](%d)", name, zero_thread_count);
 		}
 		//登记线程失败
 		void set_command_thread_bad(const char* name)
 		{
 			zero_thread_bad++;
-			log_msg2("zero thread bad 【%s】(%d)", name, zero_thread_bad);
+			log_msg2("zero thread bad [%s](%d)", name, zero_thread_bad);
 		}
 		//登记线程关闭
 		void set_command_thread_end(const char* name)
 		{
 			zero_thread_count--;
-			log_msg2("zero thread left 【%s】(%d)", name, zero_thread_count);
+			log_msg2("zero thread left [%s](%d)", name, zero_thread_count);
 		}
 		//运行状态
 		NET_STATE get_net_state()
@@ -102,29 +102,28 @@ namespace agebull
 			zmq_net::station_dispatcher::run();
 			while (zero_thread_count < 1)
 			{
-				cout << ".";
 				thread_sleep(10);
-			}
-			cout << endl;
-
-			zmq_net::system_monitor_station::run();
-			while (zero_thread_count < 2)
-			{
+				if (station_dispatcher::instance == nullptr ||
+					station_dispatcher::instance->get_config().station_state_ == station_state::Failed)
+				{
+					cout << endl << "dispatcher failed";
+					return	net_state = NET_STATE_FAILED;
+				}
 				cout << ".";
-				thread_sleep(10);
 			}
 			cout << endl << "waiting connect";
 
-			for (int i = 0; i < 30; i++)
+			for (int i = 0; i < 10; i++)
 			{
 				cout << ".";
-				thread_sleep(100);
+				station_dispatcher::monitor("SystemManage", "worker_sound_off", "*");
+				thread_sleep(300);
 			}
 			cout << endl;
 			zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
 
 			log_msg("start business stations...");
-			int cnt = zmq_net::station_warehouse::restore() + 2;
+			int cnt = zmq_net::station_warehouse::restore() + 1;
 			while (zero_thread_count < cnt)
 			{
 				cout << ".";
@@ -141,7 +140,7 @@ namespace agebull
 			if (net_state != NET_STATE_RUNING)
 				return;
 			log_msg("zero center closing...");
-			zmq_net::monitor_async("*", "system_stop", "*************ZeroNet is closed, see you late!*************");
+			zmq_net::monitor_sync("*", "system_stop", "*");
 			thread_sleep(10);
 
 			net_state = NET_STATE_CLOSING;
@@ -155,12 +154,18 @@ namespace agebull
 		{
 			if (net_state < NET_STATE_CLOSING)
 				close_net_command();
+			zmq_net::monitor_sync("*", "system_distory", "*************ZeroNet is closed, see you late!*************");
+			thread_sleep(10000);
 			net_state = NET_STATE_DISTORY;
 			zmq_ctx_shutdown(net_context);
 			//zmq_ctx_term(net_context);
+			
 			net_context = nullptr;
 			log_msg("zero center destoried");
+#ifndef _DEBUG
 			delete guard;
+#endif
+			std::cout << endl << "bye bye";
 		}
 	}
 }

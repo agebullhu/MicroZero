@@ -1,101 +1,102 @@
 using System;
 using System.Reflection;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// Api·½·¨µÄĞÅÏ¢
+    /// Apiæ–¹æ³•çš„ä¿¡æ¯
     /// </summary>
     public class ApiActionInfo
     {
         /// <summary>
-        /// ·½·¨Ãû³Æ
+        /// æ–¹æ³•åç§°
         /// </summary>
         public string FunctionName { get; set; }
         /// <summary>
-        /// ApiÂ·ÓÉÃû³Æ
+        /// Apiè·¯ç”±åç§°
         /// </summary>
         public string RouteName { get; set; }
         /// <summary>
-        /// ·ÃÎÊÉèÖÃ
+        /// è®¿é—®è®¾ç½®
         /// </summary>
         public ApiAccessOption AccessOption { get; set; }
 
         /// <summary>
-        /// ÊÇ·ñÓĞµ÷ÓÃ²ÎÊı
+        /// æ˜¯å¦æœ‰è°ƒç”¨å‚æ•°
         /// </summary>
         public bool HaseArgument { get; set; }
 
         /// <summary>
-        /// ·ÃÎÊÉèÖÃ
+        /// è®¿é—®è®¾ç½®
         /// </summary>
         public Func<IApiResult> Action { get; set; }
 
         /// <summary>
-        /// ·ÃÎÊÉèÖÃ
+        /// è®¿é—®è®¾ç½®
         /// </summary>
         public Func<IApiArgument, IApiResult> ArgumentAction { get; set; }
 
         /// <summary>
-        /// ²ÎÊıÀàĞÍ
+        /// å‚æ•°ç±»å‹
         /// </summary>
         public Type ArgumenType { get; set; }
 
     }
     /// <summary>
-    /// ApiÕ¾µã
+    /// Apiç«™ç‚¹
     /// </summary>
     public abstract class ApiAction
     {
         /// <summary>
-        /// ApiÃû³Æ
+        /// Apiåç§°
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// ·ÃÎÊ¿ØÖÆ
+        /// è®¿é—®æ§åˆ¶
         /// </summary>
         public ApiAccessOption Access { get; set; }
 
         /// <summary>
-        /// ĞèÒªµÇÂ¼
+        /// éœ€è¦ç™»å½•
         /// </summary>
-        public bool NeedLogin => Access.HasFlag(ApiAccessOption.Anymouse);
+        public bool NeedLogin => Access.HasSomeFlags(ApiAccessOption.Customer, ApiAccessOption.Business, ApiAccessOption.Employe);
         /// <summary>
-        /// ÊÇ·ñ¹«¿ª½Ó¿Ú
+        /// æ˜¯å¦å…¬å¼€æ¥å£
         /// </summary>
         public bool IsPublic => Access.HasFlag(ApiAccessOption.Public);
         /// <summary>
-        /// ²ÎÊıÀàĞÍ
+        /// å‚æ•°ç±»å‹
         /// </summary>
         public Type ArgumenType { get; set; }
         /// <summary>
-        /// »¹Ô­²ÎÊı
+        /// è¿˜åŸå‚æ•°
         /// </summary>
         public abstract bool RestoreArgument(string argument);
 
         /// <summary>
-        /// ²ÎÊıĞ£Ñé
+        /// å‚æ•°æ ¡éªŒ
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
         public abstract bool Validate(out string message);
 
         /// <summary>
-        /// Ö´ĞĞ
+        /// æ‰§è¡Œ
         /// </summary>
         /// <returns></returns>
         public abstract IApiResult Execute();
     }
     /// <summary>
-    /// Api¶¯×÷
+    /// ApiåŠ¨ä½œ
     /// </summary>
     public sealed class ApiAction<TResult> : ApiAction
         where TResult : IApiResult
     {
         /// <summary>
-        /// »¹Ô­²ÎÊı
+        /// è¿˜åŸå‚æ•°
         /// </summary>
         public override bool RestoreArgument(string argument)
         {
@@ -103,7 +104,7 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// ²ÎÊıĞ£Ñé
+        /// å‚æ•°æ ¡éªŒ
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
@@ -114,11 +115,11 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// Ö´ĞĞĞĞÎª
+        /// æ‰§è¡Œè¡Œä¸º
         /// </summary>
         public Func<TResult> Action { get; set; }
         /// <summary>
-        /// Ö´ĞĞ
+        /// æ‰§è¡Œ
         /// </summary>
         /// <returns></returns>
         public override IApiResult Execute()
@@ -127,30 +128,30 @@ namespace Agebull.ZeroNet.ZeroApi
         }
     }
     /// <summary>
-    /// API±ê×¼Î¯ÍĞ
+    /// APIæ ‡å‡†å§”æ‰˜
     /// </summary>
     /// <param name="argument"></param>
     /// <returns></returns>
     public delegate IApiResult ApiDelegate1(IApiArgument argument);
 
     /// <summary>
-    /// API±ê×¼Î¯ÍĞ
+    /// APIæ ‡å‡†å§”æ‰˜
     /// </summary>
     /// <returns></returns>
     public delegate IApiResult ApiDelegate();
 
     /// <summary>
-    /// Api¶¯×÷
+    /// ApiåŠ¨ä½œ
     /// </summary>
     public sealed class AnyApiAction<TControler> : ApiAction
         where TControler : class, new()
     {
         /// <summary>
-        /// ²ÎÊı
+        /// å‚æ•°
         /// </summary>
         private IApiArgument _argument;
         /// <summary>
-        /// »¹Ô­²ÎÊı
+        /// è¿˜åŸå‚æ•°
         /// </summary>
         public override bool RestoreArgument(string argument)
         {
@@ -159,7 +160,7 @@ namespace Agebull.ZeroNet.ZeroApi
             try
             {
                 _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as IApiArgument;
-                return _argument != null;
+                return true;
             }
             catch (Exception e)
             {
@@ -169,26 +170,29 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// ²ÎÊıĞ£Ñé
+        /// å‚æ•°æ ¡éªŒ
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
         public override bool Validate(out string message)
         {
-            if (_argument == null)
+            if (_argument != null)
+                return _argument.Validate(out message);
+            if (Access.HasFlag(ApiAccessOption.ArgumentCanNil))
             {
-                message = "²ÎÊı²»ÄÜÎª¿Õ";
-                return false;
+                message = null;
+                return true;
             }
-            return _argument.Validate(out message);
+            message = "å‚æ•°ä¸èƒ½ä¸ºç©º";
+            return false;
         }
         /// <summary>
-        /// Ö´ĞĞĞĞÎª
+        /// æ‰§è¡Œè¡Œä¸º
         /// </summary>
         public MethodInfo Method { get; set; }
 
         /// <summary>
-        /// Ö´ĞĞ
+        /// æ‰§è¡Œ
         /// </summary>
         /// <returns></returns>
         public override IApiResult Execute()
@@ -207,18 +211,18 @@ namespace Agebull.ZeroNet.ZeroApi
     }
 
     /// <summary>
-    /// Api¶¯×÷
+    /// ApiåŠ¨ä½œ
     /// </summary>
     public sealed class ApiAction<TArgument, TResult> : ApiAction
         where TArgument : class, IApiArgument
         where TResult : IApiResult
     {
         /// <summary>
-        /// ²ÎÊı
+        /// å‚æ•°
         /// </summary>
         private TArgument _argument;
         /// <summary>
-        /// »¹Ô­²ÎÊı
+        /// è¿˜åŸå‚æ•°
         /// </summary>
         public override bool RestoreArgument(string argument)
         {
@@ -243,26 +247,35 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
+                StationConsole.WriteError($"{e.Message}\r\n{argument}");
                 return false;
             }
         }
 
         /// <summary>
-        /// ²ÎÊıĞ£Ñé
+        /// å‚æ•°æ ¡éªŒ
         /// </summary>
         /// <param name="message"></param>
         /// <returns></returns>
         public override bool Validate(out string message)
         {
-            return _argument.Validate(out message);
+            if (_argument != null)
+                return _argument.Validate(out message);
+            if (Access.HasFlag(ApiAccessOption.ArgumentCanNil))
+            {
+                message = null;
+                return true;
+            }
+            message = "å‚æ•°ä¸èƒ½ä¸ºç©º";
+            return false;
         }
 
         /// <summary>
-        /// Ö´ĞĞĞĞÎª
+        /// æ‰§è¡Œè¡Œä¸º
         /// </summary>
         public Func<TArgument, TResult> Action { get; set; }
         /// <summary>
-        /// Ö´ĞĞ
+        /// æ‰§è¡Œ
         /// </summary>
         /// <returns></returns>
         public override IApiResult Execute()

@@ -6,13 +6,13 @@ using Newtonsoft.Json;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// Â·ÓÉ¼ÆÊıÆ÷½Úµã
+    /// è·¯ç”±è®¡æ•°å™¨èŠ‚ç‚¹
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
     internal class CountItem
     {
         /// <summary>
-        /// ÉèÖÃ¼ÆÊıÖµ
+        /// è®¾ç½®è®¡æ•°å€¼
         /// </summary>
         /// <param name="tm"></param>
         /// <param name="data"></param>
@@ -31,10 +31,10 @@ namespace ZeroNet.Http.Route
             }
             else
             {
-                if (tm > AppConfig.Config.SystemConfig.WaringTime)
-                {
-                    TimeOut += 1;
-                }
+                //if (tm > AppConfig.Config.SystemConfig.WaringTime)
+                //{
+                //    TimeOut += 1;
+                //}
                 TotalTime += tm;
                 AvgTime = TotalTime / Count;
                 if (MaxTime < tm)
@@ -45,59 +45,59 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// ×î³¤Ê±¼ä
+        /// æœ€é•¿æ—¶é—´
         /// </summary>
         [DataMember, JsonProperty]
         public double MaxTime { get; set; } = double.MinValue;
 
         /// <summary>
-        /// ×î¶ÌÊ±¼ä
+        /// æœ€çŸ­æ—¶é—´
         /// </summary>
         [DataMember, JsonProperty]
         public double MinTime { get; set; } = Double.MaxValue;
         /// <summary>
-        /// ×ÜÊ±¼ä
+        /// æ€»æ—¶é—´
         /// </summary>
         [DataMember, JsonProperty]
         public double TotalTime { get; set; }
         /// <summary>
-        /// Æ½¾ùÊ±¼ä
+        /// å¹³å‡æ—¶é—´
         /// </summary>
         [DataMember, JsonProperty]
         public double AvgTime { get; set; }
 
         /// <summary>
-        /// ×îºóÊ±¼ä
+        /// æœ€åæ—¶é—´
         /// </summary>
         [DataMember, JsonProperty]
         public double LastTime { get; set; }
         
         /// <summary>
-        /// ×Ü´ÎÊı
+        /// æ€»æ¬¡æ•°
         /// </summary>
         [DataMember, JsonProperty]
         public int Count { get; set; }
 
         /// <summary>
-        /// ´íÎó´ÎÊı
+        /// é”™è¯¯æ¬¡æ•°
         /// </summary>
         [DataMember, JsonProperty]
         public int TimeOut { get; set; }
 
         /// <summary>
-        /// ´íÎó´ÎÊı
+        /// é”™è¯¯æ¬¡æ•°
         /// </summary>
         [DataMember, JsonProperty]
         public int Error { get; set; }
 
         /// <summary>
-        /// ¾Ü¾ø´ÎÊı
+        /// æ‹’ç»æ¬¡æ•°
         /// </summary>
         [DataMember, JsonProperty]
         public int Deny { get; set; }
         
         /// <summary>
-        /// ×Ó¼¶
+        /// å­çº§
         /// </summary>
         [DataMember, JsonProperty]
         public Dictionary<string, CountItem> Items { get; set; } = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase);

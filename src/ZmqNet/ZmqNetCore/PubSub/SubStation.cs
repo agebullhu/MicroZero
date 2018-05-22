@@ -24,6 +24,12 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public string Subscribe { get; set; } = "";
 
+        /// <summary>
+        /// 是否实时数据(如为真,则不保存未处理数据)
+        /// </summary>
+        public bool IsRealModel { get; set; }
+
+
         private SubscriberSocket _socket;
 
         /*// <summary>
@@ -55,33 +61,19 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationConsole.WriteInfo($"【{StationName}:{RealName}】start...");
+            StationConsole.WriteInfo($"[{StationName}:{RealName}]{Config.WorkerAddress}start...");
             RunState = StationState.Start;
             InPoll = false;
-            _socket = new SubscriberSocket();
-            try
-            {
-                _socket.Options.Identity = Identity;
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 200);
-                _socket.Subscribe(Subscribe);
-                _socket.Connect(Config.WorkerAddress);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                RunState = StationState.Failed;
-                CloseSocket();
-                StationConsole.WriteError($"【{StationName}:{RealName}】connect error =>{e.Message}");
-                return false;
-            }
-            RunState = StationState.Run;
 
-            Items = SyncQueue<PublishItem>.Load(CacheFileName);
-            Task.Factory.StartNew(CommandTask);
+            RunState = StationState.Run;
+            if (!IsRealModel)
+                Items = SyncQueue<PublishItem>.Load(CacheFileName);
+
+            Task.Factory.StartNew(HandleTask);
             Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
             while (!InPoll)
                 Thread.Sleep(50);
-            StationConsole.WriteInfo($"【{StationName}:{RealName}】runing...");
+            StationConsole.WriteInfo($"[{StationName}:{RealName}]runing...");
             return true;
         }
 
@@ -94,7 +86,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 请求队列
         /// </summary>
-        public  SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
+        public SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
         /// <summary>
         /// 命令轮询
@@ -102,7 +94,13 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private void PollTask()
         {
-            StationConsole.WriteLine($"【{StationName}:{RealName}】poll start...");
+            Heartbeat(false);
+            if (!CreateSocket())
+            {
+                RunState = StationState.Failed;
+                return;
+            }
+            StationConsole.WriteLine($"[{StationName}:{RealName}]poll start...");
             var timeout = new TimeSpan(0, 0, 5);
             InPoll = true;
             while (RunState == StationState.Run)
@@ -148,16 +146,41 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    StationConsole.WriteError($"【{StationName}:{RealName}】poll error{e.Message}...");
+                    StationConsole.WriteError($"[{StationName}:{RealName}]poll error.{e.Message}...");
                     LogRecorder.Exception(e);
                     RunState = StationState.Failed;
                 }
             }
             InPoll = false;
-            StationConsole.WriteLine($"【{StationName}:{RealName}】poll stop");
-            Items.Save(CacheFileName);
+            StationConsole.WriteLine($"[{StationName}:{RealName}]poll stop");
+            if (!IsRealModel)
+                Items.Save(CacheFileName);
             CloseSocket();
 
+        }
+
+        private bool CreateSocket()
+        {
+            _socket = new SubscriberSocket();
+            _socket.Options.Identity = Identity;
+            _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
+            _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
+            _socket.Options.TcpKeepalive = true;
+            _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
+            try
+            {
+                _socket.Subscribe(Subscribe);
+                _socket.Connect(Config.WorkerAddress);
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                RunState = StationState.Failed;
+                CloseSocket();
+                StationConsole.WriteError($"[{StationName}:{RealName}]connect error =>{e.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -185,14 +208,28 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 命令处理任务
         /// </summary>
-        private void CommandTask()
+        private void HandleTask()
         {
             while (RunState == StationState.Run)
             {
                 if (!Items.StartProcess(out var item, 1000))
                     continue;
-                Handle(item);
-                Items.EndProcess();
+                try
+                {
+                    Handle(item);
+                    if (!IsRealModel)
+                        Items.EndProcess();
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    Thread.Sleep(5);
+                }
+                finally
+                {
+                    if(IsRealModel )
+                        Items.EndProcess();
+                }
             }
         }
     }

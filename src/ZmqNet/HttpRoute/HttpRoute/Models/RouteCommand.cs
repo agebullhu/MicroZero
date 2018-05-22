@@ -59,7 +59,6 @@ namespace ZeroNet.Http.Route
         {
             AppConfig.Initialize();
             RouteChahe.Flush();
-            RuntimeWaring.Flush();
             ZeroFlush();
         }
 

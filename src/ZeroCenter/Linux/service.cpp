@@ -53,9 +53,9 @@ namespace agebull
 			switch (sig)
 			{
 			case SIGABRT://由调用abort函数产生，进程非正常退出
-			case SIGINT://由Interrupt Key产生，通常是CTRL + C或者DELETE。发送给所有ForeGround Group的进程
 			case SIGKILL://无法处理和忽略。中止某个进程
 			case SIGTERM://请求中止进程，kill命令缺省发送
+			case SIGINT://由Interrupt Key产生，通常是CTRL + C或者DELETE。发送给所有ForeGround Group的进程
 				boost::thread(boost::bind(rpc_service::stop));
 				break;
 				/*

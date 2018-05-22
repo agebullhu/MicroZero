@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
@@ -17,7 +16,7 @@ namespace ZeroNet.Http.Route
         public void Command(RouteData data)
         {
             _data = data;
-            _words = data.ApiName.Split(new char[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            _words = data.ApiName.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             if (_words.Length == 0)
             {
                 data.Status = RouteStatus.FormalError;
@@ -47,10 +46,9 @@ namespace ZeroNet.Http.Route
             }
 
             var stationName = _words[2];
-            StationConfig config;
             lock (ZeroApplication.Configs)
             {
-                if (ZeroApplication.Configs.TryGetValue(stationName, out config))
+                if (ZeroApplication.Configs.TryGetValue(stationName, out var config))
                 {
                     _result = ApiResult<StationConfig>.Succees(config);
                     _result.Status = new ApiStatsResult
@@ -69,16 +67,15 @@ namespace ZeroNet.Http.Route
             }
 
             string type = _words[1];
-            List<string> datas;
             try
             {
-                datas = ZeroApplication.ZeroManageAddress.MulitRequestNet("install", type, stationName);
-                if (datas.Count == 0)
+                var result = ZeroApplication.ZeroManageAddress.RequestNet("install", type, stationName);
+                if (result == null)
                 {
                     _result = ApiResult.Error(ErrorCode.NetworkError);
                     return;
                 }
-                switch (datas[0])
+                switch (result)
                 {
                     case null:
                         _result = ApiResult.Error(ErrorCode.NetworkError);
@@ -87,7 +84,7 @@ namespace ZeroNet.Http.Route
                         _result = ApiResult.Error(ErrorCode.UnknowError, $"类型{type}不支持");
                         return;
                     case ZeroNetStatus.ZeroCommandFailed:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, datas[0]);
+                        _result = ApiResult.Error(ErrorCode.UnknowError, result);
                         return;
                     case ZeroNetStatus.ZeroCommandOk:
                         _result = ApiResult.Succees();
@@ -98,35 +95,34 @@ namespace ZeroNet.Http.Route
                         };
                         return;
                     default:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, datas[0]);
+                        _result = ApiResult.Error(ErrorCode.UnknowError, result);
                         return;
                 }
             }
             catch (Exception e)
             {
                 _result = ApiResult.Error(ErrorCode.NetworkError, e.Message);
-                return;
             }
 
-            try
-            {
-                config = JsonConvert.DeserializeObject<StationConfig>(datas[0]);
-            }
-            catch
-            {
-                _result = ApiResult.Error(ErrorCode.UnknowError, "返回值不正确");
-                return;
-            }
-            lock (ZeroApplication.Configs)
-            {
-                ZeroApplication.Configs.Add(stationName, config);
-            }
-            _result = ApiResult<StationConfig>.Succees(config);
-            _result.Status = new ApiStatsResult
-            {
-                ErrorCode = ErrorCode.Success,
-                ClientMessage = "安装成功"
-            };
+            //try
+            //{
+            //    config = JsonConvert.DeserializeObject<StationConfig>(datas[0]);
+            //}
+            //catch
+            //{
+            //    _result = ApiResult.Error(ErrorCode.UnknowError, "返回值不正确");
+            //    return;
+            //}
+            //lock (ZeroApplication.Configs)
+            //{
+            //    ZeroApplication.Configs.Add(stationName, config);
+            //}
+            //_result = ApiResult<StationConfig>.Succees(config);
+            //_result.Status = new ApiStatsResult
+            //{
+            //    ErrorCode = ErrorCode.Success,
+            //    ClientMessage = "安装成功"
+            //};
         }
 
         private void Call()
@@ -146,13 +142,13 @@ namespace ZeroNet.Http.Route
 
             try
             {
-                var datas = ZeroApplication.ZeroManageAddress.MulitRequestNet(_words);
-                if (datas.Count == 0)
+                var value = ZeroApplication.ZeroManageAddress.RequestNet(_words);
+                if (value == null)
                 {
                     _result = ApiResult.Error(ErrorCode.NetworkError);
                     return;
                 }
-                switch (datas[0])
+                switch (value)
                 {
                     case null:
                         _result = ApiResult.Error(ErrorCode.NetworkError);
@@ -161,10 +157,10 @@ namespace ZeroNet.Http.Route
                         _result = ApiResult.Error(ErrorCode.UnknowError, "不支持的操作");
                         return;
                     case ZeroNetStatus.ZeroCommandFailed:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, datas[0]);
+                        _result = ApiResult.Error(ErrorCode.UnknowError, value);
                         return;
                     case ZeroNetStatus.ZeroCommandOk:
-                        _result = ApiValueResult.Succees(datas[0]);
+                        _result = ApiValueResult.Succees(value);
                         _result.Status = new ApiStatsResult
                         {
                             ErrorCode = ErrorCode.Success,
@@ -172,14 +168,13 @@ namespace ZeroNet.Http.Route
                         };
                         return;
                     default:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, datas[0]);
+                        _result = ApiResult.Error(ErrorCode.UnknowError, value);
                         return;
                 }
             }
             catch (Exception e)
             {
                 _result = ApiResult.Error(ErrorCode.NetworkError, e.Message);
-                return;
             }
         }
     }

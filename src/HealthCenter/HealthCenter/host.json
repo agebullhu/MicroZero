@@ -1,0 +1,8 @@
+{
+  "zeroAddr": "192.168.240.132",
+  "managePort": 8000,
+  "monitorPort": 8001,
+  "stationName": "RemoteLog",
+  "serviceName": "RemoteLog",
+  "dataFolder": "/etc/dotnet/data"
+}

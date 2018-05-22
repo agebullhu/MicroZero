@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RuntimeWaring\**" />
+    <EmbeddedResource Remove="RuntimeWaring\**" />
+    <None Remove="RuntimeWaring\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="sms.json" />
   </ItemGroup>
 
@@ -26,6 +32,12 @@
     <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNet\HttpRoute\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

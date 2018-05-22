@@ -9,8 +9,7 @@ namespace Agebull.ZeroNet.LogService
         {
             Console.WriteLine("Hello ZeroNet");
             ZeroApplication.Initialize();
-            ZeroApplication.RegisteStation(new RemoteLogStation());
-            ZeroApplication.Initialize(false);
+            ZeroApplication.Discove();
             ZeroApplication.RunAwaite();
         }
     }

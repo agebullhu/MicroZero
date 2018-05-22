@@ -1,4 +1,3 @@
-using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

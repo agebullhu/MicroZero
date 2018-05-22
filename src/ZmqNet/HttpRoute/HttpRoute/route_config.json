@@ -1,10 +1,17 @@
 {
+  /*ZeroNet站点配置（不要改）*/
+  "zeroConfig": {
+    "zeroAddr": "192.168.240.132",
+    "monitorPort": 8001,
+    "managePort": 8000,
+    "stationName": "HttpRoute",
+    "serviceName": "HttpRoute",
+    "serviceKey": "001"
+  },
   /*系统设置*/
   "sysConfig": {
     /*是否开启ZMQ网络（不要改）*/
     "FireZero": true,
-    /*机器名称*/
-    "ServiceKey": "HttpRoute-1",
     /*是否记录跟踪日志*/
     "LogMonitor": true,
     /*日志目录*/
@@ -17,6 +24,21 @@
     "RedisConnectionString": "127.0.0.1:6379",
     /*内容页地址*/
     "ContextHost": "http://api.yizuanbao.cn:8080/"
+  },
+  /*路由信息，缺省地址必须要有，即找不到时使用的地址*/
+  "route": {
+    /*缺省地址*/
+    "Default": {
+      "hosts": [ "Http://127.0.0.1:8080/" ]
+    },
+    /*User对应的地址*/
+    "GoodLin-User-External-Api": {
+      "hosts": [ "http://172.16.20.142:8081/" ]
+    },
+    /*OAuth对应的地址*/
+    "GoodLin-OAuth-Api": {
+      "hosts": [ "http://172.16.20.142/" /*,"http://localhost:8080/GoodLin-OAuth-Api/"*/ ]
+    }
   },
   /**/
   "security": {
@@ -50,29 +72,6 @@
         "Browser": "_APP",
         "Os": ""
       }
-    }
-  },
-  /*ZeroNet站点配置（不要改）*/
-  "zeroConfig": {
-    "zeroAddr": "192.168.240.131",
-    "monitorPort": 8002,
-    "managePort": 8000,
-    "stationName": "HttpRoute",
-    "serviceName": "HttpRoute"
-  },
-  /*路由信息，缺省地址必须要有，即找不到时使用的地址*/
-  "route": {
-    /*缺省地址*/
-    "Default": {
-      "hosts": [ "Http://127.0.0.1:8080/" ]
-    },
-    /*User对应的地址*/
-    "GoodLin-User-External-Api": {
-      "hosts": [ "http://172.16.20.142:8081/" ]
-    },
-    /*OAuth对应的地址*/
-    "GoodLin-OAuth-Api": {
-      "hosts": [ "http://172.16.20.142/" /*,"http://localhost:8080/GoodLin-OAuth-Api/"*/ ]
     }
   },
   /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/

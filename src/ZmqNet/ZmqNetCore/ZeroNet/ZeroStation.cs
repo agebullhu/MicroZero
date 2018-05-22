@@ -1,4 +1,7 @@
 using System;
+using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using Gboxt.Common.DataModel;
 
@@ -44,14 +47,20 @@ namespace Agebull.ZeroNet.Core
         private string _realName;
 
         /// <summary>
+        /// 节点名称
+        /// </summary>
+        protected string Name { get; set; }
+
+        /// <summary>
         /// 实例名称
         /// </summary>
-        public string RealName => _realName ?? (_realName = StationName + "-" + RandomOperate.Generate(5));
+        public string RealName => _realName ?? (_realName =
+                                      $"{ZeroApplication.Config.ServiceName}-{ZeroApplication.Config.ServiceKey}-{StationName}-{Name}");
         /// <summary>
         /// 实例名称
         /// </summary>
         public byte[] Identity => ZeroApplication.Config.ToZeroIdentity(RealName);
-        
+
         /// <summary>
         /// 站点配置
         /// </summary>
@@ -67,10 +76,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         protected bool InPoll { get; set; }
 
-        /// <summary>
-        /// 心跳的存活状态开关
-        /// </summary>
-        protected bool InHeart { get; set; }
         /// <summary>
         /// 命令轮询
         /// </summary>
@@ -106,21 +111,37 @@ namespace Agebull.ZeroNet.Core
                 //            type = "vote";
                 //            break;
                 //        default:
-                //            StationProgram.WriteError($"【{station.StationName}】type no supper,failed!");
+                //            StationProgram.WriteError($"[{station.StationName}]type no supper,failed!");
                 //            return;
                 //    }
-                //    StationProgram.WriteError($"【{station.StationName}】not find,try install...");
+                //    StationProgram.WriteError($"[{station.StationName}]not find,try install...");
                 //    StationProgram.InstallStation(station.StationName, type);
                 //    return;
                 //}
                 if (station.Config == null)
                 {
                     station.RunState = StationState.ConfigError;
-                    StationConsole.WriteError($"【{station.StationName}】config cann`t get,failed!");
+                    StationConsole.WriteError($"[{station.StationName}]config cann`t get,failed!");
                     return false;
                 }
             }
+            SystemMonitor.StationEvent += station.SystemMonitor_StationEvent;
             return station.Run();
+        }
+
+        private void SystemMonitor_StationEvent(object sender, SystemMonitor.StationEventArgument e)
+        {
+            Heartbeat(false);
+        }
+        /// <summary>
+        /// 心跳
+        /// </summary>
+        protected void Heartbeat(bool left)
+        {
+            if (left)
+                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartLeft, Config.StationName, RealName);
+            else
+                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartPitpat, Config.StationName, RealName, ZeroApplication.Address);
         }
         /// <summary>
         /// 命令轮询
@@ -128,11 +149,12 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         protected virtual void OnTaskStop()
         {
+            Heartbeat(true);
             while (InPoll)
                 Thread.Sleep(50);
             if (ZeroApplication.State == StationState.Run && RunState == StationState.Failed)
             {
-                StationConsole.WriteInfo($"【{StationName}】restart...");
+                StationConsole.WriteInfo($"[{StationName}]restart...");
                 Console.CursorLeft = 0;
                 StationConsole.WriteInfo("                       ");
                 for (int i = 1; i <= 3; i++)

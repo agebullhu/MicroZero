@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.LogRecorder;
+using Agebull.ZeroNet.Log;
 using Agebull.ZeroNet.LogService;
 using Agebull.ZeroNet.PubSub;
 using NetMQ;
@@ -42,7 +42,7 @@ namespace RpcTest
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
             LogRecorder.Shutdown();
-            ZeroApplication.Exit();
+            ZeroApplication.Destroy();
         }
 
         private static long count = 0;

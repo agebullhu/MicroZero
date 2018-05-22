@@ -1,4 +1,4 @@
-﻿using Agebull.ZeroNet.ZeroApi;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace ApiTest
 {
@@ -8,7 +8,7 @@ namespace ApiTest
         {
             string IApiArgument.ToFormString()
             {
-                return "";
+                return " ";
             }
 
             bool IApiArgument.Validate(out string message)

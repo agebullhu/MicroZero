@@ -1,3 +1,5 @@
+#ifndef _1_BOOST_INC_H
+#define _1_BOOST_INC_H
 #pragma once
 #if BOOST_VERSION < 105000
 #define XT_TIME_UTC boost::TIME_UTC
@@ -43,4 +45,4 @@
 #include <boost/format.hpp> 
 #include <boost/unordered_map.hpp> 
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
-
+#endif//!_1_BOOST_INC_H

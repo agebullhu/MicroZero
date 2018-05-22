@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <remarks>
         ///     服务注册时自动分配
         /// </remarks>
-        public static string MyServiceKey { get; set; } = ConfigurationManager.AppSettings["ServiceKey"];
+        public static string MyServiceKey { get; set; }
 
         /// <summary>
         ///     当前服务器的名称
@@ -33,7 +33,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <remarks>
         ///     但实际名称，会以服务器返回为准。
         /// </remarks>
-        public static string MyServiceName { get; set; } = ConfigurationManager.AppSettings["ServiceName"];
+        public static string MyServiceName { get; set; }
 
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <remarks>
         ///     但实际名称，会以服务器返回为准。
         /// </remarks>
-        public static string MyRealName { get; set; } = ConfigurationManager.AppSettings["ServiceAddress"];
+        public static string MyRealName { get; set; }
 
         #endregion
 
