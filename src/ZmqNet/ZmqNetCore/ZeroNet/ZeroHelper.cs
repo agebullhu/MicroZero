@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using NetMQ;
 using NetMQ.Sockets;
 
@@ -12,6 +13,32 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class ZeroHelper
     {
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Send(this RequestSocket socket, PublishItem item)
+        {
+            byte[] description = new byte[5];
+            description[0] = 3;
+            description[1] = ZeroFrameType.Publisher;
+            description[2] = ZeroFrameType.SubTitle;
+            description[3] = ZeroFrameType.Argument;
+            description[4] = ZeroFrameType.End;
+            lock (socket)
+            {
+                socket.SendMoreFrame(item.Title);
+                socket.SendMoreFrame(description);
+                socket.SendMoreFrame(ZeroApplication.Config.StationName);
+                socket.SendMoreFrame(item.SubTitle);
+                socket.SendFrame(item.Content);
+                var word = socket.ReceiveFrameString();
+                return word == ZeroNetStatus.ZeroCommandOk;
+            }
+        }
+
         /// <summary>
         ///     关闭套接字
         /// </summary>
@@ -30,6 +57,35 @@ namespace Agebull.ZeroNet.Core
             socket.Close();
             socket.Dispose();
         }
+
+        /// <summary>
+        ///     接收文本
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="datas"></param>
+        /// <param name="tryCnt"></param>
+        /// <returns></returns>
+        public static bool ReceiveState(this NetMQSocket request, out List<string> datas, int tryCnt = 3)
+        {
+            datas = new List<string>();
+
+            var more = true;
+            var cnt = 0;
+            var ts = new TimeSpan(0, 0, 3);
+            //收完消息
+            while (more)
+            {
+                if (!request.TryReceiveFrameString(ts, out var data, out more))
+                {
+                    if (++cnt >= tryCnt)
+                        return false;
+                    more = true;
+                }
+                datas.Add(data);
+            }
+            return true;
+        }
+
         /// <summary>
         ///     接收文本
         /// </summary>
@@ -149,7 +205,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="address">请求地址</param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        public static string RequestNet(this string address, params string[] args)
+        internal static string RequestNet(this string address, params string[] args)
         {
             if (args.Length == 0)
                 throw new ArgumentException("args 不能为空");

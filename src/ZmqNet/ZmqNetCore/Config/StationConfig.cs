@@ -40,7 +40,7 @@ namespace Agebull.ZeroNet.Core
         /// 入站地址
         /// </summary>
         [DataMember, JsonProperty]
-        public string RequestAddress => ZeroApplication.Config.GetRemoteAddress(StationName, RequestPort);
+        public string RequestAddress => ZeroIdentityHelper.GetRemoteAddress(StationName, RequestPort);
 
         /// <summary>
         /// 入站端口
@@ -52,7 +52,7 @@ namespace Agebull.ZeroNet.Core
         /// 出站地址
         /// </summary>
         [DataMember, JsonProperty]
-        public string WorkerAddress => ZeroApplication.Config.GetRemoteAddress(StationName, WorkerPort);
+        public string WorkerAddress => ZeroIdentityHelper.GetRemoteAddress(StationName, WorkerPort);
 
         /// <summary>
         /// 请求入
@@ -69,7 +69,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember, JsonProperty("request_err")]
         public long RequestErr { get; set; }
-        
+
         /// <summary>
         /// 调用回
         /// </summary>
@@ -149,22 +149,27 @@ namespace Agebull.ZeroNet.Core
             WorkerOut = src.WorkerOut;
             WorkerErr = src.WorkerErr;
             Workers = src.Workers;
-            Sockets = src.Sockets;
-            Pools = src.Pools;
+            _sockets = src._sockets;
+            lock (_pools)
+            {
+                _pools = src._pools;
+            }
         }
 
+        /// <summary>
+        /// Socket名称标识
+        /// </summary>
+        private int _socketId;
 
         /// <summary>
         /// 所有连接
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        List<RequestSocket> Sockets = new List<RequestSocket>();
+        [IgnoreDataMember, JsonIgnore] private List<RequestSocket> _sockets = new List<RequestSocket>();
 
         /// <summary>
         /// 连接池
         /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        Queue<RequestSocket> Pools = new Queue<RequestSocket>();
+        [IgnoreDataMember, JsonIgnore] private Queue<RequestSocket> _pools = new Queue<RequestSocket>();
 
         /// <summary>
         /// 取得一个连接对象
@@ -174,19 +179,19 @@ namespace Agebull.ZeroNet.Core
         {
             if (_isDisposed)
                 return null;
-            lock (Pools)
+            lock (_pools)
             {
-                if (Pools.Count != 0)
-                    return Pools.Dequeue();
+                if (_pools.Count != 0)
+                    return _pools.Dequeue();
             }
             var socket = new RequestSocket();
-            socket.Options.Identity = ZeroApplication.Config.ToZeroIdentity(StationName);
+            socket.Options.Identity = ZeroIdentityHelper.ToZeroIdentity(StationName, (++_socketId).ToString());
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
             socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
             socket.Options.TcpKeepalive = true;
             socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
             socket.Connect(RequestAddress);
-            Sockets.Add(socket);
+            _sockets.Add(socket);
             return socket;
         }
         /// <summary>
@@ -197,7 +202,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (socket == null)
                 return;
-            Sockets.Remove(socket);
+            _sockets.Remove(socket);
             socket.CloseSocket(RequestAddress);
         }
         /// <summary>
@@ -208,18 +213,18 @@ namespace Agebull.ZeroNet.Core
         {
             if (socket == null)
                 return;
-            lock (Pools)
+            lock (_pools)
             {
-                if (_isDisposed || Pools.Count > 99)
+                if (_isDisposed || _pools.Count > 99)
                 {
                     socket.Disconnect(RequestAddress);
                     socket.Close();
                     socket.Dispose();
-                    Sockets.Remove(socket);
+                    _sockets.Remove(socket);
                 }
                 else
                 {
-                    Pools.Enqueue(socket);
+                    _pools.Enqueue(socket);
                 }
             }
         }
@@ -249,19 +254,19 @@ namespace Agebull.ZeroNet.Core
             if (_isDisposed)
                 return;
             _isDisposed = true;
-            while (Pools.Count != Sockets.Count)
+            while (_pools.Count != _sockets.Count)
             {
                 Thread.Sleep(10);
             }
-            lock (Pools)
+            lock (_pools)
             {
-                Pools.Clear();
+                _pools.Clear();
             }
-            foreach (var socket in Sockets)
+            foreach (var socket in _sockets)
             {
                 socket.CloseSocket(RequestAddress);
             }
-            Sockets.Clear();
+            _sockets.Clear();
         }
     }
 }

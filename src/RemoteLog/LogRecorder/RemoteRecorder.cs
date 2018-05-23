@@ -120,7 +120,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void SendTask()
         {
-            _identity = ZeroApplication.Config.ToZeroIdentity("LogRecorder");
+            _identity = ZeroIdentityHelper.ToZeroIdentity("LogRecorder");
             _state = StationState.Run;
             while (ZeroApplication.State < StationState.Closing && _state == StationState.Run)
             {

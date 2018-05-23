@@ -42,3 +42,4 @@ packages
 /src/ZeroCenter/Console/Release
 *.TMP
 /src/ZeroMonitor
+/src/ZmqNet/HttpRoute/HttpRoute/Datas

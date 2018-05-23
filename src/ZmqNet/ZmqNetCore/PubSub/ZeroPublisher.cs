@@ -13,9 +13,9 @@ using NetMQ.Sockets;
 namespace Agebull.ZeroNet.PubSub
 {
     /// <summary>
-        ///     消息发布
-        /// </summary>
-        public class ZeroPublisher
+    ///     消息发布
+    /// </summary>
+    public class ZeroPublisher
     {
         /// <summary>
         ///     保持长连接的连接池
@@ -83,7 +83,7 @@ namespace Agebull.ZeroNet.PubSub
             {
                 Thread.Sleep(20);
             } while (RunState != StationState.Closed);
-            
+
             StationConsole.WriteInfo("Publisher closed");
             return true;
         }
@@ -144,7 +144,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 try
                 {
-                    if (!Send(socket, item))
+                    if (!socket.Send(item))
                     {
                         LogRecorder.Trace(LogType.Warning, "Publish",
                             $@"向[{item.Station}]广播的主题为[{item.Title}]的消息发送失败，内容为：
@@ -168,29 +168,6 @@ namespace Agebull.ZeroNet.PubSub
             RunState = StationState.Closed;
         }
 
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        private static bool Send(RequestSocket socket, PublishItem item)
-        {
-            byte[] description = new byte[5];
-            description[0] = 3;
-            description[1] = ZeroFrameType.Publisher;
-            description[2] = ZeroFrameType.SubTitle;
-            description[3] = ZeroFrameType.Argument;
-            description[4] = ZeroFrameType.End;
 
-            socket.SendMoreFrame(item.Title);
-            socket.SendMoreFrame(description);
-            socket.SendMoreFrame(ZeroApplication.Config.StationName);
-            socket.SendMoreFrame(item.SubTitle);
-            socket.SendFrame(item.Content);
-            var word = socket.ReceiveFrameString();
-            return word == ZeroNetStatus.ZeroCommandOk;
-        }
-        
     }
 }

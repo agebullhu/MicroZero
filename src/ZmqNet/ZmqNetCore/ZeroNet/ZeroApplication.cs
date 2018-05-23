@@ -30,12 +30,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     监测中心广播地址
         /// </summary>
-        public static string ZeroMonitorAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}";//Config.GetRemoteAddress("SystemMonitor", Config.ZeroMonitorPort);
+        public static string ZeroMonitorAddress => $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}";//ZeroIdentityHelper.GetRemoteAddress("SystemMonitor", Config.ZeroMonitorPort);
 
         /// <summary>
         ///     监测中心管理地址
         /// </summary>
-        public static string ZeroManageAddress => Config.GetRemoteAddress("SystemManage", Config.ZeroManagePort);
+        public static string ZeroManageAddress => ZeroIdentityHelper.GetRemoteAddress("SystemManage", Config.ZeroManagePort);
 
         /// <summary>
         /// 注册站点
@@ -228,7 +228,7 @@ namespace Agebull.ZeroNet.Core
             ZeroPublisher.Initialize();
         }
 
-        static void InitializeConfig()
+        private static void InitializeConfig()
         {
 
             if (ApiContext.Configuration == null)

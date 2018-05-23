@@ -10,7 +10,7 @@ namespace NetMQ.WebSockets
         }
     }
 
-    class RouterShimHandler : BaseShimHandler
+    internal class RouterShimHandler : BaseShimHandler
     {
         public RouterShimHandler(int id)
             : base(id)

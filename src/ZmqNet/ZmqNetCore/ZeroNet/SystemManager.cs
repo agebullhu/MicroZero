@@ -87,7 +87,8 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
         }
-        static bool LoadAllConfig()
+
+        private static bool LoadAllConfig()
         {
             string result;
             int trycnt = 0;

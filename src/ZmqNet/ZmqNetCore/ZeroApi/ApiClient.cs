@@ -15,7 +15,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 请求格式说明
         /// </summary>
-        static readonly byte[] Description = new byte[]
+        private static readonly byte[] Description = new byte[]
         {
             5,
             ZeroFrameType.Command,
@@ -179,7 +179,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="datas"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        static bool Receive(NetMQSocket request, out string message, out List<byte[]> datas)
+        private static bool Receive(NetMQSocket request, out string message, out List<byte[]> datas)
         {
             datas = new List<byte[]>();
 

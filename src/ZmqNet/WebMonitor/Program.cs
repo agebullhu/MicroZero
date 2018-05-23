@@ -15,6 +15,15 @@ namespace WebMonitor
     {
         public static void Main(string[] args)
         {
+            int haha = 0;
+            int hoho = 0;
+            for (int i = 0; i < short.MaxValue; i++)
+            {
+                if (DateTime.Now.Ticks != DateTime.Now.Ticks)
+                    haha++;
+                else hoho++;
+            }
+            Console.WriteLine($"haha:{haha} hoho{hoho}");
             BuildWebHost(args).Run();
             WebSocketPooler.Instance.Dispose();
             ZeroApplication.Destroy();

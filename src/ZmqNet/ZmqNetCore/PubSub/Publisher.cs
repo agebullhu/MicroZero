@@ -26,6 +26,8 @@ namespace Agebull.ZeroNet.PubSub
     /// </summary>
     public abstract class Publisher<TData> where TData : class, IPublishData
     {
+        #region 广播
+
         /// <summary>
         /// 广播
         /// </summary>
@@ -38,6 +40,9 @@ namespace Agebull.ZeroNet.PubSub
             }
             Items.Push(data);
         }
+
+        #endregion
+
         #region Field
         /// <summary>
         /// 节点名称
@@ -100,7 +105,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         private void SendTask()
         {
-            Identity = ZeroApplication.Config.ToZeroIdentity(StationName, Name);
+            Identity = ZeroIdentityHelper.ToZeroIdentity(StationName, Name);
             State = StationState.Run;
             while (ZeroApplication.State < StationState.Closing && State == StationState.Run)
             {

@@ -16,6 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="RouteCounter.cs" />
+    <Compile Remove="RuntimeWaring.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="sms.json" />
   </ItemGroup>
 

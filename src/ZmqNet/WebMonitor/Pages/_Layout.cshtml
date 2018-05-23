@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html style="height: 100%;width:100%">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,13 +8,14 @@
     <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
     <link href="~/lib/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/element-ui@2.3.9/lib/theme-chalk/index.css">
+    @RenderSection("Styles", required: false)
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/js/jsmq.js"></script>
     <script src="~/js/site.js"></script>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui@2.3.9/lib/index.js"></script>
 </head>
-<body>
+<body style="height: 100%;width:100%">
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -35,7 +36,7 @@
             </div>
         </div>
     </nav>
-    <div class="container body-content">
+    <div class="container body-content"  style="height: 100%">
         @RenderBody()
         @*<hr />
 <footer>

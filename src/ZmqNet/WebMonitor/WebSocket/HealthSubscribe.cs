@@ -34,7 +34,7 @@ namespace ZeroNet.Http.Route
             {
                 try
                 {
-                    End(JsonConvert.DeserializeObject<RouteData>(args.Content));
+                    End(JsonConvert.DeserializeObject<CountData>(args.Content));
                 }
                 catch (Exception e)
                 {
@@ -68,14 +68,17 @@ namespace ZeroNet.Http.Route
         /// 开始计数
         /// </summary>
         /// <returns></returns>
-        public static void End(RouteData data)
+        public static void End(CountData data)
         {
             if (data == null || string.IsNullOrWhiteSpace(data.HostName))
                 return;
             try
             {
                 var tm = (data.End - data.Start).TotalMilliseconds;
-                long unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
+                var now = DateTime.Now;
+                if (DateTime.Now.Ticks != DateTime.Now.Ticks)
+                    Console.WriteLine("haha");
+                long unit = now.Year * 1000000 + now.Month * 10000 + now.Day * 100 + now.Hour;
                 if (unit != Unit)
                 {
                     Unit = unit;
@@ -83,22 +86,23 @@ namespace ZeroNet.Http.Route
                     Root.Children.Clear();
                     Root.Items.Clear();
                 }
-
+                Root.LastCall = data.End;
                 CountItem host;
                 lock (Root)
                 {
-                    Root.SetValue(tm, data);
                     if (!Root.Items.TryGetValue(data.HostName, out host))
                     {
+                        var config = ZeroApplication.GetConfig(data.HostName,out var status);
                         Root.Items.Add(data.HostName, host = new CountItem
                         {
-                            Id = data.HostName,
-                            Label = data.HostName,
+                            Id = "/" + data.HostName,
+                            Label = config == null ? data.HostName + "(*)" : config.StationName,
                             Children = new List<CountItem>(),
                             Items = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase)
                         });
                         Root.Children.Add(host);
                     }
+                    Root.SetValue(tm, data);
                 }
                 lock (host)
                 {
@@ -109,7 +113,7 @@ namespace ZeroNet.Http.Route
                         {
                             host.Items.Add(data.ApiName, api = new CountItem
                             {
-                                Id = data.ApiName,
+                                Id = host.Id + "/" + data.ApiName,
                                 Label = data.ApiName,
                                 Children = new List<CountItem>(),
                                 Items = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase)

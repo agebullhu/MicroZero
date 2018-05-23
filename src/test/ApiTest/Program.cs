@@ -14,6 +14,7 @@ namespace ApiTest
             LogRecorder.Initialize(new RemoteRecorder());
             ZeroApplication.Discove();
             ZeroApplication.RunAwaite();
+            LogRecorder.Shutdown();
         }
     }
 }

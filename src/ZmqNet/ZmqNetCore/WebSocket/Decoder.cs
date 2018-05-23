@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace NetMQ.WebSockets
 {
-    enum OpcodeEnum : byte
+    internal enum OpcodeEnum : byte
     {
         Continuation = 0,
         Text = 0x01,
@@ -13,7 +13,7 @@ namespace NetMQ.WebSockets
         Pong = 0xA
     }
 
-    class MessageEventArgs : EventArgs
+    internal class MessageEventArgs : EventArgs
     {
         public MessageEventArgs(OpcodeEnum opcode, byte[] payload, bool more)
         {
@@ -27,12 +27,12 @@ namespace NetMQ.WebSockets
         public bool More { get; private set; }
     }
 
-    class Decoder
+    internal class Decoder
     {
-        const byte FinalBit = 0x80;
+        private const byte FinalBit = 0x80;
         private const byte MaskedBit = 0x80;
 
-        enum State
+        private enum State
         {
             NewMessage,
             SecondByte,
@@ -131,7 +131,7 @@ namespace NetMQ.WebSockets
             }
         }
 
-        State NextState()
+        private State NextState()
         {
             if ((m_state == State.LongSize8 || m_state == State.SecondByte || m_state == State.ShortSize2) &&
                 m_isMaksed)
@@ -148,7 +148,7 @@ namespace NetMQ.WebSockets
             }
         }
 
-        void Process(byte b)
+        private void Process(byte b)
         {
             switch (m_state)
             {

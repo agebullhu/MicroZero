@@ -1,0 +1,27 @@
+[
+  {
+    "Api": "/GoodLin-Goods-External-Api/v1/discover/info"
+  },
+  {
+    "Api": "/GoodLin-Goods-External-Api/v1/dashboard/advertandchannel"
+  },
+  {
+    "Api": "/GoodLin-Goods-External-Api/v2/dashboard/hotcake"
+  },
+  {
+    "Api": "/GoodLin-Goods-External-Api/v1/channel/info"
+  },
+  {
+    "Api": "/Yizuan-ForcedUpdating-External-Api/v1/start/updatingad",
+    "OnlyName": true
+  },
+  {
+    "Api": "/Yizuan-ForcedUpdating-External-Api/v2/activty/getconfig",
+    "OnlyName": true
+  },
+  {
+    "Api": "/GoodLin-DiamondMall-External-Api/v1/diamond/config",
+    "OnlyName": true,
+    "Bear": "*"
+  }
+]

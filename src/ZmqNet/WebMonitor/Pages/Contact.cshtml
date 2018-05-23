@@ -4,16 +4,87 @@
 @{
     ViewData["Title"] = "实时警告";
 }
+@section Styles{
+
+    <style>
+        .el-header {
+            background-color: #B3C0D1;
+            color: #333;
+            line-height: 60px;
+        }
+
+        .el-aside {
+            color: #333;
+        }
+    </style>
+}
 @section Scripts{
-<script src="js/JSMQ.js"></script>
-<script>
+    <script src="/js/JSMQ.js"></script>
+    <script>
     var data = {
-        host: [@(Html.Raw(JsonConvert.SerializeObject(HealthSubscribe.Root)))]
-    };
+        hosts: [@(Html.Raw(JsonConvert.SerializeObject(HealthSubscribe.Root)))],
+        //host: {
+        //    id:"0",
+        //    label:"select a node",
+        //    MaxTime:0,
+        //    MinTime:0,
+        //    TotalTime: 0,
+        //    AvgTime: 0,
+        //    LastTime: 0,
+        //    Count: 0,
+        //    TimeOut: 0,
+        //    Error: 0,
+        //    Deny: 0
+        //}
+        };
+    data.host = data.hosts[0];
     var vm = new Vue({
         el: '#vue',
-        data: data
-    });
+        data: data,
+        methods: {
+            tree_select: function (vl, node) {
+                if (vl)
+                    data.host = vl;
+            }
+        },
+        filters: {
+            formatDate(time) {
+                var date = new Date(time);
+                return formatDate(date, 'MM-dd hh:mm:ss');
+            },
+            formatNumber(number) {
+                if (number){
+                    return number.toFixed(4);
+                }else{
+                    return "0.0";
+                }
+            }
+        }
+        });
+        function formatDate(date, fmt) {
+            if (isNaN(date.getMonth()))
+                    return "*";
+        if (/(y+)/.test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+        }
+        var o = {
+            'M+': date.getMonth() + 1,
+            'd+': date.getDate(),
+            'h+': date.getHours(),
+            'm+': date.getMinutes(),
+            's+': date.getSeconds()
+        };
+        for (var k in o) {
+            if (new RegExp(`(${k})`).test(fmt)) {
+                var str = o[k] + '';
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+            }
+        }
+        return fmt;
+        }
+    function padLeftZero(str) {
+        return ('00' + str).substr(str.length);
+    }
     var subscriber = new JSMQ.Subscriber();
     var index = 0;
     subscriber.connect("ws://" + location.hostname + ":81");
@@ -24,17 +95,57 @@
         var reader = new FileReader();
         reader.readAsText(new Blob([bytes]), 'utf-8');
         reader.onload = function (evt) {
-            data.host = eval('([' + reader.result + '])');
+            data.hosts = eval('([' + reader.result + '])');
+            find(data.hosts[0]);
         }
-    };
-</script>
+        };
+        function find(host) {
+            if (host.id === data.host.id) {
+                data.host = host;
+                return true;
+            }
+            if (!host.children || host.children.length === 0)
+                return false;
+            for (var idx = 0; idx < host.children.length; idx++) {
+                if (find(host.children[idx]))
+                return true;
+        }
+        return false;
+    }
+    </script>
 }
-<div id="vue">
-    <el-tree
-        :data="host"
-        default-expand-all
-        node-key="id"
-        ref="tree"
-        highlight-current>
-    </el-tree>
+<div id="vue" style="height: 100%;width:100%">
+    <el-container style="height: 100%; border: 1px solid #eee">
+        <el-aside width="200px" height="100%" style="background-color: rgb(238, 241, 246)">
+            <el-tree :data="hosts"
+                     default-expand-all
+                     node-key="id"
+                     ref="tree"
+                     @@current-change="tree_select"
+                     :expand-on-click-node="false"
+                     highlight-current>
+            </el-tree>
+        </el-aside>
+        <el-container>
+            <template>
+                <div class="col-md-3">
+                    <label>{{host.id}}</label>
+                    <ul>
+                        <li>LastCall:{{host.LastCall | formatDate}}</li>
+                        <li>TotalTime:{{host.TotalTime | formatNumber}}ms</li>
+                        <li>Count:{{host.Count}}</li>
+                        <li>AvgTime:{{host.AvgTime | formatNumber}}ms</li>
+                        <li>LastTime:{{host.LastTime | formatNumber}}ms</li>
+                        <li>TimeOut:{{host.TimeOut}}</li>
+                        <li>MaxTime:{{host.MaxTime | formatNumber}}ms</li>
+                        <li>MinTime:{{host.MinTime | formatNumber}}ms</li>
+                        <li>Error:{{host.Error}}</li>
+                        <li>Deny:{{host.Deny}}</li>
+                    </ul>
+                </div>
+            </template>
+        </el-container>
+    </el-container>
+
+
 </div>

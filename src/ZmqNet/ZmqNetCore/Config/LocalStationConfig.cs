@@ -84,7 +84,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!string.IsNullOrEmpty(_realName))
                     return _realName;
-                return _realName = $"{StationName}-{ServiceName}-{ServiceKey}";
+                return _realName = ZeroIdentityHelper.CreateRealName();
             }
         }
 
@@ -94,45 +94,7 @@ namespace Agebull.ZeroNet.Core
         /// 实例名称
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public byte[] Identity => _identity ?? (_identity = ToZeroIdentity());
+        public byte[] Identity => _identity ?? (_identity = ZeroIdentityHelper.ToZeroIdentity());
 
-        /// <summary>
-        /// 是否本机
-        /// </summary>
-        /// <returns></returns>
-        public bool IsLocalhost => string.IsNullOrWhiteSpace(ZeroAddress) ||
-                                   ZeroAddress == "127.0.0.1" ||
-                                   ZeroAddress == "::1" ||
-                                   ZeroAddress.Equals("localhost", StringComparison.OrdinalIgnoreCase);
-        /// <summary>
-        /// 格式化地址
-        /// </summary>
-        /// <param name="station"></param>
-        /// <param name="port"></param>
-        /// <returns></returns>
-        public string GetRemoteAddress(string station, int port)
-        {
-            return /*IsLocalhost
-                ? $"ipc:///usr/zero/{station}.ipc"
-                : */$"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-        }
-
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public byte[] ToZeroIdentity(params string[] ranges)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append('+');//IsLocalhost ? "-" : "+"
-            sb.Append(RealName);
-            foreach (var range in ranges)
-            {
-                sb.Append("-");
-                sb.Append(range);
-            }
-            return sb.ToString().ToAsciiBytes();
-        }
     }
 }

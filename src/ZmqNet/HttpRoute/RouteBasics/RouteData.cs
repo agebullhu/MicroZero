@@ -15,7 +15,7 @@ namespace ZeroNet.Http.Route
     /// 路由数据
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    public class RouteData : NetData,IPublishData
+    public class RouteData
     {
         /// <summary>
         /// 开始时间

@@ -44,7 +44,12 @@ namespace ZeroNet.Http.Route
         /// </summary>
         [DataMember, JsonProperty]
         public double LastTime { get; set; }
-        
+
+        /// <summary>
+        /// 最后时间
+        /// </summary>
+        [DataMember, JsonProperty]
+        public DateTime LastCall { get; set; }
         /// <summary>
         /// 总次数
         /// </summary>
@@ -90,6 +95,7 @@ namespace ZeroNet.Http.Route
         /// <param name="data"></param>
         public void SetValue(double tm, RouteData data)
         {
+            LastCall = data.Start;
             Count += 1;
             LastTime = tm;
             TotalTime += tm;
@@ -112,7 +118,7 @@ namespace ZeroNet.Http.Route
                 TimeOut += 1;
             }
 
-            Label = $"{Id} Count:[{Count}] Deny:[{Deny}] Error:[{Error}] TotalTime:[{TotalTime:F2}] AvgTime:[{AvgTime:F2}] MaxTime:[{MaxTime:F2}] MinTime:[{MinTime:F2}]";
+            //Label = $"{Id} Count:[{Count}] Deny:[{Deny}] Error:[{Error}] TotalTime:[{TotalTime:F2}] AvgTime:[{AvgTime:F2}] MaxTime:[{MaxTime:F2}] MinTime:[{MinTime:F2}]";
         }
 
     }

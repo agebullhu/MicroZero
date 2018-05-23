@@ -5,7 +5,7 @@ using NetMQ.Sockets;
 
 namespace NetMQ.WebSockets
 {
-    abstract class BaseShimHandler : IShimHandler
+    internal abstract class BaseShimHandler : IShimHandler
     {
         private int m_id;
 

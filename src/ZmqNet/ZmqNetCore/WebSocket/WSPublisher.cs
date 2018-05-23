@@ -4,7 +4,7 @@ namespace NetMQ.WebSockets
 {
     public class WSPublisher : WsSocket
     {
-        class PublisherShimHandler : BaseShimHandler
+        private class PublisherShimHandler : BaseShimHandler
         {
             //  List of all subscriptions mapped to corresponding pipes.
             private readonly Mtrie m_subscriptions;

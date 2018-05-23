@@ -13,6 +13,14 @@ namespace Agebull.ZeroNet.Core
     public abstract class ZeroStation
     {
         /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="type"></param>
+        protected ZeroStation(int type)
+        {
+            StationType = type;
+        }
+        /// <summary>
         /// 调度器
         /// </summary>
         public const int StationTypeDispatcher = 1;
@@ -36,7 +44,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 类型
         /// </summary>
-        public abstract int StationType { get; }
+        public int StationType { get; }
         /// <summary>
         /// 站点名称
         /// </summary>
@@ -54,12 +62,11 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 实例名称
         /// </summary>
-        public string RealName => _realName ?? (_realName =
-                                      $"{ZeroApplication.Config.ServiceName}-{ZeroApplication.Config.ServiceKey}-{StationName}-{Name}");
+        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName(StationName,Name));
         /// <summary>
         /// 实例名称
         /// </summary>
-        public byte[] Identity => ZeroApplication.Config.ToZeroIdentity(RealName);
+        public byte[] Identity => ZeroIdentityHelper.ToZeroIdentity(StationName, Name);
 
         /// <summary>
         /// 站点配置

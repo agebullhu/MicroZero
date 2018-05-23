@@ -16,9 +16,12 @@ namespace Agebull.ZeroNet.PubSub
     public abstract class SubStation : ZeroStation
     {
         /// <summary>
-        /// 类型
+        /// 构造
         /// </summary>
-        public override int StationType => StationTypePublish;
+        protected SubStation() : base(StationTypePublish)
+        {
+
+        }
         /// <summary>
         /// 订阅主题
         /// </summary>
@@ -227,7 +230,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 finally
                 {
-                    if(IsRealModel )
+                    if (IsRealModel)
                         Items.EndProcess();
                 }
             }

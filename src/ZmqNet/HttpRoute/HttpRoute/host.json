@@ -1,0 +1,8 @@
+﻿{
+  "zeroAddr": "47.97.173.25",
+  "monitorPort": 8001,
+  "managePort": 8000,
+  "stationName": "HttpRoute-1",
+  "serviceName": "HttpRoute",
+  "ServiceName": "HttpRoute-1"
+}

@@ -118,12 +118,14 @@ namespace Agebull.ZeroNet.Core
         #endregion
 
         #region Api调用
-
-        /// <inheritdoc />
         /// <summary>
-        ///     类型
+        /// 构造
         /// </summary>
-        public override int StationType => StationTypeApi;
+        public ApiStation() : base(StationTypeApi)
+        {
+
+        }
+
         /// <summary>
         /// 返回值说明
         /// </summary>

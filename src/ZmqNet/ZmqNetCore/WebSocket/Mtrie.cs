@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace NetMQ.WebSockets
 {
-    class Mtrie
+    internal class Mtrie
     {
         private HashSet<byte[]> m_pipes;
 
