@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
@@ -50,21 +51,6 @@ namespace Gboxt.Common.DataModel.ZeroNet
         /// </summary>
         private static StationState _state;
 
-        /// <summary>
-        /// 超时
-        /// </summary>
-        private static readonly TimeSpan TimeWaite = new TimeSpan(0, 0, 0, 3);
-
-        /// <summary>
-        /// 广播内容说明
-        /// </summary>
-        private static readonly byte[] Description = new byte[]
-        {
-            2,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.Argument,
-            ZeroFrameType.End
-        };//ZeroFrameType.SubTitle, 
         #endregion
 
         #region Task
@@ -92,25 +78,19 @@ namespace Gboxt.Common.DataModel.ZeroNet
                     Thread.Sleep(10);
                     continue;
                 }
-                string result;
-                bool success;
                 try
                 {
-                    _socket.SendMoreFrame(database);
-                    _socket.SendMoreFrame(Description);
-                    _socket.SendMoreFrame(ZeroApplication.Config.StationName);
-                    _socket.SendFrame(JsonConvert.SerializeObject(items));
-                    success = _socket.TryReceiveFrameString(TimeWaite, out result);
+                    if (!_socket.Publish(database, null, items))
+                    {
+                        LogRecorder.Error("实体事件发送失败");
+                        CreateSocket();
+                        continue;
+                    }
                 }
                 catch (Exception e)
                 {
-                    LogRecorder.Exception(e, "实体事件发送失败");
+                    LogRecorder.Error($"实体事件发送失败:\r\n{e}");
                     CreateSocket();
-                    continue;
-                }
-                if (!success || result != ZeroNetStatus.ZeroCommandOk)
-                {
-                    LogRecorder.Error("实体事件发送失败");
                     continue;
                 }
                 Items.EndProcess();

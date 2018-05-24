@@ -15,100 +15,28 @@ namespace agebull
 		/**
 		* \brief 处理请求
 		*/
-		void broadcasting_station::request(ZMQ_HANDLE socket, bool inner)
+		/**
+		* \brief 工作开始（发送到工作者）
+		*/
+		void broadcasting_station::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
 		{
-			vector<sharp_char> list;
-			zmq_state_ = recv(socket, list);
-			if (zmq_state_ != zmq_socket_state::Succeed)
+			if (list.size() < 5)
 			{
-				config_->log(state_str(zmq_state_));
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-			const sharp_char& caller = list[0];
-			if (list.size() <= 3)
-			{
-				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID);
-				return;
-			}
-			sharp_char& title = list[2];
-			sharp_char& description = list[3];
-			char* const buf = description.get_buffer();
-			const size_t list_size = list.size();
-			const auto frame_size = static_cast<size_t>(buf[0]);
-			if (frame_size >= description.size() || (frame_size + 4) != list_size)
-			{
-				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID);
-				return;
-			}
-			bool hase_plan = false;
-			for (size_t idx = 1; idx <= frame_size; idx++)
-			{
-				if (buf[idx] == ZERO_FRAME_PLAN)
-				{
-					hase_plan = true;
-					break;
-				}
-			}
-			if (!hase_plan)
-			{
-				send_request_status(socket, *caller, ZERO_STATUS_OK);
-				send_response(list, 2);
-				//cout << *caller << endl;
-				return;
-			}
-			plan_message message;
-			message.messages.push_back(title);
-			message.messages.push_back(description);
-			sharp_char plan, sub, arg, publisher, id;
-			for (size_t idx = 1; idx <= frame_size; idx++)
-			{
-				switch (buf[idx])
-				{
-				case ZERO_FRAME_PLAN:
-					plan = list[3 + idx];
-					break;
-				case ZERO_FRAME_PUBLISHER:
-					publisher = list[3 + idx];
-					break;
-				case ZERO_FRAME_SUBTITLE:
-					sub = list[3 + idx];
-					break;
-				case ZERO_FRAME_ARG:
-					arg = list[3 + idx];
-					break;
-				case ZERO_FRAME_REQUEST_ID:
-					id = list[3 + idx];
-					break;
-				}
-			}
-			int cnt = 0;
-			buf[++cnt] = ZERO_FRAME_PUBLISHER;
-			message.messages.push_back(publisher);
-			if (!id.empty())
-			{
-				buf[++cnt] = ZERO_FRAME_REQUEST_ID;
-				message.messages.push_back(id);
-			}
-			if (!sub.empty())
-			{
-				buf[++cnt] = ZERO_FRAME_SUBTITLE;
-				message.messages.push_back(sub);
-			}
-			if (!arg.empty())
-			{
-				buf[++cnt] = ZERO_FRAME_ARG;
-				message.messages.push_back(arg);
-			}
-			buf[0] = static_cast<char>(cnt);
-
-			message.read_plan(plan.get_buffer());
-			message.request_caller = caller;
-			message.messages_description = description;
-			plan_next(message, true);
-
-
-			send_request_status(socket, *caller, ZERO_STATUS_PLAN);
-
+#if _DEBUG_
+			const sharp_char description = list[2];
+			assert(description[2] == ZERO_FRAME_PUB_TITLE);
+			assert(description[3] == ZERO_FRAME_REQUEST_ID);
+#endif // _DEBUG_
+			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *global_id, *list[4]);
+			list[2] = list[3];
+			list[3] = description;
+			char* buf = *description;
+			for (size_t i = 2; i < description.size(); i++)
+				buf[i] = buf[i + 1];
+			send_response(list, 2);
 		}
 
 		/**
@@ -132,15 +60,19 @@ namespace agebull
 			sharp_char description;
 			description.alloc(6);
 			char* buf = description.get_buffer();
-			buf[0] = 2;
-			buf[1] = ZERO_FRAME_PUBLISHER;
-			buf[2] = ZERO_FRAME_ARG;
-			buf[3] = ZERO_FRAME_END;
+			buf[0] = 3;
+			buf[2] = ZERO_FRAME_PUBLISHER;
+			buf[3] = ZERO_FRAME_ARG;
+			buf[4] = ZERO_FRAME_GLOBAL_ID;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
+			const int64 id = station_warehouse::get_glogal_id();
+			sharp_char g(16);
+			sprintf(*g, "%llx", id);
+			datas.emplace_back(g);
 			return send_response(datas);
 		}
 		/**
@@ -154,17 +86,21 @@ namespace agebull
 			sharp_char description;
 			description.alloc(6);
 			char* buf = description.get_buffer();
-			buf[0] = 3;
-			buf[1] = ZERO_FRAME_PUBLISHER;
-			buf[2] = ZERO_FRAME_SUBTITLE;
-			buf[3] = ZERO_FRAME_ARG;
-			buf[4] = ZERO_FRAME_END;
+			buf[0] = 4;
+			buf[2] = ZERO_FRAME_PUBLISHER;
+			buf[3] = ZERO_FRAME_SUBTITLE;
+			buf[4] = ZERO_FRAME_ARG;
+			buf[5] = ZERO_FRAME_GLOBAL_ID;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
-			datas.push_back(description);
+			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(sub.c_str());
 			datas.emplace_back(arg.c_str());
+			const int64 id = station_warehouse::get_glogal_id();
+			sharp_char g(16);
+			sprintf(*g, "%llx", id);
+			datas.emplace_back(g);
 
 			return send_response(datas);
 		}
@@ -177,22 +113,34 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
 				return false;
+			const int64 id = station_warehouse::get_glogal_id();
+			sharp_char g(16);
+			sprintf(*g, "%llx", id);
+
 			plan_message message;
-			message.request_caller = publiher;
+			message.request_caller = publiher.c_str();
+			message.request_id = g;
+			message.plan_id = id;
 			vector<sharp_char> datas;
-			vector<string> argument;
-			message.messages_description.alloc(6);
+			message.messages_description.alloc(8);
 			char* buf = message.messages_description.get_buffer();
-			buf[0] = 3;
-			buf[1] = ZERO_FRAME_PUBLISHER;
-			buf[2] = ZERO_FRAME_SUBTITLE;
-			buf[3] = ZERO_FRAME_ARG;
-			buf[4] = ZERO_FRAME_END;
+			buf[0] = 5;
+			buf[2] = ZERO_FRAME_PUB_TITLE;
+			buf[3] = ZERO_FRAME_REQUEST_ID;
+			buf[4] = ZERO_FRAME_PLAN;
+			buf[5] = ZERO_FRAME_SUBTITLE;
+			buf[6] = ZERO_FRAME_ARG;
+			buf[7] = ZERO_FRAME_PUBLISHER;
+			buf[8] = ZERO_FRAME_GLOBAL_ID;
+			message.messages.emplace_back(message.messages_description);
 			message.messages.emplace_back(title.c_str());
-			datas.emplace_back(message.messages_description);
-			datas.emplace_back(publiher.c_str());
-			datas.emplace_back(sub.c_str());
-			datas.emplace_back(arg.c_str());
+			message.messages.emplace_back(g);
+			message.messages.emplace_back(plan.c_str());
+			message.messages.emplace_back(sub.c_str());
+			message.messages.emplace_back(arg.c_str());
+			message.messages.emplace_back(publiher.c_str());
+			message.messages.emplace_back(g);
+
 
 			message.read_plan(plan.c_str());
 

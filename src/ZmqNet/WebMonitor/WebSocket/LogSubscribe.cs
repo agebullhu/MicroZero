@@ -51,75 +51,80 @@ namespace Agebull.ZeroNet.LogService
                     code.AppendLine($"<tr style='border-bottom: silver 1px solid;padding: 4px'><td>标识</td><td>{info.RequestID}</td><td>时间</td><td>{DateTime.Now}({info.Time})</td></tr>");
                     code.AppendLine($"<tr style='border-bottom: silver 1px solid;padding: 4px'><td>机器</td><td>{info.Machine}</td><td>用户</td><td>{info.User}</td></tr>");
                     code.AppendLine("</table>");
-                    var lines = info.Message.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (lines.Length > 0)
+                    switch (info.Type)
                     {
-                        code.AppendLine("<table><tr style='border-bottom: silver 1px solid;padding: 4px'>");
-                        var line = lines[0];
-                        var words = line.Split(new char[] { '|', '│' },5);
-                        for (var index = 0; index < words.Length && index < 4; index++)
-                        {
-                            var word = words[index];
-                            code.AppendLine($"<td>{word.Trim()}</td>");
-                        }
-
-                        for (var index = 1; index < lines.Length; index++)
-                        {
-                            line = lines[index].Substring(1);//.TrimStart(new char[] { '|', '│', '┌', '└', '├' });
-                            words = line.Split(new char[] { '|', '│' });
-                            code.AppendLine("<tr style='border-bottom: silver 1px solid;padding: 4px'>");
-                            var word = words[0];
-                            code.Append("<td");
-                            if (words.Length == 1)
-                            {
-                                code.AppendLine(" colspan='4'>");
-                            }
-                            else
-                            {
-                                code.Append('>');
-                            }
-                            foreach (var ch in word)
-                            {
-                                switch (ch)
-                                {
-                                    default:
-                                        code.Append(ch);
-                                        break;
-                                    case '┌':
-                                    case '│':
-                                    case '└':
-                                    case '├':
-                                    case '┴':
-                                    case '─':
-                                        code.Append("　");
-                                        break;
-                                }
-                            }
-                            code.AppendLine("</td>");
-                            for (var i = 1; i < words.Length; i++)
-                            {
-                                word = words[i];
-                                code.AppendLine($"<td>{word.Trim()}</td>");
-                            }
-
-                            code.AppendLine("</tr>");
-                        }
-
-                        code.AppendLine("</table>");
+                        case LogType.Monitor:
+                            FormatMonitor(code, info);
+                            break;
+                        default:
+                            code.Append($"<div>{info.Message.Replace("\n", "<br/>")}</div>");
+                            break;
                     }
-                    //var lines = info.Message.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                    //foreach (var line in lines)
-                    //{
-                    //    code.Append(line.Replace(' ', '　'));
-                    //    code.AppendLine("</td></tr>");
-                    //}
-                    WebSocketPooler.Instance?.Publish(info.Type.ToString(), code.ToString());
+                    WebSocketPooler.Instance?.Publish("Log", code.ToString());
                 }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
             }
+        }
+
+        void FormatMonitor(StringBuilder code,RecordInfo info)
+        {
+            var lines = info.Message.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            if (lines.Length <= 0) return;
+            code.AppendLine("<table><tr style='border-bottom: silver 1px solid;padding: 4px'>");
+            var line = lines[0];
+            var words = line.Split(new char[] { '|', '│' }, 5);
+            for (var index = 0; index < words.Length && index < 4; index++)
+            {
+                var word = words[index];
+                code.AppendLine($"<td>{word.Trim()}</td>");
+            }
+
+            for (var index = 1; index < lines.Length; index++)
+            {
+                line = lines[index].Substring(1);//.TrimStart(new char[] { '|', '│', '┌', '└', '├' });
+                words = line.Split(new char[] { '|', '│' });
+                code.AppendLine("<tr style='border-bottom: silver 1px solid;padding: 4px'>");
+                var word = words[0];
+                code.Append("<td");
+                if (words.Length == 1)
+                {
+                    code.AppendLine(" colspan='4'>");
+                }
+                else
+                {
+                    code.Append('>');
+                }
+                foreach (var ch in word)
+                {
+                    switch (ch)
+                    {
+                        default:
+                            code.Append(ch);
+                            break;
+                        case '┌':
+                        case '│':
+                        case '└':
+                        case '├':
+                        case '┴':
+                        case '─':
+                            code.Append("　");
+                            break;
+                    }
+                }
+                code.AppendLine("</td>");
+                for (var i = 1; i < words.Length; i++)
+                {
+                    word = words[i];
+                    code.AppendLine($"<td>{word.Trim()}</td>");
+                }
+
+                code.AppendLine("</tr>");
+            }
+
+            code.AppendLine("</table>");
         }
     }
 }

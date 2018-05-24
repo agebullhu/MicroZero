@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.Log;
@@ -12,6 +11,7 @@ namespace ApiTest
             StationConsole.WriteLine("Hello ZeroNet");
             ZeroApplication.Initialize();
             LogRecorder.Initialize(new RemoteRecorder());
+            LogRecorder.LogMonitor = true;
             ZeroApplication.Discove();
             ZeroApplication.RunAwaite();
             LogRecorder.Shutdown();

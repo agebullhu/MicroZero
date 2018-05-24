@@ -11,7 +11,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 锁对象
         /// </summary>
-        public static object lock_obj = new object();
+        private static readonly object LockObj = new object();
 
         /// <summary>
         /// 
@@ -21,7 +21,7 @@ namespace Agebull.ZeroNet.Core
         {
             Task.Factory.StartNew(() =>
             {
-                lock (lock_obj)
+                lock (LockObj)
                 {
                     //Console.CursorLeft = 0;
                     Console.WriteLine(message);
@@ -37,7 +37,7 @@ namespace Agebull.ZeroNet.Core
         {
             Task.Factory.StartNew(() =>
             {
-                lock (lock_obj)
+                lock (LockObj)
                 {
                     //Console.CursorLeft = 0;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -55,7 +55,7 @@ namespace Agebull.ZeroNet.Core
         {
             Task.Factory.StartNew(() =>
             {
-                lock (lock_obj)
+                lock (LockObj)
                 {
                     //Console.CursorLeft = 0;
                     Console.ForegroundColor = ConsoleColor.DarkGreen;

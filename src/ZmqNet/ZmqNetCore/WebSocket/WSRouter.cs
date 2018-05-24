@@ -2,52 +2,64 @@ using System;
 
 namespace NetMQ.WebSockets
 {
-    public class WSRouter : WsSocket
+    /// <summary>
+    /// WebSocket路由
+    /// </summary>
+    public class WsRouter : WsSocket
     {
-        public WSRouter()
+        /// <summary>
+        /// 构造
+        /// </summary>
+        public WsRouter()
             : base(id => new RouterShimHandler(id))
         {
         }
-    }
 
-    internal class RouterShimHandler : BaseShimHandler
-    {
-        public RouterShimHandler(int id)
-            : base(id)
+        /// <summary>
+        /// 路由垫片
+        /// </summary>
+        private class RouterShimHandler : BaseShimHandler
         {
-        }
-
-        protected override void OnOutgoingMessage(NetMQMessage message)
-        {
-            byte[] identity = message.Pop().ToByteArray();
-
-            //  Each frame is a full ZMQ message with identity frame
-            while (message.FrameCount > 0)
+            /// <summary>
+            /// 构造
+            /// </summary>
+            public RouterShimHandler(int id)
+                : base(id)
             {
-                var data = message.Pop().ToByteArray(false);
-                bool more = message.FrameCount > 0;
-
-                WriteOutgoing(identity, data, more);
             }
-        }
 
-        protected override void OnIncomingMessage(byte[] identity, NetMQMessage message)
-        {
-            message.Push(identity);
+            protected override void OnOutgoingMessage(NetMQMessage message)
+            {
+                byte[] identity = message.Pop().ToByteArray();
 
-            WriteIngoing(message);
-        }
+                //  Each frame is a full ZMQ message with identity frame
+                while (message.FrameCount > 0)
+                {
+                    var data = message.Pop().ToByteArray(false);
+                    bool more = message.FrameCount > 0;
 
-        protected override void OnNewClient(byte[] identity)
-        {
-            var name = BitConverter.ToString(identity);
-            Console.WriteLine($"{name} is join");
-        }
+                    WriteOutgoing(identity, data, more);
+                }
+            }
 
-        protected override void OnClientRemoved(byte[] identity)
-        {
-            var name = BitConverter.ToString(identity);
-            Console.WriteLine($"{name} is left");
+            protected override void OnIncomingMessage(byte[] identity, NetMQMessage message)
+            {
+                message.Push(identity);
+
+                WriteIngoing(message);
+            }
+
+            protected override void OnNewClient(byte[] identity)
+            {
+                var name = BitConverter.ToString(identity);
+                Console.WriteLine($"{name} is join");
+            }
+
+            protected override void OnClientRemoved(byte[] identity)
+            {
+                var name = BitConverter.ToString(identity);
+                Console.WriteLine($"{name} is left");
+            }
         }
     }
 

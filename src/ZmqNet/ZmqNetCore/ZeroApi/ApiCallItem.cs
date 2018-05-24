@@ -1,10 +1,18 @@
-﻿namespace Agebull.ZeroNet.Core
+﻿using Newtonsoft.Json;
+
+namespace Agebull.ZeroNet.Core
 {
     /// <summary>
     /// Api调用节点
     /// </summary>
     public class ApiCallItem
     {
+        /// <summary>
+        /// 全局ID
+        /// </summary>
+        [JsonProperty]
+        public long GlobalId { get; set; }
+
         /// <summary>
         /// 请求者
         /// </summary>

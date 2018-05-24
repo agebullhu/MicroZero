@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using Newtonsoft.Json;
+using ErrorCode = NetMQ.ErrorCode;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -15,14 +17,24 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 请求格式说明
         /// </summary>
-        private static readonly byte[] Description = new byte[]
+        private static readonly byte[] CallDescription = new byte[]
         {
             5,
+            ZeroByteCommand.General,
             ZeroFrameType.Command,
             ZeroFrameType.Requester,
             ZeroFrameType.RequestId,
             ZeroFrameType.Context,
             ZeroFrameType.Argument,
+            ZeroFrameType.End
+        };
+        /// <summary>
+        /// 请求格式说明
+        /// </summary>
+        private static readonly byte[] WaitingDescription = new byte[]
+        {
+            0,
+            ZeroByteCommand.Waiting,
             ZeroFrameType.End
         };
         /// <summary>
@@ -75,147 +87,87 @@ namespace Agebull.ZeroNet.Core
             {
                 return ZeroNetStatus.NoReadyJson;
             }
-            List<byte[]> result;
+
             try
             {
-                if (!Send(socket, out var message,
-                     commmand,
-                     ZeroApplication.Config.StationName,
-                     ApiContext.RequestContext.RequestId,
-                     JsonConvert.SerializeObject(ApiContext.Current),
-                    argument))
+                var result = socket.Send(CallDescription,
+                    commmand,
+                    ZeroApplication.Config.StationName,
+                    ApiContext.RequestContext.RequestId,
+                    JsonConvert.SerializeObject(ApiContext.Current),
+                    argument);
+                if (!result.InteractiveSuccess)
                 {
                     config.Close(socket);
                     socket = null;
-                    return message;
+                    return JsonConvert.SerializeObject(ApiResult.Error(Agebull.ZeroNet.ZeroApi.ErrorCode.NetworkError, result.State.Text()));
                 }
 
-                if (!Receive(socket, out message, out result))
+                result = socket.ReceiveString();
+                if (!result.InteractiveSuccess)
                 {
                     config.Close(socket);
                     socket = null;
-                    return message;
+                    return JsonConvert.SerializeObject(ApiResult.Error(Agebull.ZeroNet.ZeroApi.ErrorCode.NetworkError, result.State.Text()));
+                }
+
+                if(result.TryGetValue(ZeroFrameType.GlobalId, out var gid))
+                    LogRecorder.MonitorTrace($"GlobalId:{long.Parse(gid,NumberStyles.HexNumber)}");
+                if (result.State == ZeroStateType.VoteWaiting)
+                {
+                    result = socket.Send(WaitingDescription);
+                    if (!result.InteractiveSuccess)
+                    {
+                        config.Close(socket);
+                        socket = null;
+                        return JsonConvert.SerializeObject(ApiResult.Error(Agebull.ZeroNet.ZeroApi.ErrorCode.NetworkError, result.State.Text()));
+                    }
+                    result = socket.ReceiveString();
+                    if (!result.InteractiveSuccess)
+                    {
+                        config.Close(socket);
+                        socket = null;
+                        var apiResult = ApiResult.Error(Agebull.ZeroNet.ZeroApi.ErrorCode.NetworkError, result.State.Text());
+                        apiResult.Status.InnerMessage = gid;
+                        return JsonConvert.SerializeObject(apiResult);
+                    }
+                }
+                switch (result.State)
+                {
+                    case ZeroStateType.Plan:
+                    case ZeroStateType.VoteRuning:
+                    case ZeroStateType.VoteBye:
+                    case ZeroStateType.VoteWecome:
+                    case ZeroStateType.VoteSend:
+                    case ZeroStateType.VoteWaiting:
+                    case ZeroStateType.VoteStart:
+                    case ZeroStateType.VoteEnd:
+                        return ZeroNetStatus.SucceesJson;
+                    case ZeroStateType.Error:
+                        return ZeroNetStatus.InnerErrorJson;
+                    case ZeroStateType.NoSupport:
+                    case ZeroStateType.NoFind:
+                    case ZeroStateType.NoWorker:
+                        return ZeroNetStatus.NoFindJson;
+                    case ZeroStateType.Invalid:
+                        return ZeroNetStatus.ArgumentErrorJson;
+                    case ZeroStateType.TimeOut:
+                        return ZeroNetStatus.TimeOutJson;
+                    case ZeroStateType.NetError:
+                        return ZeroNetStatus.NetworkErrorJson;
+                    case ZeroStateType.Failed:
+                        return ZeroNetStatus.UnknowErrorJson;
+                    default:
+                        return ZeroNetStatus.UnknowErrorJson;
+                    case ZeroStateType.Ok:
+                        return result.TryGetValue(ZeroFrameType.JsonValue, out var json) ? json : ZeroNetStatus.SucceesJson;
                 }
             }
             finally
             {
                 config.Free(socket);
             }
-            if (result.Count == 0)
-                return ZeroNetStatus.TimeOutJson;
-            int size = result[0][0];
-            string value = null;
-            for (int i = 1; i <= size && i < result[0].Length; i++)
-            {
-                switch (result[0][i])
-                {
-                    case ZeroFrameType.JsonValue:
-                        value = SendReceiveConstants.DefaultEncoding.GetString(result[i]);
-                        break;
-                    case ZeroFrameType.Status:
-                        if (result[i][0] == ZeroNetStatus.ZeroStatusSuccess)
-                        {
-                            value = ZeroNetStatus.SucceesJson;
-                            break;
-                        }
-                        switch (SendReceiveConstants.DefaultEncoding.GetString(result[i]))
-                        {
-                            case ZeroNetStatus.ZeroCommandInvalid:
-                                value = ZeroNetStatus.ArgumentErrorJson;
-                                break;
-                            case ZeroNetStatus.ZeroCommandNotWorker:
-                                value = ZeroNetStatus.NoFindJson;
-                                break;
-                            default:
-                                value = ZeroNetStatus.InnerErrorJson;
-                                break;
-                        }
-                        break;
-                    case ZeroFrameType.End:
-                        return value ?? ZeroNetStatus.SucceesJson;
-                }
-            }
-            return value;
-        }
-
-        private static bool Send(NetMQSocket socket, out string result, params string[] values)
-        {
-            TimeSpan timeout = new TimeSpan(0, 0, 0, 1);
-            try
-            {
-                bool success = socket.TrySendFrame(timeout, Description, true);
-                if (!success)
-                {
-                    result = ZeroNetStatus.TimeOutJson;
-                    return false;
-                }
-
-                int last = values.Length - 1;
-                for (var index = 0; index <= last; index++)
-                {
-                    var value = values[index];
-                    success = socket.TrySendFrame(timeout, value, index != last);
-                    if (!success)
-                    {
-                        result = ZeroNetStatus.TimeOutJson;
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-
-                LogRecorder.Exception(ex);
-                result = ZeroNetStatus.NetworkErrorJson;
-                return false;
-            }
-            result = null;
-            return true;
-        }
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="datas"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        private static bool Receive(NetMQSocket request, out string message, out List<byte[]> datas)
-        {
-            datas = new List<byte[]>();
-
-            var timout = new TimeSpan(0, 0, 3);
-            try
-            {
-                var more = true;
-                var cnt = 0;
-                //收完消息
-                while (more)
-                {
-                    Msg msg = new Msg();
-                    msg.InitDelimiter();
-                    if (!request.TryReceiveFrameBytes(timout, out var bytes, out more))
-                    {
-                        if (++cnt >= 3)
-                        {
-                            message = ZeroNetStatus.TimeOutJson;
-                            return false;
-                        }
-                        more = true;
-                    }
-                    else
-                    {
-                        datas.Add(bytes);
-                    }
-                }
-                message = null;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                LogRecorder.Exception(ex);
-                message = ZeroNetStatus.UnknowErrorJson;
-                return false;
-            }
+            
         }
     }
 }

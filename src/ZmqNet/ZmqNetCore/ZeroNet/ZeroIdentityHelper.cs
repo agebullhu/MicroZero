@@ -40,11 +40,16 @@ namespace Agebull.ZeroNet.Core
             sb.Append('+');//IsLocalhost ? "-" : "+"
             sb.Append(ZeroApplication.Config.ServiceName);
             sb.Append("-");
-            sb.Append(ZeroApplication.Config.ServiceKey);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.StationName);
+            sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);
+            if (ZeroApplication.Config.ServiceKey != "*")
+            {
+                sb.Append("-");
+                sb.Append(ZeroApplication.Config.ServiceKey);
+            }
             foreach (var range in ranges)
             {
+                if (range == null)
+                    continue;
                 sb.Append("-");
                 sb.Append(range);
             }

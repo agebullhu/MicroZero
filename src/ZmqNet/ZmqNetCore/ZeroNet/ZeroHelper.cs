@@ -1,50 +1,26 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using NetMQ;
 using NetMQ.Sockets;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// Zmq帮助类
+    ///     Zmq帮助类
     /// </summary>
     public static class ZeroHelper
     {
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Send(this RequestSocket socket, PublishItem item)
-        {
-            byte[] description = new byte[5];
-            description[0] = 3;
-            description[1] = ZeroFrameType.Publisher;
-            description[2] = ZeroFrameType.SubTitle;
-            description[3] = ZeroFrameType.Argument;
-            description[4] = ZeroFrameType.End;
-            lock (socket)
-            {
-                socket.SendMoreFrame(item.Title);
-                socket.SendMoreFrame(description);
-                socket.SendMoreFrame(ZeroApplication.Config.StationName);
-                socket.SendMoreFrame(item.SubTitle);
-                socket.SendFrame(item.Content);
-                var word = socket.ReceiveFrameString();
-                return word == ZeroNetStatus.ZeroCommandOk;
-            }
-        }
+        #region 关闭支持
 
         /// <summary>
         ///     关闭套接字
         /// </summary>
         public static void CloseSocket(this NetMQSocket socket, string address)
         {
-            if (socket == null)
+            if (socket == null || address == null)
                 return;
             try
             {
@@ -54,199 +30,359 @@ namespace Agebull.ZeroNet.Core
             {
                 LogRecorder.Exception(e); //一般是无法连接服务器而出错
             }
+
             socket.Close();
             socket.Dispose();
         }
 
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="datas"></param>
-        /// <param name="tryCnt"></param>
-        /// <returns></returns>
-        public static bool ReceiveState(this NetMQSocket request, out List<string> datas, int tryCnt = 3)
-        {
-            datas = new List<string>();
+        #endregion
 
-            var more = true;
-            var cnt = 0;
+        #region 调用支持
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="desicription"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static ZeroResultData<string> Send(this NetMQSocket socket, byte[] desicription, params string[] args)
+        {
             var ts = new TimeSpan(0, 0, 3);
-            //收完消息
-            while (more)
+            try
             {
-                if (!request.TryReceiveFrameString(ts, out var data, out more))
+                if (args != null && args.Length > 0)
                 {
-                    if (++cnt >= tryCnt)
-                        return false;
-                    more = true;
-                }
-                datas.Add(data);
-            }
-            return true;
-        }
-
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="datas"></param>
-        /// <param name="tryCnt"></param>
-        /// <returns></returns>
-        public static bool ReceiveString(this NetMQSocket request, out List<string> datas, int tryCnt = 3)
-        {
-            datas = new List<string>();
-
-            var more = true;
-            var cnt = 0;
-            var ts = new TimeSpan(0, 0, 3);
-            //收完消息
-            while (more)
-            {
-                if (!request.TryReceiveFrameString(ts, out var data, out more))
-                {
-                    if (++cnt >= tryCnt)
-                        return false;
-                    more = true;
-                }
-                datas.Add(data);
-            }
-            return true;
-        }
-
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="datas"></param>
-        /// <param name="tryCnt"></param>
-        /// <returns></returns>
-        public static bool Receive(this NetMQSocket request, out List<byte[]> datas, int tryCnt = 3)
-        {
-            datas = new List<byte[]>();
-
-            var more = true;
-            var cnt = 0;
-            var ts = new TimeSpan(0, 0, 30);
-            //收完消息
-            while (more)
-            {
-                Msg msg = new Msg();
-                msg.InitDelimiter();
-                if (!request.TryReceiveFrameBytes(ts, out var bytes, out more))
-                {
-                    if (++cnt >= tryCnt)
-                        return false;
-                    more = true;
+                    if (!socket.TrySendFrame(ts, desicription, true))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
+                    var i = 0;
+                    for (; i < args.Length - 1; i++)
+                    {
+                        if (!socket.TrySendFrame(ts, args[i], true))
+                        {
+                            return new ZeroResultData<string>
+                            {
+                                State = ZeroStateType.LocalRecvError
+                            };
+                        }
+                    }
+                    if (!socket.TrySendFrame(ts, args[i]))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
                 }
                 else
                 {
-                    datas.Add(bytes);
+                    if (!socket.TrySendFrame(ts, desicription))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
                 }
             }
-            return true;
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                return new ZeroResultData<string>
+                {
+                    State = ZeroStateType.Exception,
+                    Exception = e
+                };
+            }
+
+            return new ZeroResultData<string>
+            {
+                State = ZeroStateType.Ok,
+                InteractiveSuccess = true
+            };
         }
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="desicription"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static ZeroResultData<string> Call(this NetMQSocket socket, byte[] desicription, params string[] args)
+        {
+            var ts = new TimeSpan(0, 0, 3);
+            try
+            {
+                if (args != null && args.Length > 0)
+                {
+                    if (!socket.TrySendFrame(ts, desicription, true))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
+                    var i = 0;
+                    for (; i < args.Length - 1; i++)
+                    {
+                        if (!socket.TrySendFrame(ts, args[i], true))
+                        {
+                            return new ZeroResultData<string>
+                            {
+                                State = ZeroStateType.LocalRecvError
+                            };
+                        }
+                    }
+                    if (!socket.TrySendFrame(ts, args[i]))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
+                }
+                else
+                {
+                    if (!socket.TrySendFrame(ts, desicription))
+                    {
+                        return new ZeroResultData<string>
+                        {
+                            State = ZeroStateType.LocalRecvError
+                        };
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                return new ZeroResultData<string>
+                {
+                    State = ZeroStateType.Exception,
+                    Exception = e
+                };
+            }
+
+            return socket.ReceiveString();
+        }
+
+        #endregion
+
+        #region 广播支持
+
+        /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        public static readonly byte[] PubDescription =
+        {
+            5,
+            ZeroByteCommand.General,
+            ZeroFrameType.PubTitle,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.SubTitle,
+            ZeroFrameType.Argument,
+            ZeroFrameType.End
+        };
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish<T>(this NetMQSocket socket, T content)
+            where T : class, IPublishData
+        {
+            return Publish(socket, content.Title, null, JsonConvert.SerializeObject(content));
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish<T>(this NetMQSocket socket, string title, string subTitle, T content)
+            where T : class
+        {
+            return Publish(socket, title, subTitle, JsonConvert.SerializeObject(content));
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish<T>(this NetMQSocket socket, string title, T content) where T : class
+        {
+            return Publish(socket, title, null, JsonConvert.SerializeObject(content));
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish(this NetMQSocket socket, PublishItem item)
+        {
+            return Publish(socket, item.Title, item.SubTitle, item.Content);
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish(this NetMQSocket socket, string title, string subTitle, string content)
+        {
+            var ts = new TimeSpan(0, 0, 3);
+            lock (socket)
+            {
+                if (!socket.TrySendFrame(ts, PubDescription, true))
+                    return false;
+                if (!socket.TrySendFrame(ts, title ?? "", true))
+                    return false;
+                if (!socket.TrySendFrame(ts, ApiContext.RequestContext.RequestId, true))
+                    return false;
+                if (!socket.TrySendFrame(ts, ZeroApplication.Config.RealName, true))
+                    return false;
+                if (!socket.TrySendFrame(ts, subTitle ?? "", true))
+                    return false;
+                if (!socket.TrySendFrame(ts, content ?? ""))
+                    return false;
+                var result = socket.ReceiveString();
+                return result.InteractiveSuccess && result.State == ZeroStateType.Ok;
+            }
+        }
+
+        #endregion
+
+        #region 接收支持
+
         /// <summary>
         ///     接收文本
         /// </summary>
         /// <param name="request"></param>
         /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static string ReceiveString(NetMQSocket request, int tryCnt = 3)
+        public static ZeroResultData<string> ReceiveString(this NetMQSocket request, int tryCnt = 3)
         {
-            return ReceiveString(request, out var datas, tryCnt) ? datas.FirstOrDefault() : null;
+            var result = new ZeroResultData<string>();
+
+            var ts = new TimeSpan(0, 0, 3);
+            try
+            {
+                byte[] bytes = { 0 };
+                var more = false;
+                for (var idx = 0; idx <= tryCnt; idx++)
+                {
+                    if (idx == tryCnt)
+                    {
+                        result.State = ZeroStateType.LocalRecvError;
+                        return result;
+                    }
+
+                    if (request.TryReceiveFrameBytes(ts, out bytes, out more) && bytes.Length >0) break;
+                }
+
+                result.State = (ZeroStateType)bytes[1];
+                var sub = 2;
+                //收完消息
+                while (more)
+                {
+                    if (!request.TryReceiveFrameString(ts, out var data, out more)) return result;
+
+                    if (sub >= bytes.Length)
+                    {
+                        if (more)
+                            request.TrySkipMultipartMessage();
+                        result.State = ZeroStateType.LocalRecvError;
+                        return result;
+                    }
+
+                    result.Add(sub < bytes.Length ? bytes[sub++] : ZeroFrameType.BinaryValue, data);
+                }
+
+                result.InteractiveSuccess = true;
+                return result;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                result.Exception = e;
+                result.State = ZeroStateType.Exception;
+                return result;
+            }
         }
 
         /// <summary>
         ///     接收文本
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="args"></param>
+        /// <param name="tryCnt"></param>
         /// <returns></returns>
-        public static bool SendString(this NetMQSocket request, params string[] args)
+        public static ZeroResultData<byte[]> Receive(this NetMQSocket request, int tryCnt = 3)
         {
-            if (args.Length == 0)
-                throw new ArgumentException("args 不能为空");
-            return SendStringInner(request, args);
-        }
-
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        private static bool SendStringInner(NetMQSocket request, params string[] args)
-        {
-            var i = 0;
-            for (; i < args.Length - 1; i++)
-                request.SendFrame(args[i] ?? "", true);
-            return request.TrySendFrame(args[i] ?? "");
-        }
-        /// <summary>
-        ///     发送文本
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static string Request(this NetMQSocket request, params string[] args)
-        {
-            if (args.Length == 0)
-                throw new ArgumentException("args 不能为空");
-            if (!SendString(request, args))
-                throw new Exception("发送失败");
-            return ReceiveString(request);
-        }
-
-
-        /// <summary>
-        ///     发起一次请求
-        /// </summary>
-        /// <param name="address">请求地址</param>
-        /// <param name="args">请求参数</param>
-        /// <returns></returns>
-        internal static string RequestNet(this string address, params string[] args)
-        {
-            if (args.Length == 0)
-                throw new ArgumentException("args 不能为空");
-            using (var request = new RequestSocket())
+            var result = new ZeroResultData<byte[]>();
+            var ts = new TimeSpan(0, 0, 3);
+            try
             {
-                request.Options.Identity = ZeroApplication.Config.Identity;
-                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0,0, 200);
-                request.Connect(address);
+                byte[] bytes = { 0 };
+                var more = false;
+                for (var idx = 0; idx <= tryCnt; idx++)
+                {
+                    if (idx <= tryCnt)
+                    {
+                        result.State = ZeroStateType.LocalRecvError;
+                        return result;
+                    }
 
-                if (!SendStringInner(request, args))
-                    throw new Exception($"{address}:发送失败");
-                ReceiveString(request, out var datas, 1);
-                request.Disconnect(address);
-                return datas.Count < 2 ? null : datas[1];
+                    if (request.TryReceiveFrameBytes(ts, out bytes, out more)) break;
+                }
+
+                result.State = (ZeroStateType)bytes[1];
+                var sub = 2;
+                //收完消息
+                while (more)
+                {
+                    if (!request.TryReceiveFrameBytes(ts, out var data, out more)) return result;
+
+                    if (sub >= bytes.Length)
+                    {
+                        if (more)
+                            request.TrySkipMultipartMessage();
+                        result.State = ZeroStateType.LocalRecvError;
+                        return result;
+                    }
+
+                    result.Add(sub < bytes.Length ? bytes[sub++] : ZeroFrameType.BinaryValue, data);
+                }
+
+                result.InteractiveSuccess = true;
+                return result;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                result.Exception = e;
+                result.State = ZeroStateType.Exception;
+                return result;
             }
         }
 
-        /// <summary>
-        ///     发起一次请求
-        /// </summary>
-        /// <param name="address">请求地址</param>
-        /// <param name="args">请求参数</param>
-        /// <returns>返回的所有数据</returns>
-        public static List<string> MulitRequestNet(this string address, params string[] args)
-        {
-            if (args.Length == 0)
-                throw new ArgumentException("args 不能为空");
-            using (var request = new RequestSocket())
-            {
-                request.Options.Identity = ZeroApplication.Config.Identity;
-                request.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-                request.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-                request.Options.DisableTimeWait = true;
-                request.Connect(address);
-
-                if (!SendStringInner(request, args))
-                    throw new Exception($"{address}:发送失败");
-                ReceiveString(request, out var datas, 1);
-                request.Disconnect(address);
-                return datas;
-            }
-        }
+        #endregion
     }
 }

@@ -5,7 +5,6 @@
     ViewData["Title"] = "实时警告";
 }
 @section Styles{
-
     <style>
         .el-header {
             background-color: #B3C0D1;
@@ -22,20 +21,7 @@
     <script src="/js/JSMQ.js"></script>
     <script>
     var data = {
-        hosts: [@(Html.Raw(JsonConvert.SerializeObject(HealthSubscribe.Root)))],
-        //host: {
-        //    id:"0",
-        //    label:"select a node",
-        //    MaxTime:0,
-        //    MinTime:0,
-        //    TotalTime: 0,
-        //    AvgTime: 0,
-        //    LastTime: 0,
-        //    Count: 0,
-        //    TimeOut: 0,
-        //    Error: 0,
-        //    Deny: 0
-        //}
+        hosts: [@(Html.Raw(JsonConvert.SerializeObject(HealthSubscribe.Root)))]
         };
     data.host = data.hosts[0];
     var vm = new Vue({
@@ -75,12 +61,14 @@
             's+': date.getSeconds()
         };
         for (var k in o) {
-            if (new RegExp(`(${k})`).test(fmt)) {
-                var str = o[k] + '';
-                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+                if (o.hasOwnProperty(k)) {
+                    if (new RegExp(`(${k})`).test(fmt)) {
+                        var str = o[k] + '';
+                        fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+                    }
+                }
             }
-        }
-        return fmt;
+            return fmt;
         }
     function padLeftZero(str) {
         return ('00' + str).substr(str.length);

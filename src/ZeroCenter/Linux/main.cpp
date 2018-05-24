@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
 	if (!agebull::zmq_net::rpc_service::initialize())
 		return 0;
-	//agebull::zmq_net::station_warehouse::clear();
+	agebull::zmq_net::station_warehouse::clear();
 	agebull::zmq_net::rpc_service::start();
 	signal(SIGINT, agebull::zmq_net::on_sig);
 #ifdef _DEBUG

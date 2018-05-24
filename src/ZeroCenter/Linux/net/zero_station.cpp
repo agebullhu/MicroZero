@@ -223,6 +223,8 @@ namespace agebull
 			config_->log("net pool end");
 			return state < zmq_socket_state::Term && state > zmq_socket_state::Empty;
 		}
+
+
 		/**
 		* \brief 暂停
 		*/
@@ -267,6 +269,55 @@ namespace agebull
 		}
 
 		/**
+		* \brief 工作进入计划
+		*/
+		void zero_station::job_plan(ZMQ_HANDLE socket, const int64 id, sharp_char& global_id, vector<sharp_char>& list)
+		{
+			sharp_char& description = list[2];
+			char* const buf = description.get_buffer();
+			const auto frame_size = description.size();
+			buf[1] = ZERO_STATE_CODE_PLAN;
+			size_t plan = 0, rqid = 0;
+			for (size_t idx = 2; idx <= frame_size; idx++)
+			{
+				switch (buf[idx])
+				{
+				case ZERO_FRAME_PLAN:
+					plan = idx + 1;
+					break;
+				case ZERO_FRAME_REQUEST_ID:
+					rqid = idx + 1;
+					break;
+				}
+			}
+			if (plan == 0)
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid == 0 ? nullptr : *list[rqid], "plan frame no find");
+				return;
+			}
+			plan_message message;
+			message.read_plan(list[plan].get_buffer());
+			message.plan_id = id;
+			if (rqid != 0)
+				message.request_id = list[rqid];
+			message.request_caller = list[0];
+			message.messages_description = description;
+			message.messages = list;
+			plan_next(message, true);
+			send_request_status(socket, *list[0], ZERO_STATUS_PLAN_ID, *global_id, rqid == 0 ? nullptr : *list[rqid]);
+		}
+
+		void zero_station::save_plan(ZMQ_HANDLE socket, vector<sharp_char> list) const
+		{
+			plan_message message;
+			message.request_caller = list[0];
+			for (size_t idx = 3; idx < list.size(); idx++)
+			{
+				message.messages.emplace_back(list[idx]);
+			}
+			message.read_plan(list[0].get_buffer());
+			plan_next(message, true);
+		} /**
 		* \brief 计划轮询
 		*/
 		void zero_station::plan_poll_()
@@ -291,7 +342,7 @@ namespace agebull
 				load_now(messages);
 				for (plan_message msg : messages)
 				{
-					command(msg.request_caller.c_str(), msg.messages);
+					command(*msg.request_caller, msg.messages);
 					if (zmq_state_ == zmq_socket_state::Succeed)
 					{
 						plan_next(msg, false);
@@ -301,7 +352,6 @@ namespace agebull
 			config_->log("plan poll end");
 			in_plan_poll_ = false;
 		}
-
 
 		/**
 		* \brief 载入现在到期的内容
@@ -318,7 +368,7 @@ namespace agebull
 			{
 				plan_message message;
 				load_message(static_cast<uint>(acl_atoll(key.c_str())), message);
-				messages.push_back(message);
+				messages.emplace_back(message);
 			}
 		}
 
@@ -407,12 +457,7 @@ namespace agebull
 			char key[MAX_PATH];
 			redis_live_scope redis_live_scope;
 			redis_db_scope db_scope(REDIS_DB_ZERO_MESSAGE);
-			if (message.plan_id == 0)
-			{
-				sprintf(key, "zero:identity:%s", get_station_name());
-				message.plan_id = static_cast<uint32_t>(trans_redis::get_context().incr_redis(key)) + 1;
-			}
-			sprintf(key, "zero:message:%s:%8x", get_station_name(), message.plan_id);
+			sprintf(key, "zero:message:%s:%llx", get_station_name(), message.plan_id);
 			return trans_redis::get_context()->set(key, message.write_json().c_str());
 		}
 
@@ -448,9 +493,9 @@ namespace agebull
 			trans_redis& redis = trans_redis::get_context();
 			char key[MAX_PATH];
 			char id[MAX_PATH];
-			sprintf(id, "%d", message.plan_id);
+			sprintf(id, "%llx", message.plan_id);
 			//1 删除消息
-			sprintf(key, "zero:message:%s:%8x", get_station_name(), message.plan_id);
+			sprintf(key, "zero:message:%s:%llx", get_station_name(), message.plan_id);
 			redis->del(key);
 			//2 删除计划
 			if (message.plan_type > plan_date_type::none)
@@ -459,7 +504,7 @@ namespace agebull
 				redis->zrem(key, id);
 			}
 			//3 删除参与者
-			sprintf(key, "zero:worker:%s:%8x", get_station_name(), message.plan_id);
+			sprintf(key, "zero:worker:%s:%llx", get_station_name(), message.plan_id);
 			acl::string val(128);
 			while (redis->spop(key, val))
 			{
@@ -468,7 +513,7 @@ namespace agebull
 			}
 			redis->del(key);
 			//4 删除返回值
-			sprintf(key, "zero:result:%s:%8x", get_station_name(), message.plan_id);
+			sprintf(key, "zero:result:%s:%llx", get_station_name(), message.plan_id);
 			redis->del(key);
 			return true;
 		}

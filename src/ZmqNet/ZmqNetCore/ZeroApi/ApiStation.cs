@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
@@ -127,27 +127,43 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        /// 返回值说明
-        /// </summary>
-        private readonly byte[] _responseDescription = new byte[] { 2, ZeroFrameType.Status, ZeroFrameType.JsonValue };
-        /// <summary>
         ///     执行命令
         /// </summary>
         private void ExecCommand(object arg)
         {
+            var item = (ApiCallItem)arg;
             using (MonitorScope.CreateScope("ExecCommand"))
             {
-                var item = (ApiCallItem)arg;
-                using (MonitorStepScope.CreateScope("Argument"))
-                    LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
-                var response = ExecCommand(item);
+                LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
+                bool success;
+                try
+                {
+                    using (MonitorStepScope.CreateScope("Argument"))
+                        LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                    success = ExecCommand(item);
+                }
+                catch (Exception ex)
+                {
+                    LogRecorder.Exception(ex);
+                    LogRecorder.MonitorTrace(ex.Message);
+                    success = false;
+                    item.Result = ZeroNetStatus.InnerErrorJson;
+                }
                 using (MonitorStepScope.CreateScope("Result"))
-                    LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
-                _socket.SendMoreFrame(item.Caller);
-                _socket.SendMoreFrameEmpty();
-                _socket.SendMoreFrame(_responseDescription);
-                _socket.SendMoreFrame(response ? ZeroNetStatus.ZeroCommandOk : ZeroNetStatus.ZeroCommandError);
-                _socket.SendFrame(item.Result);
+                    LogRecorder.MonitorTrace(item.Result);
+                try
+                {
+                    _socket.SendMoreFrame(item.Caller);
+                    _socket.SendMoreFrameEmpty();
+                    _socket.SendMoreFrame(new byte[] { 2, (byte)(success ? ZeroStateType.Ok : ZeroStateType.Error), ZeroFrameType.JsonValue, ZeroFrameType.GlobalId });
+                    _socket.SendMoreFrame(item.Result);
+                    _socket.SendFrame(item.GlobalId.ToString("X"));
+                }
+                catch (Exception ex)
+                {
+                    LogRecorder.Exception(ex);
+                    LogRecorder.MonitorTrace(ex.Message);
+                }
             }
         }
 
@@ -342,16 +358,19 @@ namespace Agebull.ZeroNet.Core
                     {
                         Caller = caller
                     };
-
+                    _socket.SkipFrame(out more);
                     _socket.TryReceiveFrameBytes(out var description, out more);
 
-                    var idx = 1;
+                    var idx = 2;
                     while (more)
                     {
                         if (!_socket.TryReceiveFrameString(out var val, out more))
                             continue;
                         switch (description[idx++])
                         {
+                            case ZeroFrameType.GlobalId:
+                                item.GlobalId = long.Parse(val, NumberStyles.HexNumber);
+                                break;
                             case ZeroFrameType.RequestId:
                                 item.RequestId = val;
                                 break;
@@ -381,8 +400,6 @@ namespace Agebull.ZeroNet.Core
 
             InPoll = false;
             StationConsole.WriteInfo($"[{RealName}]poll stop");
-            //_socket.TrySendFrame(timeout, ZeroByteCommand.WorkerLeft);
-
             _socket.CloseSocket(Config.WorkerAddress);
         }
 

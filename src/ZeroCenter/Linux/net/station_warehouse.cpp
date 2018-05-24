@@ -27,6 +27,11 @@ namespace agebull
 		boost::mutex station_warehouse::mutex_;
 
 		/**
+		* \brief 全局ID
+		*/
+		int64_t station_warehouse::glogal_id_ = 0LL;
+
+		/**
 		* \brief 还原站点
 		*/
 		bool station_warehouse::restore(shared_ptr<zero_config>& config)
@@ -36,9 +41,9 @@ namespace agebull
 			case STATION_TYPE_API:
 				api_station::run(config);
 				return true;
-			//case STATION_TYPE_VOTE:
-			//	vote_station::run(config);
-			//	return true;
+				//case STATION_TYPE_VOTE:
+				//	vote_station::run(config);
+				//	return true;
 			case STATION_TYPE_PUBLISH:
 				broadcasting_station::run(config);
 				return true;
@@ -78,9 +83,9 @@ namespace agebull
 			else
 			{
 				redis.set(port_redis_key, port.c_str());
-				install("SystemManage", STATION_TYPE_DISPATCHER);
-				install("RemoteLog", STATION_TYPE_DISPATCHER);
-				install("HealthCenter", STATION_TYPE_DISPATCHER);
+				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
+				install("RemoteLog", STATION_TYPE_DISPATCHER, "log");
+				install("HealthCenter", STATION_TYPE_DISPATCHER, "hea");
 			}
 			return true;
 		}
@@ -111,7 +116,7 @@ namespace agebull
 		*/
 		void station_warehouse::save_configs()
 		{
-			for(auto& iter : configs_)
+			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
 				fmt % iter.first;
@@ -151,6 +156,7 @@ namespace agebull
 		*/
 		int station_warehouse::restore()
 		{
+			glogal_id_ = 0LL;
 			int cnt = 0;
 			for (auto& kv : configs_)
 			{
@@ -167,6 +173,7 @@ namespace agebull
 		*/
 		void station_warehouse::clear()
 		{
+			glogal_id_ = 0LL;
 			//assert(examples_.empty());
 			{
 				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
@@ -175,9 +182,9 @@ namespace agebull
 				redis.set(port_redis_key, config::get_global_string(port_config_key).c_str());
 			}
 			configs_.clear();
-			install("SystemManage", STATION_TYPE_DISPATCHER);
-			install("RemoteLog", STATION_TYPE_PUBLISH);
-			install("HealthCenter", STATION_TYPE_PUBLISH);
+			install("SystemManage", STATION_TYPE_DISPATCHER, "man");
+			install("RemoteLog", STATION_TYPE_PUBLISH, "log");
+			install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
 		}
 
 		/**
@@ -207,7 +214,7 @@ namespace agebull
 		/**
 		* \brief 初始化站点
 		*/
-		bool station_warehouse::install(const char* station_name, int station_type)
+		bool station_warehouse::install(const char* station_name, int station_type, const char* short_name)
 		{
 			shared_ptr<zero_config> config = get_config(station_name);
 			if (config != nullptr)
@@ -227,6 +234,7 @@ namespace agebull
 			}
 
 			config->station_name_ = station_name;
+			config->short_name = short_name;
 			config->station_type_ = station_type;
 			int64 port;
 			redis->incr(port_redis_key, &port);

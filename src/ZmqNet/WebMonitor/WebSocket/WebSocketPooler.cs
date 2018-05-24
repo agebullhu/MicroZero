@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Text;
 using Agebull.ZeroNet.Core;
 using NetMQ;
 using NetMQ.WebSockets;
@@ -10,17 +9,17 @@ namespace WebMonitor
 {
     public class WebSocketPooler : IDisposable
     {
-        public NetMQPoller poller;
-        private WSRouter router;
-        private WSPublisher publisher;
+        private NetMQPoller _poller;
+        private WsRouter _router;
+        private WsPublisher _publisher;
 
         public static WebSocketPooler Instance = new WebSocketPooler();
 
         public WebSocketPooler()
         {
-            router = new WSRouter();
-            router.ReceiveReady += OnRouterReceiveReady;
-            publisher = new WSPublisher();
+            _router = new WsRouter();
+            _router.ReceiveReady += OnRouterReceiveReady;
+            _publisher = new WsPublisher();
             SystemMonitor.StationEvent += SystemMonitor_StationEvent;
         }
 
@@ -39,15 +38,15 @@ namespace WebMonitor
 
             eventArgs.Socket.SendMoreFrame(identity).SendFrame("OK");
 
-            publisher.SendMoreFrame("chat").SendFrame(message.ToUpper());
+            _publisher.SendMoreFrame("chat").SendFrame(message.ToUpper());
         }
         public void Pool()
         {
-            router.Bind("ws://*:80");
-            publisher.Bind("ws://*:81");
+            _router.Bind("ws://*:80");
+            _publisher.Bind("ws://*:81");
             
-            poller = new NetMQPoller { router };
-            poller.RunAsync();
+            _poller = new NetMQPoller { _router };
+            _poller.RunAsync();
         }
         /// <summary>
         /// 广播消息到Socket
@@ -56,9 +55,9 @@ namespace WebMonitor
         /// <param name="message"></param>
         public void Publish(string theme,string message)
         {
-            if (publisher == null)
+            if (_publisher == null)
                 return;
-            publisher.SendMoreFrame(theme).SendFrame(message.ToUtf8Bytes());
+            _publisher.SendMoreFrame(theme).SendFrame(message.ToUtf8Bytes());
         }
 
         #region IDisposable Support
@@ -69,12 +68,12 @@ namespace WebMonitor
             if (disposedValue)
                 return;
             Instance = null;
-            poller?.Dispose();
-            router?.Dispose();
-            publisher?.Dispose();
-            poller = null;
-            router = null;
-            publisher = null;
+            _poller?.Dispose();
+            _router?.Dispose();
+            _publisher?.Dispose();
+            _poller = null;
+            _router = null;
+            _publisher = null;
             disposedValue = true;
         }
 

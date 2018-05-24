@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace WebMonitor
 {
@@ -15,15 +11,6 @@ namespace WebMonitor
     {
         public static void Main(string[] args)
         {
-            int haha = 0;
-            int hoho = 0;
-            for (int i = 0; i < short.MaxValue; i++)
-            {
-                if (DateTime.Now.Ticks != DateTime.Now.Ticks)
-                    haha++;
-                else hoho++;
-            }
-            Console.WriteLine($"haha:{haha} hoho{hoho}");
             BuildWebHost(args).Run();
             WebSocketPooler.Instance.Dispose();
             ZeroApplication.Destroy();

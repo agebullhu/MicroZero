@@ -76,8 +76,10 @@ namespace NetMQ.WebSockets
 
             _messagesPipe.ReceiveSignal();
         }
-
-        public string Address;
+        /// <summary>
+        /// 地址
+        /// </summary>
+        public string Address { get; set; }
         /// <summary>
         /// 地址绑定
         /// </summary>

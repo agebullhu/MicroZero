@@ -17,7 +17,7 @@ namespace agebull
 		*\brief 广播内容(同步)
 		*/
 		bool monitor_sync(string publiher, string state, string content);
-		
+
 
 
 		/**
@@ -264,13 +264,46 @@ namespace agebull
 		/**
 		* \brief 发送帧
 		*/
-		inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, const char* status)
+		inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, char code, const char* global_id, const char* reqId, const char* msg)
 		{
-			sharp_char d(3);
-			char buf[3];
-			buf[0] = 1;
-			buf[1] = ZERO_FRAME_STATUS;
-			buf[2] = ZERO_FRAME_END;
+			char descirpt[6];
+			descirpt[1] = code;
+
+			int idx = 2;
+			if (msg != nullptr)
+			{
+				descirpt[idx++] = ZERO_FRAME_TEXT;
+			}
+			if (reqId != nullptr)
+			{
+				descirpt[idx++] = ZERO_FRAME_REQUEST_ID;
+			}
+			if (global_id != nullptr)
+			{
+				descirpt[idx++] = ZERO_FRAME_GLOBAL_ID;
+			}
+			descirpt[0] = static_cast<char>(idx);
+			descirpt[idx] = ZERO_FRAME_END;
+
+			int descirpt_flags = ZMQ_SNDMORE;
+			int msg_flags = ZMQ_SNDMORE;
+			int reqId_flags = ZMQ_SNDMORE;
+			if (global_id == nullptr)
+			{
+				if (reqId != nullptr)
+				{
+					reqId_flags = ZMQ_DONTWAIT;
+				}
+				else if (msg != nullptr)
+				{
+					msg_flags = ZMQ_DONTWAIT;
+				}
+				else
+				{
+					descirpt_flags = ZMQ_DONTWAIT;
+				}
+			}
+
 			int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
 			if (state < 0)
 			{
@@ -281,15 +314,34 @@ namespace agebull
 			{
 				return check_zmq_error();
 			}
-			state = zmq_send(socket, buf, 3, ZMQ_SNDMORE);
+			state = zmq_send(socket, descirpt, idx + 1, descirpt_flags);
 			if (state < 0)
 			{
 				return check_zmq_error();
 			}
-			state = zmq_send(socket, status, strlen(status), ZMQ_DONTWAIT);
-			if (state < 0)
+			if (msg != nullptr)
 			{
-				return check_zmq_error();
+				state = zmq_send(socket, msg, strlen(msg), msg_flags);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
+			}
+			if (reqId != nullptr)
+			{
+				state = zmq_send(socket, reqId, strlen(reqId), reqId_flags);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
+			}
+			if (global_id != nullptr)
+			{
+				state = zmq_send(socket, global_id, strlen(global_id), ZMQ_DONTWAIT);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
 			}
 			return zmq_socket_state::Succeed;
 		}

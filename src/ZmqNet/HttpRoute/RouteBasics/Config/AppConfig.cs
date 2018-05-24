@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
-using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
@@ -16,6 +14,24 @@ namespace ZeroNet.Http.Route
     [JsonObject(MemberSerialization.OptIn), DataContract]
     public class AppConfig
     {
+#pragma warning disable CS0649
+        /// <summary>
+        /// 缓存配置
+        /// </summary>
+        [DataMember, JsonProperty("cache")] private List<CacheSetting> _cacheSettings;
+
+        /// <summary>
+        /// 路由配置
+        /// </summary>
+        [DataMember, JsonProperty("route")] private Dictionary<string, HostConfig> _routeConfig;
+
+        /// <summary>
+        /// 系统配置
+        /// </summary>
+        [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
+
+#pragma warning restore CS0649
+
         public static AppConfig Config { get; set; }
 
         /// <summary>
@@ -31,27 +47,12 @@ namespace ZeroNet.Http.Route
         /// <summary>
         /// 系统配置
         /// </summary>
-        [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
-
-        /// <summary>
-        /// 系统配置
-        /// </summary>
         public SystemConfig SystemConfig => _systemConfig ?? (_systemConfig = new SystemConfig());
-
-        /// <summary>
-        /// 缓存配置
-        /// </summary>
-        [DataMember, JsonProperty("cache")] private List<CacheSetting> _cacheSettings;
 
         /// <summary>
         /// 路由配置
         /// </summary>
         public Dictionary<string, CacheSetting> CacheMap { get; set; }
-
-        /// <summary>
-        /// 路由配置
-        /// </summary>
-        [DataMember, JsonProperty("route")] private Dictionary<string, HostConfig> _routeConfig;
 
         /// <summary>
         /// 缓存图

@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using System.Text;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
@@ -13,11 +12,38 @@ namespace Agebull.ZeroNet.Core
     [JsonObject(MemberSerialization.OptIn)]
     public class LocalStationConfig
     {
+#pragma warning disable CS0649
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        private string _realName;
+        /// <summary>
+        /// Zmq标识
+        /// </summary>
+        private byte[] _identity;
+
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        [DataMember, JsonProperty("serviceKey")]
+        private string _serviceKey;
+        /// <summary>
+        /// 站点名称，注意唯一性
+        /// </summary>
+        [DataMember, JsonProperty("shortName")]
+        private string _shortName;
+#pragma warning restore CS0649
+
         /// <summary>
         /// 服务名称
         /// </summary>
         [DataMember, JsonProperty("serviceName")]
         public string ServiceName { get; set; }
+
+        /// <summary>
+        /// 短名称
+        /// </summary>
+        public string ShortName => _shortName;
 
         /// <summary>
         /// 站点名称，注意唯一性
@@ -52,46 +78,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 实例名称
         /// </summary>
-        [DataMember, JsonProperty("realName")]
-        private string _realName;
-        /// <summary>
-        /// 实例名称
-        /// </summary>
-        [DataMember, JsonProperty("serviceKey")]
-        private string _serviceKey;
+        [IgnoreDataMember, JsonIgnore]
+        public string ServiceKey => _serviceKey ?? (_serviceKey = RandomOperate.Generate(4));
 
         /// <summary>
         /// 实例名称
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public string ServiceKey
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(_serviceKey))
-                    return _serviceKey;
-                return _serviceKey = RandomOperate.Generate(8);
-            }
-        }
+        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName());
 
         /// <summary>
-        /// 实例名称
-        /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        public string RealName
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(_realName))
-                    return _realName;
-                return _realName = ZeroIdentityHelper.CreateRealName();
-            }
-        }
-
-        private byte[] _identity;
-
-        /// <summary>
-        /// 实例名称
+        /// Zmq标识
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
         public byte[] Identity => _identity ?? (_identity = ZeroIdentityHelper.ToZeroIdentity());

@@ -24,6 +24,11 @@ namespace agebull
 		*/
 		bool monitor_async(string publiher, string state, string content)
 		{
+			if (station_dispatcher::instance == nullptr ||
+				get_net_state() == NET_STATE_DISTORY ||
+				station_dispatcher::instance->get_config().get_station_state() != station_state::Run || 
+				publiher.length() == 0)
+				return false;
 			boost::thread thread_xxx(boost::bind(station_dispatcher::monitor, std::move(publiher), std::move(state), std::move(content)));
 			return true;
 		}
@@ -34,6 +39,11 @@ namespace agebull
 		*/
 		bool monitor_sync(string publiher, string state, string content)
 		{
+			if (station_dispatcher::instance == nullptr ||
+				get_net_state() == NET_STATE_DISTORY ||
+				station_dispatcher::instance->get_config().get_station_state() != station_state::Run ||
+				publiher.length() == 0)
+				return false;
 			return station_dispatcher::monitor(std::move(publiher), std::move(state), std::move(content));
 		}
 
@@ -43,20 +53,24 @@ namespace agebull
 		bool station_dispatcher::publish(const string& title, const string& publiher, const string& arg)
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
-			if (get_net_state() == NET_STATE_DISTORY || publiher.length() == 0)
+			if (get_net_state() == NET_STATE_DISTORY)
 				return false;
 			sharp_char description;
 			description.alloc(6);
 			char* buf = description.get_buffer();
-			buf[0] = 2;
-			buf[1] = ZERO_FRAME_PUBLISHER;
-			buf[2] = ZERO_FRAME_ARG;
-			buf[3] = ZERO_FRAME_END;
+			buf[0] = 3;
+			buf[2] = ZERO_FRAME_PUBLISHER;
+			buf[3] = ZERO_FRAME_ARG;
+			buf[4] = ZERO_FRAME_GLOBAL_ID;
 			vector<sharp_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
+			const int64 id = station_warehouse::get_glogal_id();
+			sharp_char g(16);
+			sprintf(*g, "%llx", id);
+			datas.emplace_back(g);
 			return send_response(datas);
 		}
 
@@ -75,24 +89,24 @@ namespace agebull
 		/**
 		* \brief 执行命令
 		*/
-		string station_dispatcher::exec_command(const char* command, vector<sharp_char> arguments)
+		char station_dispatcher::exec_command(const char* command, vector<sharp_char>& arguments, string& json)
 		{
-			const int idx = strmatchi(12, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall", "exit", "ping", "heartbeat");
-			if (idx < 0)
-				return (ZERO_STATUS_NO_SUPPORT);
+			const int idx = strmatchi(10, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall", "exit");
+			if (idx <= 0)
+				return (ZERO_STATUS_NO_SUPPORT_ID);
 			switch (idx)
 			{
 			case 0:
 			{
-				if (arguments.size() < 2)
-				{
-					return ZERO_STATUS_FRAME_INVALID;
-				}
+				//if (arguments.size() < 2)
+				//{
+				//	return ZERO_STATUS_FRAME_INVALID_ID;
+				//}
 
-				const auto host = *arguments[0];
-				arguments.erase(arguments.begin());
+				//const auto host = *arguments[0];
+				//arguments.erase(arguments.begin());
 
-				return call_station(host, arguments);
+				//return call_station(host, arguments);
 			}
 			case 1:
 			{
@@ -112,74 +126,68 @@ namespace agebull
 			}
 			case 5:
 			{
-				return host_info(arguments.empty() ? "*" : arguments[0]);
+				return host_info(arguments.empty() ? "*" : arguments[0], json);
 			}
 			case 6:
 			{
-				if (arguments.size() < 2)
-					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR;
-				return install_station(arguments[0], arguments[1]);
+				if (arguments.size() < 3)
+					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID;
+				return install_station(*arguments[0], *arguments[1], *arguments[2]);
 			}
 			case 7:
 			{
 				if (arguments.empty())
-					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR;
-				return uninstall(arguments[0]) ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
+					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID;
+				return uninstall(arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID;
 			}
 			case 8:
 			{
 				boost::thread(boost::bind(distory_net_command));
-				return ZERO_STATUS_OK;
-			}
-			case 9:
-			{
-				return ZERO_STATUS_OK;
-			}
-			case 10:
-			{
-				if (arguments.size() < 4)
-					return ZERO_STATUS_FRAME_INVALID;
-				;
-				return heartbeat(arguments) ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
+				return ZERO_STATUS_OK_ID;
 			}
 			default:
-				return ZERO_STATUS_NO_SUPPORT;
+				return ZERO_STATUS_NO_SUPPORT_ID;
 			}
 		}
 		/**
 		* 心跳的响应
 		*/
-		bool station_dispatcher::heartbeat(vector<sharp_char> list)
+		bool station_dispatcher::heartbeat(char cmd, vector<sharp_char> list)
 		{
-			auto config = station_warehouse::get_config(list[1], false);
+			auto config = station_warehouse::get_config(list[3], false);
 			if (config == nullptr)
 				return false;
-			switch (list[0][0])
+			switch (cmd)
 			{
-			case ZERO_HEART_LEFT:
-				config->worker_left(*list[2]);
+			case ZERO_COMMAND_HEART_JOIN:
+				config->worker_join(*list[4], *list[5]);
 				return true;
-			case ZERO_HEART_JOIN:
-			case ZERO_HEART_PITPAT:
-				config->worker_heartbeat(*list[2], *list[3]);
+			case ZERO_COMMAND_HEART_PITPAT:
+				config->worker_heartbeat(*list[4]);
+				return true;
+			case ZERO_COMMAND_HEART_LEFT:
+				config->worker_left(*list[4]);
 				return true;
 			default:
 				return false;
 			}
 		}
+
 		/**
 		* \brief 执行命令
 		*/
 		string station_dispatcher::exec_command(const char* command, const char* argument)
 		{
 			acl::string str = command;
-			return exec_command(command, { sharp_char(argument) });
+			vector<sharp_char> args{ sharp_char(argument) };
+			string json;
+			return exec_command(command, args, json) == '\0' ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
 		}
 
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string station_dispatcher::pause_station(const string& arg)
+		char station_dispatcher::pause_station(const string& arg)
 		{
 			if (arg == "*")
 			{
@@ -188,20 +196,20 @@ namespace agebull
 				{
 					station.second->pause(true);
 				}
-				return ZERO_STATUS_OK;
+				return ZERO_STATUS_OK_ID;
 			}
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return ZERO_STATUS_NO_FIND;
+				return ZERO_STATUS_NO_FIND_ID;
 			}
-			return station->pause(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
+			return station->pause(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
 
 		/**
 		* \brief 继续站点
 		*/
-		string station_dispatcher::resume_station(const string& arg)
+		char station_dispatcher::resume_station(const string& arg)
 		{
 			if (arg == "*")
 			{
@@ -210,30 +218,59 @@ namespace agebull
 				{
 					station.second->resume(true);
 				}
-				return ZERO_STATUS_OK;
+				return ZERO_STATUS_OK_ID;
 			}
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return (ZERO_STATUS_NO_FIND);
+				return (ZERO_STATUS_NO_FIND_ID);
 			}
-			return station->resume(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
+			return station->resume(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
 
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string station_dispatcher::start_station(string stattion)
+		char station_dispatcher::start_station(string stattion)
 		{
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station != nullptr)
 			{
-				return ZERO_STATUS_RUNING;
+				return ZERO_STATUS_RUNING_ID;
 			}
 			shared_ptr<zero_config> config = station_warehouse::get_config(stattion);
 			if (config == nullptr)
-				return ZERO_STATUS_NET_ERROR;
-			return station_warehouse::restore(config) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
+				return ZERO_STATUS_NO_FIND_ID;
+			return station_warehouse::restore(config) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+		}
+
+		/**
+		* 当远程调用进入时的处理
+		*/
+		char station_dispatcher::install_station(const char* type_name, const char* stattion, const char* short_name)
+		{
+			const int type = strmatchi(4, type_name, "api", "pub", "vote");
+			bool success;
+			switch (type)
+			{
+			case 0:
+				success = station_warehouse::install(stattion, STATION_TYPE_API, short_name); break;
+			case 1:
+				success = station_warehouse::install(stattion, STATION_TYPE_PUBLISH, short_name); break;
+			case 2:
+				success = station_warehouse::install(stattion, STATION_TYPE_VOTE, short_name); break;
+			default:
+				return ZERO_STATUS_NO_SUPPORT_ID;
+			}
+			return success ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+		}
+
+		/**
+		* \brief 站点卸载
+		*/
+		bool station_dispatcher::uninstall(const string& stattion)
+		{
+			return station_warehouse::uninstall(stattion);
 		}
 
 		/**
@@ -245,34 +282,6 @@ namespace agebull
 			return sharp_char(val);
 		}
 
-		/**
-		* 当远程调用进入时的处理
-		*/
-		string station_dispatcher::install_station(const string& type_name, const string& stattion)
-		{
-			const int type = strmatchi(4, type_name.c_str(), "api", "pub", "vote");
-			bool success;
-			switch (type)
-			{
-			case 0:
-				success = station_warehouse::install(stattion.c_str(), STATION_TYPE_API); break;
-			case 1:
-				success = station_warehouse::install(stattion.c_str(), STATION_TYPE_PUBLISH); break;
-			case 2:
-				success = station_warehouse::install(stattion.c_str(), STATION_TYPE_VOTE); break;
-			default:
-				return ZERO_STATUS_NO_SUPPORT;
-			}
-			return success ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
-		}
-
-		/**
-		* \brief 站点卸载
-		*/
-		bool station_dispatcher::uninstall(const string& stattion)
-		{
-			return station_warehouse::uninstall(stattion);
-		}
 		/**
 		* \brief 远程调用
 		*/
@@ -304,9 +313,9 @@ namespace agebull
 			const sharp_char empty;
 			if (arguments.size() == 1)
 			{
-				arguments.push_back(empty);
-				arguments.push_back(empty);
-				arguments.push_back(empty);
+				arguments.emplace_back(empty);
+				arguments.emplace_back(empty);
+				arguments.emplace_back(empty);
 			}
 			else if (arguments.size() == 2)
 			{
@@ -321,7 +330,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		string station_dispatcher::close_station(const string& stattion)
+		char station_dispatcher::close_station(const string& stattion)
 		{
 			if (stattion == "*")
 			{
@@ -330,20 +339,20 @@ namespace agebull
 				{
 					station.second->close(true);
 				}
-				return ZERO_STATUS_OK;
+				return ZERO_STATUS_OK_ID;
 			}
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return (ZERO_STATUS_NO_FIND);
+				return (ZERO_STATUS_NO_FIND_ID);
 			}
-			return station->close(true) ? ZERO_STATUS_OK : ZERO_STATUS_FAILED;
+			return station->close(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
 
 		/**
 		* \brief 取机器信息
 		*/
-		string station_dispatcher::host_info(const string& stattion)
+		char station_dispatcher::host_info(const string& stattion, string& json)
 		{
 			if (stattion == "*")
 			{
@@ -358,33 +367,68 @@ namespace agebull
 					result += station.second->get_config().to_json().c_str();
 				}
 				result += "]";
-				return result;
+				json = result;
+				return ZERO_STATUS_OK_ID;
 			}
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return ZERO_STATUS_NO_FIND;
+				return ZERO_STATUS_NO_FIND_ID;
 			}
-			return station->get_config().to_json().c_str();
+			json = station->get_config().to_json().c_str();
+			return ZERO_STATUS_OK_ID;
 		}
 
 		/**
-		* 当远程调用进入时的处理
+		* \brief 工作开始（发送到工作者）
 		*/
-		void station_dispatcher::request(ZMQ_HANDLE socket, bool inner)
+		void station_dispatcher::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
 		{
-			vector<sharp_char> list;
-			//0 路由到的地址 1 空帧 2 命令 3 参数
-			zmq_state_ = recv(request_scoket_tcp_, list);
-			const sharp_char caller = list[0];
-			const sharp_char cmd = list[2];
+			char* const buf = list[2].get_buffer();
+			switch(buf[1])
+			{
+			case ZERO_COMMAND_PING:
+				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID);
+				return;
+			case ZERO_COMMAND_HEART_LEFT:
+			case ZERO_COMMAND_HEART_JOIN:
+			case ZERO_COMMAND_HEART_PITPAT:
+				send_request_status(socket, *list[0], heartbeat(buf[1], list) ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID);
+				return;
+			}
+			const char* cmd = nullptr;
+			size_t rqid_index = 0;
+			vector<sharp_char> arg;
+			const auto frame_size = list[2].size();
+			for (size_t idx = 2; idx <= frame_size; idx++)
+			{
+				switch (buf[idx])
+				{
+				case ZERO_FRAME_COMMAND:
+					cmd = *list[idx + 1];
+					break;
+				case ZERO_FRAME_REQUEST_ID:
+					rqid_index = idx + 1;
+					break;
+				case ZERO_FRAME_ARG:
+					arg.emplace_back(list[idx + 1]);
+					break;
+				}
+			}
+			if (cmd == nullptr)
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid_index == 0 ? nullptr : *list[rqid_index], "need command frame");
+				return;
+			}
+			string json;
+			const char code = exec_command(cmd, arg, json);
 
-			list.erase(list.begin());
-			list.erase(list.begin());
-			list.erase(list.begin());
-
-			string result = exec_command(*cmd, list);
-			send_request_status(socket, *caller, result.c_str());
+			send_request_status(socket, *list[0], code, *global_id, rqid_index == 0 ? nullptr : *list[rqid_index],
+				code == ZERO_STATUS_OK_ID
+				? json.length() > 0
+				? json.c_str()
+				: nullptr
+				: nullptr);
 		}
 
 		void station_dispatcher::launch(shared_ptr<station_dispatcher>& station)

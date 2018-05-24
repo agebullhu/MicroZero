@@ -29,7 +29,7 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~station_dispatcher() override = default;
+			~station_dispatcher() final = default;
 
 			/**
 			* \brief 运行一个广播线程
@@ -62,7 +62,7 @@ namespace agebull
 			/**
 			* \brief 暂停
 			*/
-			bool pause(bool waiting) override
+			bool pause(bool waiting) final
 			{
 				return false;
 			}
@@ -70,7 +70,7 @@ namespace agebull
 			/**
 			* \brief 继续
 			*/
-			bool resume(bool waiting)override
+			bool resume(bool waiting)final
 			{
 				return false;
 			}
@@ -78,14 +78,14 @@ namespace agebull
 			/**
 			* \brief 结束
 			*/
-			bool close(bool waiting)override
+			bool close(bool waiting)final
 			{
 				return false;
 			}
 			/**
-			* \brief 处理请求
+			* \brief 工作开始（发送到工作者）
 			*/
-			void request(ZMQ_HANDLE socket,bool inner)override;
+			void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) final;
 			/**
 			*\brief 发布消息
 			*/
@@ -93,16 +93,16 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			static bool heartbeat(vector<sharp_char> lines);
+			static bool heartbeat(char cmd, vector<sharp_char> lines);
 		public:
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<sharp_char> lines) override;
+			sharp_char command(const char* caller, vector<sharp_char> lines) final;
 			/**
 			* \brief 站点安装
 			*/
-			static string install_station(const string& type_name, const string& stattion);
+			static char install_station(const char* type_name, const char* stattion, const char* short_name);
 			/**
 			* \brief 站点卸载
 			*/
@@ -110,23 +110,23 @@ namespace agebull
 			/**
 			* \brief 取机器信息
 			*/
-			static string host_info(const string& stattion);
+			static char host_info(const string& stattion, string& json);
 			/**
 			*  \brief 启动站点
 			*/
-			static string start_station(string stattion);
+			static char start_station(string stattion);
 			/**
 			* \brief 暂停站点
 			*/
-			static string pause_station(const string& stattion);
+			static char pause_station(const string& stattion);
 			/**
 			* \brief 继续站点
 			*/
-			static string resume_station(const string& stattion);
+			static char resume_station(const string& stattion);
 			/**
 			* \brief 关闭站点
 			*/
-			static string close_station(const string& stattion);
+			static char close_station(const string& stattion);
 			/**
 			* \brief 远程调用
 			*/
@@ -138,7 +138,7 @@ namespace agebull
 			/**
 			* \brief 执行命令
 			*/
-			static string exec_command(const char* command, vector<sharp_char> arguments);
+			static char exec_command(const char* command, vector<sharp_char>& arguments, string& json);
 			/**
 			* \brief 执行命令
 			*/

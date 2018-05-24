@@ -144,7 +144,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 try
                 {
-                    if (!socket.Send(item))
+                    if (!socket.Publish(item))
                     {
                         LogRecorder.Trace(LogType.Warning, "Publish",
                             $@"向[{item.Station}]广播的主题为[{item.Title}]的消息发送失败，内容为：

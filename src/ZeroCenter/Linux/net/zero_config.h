@@ -210,70 +210,6 @@ namespace agebull
 		* \brief 检查ZMQ错误状态
 		* \return 状态
 		*/
-		inline zmq_socket_state check_zmq_error()
-		{
-			const int err = zmq_errno();
-			switch (err)
-			{
-			case 0:
-				return zmq_socket_state::Empty;
-			case ETERM:
-				return zmq_socket_state::Intr;
-			case ENOTSOCK:
-				return zmq_socket_state::NotSocket;
-			case EINTR:
-				return zmq_socket_state::Intr;
-			case EAGAIN:
-			case ETIMEDOUT:
-				return zmq_socket_state::TimedOut;
-				//return ZmqSocketState::TimedOut;
-			case ENOTSUP:
-				return zmq_socket_state::NotSup;
-			case EPROTONOSUPPORT:
-				return zmq_socket_state::ProtoNoSupport;
-			case ENOBUFS:
-				return zmq_socket_state::NoBufs;
-			case ENETDOWN:
-				return zmq_socket_state::NetDown;
-			case EADDRINUSE:
-				return zmq_socket_state::AddrInUse;
-			case EADDRNOTAVAIL:
-				return zmq_socket_state::AddrNotAvAll;
-			case ECONNREFUSED:
-				return zmq_socket_state::ConnRefUsed;
-			case EINPROGRESS:
-				return zmq_socket_state::InProgress;
-			case EMSGSIZE:
-				return zmq_socket_state::MsgSize;
-			case EAFNOSUPPORT:
-				return zmq_socket_state::AfNoSupport;
-			case ENETUNREACH:
-				return zmq_socket_state::NetUnReach;
-			case ECONNABORTED:
-				return zmq_socket_state::ConnAborted;
-			case ECONNRESET:
-				return zmq_socket_state::ConnReset;
-			case ENOTCONN:
-				return zmq_socket_state::NotConn;
-			case EHOSTUNREACH:
-				return zmq_socket_state::HostUnReach;
-			case ENETRESET:
-				return zmq_socket_state::NetReset;
-			case EFSM:
-				return zmq_socket_state::Fsm;
-			case ENOCOMPATPROTO:
-				return zmq_socket_state::NoCompatProto;
-			case EMTHREAD:
-				return zmq_socket_state::Mthread;
-			default:
-				return zmq_socket_state::Unknow;
-			}
-		}
-
-		/**
-		* \brief 检查ZMQ错误状态
-		* \return 状态
-		*/
 		inline const char* state_str(zmq_socket_state state)
 		{
 			switch (state)
@@ -311,7 +247,77 @@ namespace agebull
 		}
 
 		/**
-		* \brief 工作
+		* \brief 检查ZMQ错误状态
+		* \return 状态
+		*/
+		inline zmq_socket_state check_zmq_error()
+		{
+			const int err = zmq_errno();
+			zmq_socket_state state;
+			switch (err)
+			{
+			case 0:
+				state = zmq_socket_state::Empty; break;
+			case ETERM:
+				state = zmq_socket_state::Intr; break;
+			case ENOTSOCK:
+				state = zmq_socket_state::NotSocket; break;
+			case EINTR:
+				state = zmq_socket_state::Intr; break;
+			case EAGAIN:
+			case ETIMEDOUT:
+				state = zmq_socket_state::TimedOut; break;
+				//state = ZmqSocketState::TimedOut;break;
+			case ENOTSUP:
+				state = zmq_socket_state::NotSup; break;
+			case EPROTONOSUPPORT:
+				state = zmq_socket_state::ProtoNoSupport; break;
+			case ENOBUFS:
+				state = zmq_socket_state::NoBufs; break;
+			case ENETDOWN:
+				state = zmq_socket_state::NetDown; break;
+			case EADDRINUSE:
+				state = zmq_socket_state::AddrInUse; break;
+			case EADDRNOTAVAIL:
+				state = zmq_socket_state::AddrNotAvAll; break;
+			case ECONNREFUSED:
+				state = zmq_socket_state::ConnRefUsed; break;
+			case EINPROGRESS:
+				state = zmq_socket_state::InProgress; break;
+			case EMSGSIZE:
+				state = zmq_socket_state::MsgSize; break;
+			case EAFNOSUPPORT:
+				state = zmq_socket_state::AfNoSupport; break;
+			case ENETUNREACH:
+				state = zmq_socket_state::NetUnReach; break;
+			case ECONNABORTED:
+				state = zmq_socket_state::ConnAborted; break;
+			case ECONNRESET:
+				state = zmq_socket_state::ConnReset; break;
+			case ENOTCONN:
+				state = zmq_socket_state::NotConn; break;
+			case EHOSTUNREACH:
+				state = zmq_socket_state::HostUnReach; break;
+			case ENETRESET:
+				state = zmq_socket_state::NetReset; break;
+			case EFSM:
+				state = zmq_socket_state::Fsm; break;
+			case ENOCOMPATPROTO:
+				state = zmq_socket_state::NoCompatProto; break;
+			case EMTHREAD:
+				state = zmq_socket_state::Mthread; break;
+			default:
+				state = zmq_socket_state::Unknow; break;
+			}
+#if _DEBUG_
+			if (state != zmq_socket_state::Succeed)
+				log_debug(0, 0, state_str(state));
+#endif // _DEBUG_
+			return state;
+		}
+
+		/**
+		* \brief 工作对象
 		*/
 		struct worker
 		{
@@ -331,6 +337,9 @@ namespace agebull
 			*/
 			int level;
 
+			/**
+			 * \brief 构造
+			 */
 			worker()
 				: pre_time(0)
 				, level(-1)
@@ -376,6 +385,10 @@ namespace agebull
 			* \brief 站点名称
 			*/
 			string station_name_;
+			/**
+			* \brief 站点名称
+			*/
+			string short_name;
 			/**
 			* \brief 站点标题
 			*/
@@ -460,7 +473,7 @@ namespace agebull
 			/**
 			* \brief 心跳
 			*/
-			void worker_heartbeat(const char* w, const char* ips)
+			void worker_join(const char* w, const char* ips)
 			{
 				auto iter = workers.find(w);
 				if (iter == workers.end())
@@ -476,6 +489,22 @@ namespace agebull
 				}
 			}
 
+			/**
+			* \brief 心跳
+			*/
+			void worker_heartbeat(const char* w)
+			{
+				auto iter = workers.find(w);
+				if (iter == workers.end())
+				{
+					worker wk;
+					workers.insert(make_pair(w, wk));
+				}
+				else
+				{
+					iter->second.active();
+				}
+			}
 			/**
 			* \brief 心跳
 			*/
@@ -547,7 +576,7 @@ namespace agebull
 						iter = json.next_node();
 						continue;
 					}
-					const int idx = strmatchi(15, tag
+					const int idx = strmatchi(16, tag
 						, "station_name"
 						, "station_type"
 						, "request_port"
@@ -562,7 +591,8 @@ namespace agebull
 						, "request_err"
 						, "worker_in"
 						, "worker_out"
-						, "worker_err");
+						, "worker_err"
+						, "short_name");
 					switch (idx)
 					{
 					case 0:
@@ -592,7 +622,7 @@ namespace agebull
 							auto it = ajson->first_child();
 							while (it)
 							{
-								alias_.push_back(it->get_string());
+								alias_.emplace_back(it->get_string());
 								it = ajson->next_child();
 							}
 						}
@@ -618,6 +648,9 @@ namespace agebull
 					case 14:
 						worker_err = *iter->get_int64();
 						break;
+					case 15:
+						short_name = *iter->get_string();
+						break;
 					default: break;
 					}
 					iter = json.next_node();
@@ -633,6 +666,8 @@ namespace agebull
 				acl::json_node& node = json.create_node();
 				if (!station_name_.empty())
 					node.add_text("station_name", station_name_.c_str());
+				if (!short_name.empty())
+					node.add_text("short_name", short_name.c_str());
 				if (!station_description_.empty())
 					node.add_text("_description", station_description_.c_str());
 				if (!station_caption_.empty())
@@ -665,7 +700,8 @@ namespace agebull
 					for (auto& worker : workers)
 					{
 						acl::string str;
-						str.format("%s (%s) [%d]", worker.first.c_str(), worker.second.ips.c_str(), worker.second.level);
+						//str.format("%s (%s) [%d]", worker.first.c_str(), worker.second.ips.c_str(), worker.second.level);
+						str.format("%s [%d]", worker.first.c_str(), worker.second.level);
 						array.add_array_text(str);
 					}
 					node.add_child("workers", array);

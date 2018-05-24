@@ -27,7 +27,7 @@ namespace agebull
 		const NET_STATE NET_STATE_FAILED = 5;
 
 		//正常状态
-#define  ZERO_STATUS_SUCCESS '+'
+#define ZERO_STATUS_SUCCESS '+'
 		//错误状态
 #define ZERO_STATUS_BAD  '-'
 //正常状态
@@ -36,13 +36,25 @@ namespace agebull
 #define ZERO_STATUS_RUNING  "+runing"
 #define ZERO_STATUS_BYE  "+bye"
 #define ZERO_STATUS_WECOME  "+wecome"
+#define ZERO_STATUS_WAITING  "+waiting"
 #define ZERO_STATUS_VOTE_SENDED  "+send"
 #define ZERO_STATUS_VOTE_CLOSED  "+close"
 #define ZERO_STATUS_VOTE_BYE  "+bye"
-#define ZERO_STATUS_VOTE_WAITING  "+waiting"
 #define ZERO_STATUS_VOTE_START  "+start"
 #define ZERO_STATUS_VOTE_END  "+end"
 
+#define ZERO_STATUS_OK_ID char(0)
+#define ZERO_STATUS_PLAN_ID char(1)
+#define ZERO_STATUS_RUNING_ID char(2)
+#define ZERO_STATUS_BYE_ID char(3)
+#define ZERO_STATUS_WECOME_ID char(4)
+#define ZERO_STATUS_VOTE_SENDED_ID char(5)
+#define ZERO_STATUS_VOTE_BYE_ID char(3)
+#define ZERO_STATUS_WAITING_ID char(6)
+#define ZERO_STATUS_VOTE_START_ID char(7)
+#define ZERO_STATUS_VOTE_END_ID char(8)
+#define ZERO_STATUS_VOTE_CLOSED_ID char(9)
+//错误状态
 #define ZERO_STATUS_NO_FIND  "-no find"
 #define ZERO_STATUS_FRAME_INVALID  "-invalid" 
 #define ZERO_STATUS_TIMEOUT  "-time out"
@@ -51,13 +63,22 @@ namespace agebull
 #define ZERO_STATUS_FAILED  "-failed"
 #define ZERO_STATUS_ERROR  "-error"
 #define ZERO_STATUS_API_NOT_WORKER  "-not work"
-
 #define ZERO_STATUS_MANAGE_ARG_ERROR  "-ArgumentError! must like : call[name][command][argument]"
 #define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
 
+#define ZERO_STATUS_ERROR_ID char(0x81)
+#define ZERO_STATUS_FAILED_ID char(0x82)
+#define ZERO_STATUS_NO_FIND_ID char(0x83)
+#define ZERO_STATUS_NO_SUPPORT_ID char(0x84)
+#define ZERO_STATUS_FRAME_INVALID_ID char(0x85)
+#define ZERO_STATUS_TIMEOUT_ID char(0x86)
+#define ZERO_STATUS_NET_ERROR_ID char(0x87)
+#define ZERO_STATUS_NOT_WORKER_ID char(0x88)
+#define ZERO_STATUS_MANAGE_ARG_ERROR_ID char(0x89)
+#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID char(0x8A)
 
 //终止符号
-#define ZERO_FRAME_END  'E'
+#define ZERO_FRAME_END  '\0'
 //执行计划
 #define ZERO_FRAME_PLAN  'P'
 //参数
@@ -75,44 +96,71 @@ namespace agebull
 //订阅者/浪费者
 #define ZERO_FRAME_SUBSCRIBER  zero_responser
 //广播主题
-//#define zero_pub_title  '*'
+#define ZERO_FRAME_PUB_TITLE  '*'
 //广播副题
 #define ZERO_FRAME_SUBTITLE  'S'
 //网络上下文信息
 #define ZERO_FRAME_CONTEXT  'T'
 //状态
 #define ZERO_FRAME_STATUS  'S'
+//状态
+#define ZERO_FRAME_TEXT  'T'
+#define ZERO_FRAME_JSON  'J'
+#define ZERO_FRAME_BIN  'B'
+#define ZERO_FRAME_XML  'X'
 
+//全局标识
+#define ZERO_FRAME_GLOBAL_ID  '\1'
 
 
 
 /**
-* \brief 工作站点加入
+* \brief 等待结果
 */
-#define  ZERO_WORKER_JOIN  '@' 
+#define ZERO_COMMAND_WAITING '#'
+
 /**
-* \brief 工作站点加入
+* \brief Ping
 */
-#define  ZERO_WORKER_LEFT  '!' 
-/**
-* \brief 工作站点等待工作
-*/
-#define  ZERO_WORKER_LISTEN  '$' 
+#define ZERO_COMMAND_PING '*'
 
 /**
 * \brief 心跳加入
 */
-#define  ZERO_HEART_JOIN  '@' 
+#define  ZERO_COMMAND_HEART_JOIN  '@' 
 
 /**
 * \brief 心跳进行
 */
-#define  ZERO_HEART_PITPAT  '$' 
+#define  ZERO_COMMAND_HEART_PITPAT  '$' 
 
 /**
 * \brief 心跳退出
 */
-#define  ZERO_HEART_LEFT  '!' 
+#define  ZERO_COMMAND_HEART_LEFT  '!' 
+
+//状态说明符
+
+//1 请求
+/**
+* \brief 无特殊说明
+*/
+#define  ZERO_STATE_CODE_NONE  '\0' 
+
+//1 请求
+/**
+* \brief 计划任务
+*/
+#define  ZERO_STATE_CODE_PLAN  char(1) 
+//1 请求
+/**
+* \brief 工作站点退出
+*/
+#define  ZERO_STATE_CODE_WORKER_LEFT  char(2) 
+/**
+* \brief 工作站点等待工作
+*/
+#define  ZERO_STATE_CODE_WORKER_LISTEN  char(3) 
 
 	}
 }
