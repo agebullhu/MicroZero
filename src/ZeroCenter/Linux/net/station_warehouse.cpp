@@ -116,6 +116,7 @@ namespace agebull
 		*/
 		void station_warehouse::save_configs()
 		{
+			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
 			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
@@ -158,6 +159,7 @@ namespace agebull
 		{
 			glogal_id_ = 0LL;
 			int cnt = 0;
+			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
 			for (auto& kv : configs_)
 			{
 				if (kv.second->station_type_ < STATION_TYPE_API)
@@ -198,7 +200,10 @@ namespace agebull
 				station->close(true);
 				station->config_->station_state_ = station_state::Uninstall;
 			}
-			configs_.erase(station_name);
+			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				configs_.erase(station_name);
+			}
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
@@ -253,6 +258,7 @@ namespace agebull
 		*/
 		bool station_warehouse::join(zero_station* station)
 		{
+			boost::lock_guard<boost::mutex>(station->mutex_);
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
 				if (examples_.find(station->config_->station_name_) != examples_.end())
@@ -268,12 +274,13 @@ namespace agebull
 		*/
 		bool station_warehouse::left(zero_station* station)
 		{
+			boost::lock_guard<boost::mutex>(station->mutex_);
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
 				const auto iter = examples_.find(station->config_->station_name_);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
-				examples_.erase(station->config_->station_name_);
+				examples_.erase(iter);
 			}
 			monitor_async(station->config_->station_name_, "station_left", station->config_->station_name_);
 
@@ -285,6 +292,7 @@ namespace agebull
 		*/
 		zero_station* station_warehouse::instance(const string& name)
 		{
+			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
 			const auto iter = examples_.find(name);
 			if (iter == examples_.end())
 				return nullptr;

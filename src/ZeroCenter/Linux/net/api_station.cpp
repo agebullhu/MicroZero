@@ -30,10 +30,13 @@ namespace agebull
 		void api_station::launch(shared_ptr<api_station>& station)
 		{
 			station->config_->log_start();
-			if (!station_warehouse::join(station.get()))
 			{
-				station->config_->log_failed();
-				return;
+				boost::lock_guard<boost::mutex> guard(station->mutex_);
+				if (!station_warehouse::join(station.get()))
+				{
+					station->config_->log_failed();
+					return;
+				}
 			}
 			if (!station->initialize())
 			{
@@ -41,7 +44,10 @@ namespace agebull
 				return;
 			}
 			station->poll();
-			station_warehouse::left(station.get());
+			{
+				boost::lock_guard<boost::mutex> guard(station->mutex_);
+				station_warehouse::left(station.get());
+			}
 			station->destruct();
 			if (station->config_->station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
 			{

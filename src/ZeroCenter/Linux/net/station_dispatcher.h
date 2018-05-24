@@ -44,6 +44,7 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
+				boost::lock_guard<boost::mutex> guard(config->mutex_);
 				instance = new station_dispatcher();
 				instance->config_ = config;
 				boost::thread(boost::bind(launch, shared_ptr<station_dispatcher>(instance)));

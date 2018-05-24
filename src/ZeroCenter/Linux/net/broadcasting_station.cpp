@@ -153,6 +153,7 @@ namespace agebull
 		void broadcasting_station::launch(shared_ptr<broadcasting_station> station)
 		{
 			station->config_->log_start();
+			station->config_->log_start();
 			if (!station_warehouse::join(station.get()))
 			{
 				station->config_->log_failed();

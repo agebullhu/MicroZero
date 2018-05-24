@@ -39,6 +39,7 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
+				boost::lock_guard<boost::mutex> guard(config->mutex_);
 				if (config->station_state_ == station_state::Uninstall)
 					return;
 				if (config->station_state_ > station_state::ReStart && config->station_state_ < station_state::Closed)

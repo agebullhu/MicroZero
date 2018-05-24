@@ -31,6 +31,7 @@ namespace agebull
 
 		bool zero_station::initialize()
 		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
 			config_->station_state_ = station_state::Start;
 			zmq_state_ = zmq_socket_state::Succeed;
 			poll_count_ = 0;
@@ -107,11 +108,12 @@ namespace agebull
 
 		bool zero_station::destruct()
 		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
 			if (poll_items_ == nullptr)
 				return true;
+			config_->station_state_ = station_state::Closing;
 			delete[]poll_items_;
 			poll_items_ = nullptr;
-			config_->station_state_ = station_state::Closing;
 			if (request_scoket_tcp_ != nullptr)
 			{
 				close_res_socket(request_scoket_tcp_, get_out_address().c_str());
@@ -161,6 +163,7 @@ namespace agebull
 					break;
 				}
 
+				boost::lock_guard<boost::mutex> guard(mutex_);
 				const int state = zmq_poll(poll_items_, poll_count_, 1000);
 				if (state == 0)//超时
 					continue;

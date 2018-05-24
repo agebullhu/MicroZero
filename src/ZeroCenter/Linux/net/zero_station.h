@@ -18,6 +18,10 @@ namespace agebull
 			friend class station_warehouse;
 		protected:
 			/**
+			* \brief 实例队列访问锁
+			*/
+			boost::mutex mutex_;
+			/**
 			* \brief 站点名称
 			*/
 			string station_name_;

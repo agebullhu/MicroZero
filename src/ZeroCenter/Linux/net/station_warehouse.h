@@ -14,15 +14,15 @@ namespace agebull
 		class station_warehouse
 		{
 			/**
-			* \brief 实例队列访问锁
-			*/
-			static boost::mutex mutex_;
-
-			/**
 			* \brief 全局ID
 			*/
 			static int64_t glogal_id_;
 		public:
+			/**
+			* \brief 实例队列访问锁
+			*/
+			static boost::mutex mutex_;
+
 			/**
 			* \brief 取全局ID
 			*/

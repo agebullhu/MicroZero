@@ -375,12 +375,18 @@ namespace agebull
 				return level = -1;
 			}
 		};
+		class zero_station;
 		/**
 		* \brief ZMQ的网络站点配置
 		*/
 		class zero_config
 		{
+			friend class zero_station;
 		public:
+			/**
+			* \brief 实例队列访问锁
+			*/
+			boost::mutex mutex_;
 			/**
 			* \brief 站点名称
 			*/
@@ -480,7 +486,10 @@ namespace agebull
 				{
 					worker wk;
 					wk.ips = ips;
-					workers.insert(make_pair(w, wk));
+					{
+						boost::lock_guard<boost::mutex> guard(mutex_);
+						workers.insert(make_pair(w, wk));
+					}
 				}
 				else
 				{
@@ -498,7 +507,10 @@ namespace agebull
 				if (iter == workers.end())
 				{
 					worker wk;
-					workers.insert(make_pair(w, wk));
+					{
+						boost::lock_guard<boost::mutex> guard(mutex_);
+						workers.insert(make_pair(w, wk));
+					}
 				}
 				else
 				{
@@ -510,11 +522,8 @@ namespace agebull
 			*/
 			void worker_left(const char* w)
 			{
-				//auto iter = workers.find(w);
-				//if (iter != workers.end())
-				{
-					workers.erase(w);
-				}
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				workers.erase(w);
 			}
 			/**
 			* \brief 站点名称
@@ -565,6 +574,7 @@ namespace agebull
 			*/
 			void read_json(const char* val)
 			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
 				acl::json json;
 				json.update(val);
 				acl::json_node* iter = json.first_node();
@@ -660,8 +670,9 @@ namespace agebull
 			/**
 			* \brief 写入JSON
 			*/
-			acl::string to_json() const
+			acl::string to_json()
 			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
 				acl::json json;
 				acl::json_node& node = json.create_node();
 				if (!station_name_.empty())

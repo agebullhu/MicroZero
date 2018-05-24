@@ -26,7 +26,7 @@ namespace agebull
 		{
 			if (station_dispatcher::instance == nullptr ||
 				get_net_state() == NET_STATE_DISTORY ||
-				station_dispatcher::instance->get_config().get_station_state() != station_state::Run || 
+				station_dispatcher::instance->get_config().get_station_state() != station_state::Run ||
 				publiher.length() == 0)
 				return false;
 			boost::thread thread_xxx(boost::bind(station_dispatcher::monitor, std::move(publiher), std::move(state), std::move(content)));
@@ -191,8 +191,8 @@ namespace agebull
 		{
 			if (arg == "*")
 			{
-				auto examples = station_warehouse::examples_;
-				for (map<string, zero_station*>::value_type& station : examples)
+				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				for (map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
 					station.second->pause(true);
 				}
@@ -213,8 +213,8 @@ namespace agebull
 		{
 			if (arg == "*")
 			{
-				auto examples = station_warehouse::examples_;
-				for (map<string, zero_station*>::value_type& station : examples)
+				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				for (map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
 					station.second->resume(true);
 				}
@@ -334,8 +334,8 @@ namespace agebull
 		{
 			if (stattion == "*")
 			{
-				map<string, zero_station*> examples = station_warehouse::examples_;
-				for (map<string, zero_station*>::value_type station : examples)
+				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				for (auto& station : station_warehouse::examples_)
 				{
 					station.second->close(true);
 				}
@@ -358,13 +358,16 @@ namespace agebull
 			{
 				string result = "[";
 				bool first = true;
-				for (const map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
-					if (first)
-						first = false;
-					else
-						result += ",";
-					result += station.second->get_config().to_json().c_str();
+					boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+					for (const map<string, zero_station*>::value_type& station : station_warehouse::examples_)
+					{
+						if (first)
+							first = false;
+						else
+							result += ",";
+						result += station.second->get_config().to_json().c_str();
+					}
 				}
 				result += "]";
 				json = result;
@@ -385,7 +388,7 @@ namespace agebull
 		void station_dispatcher::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
 		{
 			char* const buf = list[2].get_buffer();
-			switch(buf[1])
+			switch (buf[1])
 			{
 			case ZERO_COMMAND_PING:
 				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID);
@@ -476,20 +479,36 @@ namespace agebull
 			while (instance != nullptr &&  get_net_state() <= NET_STATE_CLOSED)
 			{
 				thread_sleep(1000);
-				for (auto & config : station_warehouse::configs_)
+				map<string, string> cfgs;//复制避免锁定时间过长
 				{
-					for (auto & work : config.second->workers)
+					boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+					for (auto & config : station_warehouse::configs_)
 					{
-						if (work.second.check() < 0)
-							config.second->workers.erase(work.first);
+						{
+							boost::lock_guard<boost::mutex>(config.second->mutex_);
+							for (auto & work : config.second->workers)
+							{
+								if (work.second.check() < 0)
+								{
+									config.second->workers.erase(work.first);
+								}
+							}
+						}
+						cfgs.insert(make_pair(config.first, config.second->to_json().c_str()));
 					}
-					monitor(config.first, "station_state", config.second->to_json().c_str());
 				}
 				monitor("SystemManage", "worker_sound_off", "*");
+				for (auto& cfg : cfgs)
+				{
+					monitor(cfg.first, "station_state", cfg.second);
+				}
 			}
-			for (auto & config : station_warehouse::configs_)
 			{
-				config.second->station_state_ = station_state::Destroy;
+				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				for (auto & config : station_warehouse::configs_)
+				{
+					config.second->station_state_ = station_state::Destroy;
+				}
 			}
 			station_warehouse::save_configs();
 		}
