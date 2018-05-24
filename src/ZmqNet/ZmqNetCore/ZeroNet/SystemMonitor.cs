@@ -125,7 +125,7 @@ namespace Agebull.ZeroNet.Core
                     {
                         Title = title
                     };
-                    int idx = 1;
+                    int idx = 2;
                     while (more)
                     {
                         if (!_subscriber.TryReceiveFrameString(out var val, out more))
@@ -435,9 +435,9 @@ namespace Agebull.ZeroNet.Core
         private static void Heartbeat(bool left)
         {
             if (left)
-                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartLeft, "SystemManage", ZeroApplication.Config.RealName);
+                SystemManager.HeartLeft();
             else
-                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartPitpat, "SystemManage", ZeroApplication.Config.RealName, ZeroApplication.Address);
+                SystemManager.Heartbeat();
         }
         #endregion
     }

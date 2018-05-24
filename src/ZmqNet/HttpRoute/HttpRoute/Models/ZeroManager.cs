@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
@@ -69,24 +70,29 @@ namespace ZeroNet.Http.Route
             string type = _words[1];
             try
             {
-                var result = ZeroApplication.ZeroManageAddress.RequestNet("install", type, stationName);
-                if (result == null)
+                var result = SystemManager.CallCommand(_words);
+                if (!result.InteractiveSuccess)
                 {
-                    _result = ApiResult.Error(ErrorCode.NetworkError);
+                    _result = ApiResult.Error(ErrorCode.NetworkError,"服务器无法访问");
                     return;
                 }
-                switch (result)
+                switch (result.State)
                 {
-                    case null:
-                        _result = ApiResult.Error(ErrorCode.NetworkError);
+                    case ZeroStateType.InstallArgumentError:
+                        _result = ApiResult.Error(ErrorCode.ArgumentError, $"命令格式错误:{result.State.Text()}");
                         return;
-                    case ZeroNetStatus.ZeroCommandNoSupport:
+                    case ZeroStateType.NoSupport:
                         _result = ApiResult.Error(ErrorCode.UnknowError, $"类型{type}不支持");
                         return;
-                    case ZeroNetStatus.ZeroCommandFailed:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, result);
+                    case ZeroStateType.Failed:
+                        _result = ApiResult.Error(ErrorCode.ArgumentError, "已存在");
+                        _result.Status = new ApiStatsResult
+                        {
+                            ErrorCode = ErrorCode.Success,
+                            ClientMessage = "安装成功"
+                        };
                         return;
-                    case ZeroNetStatus.ZeroCommandOk:
+                    case ZeroStateType.Ok:
                         _result = ApiResult.Succees();
                         _result.Status = new ApiStatsResult
                         {
@@ -95,7 +101,7 @@ namespace ZeroNet.Http.Route
                         };
                         return;
                     default:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, result);
+                        _result = ApiResult.Error(ErrorCode.UnknowError, result.State.Text());
                         return;
                 }
             }
@@ -140,41 +146,28 @@ namespace ZeroNet.Http.Route
                 return;
             }
 
-            try
+            var value = SystemManager.CallCommand(_words);
+            if (!value.InteractiveSuccess)
             {
-                var value = ZeroApplication.ZeroManageAddress.RequestNet(_words);
-                if (value == null)
-                {
-                    _result = ApiResult.Error(ErrorCode.NetworkError);
-                    return;
-                }
-                switch (value)
-                {
-                    case null:
-                        _result = ApiResult.Error(ErrorCode.NetworkError);
-                        return;
-                    case ZeroNetStatus.ZeroCommandNoSupport:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, "不支持的操作");
-                        return;
-                    case ZeroNetStatus.ZeroCommandFailed:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, value);
-                        return;
-                    case ZeroNetStatus.ZeroCommandOk:
-                        _result = ApiValueResult.Succees(value);
-                        _result.Status = new ApiStatsResult
-                        {
-                            ErrorCode = ErrorCode.Success,
-                            ClientMessage = "操作成功"
-                        };
-                        return;
-                    default:
-                        _result = ApiResult.Error(ErrorCode.UnknowError, value);
-                        return;
-                }
+                _result = ApiResult.Error(ErrorCode.NetworkError);
+                return;
             }
-            catch (Exception e)
+            switch (value.State)
             {
-                _result = ApiResult.Error(ErrorCode.NetworkError, e.Message);
+                case ZeroStateType.NoSupport:
+                    _result = ApiResult.Error(ErrorCode.UnknowError, "不支持的操作");
+                    return;
+                case ZeroStateType.Ok:
+                    _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.TextValue) ?? value.State.Text());
+                    _result.Status = new ApiStatsResult
+                    {
+                        ErrorCode = ErrorCode.Success,
+                        ClientMessage = "操作成功"
+                    };
+                    return;
+                default:
+                    _result = ApiResult.Error(ErrorCode.UnknowError, value.State.Text());
+                    return;
             }
         }
     }

@@ -618,7 +618,7 @@ namespace agebull
 					log_error3("(%s)get(%s)时发生错误(%s)", redis_ip, key.c_str(), m_redis_cmd->result_error());
 					continue;
 				}
-				values.push_back(str);
+				values.emplace_back(str);
 			}
 		}
 		return values;

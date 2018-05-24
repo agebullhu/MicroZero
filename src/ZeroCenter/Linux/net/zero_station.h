@@ -262,15 +262,6 @@ namespace agebull
 			* \brief 结束
 			*/
 			virtual bool close(bool waiting);
-
-			/**
-			* \brief 计划轮询
-			*/
-			static void plan_poll(zero_station* station)
-			{
-				station->plan_poll_();
-			}
-
 		protected:
 
 			/**
@@ -280,7 +271,7 @@ namespace agebull
 			{
 				config_->worker_out++;
 				zmq_state_ = send(response_socket_tcp_, datas, first_index);
-				if(zmq_state_ == zmq_socket_state::Succeed)
+				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				config_->worker_err++;
 				return false;
@@ -288,10 +279,10 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, const char* status)
+			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code=ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg=nullptr)
 			{
 				++config_->request_out;
-				zmq_state_ = send_status(socket, addr, status);
+				zmq_state_ = send_status(socket,  addr, code,  global_id,reqId, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -302,27 +293,47 @@ namespace agebull
 			*/
 			bool send_request_result(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
 			{
-				 config_->request_out++;
-				 zmq_state_ = send(socket, ls, first_index);
-				 if (zmq_state_ == zmq_socket_state::Succeed)
-					 return true;
-				 ++config_->request_err;
-				 return false;
+				config_->request_out++;
+				zmq_state_ = send(socket, ls, first_index);
+				if (zmq_state_ == zmq_socket_state::Succeed)
+					return true;
+				++config_->request_err;
+				return false;
+			}
+		private:
+			/**
+			* \brief 工作集合的响应
+			*/
+			void response();
+
+			/**
+			* \brief 调用集合的响应
+			*/
+			void request(ZMQ_HANDLE socket, bool inner);
+
+		protected:
+			/**
+			* \brief 工作开始（发送到工作者）
+			*/
+			virtual void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) = 0;
+			/**
+			* \brief 工作结束(发送到请求者)
+			*/
+			virtual void job_end(vector<sharp_char>& list)
+			{
+			}
+		private:
+			/**
+			* \brief 计划轮询
+			*/
+			static void plan_poll(zero_station* station)
+			{
+				station->plan_poll_();
 			}
 			/**
 			* \brief 保存计划
 			*/
-			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list) const
-			{
-				plan_message message;
-				message.request_caller = list[0];
-				for (size_t idx = 3; idx < list.size(); idx++)
-				{
-					message.messages.push_back(list[idx]);
-				}
-				message.read_plan(list[0].get_buffer());
-				plan_next(message, true);
-			}
+			void save_plan(ZMQ_HANDLE socket, vector<sharp_char> list) const;
 
 			/**
 			* \brief 计划轮询
@@ -330,17 +341,75 @@ namespace agebull
 			void plan_poll_();
 
 			/**
-			* \brief 工作集合的响应
+			* \brief 工作进入计划
 			*/
-			virtual void response()
+			void job_plan(ZMQ_HANDLE socket, const int64 id, sharp_char& global_id, vector<sharp_char>& list);
+		};
+
+		/**
+		* \brief 调用集合的响应
+		*/
+		inline void zero_station::request(ZMQ_HANDLE socket, bool inner)
+		{
+			vector<sharp_char> list;
+			zmq_state_ = recv(socket, list);
+			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
+				config_->log(state_str(zmq_state_));
+				return;
+			}
+			const size_t list_size = list.size();
+			if (list_size < 3)
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				return;
+			}
+			char* description = *list[2];
+			const size_t size = list[2].size();
+			const auto frame_size = static_cast<size_t>(description[0]);
+			if (frame_size >= size || (frame_size + 3) != list_size || (description[size - 1] != ZERO_FRAME_END && description[size - 1] != ZERO_FRAME_GLOBAL_ID))
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				return;
 			}
 
-			/**
-			* \brief 调用集合的响应
-			*/
-			virtual void request(ZMQ_HANDLE socket, bool inner) = 0;
-		};
+			const int64 id = station_warehouse::get_glogal_id();
+			sharp_char g(16);
+			sprintf(*g, "%llx", id);
+			description[size - 1] = ZERO_FRAME_GLOBAL_ID;
+			description[0]++;
+			list.emplace_back(g);
+			if (description[1] == ZERO_STATE_CODE_PLAN)
+			{
+				job_plan(socket, id, g, list);
+			}
+			else
+			{
+				job_start(socket, g, list);
+			}
+		}
+
+		/**
+		* \brief 工作集合的响应
+		*/
+		inline void zero_station::response()
+		{
+			vector<sharp_char> list;
+			zmq_state_ = recv(response_socket_tcp_, list);
+			if (zmq_state_ == zmq_socket_state::TimedOut)
+			{
+				config_->worker_err++;
+				return;
+			}
+			if (zmq_state_ != zmq_socket_state::Succeed)
+			{
+				config_->worker_err++;
+				log_error3("接收结果失败%s(%d)%s", get_station_name(), config_->worker_port_, state_str(zmq_state_));
+				return;
+			}
+			job_end(list);
+		}
+
 	}
 }
 #endif//!_ZERO_STATION_H

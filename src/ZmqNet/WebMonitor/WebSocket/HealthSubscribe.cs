@@ -12,7 +12,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 路由计数器
     /// </summary>
-    public class HealthSubscribe : SubStation
+    internal class HealthSubscribe : SubStation
     {
         /// <summary>
         /// 构造路由计数器
@@ -30,21 +30,16 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         public override void Handle(PublishItem args)
         {
+            if (Items.Queue.Count > 1)
+                return;//重复处理没意思
             try
             {
-                try
-                {
-                    End(JsonConvert.DeserializeObject<CountData>(args.Content));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    StationConsole.WriteError($"{e.Message}\r\n{args.Content}");
-                }
+                End(JsonConvert.DeserializeObject<CountData>(args.Content));
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
+                StationConsole.WriteError($"HealthSubscribe Handle:\r\n{e}\r\n{args.Content}");
             }
         }
         /// <summary>
@@ -68,7 +63,7 @@ namespace ZeroNet.Http.Route
         /// 开始计数
         /// </summary>
         /// <returns></returns>
-        public static void End(CountData data)
+        internal static void End(CountData data)
         {
             if (data == null || string.IsNullOrWhiteSpace(data.HostName))
                 return;

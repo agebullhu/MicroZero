@@ -1,26 +1,13 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using NetMQ;
 using NetMQ.Sockets;
-using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.PubSub
 {
-    /// <summary>
-    /// 表示广播数据
-    /// </summary>
-    public interface IPublishData
-    {
-        /// <summary>
-        /// 标题
-        /// </summary>
-        string Title { get;}
-    }
     /// <summary>
     ///     消息发布器
     /// </summary>
@@ -72,22 +59,6 @@ namespace Agebull.ZeroNet.PubSub
         public StationState State { get; protected set; }
 
         /// <summary>
-        /// 超时
-        /// </summary>
-        protected readonly TimeSpan TimeWaite = new TimeSpan(0, 0, 0, 3);
-
-        /// <summary>
-        /// 广播内容说明
-        /// </summary>
-        private readonly byte[] _description = new byte[]
-        {
-            2,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.Argument,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
         /// 广播总数
         /// </summary>
         public long PubCount { get; private set; }
@@ -105,7 +76,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         private void SendTask()
         {
-            Identity = ZeroIdentityHelper.ToZeroIdentity(StationName, Name);
+            Identity = ZeroIdentityHelper.ToZeroIdentity(_config?.ShortName ?? StationName, Name);
             State = StationState.Run;
             while (ZeroApplication.State < StationState.Closing && State == StationState.Run)
             {
@@ -127,22 +98,10 @@ namespace Agebull.ZeroNet.PubSub
 
                 try
                 {
-                    if (!SendOrPostCallback(data))
+                    if (!_socket.Publish(data))
                     {
                         LogRecorder.Error($"{StationName}广播失败:发送超时");
                         CreateSocket();
-                        continue;
-                    }
-
-                    if (!_socket.ReceiveString(out var datas))
-                    {
-                        LogRecorder.Error($"{StationName}广播失败:接收返回:{datas.FirstOrDefault()}");
-                        CreateSocket();
-                        continue;
-                    }
-                    if (datas.Count < 2 && datas[1] != ZeroNetStatus.ZeroCommandOk)
-                    {
-                        LogRecorder.Error($"{StationName}广播失败:{datas[1]}");
                         continue;
                     }
                 }
@@ -161,22 +120,9 @@ namespace Agebull.ZeroNet.PubSub
                     PubCount = 0;
             }
             State = StationState.Closed;
-            _socket.CloseSocket(_config.RequestAddress);
+            _socket.CloseSocket(_config?.RequestAddress);
         }
 
-        /// <summary>
-        /// 发送广播
-        /// </summary>
-        /// <returns></returns>
-        protected virtual bool SendOrPostCallback(TData data)
-        {
-            _socket
-                .SendMoreFrame(data.Title)
-                .SendMoreFrame(_description)
-                .SendMoreFrame(ZeroApplication.Config.StationName)
-                .SendFrame(JsonConvert.SerializeObject(data));
-            return true;
-        }
         #endregion
 
         #region Socket
@@ -192,8 +138,8 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected bool InitSocket()
         {
-            _config = ZeroApplication.GetConfig(StationName, out var status);
-            if (status != ZeroCommandStatus.Success || _config == null)
+            _config = ZeroApplication.GetConfig(StationName);
+            if (_config == null)
             {
                 return false;
             }

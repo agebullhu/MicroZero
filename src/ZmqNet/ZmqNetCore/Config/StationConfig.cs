@@ -21,6 +21,11 @@ namespace Agebull.ZeroNet.Core
         [DataMember, JsonProperty("station_name")]
         public string StationName { get => _name; set => _name = value; }
         /// <summary>
+        /// 站点名称
+        /// </summary>
+        [DataMember, JsonProperty("short_name")]
+        public string ShortName { get; set; }
+        /// <summary>
         /// 站点别名
         /// </summary>
         [DataMember, JsonProperty("station_alias")]
@@ -185,7 +190,7 @@ namespace Agebull.ZeroNet.Core
                     return _pools.Dequeue();
             }
             var socket = new RequestSocket();
-            socket.Options.Identity = ZeroIdentityHelper.ToZeroIdentity(StationName, (++_socketId).ToString());
+            socket.Options.Identity = ZeroIdentityHelper.ToZeroIdentity(ShortName ?? StationName, (++_socketId).ToString());
             socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
             socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
             socket.Options.TcpKeepalive = true;

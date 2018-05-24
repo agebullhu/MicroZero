@@ -56,7 +56,7 @@ namespace agebull
 			/**
 			* \brief 消息标识
 			*/
-			uint32_t plan_id;
+			int64_t plan_id;
 
 			/**
 			* \brief 计划类型
@@ -81,12 +81,12 @@ namespace agebull
 			/**
 			* \brief 发起者提供的标识
 			*/
-			string request_id;
+			sharp_char request_id;
 
 			/**
 			* \brief 发起者
 			*/
-			string request_caller;
+			sharp_char request_caller;
 			/**
 			* \brief 消息描述
 			*/
@@ -186,8 +186,8 @@ namespace agebull
 					node.add_number("plan_repet", plan_repet);
 					node.add_number("real_repet", real_repet);
 				}
-				node.add_text("request_id", request_id.c_str());
-				node.add_text("request_caller", request_caller.c_str());
+				node.add_text("request_id", *request_id);
+				node.add_text("request_caller", *request_caller);
 				node.add_text("messages_description", messages_description.get_buffer());
 				acl::json_node& array = node.add_array(true);
 				array.set_tag("messages");

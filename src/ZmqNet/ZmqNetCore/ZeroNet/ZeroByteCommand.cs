@@ -6,31 +6,33 @@ namespace Agebull.ZeroNet.Core
     public static class ZeroByteCommand
     {
         /// <summary>
-        /// 工作站点加入
+        /// 标准调用
         /// </summary>
-        public const string WorkerJoin = "@";
+        public const byte General = (byte)0;
+
         /// <summary>
-        /// 工作站点加入
+        /// 等待结果
         /// </summary>
-        public const string WorkerLeft = "!";
+        public const byte Waiting = (byte)'#';
+
         /// <summary>
-        /// 工作站点等待工作
+        /// Ping
         /// </summary>
-        public const string WorkerListen = "$";
+        public const byte Ping = (byte)'*';
 
         /// <summary>
         /// 心跳加入
         /// </summary>
-        public const string HeartJoin = "@";
+        public const byte HeartJoin = (byte)'@';
 
         /// <summary>
         /// 心跳进行
         /// </summary>
-        public const string HeartPitpat = "$";
+        public const byte HeartPitpat = (byte)'$';
 
         /// <summary>
         /// 心跳退出
         /// </summary>
-        public const string HeartLeft = "!";
+        public const byte HeartLeft = (byte)'!';
     }
 }

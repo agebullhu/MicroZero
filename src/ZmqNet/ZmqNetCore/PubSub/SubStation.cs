@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,7 +65,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationConsole.WriteInfo($"[{StationName}:{RealName}]{Config.WorkerAddress}start...");
+            StationConsole.WriteInfo($"[{RealName}=>{Config.WorkerAddress}]start...");
             RunState = StationState.Start;
             InPoll = false;
 
@@ -103,7 +104,7 @@ namespace Agebull.ZeroNet.PubSub
                 RunState = StationState.Failed;
                 return;
             }
-            StationConsole.WriteLine($"[{StationName}:{RealName}]poll start...");
+            StationConsole.WriteLine($"[{RealName}]poll start...");
             var timeout = new TimeSpan(0, 0, 5);
             InPoll = true;
             while (RunState == StationState.Run)
@@ -122,7 +123,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         Title = title
                     };
-                    int idx = 1;
+                    int idx = 2;
                     while (more)
                     {
                         if (!_socket.TryReceiveFrameString(out var val, out more))
@@ -142,6 +143,9 @@ namespace Agebull.ZeroNet.PubSub
                                 break;
                             case ZeroFrameType.RequestId:
                                 item.RequestId = val;
+                                break;
+                            case ZeroFrameType.GlobalId:
+                                item.GlobalId = long.Parse(val,NumberStyles.HexNumber);
                                 break;
                         }
                     }

@@ -1,5 +1,3 @@
-using Gboxt.Common.DataModel;
-
 namespace Gboxt.Common.DataModel.ZeroNet
 {
     /// <summary>

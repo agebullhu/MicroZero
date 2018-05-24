@@ -56,13 +56,7 @@ namespace Agebull.ZeroNet.Core
             if (State == StationState.Run)
                 ZeroStation.Run(station);
         }
-        /// <summary>
-        /// 注册站点
-        /// </summary>
-        public static void RegisteStation<TStation>() where TStation : ZeroStation, new()
-        {
-            RegisteStation(new TStation());
-        }
+
 
         #endregion
 
@@ -78,6 +72,33 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static LocalStationConfig Config { get; set; }
 
+        /// <summary>
+        ///     读取配置
+        /// </summary>
+        /// <returns></returns>
+        public static StationConfig GetConfig(string stationName)
+        {
+            if (State != StationState.Run)
+            {
+                return null;
+            }
+            StationConfig config;
+            lock (Configs)
+            {
+                if (Configs.TryGetValue(stationName, out config))
+                {
+                    return config;
+                }
+            }
+            config = SystemManager.GetConfig(stationName, out _);
+            if (config == null)
+                return null;
+            lock (Configs)
+            {
+                Configs.Add(stationName, config);
+            }
+            return config;
+        }
         /// <summary>
         ///     读取配置
         /// </summary>
@@ -98,45 +119,13 @@ namespace Agebull.ZeroNet.Core
                     return config;
                 }
             }
-            string result;
-            try
-            {
-                result = ZeroManageAddress.RequestNet("host", stationName);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                status = ZeroCommandStatus.Exception;
+            config = SystemManager.GetConfig(stationName, out status);
+            if (config == null)
                 return null;
-            }
-            switch (result)
-            {
-                case null:
-                    StationConsole.WriteError($"[{stationName}]无法获取配置");
-                    status = ZeroCommandStatus.Error;
-                    return null;
-                case ZeroNetStatus.ZeroCommandNoFind:
-                    //WriteError($"[{stationName}]未安装");
-                    status = ZeroCommandStatus.NoFind;
-                    return null;
-            }
-            try
-            {
-                config = JsonConvert.DeserializeObject<StationConfig>(result);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                StationConsole.WriteError($"{e.Message}\r\n{result}");
-                status = ZeroCommandStatus.Error;
-                return null;
-            }
-
             lock (Configs)
             {
                 Configs.Add(stationName, config);
             }
-            status = ZeroCommandStatus.Success;
             return config;
         }
 
@@ -256,11 +245,12 @@ namespace Agebull.ZeroNet.Core
                 ? IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "datas")
                 : IOHelper.CheckPath(Config.DataFolder);
 
+            Config.ServiceName = Dns.GetHostName();
+
             ApiContext.MyRealName = Config.RealName;
             ApiContext.MyServiceKey = Config.ServiceKey;
             ApiContext.MyServiceName = Config.ServiceName;
 
-            Config.ServiceName = Dns.GetHostName();
             StringBuilder ips = new StringBuilder();
             bool first = true;
             foreach (var address in Dns.GetHostAddresses(Config.ServiceName))
@@ -342,18 +332,10 @@ namespace Agebull.ZeroNet.Core
 
         #region Console
 
-
         /// <summary>
-        ///     运行
+        /// 命令行方式管理
         /// </summary>
-        public static void RunConsole()
-        {
-            Launch();
-            ConsoleInput();
-            Destroy();
-        }
-
-        private static void ConsoleInput()
+        public static void CommandConsole()
         {
             while (true)
             {
@@ -377,7 +359,19 @@ namespace Agebull.ZeroNet.Core
                     continue;
                 }
 
-                SystemManager.Request(words[0], words.Length == 1 ? null : words[1]);
+                var result = SystemManager.CallCommand(words);
+                if (result.InteractiveSuccess)
+                {
+                    StationConsole.WriteInfo(result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                        ? value
+                        : result.State.Text());
+                }
+                else
+                {
+                    StationConsole.WriteError(result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                        ? value
+                        : result.State.Text());
+                }
             }
         }
 

@@ -27,7 +27,7 @@ namespace agebull
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector< sharp_char> lines) override
+			sharp_char command(const char* caller, vector< sharp_char> lines) final
 			{
 				const bool res = publish(caller, lines[0], lines[1], lines[1]);
 				return sharp_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
@@ -35,10 +35,9 @@ namespace agebull
 
 
 			/**
-			* \brief 处理请求
+			* \brief 工作开始（发送到工作者）
 			*/
-			void request(ZMQ_HANDLE socket, bool inner)override;
-
+			void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) final;
 			/**
 			*\brief 发送消息
 			*/

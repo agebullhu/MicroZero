@@ -1,9 +1,5 @@
 using System;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
-using Gboxt.Common.DataModel;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -49,6 +45,7 @@ namespace Agebull.ZeroNet.Core
         /// 站点名称
         /// </summary>
         public string StationName { get; set; }
+
         /// <summary>
         /// 实例名称
         /// </summary>
@@ -62,11 +59,11 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 实例名称
         /// </summary>
-        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName(StationName,Name));
+        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName(Config?.ShortName ?? StationName,Name));
         /// <summary>
         /// 实例名称
         /// </summary>
-        public byte[] Identity => ZeroIdentityHelper.ToZeroIdentity(StationName, Name);
+        public byte[] Identity => ZeroIdentityHelper.ToZeroIdentity(Config?.ShortName ?? StationName, Name);
 
         /// <summary>
         /// 站点配置
@@ -146,9 +143,9 @@ namespace Agebull.ZeroNet.Core
         protected void Heartbeat(bool left)
         {
             if (left)
-                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartLeft, Config.StationName, RealName);
+                SystemManager.HeartLeft(Config.StationName, RealName);
             else
-                ZeroApplication.ZeroManageAddress.RequestNet("heartbeat", ZeroByteCommand.HeartPitpat, Config.StationName, RealName, ZeroApplication.Address);
+                SystemManager.Heartbeat(Config.StationName, RealName);
         }
         /// <summary>
         /// 命令轮询

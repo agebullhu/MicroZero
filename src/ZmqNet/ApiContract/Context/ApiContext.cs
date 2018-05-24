@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using System.Threading;
 using Agebull.Common.Base;
 using Agebull.Common.Logging;

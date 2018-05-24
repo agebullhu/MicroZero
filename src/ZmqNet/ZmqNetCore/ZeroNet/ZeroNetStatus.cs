@@ -182,5 +182,63 @@ namespace Agebull.ZeroNet.Core
         /// <remarks>方法未注册</remarks>
         public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "系统未就绪"));
 
+        /// <summary>
+        /// 状态原始文本
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static string Text(this ZeroStateType state)
+        {
+            switch (state)
+            {
+                case ZeroStateType.Ok:
+                    return ZeroCommandOk;
+                case ZeroStateType.Plan:
+                    return ZeroCommandPlan;
+                case ZeroStateType.VoteRuning:
+                    return ZeroCommandRuning;
+                case ZeroStateType.VoteBye:
+                    return ZeroCommandBye;
+                case ZeroStateType.VoteWecome:
+                    return ZeroCommandWecome;
+                case ZeroStateType.VoteSend:
+                    return ZeroVoteSended;
+                case ZeroStateType.VoteWaiting:
+                    return ZeroVoteWaiting;
+                case ZeroStateType.VoteStart:
+                    return ZeroVoteStart;
+                case ZeroStateType.VoteEnd:
+                    return ZeroVoteEnd;
+                case ZeroStateType.Error:
+                    return ZeroCommandError;
+                case ZeroStateType.Failed:
+                    return ZeroCommandFailed;
+                case ZeroStateType.NoFind:
+                    return ZeroCommandNoFind;
+                case ZeroStateType.NoSupport:
+                    return ZeroCommandNoSupport;
+                case ZeroStateType.Invalid:
+                    return ZeroCommandInvalid;
+                case ZeroStateType.TimeOut:
+                    return ZeroCommandTimeout;
+                case ZeroStateType.NetError:
+                    return ZeroCommandNetError;
+                case ZeroStateType.NoWorker:
+                    return ZeroCommandNotWorker;
+                case ZeroStateType.CommandArgumentError:
+                    return ZeroCommandArgError;
+                case ZeroStateType.InstallArgumentError:
+                    return ZeroCommandInstallArgError;
+                case ZeroStateType.LocalRecvError:
+                    return "-can't recv data";
+                case ZeroStateType.LocalSendError:
+                    return "-can't send data";
+                case ZeroStateType.Exception:
+                    return "-exception";
+                default:
+                    return ZeroCommandFailed;
+            }
+        }
     }
+
 }

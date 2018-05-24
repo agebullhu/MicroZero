@@ -93,7 +93,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         /// <param name="tm"></param>
         /// <param name="data"></param>
-        public void SetValue(double tm, RouteData data)
+        internal void SetValue(double tm, CountData data)
         {
             LastCall = data.Start;
             Count += 1;

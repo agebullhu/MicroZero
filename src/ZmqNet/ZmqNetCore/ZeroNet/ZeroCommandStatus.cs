@@ -26,6 +26,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         Error,
         /// <summary>
+        /// 返回值不正确
+        /// </summary>
+        ValueError,
+        /// <summary>
         /// 本地异常
         /// </summary>
         Exception,

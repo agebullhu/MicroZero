@@ -2,40 +2,53 @@ using System.Collections.Generic;
 
 namespace NetMQ.WebSockets
 {
-    public class WSPublisher : WsSocket
+    /// <summary>
+    /// WebSocket发布器
+    /// </summary>
+    public class WsPublisher : WsSocket
     {
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        public WsPublisher() : base(id => new PublisherShimHandler(id))
+        {
+        }
+        /// <summary>
+        /// 发布垫片
+        /// </summary>
         private class PublisherShimHandler : BaseShimHandler
         {
             //  List of all subscriptions mapped to corresponding pipes.
-            private readonly Mtrie m_subscriptions;
+            private readonly Mtrie _subscriptions;
 
-            private static readonly Mtrie.MtrieDelegate s_markAsMatching;
-            private static readonly Mtrie.MtrieDelegate s_SendUnsubscription;
-            private static readonly ByteArrayEqualityComparer s_byteArrayEqualityComparer;
+            private static readonly Mtrie.MtrieDelegate MarkAsMatching;
+            private static readonly Mtrie.MtrieDelegate SendUnsubscription;
+            private static readonly ByteArrayEqualityComparer ByteArrayEqualityComparer;
 
-            private List<byte[]> m_identities;
-            private int m_matching = 0;
+            private readonly List<byte[]> _identities;
+            private int _matching = 0;
 
             static PublisherShimHandler()
             {
-                s_markAsMatching = (pipe, data, arg) =>
+                MarkAsMatching = (pipe, data, arg) =>
                 {
                     PublisherShimHandler self = (PublisherShimHandler) arg;
 
-                    self.m_identities.Swap(IndexOf(self.m_identities, pipe), self.m_matching);
-                    self.m_matching++;
+                    self._identities.Swap(IndexOf(self._identities, pipe), self._matching);
+                    self._matching++;
                 };
 
-                s_SendUnsubscription = (pipe, data, arg) => { };
+                SendUnsubscription = (pipe, data, arg) => { };
 
-                s_byteArrayEqualityComparer = new ByteArrayEqualityComparer();
+                ByteArrayEqualityComparer = new ByteArrayEqualityComparer();
             }
 
             private static int IndexOf(IList<byte[]> list, byte[] identity)
             {
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (s_byteArrayEqualityComparer.Equals(list[i], identity))
+                    if (ByteArrayEqualityComparer.Equals(list[i], identity))
                     {
                         return i;
                     }
@@ -48,26 +61,26 @@ namespace NetMQ.WebSockets
             public PublisherShimHandler(int id)
                 : base(id)
             {
-                m_identities = new List<byte[]>();
-                m_subscriptions = new Mtrie();
+                _identities = new List<byte[]>();
+                _subscriptions = new Mtrie();
             }
 
             protected override void OnOutgoingMessage(NetMQMessage message)
             {
-                m_subscriptions.Match(message[0].ToByteArray(false), message[0].MessageSize, s_markAsMatching, this);
+                _subscriptions.Match(message[0].ToByteArray(false), message[0].MessageSize, MarkAsMatching, this);
 
                 while (message.FrameCount > 0)
                 {
                     var frame = message.Pop().ToByteArray();
                     bool more = message.FrameCount > 0;
 
-                    for (int i = 0; i < m_matching; i++)
+                    for (int i = 0; i < _matching; i++)
                     {
-                        WriteOutgoing(m_identities[i], frame, more);
+                        WriteOutgoing(_identities[i], frame, more);
                     }
                 }
 
-                m_matching = 0;
+                _matching = 0;
             }
 
             protected override void OnIncomingMessage(byte[] identity, NetMQMessage message)
@@ -78,37 +91,33 @@ namespace NetMQ.WebSockets
                 {
                     if (data[0] == 0)
                     {
-                        m_subscriptions.Remove(data, 1, identity);
+                        _subscriptions.Remove(data, 1, identity);
                     }
                     else
                     {
-                        m_subscriptions.Add(data, 1, identity);
+                        _subscriptions.Add(data, 1, identity);
                     }
                 }
             }
 
             protected override void OnNewClient(byte[] identity)
             {
-                m_identities.Add(identity);
+                _identities.Add(identity);
             }
 
             protected override void OnClientRemoved(byte[] identity)
             {
-                m_subscriptions.RemoveHelper(identity, s_SendUnsubscription, this);
+                _subscriptions.RemoveHelper(identity, SendUnsubscription, this);
 
-                int index = IndexOf(m_identities, identity);
+                int index = IndexOf(_identities, identity);
 
-                if (index < m_matching)
+                if (index < _matching)
                 {
-                    m_matching--;
+                    _matching--;
                 }
 
-                m_identities.Remove(identity);
+                _identities.Remove(identity);
             }
-        }
-
-        public WSPublisher() : base(id => new PublisherShimHandler(id))
-        {
         }
     }
 }

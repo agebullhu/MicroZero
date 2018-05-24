@@ -6,7 +6,8 @@
     "managePort": 8000,
     "stationName": "HttpRoute",
     "serviceName": "HttpRoute",
-    "serviceKey": "001"
+    "serviceKey": "001",
+    "shortName": "route" 
   },
   /*系统设置*/
   "sysConfig": {
@@ -27,18 +28,18 @@
   },
   /*路由信息，缺省地址必须要有，即找不到时使用的地址*/
   "route": {
-    /*缺省地址*/
+    /*缺省地址* /
     "Default": {
       "hosts": [ "Http://127.0.0.1:8080/" ]
     },
-    /*User对应的地址*/
+    /*User对应的地址* /
     "GoodLin-User-External-Api": {
       "hosts": [ "http://172.16.20.142:8081/" ]
     },
-    /*OAuth对应的地址*/
+    /*OAuth对应的地址* /
     "GoodLin-OAuth-Api": {
-      "hosts": [ "http://172.16.20.142/" /*,"http://localhost:8080/GoodLin-OAuth-Api/"*/ ]
-    }
+      "hosts": [ "http://172.16.20.142/" /*,"http://localhost:8080/GoodLin-OAuth-Api/"* /]
+    }*/
   },
   /**/
   "security": {

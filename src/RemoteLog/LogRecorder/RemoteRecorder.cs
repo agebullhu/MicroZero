@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 
@@ -60,7 +59,7 @@ namespace Agebull.ZeroNet.Log
                 }
                 else
                 {
-                    Common.Logging.LogRecorder.BaseRecorder.RecordLog(info);
+                    LogRecorder.BaseRecorder.RecordLog(info);
                 }
             }
         }
@@ -88,21 +87,6 @@ namespace Agebull.ZeroNet.Log
         private static StationState _state;
 
         /// <summary>
-        /// 超时
-        /// </summary>
-        private static readonly TimeSpan TimeWaite = new TimeSpan(0, 0, 0, 3);
-
-        /// <summary>
-        /// 广播内容说明
-        /// </summary>
-        private static readonly byte[] Description = new byte[]
-        {
-            2,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.Argument,
-            ZeroFrameType.End
-        };//ZeroFrameType.SubTitle, 
-        /// <summary>
         /// 广播总数
         /// </summary>
         public static long PubCount { get; private set; }
@@ -120,7 +104,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void SendTask()
         {
-            _identity = ZeroIdentityHelper.ToZeroIdentity("LogRecorder");
+            _identity = ZeroIdentityHelper.ToZeroIdentity("log");
             _state = StationState.Run;
             while (ZeroApplication.State < StationState.Closing && _state == StationState.Run)
             {
@@ -139,36 +123,30 @@ namespace Agebull.ZeroNet.Log
                     Thread.Sleep(10);
                     continue;
                 }
-                string result;
-                bool success;
                 try
                 {
-                    _socket.SendMoreFrame(title.ToString());
-                    _socket.SendMoreFrame(Description);
-                    _socket.SendMoreFrame(ZeroApplication.Config.StationName);
-                    _socket.SendFrame(JsonConvert.SerializeObject(items));
-                    _socket.TrySkipFrame(TimeWaite);
-                    success = _socket.TryReceiveFrameString(TimeWaite, out result);
+                    if (!_socket.Publish(title.ToString(), ZeroApplication.Config.StationName,
+                        JsonConvert.SerializeObject(items)))
+                    {
+                        LogRecorder.BaseRecorder.RecordLog(new RecordInfo
+                        {
+                            Type = LogType.Error,
+                            Name = "RemoteLog",
+                            Message = "日志发送失败"
+                        });
+                        CreateSocket();
+                        continue;
+                    }
                 }
                 catch (Exception e)
                 {
-                    Common.Logging.LogRecorder.BaseRecorder.RecordLog(new RecordInfo
+                    LogRecorder.BaseRecorder.RecordLog(new RecordInfo
                     {
                         Type = LogType.Error,
                         Name = "RemoteLog",
-                        Message = $"日志发送失败，\r\n异常为：\r\n{e}"
+                        Message = $"日志发送失败，异常为：\r\n{e}"
                     });
                     CreateSocket();
-                    continue;
-                }
-                if (!success || result != ZeroNetStatus.ZeroCommandOk)
-                {
-                    Common.Logging.LogRecorder.BaseRecorder.RecordLog(new RecordInfo
-                    {
-                        Type = LogType.Error,
-                        Name = "RemoteLog",
-                        Message = $"日志发送失败，\r\n异常为：\r\n{result}"
-                    });
                     continue;
                 }
                 Items.EndProcess();
@@ -180,7 +158,7 @@ namespace Agebull.ZeroNet.Log
                     PubCount = 0;
             }
             _state = StationState.Closed;
-            _socket.CloseSocket(_config.RequestAddress);
+            _socket.CloseSocket(_config?.RequestAddress);
         }
 
 
@@ -190,7 +168,6 @@ namespace Agebull.ZeroNet.Log
 
 
         private byte[] _identity;
-
         private bool InitSocket()
         {
             _config = ZeroApplication.GetConfig("RemoteLog", out var status);

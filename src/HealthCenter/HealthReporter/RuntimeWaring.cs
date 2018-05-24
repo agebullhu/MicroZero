@@ -26,6 +26,7 @@ namespace ZeroNet.Http.Route
 
         string IPublishData.Title => "RuntimeWaring";
     }
+
     /// <summary>
     /// 运行时警告
     /// </summary>
@@ -53,5 +54,4 @@ namespace ZeroNet.Http.Route
             });
         }
     }
-
 }

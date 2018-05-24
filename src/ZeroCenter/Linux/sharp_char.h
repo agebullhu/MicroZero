@@ -12,100 +12,101 @@ namespace agebull
 		 */
 		class sharp_char
 		{
-			int* _count;
-			char* _buffer;
-			size_t _size;
+			int* count_;
+			char* buffer_;
+			size_t size_;
 		public:
-			sharp_char() : _count(nullptr), _buffer(nullptr), _size(0)
+			sharp_char() : count_(nullptr), buffer_(nullptr), size_(0)
 			{
 			}
-			sharp_char(const sharp_char& fri) : _count(fri._count), _buffer(fri._buffer), _size(fri._size)
+			sharp_char(const sharp_char& fri) : count_(fri.count_), buffer_(fri.buffer_), size_(fri.size_)
 			{
-				if (_count != nullptr)
-					*_count += 1;
+				if (count_ != nullptr)
+					*count_ += 1;
 			}
 
-			sharp_char(char* buffer, int len) : _count(new int()), _buffer(buffer), _size(len)
+			sharp_char(char* buffer, int len) : count_(new int()), buffer_(buffer), size_(len)
 			{
-				*_count = 1;
+				*count_ = 1;
 			}
 
 			sharp_char(const char* buffer)
 			{
 				if (buffer == nullptr)
 				{
-					_buffer = nullptr;
-					_count = nullptr;
-					_size = 0;
+					buffer_ = nullptr;
+					count_ = nullptr;
+					size_ = 0;
 					return;
 				}
-				_size = strlen(buffer);
-				_buffer = new char[_size + 1];
-				memcpy(_buffer, buffer, _size);
-				_buffer[_size] = 0;
-				_count = new int();
-				*_count = 1;
+				size_ = strlen(buffer);
+				buffer_ = new char[size_ + 1];
+				memcpy(buffer_, buffer, size_);
+				buffer_[size_] = 0;
+				count_ = new int();
+				*count_ = 1;
 			}
 
 			sharp_char(zmq_msg_t& msg)
 			{
-				_size = zmq_msg_size(&msg);
-				if (_size == 0)
+				size_ = zmq_msg_size(&msg);
+				if (size_ == 0)
 				{
-					_buffer = nullptr;
-					_count = nullptr;
+					buffer_ = nullptr;
+					count_ = nullptr;
 					return;
 				}
-				_buffer = new char[_size + 1];
-				_count = new int();
-				*_count = 1;
-				memcpy(_buffer, zmq_msg_data(&msg), _size);
-				_buffer[_size] = 0;
+				buffer_ = new char[size_ + 1];
+				count_ = new int();
+				*count_ = 1;
+				memcpy(buffer_, zmq_msg_data(&msg), size_);
+				buffer_[size_] = 0;
 			}
 
 			sharp_char(const std::string& msg)
 			{
-				_size = msg.length();
-				if (_size == 0)
+				size_ = msg.length();
+				if (size_ == 0)
 				{
-					_buffer = nullptr;
-					_count = nullptr;
+					buffer_ = nullptr;
+					count_ = nullptr;
 					return;
 				}
-				_buffer = new char[_size + 1];
-				_count = new int();
-				*_count = 1;
-				memcpy(_buffer, msg.c_str(), _size);
-				_buffer[_size] = 0;
+				buffer_ = new char[size_ + 1];
+				count_ = new int();
+				*count_ = 1;
+				memcpy(buffer_, msg.c_str(), size_);
+				buffer_[size_] = 0;
 			}
-			sharp_char(size_t size)
+
+			explicit sharp_char(size_t size)
 			{
-				_size = size;
-				if (_size == 0)
+				size_ = size;
+				if (size_ == 0)
 				{
-					_buffer = nullptr;
-					_count = nullptr;
+					buffer_ = nullptr;
+					count_ = nullptr;
 					return;
 				}
-				_buffer = new char[_size + 1];
-				_count = new int();
-				*_count = 1;
-				memset(_buffer, 0, _size + 1);
+				buffer_ = new char[size_ + 1];
+				count_ = new int();
+				*count_ = 1;
+				memset(buffer_, 0, size_ + 1);
 			}
 			sharp_char(const acl::string& msg)
 			{
-				_size = msg.length();
-				if (_size == 0)
+				size_ = msg.length();
+				if (size_ == 0)
 				{
-					_buffer = nullptr;
-					_count = nullptr;
+					buffer_ = nullptr;
+					count_ = nullptr;
 					return;
 				}
-				_buffer = new char[_size + 1];
-				_count = new int();
-				*_count = 1;
-				memcpy(_buffer, msg.c_str(), _size);
-				_buffer[_size] = 0;
+				buffer_ = new char[size_ + 1];
+				count_ = new int();
+				*count_ = 1;
+				memcpy(buffer_, msg.c_str(), size_);
+				buffer_[size_] = 0;
 			}
 			~sharp_char()
 			{
@@ -113,71 +114,71 @@ namespace agebull
 			}
 			char* get_buffer() const
 			{
-				return _buffer;
+				return buffer_;
 			}
 			int user_count() const
 			{
-				return _count == nullptr ? 0 : *_count;
+				return count_ == nullptr ? 0 : *count_;
 			}
 			size_t size() const
 			{
-				return _size;
+				return size_;
 			}
 			bool empty() const
 			{
-				return _buffer == nullptr || _size == 0;
+				return buffer_ == nullptr || size_ == 0;
 			}
 			char operator[](size_t idx) const
 			{
-				return _buffer == nullptr || idx < 0 || idx >= _size ? '\0' : _buffer[idx];
+				return buffer_ == nullptr || idx >= size_ ? '\0' : buffer_[idx];
 			}
 			sharp_char& alloc(size_t size)
 			{
 				free();
-				_buffer = new char[size + 1];
-				memset(_buffer, 0, size + 1);
-				_count = new int();
-				*_count = 1;
-				_size = size;
+				buffer_ = new char[size + 1];
+				memset(buffer_, 0, size + 1);
+				count_ = new int();
+				*count_ = 1;
+				size_ = size;
 				return *this;
 			}
 			sharp_char& operator = (zmq_msg_t& msg)
 			{
 				free();
-				_size = zmq_msg_size(&msg);
-				if (_size == 0)
+				size_ = zmq_msg_size(&msg);
+				if (size_ == 0)
 					return *this;
-				alloc(_size);
-				memcpy(_buffer, zmq_msg_data(&msg), _size);
-				_buffer[_size] = 0;
-				_count = new int();
-				*_count = 1;
+				alloc(size_);
+				memcpy(buffer_, zmq_msg_data(&msg), size_);
+				buffer_[size_] = 0;
+				count_ = new int();
+				*count_ = 1;
 				return *this;
 			}
 			sharp_char& operator = (std::string& msg)
 			{
 				free();
-				_size = msg.length();
-				if (_size == 0)
+				size_ = msg.length();
+				if (size_ == 0)
 					return *this;
-				alloc(_size);
-				memcpy(_buffer, msg.c_str(), _size);
-				_buffer[_size] = 0;
-				_count = new int();
-				*_count = 1;
+				alloc(size_);
+				memcpy(buffer_, msg.c_str(), size_);
+				buffer_[size_] = 0;
+				count_ = new int();
+				*count_ = 1;
 				return *this;
 			}
 			sharp_char& operator = (acl::string& msg)
 			{
 				free();
-				_size = msg.length();
-				if (_size == 0)
+				size_ = msg.length();
+				if (size_ == 0)
 					return *this;
-				alloc(_size);
-				memcpy(_buffer, msg.c_str(), _size);
-				_buffer[_size] = 0;
-				_count = new int();
-				*_count = 1;
+				alloc(size_);
+				memcpy(buffer_, msg.c_str(), size_);
+				buffer_[size_] = 0;
+				count_ = new int();
+				*count_ = 1;
 				return *this;
 			}
 			sharp_char& operator = (const char* msg)
@@ -185,37 +186,37 @@ namespace agebull
 				free();
 				if (msg == nullptr)
 					return *this;
-				_size = strlen(msg);
-				if (_size == 0)
+				size_ = strlen(msg);
+				if (size_ == 0)
 					return *this;
-				alloc(_size);
-				memcpy(_buffer, msg, _size);
-				_buffer[_size] = 0;
-				_count = new int();
-				*_count = 1;
+				alloc(size_);
+				memcpy(buffer_, msg, size_);
+				buffer_[size_] = 0;
+				count_ = new int();
+				*count_ = 1;
 				return *this;
 			}
 			void free()
 			{
-				if (_count == nullptr || _size == 0)
+				if (count_ == nullptr || size_ == 0)
 					return;
-				*_count -= 1;
-				if (*_count == 0)
+				*count_ -= 1;
+				if (*count_ == 0)
 				{
-					delete _count;
-					delete[] _buffer;
+					delete count_;
+					delete[] buffer_;
 				}
-				_count = nullptr;
-				_buffer = nullptr;
-				_size = 0;
+				count_ = nullptr;
+				buffer_ = nullptr;
+				size_ = 0;
 			}
 			sharp_char& binding(char* fri, size_t len)
 			{
 				free();
-				_size = len;
-				_buffer = fri;
-				_count = new int();
-				*_count = 1;
+				size_ = len;
+				buffer_ = fri;
+				count_ = new int();
+				*count_ = 1;
 				return *this;
 			}
 			/**
@@ -224,49 +225,51 @@ namespace agebull
 			sharp_char& swap(sharp_char& fri) noexcept
 			{
 				{
-					char* tmp = _buffer;
-					_buffer = fri._buffer;
-					fri._buffer = tmp;
+					char* tmp = buffer_;
+					buffer_ = fri.buffer_;
+					fri.buffer_ = tmp;
 				}
 				{
-					int* tmp = _count;
-					_count = fri._count;
-					fri._count = tmp;
+					int* tmp = count_;
+					count_ = fri.count_;
+					fri.count_ = tmp;
 				}
 				{
-					const size_t tmp = _size;
-					_size = fri._size;
-					fri._size = tmp;
+					const size_t tmp = size_;
+					size_ = fri.size_;
+					fri.size_ = tmp;
 				}
 				return *this;
 			}
 			sharp_char& operator = (const sharp_char& fri)
 			{
 				free();
-				if (fri._buffer != nullptr)
+				if (fri.buffer_ != nullptr)
 				{
-					_buffer = fri._buffer;
-					_size = fri._size;
-					_count = fri._count;
-					*_count += 1;
+					buffer_ = fri.buffer_;
+					size_ = fri.size_;
+					count_ = fri.count_;
+					*count_ += 1;
 				}
 				return *this;
 			}
+
 			sharp_char& operator = (char* fri)
 			{
-				return binding(fri, fri == nullptr ? 0 : strlen(fri));
+				binding(fri, fri == nullptr ? 0 : strlen(fri));
+				return *this;
 			}
-			const char* operator*() const
+			char* operator*() const
 			{
-				return _size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer;
+				return buffer_;
 			}
 			operator std::string() const
 			{
-				return std::string(_size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer);
+				return std::string(size_ == 0 || count_ == nullptr || buffer_ == nullptr ? "" : buffer_);
 			}
 			operator acl::string() const
 			{
-				return acl::string(_size == 0 || _count == nullptr || _buffer == nullptr ? "" : _buffer);
+				return acl::string(size_ == 0 || count_ == nullptr || buffer_ == nullptr ? "" : buffer_);
 			}
 		};
 	}

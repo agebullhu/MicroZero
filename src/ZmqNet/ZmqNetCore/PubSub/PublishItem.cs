@@ -9,6 +9,12 @@ namespace Agebull.ZeroNet.PubSub
     public class PublishItem
     {
         /// <summary>
+        /// 全局ID
+        /// </summary>
+        [JsonProperty]
+        public long GlobalId { get; set; }
+
+        /// <summary>
         /// 请求ID
         /// </summary>
         [JsonProperty]

@@ -17,7 +17,21 @@ namespace agebull
 			* \brief 实例队列访问锁
 			*/
 			static boost::mutex mutex_;
+
+			/**
+			* \brief 全局ID
+			*/
+			static int64_t glogal_id_;
 		public:
+			/**
+			* \brief 取全局ID
+			*/
+			static int64_t get_glogal_id()
+			{
+				if (glogal_id_ == 0xFFFFFFFFFFFFFFF)
+					glogal_id_ = 0;
+				return ++glogal_id_;
+			}
 			/**
 			* \brief 配置集合
 			*/
@@ -53,7 +67,7 @@ namespace agebull
 			/**
 			* \brief 安装一个站点
 			*/
-			static bool install( const char* station_name,int station_type);
+			static bool install( const char* station_name,int station_type, const char* short_name);
 
 			/**
 			* \brief 初始化

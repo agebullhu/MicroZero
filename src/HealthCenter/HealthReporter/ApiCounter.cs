@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -48,6 +43,7 @@ namespace ZeroNet.Http.Route
                 HostName = data.HostName,
                 ApiName = data.ApiName,
                 IsSucceed = data.IsSucceed,
+                Status = data.Status,
                 Requester = $"Web://{ApiContext.RequestContext.Ip}:{ApiContext.RequestContext.Port}"
             });
         }
@@ -101,5 +97,11 @@ namespace ZeroNet.Http.Route
         [DataMember, JsonProperty("succeed")]
         public bool IsSucceed { get; set; }
 
+
+        /// <summary>
+        /// 执行状态
+        /// </summary>
+        [DataMember, JsonProperty("status")]
+        public RouteStatus Status;
     }
 }

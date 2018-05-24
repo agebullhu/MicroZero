@@ -41,7 +41,7 @@ namespace agebull
 			{
 				if (config->station_state_ == station_state::Uninstall)
 					return;
-				if(config->station_state_ > station_state::ReStart && config->station_state_ < station_state::Closed)
+				if (config->station_state_ > station_state::ReStart && config->station_state_ < station_state::Closed)
 				{
 					config->station_state_ = station_state::ReStart;
 					return;
@@ -56,33 +56,55 @@ namespace agebull
 			static void launch(shared_ptr<api_station>& station);
 		private:
 			/**
-			* \brief 工作集合的响应
-			*/
-			void response() override;
-			/**
-			* \brief 调用集合的响应
-			*/
-			void request(ZMQ_HANDLE socket, bool inner) override;
-			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<sharp_char> lines) override;
+			sharp_char command(const char* caller, vector<sharp_char> lines) final;
 
-
-			/**
-			* \brief 工作进入计划
-			*/
-			bool job_plan(ZMQ_HANDLE socket, vector<sharp_char>& list);
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			bool job_start(ZMQ_HANDLE socket, vector<sharp_char>& list);
+			void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
-			bool job_end(vector<sharp_char>& list);
-
+			void job_end(vector<sharp_char>& list) final;
 		};
+
+		/**
+		* \brief 工作开始（发送到工作者）
+		*/
+		inline void api_station::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
+		{
+			//路由到其中一个工作对象
+			//const char* worker;
+			//while(!_balance.get_host(worker))
+			//{
+			//	worker_left(worker);
+			//}
+			//if (worker == nullptr)
+			//{
+			//	zmq_state_ = send_status(socket, *caller, ZERO_STATUS_API_NOT_WORKER);
+			//	return zmq_state_ == zmq_socket_state::Succeed;
+			//}
+			if (list[2][1] == ZERO_COMMAND_WAITING)
+				return;
+			if (!send_response(list))
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID, *global_id);
+			}
+			else
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_WAITING_ID, *global_id);
+			}
+		}
+
+		/**
+		* \brief 工作结束(发送到请求者)
+		*/
+		inline void api_station::job_end(vector<sharp_char>& list)
+		{
+			send_request_result(list[1][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, list);
+		}
 	}
 }
 #endif//!ZMQ_API_STATION_H

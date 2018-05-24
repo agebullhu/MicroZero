@@ -81,11 +81,15 @@ namespace ZeroNet.Http.Route
                 manager.Command(Data);
                 return;
             }
-            // 1 安全检查
-            if (!SecurityCheck())
+            // 1 初始化路由信息
+            if (!FindHost() || Data.RouteHost.Failed)
+            {
+                Data.IsSucceed = false;
+                Data.ResultMessage = RouteRuntime.NoFindJson;
                 return;
-            // 2 初始化路由信息
-            if (!InitializeContext())
+            }
+            // 2 安全检查
+            if (!SecurityCheck())
                 return;
             // 3 缓存快速处理
             if (RouteChahe.LoadCache(Data.Uri, Data.Bearer, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
@@ -95,16 +99,11 @@ namespace ZeroNet.Http.Route
                 return;
             }
             // 4 远程调用
-            if (Data.RouteHost.Failed)
-            {
-                Data.IsSucceed = false;
-                Data.ResultMessage = RouteRuntime.NoFindJson;
-                return;
-            }
             Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
             // 5 结果检查
             Data.IsSucceed = CheckResult(Data);
         }
+
         /// <summary>
         /// 检查调用内容
         /// </summary>
@@ -140,6 +139,8 @@ namespace ZeroNet.Http.Route
                 Data.Bearer = null;
             else
                 Data.Bearer = words[1];
+
+            ApiContext.Current.Request.Bear = Data.Bearer;
 
             var checker = new SecurityChecker
             {
@@ -235,19 +236,17 @@ namespace ZeroNet.Http.Route
         }
 
         #endregion
+
         #region 路由
 
         /// <summary>
         ///     初始化基本上下文
         /// </summary>
-        private bool InitializeContext()
+        private bool FindHost()
         {
-
-            ApiContext.Current.Request.Bear = Data.Bearer;
-
             if (!AppConfig.Config.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
                 Data.RouteHost = HostConfig.DefaultHost;
-            return true;
+            return Data.RouteHost != null;
         }
 
         #endregion
@@ -332,7 +331,7 @@ namespace ZeroNet.Http.Route
                     values.TryAdd(form, Request.Form[form]);
                 context = JsonConvert.SerializeObject(values);
             }
-            else if(Request.ContentLength > 0)
+            else if (Request.ContentLength > 0)
             {
                 using (var texter = new StreamReader(Request.Body))
                 {
