@@ -1,9 +1,11 @@
+using Agebull.ZeroNet.PubSub;
+
 namespace Gboxt.Common.DataModel.ZeroNet
 {
     /// <summary>
     /// 实体事件节点
     /// </summary>
-    public class EntityEventItem
+    public class EntityEventItem : IPublishData
     {
         /// <summary>
         /// 数据库名称
@@ -24,5 +26,7 @@ namespace Gboxt.Common.DataModel.ZeroNet
         /// 事件值
         /// </summary>
         public string Value { get; set; }
+
+        string IPublishData.Title => DbName;
     }
 }

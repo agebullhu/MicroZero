@@ -3,43 +3,75 @@
     /// <summary>
     /// 站点状态
     /// </summary>
-    public enum StationState
+    public class StationState
     {
         /// <summary>
         /// 无，刚构造
         /// </summary>
-        None,
+        public const int None = 0;
         /// <summary>
         /// 配置错误
         /// </summary>
-        ConfigError,
-        /// <summary>
-        /// 正在启动
-        /// </summary>
-        Start,
-        /// <summary>
-        /// 正在运行
-        /// </summary>
-        Run,
-        /// <summary>
-        /// 已暂停
-        /// </summary>
-        Pause,
+        public const int ConfigError = 2;
         /// <summary>
         /// 错误状态
         /// </summary>
-        Failed,
+        public const int Failed = 3;
+        /// <summary>
+        /// 正在启动
+        /// </summary>
+        public const int Start = 4;
+        /// <summary>
+        /// 正在运行
+        /// </summary>
+        public const int Run = 5;
+        /// <summary>
+        /// 已暂停
+        /// </summary>
+        public const int Pause = 6;
         /// <summary>
         /// 将要关闭
         /// </summary>
-        Closing,
+        public const int Closing = 7;
         /// <summary>
         /// 已关闭
         /// </summary>
-        Closed,
+        public const int Closed = 8;
         /// <summary>
         /// 已销毁，析构已调用
         /// </summary>
-        Destroy
+        public const int Destroy = 9;
+
+        /// <summary>
+        /// 返回状态文本
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static string Text(int state)
+        {
+            switch (state)
+            {
+                case None:
+                    return "None";
+                case ConfigError:
+                    return "ConfigError";
+                case Failed:
+                    return "Failed";
+                case Start:// 4;
+                    return "Start";
+                case Run:// 5;
+                    return "Run";
+                case Pause:// 6;
+                    return "Pause";
+                case Closing:// 7;
+                    return "Closing";
+                case Closed:// 8;
+                    return "Closed";
+                case Destroy:// 9;
+                    return "Destroy";
+                default:
+                    return "Undefine";
+            }
+        }
     }
 }

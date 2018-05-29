@@ -93,8 +93,6 @@ namespace ZeroNet.Http.Route
             Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(FileName));
             if (Config == null)
                 return false;
-            LogRecorder.LogMonitor = Config.SystemConfig.LogMonitor;
-            TxtRecorder.LogPath = Config.SystemConfig.LogPath;
             Config.InitCache();
             Config.InitRoute();
             Config.InitCheckApis();

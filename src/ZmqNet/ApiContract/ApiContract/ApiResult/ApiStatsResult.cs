@@ -42,8 +42,8 @@ namespace Agebull.ZeroNet.ZeroApi
         public string ClientMessage { get; set; }
         /// <summary>
         /// 内部提示信息
-        /// </summary>        
-        [JsonIgnore]
+        /// </summary>
+        [JsonProperty("info", NullValueHandling = NullValueHandling.Ignore)]
         public string InnerMessage { get; set; }
     }
 }

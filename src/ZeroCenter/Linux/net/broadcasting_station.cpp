@@ -18,19 +18,19 @@ namespace agebull
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		void broadcasting_station::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
+		void broadcasting_station::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
 		{
 			if (list.size() < 5)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-#if _DEBUG_
 			const sharp_char description = list[2];
+#if _DEBUG_
 			assert(description[2] == ZERO_FRAME_PUB_TITLE);
 			assert(description[3] == ZERO_FRAME_REQUEST_ID);
 #endif // _DEBUG_
-			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *global_id, *list[4]);
+			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, nullptr, *list[4]);
 			list[2] = list[3];
 			list[3] = description;
 			char* buf = *description;
@@ -44,8 +44,9 @@ namespace agebull
 		*/
 		bool broadcasting_station::publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas)
 		{
-			send_more(response_socket_tcp_, *title);
-			send_more(response_socket_tcp_, *description);
+			const auto first = datas.begin();
+			datas.insert(first, title);
+			datas.insert(first, description);
 			return send_response(datas);
 		}
 
@@ -152,29 +153,29 @@ namespace agebull
 		*/
 		void broadcasting_station::launch(shared_ptr<broadcasting_station> station)
 		{
-			station->config_->log_start();
-			station->config_->log_start();
+			zero_config& config = station->get_config();
+			config.log_start();
 			if (!station_warehouse::join(station.get()))
 			{
-				station->config_->log_failed();
+				config.log_failed();
 				return;
 			}
 			if (!station->initialize())
 			{
-				station->config_->log_failed();
+				config.log_failed();
 				return;
 			}
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (station->config_->station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
+			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
 			{
-				station->config_->station_state_ = station_state::ReStart;
-				run(station->config_);
+				config.station_state_ = station_state::ReStart;
+				run(station->get_config_ptr());
 			}
 			else
 			{
-				station->config_->log_closed();
+				config.log_closed();
 			}
 			thread_sleep(1000);
 		}

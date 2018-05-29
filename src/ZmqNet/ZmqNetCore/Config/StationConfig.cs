@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using NetMQ.Sockets;
+using ZeroMQ;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -92,17 +92,25 @@ namespace Agebull.ZeroNet.Core
         public long WorkerErr { get; set; }
 
         /// <summary>
-        /// 状态
+        ///     运行状态
         /// </summary>
         [DataMember, JsonProperty("station_state")]
-        public StationState State { get; set; }
+        private int _state;
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        public int State
+        {
+            get => _state;
+            set => Interlocked.Exchange(ref _state, value);
+        }
 
         /// <summary>
         /// 状态
         /// </summary>
         [DataMember, JsonProperty("state")]
-        public string __ => State.ToString();
-
+        public string __ => StationState.Text(State);
 
         /// <summary>
         /// 状态
@@ -154,7 +162,10 @@ namespace Agebull.ZeroNet.Core
             WorkerOut = src.WorkerOut;
             WorkerErr = src.WorkerErr;
             Workers = src.Workers;
-            _sockets = src._sockets;
+            lock (_sockets)
+            {
+                _sockets = src._sockets;
+            }
             lock (_pools)
             {
                 _pools = src._pools;
@@ -164,23 +175,23 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// Socket名称标识
         /// </summary>
-        private int _socketId;
+        private ulong _socketId;
 
         /// <summary>
         /// 所有连接
         /// </summary>
-        [IgnoreDataMember, JsonIgnore] private List<RequestSocket> _sockets = new List<RequestSocket>();
+        [IgnoreDataMember, JsonIgnore] private List<ZSocket> _sockets = new List<ZSocket>();
 
         /// <summary>
         /// 连接池
         /// </summary>
-        [IgnoreDataMember, JsonIgnore] private Queue<RequestSocket> _pools = new Queue<RequestSocket>();
+        [IgnoreDataMember, JsonIgnore] private Queue<ZSocket> _pools = new Queue<ZSocket>();
 
         /// <summary>
         /// 取得一个连接对象
         /// </summary>
         /// <returns></returns>
-        internal RequestSocket GetSocket()
+        internal ZSocket GetSocket()
         {
             if (_isDisposed)
                 return null;
@@ -189,49 +200,45 @@ namespace Agebull.ZeroNet.Core
                 if (_pools.Count != 0)
                     return _pools.Dequeue();
             }
-            var socket = new RequestSocket();
-            socket.Options.Identity = ZeroIdentityHelper.ToZeroIdentity(ShortName ?? StationName, (++_socketId).ToString());
-            socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-            socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-            socket.Options.TcpKeepalive = true;
-            socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
-            socket.Connect(RequestAddress);
-            _sockets.Add(socket);
+            var socket = ZeroHelper.CreateRequestSocket(RequestAddress, ZeroIdentityHelper.ToZeroIdentity(ShortName ?? StationName, (++_socketId).ToString()));
+            if (socket == null) return null;
+            lock (_sockets)
+                _sockets.Add(socket);
             return socket;
         }
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
         /// <returns></returns>
-        internal void Close(RequestSocket socket)
+        internal void Free(ZSocket socket)
         {
             if (socket == null)
                 return;
-            _sockets.Remove(socket);
-            socket.CloseSocket(RequestAddress);
-        }
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        internal void Free(RequestSocket socket)
-        {
-            if (socket == null)
-                return;
+            //Close(ref socket);
             lock (_pools)
             {
-                if (_isDisposed || _pools.Count > 99)
+                if (_isDisposed || socket.LastError != null || _pools.Count > 99)
                 {
-                    socket.Disconnect(RequestAddress);
-                    socket.Close();
-                    socket.Dispose();
-                    _sockets.Remove(socket);
+                    Close(ref socket);
                 }
                 else
                 {
                     _pools.Enqueue(socket);
                 }
             }
+        }
+        /// <summary>
+        /// 释放一个连接对象
+        /// </summary>
+        /// <returns></returns>
+        internal void Close(ref ZSocket socket)
+        {
+            if (socket == null)
+                return;
+            lock (_sockets)
+                _sockets.Remove(socket);
+            socket.CloseSocket();
+            socket = null;
         }
         /// <summary>
         /// 是否已析构
@@ -265,13 +272,17 @@ namespace Agebull.ZeroNet.Core
             }
             lock (_pools)
             {
-                _pools.Clear();
+                while (_pools.Count > 0)
+                    _pools.Dequeue().CloseSocket();
             }
-            foreach (var socket in _sockets)
+            lock (_sockets)
             {
-                socket.CloseSocket(RequestAddress);
+                foreach (var socket in _sockets)
+                {
+                    socket.CloseSocket();
+                }
+                _sockets.Clear();
             }
-            _sockets.Clear();
         }
     }
 }

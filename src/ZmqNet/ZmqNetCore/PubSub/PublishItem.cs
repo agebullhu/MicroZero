@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -8,6 +9,13 @@ namespace Agebull.ZeroNet.PubSub
     [JsonObject(MemberSerialization.OptIn)]
     public class PublishItem
     {
+
+        /// <summary>
+        /// 是否非正常值
+        /// </summary>
+        [JsonProperty]
+        public bool IsBadValue { get; set; }
+
         /// <summary>
         /// 全局ID
         /// </summary>

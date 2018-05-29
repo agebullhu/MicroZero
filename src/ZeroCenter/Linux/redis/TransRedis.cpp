@@ -477,7 +477,6 @@ namespace agebull
 		}
 		m_local_values[key] = vl2;
 		vl = vl2;
-		log_debug2(DEBUG_BASE, 5, "redis->get %s(%s)", key, vl.c_str());
 		return true;
 	}
 	void trans_redis::set(const char* key, acl::string&vl)

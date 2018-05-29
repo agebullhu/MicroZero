@@ -282,7 +282,7 @@ namespace agebull
 			{
 				descirpt[idx++] = ZERO_FRAME_GLOBAL_ID;
 			}
-			descirpt[0] = static_cast<char>(idx);
+			descirpt[0] = static_cast<char>(idx-2);
 			descirpt[idx] = ZERO_FRAME_END;
 
 			int descirpt_flags = ZMQ_SNDMORE;
@@ -367,6 +367,8 @@ namespace agebull
 		*/
 		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
 		{
+			if(first_index >= ls.size())
+				return send_late(socket,"");
 			size_t idx = first_index;
 			for (; idx < ls.size() - 1; idx++)
 			{
@@ -383,6 +385,8 @@ namespace agebull
 		*/
 		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls, int first_index = 0)
 		{
+			if (first_index >= ls.size())
+				return send_late(socket, "");
 			size_t idx = first_index;
 			for (; idx < ls.size() - 1; idx++)
 			{

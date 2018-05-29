@@ -7,16 +7,19 @@ namespace agebull
 {
 	namespace zmq_net
 	{
+		map<int64, vector<sharp_char>> zero_station::results;
+		boost::mutex zero_station::results_mutex_;
+
 		zero_station::zero_station(const string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type)
-			: station_name_(name)
-			, station_type_(type)
-			, in_plan_poll_(false)
-			, config_(station_warehouse::get_config(name))
-			, state_semaphore_(1)
-			, request_zmq_type_(request_zmq_type)
+			: request_zmq_type_(request_zmq_type)
 			, response_zmq_type_(response_zmq_type)
 			, poll_items_(nullptr)
 			, poll_count_(0)
+			, station_name_(name)
+			, station_type_(type)
+			, in_plan_poll_(false)
+			, state_semaphore_(1)
+			, config_(station_warehouse::get_config(name))
 			, request_scoket_tcp_(nullptr)
 			, request_socket_ipc_(nullptr)
 			, response_socket_tcp_(nullptr)
@@ -24,7 +27,24 @@ namespace agebull
 		{
 
 		}
+		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type)
+			: request_zmq_type_(request_zmq_type)
+			, response_zmq_type_(response_zmq_type)
+			, poll_items_(nullptr)
+			, poll_count_(0)
+			, station_name_(config->station_name_)
+			, station_type_(type)
+			, in_plan_poll_(false)
+			, state_semaphore_(1)
+			, config_(config)
+			, request_scoket_tcp_(nullptr)
+			, request_socket_ipc_(nullptr)
+			, response_socket_tcp_(nullptr)
+			, zmq_state_(zmq_socket_state::Succeed)
+		{
 
+		}
+		
 		/**
 		* \brief 初始化
 		*/
@@ -163,16 +183,17 @@ namespace agebull
 					break;
 				}
 
-				boost::lock_guard<boost::mutex> guard(mutex_);
 				const int state = zmq_poll(poll_items_, poll_count_, 1000);
 				if (state == 0)//超时
 					continue;
-				if (config_->station_state_ == station_state::Pause)
-					continue;
 				if (state < 0)
 				{
-					zmq_state_ = check_zmq_error();
-					check_zmq_state()
+					if ((zmq_state_ = check_zmq_error()) > zmq_socket_state::Succeed)
+					{
+						if (zmq_state_ < zmq_socket_state::Again)
+							continue;
+						break;
+					}
 				}
 				for (int idx = 0; idx < poll_count_; idx++)
 				{
@@ -181,6 +202,7 @@ namespace agebull
 						if (poll_items_[idx].socket == request_scoket_tcp_)
 						{
 							config_->request_in++;
+							//cout << ">>" << station_name_ << config_->request_in << endl;
 							request(poll_items_[idx].socket, false);
 						}
 						else if (poll_items_[idx].socket == request_socket_ipc_)
@@ -191,9 +213,15 @@ namespace agebull
 						else if (poll_items_[idx].socket == response_socket_tcp_)
 						{
 							config_->worker_in++;
+							//cout << "<<"<< station_name_ << config_->worker_in << endl;
 							response();
 						}
-						check_zmq_state()
+						if (zmq_state_ > zmq_socket_state::Succeed)
+						{
+							if (zmq_state_ < zmq_socket_state::Again)
+								continue;
+							break;
+						}
 					}
 					//if (poll_items_[idx].revents & ZMQ_POLLOUT)
 					//{
@@ -274,13 +302,13 @@ namespace agebull
 		/**
 		* \brief 工作进入计划
 		*/
-		void zero_station::job_plan(ZMQ_HANDLE socket, const int64 id, sharp_char& global_id, vector<sharp_char>& list)
+		void zero_station::job_plan(ZMQ_HANDLE socket, vector<sharp_char>& list)//const int64 id, sharp_char& global_id, 
 		{
 			sharp_char& description = list[2];
 			char* const buf = description.get_buffer();
 			const auto frame_size = description.size();
 			buf[1] = ZERO_STATE_CODE_PLAN;
-			size_t plan = 0, rqid = 0;
+			size_t plan = 0, rqid = 0, glid = 0;
 			for (size_t idx = 2; idx <= frame_size; idx++)
 			{
 				switch (buf[idx])
@@ -291,8 +319,12 @@ namespace agebull
 				case ZERO_FRAME_REQUEST_ID:
 					rqid = idx + 1;
 					break;
+				case ZERO_FRAME_GLOBAL_ID:
+					glid = idx + 1;
+					break;
 				}
 			}
+			const sharp_char global_id = glid == 0 ? nullptr : list[glid];
 			if (plan == 0)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid == 0 ? nullptr : *list[rqid], "plan frame no find");
@@ -300,7 +332,7 @@ namespace agebull
 			}
 			plan_message message;
 			message.read_plan(list[plan].get_buffer());
-			message.plan_id = id;
+			message.plan_id = atoll(*global_id);
 			if (rqid != 0)
 				message.request_id = list[rqid];
 			message.request_caller = list[0];

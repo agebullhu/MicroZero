@@ -7,8 +7,7 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using NetMQ;
-using NetMQ.Sockets;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -20,8 +19,8 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     保持长连接的连接池
         /// </summary>
-        private static readonly Dictionary<string, KeyValuePair<StationConfig, RequestSocket>> Publishers =
-            new Dictionary<string, KeyValuePair<StationConfig, RequestSocket>>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, KeyValuePair<StationConfig, ZSocket>> Publishers =
+            new Dictionary<string, KeyValuePair<StationConfig, ZSocket>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 请求队列
@@ -31,18 +30,27 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     运行状态
         /// </summary>
-        public static StationState RunState { get; private set; }
+        private static int _state;
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        public static int State
+        {
+            get => _state;
+            protected set => Interlocked.Exchange(ref _state, value);
+        }
+
         /// <summary>
         /// 缓存文件名称
         /// </summary>
-        private static string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
-            "zero_publish_queue.json");
+        private static string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, "zero_publish_queue.json");
         /// <summary>
         ///     启动
         /// </summary>
         public static void Initialize()
         {
-            RunState = StationState.Start;
+            State = StationState.Start;
             try
             {
                 var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
@@ -51,8 +59,9 @@ namespace Agebull.ZeroNet.PubSub
                 foreach (var val in old.Queue)
                     Items.Push(val);
             }
-            catch
+            catch(Exception ex)
             {
+                StationConsole.WriteException("Publisher", ex);
             }
         }
         /// <summary>
@@ -71,20 +80,18 @@ namespace Agebull.ZeroNet.PubSub
             lock (Publishers)
             {
                 foreach (var vl in Publishers.Values)
-                    vl.Value.CloseSocket(vl.Key.RequestAddress);
+                    vl.Value.CloseSocket();
                 Publishers.Clear();
             }
             //未运行状态
-            if (RunState < StationState.Start || RunState > StationState.Failed)
+            if (State < StationState.Start || State > StationState.Pause)
                 return true;
-            StationConsole.WriteInfo("Publisher closing....");
-            RunState = StationState.Closing;
+            StationConsole.WriteInfo("Publisher","closing....");
+            State = StationState.Closing;
             do
             {
                 Thread.Sleep(20);
-            } while (RunState != StationState.Closed);
-
-            StationConsole.WriteInfo("Publisher closed");
+            } while (State != StationState.Closed);
             return true;
         }
         /// <summary>
@@ -105,7 +112,7 @@ namespace Agebull.ZeroNet.PubSub
                 RequestId = ApiContext.RequestContext.RequestId,
                 Content = value ?? "{}"
             });
-            if (RunState == StationState.Closed)
+            if (State == StationState.Closed)
                 Items.Save(CacheFileName);
         }
         /// <summary>
@@ -117,10 +124,11 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         private static void SendTask()
         {
-            RunState = StationState.Run;
-            while (ZeroApplication.State < StationState.Closing && RunState == StationState.Run)
+            State = StationState.Run;
+            StationConsole.WriteInfo("Publisher", "run...");
+            while (ZeroApplication.ApplicationState < StationState.Closing && State == StationState.Run)
             {
-                if (ZeroApplication.State != StationState.Run)
+                if (ZeroApplication.ApplicationState != StationState.Run)
                 {
                     Thread.Sleep(1000);
                     continue;
@@ -130,6 +138,7 @@ namespace Agebull.ZeroNet.PubSub
 
                 if (!ZeroApplication.Configs.TryGetValue(item.Station, out var config))
                 {
+                    StationConsole.WriteError($"ZeroPublisher:{item.Station}-{item.Title}", "因为无法找到站点而导致消息被遗弃");
                     LogRecorder.Trace(LogType.Error, "Publish",
                         $@"因为无法找到站点而导致向[{item.Station}]广播的主题为[{item.Title}]的消息被遗弃，内容为：
 {item.Content}");
@@ -146,6 +155,7 @@ namespace Agebull.ZeroNet.PubSub
                 {
                     if (!socket.Publish(item))
                     {
+                        StationConsole.WriteError($"ZeroPublisher:{item.Station}-{item.Title}", "消息发送失败");
                         LogRecorder.Trace(LogType.Warning, "Publish",
                             $@"向[{item.Station}]广播的主题为[{item.Title}]的消息发送失败，内容为：
 {item.Content}");
@@ -154,9 +164,8 @@ namespace Agebull.ZeroNet.PubSub
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
-                    StationConsole.WriteError($"[{item.Station}-{item.Title}]request error =>{e.Message}");
-                    config.Close(socket);
-                    socket = null;
+                    StationConsole.WriteException($"ZeroPublisher:{item.Station}-{item.Title}",e);
+                    config.Close(ref socket);
                 }
                 finally
                 {
@@ -165,7 +174,8 @@ namespace Agebull.ZeroNet.PubSub
                 Items.EndProcess();
                 PubCount++;
             }
-            RunState = StationState.Closed;
+            State = StationState.Closed;
+            StationConsole.WriteInfo("Publisher", "closed");
         }
 
 

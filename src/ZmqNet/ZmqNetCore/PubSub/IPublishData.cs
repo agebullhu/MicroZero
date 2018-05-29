@@ -1,12 +1,12 @@
 namespace Agebull.ZeroNet.PubSub
 {
     /// <summary>
-    /// 琛ㄧず骞挎挱鏁版嵁
+    /// 表示广播数据
     /// </summary>
     public interface IPublishData
     {
         /// <summary>
-        /// 鏍囬
+        /// 广播标题
         /// </summary>
         string Title { get; }
     }

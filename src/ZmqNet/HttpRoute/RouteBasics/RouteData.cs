@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.ZeroApi;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -118,7 +119,7 @@ namespace ZeroNet.Http.Route
         /// 是否正常
         /// </summary>
         [DataMember, JsonProperty("succeed")]
-        public bool IsSucceed { get; set; }
+        public bool IsSucceed => Status == RouteStatus.None;
 
         /// <summary>
         /// 准备
@@ -140,11 +141,12 @@ namespace ZeroNet.Http.Route
             {
                 Form = request.Form.LinkToString(p => $"{p.Key}={p.Value}", "&");
             }
-            else if (request.ContentLength != null)
+            if (request.ContentLength != null)
             {
                 using (var texter = new StreamReader(request.Body))
                 {
                     Context = texter.ReadToEnd();
+                    texter.Close();
                 }
             }
         }

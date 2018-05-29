@@ -77,7 +77,6 @@ namespace Agebull.ZeroNet.LogService
                 writer.Flush();
                 writer.Dispose();
             }
-
             _writers.Clear();
             base.OnTaskStop();
         }

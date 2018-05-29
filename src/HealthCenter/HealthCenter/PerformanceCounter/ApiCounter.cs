@@ -37,7 +37,7 @@ namespace ZeroNet.Http.Route
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    StationConsole.WriteError($"{e.Message}\r\n{args.Content}");
+                    StationConsole.WriteError("HealthCenter", args.Content);
                 }
             }
             catch (Exception e)

@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -59,7 +60,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 实例名称
         /// </summary>
-        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName(Config?.ShortName ?? StationName,Name));
+        public string RealName => _realName ?? (_realName = ZeroIdentityHelper.CreateRealName(Config?.ShortName ?? StationName, Name));
         /// <summary>
         /// 实例名称
         /// </summary>
@@ -71,9 +72,18 @@ namespace Agebull.ZeroNet.Core
         public StationConfig Config { get; set; }
 
         /// <summary>
-        /// 运行状态
+        ///     运行状态
         /// </summary>
-        public StationState RunState;
+        private int _state;
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        public int State
+        {
+            get => _state;
+            set => Interlocked.Exchange(ref _state, value);
+        }
 
         /// <summary>
         /// 正在侦听的状态开关
@@ -93,7 +103,7 @@ namespace Agebull.ZeroNet.Core
         public static bool Run(ZeroStation station)
         {
             //执行状态，会自动处理
-            if (station.RunState >= StationState.Start && station.RunState <= StationState.Failed)
+            if (station.State >= StationState.Start && station.State <= StationState.Pause)
             {
                 return false;
             }
@@ -124,8 +134,8 @@ namespace Agebull.ZeroNet.Core
                 //}
                 if (station.Config == null)
                 {
-                    station.RunState = StationState.ConfigError;
-                    StationConsole.WriteError($"[{station.StationName}]config cann`t get,failed!");
+                    station.State = StationState.ConfigError;
+                    StationConsole.WriteError(station.StationName, "config can`t load");
                     return false;
                 }
             }
@@ -148,31 +158,31 @@ namespace Agebull.ZeroNet.Core
                 SystemManager.Heartbeat(Config.StationName, RealName);
         }
         /// <summary>
+        ///     尝试重启
+        /// </summary>
+        /// <returns></returns>
+        protected bool TryRun()
+        {
+            StationConsole.WriteInfo(RealName, "restart...");
+            Thread.Sleep(1000);
+            Task.Factory.StartNew(Run);
+            return true;
+        }
+        /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
         protected virtual void OnTaskStop()
         {
-            Heartbeat(true);
-            while (InPoll)
-                Thread.Sleep(50);
-            if (ZeroApplication.State == StationState.Run && RunState == StationState.Failed)
+            if (ZeroApplication.CanDo && State == StationState.Failed)
             {
-                StationConsole.WriteInfo($"[{StationName}]restart...");
-                Console.CursorLeft = 0;
-                StationConsole.WriteInfo("                       ");
-                for (int i = 1; i <= 3; i++)
-                {
-                    Console.CursorLeft = 0;
-                    Console.Write($"{i}s");
-                    Thread.Sleep(1000);
-                }
-                RunState = StationState.None;
-                Run();
+                State = StationState.None;
+                TryRun();
                 return;
             }
-            if (RunState == StationState.Closing)
-                RunState = StationState.Closed;
+            Heartbeat(true);
+            State = StationState.Closed;
+            StationConsole.WriteInfo(RealName, "end");
         }
         /// <summary>
         /// 关闭
@@ -181,16 +191,16 @@ namespace Agebull.ZeroNet.Core
         public bool Close()
         {
             //未运行状态
-            if (RunState < StationState.Start || RunState > StationState.Failed)
+            if (State < StationState.Start || State > StationState.Pause)
                 return true;
-            StationConsole.WriteInfo($"{StationName} closing....");
-            RunState = StationState.Closing;
+            StationConsole.WriteInfo(StationName, "closing....");
+            State = StationState.Closing;
             do
             {
                 Thread.Sleep(20);
-            } while (RunState != StationState.Closed);
+            } while (State != StationState.Closed);
 
-            StationConsole.WriteInfo($"{StationName} closed");
+            StationConsole.WriteInfo(StationName, "closed");
             return true;
         }
 

@@ -27,6 +27,14 @@ namespace agebull
 
 			}
 			/**
+			* \brief 构造
+			*/
+			station_dispatcher(shared_ptr<zero_config>& config)
+				:zero_station(config, STATION_TYPE_DISPATCHER, ZMQ_ROUTER, ZMQ_PUB, -1)
+			{
+
+			}
+			/**
 			* \brief 析构
 			*/
 			~station_dispatcher() final = default;
@@ -44,9 +52,7 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
-				boost::lock_guard<boost::mutex> guard(config->mutex_);
-				instance = new station_dispatcher();
-				instance->config_ = config;
+				instance = new station_dispatcher(config);
 				boost::thread(boost::bind(launch, shared_ptr<station_dispatcher>(instance)));
 			}
 			/**
@@ -86,7 +92,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) final;
+			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
 			/**
 			*\brief 发布消息
 			*/
@@ -101,6 +107,10 @@ namespace agebull
 			*/
 			sharp_char command(const char* caller, vector<sharp_char> lines) final;
 			/**
+			* \brief 取机器信息
+			*/
+			static char host_info(const string& stattion, string& json);
+			/**
 			* \brief 站点安装
 			*/
 			static char install_station(const char* type_name, const char* stattion, const char* short_name);
@@ -108,10 +118,6 @@ namespace agebull
 			* \brief 站点卸载
 			*/
 			static bool uninstall(const string& stattion);
-			/**
-			* \brief 取机器信息
-			*/
-			static char host_info(const string& stattion, string& json);
 			/**
 			*  \brief 启动站点
 			*/

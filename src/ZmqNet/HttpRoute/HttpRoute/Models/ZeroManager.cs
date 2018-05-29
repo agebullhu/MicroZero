@@ -61,7 +61,7 @@ namespace ZeroNet.Http.Route
                 }
             }
 
-            if (ZeroApplication.State != StationState.Run)
+            if (ZeroApplication.ApplicationState != StationState.Run)
             {
                 _result = ApiResult.Error(ErrorCode.NoReady);
                 return;
@@ -78,13 +78,13 @@ namespace ZeroNet.Http.Route
                 }
                 switch (result.State)
                 {
-                    case ZeroStateType.InstallArgumentError:
+                    case ZeroOperatorStateType.InstallArgumentError:
                         _result = ApiResult.Error(ErrorCode.ArgumentError, $"命令格式错误:{result.State.Text()}");
                         return;
-                    case ZeroStateType.NoSupport:
+                    case ZeroOperatorStateType.NoSupport:
                         _result = ApiResult.Error(ErrorCode.UnknowError, $"类型{type}不支持");
                         return;
-                    case ZeroStateType.Failed:
+                    case ZeroOperatorStateType.Failed:
                         _result = ApiResult.Error(ErrorCode.ArgumentError, "已存在");
                         _result.Status = new ApiStatsResult
                         {
@@ -92,7 +92,7 @@ namespace ZeroNet.Http.Route
                             ClientMessage = "安装成功"
                         };
                         return;
-                    case ZeroStateType.Ok:
+                    case ZeroOperatorStateType.Ok:
                         _result = ApiResult.Succees();
                         _result.Status = new ApiStatsResult
                         {
@@ -140,7 +140,7 @@ namespace ZeroNet.Http.Route
                 return;
             }
             
-            if (ZeroApplication.State != StationState.Run)
+            if (ZeroApplication.ApplicationState != StationState.Run)
             {
                 _result = ApiResult.Error(ErrorCode.NoReady);
                 return;
@@ -154,10 +154,10 @@ namespace ZeroNet.Http.Route
             }
             switch (value.State)
             {
-                case ZeroStateType.NoSupport:
+                case ZeroOperatorStateType.NoSupport:
                     _result = ApiResult.Error(ErrorCode.UnknowError, "不支持的操作");
                     return;
-                case ZeroStateType.Ok:
+                case ZeroOperatorStateType.Ok:
                     _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.TextValue) ?? value.State.Text());
                     _result.Status = new ApiStatsResult
                     {

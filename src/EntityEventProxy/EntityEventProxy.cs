@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using NetMQ;
-using NetMQ.Sockets;
+using Agebull.ZeroNet.PubSub;
+using ZeroMQ;
 using Newtonsoft.Json;
 
 namespace Gboxt.Common.DataModel.ZeroNet
@@ -12,8 +12,24 @@ namespace Gboxt.Common.DataModel.ZeroNet
     /// <summary>
     /// 实体事件代理,实现网络广播功能
     /// </summary>
-    public class EntityEventProxy : IEntityEventProxy
+    public class EntityEventProxy : Publisher<EntityEventItem>, IEntityEventProxy
     {
+        /// <summary>
+        /// 防止构造
+        /// </summary>
+        EntityEventProxy()
+        {
+            
+        }
+
+        /// <summary>
+        /// 注入
+        /// </summary>
+        public static void RegistProxy()
+        {
+            BusinessGlobal.EntityEventProxy = new EntityEventProxy();
+        }
+
         /// <summary>状态修改事件</summary>
         /// <param name="database">数据库</param>
         /// <param name="entity">实体</param>
@@ -21,7 +37,7 @@ namespace Gboxt.Common.DataModel.ZeroNet
         /// <param name="value">对应实体</param>
         void IEntityEventProxy.OnStatusChanged(string database, string entity, DataOperatorType type, string value)
         {
-            Items.Push(new EntityEventItem
+            Publish(new EntityEventItem
             {
                 DbName = database,
                 EntityName = entity,
@@ -30,116 +46,5 @@ namespace Gboxt.Common.DataModel.ZeroNet
             });
         }
 
-
-        #region Field
-        /// <summary>
-        /// 配置
-        /// </summary>
-        private StationConfig _config;
-        /// <summary>
-        /// 连接对象
-        /// </summary>
-        private RequestSocket _socket;
-
-        /// <summary>
-        /// 请求队列
-        /// </summary>
-        public static readonly EntityEventQueue Items = new EntityEventQueue();
-
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        private static StationState _state;
-
-        #endregion
-
-        #region Task
-
-        /// <summary>
-        ///     发送广播的后台任务
-        /// </summary>
-        private void SendTask()
-        {
-            _state = StationState.Run;
-            while (ZeroApplication.State < StationState.Closing && _state == StationState.Run)
-            {
-                if (ZeroApplication.State != StationState.Run)
-                {
-                    Thread.Sleep(1000);
-                    continue;
-                }
-                if (!Items.StartProcess(out var database, out var items, 100))
-                {
-                    Thread.Sleep(10);
-                    continue;
-                }
-                if (_socket == null && InitSocket())
-                {
-                    Thread.Sleep(10);
-                    continue;
-                }
-                try
-                {
-                    if (!_socket.Publish(database, null, items))
-                    {
-                        LogRecorder.Error("实体事件发送失败");
-                        CreateSocket();
-                        continue;
-                    }
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Error($"实体事件发送失败:\r\n{e}");
-                    CreateSocket();
-                    continue;
-                }
-                Items.EndProcess();
-            }
-            _state = StationState.Closed;
-            _socket.CloseSocket(_config.RequestAddress);
-        }
-
-
-        #endregion
-
-        #region Socket
-
-        
-        private bool InitSocket()
-        {
-            _config = ZeroApplication.GetConfig("EntityEvent", out var status);
-            if (status != ZeroCommandStatus.Success || _config == null)
-            {
-                return false;
-            }
-            return CreateSocket() == ZeroCommandStatus.Success;
-        }
-        /// <summary>
-        ///     取得Socket对象
-        /// </summary>
-        /// <returns></returns>
-        private ZeroCommandStatus CreateSocket()
-        {
-            try
-            {
-                _socket.CloseSocket(_config.RequestAddress);
-
-                _socket = new RequestSocket();
-                _socket.Options.Identity = ZeroApplication.Config.Identity;
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-                _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-                _socket.Options.TcpKeepalive = true;
-                _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
-                _socket.Connect(_config.RequestAddress);
-                return ZeroCommandStatus.Success;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return ZeroCommandStatus.Exception;
-            }
-        }
-
-        #endregion
     }
 }

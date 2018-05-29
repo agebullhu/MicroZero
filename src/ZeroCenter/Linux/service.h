@@ -42,6 +42,9 @@ namespace agebull
 					std::cout << "Ip:empty" << endl;
 					return false;
 				}
+				int major, minor, patch;
+				zmq_version(&major, &minor, &patch); 
+				printf("Current ØMQ version is %d.%d.%d\n", major, minor, patch);
 				return station_warehouse::initialize();
 			}
 

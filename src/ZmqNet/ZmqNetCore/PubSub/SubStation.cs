@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using NetMQ;
-using NetMQ.Sockets;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -34,7 +33,7 @@ namespace Agebull.ZeroNet.PubSub
         public bool IsRealModel { get; set; }
 
 
-        private SubscriberSocket _socket;
+        private ZSocket _socket;
 
         /*// <summary>
         /// 命令处理方法 
@@ -65,19 +64,18 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationConsole.WriteInfo($"[{RealName}=>{Config.WorkerAddress}]start...");
-            RunState = StationState.Start;
+            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", Config.WorkerAddress);
+            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", RealName);
+            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", "start...");
+            State = StationState.Start;
             InPoll = false;
 
-            RunState = StationState.Run;
+            State = StationState.Run;
             if (!IsRealModel)
                 Items = SyncQueue<PublishItem>.Load(CacheFileName);
 
             Task.Factory.StartNew(HandleTask);
             Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
-            while (!InPoll)
-                Thread.Sleep(50);
-            StationConsole.WriteInfo($"[{StationName}:{RealName}]runing...");
             return true;
         }
 
@@ -101,91 +99,48 @@ namespace Agebull.ZeroNet.PubSub
             Heartbeat(false);
             if (!CreateSocket())
             {
-                RunState = StationState.Failed;
+                State = StationState.Failed;
                 return;
             }
-            StationConsole.WriteLine($"[{RealName}]poll start...");
-            var timeout = new TimeSpan(0, 0, 5);
+            StationConsole.WriteInfo(StationName, "run...");
             InPoll = true;
-            while (RunState == StationState.Run)
+            while (State == StationState.Run)
             {
-                try
-                {
-                    if (!_socket.TryReceiveFrameString(timeout, out var title, out var more) || !more)
-                    {
-                        continue;
-                    }
-                    if (!_socket.TryReceiveFrameBytes(out var description, out more) || !more)
-                    {
-                        continue;
-                    }
-                    PublishItem item = new PublishItem
-                    {
-                        Title = title
-                    };
-                    int idx = 2;
-                    while (more)
-                    {
-                        if (!_socket.TryReceiveFrameString(out var val, out more))
-                        {
-                            continue;
-                        }
-                        switch (description[idx++])
-                        {
-                            case ZeroFrameType.SubTitle:
-                                item.SubTitle = val;
-                                break;
-                            case ZeroFrameType.Publisher:
-                                item.Station = val;
-                                break;
-                            case ZeroFrameType.Argument:
-                                item.Content = val;
-                                break;
-                            case ZeroFrameType.RequestId:
-                                item.RequestId = val;
-                                break;
-                            case ZeroFrameType.GlobalId:
-                                item.GlobalId = long.Parse(val,NumberStyles.HexNumber);
-                                break;
-                        }
-                    }
+                if (_socket.Subscribe(out var item))
                     Items.Push(item);
-                }
-                catch (Exception e)
-                {
-                    StationConsole.WriteError($"[{StationName}:{RealName}]poll error.{e.Message}...");
-                    LogRecorder.Exception(e);
-                    RunState = StationState.Failed;
-                }
             }
             InPoll = false;
-            StationConsole.WriteLine($"[{StationName}:{RealName}]poll stop");
-            if (!IsRealModel)
-                Items.Save(CacheFileName);
-            CloseSocket();
+            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", "poll stop");
+        }
 
+        /// <summary>
+        /// 命令轮询
+        /// </summary>
+        /// <returns></returns>
+        protected override void OnTaskStop()
+        {
+            CloseSocket();
+            if (!ZeroApplication.IsAlive)
+            {
+                if (!IsRealModel)
+                    Items.Save(CacheFileName);
+            }
+            base.OnTaskStop();
         }
 
         private bool CreateSocket()
         {
-            _socket = new SubscriberSocket();
-            _socket.Options.Identity = Identity;
-            _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-            _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-            _socket.Options.TcpKeepalive = true;
-            _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
             try
             {
-                _socket.Subscribe(Subscribe);
-                _socket.Connect(Config.WorkerAddress);
+                _socket = ZeroHelper.CreateSubscriberSocket(Config.WorkerAddress, Identity, Subscribe);
                 return true;
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                RunState = StationState.Failed;
+                State = StationState.Failed;
                 CloseSocket();
-                StationConsole.WriteError($"[{StationName}:{RealName}]connect error =>{e.Message}");
+                StationConsole.WriteException("Pub",$"{ StationName}:{Name}", e);
                 return false;
             }
         }
@@ -215,9 +170,9 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 命令处理任务
         /// </summary>
-        private void HandleTask()
+        protected virtual void HandleTask()
         {
-            while (RunState == StationState.Run)
+            while (State == StationState.Run)
             {
                 if (!Items.StartProcess(out var item, 1000))
                     continue;
@@ -230,6 +185,7 @@ namespace Agebull.ZeroNet.PubSub
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
+                    StationConsole.WriteException("Pub",$"{ StationName}:{Name}", e);
                     Thread.Sleep(5);
                 }
                 finally

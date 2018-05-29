@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// Api调用节点
@@ -11,7 +11,13 @@ namespace Agebull.ZeroNet.Core
         /// 全局ID
         /// </summary>
         [JsonProperty]
-        public long GlobalId { get; set; }
+        public string GlobalId { get; set; }
+
+        /// <summary>
+        /// 调用方的全局ID
+        /// </summary>
+        [JsonProperty]
+        public string CallerGlobalId { get; set; }
 
         /// <summary>
         /// 请求者
@@ -45,7 +51,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 执行状态
         /// </summary>
-        public int Status { get; set; }
+        public OperatorStatus Status { get; set; }
 
     }
 }

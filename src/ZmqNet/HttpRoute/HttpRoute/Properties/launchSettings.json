@@ -9,7 +9,7 @@
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "Project",
+      "commandName": "IISExpress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development**"
       },
@@ -18,9 +18,9 @@
     "ExternalStation": {
       "commandName": "Project",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT_": "Development"
       },
-      "applicationUrl": "http://localhost:24240/"
+      "applicationUrl": "http://localhost:5000/"
     }
   }
 }

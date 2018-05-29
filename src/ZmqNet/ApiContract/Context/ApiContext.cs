@@ -66,7 +66,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 全局
         /// </summary>
-        public static IConfiguration Configuration { get;private set; }
+        public static IConfiguration Configuration { get; private set; }
         /// <summary>
         ///     当前线程的调用上下文
         /// </summary>
@@ -108,6 +108,11 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public static ILoginUserInfo Customer => Current._user;
 
+        /// <summary>
+        /// 最后操作的错误码
+        /// </summary>
+        public int LastError { get; set; }
+
         #endregion
 
 
@@ -128,42 +133,33 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public CallContext Request => _requestContext ?? (_requestContext = new CallContext());
 
-        /// <summary>
-        ///     当前调用的客户信息
-        /// </summary>
-        public ILoginUserInfo LoginUser => _user ?? (_user = new LoginUserInfo { UserId = -1 });
-
-
         #endregion
 
         #region 内容设置
 
+        /// <summary>
+        /// 内部构造
+        /// </summary>
         private ApiContext()
         {
-            _requestContext = new CallContext
-            {
-                requestId = $"{MyRealName}-{RandomOperate.Generate(8)}",
-                Bear = "<error>",
-                serviceKey = MyServiceKey,
-                RequestType = RequestType.None
-            };
+            _requestContext = new CallContext($"{MyRealName}-{RandomOperate.Generate(8)}", MyServiceKey);
             _user = LoginUserInfo.CreateAnymouse("<error>", "<error>", "<error>");
         }
+
         /// <summary>
         ///     设置当前上下文（框架内调用，外部误用后果未知）
         /// </summary>
         /// <param name="context"></param>
         public static void SetContext(ApiContext context)
         {
-            if (_current == context)
+            if (Current == context)
                 return;
-            var local = new AsyncLocal<ApiContext>();
-            if (local.Value == context) return;
-            local.Value?.Dispose();
-            local.Value = context;
-            _current = context;
+            if (context._user != null)
+                Current._user = context._user;
+            if (context._requestContext != null)
+                Current._requestContext = context._requestContext;
         }
-        
+
         /// <summary>
         ///     设置当前用户（框架内调用，外部误用后果未知）
         /// </summary>
@@ -171,23 +167,6 @@ namespace Agebull.ZeroNet.ZeroApi
         public static void SetCustomer(LoginUserInfo customer)
         {
             Current._user = customer;
-        }
-
-        /// <summary>
-        ///     检查上下文，如果信息为空，加入系统匿名用户上下文
-        /// </summary>
-        public static void TryCheckByAnymouse()
-        {
-            if (Current._requestContext == null)
-                Current._requestContext = new CallContext
-                {
-                    requestId = $"{MyRealName}-{RandomOperate.Generate(8)}",
-                    Bear = "<error>",
-                    serviceKey = MyServiceKey,
-                    RequestType = RequestType.None
-                };
-            if (Current._user == null)
-                Current._user = LoginUserInfo.CreateAnymouse(Current._requestContext.Bear, "<error>", "<error>");
         }
 
         #endregion

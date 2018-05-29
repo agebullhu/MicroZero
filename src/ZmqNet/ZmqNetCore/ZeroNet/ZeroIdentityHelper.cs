@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Gboxt.Common.DataModel;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -63,7 +64,26 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static byte[] ToZeroIdentity(params string[] ranges)
         {
-            return CreateRealName(ranges).ToAsciiBytes();
+            StringBuilder sb = new StringBuilder();
+            sb.Append('+');//IsLocalhost ? "-" : "+"
+            sb.Append(ZeroApplication.Config.ServiceName);
+            sb.Append("-");
+            sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);
+            //if (ZeroApplication.Config.ServiceKey != "*")
+            //{
+            //    sb.Append("-");
+            //    sb.Append(ZeroApplication.Config.ServiceKey);
+            //}
+            //foreach (var range in ranges)
+            //{
+            //    if (range == null)
+            //        continue;
+            //    sb.Append("-");
+            //    sb.Append(range);
+            //}
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(8));
+            return sb.ToString().ToAsciiBytes();
         }
     }
 }

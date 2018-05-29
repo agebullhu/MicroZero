@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.ZeroApi;
-using NetMQ;
-using NetMQ.Sockets;
+using Agebull.ZeroNet.Core;
+using ZeroMQ;
 using Newtonsoft.Json;
-using ErrorCode = Agebull.ZeroNet.ZeroApi.ErrorCode;
-
-namespace Agebull.ZeroNet.Core
+namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     ///     Api站点
@@ -33,7 +31,7 @@ namespace Agebull.ZeroNet.Core
             {
                 action.Name = name;
                 _apiActions.Add(name, action);
-                StationConsole.WriteLine($"{StationName}:{name} is registed");
+                StationConsole.WriteInfo(StationName, $"{name} is registed");
             }
             else
             {
@@ -118,6 +116,8 @@ namespace Agebull.ZeroNet.Core
         #endregion
 
         #region Api调用
+        public int CallCount, ErrorCount, SuccessCount,RecvCount, SendCount, SendError;
+
         /// <summary>
         /// 构造
         /// </summary>
@@ -125,59 +125,27 @@ namespace Agebull.ZeroNet.Core
         {
 
         }
-
         /// <summary>
-        ///     执行命令
+        /// 执行前的处理
         /// </summary>
-        private void ExecCommand(object arg)
-        {
-            var item = (ApiCallItem)arg;
-            using (MonitorScope.CreateScope("ExecCommand"))
-            {
-                LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
-                bool success;
-                try
-                {
-                    using (MonitorStepScope.CreateScope("Argument"))
-                        LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
-                    success = ExecCommand(item);
-                }
-                catch (Exception ex)
-                {
-                    LogRecorder.Exception(ex);
-                    LogRecorder.MonitorTrace(ex.Message);
-                    success = false;
-                    item.Result = ZeroNetStatus.InnerErrorJson;
-                }
-                using (MonitorStepScope.CreateScope("Result"))
-                    LogRecorder.MonitorTrace(item.Result);
-                try
-                {
-                    _socket.SendMoreFrame(item.Caller);
-                    _socket.SendMoreFrameEmpty();
-                    _socket.SendMoreFrame(new byte[] { 2, (byte)(success ? ZeroStateType.Ok : ZeroStateType.Error), ZeroFrameType.JsonValue, ZeroFrameType.GlobalId });
-                    _socket.SendMoreFrame(item.Result);
-                    _socket.SendFrame(item.GlobalId.ToString("X"));
-                }
-                catch (Exception ex)
-                {
-                    LogRecorder.Exception(ex);
-                    LogRecorder.MonitorTrace(ex.Message);
-                }
-            }
-        }
+        public static List<Action<ApiStation, ApiCallItem>> PreActions { get; } = new List<Action<ApiStation, ApiCallItem>>();
+        /// <summary>
+        /// 执行后的处理
+        /// </summary>
+        public static List<Action<ApiStation, ApiCallItem>> EndActions { get; } = new List<Action<ApiStation, ApiCallItem>>();
+
 
         /// <summary>
         ///     执行命令
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool ExecCommand(ApiCallItem item)
+        private bool ExecCommand(ApiCallItem item)
         {
             if (!_apiActions.TryGetValue(item.ApiName, out var action))
             {
-                item.Result = ZeroNetStatus.NoFindJson;
-                item.Status = ErrorCode.NoFind;
+                item.Result = ZeroStatuValue.NoFindJson;
+                item.Status = OperatorStatus.FormalError;
                 return false;
             }
 
@@ -186,39 +154,25 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!string.IsNullOrWhiteSpace(item.ContextJson))
                 {
-                    var context = JsonConvert.DeserializeObject<ApiContext>(item.ContextJson);
-                    ApiContext.SetContext(context);
+                    ApiContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.ContextJson));
                 }
-                else
-                {
-                    ApiContext.TryCheckByAnymouse();
-                    ApiContext.RequestContext.SetValue(item.Requester, item.RequestId);
-                }
+                ApiContext.RequestContext.SetValue(item.GlobalId, item.Requester, item.RequestId);
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationConsole.WriteError($"{e.Message}\r\n{item.ContextJson}");
-                item.Result = ZeroNetStatus.ArgumentErrorJson;
-                item.Status = ErrorCode.ArgumentError;
+                StationConsole.WriteException($"{StationName}:{item.ApiName}:restory context", e);
+                StationConsole.WriteError($"{StationName}:{item.ApiName}:restory context", item.ContextJson);
+                item.Result = ZeroStatuValue.ArgumentErrorJson;
+                item.Status = OperatorStatus.FormalError;
                 return false;
             }
 
             //2 确定调用方法及对应权限
-            try
+            if (action.NeedLogin && (ApiContext.Customer == null || ApiContext.Customer.UserId <= 0))
             {
-                if (action.NeedLogin && ApiContext.Customer.UserId <= 0)
-                {
-                    item.Result = ZeroNetStatus.DenyAccessJson;
-                    item.Status = ErrorCode.DenyAccess;
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                item.Result = ZeroNetStatus.ArgumentErrorJson;
-                item.Status = ErrorCode.InnerError;
+                item.Result = ZeroStatuValue.DenyAccessJson;
+                item.Status = OperatorStatus.DenyAccess;
                 return false;
             }
 
@@ -227,23 +181,36 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!action.RestoreArgument(item.Argument))
                 {
-                    item.Result = ZeroNetStatus.ArgumentErrorJson;
-                    item.Status = ErrorCode.ArgumentError;
-                    return false;
-                }
-
-                if (!action.Validate(out var message))
-                {
-                    item.Result = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError, message));
-                    item.Status = ErrorCode.ArgumentError;
+                    item.Result = ZeroStatuValue.ArgumentErrorJson;
+                    item.Status = OperatorStatus.FormalError;
                     return false;
                 }
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                item.Result = ZeroNetStatus.ArgumentErrorJson;
-                item.Status = ErrorCode.ArgumentError;
+                item.Result = ZeroStatuValue.ArgumentErrorJson;
+                item.Status = OperatorStatus.FormalError;
+                StationConsole.WriteException($"{StationName}:{item.ApiName}:restory argument", e);
+                StationConsole.WriteError($"{StationName}:{item.ApiName}:restory argument", item.Argument);
+                return false;
+            }
+            try
+            {
+
+                if (!action.Validate(out var message))
+                {
+                    item.Result = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError, message));
+                    item.Status = OperatorStatus.FormalError;
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                item.Result = ZeroStatuValue.ArgumentErrorJson;
+                item.Status = OperatorStatus.FormalError;
+                StationConsole.WriteException($"{StationName}:{item.ApiName}:invalidate argument", e);
                 return false;
             }
 
@@ -251,15 +218,23 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 var result = action.Execute();
-                item.Result = result == null ? ZeroNetStatus.SucceesJson : JsonConvert.SerializeObject(result);
-                item.Status = ErrorCode.Success;
+                if (result != null)
+                {
+                    if (result.Status == null)
+                        result.Status = new ApiStatsResult { InnerMessage = item.GlobalId };
+                    else
+                        result.Status.InnerMessage = item.GlobalId;
+                }
+                item.Result = result == null ? ZeroStatuValue.SucceesJson : JsonConvert.SerializeObject(result);
+                item.Status = OperatorStatus.Success;
                 return true;
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                item.Result = ZeroNetStatus.InnerErrorJson;
-                item.Status = ErrorCode.InnerError;
+                item.Result = ZeroStatuValue.InnerErrorJson;
+                item.Status = OperatorStatus.LocalError;
+                StationConsole.WriteException($"{StationName}:{item.ApiName}:execuest", e);
                 return false;
             }
         }
@@ -268,23 +243,7 @@ namespace Agebull.ZeroNet.Core
 
         #region 网络与执行
 
-        /// <summary>
-        ///     尝试重启次数
-        /// </summary>
-        private int _tryCount;
-
-        /// <summary>
-        ///     尝试重启
-        /// </summary>
-        /// <returns></returns>
-        private bool TryRun()
-        {
-            if (++_tryCount > 9)
-                return false;
-            Thread.Sleep(1000);
-            Task.Factory.StartNew(Run);
-            return true;
-        }
+        private ZSocket resultCallSocket, resultPoolSocket, outSocket;
         /// <inheritdoc />
         /// <summary>
         ///     命令轮询
@@ -292,47 +251,22 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationConsole.WriteLine($"[{StationName}]start...");
+            StationConsole.WriteInfo(StationName, Config.WorkerAddress);
+            StationConsole.WriteInfo(StationName, RealName);
+            StationConsole.WriteInfo(StationName, "start...");
 
             InPoll = false;
-            RunState = StationState.Start;
-
-            if (!CreateSocket())
-            {
-                Task.Factory.StartNew(TryRun);
-                return false;
-            }
-            RunState = StationState.Run;
-            _tryCount = 0;
-
+            State = StationState.Start;
+            string name = $"inproc://{StationName}";
+            resultCallSocket = ZeroHelper.CreateClientSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
+            resultPoolSocket = ZeroHelper.CreateServiceSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
+            outSocket = ZeroHelper.CreateClientSocket(Config.WorkerAddress, ZSocketType.DEALER, Identity);
+            Heartbeat(false);
+            State = StationState.Run;
             Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
-            //Task.Factory.StartNew(HeartbeatTask).ContinueWith(task => OnTaskStop());
-
-            while (!InPoll)
-                Thread.Sleep(50);
-
-            StationConsole.WriteLine($"[{StationName}]runing...");
             return true;
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        protected sealed override void OnTaskStop()
-        {
-            if (InPoll)
-                return;
-            if (ZeroApplication.State == StationState.Run && RunState == StationState.Failed)
-            {
-                StationConsole.WriteInfo($"[{RealName}]restart...");
-                TryRun();
-                return;
-            }
-            if (RunState == StationState.Closing)
-                RunState = StationState.Closed;
-        }
         #endregion
 
         #region 命令
@@ -343,210 +277,267 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void PollTask()
         {
-            StationConsole.WriteLine($"[{RealName}]poll start");
-            var timeout = new TimeSpan(0, 0, 5);
+            StationConsole.WriteInfo(StationName, "run...");
 
-            Heartbeat(false);
+            var sockets = new[] { outSocket, resultPoolSocket };
+            var pollItems = new[] { ZPollItem.CreateReceiver(), ZPollItem.CreateReceiver() };
             InPoll = true;
-            while (RunState == StationState.Run && RunState == StationState.Run)
+            while (State == StationState.Run && State == StationState.Run)
             {
-                try
+                ZMessage[] messages = null;
+                if (!sockets.PollIn(pollItems, out messages, out var error))//, new TimeSpan(0, 0, 1)
                 {
-                    if (!_socket.TryReceiveFrameString(timeout, out var caller, out var more) || !more)
-                        continue;
-                    var item = new ApiCallItem
+                    if (error != null && !Equals(error, ZError.EAGAIN))
                     {
-                        Caller = caller
-                    };
-                    _socket.SkipFrame(out more);
-                    _socket.TryReceiveFrameBytes(out var description, out more);
-
-                    var idx = 2;
-                    while (more)
-                    {
-                        if (!_socket.TryReceiveFrameString(out var val, out more))
-                            continue;
-                        switch (description[idx++])
-                        {
-                            case ZeroFrameType.GlobalId:
-                                item.GlobalId = long.Parse(val, NumberStyles.HexNumber);
-                                break;
-                            case ZeroFrameType.RequestId:
-                                item.RequestId = val;
-                                break;
-                            case ZeroFrameType.Requester:
-                                item.Requester = val;
-                                break;
-                            case ZeroFrameType.Context:
-                                item.ContextJson = val;
-                                break;
-                            case ZeroFrameType.Command:
-                                item.ApiName = val;
-                                break;
-                            case ZeroFrameType.Argument:
-                                item.Argument = val;
-                                break;
-                        }
+                        StationConsole.WriteError(StationName, error.Text, error.Name);
                     }
-                    Task.Factory.StartNew(ExecCommand, item);
                 }
-                catch (Exception e)
+                else
                 {
-                    StationConsole.WriteError($"[{RealName}]poll error{e.Message}...");
-                    LogRecorder.Exception(e);
-                    RunState = StationState.Failed;
+                    if (messages[0] != null)
+                    {
+                        Interlocked.Increment(ref RecvCount);
+                        Task.Factory.StartNew(ApiCall, messages[0].Clone());
+                    }
+                    if (messages[1] != null)
+                    {
+                        if (!outSocket.Send(messages[1], out error)||error != null)
+                        {
+                            Interlocked.Increment(ref SendError);
+                        }
+                        Interlocked.Increment(ref SendCount);
+                    }
+                }
+                if(CallCount % 1000 == 0)
+                StationConsole.WriteLoop("Run", $"count:{CallCount} success:{SuccessCount} error:{ErrorCount} send:{SendCount}|{SendError} recv:{RecvCount} MemAlive:{MemoryCheck.AliveCount}");
+
+                if (messages == null) continue;
+                foreach (var messsage in messages)
+                {
+                    messsage?.Dispose();
                 }
             }
 
             InPoll = false;
-            StationConsole.WriteInfo($"[{RealName}]poll stop");
-            _socket.CloseSocket(Config.WorkerAddress);
+            StationConsole.WriteInfo(StationName, "poll stop");
         }
 
+        /// <summary>
+        /// 命令轮询
+        /// </summary>
+        /// <returns></returns>
+        protected override void OnTaskStop()
+        {
+            outSocket.CloseSocket();
+            resultCallSocket.CloseSocket();
+            resultPoolSocket.CloseSocket();
+            base.OnTaskStop();
+        }
+
+        #endregion
+
+
+        #region Socket
 
         /// <summary>
-        ///     使用的套接字
+        ///     接收文本
         /// </summary>
-        private DealerSocket _socket;
-
-        private bool CreateSocket()
+        /// <param name="socket"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private bool ReceiveApiCall(ZSocket socket, out ApiCallItem item)
         {
-            _socket.CloseSocket(Config.WorkerAddress);
-            _socket = new DealerSocket();
+            ZMessage messages;
             try
             {
-                _socket.Options.Identity = Identity;
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-                _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-                _socket.Options.TcpKeepalive = true;
-                _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
-                _socket.Options.DisableTimeWait = true;
-                _socket.Connect(Config.WorkerAddress);
+                messages = socket.ReceiveMessage(out var error);
+                if (error != null || messages.Count < 3)
+                {
+                    if (error != null && error.Number != 11)
+                        StationConsole.WriteError("Receive", error.Text, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
+                    item = null;
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                StationConsole.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.", e);
+                LogRecorder.Exception(e);
+                item = null;
+                return false;
+            }
+
+            return ReceiveApiCall(messages, out item);
+        }
+
+        private void ApiCall(object msg)
+        {
+            if (!ReceiveApiCall((ZMessage)msg, out var item))
+                return;
+            using (MonitorScope.CreateScope(item.ApiName))
+            {
+                Interlocked.Increment(ref CallCount);
+                LogRecorder.MonitorTrace($"Caller:{item.Caller}");
+                LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
+                LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                try
+                {
+                    PreActions.ForEach(p => p(this, item));
+                }
+                catch (Exception e)
+                {
+                    StationConsole.WriteError(item.ApiName, "PreActions");
+                    StationConsole.WriteException(item.ApiName, e);
+                }
+                bool success;
+                try
+                {
+                    using (MonitorStepScope.CreateScope("Do"))
+                    {
+                        success = ExecCommand(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogRecorder.Exception(ex);
+                    LogRecorder.MonitorTrace(ex.Message);
+                    StationConsole.WriteException(StationName, ex);
+                    success = false;
+                    item.Result = ZeroStatuValue.InnerErrorJson;
+                }
+                if (!success)
+                    Interlocked.Increment(ref ErrorCount);
+                else
+                    Interlocked.Increment(ref SuccessCount);
+                LogRecorder.MonitorTrace(item.Result);
+                if (!SendResult(item, success))
+                {
+                    Interlocked.Increment(ref SendError);
+                    StationConsole.WriteError(item.ApiName, "PreActions");
+                }
+                 
+
+                try
+                {
+                    EndActions.ForEach(p => p(this, item));
+                }
+                catch (Exception e)
+                {
+                    StationConsole.WriteError(item.ApiName, "EndActions");
+                    StationConsole.WriteException(item.ApiName, e);
+                }
+
+            }
+        }
+
+        private bool ReceiveApiCall(ZMessage messages, out ApiCallItem item)
+        {
+            try
+            {
+                var description = messages[2].Read();
+                if (description.Length < 2)
+                {
+                    StationConsole.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
+                        description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{outSocket.SocketPtr}.");
+                    item = null;
+                    return false;
+                }
+
+                int end = description[0] + 3;
+                if (end != messages.Count)
+                {
+                    StationConsole.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
+                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
+                        $"Socket Ptr:{outSocket.SocketPtr}.");
+                    item = null;
+                    return false;
+                }
+
+                item = new ApiCallItem
+                {
+                    Caller = Encoding.ASCII.GetString(messages[0].Read())
+                };
+                for (int idx = 3; idx < end; idx++)
+                {
+                    var bytes = messages[idx].Read();
+                    if (bytes.Length == 0)
+                        continue;
+                    var val = Encoding.UTF8.GetString(bytes);
+                    switch (description[idx - 1])
+                    {
+                        case ZeroFrameType.GlobalId:
+                            item.GlobalId = val;
+                            break;
+                        case ZeroFrameType.RequestId:
+                            item.RequestId = val;
+                            break;
+                        case ZeroFrameType.Requester:
+                            item.Requester = val;
+                            break;
+                        case ZeroFrameType.Context:
+                            item.ContextJson = val;
+                            break;
+                        case ZeroFrameType.Command:
+                            item.ApiName = val;
+                            break;
+                        case ZeroFrameType.Argument:
+                            item.Argument = val;
+                            break;
+                    }
+                }
+
                 return true;
             }
             catch (Exception e)
             {
+                StationConsole.WriteError("Receive", "Exception", outSocket.Connects.LinkToString(','),
+                    $"FrameSize{messages.Count}.Socket Ptr:{outSocket.SocketPtr}.");
+                StationConsole.WriteException("ReceiveApiCall", e);
                 LogRecorder.Exception(e);
-                StationConsole.WriteError($"[{RealName}]connect error =>{e.Message}");
+                item = null;
                 return false;
             }
+            finally
+            {
+                messages.Dispose();
+            }
         }
 
-
-        #endregion
-
-        #region 心跳
-
-
-        /*// <summary>
-        /// 心跳的存活状态开关
-        /// </summary>
-        protected bool InHeart { get; set; }
         /// <summary>
-        ///     心跳
+        /// 发送返回值 
         /// </summary>
+        /// <param name="item"></param>
+        /// <param name="success"></param>
         /// <returns></returns>
-        private void HeartbeatTask()
+        private bool SendResult(ApiCallItem item, bool success)
         {
-            InHeart = true;
-            var errorCount = 0;
-            StationConsole.WriteLine($"[{RealName}]heartbeat start");
-            //连接
-            var socket = new DealerSocket();
-            socket.Options.Identity = Identity;
-            socket.Options.ReconnectInterval = new TimeSpan(0, 0, 1);
-            socket.Options.DisableTimeWait = true;
-            socket.Connect(Config.HeartAddress);
-
-            var ts = new TimeSpan(0, 0, 3);
-            //收完消息
-            Msg msg = new Msg();
-            msg.InitEmpty();
-            while (socket.TryReceive(ref msg, ts))
+            if (!InPoll)
             {
-                msg.InitEmpty();
+                StationConsole.WriteError("SendResult", "is closed", StationName);
+                return false;
             }
-            //第一次登记
-            List<string> result;
-            while (RunState == StationState.Run && RunState == StationState.Run)
+            var description = new byte[]
             {
-                socket.SendMoreFrame(ZeroByteCommand.HeartJoin);
-                socket.SendFrame(RealName);
-                if (!socket.ReceiveString(out result))
-                {
-                    ++errorCount;
-                    StationConsole.WriteError($"[{RealName}]heartbeat timeout({errorCount})...");
-                    Thread.Sleep(100);
-                }
-                break;
-            }
-            //正常跳
-            while (RunState == StationState.Run && RunState == StationState.Run)
+                2, (byte) (success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Error), ZeroFrameType.JsonValue,ZeroFrameType.GlobalId
+            };
+            lock (resultCallSocket)
             {
-                try
+                using (var frames = new ZMessage
                 {
-                    socket.SendFrame(ZeroByteCommand.HeartPitpat, true);
-                    socket.SendFrame(RealName);
-                    if (!socket.ReceiveString(out result))
-                    {
-                        ++errorCount;
-                        StationConsole.WriteError($"[{RealName}]heartbeat timeout({errorCount})...");
-                        Thread.Sleep(100);
-                        continue;
-                    }
-                }
-                catch (Exception e)
+                    new ZFrame(item.Caller.ToAsciiBytes()),
+                    new ZFrame("".ToAsciiBytes()),
+                    new ZFrame(description),
+                    new ZFrame((item.Result ?? "").ToAsciiBytes()),
+                    new ZFrame((item.GlobalId ?? "").ToAsciiBytes())
+                })
                 {
-                    LogRecorder.Exception(e);
-                    ++errorCount;
-                    StationConsole.WriteError($"[{RealName}]heartbeat exception({errorCount}):{e.Message}...");
-                    Thread.Sleep(100);
-                    continue;
-                }
-                var str = result.FirstOrDefault(p => !string.IsNullOrEmpty(p));
-                if (str == null || str[0] == ZeroNetStatus.ZeroStatusBad)
-                {
-                    ++errorCount;
-                    StationConsole.WriteError($"[{RealName}]heartbeat request failed({errorCount}):{result[0]}...");
-                    Thread.Sleep(100);
-                    continue;
-                }
-
-                if (errorCount > 0)
-                {
-                    errorCount = 0;
-                    StationConsole.WriteInfo($"[{RealName}]heartbeat resume...");
-                }
-                for (int i = 0; i < 20 && RunState == StationState.Run && RunState == StationState.Run; i++)
-                {
-                    Thread.Sleep(250);
+                    var ok = resultCallSocket.Send(frames, out var error);
+                    if (error != null)
+                        StationConsole.WriteError("SendResult", error.Text);
+                    return ok;
                 }
             }
-            //退出
-            try
-            {
-                socket.SendMoreFrame(ZeroByteCommand.HeartLeft);
-                socket.SendFrame(RealName);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-            }
-            //关闭
-            try
-            {
-                socket.Disconnect(Config.HeartAddress);
-                socket.Close();
-                socket.Dispose();
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-            }
-            StationConsole.WriteLine($"[{RealName}]heartbeat stop");
-            InHeart = false;
         }
-        */
 
         #endregion
     }

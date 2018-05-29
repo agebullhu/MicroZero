@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Agebull.Common.Base;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
@@ -15,7 +16,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     ///     调用映射核心类
     /// </summary>
-    internal class HttpRouter : ScopeBase
+    internal class HttpRouter
     {
 
         #region 变量
@@ -39,6 +40,10 @@ namespace ZeroNet.Http.Route
         ///     Http返回
         /// </summary>
         public RouteData Data { get; }
+        /// <summary>
+        /// 安全检查器
+        /// </summary>
+        public SecurityChecker SecurityChecker { get; }
 
         #endregion
 
@@ -55,17 +60,11 @@ namespace ZeroNet.Http.Route
             Response = context.Response;
             Data = new RouteData();
             Data.Prepare(context.Request);
-
+            SecurityChecker = new SecurityChecker { Data = Data };
             ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
             ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
             ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
             ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
-        }
-
-
-        /// <summary>清理资源</summary>
-        protected override void OnDispose()
-        {
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace ZeroNet.Http.Route
             // 1 初始化路由信息
             if (!FindHost() || Data.RouteHost.Failed)
             {
-                Data.IsSucceed = false;
+                Data.Status = RouteStatus.FormalError;
                 Data.ResultMessage = RouteRuntime.NoFindJson;
                 return;
             }
@@ -99,9 +98,10 @@ namespace ZeroNet.Http.Route
                 return;
             }
             // 4 远程调用
-            Data.ResultMessage = Data.RouteHost.ByZero ? CallZero() : CallHttp();
+            Data.ResultMessage = Data.RouteHost.ByZero ? CallZero().Result : CallHttp().Result;
             // 5 结果检查
-            Data.IsSucceed = CheckResult(Data);
+            //if (!CheckResult(Data))
+            //    Data.Status = RouteStatus.RemoteError;
         }
 
         /// <summary>
@@ -141,13 +141,8 @@ namespace ZeroNet.Http.Route
                 Data.Bearer = words[1];
 
             ApiContext.Current.Request.Bear = Data.Bearer;
-
-            var checker = new SecurityChecker
-            {
-                Request = Request,
-                Bearer = Data.Bearer
-            };
-            if (checker.Check())
+            SecurityChecker.Bearer = Data.Bearer;
+            if (SecurityChecker.Check())
                 return true;
             Data.Status = RouteStatus.DenyAccess;
             Data.ResultMessage = AppConfig.Config.Security.BlockHost;
@@ -165,7 +160,7 @@ namespace ZeroNet.Http.Route
             if (Data.Redirect)
                 return;
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.WriteAsync(Data.ResultMessage ?? RouteRuntime.RemoteEmptyErrorJson, Encoding.UTF8);
+            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = RouteRuntime.RemoteEmptyErrorJson), Encoding.UTF8);
         }
 
         #endregion
@@ -257,7 +252,7 @@ namespace ZeroNet.Http.Route
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        private string CallHttp()
+        private async Task<string> CallHttp()
         {
             // 当前请求调用的模型对应的主机名称
             string httpHost;
@@ -282,18 +277,16 @@ namespace ZeroNet.Http.Route
             {
                 Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
             };
-            var req = caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
+            caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
             LogRecorder.BeginStepMonitor("内部HTTP调用");
-            LogRecorder.MonitorTrace($"Url:{req.RequestUri.PathAndQuery}");
-            LogRecorder.MonitorTrace($"Auth:{caller.Bearer}");
 
             try
             {
                 // 远程调用状态
-                Data.ResultMessage = caller.GetResult(req, out var webStatus);
-                LogRecorder.MonitorTrace(webStatus.ToString());
-                if (webStatus != WebExceptionStatus.Success)
+                Data.ResultMessage = await caller.GetResult();
+                LogRecorder.MonitorTrace(caller.Status.ToString());
+                if (caller.Status != WebExceptionStatus.Success)
                     Data.Status = RouteStatus.RemoteError;
             }
             catch (Exception ex)
@@ -320,7 +313,7 @@ namespace ZeroNet.Http.Route
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        private string CallZero()
+        private async Task<string> CallZero()
         {
             string context;
             //参数解析
@@ -346,7 +339,9 @@ namespace ZeroNet.Http.Route
                 context = JsonConvert.SerializeObject(values);
             }
 
-            Data.ResultMessage = ApiClient.Call(Data.HostName, Data.ApiName, context);
+            Data.ResultMessage = await ApiClient.CallSync(Data.HostName, Data.ApiName, context);
+            if (ApiContext.Current.LastError != ErrorCode.Success)
+                Data.Status = RouteStatus.RemoteError;
             return Data.ResultMessage;
         }
 

@@ -17,10 +17,9 @@
     },
     "WebMonitor": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchUrl": "http://localhost:6000/Api",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "server.urls": "http://*:6000"
+        "ASPNETCORE_ENVIRONMENT_": "Development"
       },
       "use64Bit": true,
       "applicationUrl": "http://localhost:6000"

@@ -24,7 +24,11 @@ namespace agebull
 		/**
 		* \brief 实例队列访问锁
 		*/
-		boost::mutex station_warehouse::mutex_;
+		boost::mutex station_warehouse::examples_mutex_;
+		/**
+		* \brief 实例队列访问锁
+		*/
+		boost::mutex station_warehouse::config_mutex_;
 
 		/**
 		* \brief 全局ID
@@ -91,10 +95,52 @@ namespace agebull
 		}
 
 		/**
+		* \brief 遍历配置
+		*/
+		void station_warehouse::foreach_configs(std::function<void(shared_ptr<zero_config>&)> look)
+		{
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
+			for (auto & config : configs_)
+			{
+				look(config.second);
+			}
+		}
+		/**
+		* \brief 取机器信息
+		*/
+		char station_warehouse::host_info(const string& stattion, string& json)
+		{
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
+			if (stattion == "*")
+			{
+				json = "[";
+				bool first = true;
+				for (auto& config : configs_)
+				{
+					if (first)
+						first = false;
+					else
+						json += ",";
+					json += config.second->to_json().c_str();
+				}
+				json += "]";
+				return ZERO_STATUS_OK_ID;
+			}
+			const auto iter = configs_.find(stattion);
+			if (iter == configs_.end())
+			{
+				return ZERO_STATUS_NO_FIND_ID;
+			}
+			json = iter->second->to_json().c_str();
+			return ZERO_STATUS_OK_ID;
+		}
+
+		/**
 		* \brief 保存配置
 		*/
 		zero_config& station_warehouse::insert_config(shared_ptr<zero_config>& config, bool save)
 		{
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			auto iter = configs_.find(config->station_name_);
 			if (iter == configs_.end())
 			{
@@ -116,27 +162,30 @@ namespace agebull
 		*/
 		void station_warehouse::save_configs()
 		{
-			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
+			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+			trans_redis& redis = trans_redis::get_context();
 			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
 				fmt % iter.first;
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis::get_context()->set(fmt.str().c_str(), iter.second->to_json());
+				redis->set(fmt.str().c_str(), iter.second->to_json());
 			}
 		}
+		shared_ptr<zero_config> empty_config;
 		/**
 		* \brief 取得配置
 		*/
-		shared_ptr<zero_config> station_warehouse::get_config(const string& station_name, bool find_redis)
+		shared_ptr<zero_config>& station_warehouse::get_config(const string& station_name, bool find_redis)
 		{
-			auto iter = configs_.find(station_name);
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
+			const auto iter = configs_.find(station_name);
 			if (iter != configs_.end())
 			{
 				return iter->second;
 			}
 			if (!find_redis)
-				return nullptr;
+				return empty_config;
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
@@ -146,11 +195,12 @@ namespace agebull
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
 				shared_ptr<zero_config> config(new zero_config());
+				config.reset();
 				config->read_json(json);
 				configs_.insert(make_pair(station_name, config));
-				return config;
+				return configs_[station_name];
 			}
-			return nullptr;
+			return empty_config;
 		}
 		/**
 		* \brief 还原站点
@@ -159,7 +209,7 @@ namespace agebull
 		{
 			glogal_id_ = 0LL;
 			int cnt = 0;
-			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto& kv : configs_)
 			{
 				if (kv.second->station_type_ < STATION_TYPE_API)
@@ -183,10 +233,14 @@ namespace agebull
 				redis->flushdb();
 				redis.set(port_redis_key, config::get_global_string(port_config_key).c_str());
 			}
-			configs_.clear();
+			{
+				boost::lock_guard<boost::mutex> guard(config_mutex_);
+				configs_.clear();
+			}
 			install("SystemManage", STATION_TYPE_DISPATCHER, "man");
 			install("RemoteLog", STATION_TYPE_PUBLISH, "log");
 			install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
+			install("Test", STATION_TYPE_API, "test");
 		}
 
 		/**
@@ -194,27 +248,31 @@ namespace agebull
 		*/
 		bool station_warehouse::uninstall(const string& station_name)
 		{
+			shared_ptr<zero_config> config;
 			auto station = instance(station_name);
 			if (station != nullptr)
 			{
+				config = station->config_;
 				station->close(true);
 				station->config_->station_state_ = station_state::Uninstall;
 			}
+			else
 			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
+				config = get_config(station_name);
+			}
+			{
+				boost::lock_guard<boost::mutex> guard(config_mutex_);
 				configs_.erase(station_name);
 			}
-			boost::format fmt("net:host:%1%");
-			fmt % station_name;
-			auto key = fmt.str();
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-			trans_redis& redis = trans_redis::get_context();
-			if (redis->del(key.c_str()) > 0)
 			{
-				monitor_async(station_name, "station_uninstall", station_name);
-				return true;
+				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+				trans_redis& redis = trans_redis::get_context();
+				char key[256];
+				sprintf(key, "net:host:%s", station_name.c_str());
+				redis.delete_from_redis(key);
 			}
-			return false;
+			monitor_async(station_name, "station_uninstall", station_name);
+			return true;
 		}
 		/**
 		* \brief 初始化站点
@@ -258,9 +316,8 @@ namespace agebull
 		*/
 		bool station_warehouse::join(zero_station* station)
 		{
-			boost::lock_guard<boost::mutex>(station->mutex_);
 			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
+				boost::lock_guard<boost::mutex> guard(examples_mutex_);
 				if (examples_.find(station->config_->station_name_) != examples_.end())
 					return false;
 				examples_.insert(make_pair(station->config_->station_name_, station));
@@ -274,9 +331,8 @@ namespace agebull
 		*/
 		bool station_warehouse::left(zero_station* station)
 		{
-			boost::lock_guard<boost::mutex>(station->mutex_);
 			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
+				boost::lock_guard<boost::mutex> guard(examples_mutex_);
 				const auto iter = examples_.find(station->config_->station_name_);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
@@ -292,7 +348,7 @@ namespace agebull
 		*/
 		zero_station* station_warehouse::instance(const string& name)
 		{
-			boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+			boost::lock_guard<boost::mutex> guard(examples_mutex_);
 			const auto iter = examples_.find(name);
 			if (iter == examples_.end())
 				return nullptr;

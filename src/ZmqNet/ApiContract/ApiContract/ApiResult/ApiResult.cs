@@ -17,13 +17,17 @@ namespace Agebull.ZeroNet.ZeroApi
         [JsonProperty("success", NullValueHandling = NullValueHandling.Ignore)]
         public bool Success { get; set; }
 
-        
+
 
         /// <summary>
         /// API执行状态（为空表示状态正常）
         /// </summary>
         [JsonIgnore]
-        IApiStatusResult IApiResult.Status => Status;
+        IApiStatusResult IApiResult.Status
+        {
+            get => Status;
+            set => Status = value as ApiStatsResult;
+        }
 
         /// <summary>
         /// API执行状态（为空表示状态正常）
@@ -111,7 +115,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 返回值
         /// </summary>
-        [JsonProperty("data",NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore)]
         public TData ResultData { get; set; }
 
         /// <summary>

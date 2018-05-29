@@ -115,9 +115,24 @@ namespace agebull
 
 
 /**
+* \brief 心跳退出
+*/
+#define  ZERO_COMMAND_GLOBAL_ID  '>' 
+
+/**
 * \brief 等待结果
 */
 #define ZERO_COMMAND_WAITING '#'
+
+/**
+* \brief 查找结果
+*/
+#define ZERO_COMMAND_FIND_RESULT '%'
+
+/**
+* \brief 关闭结果
+*/
+#define ZERO_COMMAND_CLOSE_RESULT '-'
 
 /**
 * \brief Ping

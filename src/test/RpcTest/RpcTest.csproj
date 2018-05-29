@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
     <Compile Remove="StationTester.cs" />
   </ItemGroup>
@@ -29,9 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\RemoteLog\LogRecorder\ZeroNet.LogRecorder.csproj" />
-    <ProjectReference Include="..\..\RemoteLog\LogService\ZeroNet.LogService.csproj" />
-    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

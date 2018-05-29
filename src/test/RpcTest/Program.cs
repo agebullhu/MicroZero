@@ -1,10 +1,8 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Log;
-using Agebull.ZeroNet.LogService;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
 {
@@ -13,59 +11,24 @@ namespace RpcTest
         //private static Recorder recorder;
         private static void Main(string[] args)
         {
-            StationConsole.WriteLine("Hello ZeroNet");
-            ZeroApplication.Config.DataFolder = @"c:\data";
-            //StationProgram.RegisteStation(new RemoteLogStation());
-            LogRecorder.Initialize(new RemoteRecorder());
-            ZeroApplication.Launch();
-
-            Thread.Sleep(1000);
-            start = DateTime.Now;
-            count = 0;
-            row = Console.CursorTop;
-            for (int i = 0; i < 4; i++)
-            {
-                Task.Factory.StartNew(TestTask);
-                //TestTask();
-            }
-            Console.TreatControlCAsInput = true;
-            ConsoleKeyInfo key;
+            ZeroApplication.Initialize();
+            ZeroApplication.RunBySuccess();
+            Console.CursorVisible = false;
+            var tester = new ZeroTester();
+            //var tester = new HtttpTester();
             do
             {
-                key = Console.ReadKey();
-            } while (key.Modifiers != ConsoleModifiers.Control || key.Key != ConsoleKey.C);
-            //recorder.Shutdown();
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine();
+                tester.TestOnce();
+
+            } while (Console.ReadKey().Key == ConsoleKey.A);
+
+
+            Console.CancelKeyPress += tester.Console_CancelKeyPress;
+            int cnt = 0;
+            while (++cnt <= 4)
+                Task.Factory.StartNew(tester.TestTask);
+            Task.Factory.StartNew(tester.Counter).Wait();
             LogRecorder.Shutdown();
-            ZeroApplication.Destroy();
-        }
-
-        private static long count = 0;
-        static DateTime start;
-        static int row;
-        static object lo = new object();
-        static void TestTask()
-        {
-            Random random = new Random((int)DateTime.Now.Ticks % int.MaxValue);
-
-            while (ZeroApplication.State < StationState.Closing)
-            {
-                if (count - RemoteRecorder.DataCount > 9999)
-                    Thread.Sleep(10);
-                LogRecorder.Message($"Test{ Task.CurrentId}:{ random.Next()}");
-
-                if (++count == long.MaxValue)
-                    count = 0;
-                if (count % 10000 != 0) continue;
-                lock (lo)
-                {
-                    var tm = (DateTime.Now - start).TotalSeconds;
-                    Console.CursorLeft = 0;
-                    Console.CursorTop = row;
-                    Console.Write($"{count- RemoteRecorder.DataCount:D8}| Sub:{RemoteLogStation.RecorderCount:D8}({(int)(RemoteLogStation.RecorderCount / tm):D5}/s)  Pub:{RemoteRecorder.PubCount:D8}({(int)(RemoteRecorder.PubCount / tm):D5}/s)   Pub:{RemoteRecorder.DataCount:D8}({(int)(RemoteRecorder.DataCount / tm):D5}/s)");
-                }
-            }
         }
     }
 }

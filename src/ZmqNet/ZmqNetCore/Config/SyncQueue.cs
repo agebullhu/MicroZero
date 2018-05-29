@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 
@@ -39,11 +40,7 @@ namespace Agebull.Common
         /// 是否为空
         /// </summary>
         /// <returns></returns>
-        public bool IsEmpty()
-        {
-            return Queue.Count == 0;
-        }
-
+        public bool IsEmpty => Queue.Count == 0 && Doing.Count <= 1;
 
         /// <summary>
         /// 保存以备下次启动时使用
@@ -96,9 +93,11 @@ namespace Agebull.Common
             {
                 Queue.Enqueue(t);
             }
+            log.AppendLine($"Push:{Doing.Count}:{Queue.Count}");
             _semaphore.Release();
         }
 
+        private StringBuilder log = new StringBuilder();
         /// <summary>
         /// 开始处理队列内容
         /// </summary>
@@ -106,11 +105,14 @@ namespace Agebull.Common
         /// <param name="waitMs">等待时长</param>
         public bool StartProcess(out T t, int waitMs)
         {
-            if (Doing.Count > 0)//之前存在失败
+            lock (Doing)
             {
-                lock (Doing)
+                if (Doing.Count > 0)//之前存在失败
+                {
                     t = Doing.Peek();
-                return true;
+                    log.AppendLine($"Peek:{Doing.Count}:{Queue.Count}");
+                    return true;
+                }
             }
             if (!_semaphore.WaitOne(waitMs))
             {
@@ -121,7 +123,12 @@ namespace Agebull.Common
             {
                 t = Queue.Dequeue();
             }
-            Doing.Enqueue(t);
+
+            lock (Doing)
+            {
+                Doing.Enqueue(t);
+            }
+            log.AppendLine($"Enqueue:{Doing.Count}:{Queue.Count}");
             return true;
         }
 
@@ -131,7 +138,27 @@ namespace Agebull.Common
         public void EndProcess()
         {
             lock (Doing)
+            {
+                log.AppendLine($"Dequeue:{Doing.Count}:{Queue.Count}");
                 Doing.Dequeue();
+                PubCount += 1;
+                DataCount += 1;
+                if (DataCount == long.MaxValue)
+                    DataCount = 0;
+                if (PubCount == long.MaxValue)
+                    PubCount = 0;
+            }
         }
+
+
+        /// <summary>
+        /// 广播总数
+        /// </summary>
+        public long PubCount { get; private set; }
+        /// <summary>
+        /// 广播总数
+        /// </summary>
+        public long DataCount { get; private set; }
+
     }
 }

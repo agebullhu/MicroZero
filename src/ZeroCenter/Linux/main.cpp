@@ -9,7 +9,8 @@ int main(int argc, char *argv[])
 		return 0;
 	agebull::zmq_net::station_warehouse::clear();
 	agebull::zmq_net::rpc_service::start();
-	signal(SIGINT, agebull::zmq_net::on_sig);
+	for(int sig= SIGHUP;sig < SIGSYS;sig++)
+		signal(sig, agebull::zmq_net::on_sig);
 #ifdef _DEBUG
 	while (agebull::zmq_net::get_net_state() == agebull::zmq_net::NET_STATE_RUNING)
 	{

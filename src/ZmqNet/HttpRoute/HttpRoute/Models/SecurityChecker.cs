@@ -18,7 +18,7 @@ namespace ZeroNet.Http.Route
         /// <summary>
         /// Http调用
         /// </summary>
-        public HttpRequest Request { get; set; }
+        public RouteData Data { get; set; }
 
         /// <summary>
         /// Auth头
@@ -58,41 +58,41 @@ namespace ZeroNet.Http.Route
             {
                 foreach (var head in AppConfig.Config.Security.DenyHttpHeaders)
                 {
-                    if (!Request.Headers.ContainsKey(head.Head))
+                    if (!Data.Headers.ContainsKey(head.Head))
                         continue;
                     switch (head.DenyType)
                     {
                         case DenyType.Hase:
-                            if (Request.Headers.ContainsKey(head.Head))
+                            if (Data.Headers.ContainsKey(head.Head))
                                 return false;
                             break;
                         case DenyType.NonHase:
-                            if (!Request.Headers.ContainsKey(head.Head))
+                            if (!Data.Headers.ContainsKey(head.Head))
                                 return false;
                             break;
                         case DenyType.Count:
-                            if (!Request.Headers.ContainsKey(head.Head))
+                            if (!Data.Headers.ContainsKey(head.Head))
                                 break;
-                            if (Request.Headers[head.Head].Count == int.Parse(head.Value))
+                            if (Data.Headers[head.Head].Count == int.Parse(head.Value))
                                 return false;
                             break;
                         case DenyType.Equals:
-                            if (!Request.Headers.ContainsKey(head.Head))
+                            if (!Data.Headers.ContainsKey(head.Head))
                                 break;
-                            if (string.Equals(Request.Headers[head.Head].ToString(), head.Value,StringComparison.OrdinalIgnoreCase))
+                            if (string.Equals(Data.Headers[head.Head].ToString(), head.Value,StringComparison.OrdinalIgnoreCase))
                                 return false;
                             break;
                         case DenyType.Like:
-                            if (!Request.Headers.ContainsKey(head.Head))
+                            if (!Data.Headers.ContainsKey(head.Head))
                                 break;
-                            if (Request.Headers[head.Head].ToString().Contains(head.Value))
+                            if (Data.Headers[head.Head].ToString().Contains(head.Value))
                                 return false;
                             break;
                         case DenyType.Regex:
-                            if (!Request.Headers.ContainsKey(head.Head))
+                            if (!Data.Headers.ContainsKey(head.Head))
                                 break;
                             var regx = new Regex(head.Value, RegexOptions.IgnoreCase | RegexOptions.ECMAScript | RegexOptions.Multiline);
-                            if (regx.IsMatch(Request.Headers[head.Head].ToString()))
+                            if (regx.IsMatch(Data.Headers[head.Head].ToString()))
                                 return false;
                             break;
                     }
@@ -154,7 +154,7 @@ namespace ZeroNet.Http.Route
         {
             try
             {
-                var api = Request.GetUri().LocalPath.Trim(' ', '\\', '/');
+                var api = Data.Uri.LocalPath.Trim(' ', '\\', '/');
                 if (string.IsNullOrWhiteSpace(Bearer))
                 {
                     return AppConfig.Config.Security.CheckApis.TryGetValue(api, out var item) 

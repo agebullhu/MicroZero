@@ -24,23 +24,20 @@ namespace ZeroNet.Http.Route
         public static void Initialize()
         {
             AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-
             ApiContext.SetLogRecorderDependency();
             if (AppConfig.Config.SystemConfig.FireZero)
             {
                 LogRecorder.Initialize(new RemoteRecorder());
                 ZeroApplication.Launch();
-                RouteCommand.ZeroFlush();
+                RouteCommand.RefreshStationConfig();
             }
             else
             {
                 LogRecorder.Initialize();
             }
-
             RouteChahe.Flush();
         }
         #endregion
-
 
         #region 基本调用
 
@@ -71,44 +68,29 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         public static void CallTask(HttpContext context)
         {
-            var uri = context.Request.GetUri();
-            try
+            var router = new HttpRouter(context);
+            //跨域支持
+            if (router.Data.HttpMethod == "OPTIONS")
             {
-                HttpProtocol.FormatResponse(context.Response);
-                //内容页转向
-                if (uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
-                {
-                    context.Response.Redirect(AppConfig.Config.SystemConfig.ContextHost + uri.LocalPath.Trim('/'));
-                    return;
-                }
-                //跨域支持
-                if (context.Request.Method.ToUpper() == "OPTIONS")
-                {
-                    HttpProtocol.Cros(context.Response);
-                    return;
-                }
-                //命令
-                if (RouteCommand.InnerCommand(uri.LocalPath, context.Response))
-                    return;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                RuntimeWaring.Waring("Route", uri.LocalPath, e.ToString());
-                context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
+                HttpProtocol.Cros(context.Response);
                 return;
             }
-
-            var router = new HttpRouter(context);
-
-            HttpIoLog.OnBegin(router.Data);
+            HttpIoHandler.OnBegin(router.Data);
             try
             {
-                var checker = new SecurityChecker
+                //内容页转向
+                if (router.Data.Uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
                 {
-                    Request = context.Request
-                };
-                if (!checker.PreCheck())
+                    context.Response.Redirect(AppConfig.Config.SystemConfig.ContextHost + router.Data.Uri.LocalPath.Trim('/'));
+                    return;
+                }
+                HttpProtocol.FormatResponse(context.Response);
+                //命令
+                if (RouteCommand.InnerCommand(router.Data.Uri.LocalPath, context.Response))
+                    return;
+
+                //开始调用
+                if (!router.SecurityChecker.PreCheck())
                 {
                     router.Data.Status = RouteStatus.DenyAccess;
                     context.Response.WriteAsync(RouteRuntime.Inner2ErrorJson, Encoding.UTF8);
@@ -127,12 +109,13 @@ namespace ZeroNet.Http.Route
             {
                 router.Data.Status = RouteStatus.LocalError;
                 LogRecorder.Exception(e);
-                RuntimeWaring.Waring("Route", uri.LocalPath, e.ToString());
+                StationConsole.WriteException("Route", e);
+                RuntimeWaring.Waring("Route", router.Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
             }
             finally
             {
-                HttpIoLog.OnEnd(router.Data);
+                HttpIoHandler.OnEnd(router.Data);
             }
         }
 

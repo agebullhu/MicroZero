@@ -1,0 +1,114 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>
+      ClrZmq的.NetCore版本
+    </Description>
+    <Version>4.1.0.26</Version>
+    <!--monoandroid60;xamarinios10-->
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/clrzmq4</RepositoryUrl>
+    <PackageVersion>4.1.0.26</PackageVersion>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>ZMQ</Authors>
+    <Company>ZMQ</Company>
+    <PackageReleaseNotes>ClrZmq的.NetCore版本</PackageReleaseNotes>
+    <Product>Agebull.ZeroNet</Product>
+    <AssemblyVersion>4.1.0.26</AssemblyVersion>
+    <FileVersion>4.1.0.26</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="packages\**" />
+    <Compile Remove="ZeroMQTest\**" />
+    <EmbeddedResource Remove="packages\**" />
+    <EmbeddedResource Remove="ZeroMQTest\**" />
+    <None Remove="packages\**" />
+    <None Remove="ZeroMQTest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="appveyor.yml" />
+    <None Remove="build.sh" />
+    <None Remove="clrzmq4.mono.userprefs" />
+    <None Remove="install_deps.sh" />
+    <None Remove="LICENSE.txt" />
+    <None Remove="README.md" />
+    <None Remove="test.ps1" />
+    <None Remove="upload_coverage.ps1" />
+    <None Remove="ZeroMQ.7z.Release.cmd" />
+    <None Remove="ZeroMQ.gif" />
+    <None Remove="ZeroMQ.ico" />
+    <None Remove="ZeroMQ.nuspec" />
+    <None Remove="ZeroMQ.snk" />
+    <None Remove="ZeroMQ.targets" />
+    <None Remove="ZeroMQ.zip.Release.sh" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="amd64\curve_keygen">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="amd64\libsodium.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="amd64\libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="amd64\libzmq.dylib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="amd64\libzmq.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="amd64\libzmq.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\curve_keygen">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\libsodium.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\libzmq.dylib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\libzmq.lib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="i386\libzmq.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

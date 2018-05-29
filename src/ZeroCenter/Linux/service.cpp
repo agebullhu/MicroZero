@@ -8,6 +8,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <stdio.h>
+#include <signal.h>
+#include <time.h>
+#include <execinfo.h>
+#include <string>
+
 namespace agebull
 {
 	namespace zmq_net
@@ -48,10 +54,66 @@ namespace agebull
 			return !first;
 		}
 
+		void sig_crash(int sig);
+
+		char* sig_text(int sig)
+		{
+			switch (sig)
+			{
+			case SIGABRT: return "由调用abort函数产生，进程非正常退出";
+			case SIGKILL: return "无法处理和忽略。中止某个进程";
+			case SIGTERM: return "请求中止进程，kill命令缺省发送";
+			case SIGINT: return "由Interrupt Key产生，通常是CTRL + C或者DELETE。发送给所有ForeGround Group的进程";
+
+			case SIGALRM: return "用alarm函数设置的timer超时或setitimer函数设置的interval timer超时";
+			case SIGBUS: return "某种特定的硬件异常，通常由内存访问引起";
+				//case SIGCANCEL: return "由Solaris Thread Library内部使用，通常不会使用";
+			case SIGCHLD: return "进程Terminate或Stop的时候，SIGCHLD会发送给它的父进程。缺省情况下该Signal会被忽略";
+			case SIGCONT: return "当被stop的进程恢复运行的时候，自动发送";
+				//case SIGEMT: return "和实现相关的硬件异常
+			case SIGFPE: return "数学相关的异常，如被0除，浮点溢出，等等";
+				//case SIGFREEZE: return "Solaris专用，Hiberate或者Suspended时候发送
+			case SIGHUP: return "发送给具有Terminal的Controlling Process，当terminal被disconnect时候发送";
+			case SIGILL: return "非法指令异常";
+				//case SIGINFO: return "BSD signal。由Status Key产生，通常是CTRL + T。发送给所有Foreground Group的进程
+			case SIGIO: return "异步IO事件";
+				//case SIGIOT: return "实现相关的硬件异常，一般对应SIGABRT";
+					//case SIGLWP: return "由Solaris Thread Libray内部使用
+			case SIGPIPE: return "在reader中止之后写Pipe的时候发送";
+				//case SIGPOLL: return "当某个事件发送给Pollable Device的时候发送";
+			case SIGPROF: return "Setitimer指定的Profiling Interval Timer所产生";
+			case SIGPWR: return "和系统相关。和UPS相关。";
+			case SIGQUIT: return "输入Quit Key的时候（CTRL + \\）发送给所有Foreground Group的进程";
+			case SIGSEGV: return "非法内存访问";
+			case SIGSTKFLT: return "Linux专用，数学协处理器的栈异常";
+			case SIGSTOP: return "中止进程。无法处理和忽略。";
+			case SIGSYS: return "非法系统调用";
+				//case SIGTHAW: return "Solaris专用，从Suspend恢复时候发送";
+			case SIGTRAP: return "实现相关的硬件异常。一般是调试异常";
+			case SIGTSTP: return "Suspend Key，一般是Ctrl + Z。发送给所有Foreground Group的进程";
+			case SIGTTIN: return "当Background Group的进程尝试读取Terminal的时候发送";
+			case SIGTTOU: return "当Background Group的进程尝试写Terminal的时候发送";
+			case SIGURG: return "当out - of - band data接收的时候可能发送";
+			case SIGUSR1: return "用户自定义signal 1";
+			case SIGUSR2: return "用户自定义signal 2";
+			case SIGVTALRM: return "setitimer函数设置的Virtual Interval Timer超时的时候";
+				//case SIGWAITING: return "Solaris Thread Library内部实现专用";
+			case SIGWINCH: return "当Terminal的窗口大小改变的时候，发送给Foreground Group的所有进程";
+			case SIGXCPU: return "当CPU时间限制超时的时候";
+			case SIGXFSZ: return "进程超过文件大小限制";
+				//case SIGXRES: return "Solaris专用，进程超过资源限制的时候发送
+			default:
+				return "未知中止原因";
+
+			}
+
+		}
 		/**
 		* \brief 系统信号处理
 		*/
 		void on_sig(int sig) {
+			log_debug2(DEBUG_BASE, 2, "on_sig: %d(%s)", sig, sig_text(sig));
+			sig_crash(sig);
 			cout << "SIG:" << sig << endl;
 			switch (sig)
 			{
@@ -102,6 +164,43 @@ namespace agebull
 				default:
 				return;*/
 
+			}
+		}
+
+		const int MAX_STACK_FRAMES = 128;
+		void sig_crash(int sig)
+		{
+			try
+			{
+				time_t t = time(nullptr);
+				tm* now = localtime(&t);
+				log_error7(
+					"#########################################################\n[%04d-%02d-%02d %02d:%02d:%02d][crash signal number:%d]\n",
+					now->tm_year + 1900,
+					now->tm_mon + 1,
+					now->tm_mday,
+					now->tm_hour,
+					now->tm_min,
+					now->tm_sec,
+					sig);
+#ifdef __linux
+				void* array[MAX_STACK_FRAMES];
+				size_t size = 0;
+				char** strings = NULL;
+				size_t i;
+				signal(sig, SIG_DFL);
+				size = backtrace(array, MAX_STACK_FRAMES);
+				strings = (char**)backtrace_symbols(array, size);
+				for (i = 0; i < size; ++i)
+				{
+					log_error2("%d %s", i, strings[i]);
+				}
+				free(strings);
+#endif // __linux
+			}
+			catch (...)
+			{
+				cout << "exception" << endl;
 			}
 		}
 	}

@@ -10,41 +10,72 @@ namespace Agebull.ZeroNet.ZeroApi
     [JsonObject(MemberSerialization.OptIn)]
     public class CallContext
     {
-        public void SetValue(string sk, string ri)
+        public void SetValue(string globalId, string sk, string ri)
         {
-            serviceKey = sk;
-            requestId = ri;
+            CallGlobalId = GlobalId;
+            GlobalId = globalId;
+            _serviceKey = sk;
+            _requestId = ri;
+        }
+
+        public CallContext()
+        {
+
         }
         /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="sk"></param>
+        /// <param name="ri"></param>
+        public CallContext(string sk, string ri)
+        {
+            _serviceKey = sk;
+            _requestId = ri;
+            Bear = "<error>";
+            RequestType = RequestType.None;
+        }
+        /// <summary>
+        /// 当前的全局标识
+        /// </summary>
+        [JsonProperty("gi", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        internal string GlobalId;
+
+        /// <summary>
+        /// 请求的全局标识
+        /// </summary>
+        [JsonIgnore]
+        public String CallGlobalId { get; set; }
+
+        /// <summary>
         /// 请求服务身份
         /// </summary>
-        [JsonProperty("sk", DefaultValueHandling = DefaultValueHandling.Ignore,NullValueHandling = NullValueHandling.Ignore)]
-        internal string serviceKey;
+        [JsonProperty("sk", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        private string _serviceKey;
 
         /// <summary>
         /// 请求服务身份
         /// </summary>
         [JsonIgnore]
-        public string ServiceKey => serviceKey;
+        public string ServiceKey => _serviceKey;
 
         /// <summary>
         /// 全局请求标识（源头为用户请求）
         /// </summary>
-        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore,NullValueHandling = NullValueHandling.Ignore)]
-        internal string requestId;
+        [JsonProperty("ri", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        private string _requestId;
 
         /// <summary>
         /// 全局请求标识（源头为用户请求）
         /// </summary>
         [JsonIgnore]
-        public string RequestId => requestId;
+        public string RequestId => _requestId;
 
         /// <summary>
         /// 当前请求的Http Authorizaition
         /// </summary>
         [JsonProperty("ha", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Bear { get; set; }
-        
+
         /// <summary>
         /// 参数类型
         /// </summary>
@@ -68,13 +99,13 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         [JsonProperty("pt", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string Port { get; set; }
-        
+
         /// <summary>
         /// HTTP的UserAgent
         /// </summary>
         [JsonProperty("ua", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
         public string UserAgent { get; set; }
-        
+
     }
 
     /// <summary>

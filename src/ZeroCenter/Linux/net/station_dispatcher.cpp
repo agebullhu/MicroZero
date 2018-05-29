@@ -150,6 +150,33 @@ namespace agebull
 			}
 		}
 		/**
+		* \brief 执行命令
+		*/
+		string station_dispatcher::exec_command(const char* command, const char* argument)
+		{
+			acl::string str = command;
+			vector<sharp_char> args{ sharp_char(argument) };
+			string json;
+			return exec_command(command, args, json) == '\0' ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
+		}
+
+		/**
+		* \brief 执行一条命令
+		*/
+		sharp_char station_dispatcher::command(const char* caller, vector<sharp_char> lines)
+		{
+			const string val = call_station(caller, lines[0], lines[1]);
+			return sharp_char(val);
+		}
+
+		/**
+		* \brief 取机器信息
+		*/
+		char station_dispatcher::host_info(const string& stattion, string& json)
+		{
+			return station_warehouse::host_info(stattion, json);
+		}
+		/**
 		* 心跳的响应
 		*/
 		bool station_dispatcher::heartbeat(char cmd, vector<sharp_char> list)
@@ -174,24 +201,13 @@ namespace agebull
 		}
 
 		/**
-		* \brief 执行命令
-		*/
-		string station_dispatcher::exec_command(const char* command, const char* argument)
-		{
-			acl::string str = command;
-			vector<sharp_char> args{ sharp_char(argument) };
-			string json;
-			return exec_command(command, args, json) == '\0' ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
-		}
-
-		/**
 		* 当远程调用进入时的处理
 		*/
 		char station_dispatcher::pause_station(const string& arg)
 		{
 			if (arg == "*")
 			{
-				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				boost::lock_guard<boost::mutex> guard(station_warehouse::examples_mutex_);
 				for (map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
 					station.second->pause(true);
@@ -213,7 +229,7 @@ namespace agebull
 		{
 			if (arg == "*")
 			{
-				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				boost::lock_guard<boost::mutex> guard(station_warehouse::examples_mutex_);
 				for (map<string, zero_station*>::value_type& station : station_warehouse::examples_)
 				{
 					station.second->resume(true);
@@ -274,15 +290,6 @@ namespace agebull
 		}
 
 		/**
-		* \brief 执行一条命令
-		*/
-		sharp_char station_dispatcher::command(const char* caller, vector<sharp_char> lines)
-		{
-			const string val = call_station(caller, lines[0], lines[1]);
-			return sharp_char(val);
-		}
-
-		/**
 		* \brief 远程调用
 		*/
 		string station_dispatcher::call_station(const string& stattion, const string& command, const string& argument)
@@ -334,7 +341,7 @@ namespace agebull
 		{
 			if (stattion == "*")
 			{
-				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
+				boost::lock_guard<boost::mutex> guard(station_warehouse::examples_mutex_);
 				for (auto& station : station_warehouse::examples_)
 				{
 					station.second->close(true);
@@ -350,42 +357,9 @@ namespace agebull
 		}
 
 		/**
-		* \brief 取机器信息
-		*/
-		char station_dispatcher::host_info(const string& stattion, string& json)
-		{
-			if (stattion == "*")
-			{
-				string result = "[";
-				bool first = true;
-				{
-					boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
-					for (const map<string, zero_station*>::value_type& station : station_warehouse::examples_)
-					{
-						if (first)
-							first = false;
-						else
-							result += ",";
-						result += station.second->get_config().to_json().c_str();
-					}
-				}
-				result += "]";
-				json = result;
-				return ZERO_STATUS_OK_ID;
-			}
-			zero_station* station = station_warehouse::instance(stattion);
-			if (station == nullptr)
-			{
-				return ZERO_STATUS_NO_FIND_ID;
-			}
-			json = station->get_config().to_json().c_str();
-			return ZERO_STATUS_OK_ID;
-		}
-
-		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		void station_dispatcher::job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list)
+		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
 		{
 			char* const buf = list[2].get_buffer();
 			switch (buf[1])
@@ -400,7 +374,7 @@ namespace agebull
 				return;
 			}
 			const char* cmd = nullptr;
-			size_t rqid_index = 0;
+			size_t rqid_index = 0, glid = 0;
 			vector<sharp_char> arg;
 			const auto frame_size = list[2].size();
 			for (size_t idx = 2; idx <= frame_size; idx++)
@@ -416,8 +390,12 @@ namespace agebull
 				case ZERO_FRAME_ARG:
 					arg.emplace_back(list[idx + 1]);
 					break;
+				case ZERO_FRAME_GLOBAL_ID:
+					glid = idx + 1;
+					break;
 				}
 			}
+			const sharp_char global_id = glid == 0 ? nullptr : list[glid];
 			if (cmd == nullptr)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid_index == 0 ? nullptr : *list[rqid_index], "need command frame");
@@ -436,28 +414,29 @@ namespace agebull
 
 		void station_dispatcher::launch(shared_ptr<station_dispatcher>& station)
 		{
-			station->config_->log_start();
+			zero_config& config = station->get_config();
+			config.log_start();
 			if (!station_warehouse::join(station.get()))
 			{
 				instance = nullptr;
-				station->config_->log_failed();
+				config.log_failed();
 				return;
 			}
 			if (!station->initialize())
 			{
 				instance = nullptr;
-				station->config_->log_failed();
+				config.log_failed();
 				return;
 			}
 			boost::thread(boost::bind(monitor_poll));
 			station->poll();
 			station_warehouse::left(station.get());
-			if (station->config_->station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
+			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
 			{
 				instance = nullptr;
 				station->destruct();
-				station->config_->station_state_ = station_state::ReStart;
-				run(station->config_);
+				config.station_state_ = station_state::ReStart;
+				run(station->get_config_ptr());
 			}
 			else
 			{
@@ -465,7 +444,7 @@ namespace agebull
 					thread_sleep(1000);
 				instance = nullptr;
 				station->destruct();
-				station->config_->log_closed();
+				config.log_closed();
 			}
 			thread_sleep(1000);
 		}
@@ -475,41 +454,26 @@ namespace agebull
 		*/
 		void station_dispatcher::monitor_poll()
 		{
-			instance->config_->log("monitor poll start");
+			instance->get_config().log("monitor poll start");
 			while (instance != nullptr &&  get_net_state() <= NET_STATE_CLOSED)
 			{
 				thread_sleep(1000);
 				map<string, string> cfgs;//复制避免锁定时间过长
+				station_warehouse::foreach_configs([&cfgs](shared_ptr<zero_config>& config)
 				{
-					boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
-					for (auto & config : station_warehouse::configs_)
-					{
-						{
-							boost::lock_guard<boost::mutex>(config.second->mutex_);
-							for (auto & work : config.second->workers)
-							{
-								if (work.second.check() < 0)
-								{
-									config.second->workers.erase(work.first);
-								}
-							}
-						}
-						cfgs.insert(make_pair(config.first, config.second->to_json().c_str()));
-					}
-				}
+					config->check_works();
+					cfgs.insert(make_pair(config->station_name_, config->to_json().c_str()));
+				});
 				monitor("SystemManage", "worker_sound_off", "*");
 				for (auto& cfg : cfgs)
 				{
 					monitor(cfg.first, "station_state", cfg.second);
 				}
 			}
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& config)
 			{
-				boost::lock_guard<boost::mutex> guard(station_warehouse::mutex_);
-				for (auto & config : station_warehouse::configs_)
-				{
-					config.second->station_state_ = station_state::Destroy;
-				}
-			}
+				config->station_state_ = station_state::Destroy;
+			});
 			station_warehouse::save_configs();
 		}
 	}

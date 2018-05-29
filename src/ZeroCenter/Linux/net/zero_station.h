@@ -16,33 +16,6 @@ namespace agebull
 		class zero_station
 		{
 			friend class station_warehouse;
-		protected:
-			/**
-			* \brief 实例队列访问锁
-			*/
-			boost::mutex mutex_;
-			/**
-			* \brief 站点名称
-			*/
-			string station_name_;
-			/**
-			* \brief 站点类型
-			*/
-			int station_type_;
-			/**
-			* \brief 任务计划轮询状态
-			*/
-			bool in_plan_poll_;
-
-			/**
-			* \brief 配置
-			*/
-			shared_ptr<zero_config> config_;
-			/**
-			* \brief 状态信号量
-			*/
-			boost::interprocess::interprocess_semaphore state_semaphore_;
-
 			/**
 			* \brief 外部SOCKET类型
 			*/
@@ -62,30 +35,82 @@ namespace agebull
 			*/
 			int poll_count_;
 			/**
-			* \brief 调用句柄
+			* \brief 实例队列访问锁
 			*/
-			void* request_scoket_tcp_;
+			boost::mutex send_mutex_;
+			/**
+			* \brief 实例队列访问锁
+			*/
+			boost::mutex mutex_;
+			/**
+			* \brief 站点名称
+			*/
+			string station_name_;
+			/**
+			* \brief 站点类型
+			*/
+			int station_type_;
+			/**
+			* \brief 任务计划轮询状态
+			*/
+			bool in_plan_poll_;
+			/**
+			* \brief 状态信号量
+			*/
+			boost::interprocess::interprocess_semaphore state_semaphore_;
+			/**
+			* \brief 配置
+			*/
+			shared_ptr<zero_config> config_;
+
 			/**
 			* \brief 调用句柄
 			*/
-			void* request_socket_ipc_;
+			ZMQ_HANDLE request_scoket_tcp_;
+			/**
+			* \brief 调用句柄
+			*/
+			ZMQ_HANDLE request_socket_ipc_;
 			/**
 			* \brief 工作句柄
 			*/
-			void* response_socket_tcp_;
+			ZMQ_HANDLE response_socket_tcp_;
+		protected:
+			/**
+			* \brief 实例队列访问锁
+			*/
+			static boost::mutex results_mutex_;
+			static map<int64, vector<sharp_char>> results;
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
 			zmq_socket_state zmq_state_;
+			/**
+			* \brief 构造
+			*/
+			zero_station(string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type);
+
+			/**
+			* \brief 构造
+			*/
+			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type);
+
 		public:
 			/**
 			* \brief 取得配置内容
 			*/
-			virtual const zero_config& get_config() const
+			zero_config& get_config() const
 			{
 				return *config_;
 			}
 
+			/**
+			* \brief 取得配置内容
+			*/
+			shared_ptr<zero_config>& get_config_ptr()
+			{
+				return config_;
+			}
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
@@ -141,11 +166,6 @@ namespace agebull
 			{
 				return config_->get_inner_address();
 			}
-
-			/**
-			* \brief 构造
-			*/
-			zero_station(string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type);
 
 			/**
 			* \brief 载入现在到期的内容
@@ -229,7 +249,7 @@ namespace agebull
 			/**
 			* \brief 检查是否暂停
 			*/
-			bool check_pause()
+			bool check_pause() 
 			{
 				if (config_->station_state_ == station_state::Pause)
 				{
@@ -273,8 +293,10 @@ namespace agebull
 			*/
 			bool send_response(vector<sharp_char>& datas, int first_index = 0)
 			{
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->worker_out++;
 				zmq_state_ = send(response_socket_tcp_, datas, first_index);
+
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				config_->worker_err++;
@@ -283,10 +305,11 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code=ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg=nullptr)
+			bool send_request_status(const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
 			{
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				++config_->request_out;
-				zmq_state_ = send_status(socket,  addr, code,  global_id,reqId, msg);
+				zmq_state_ = send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -295,10 +318,27 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			bool send_request_result(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
+			bool send_request_result(vector<sharp_char>& ls)
 			{
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->request_out++;
-				zmq_state_ = send(socket, ls, first_index);
+				void* socket = ls[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_;
+				zmq_state_ = send(socket, ls);
+
+				if (zmq_state_ == zmq_socket_state::Succeed)
+					return true;
+				++config_->worker_err;
+				cout << *ls[0] << "|" << config_->worker_err << "|" << config_->worker_in << endl;
+				return false;
+			}
+
+			/**
+			* \brief 发送帧
+			*/
+			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
+			{
+				++config_->request_out;
+				zmq_state_ = send_status(socket, addr, code, global_id, reqId, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -319,7 +359,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			virtual void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) = 0;
+			virtual void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) = 0;//, sharp_char& global_id
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
@@ -347,7 +387,7 @@ namespace agebull
 			/**
 			* \brief 工作进入计划
 			*/
-			void job_plan(ZMQ_HANDLE socket, const int64 id, sharp_char& global_id, vector<sharp_char>& list);
+			void job_plan(ZMQ_HANDLE socket, vector<sharp_char>& list);//, const int64 id, sharp_char& global_id
 		};
 
 		/**
@@ -377,19 +417,24 @@ namespace agebull
 				return;
 			}
 
-			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(16);
-			sprintf(*g, "%llx", id);
-			description[size - 1] = ZERO_FRAME_GLOBAL_ID;
-			description[0]++;
-			list.emplace_back(g);
-			if (description[1] == ZERO_STATE_CODE_PLAN)
+			//const int64 id = station_warehouse::get_glogal_id();
+			//sharp_char global_id(16);
+			//sprintf(*global_id, "%llx", id);
+			if (description[1] == ZERO_COMMAND_GLOBAL_ID)
 			{
-				job_plan(socket, id, g, list);
+				sharp_char global_id(32);
+				sprintf(*global_id, "%llx", station_warehouse::get_glogal_id());
+				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *global_id);
 			}
-			else
+			else if (description[1] == ZERO_STATE_CODE_PLAN)
 			{
-				job_start(socket, g, list);
+				//job_plan(socket, id, global_id, list);
+				job_plan(socket, list);
+			}
+			else//ZERO_COMMAND_GLOBAL_ID
+			{
+				//job_start(socket, global_id, list);
+				job_start(socket, list);
 			}
 		}
 

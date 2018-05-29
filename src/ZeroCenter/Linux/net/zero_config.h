@@ -198,13 +198,6 @@ namespace agebull
 			Unknow
 		};
 
-#define check_zmq_state()\
-	if (zmq_state_ > zmq_socket_state::Succeed)\
-	{\
-		if (zmq_state_ < zmq_socket_state::Again)\
-			continue;\
-		break;\
-	}
 
 		/**
 		* \brief 检查ZMQ错误状态
@@ -525,6 +518,22 @@ namespace agebull
 				boost::lock_guard<boost::mutex> guard(mutex_);
 				workers.erase(w);
 			}
+
+			/**
+			* \brief 检查工作对象
+			*/
+			void check_works()
+			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				for (auto & work : workers)
+				{
+					if (work.second.check() < 0)
+					{
+						//workers.erase(work.first);
+					}
+				}
+			}
+
 			/**
 			* \brief 站点名称
 			*/
@@ -568,7 +577,6 @@ namespace agebull
 				addr += std::to_string(worker_port_);
 				return addr;
 			}
-
 			/**
 			* \brief 从JSON中读取
 			*/
@@ -760,7 +768,7 @@ namespace agebull
 				station_state_ = station_state::Closed;
 			}
 			/**
-			* \brief 开机日志
+			* \brief 日志
 			*/
 			void log(const char* state) const
 			{
@@ -789,6 +797,7 @@ namespace agebull
 					log_msg5("%s:%s(%d | %d) %s", type, station_name_.c_str(), request_port_, worker_port_, state)
 
 			}
+			
 		};
 	}
 }

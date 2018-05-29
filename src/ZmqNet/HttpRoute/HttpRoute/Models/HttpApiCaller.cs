@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.Primitives;
@@ -80,7 +81,7 @@ namespace ZeroNet.Http.Route
         /// <param name="destRequest"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public HttpWebRequest CreateRequest(string apiName, string method, HttpRequest destRequest, RouteData data)
+        public void CreateRequest(string apiName, string method, HttpRequest destRequest, RouteData data)
         {
             ApiName = apiName;
             var auth = Bearer;
@@ -88,61 +89,65 @@ namespace ZeroNet.Http.Route
             _url = $"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}";
 
 
-            var req = (HttpWebRequest)WebRequest.Create(_url);
-            req.Timeout = AppConfig.Config.SystemConfig.HttpTimeOut;
-
-            req.Method = method;
-            req.Headers.Add(HttpRequestHeader.Authorization, auth);
-
-            if (destRequest.ContentLength == null)
-                return req;
-
-            req.ContentType = destRequest.ContentType;
-            if (destRequest.HasFormContentType)
+            _webRequest = (HttpWebRequest)WebRequest.Create(_url);
+            _webRequest.Headers.Add(HttpRequestHeader.Authorization, auth);
+            _webRequest.Timeout = AppConfig.Config.SystemConfig.HttpTimeOut;
+            _webRequest.Method = method;
+            _webRequest.KeepAlive = false;
+            if (destRequest.ContentLength != null)
             {
-                req.ContentType = "application/x-www-form-urlencoded";
-                var builder = new StringBuilder();
-                var first = true;
-                foreach (var kvp in destRequest.Form)
+                _webRequest.ContentType = destRequest.ContentType;
+                if (destRequest.HasFormContentType)
                 {
-                    if (first)
-                        first = false;
-                    else
-                        builder.Append('&');
-                    builder.Append($"{kvp.Key}=");
-                    if (!string.IsNullOrEmpty(kvp.Value))
-                        builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
-                }
-                var form = builder.ToString();
-                using (var rs = req.GetRequestStream())
-                {
-                    var formData = Encoding.UTF8.GetBytes(form);
-                    rs.Write(formData, 0, formData.Length);
-                }
-                LogRecorder.MonitorTrace($"Form:{form}");
-            }
-            else
-            {
-                req.ContentType = "application/json;charset=utf-8";
-                if (string.IsNullOrWhiteSpace(data.Context))
-                {
-                    using (var texter = new StreamReader(destRequest.Body))
+                    _webRequest.ContentType = "application/x-www-form-urlencoded";
+                    var builder = new StringBuilder();
+                    var first = true;
+                    foreach (var kvp in destRequest.Form)
                     {
-                        data.Context = texter.ReadToEnd();
+                        if (first)
+                            first = false;
+                        else
+                            builder.Append('&');
+                        builder.Append($"{kvp.Key}=");
+                        if (!string.IsNullOrEmpty(kvp.Value))
+                            builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
+                    }
+
+                    var form = builder.ToString();
+                    using (var rs = _webRequest.GetRequestStream())
+                    {
+                        var formData = Encoding.UTF8.GetBytes(form);
+                        rs.Write(formData, 0, formData.Length);
+                    }
+
+                    LogRecorder.MonitorTrace($"Form:{form}");
+                }
+                else
+                {
+                    _webRequest.ContentType = "application/json;charset=utf-8";
+                    if (string.IsNullOrWhiteSpace(data.Context))
+                    {
+                        using (var texter = new StreamReader(destRequest.Body))
+                        {
+                            data.Context = texter.ReadToEnd();
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(data.Context))
+                    {
+                        var buffer = data.Context.ToUtf8Bytes();
+                        using (var rs = _webRequest.GetRequestStream())
+                        {
+                            rs.Write(buffer, 0, buffer.Length);
+                        }
+
+                        LogRecorder.MonitorTrace($"Context:{data.Context}");
                     }
                 }
-                if (!string.IsNullOrWhiteSpace(data.Context))
-                {
-                    var buffer = data.Context.ToUtf8Bytes();
-                    using (var rs = req.GetRequestStream())
-                    {
-                        rs.Write(buffer, 0, buffer.Length);
-                    }
-                    LogRecorder.MonitorTrace($"Context:{data.Context}");
-                }
             }
+            LogRecorder.MonitorTrace($"Url:{_webRequest.RequestUri.PathAndQuery}");
+            LogRecorder.MonitorTrace($"Auth:{Bearer}");
 
-            return req;
         }
         /// <summary>
         /// 序列化到错误内容
@@ -157,41 +162,39 @@ namespace ZeroNet.Http.Route
             return JsonConvert.SerializeObject(ApiResult.Error(code, _url + message, message2));
         }
 
+        private HttpWebRequest _webRequest;
+        public WebExceptionStatus Status;
         /// <summary>
         ///     取返回值
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="status"></param>
         /// <returns></returns>
-        public string GetResult(HttpWebRequest req, out WebExceptionStatus status)
+        public async Task<string> GetResult()
         {
-            var jsonResult = GetResponse(req, out status);
+            var task = Task<string>.Factory.StartNew(GetResponse);
+            var jsonResult = await task;
             return string.IsNullOrWhiteSpace(jsonResult) ? RouteRuntime.RemoteEmptyErrorJson : jsonResult;
         }
 
         /// <summary>
         ///     取返回值
         /// </summary>
-        /// <param name="req"></param>
-        /// <param name="status"></param>
         /// <returns></returns>
-        private string GetResponse(HttpWebRequest req, out WebExceptionStatus status)
+        private string GetResponse()
         {
-            req.KeepAlive = false;
-            status = WebExceptionStatus.Success;
+            Status = WebExceptionStatus.Success;
             try
             {
-                return ReadResponse(req.GetResponse());
+                return ReadResponse(_webRequest.GetResponse());
             }
             catch (WebException e)
             {
-                status = e.Status;
+                Status = e.Status;
                 LogRecorder.Exception(e);
-                return e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e, ref status) : ResponseError(e);
+                return e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e) : ResponseError(e);
             }
             catch (Exception e)
             {
-                status = WebExceptionStatus.UnknownError;
+                Status = WebExceptionStatus.UnknownError;
                 LogRecorder.Exception(e);
                 return ToErrorString(ErrorCode.UnknowError, "未知错误", e.Message);
             }
@@ -200,13 +203,12 @@ namespace ZeroNet.Http.Route
         /// 协议错误
         /// </summary>
         /// <param name="exception"></param>
-        /// <param name="status"></param>
         /// <returns></returns>
-        private string ProtocolError(WebException exception, ref WebExceptionStatus status)
+        private string ProtocolError(WebException exception)
         {
             try
             {
-                var codes = exception.Message.Split(new[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
+                var codes = exception.Message.Split(new[] {'(', ')'}, StringSplitOptions.RemoveEmptyEntries);
                 if (codes.Length == 3)
                 {
                     if (int.TryParse(codes[1], out var s))
@@ -217,24 +219,30 @@ namespace ZeroNet.Http.Route
                                 return ToErrorString(ErrorCode.NetworkError, "页面不存在", "页面不存在");
                             case 503:
                                 return ToErrorString(ErrorCode.NetworkError, "拒绝访问", "页面不存在");
-                                //default:
-                                //    return ToErrorString(ErrorCode.NetworkError, $"错误{s}", exception.Message);
+                            //default:
+                            //    return ToErrorString(ErrorCode.NetworkError, $"错误{s}", exception.Message);
                         }
                     }
                 }
+
                 var msg = ReadResponse(exception.Response);
                 LogRecorder.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)
             {
-                status = WebExceptionStatus.UnknownError;
+                Status = WebExceptionStatus.UnknownError;
                 LogRecorder.Exception(e);
                 return ToErrorString(ErrorCode.NetworkError, "未知错误", e.Message);
+            }
+            finally
+            {
+                exception.Response?.Close();
             }
         }
         private string ResponseError(WebException e)
         {
+            e.Response?.Close();
             switch (e.Status)
             {
                 case WebExceptionStatus.CacheEntryNotFound:
@@ -298,8 +306,12 @@ namespace ZeroNet.Http.Route
                     {
                         using (receivedStream)
                         {
-                            var streamReader = new StreamReader(receivedStream);
-                            result = streamReader.ReadToEnd();
+                            using (var streamReader = new StreamReader(receivedStream))
+                            {
+                                result = streamReader.ReadToEnd();
+                                streamReader.Close();
+                            }
+                            receivedStream.Close();
                         }
                     }
                 }

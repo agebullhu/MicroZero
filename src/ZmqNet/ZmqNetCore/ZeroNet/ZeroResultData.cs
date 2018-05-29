@@ -18,7 +18,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 逻辑操作状态
         /// </summary>
-        public ZeroStateType State;
+        public ZeroOperatorStateType State;
+
+        /// <summary>
+        /// ZMQ错误码
+        /// </summary>
+        public int ZmqErrorCode;
+
+        /// <summary>
+        /// 逻辑操作状态
+        /// </summary>
+        public string ZmqErrorMessage;
 
         /// <summary>
         /// 异常

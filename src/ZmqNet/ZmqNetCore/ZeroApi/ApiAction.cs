@@ -157,16 +157,8 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (ArgumenType == null)
                 return true;
-            try
-            {
-                _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as IApiArgument;
-                return true;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return false;
-            }
+            _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as IApiArgument;
+            return true;
         }
 
         /// <summary>
@@ -199,12 +191,12 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (ArgumenType == null)
             {
-                var action = Method.CreateDelegate(typeof(ApiDelegate),new TControler());
+                var action = Method.CreateDelegate(typeof(ApiDelegate), new TControler());
                 return action.DynamicInvoke() as IApiResult;
             }
             else
             {
-                var action = Method.CreateDelegate(typeof(ApiDelegate1),new TControler());
+                var action = Method.CreateDelegate(typeof(ApiDelegate1), new TControler());
                 return action.DynamicInvoke(_argument) as IApiResult;
             }
         }
@@ -227,29 +219,10 @@ namespace Agebull.ZeroNet.ZeroApi
         public override bool RestoreArgument(string argument)
         {
             if (ArgumenType != null)
-            {
-                try
-                {
-                    _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as TArgument;
-                    return _argument != null;
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    return false;
-                }
-            }
-            try
-            {
+                _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as TArgument;
+            else
                 _argument = JsonConvert.DeserializeObject<TArgument>(argument);
-                return _argument != null;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                StationConsole.WriteError($"{e.Message}\r\n{argument}");
-                return false;
-            }
+            return _argument != null;
         }
 
         /// <summary>

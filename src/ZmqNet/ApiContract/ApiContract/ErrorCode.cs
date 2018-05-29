@@ -49,9 +49,14 @@ namespace Agebull.ZeroNet.ZeroApi
         public const int Success = 0;
 
         /// <summary>
-        /// 未知错误
+        /// 未知错误（发生异常)
         /// </summary>
         public const int UnknowError = -1;
+
+        /// <summary>
+        /// 发生异常
+        /// </summary>
+        public const int Exception = UnknowError;
 
         /// <summary>
         /// 参数错误
@@ -59,14 +64,24 @@ namespace Agebull.ZeroNet.ZeroApi
         public const int ArgumentError = -2;
 
         /// <summary>
-        /// 网络错误
+        /// 网络错误(调用API出错)
         /// </summary>
         public const int NetworkError = -3;
 
         /// <summary>
-        /// 服务器内部错误
+        /// 调用API出错
+        /// </summary>
+        public const int CallApiError = NetworkError;
+
+        /// <summary>
+        /// 内部错误（逻辑出错）
         /// </summary>
         public const int InnerError = -4;
+
+        /// <summary>
+        /// 逻辑出错
+        /// </summary>
+        public const int BusinessError = InnerError;
 
         /// <summary>
         /// 拒绝访问

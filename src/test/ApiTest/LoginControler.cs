@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace ApiTest
@@ -8,10 +9,6 @@ namespace ApiTest
     {
         public class LoginControler : ZeroApiController
         {
-            public LoginControler()
-            {
-
-            }
             [Route("api/login")]
             public ApiResult Login(Arg user)
             {

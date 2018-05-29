@@ -1,8 +1,6 @@
 ﻿{
-  "zeroAddr": "127.0.0.1",
+  "zeroAddr": "192.168.240.132",
   "monitorPort": 8001,
   "managePort": 8000,
-  "stationName": "HttpRoute-1",
-  "serviceName": "HttpRoute",
-  "ServiceName": "HttpRoute-1"
+  "stationName": "Client"
 }

@@ -59,38 +59,64 @@ namespace ZeroNet.Http.Route
         {
             AppConfig.Initialize();
             RouteChahe.Flush();
-            ZeroFlush();
+            RefreshStationConfig();
         }
 
-        #region ZeroNet
+        #region OnZeroNetEvent
 
+        private static void OnZeroNetEvent(object sender, SystemMonitor.StationEventArgument e)
+        {
+            switch (e.EventName)
+            {
+                case "program_run":
+                    BindZeroStation();
+                    break;
+                case "system_start":
+                    OnSystemRun();
+                    break;
+                case "system_stop":
+                    OnSystemStop();
+                    break;
+                case "station_resume":
+                case "station_join":
+                    StationJoin(e.EventConfig);
+                    break;
+                case "station_uninstall":
+                    StationLeft(e.EventConfig);
+                    break;
+                case "station_left":
+                case "station_pause":
+                case "station_closing":
+                    StationLeft(e.EventConfig);
+                    break;
+            }
+        }
 
         /// <summary>
         /// 初始化
         /// </summary>
-        public static void ZeroFlush()
+        public static void RefreshStationConfig()
         {
             if (!AppConfig.Config.SystemConfig.FireZero)
                 return;
-
-            SystemMonitor.StationEvent -= StationProgram_StationEvent;
-            BindZero();
-            SystemMonitor.StationEvent += StationProgram_StationEvent;
+            SystemMonitor.StationEvent -= OnZeroNetEvent;
+            BindZeroStation();
+            SystemMonitor.StationEvent += OnZeroNetEvent;
         }
 
-        static void BindZero()
+        static void BindZeroStation()
         {
-            if (ZeroApplication.State != StationState.Run)
+            if (ZeroApplication.ApplicationState != StationState.Run)
                 return;
             foreach (var station in ZeroApplication.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi).ToArray())
             {
-                ApiStationJoin(station);
+                StationJoin(station);
             }
         }
 
-        private static void ApiStationJoin(StationConfig station)
+        private static void StationJoin(StationConfig station)
         {
-            StationConsole.WriteInfo($"Zero Station:{station.StationName}");
+            StationConsole.WriteInfo("Api Station", $"Join:{station.StationName}");
 
             if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host))
             {
@@ -124,43 +150,37 @@ namespace ZeroNet.Http.Route
             }
         }
 
-        private static void StationProgram_StationEvent(object sender, SystemMonitor.StationEventArgument e)
+        private static void StationLeft(StationConfig station)
         {
-            switch (e.EventName)
+            StationConsole.WriteInfo("Api Station", $"Left:{station.StationName}");
+
+            if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host))
             {
-                case "program_run":
-                    BindZero();
-                    break;
-                case "system_start":
-                    {
-                        foreach (var host in AppConfig.Config.RouteMap.Values.Where(p => p.ByZero).ToArray())
-                            host.Failed = false;
-                    }
-                    break;
-                case "system_stop":
-                    {
-                        foreach (var host in AppConfig.Config.RouteMap.Values.Where(p => p.ByZero).ToArray())
-                            host.Failed = true;
-                    }
-                    break;
-                case "worker_heat":
-                case "station_resume":
-                case "station_install":
-                case "station_join":
-                    ApiStationJoin(e.EventConfig);
-                    break;
-                case "station_uninstall":
-                    AppConfig.Config.RouteMap.Remove(e.EventConfig.StationName);
-                    break;
-                case "station_left":
-                case "station_pause":
-                case "station_closing":
-                    {
-                        if (AppConfig.Config.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
-                            host.Failed = true;
-                    }
-                    break;
+                host.Failed = true;
+                host.ByZero = true;
             }
+        }
+
+
+        private static void OnSystemStop()
+        {
+            foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
+            {
+                StationConsole.WriteInfo("Api Station", $"Left:{host.Key}");
+                host.Value.Failed = true;
+                host.Value.ByZero = true;
+            }
+        }
+
+
+        private static void OnSystemRun()
+        {
+            //foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
+            //{
+            //    StationConsole.WriteInfo("Api Station", $"Left:{host.Key}");
+            //    host.Value.Failed = true;
+            //    host.Value.ByZero = true;
+            //}
         }
 
         #endregion

@@ -1,5 +1,7 @@
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -8,21 +10,24 @@ namespace ZeroNet.Http.Route
     /// 报警节点
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract]
-    public class WaringItem : IPublishData
+    public class WaringItem :NetData, IPublishData
     {
         /// <summary>
         /// API对象
         /// </summary>
         [DataMember, JsonProperty("host")]
-        public string Host;
+        public string Host{ get; set; }
+        /// <summary>
+        /// API对象
+        /// </summary>
         [DataMember, JsonProperty("api")]
-        public string Api;
+        public string Api { get; set; }
 
         /// <summary>
         /// 消息
         /// </summary>
         [DataMember, JsonProperty("message")]
-        public string Message;
+        public string Message { get; set; }
 
         string IPublishData.Title => "RuntimeWaring";
     }
@@ -48,6 +53,9 @@ namespace ZeroNet.Http.Route
         {
             Instance.Publish(new WaringItem
             {
+                Machine = ZeroApplication.Config.StationName,
+                User = ApiContext.Customer?.Account ?? "Unknow",
+                RequestId = ApiContext.RequestContext.RequestId,
                 Host = host,
                 Api = api,
                 Message = message

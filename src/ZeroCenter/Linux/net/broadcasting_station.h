@@ -25,6 +25,14 @@ namespace agebull
 			}
 
 			/**
+			 * \brief 构造
+			 * \param config 
+			 */
+			broadcasting_station(shared_ptr<zero_config>& config)
+				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB, -1)
+			{
+			}
+			/**
 			* \brief 执行一条命令
 			*/
 			sharp_char command(const char* caller, vector< sharp_char> lines) final
@@ -37,7 +45,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, sharp_char& global_id, vector<sharp_char>& list) final;
+			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
 			/**
 			*\brief 发送消息
 			*/
@@ -81,9 +89,7 @@ namespace agebull
 					config->station_state_ = station_state::ReStart;
 					return;
 				}
-				auto station = new broadcasting_station(config->station_name_);
-				station->config_ = config;
-				boost::thread(boost::bind(launch, shared_ptr<broadcasting_station>(station)));
+				boost::thread(boost::bind(launch, std::make_shared<broadcasting_station>(config)));
 			}
 			/**
 			*\brief 运行一个广播线程

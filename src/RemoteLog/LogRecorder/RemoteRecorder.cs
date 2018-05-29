@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using NetMQ.Sockets;
+using Gboxt.Common.DataModel;
+using ZeroMQ;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Log
@@ -24,7 +25,7 @@ namespace Agebull.ZeroNet.Log
         void ILogRecorder.Initialize()
         {
             LogRecorder.LogByTask = true;
-            Common.Logging.LogRecorder.TraceToConsole = false;
+            LogRecorder.TraceToConsole = false;
             _state = 0;
             Task.Factory.StartNew(SendTask);
         }
@@ -37,7 +38,7 @@ namespace Agebull.ZeroNet.Log
             if (_state != StationState.Run)
                 return;
             _state = StationState.Closing;
-            while (_state == StationState.Closed)
+            while (_state != StationState.Closed)
                 Thread.Sleep(3);
             _state = StationState.Destroy;
         }
@@ -53,7 +54,8 @@ namespace Agebull.ZeroNet.Log
             info.Machine = ZeroApplication.Config.RealName;
             using (LogRecordingScope.CreateScope())
             {
-                if (ZeroApplication.State < StationState.Failed && ZeroApplication.State > StationState.Start)
+                int state = ZeroApplication.ApplicationState;
+                if (state < StationState.Closing && state > StationState.Start)
                 {
                     Items.Push(info);
                 }
@@ -74,7 +76,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 连接对象
         /// </summary>
-        private RequestSocket _socket;
+        private ZSocket _socket;
 
         /// <summary>
         /// 请求队列
@@ -84,7 +86,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         ///     运行状态
         /// </summary>
-        private static StationState _state;
+        private static int _state;
 
         /// <summary>
         /// 广播总数
@@ -104,23 +106,27 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void SendTask()
         {
-            _identity = ZeroIdentityHelper.ToZeroIdentity("log");
-            _state = StationState.Run;
-            while (ZeroApplication.State < StationState.Closing && _state == StationState.Run)
+            StationConsole.WriteInfo("RemoteLogcorder", "start...");
+            while (ZeroApplication.ApplicationState != StationState.Run)
             {
-                if (ZeroApplication.State != StationState.Run)
+                Thread.Sleep(100);
+            }
+
+            while (_socket == null && InitSocket())
+            {
+                Thread.Sleep(100);
+            }
+            StationConsole.WriteInfo("RemoteLogcorder", "run...");
+            _state = StationState.Run;
+            while (ZeroApplication.IsAlive && _state == StationState.Run)
+            {
+                if (!ZeroApplication.CanDo)
                 {
                     Thread.Sleep(1000);
                     continue;
                 }
                 if (!Items.StartProcess(out var title, out var items, 100))
                 {
-                    Thread.Sleep(10);
-                    continue;
-                }
-                if (_socket == null && InitSocket())
-                {
-                    Thread.Sleep(10);
                     continue;
                 }
                 try
@@ -157,8 +163,8 @@ namespace Agebull.ZeroNet.Log
                 if (PubCount == long.MaxValue)
                     PubCount = 0;
             }
+            _socket.CloseSocket();
             _state = StationState.Closed;
-            _socket.CloseSocket(_config?.RequestAddress);
         }
 
 
@@ -167,7 +173,6 @@ namespace Agebull.ZeroNet.Log
         #region Socket
 
 
-        private byte[] _identity;
         private bool InitSocket()
         {
             _config = ZeroApplication.GetConfig("RemoteLog", out var status);
@@ -175,38 +180,21 @@ namespace Agebull.ZeroNet.Log
             {
                 return false;
             }
-            return CreateSocket() == ZeroCommandStatus.Success;
+            return CreateSocket();
         }
         /// <summary>
         ///     取得Socket对象
         /// </summary>
         /// <returns></returns>
-        private ZeroCommandStatus CreateSocket()
+        private bool CreateSocket()
         {
-            try
-            {
-                _socket.CloseSocket(_config.RequestAddress);
-
-                _socket = new RequestSocket();
-                _socket.Options.Identity = _identity;
-                _socket.Options.ReconnectInterval = new TimeSpan(0, 0, 0, 0, 10);
-                _socket.Options.ReconnectIntervalMax = new TimeSpan(0, 0, 0, 0, 500);
-                _socket.Options.TcpKeepalive = true;
-                _socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 1, 0);
-                _socket.Connect(_config.RequestAddress);
-                return ZeroCommandStatus.Success;
-            }
-            catch (Exception e)
-            {
-                Common.Logging.LogRecorder.BaseRecorder.RecordLog(new RecordInfo
-                {
-                    Type = LogType.Error,
-                    RequestID = Guid.NewGuid().ToString(),
-                    Name = "RemoteLog",
-                    Message = $"Socket构造失败\r\n异常为：\r\n{e}"
-                });
-                return ZeroCommandStatus.Exception;
-            }
+            _socket.CloseSocket();
+            string real = ZeroIdentityHelper.CreateRealName(_config.ShortName ?? _config.StationName, RandomOperate.Generate(3)); ;
+            var identity = real.ToAsciiBytes();
+            StationConsole.WriteInfo("RemoteLogcorder", _config.RequestAddress);
+            StationConsole.WriteInfo("RemoteLogcorder", real);
+            _socket = ZeroHelper.CreateRequestSocket(_config.RequestAddress, identity);
+            return _socket != null;
         }
 
         #endregion

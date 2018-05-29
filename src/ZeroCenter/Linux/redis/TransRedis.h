@@ -221,6 +221,7 @@ namespace agebull
 		bool del_hash(const char* key, const char* sub_key) const;
 		bool get_hash(const char* key, std::map<acl::string, acl::string>& vl) const;
 	};
+
 	/**
 	* \brief Redis当前上下文对象生存范围
 	*/

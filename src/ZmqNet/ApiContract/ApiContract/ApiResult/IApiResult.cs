@@ -13,7 +13,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// API执行状态（为空表示状态正常）
         /// </summary>
-        IApiStatusResult Status { get; }
+        IApiStatusResult Status { get; set; }
     }
     /// <summary>
     /// API返回基类

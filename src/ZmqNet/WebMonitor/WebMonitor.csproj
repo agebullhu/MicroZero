@@ -15,6 +15,9 @@
     <None Remove="logs\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="WS\LogSubscribe.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="host.json" />
   </ItemGroup>
   <ItemGroup>
@@ -22,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.1" />
+    <PackageReference Include="NetMQ" Version="4.0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
@@ -32,6 +36,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\Extend\Agebull.ZeroNet.Extend.csproj" />
   </ItemGroup>
 </Project>

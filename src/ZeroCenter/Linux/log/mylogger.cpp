@@ -74,7 +74,7 @@ namespace agebull
 	}
 	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const std::string& msg)
 	{
-		if (level < 2)
+		//if (level < 2)
 		{
 			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
@@ -83,7 +83,7 @@ namespace agebull
 	}
 	void log_acl_trace(int section, int  level, const string& msg)
 	{
-		if (level < 2)
+		//if (level < 2)
 		{
 			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);

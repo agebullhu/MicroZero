@@ -13,6 +13,7 @@ namespace agebull
 		*/
 		void set_sockopt(const ZMQ_HANDLE& socket, const char* name)
 		{
+			int iRcvTimeout;
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
 			//char monitor[MAX_PATH];
@@ -23,10 +24,18 @@ namespace agebull
 			zmq_setsockopt(socket, ZMQ_IMMEDIATE, &iZMQ_IMMEDIATE, sizeof(int));
 			int iLINGER = 500;//关闭设置停留时间,毫秒
 			zmq_setsockopt(socket, ZMQ_LINGER, &iLINGER, sizeof(int));
-			int iRcvTimeout = 500;
+			iRcvTimeout = 3000;
 			zmq_setsockopt(socket, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(int));
-			int iSndTimeout = 500;
+			int iHwm = 4096;
+			zmq_setsockopt(socket, ZMQ_SNDHWM, &iHwm, sizeof(int));
+			zmq_setsockopt(socket, ZMQ_RCVHWM, &iHwm, sizeof(int));
+			int iBuf =  0xFFFFFF;
+			zmq_setsockopt(socket, ZMQ_SNDBUF, &iBuf, sizeof(int));
+			zmq_setsockopt(socket, ZMQ_RCVBUF, &iBuf, sizeof(int));
+			int iSndTimeout = 3000;
 			zmq_setsockopt(socket, ZMQ_SNDTIMEO, &iSndTimeout, sizeof(int));
+			int iBackLog = 10000;
+			zmq_setsockopt(socket, ZMQ_BACKLOG, &iBackLog, sizeof(int));
 		}
 
 		/**

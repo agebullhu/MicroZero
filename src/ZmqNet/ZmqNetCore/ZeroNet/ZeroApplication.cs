@@ -12,6 +12,8 @@ using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using ZeroMQ;
+using ZeroMQ.lib;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -53,7 +55,7 @@ namespace Agebull.ZeroNet.Core
                 Stations.Add(station.StationName, station);
             }
 
-            if (State == StationState.Run)
+            if (ApplicationState == StationState.Run)
                 ZeroStation.Run(station);
         }
 
@@ -78,7 +80,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static StationConfig GetConfig(string stationName)
         {
-            if (State != StationState.Run)
+            if (ApplicationState != StationState.Run)
             {
                 return null;
             }
@@ -105,7 +107,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static StationConfig GetConfig(string stationName, out ZeroCommandStatus status)
         {
-            if (State != StationState.Run)
+            if (ApplicationState != StationState.Run)
             {
                 status = ZeroCommandStatus.NoRun;
                 return null;
@@ -165,6 +167,62 @@ namespace Agebull.ZeroNet.Core
         #region Run
 
         /// <summary>
+        ///     启动
+        /// </summary>
+        private static Task Start()
+        {
+            StationConsole.WriteInfo("ZeroApplication", ZeroManageAddress);
+            ApplicationState = StationState.Start;
+            ZeroPublisher.Start();
+            Task task = Task.Factory.StartNew(SystemMonitor.Monitor);
+            if (JoinCenter())
+            {
+                ZerCenterStatus = StationState.Run;
+                RunStations();
+                StationConsole.WriteInfo("ZeroApplication", "run...");
+            }
+            return task;
+        }
+
+        private static readonly object LockObj = new object();
+        /// <summary>
+        ///     进入系统侦听
+        /// </summary>
+        internal static bool JoinCenter()
+        {
+            if (ApplicationState == StationState.Run)
+                return true;
+            ApplicationState = StationState.Start;
+            StationConsole.WriteInfo("ZeroApplication", $"try connect({ZeroManageAddress})...");
+            if (!SystemManager.PingCenter() || !SystemManager.HeartJoin())
+            {
+                ApplicationState = StationState.Failed;
+                StationConsole.WriteError("ZeroApplication", "can`t connection.");
+                return false;
+            }
+
+            if (!SystemManager.LoadAllConfig())
+            {
+                ApplicationState = StationState.Failed;
+                StationConsole.WriteError("ZeroApplication", "configs can`t load.");
+                return false;
+            }
+            SystemMonitor.RaiseEvent(Config, "program_run");
+            StationConsole.WriteInfo("ZeroApplication", "be connected successfully");
+            ApplicationState = StationState.Run;
+            return true;
+        }
+
+        /// <summary>
+        ///     进入系统侦听
+        /// </summary>
+        internal static void RunStations()
+        {
+            ApplicationState = StationState.Run;
+            foreach (var station in Stations.Values)
+                ZeroStation.Run(station);
+        }
+        /// <summary>
         ///     执行(无挂起操作)
         /// </summary>
         public static void Launch()
@@ -172,24 +230,39 @@ namespace Agebull.ZeroNet.Core
             Initialize();
             Start();
         }
+        /// <summary>
+        ///     执行直到连接成功
+        /// </summary>
+        public static Task RunBySuccess()
+        {
+            Console.CancelKeyPress += OnCancelKeyPress;
+            StationConsole.WriteInfo("ZeroApplication", ZeroManageAddress);
+            ApplicationState = StationState.Start;
+            ZeroPublisher.Start();
+            while (!JoinCenter())
+                Thread.Sleep(1000);
+
+            Task task = Task.Factory.StartNew(SystemMonitor.Monitor);
+            ZerCenterStatus = StationState.Run;
+            RunStations();
+            StationConsole.WriteInfo("ZeroApplication", "run...");
+            return task;
+        }
 
         /// <summary>
         ///     执行并等待
         /// </summary>
         public static void RunAwaite()
         {
-            StationConsole.WriteLine(ZeroManageAddress);
             Console.CancelKeyPress += OnCancelKeyPress;
-            State = StationState.Start;
-            ZeroPublisher.Start();
-            SystemManager.Run();
+            var task = Start();
             StationConsole.WriteLine("Application started. Press Ctrl+C to shut down.");
-            Task.Factory.StartNew(SystemMonitor.Run).GetAwaiter().GetResult();
-            StationConsole.WriteLine("Application shut down.");
-            while (State < StationState.Destroy)
+            task.GetAwaiter().GetResult();
+            while (ApplicationState < StationState.Closed)
             {
                 Thread.Sleep(1000);
             }
+            StationConsole.WriteLine("Application shut down.");
         }
         private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
@@ -198,19 +271,18 @@ namespace Agebull.ZeroNet.Core
         }
         #endregion
 
-        #region Program
-
-        /// <summary>
-        ///     状态
-        /// </summary>
-        public static StationState State { get; internal set; }
-
+        #region Initialize
 
         /// <summary>
         ///     初始化
         /// </summary>
         public static void Initialize()
         {
+            StationConsole.WriteInfo("ZeroNet", "*************Hello World*************");
+            Console.CursorVisible = false;
+            //引发静态构造
+            StationConsole.WriteInfo("ZeroApplication", "Initialize...");
+            var context = ZContext.Current;
             LogRecorder.Initialize();
             ApiContext.SetLogRecorderDependency();
             InitializeConfig();
@@ -241,7 +313,7 @@ namespace Agebull.ZeroNet.Core
                     Config = new LocalStationConfig();
                 }
             }
-            Config.DataFolder = string.IsNullOrWhiteSpace(Config.DataFolder)
+            Config.DataFolder = String.IsNullOrWhiteSpace(Config.DataFolder)
                 ? IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "datas")
                 : IOHelper.CheckPath(Config.DataFolder);
 
@@ -271,7 +343,7 @@ namespace Agebull.ZeroNet.Core
 
             if (isnew)
                 File.WriteAllText(file, JsonConvert.SerializeObject(Config));
-            if (string.IsNullOrWhiteSpace(Config.ZeroAddress))
+            if (String.IsNullOrWhiteSpace(Config.ZeroAddress))
                 Config.ZeroAddress = "127.0.0.1";
         }
         /// <summary>
@@ -283,17 +355,41 @@ namespace Agebull.ZeroNet.Core
             discover.FindApies();
             discover.FindSubs();
         }
+        #endregion
+
+        #region Program
 
         /// <summary>
-        ///     启动
+        /// 运行状态（本地与服务器均正常）
         /// </summary>
-        public static void Start()
+        public static bool CanDo => ApplicationState == StationState.Run && ZerCenterStatus == StationState.Run;
+
+        /// <summary>
+        /// 运行状态（本地未关闭）
+        /// </summary>
+        public static bool IsAlive => ApplicationState < StationState.Closing;
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        private static int _zeroState,_appState;
+
+        /// <summary>
+        /// 服务器状态
+        /// </summary>
+        public static int ZerCenterStatus
         {
-            StationConsole.WriteLine(ZeroManageAddress);
-            State = StationState.Start;
-            ZeroPublisher.Start();
-            Task.Factory.StartNew(SystemMonitor.Run2);
-            SystemManager.Run();
+            get => _zeroState;
+            internal set => Interlocked.Exchange(ref _zeroState, value);
+        }
+
+        /// <summary>
+        ///     状态
+        /// </summary>
+        public static int ApplicationState
+        {
+            get => _appState;
+            internal set => Interlocked.Exchange(ref _appState, value);
         }
 
         /// <summary>
@@ -301,21 +397,16 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void Close()
         {
-            if (State >= StationState.Closing)
+            if (ApplicationState >= StationState.Closing)
                 return;
-            StationConsole.WriteInfo("Program Closing...");
-            State = StationState.Closing;
-            ConfigsDispose();
+            StationConsole.WriteInfo("ZeroApplication", "Closing...");
+            ApplicationState = StationState.Closing;
             ZeroPublisher.Stop();
             foreach (var stat in Stations)
                 stat.Value.Close();
-            //while (Stations.Values.Any(p => p.RunState == StationState.Run))
-            //{
-            //    Console.Write(".");
-            //    Thread.Sleep(100);
-            //}
-            State = StationState.Closed;
-            StationConsole.WriteInfo("Program Closed");
+            ConfigsDispose();
+            ApplicationState = StationState.Closed;
+            StationConsole.WriteInfo("ZeroApplication", "Closed");
         }
         /// <summary>
         ///     关闭
@@ -323,8 +414,9 @@ namespace Agebull.ZeroNet.Core
         public static void Destroy()
         {
             Close();
-            State = StationState.Destroy;
-            StationConsole.WriteInfo("Program Destroy");
+            ApplicationState = StationState.Destroy;
+            ZContext.Current.Dispose();
+            StationConsole.WriteInfo("ZeroApplication", "Destroy");
             LogRecorder.Shutdown();
         }
 
@@ -340,7 +432,7 @@ namespace Agebull.ZeroNet.Core
             while (true)
             {
                 var cmd = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(cmd))
+                if (String.IsNullOrWhiteSpace(cmd))
                     continue;
                 switch (cmd.Trim().ToLower())
                 {
@@ -362,13 +454,13 @@ namespace Agebull.ZeroNet.Core
                 var result = SystemManager.CallCommand(words);
                 if (result.InteractiveSuccess)
                 {
-                    StationConsole.WriteInfo(result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                    StationConsole.WriteInfo("Console",result.TryGetValue(ZeroFrameType.TextValue, out var value)
                         ? value
                         : result.State.Text());
                 }
                 else
                 {
-                    StationConsole.WriteError(result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                    StationConsole.WriteError("Console", result.TryGetValue(ZeroFrameType.TextValue, out var value)
                         ? value
                         : result.State.Text());
                 }
