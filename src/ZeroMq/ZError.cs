@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
+﻿using System.Linq;
 
 namespace ZeroMQ
 {
-	using lib;
+    using lib;
 
-	public class ZError : ZSymbol
+    public class ZError : ZSymbol
 	{
         static ZError()
         {
@@ -161,15 +157,9 @@ namespace ZeroMQ
 			: base(errno)
 		{ }
 
-		public static new ZError None
-		{
-			get
-			{
-				return default(ZError); // null
-			}
-		}
+		public new static ZError None => default(ZError);
 
-		public static readonly ZError
+	    public static readonly ZError
 			// DEFAULT = new ZmqError(0),
 			EPERM,
 			ENOENT,

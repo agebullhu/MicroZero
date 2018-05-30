@@ -85,7 +85,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
                 a.ArgumenType = action.Value.ArgumenType;
             }
-            ZeroApplication.RegisteStation(station);
+            ZeroApplication.RegistZeroObject(station);
         }
 
         #endregion
@@ -100,7 +100,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(SubStation))).ToArray();
             foreach (var type in types)
             {
-                ZeroApplication.RegisteStation(type.CreateObject() as SubStation);
+                ZeroApplication.RegistZeroObject(type.CreateObject() as SubStation);
             }
         }
 

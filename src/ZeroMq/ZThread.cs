@@ -1,6 +1,7 @@
 ﻿namespace ZeroMQ
 {
-	using System;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    using System;
     using System.Diagnostics;
     using System.Threading;
 
@@ -29,12 +30,9 @@
 		/// <summary>
 		/// Gets a value indicating whether the device loop is running.
 		/// </summary>
-		public bool IsCancellationRequested
-		{
-			get { return Cancellor.IsCancellationRequested; }
-		}
+		public bool IsCancellationRequested => Cancellor.IsCancellationRequested;
 
-		public virtual void Start()
+	    public virtual void Start()
 		{
 			var cancellor = new CancellationTokenSource();
 			Start(cancellor);
@@ -117,8 +115,7 @@
 
 			Stop();
 
-			if (_thread == null) return;
-			_thread.Join();
+		    _thread?.Join();
 		}
 
 		/// <summary>

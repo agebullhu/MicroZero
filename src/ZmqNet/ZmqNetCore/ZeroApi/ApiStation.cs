@@ -31,7 +31,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 action.Name = name;
                 _apiActions.Add(name, action);
-                StationConsole.WriteInfo(StationName, $"{name} is registed");
+                ZeroTrace.WriteInfo(StationName, $"{name} is registed");
             }
             else
             {
@@ -116,7 +116,10 @@ namespace Agebull.ZeroNet.ZeroApi
         #endregion
 
         #region Api调用
-        public int CallCount, ErrorCount, SuccessCount,RecvCount, SendCount, SendError;
+        /// <summary>
+        /// 调用计数
+        /// </summary>
+        public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError;
 
         /// <summary>
         /// 构造
@@ -161,8 +164,8 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationConsole.WriteException($"{StationName}:{item.ApiName}:restory context", e);
-                StationConsole.WriteError($"{StationName}:{item.ApiName}:restory context", item.ContextJson);
+                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:restory context", e);
+                ZeroTrace.WriteError($"{StationName}:{item.ApiName}:restory context", item.ContextJson);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
                 return false;
@@ -191,8 +194,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.Exception(e);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
-                StationConsole.WriteException($"{StationName}:{item.ApiName}:restory argument", e);
-                StationConsole.WriteError($"{StationName}:{item.ApiName}:restory argument", item.Argument);
+                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:restory argument", e);
+                ZeroTrace.WriteError($"{StationName}:{item.ApiName}:restory argument", item.Argument);
                 return false;
             }
             try
@@ -210,7 +213,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.Exception(e);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
-                StationConsole.WriteException($"{StationName}:{item.ApiName}:invalidate argument", e);
+                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:invalidate argument", e);
                 return false;
             }
 
@@ -234,7 +237,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.Exception(e);
                 item.Result = ZeroStatuValue.InnerErrorJson;
                 item.Status = OperatorStatus.LocalError;
-                StationConsole.WriteException($"{StationName}:{item.ApiName}:execuest", e);
+                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:execuest", e);
                 return false;
             }
         }
@@ -244,6 +247,23 @@ namespace Agebull.ZeroNet.ZeroApi
         #region 网络与执行
 
         private ZSocket resultCallSocket, resultPoolSocket, outSocket;
+
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected sealed override void OnStart()
+        {
+            base.OnStart();
+            string name = $"inproc://{StationName}";
+            resultCallSocket = ZeroHelper.CreateClientSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
+            resultPoolSocket = ZeroHelper.CreateServiceSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
+            outSocket = ZeroHelper.CreateClientSocket(Config.WorkerAddress, ZSocketType.DEALER, Identity);
+        }
+        #endregion
+
+        #region 命令
+
         /// <inheritdoc />
         /// <summary>
         ///     命令轮询
@@ -251,65 +271,41 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         protected sealed override bool Run()
         {
-            StationConsole.WriteInfo(StationName, Config.WorkerAddress);
-            StationConsole.WriteInfo(StationName, RealName);
-            StationConsole.WriteInfo(StationName, "start...");
-
-            InPoll = false;
-            State = StationState.Start;
-            string name = $"inproc://{StationName}";
-            resultCallSocket = ZeroHelper.CreateClientSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
-            resultPoolSocket = ZeroHelper.CreateServiceSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
-            outSocket = ZeroHelper.CreateClientSocket(Config.WorkerAddress, ZSocketType.DEALER, Identity);
-            Heartbeat(false);
-            State = StationState.Run;
-            Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
-            return true;
-        }
-
-        #endregion
-
-        #region 命令
-
-        /// <summary>
-        ///     命令轮询
-        /// </summary>
-        /// <returns></returns>
-        private void PollTask()
-        {
-            StationConsole.WriteInfo(StationName, "run...");
+            ZeroTrace.WriteInfo(StationName, "run...");
 
             var sockets = new[] { outSocket, resultPoolSocket };
             var pollItems = new[] { ZPollItem.CreateReceiver(), ZPollItem.CreateReceiver() };
             InPoll = true;
-            while (State == StationState.Run && State == StationState.Run)
+            State = StationState.Run;
+            while (CanRun)
             {
                 ZMessage[] messages = null;
-                if (!sockets.PollIn(pollItems, out messages, out var error))//, new TimeSpan(0, 0, 1)
+                if (!sockets.PollIn(pollItems, out messages, out var error, new TimeSpan(0, 0, 0,0,500)))
                 {
                     if (error != null && !Equals(error, ZError.EAGAIN))
                     {
-                        StationConsole.WriteError(StationName, error.Text, error.Name);
+                        ZeroTrace.WriteError(StationName, error.Text, error.Name);
                     }
                 }
                 else
                 {
                     if (messages[0] != null)
                     {
-                        Interlocked.Increment(ref RecvCount);
+                        //Interlocked.Increment(ref RecvCount);
                         Task.Factory.StartNew(ApiCall, messages[0].Clone());
                     }
                     if (messages[1] != null)
                     {
-                        if (!outSocket.Send(messages[1], out error)||error != null)
+                        if (!outSocket.Send(messages[1], out error) || error != null)
                         {
-                            Interlocked.Increment(ref SendError);
+                            ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                            //Interlocked.Increment(ref SendError);
                         }
-                        Interlocked.Increment(ref SendCount);
+                        //Interlocked.Increment(ref SendCount);
                     }
                 }
-                if(CallCount % 1000 == 0)
-                StationConsole.WriteLoop("Run", $"count:{CallCount} success:{SuccessCount} error:{ErrorCount} send:{SendCount}|{SendError} recv:{RecvCount} MemAlive:{MemoryCheck.AliveCount}");
+                //if (CallCount % 100 == 0)
+                //    ZeroTrace.WriteLoop("Run", $"count:{CallCount} success:{SuccessCount} error:{ErrorCount} send:{SendCount}|{SendError} recv:{RecvCount} MemAlive:{MemoryCheck.AliveCount}");
 
                 if (messages == null) continue;
                 foreach (var messsage in messages)
@@ -317,9 +313,9 @@ namespace Agebull.ZeroNet.ZeroApi
                     messsage?.Dispose();
                 }
             }
-
             InPoll = false;
-            StationConsole.WriteInfo(StationName, "poll stop");
+            ZeroTrace.WriteInfo(StationName, "poll stop");
+            return true;
         }
 
         /// <summary>
@@ -335,7 +331,6 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         #endregion
-
 
         #region Socket
 
@@ -354,14 +349,14 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (error != null || messages.Count < 3)
                 {
                     if (error != null && error.Number != 11)
-                        StationConsole.WriteError("Receive", error.Text, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
+                        ZeroTrace.WriteError("Receive", error.Text, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
                     item = null;
                     return false;
                 }
             }
             catch (Exception e)
             {
-                StationConsole.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.", e);
+                ZeroTrace.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.", e);
                 LogRecorder.Exception(e);
                 item = null;
                 return false;
@@ -374,25 +369,25 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!ReceiveApiCall((ZMessage)msg, out var item))
                 return;
-            using (MonitorScope.CreateScope(item.ApiName))
+            //using (MonitorScope.CreateScope(item.ApiName))
             {
                 Interlocked.Increment(ref CallCount);
-                LogRecorder.MonitorTrace($"Caller:{item.Caller}");
-                LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
-                LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                //LogRecorder.MonitorTrace($"Caller:{item.Caller}");
+                //LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
+                //LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
                 try
                 {
                     PreActions.ForEach(p => p(this, item));
                 }
                 catch (Exception e)
                 {
-                    StationConsole.WriteError(item.ApiName, "PreActions");
-                    StationConsole.WriteException(item.ApiName, e);
+                    ZeroTrace.WriteError(item.ApiName, "PreActions");
+                    ZeroTrace.WriteException(item.ApiName, e);
                 }
                 bool success;
                 try
                 {
-                    using (MonitorStepScope.CreateScope("Do"))
+                    //using (MonitorStepScope.CreateScope("Do"))
                     {
                         success = ExecCommand(item);
                     }
@@ -401,7 +396,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     LogRecorder.Exception(ex);
                     LogRecorder.MonitorTrace(ex.Message);
-                    StationConsole.WriteException(StationName, ex);
+                    ZeroTrace.WriteException(StationName, ex);
                     success = false;
                     item.Result = ZeroStatuValue.InnerErrorJson;
                 }
@@ -413,9 +408,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (!SendResult(item, success))
                 {
                     Interlocked.Increment(ref SendError);
-                    StationConsole.WriteError(item.ApiName, "PreActions");
+                    ZeroTrace.WriteError(item.ApiName, "PreActions");
                 }
-                 
+
 
                 try
                 {
@@ -423,8 +418,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 catch (Exception e)
                 {
-                    StationConsole.WriteError(item.ApiName, "EndActions");
-                    StationConsole.WriteException(item.ApiName, e);
+                    ZeroTrace.WriteError(item.ApiName, "EndActions");
+                    ZeroTrace.WriteException(item.ApiName, e);
                 }
 
             }
@@ -437,7 +432,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 var description = messages[2].Read();
                 if (description.Length < 2)
                 {
-                    StationConsole.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
+                    ZeroTrace.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
                         description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{outSocket.SocketPtr}.");
                     item = null;
                     return false;
@@ -446,7 +441,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 int end = description[0] + 3;
                 if (end != messages.Count)
                 {
-                    StationConsole.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
+                    ZeroTrace.WriteError("Receive", "LaoutError", outSocket.Connects.LinkToString(','),
                         $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
                         $"Socket Ptr:{outSocket.SocketPtr}.");
                     item = null;
@@ -490,9 +485,9 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception e)
             {
-                StationConsole.WriteError("Receive", "Exception", outSocket.Connects.LinkToString(','),
+                ZeroTrace.WriteError("Receive", "Exception", outSocket.Connects.LinkToString(','),
                     $"FrameSize{messages.Count}.Socket Ptr:{outSocket.SocketPtr}.");
-                StationConsole.WriteException("ReceiveApiCall", e);
+                ZeroTrace.WriteException("ReceiveApiCall", e);
                 LogRecorder.Exception(e);
                 item = null;
                 return false;
@@ -513,7 +508,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!InPoll)
             {
-                StationConsole.WriteError("SendResult", "is closed", StationName);
+                ZeroTrace.WriteError("SendResult", "is closed", StationName);
                 return false;
             }
             var description = new byte[]
@@ -533,7 +528,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     var ok = resultCallSocket.Send(frames, out var error);
                     if (error != null)
-                        StationConsole.WriteError("SendResult", error.Text);
+                        ZeroTrace.WriteError("SendResult", error.Text);
                     return ok;
                 }
             }

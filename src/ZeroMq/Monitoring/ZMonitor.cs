@@ -1,19 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
-
-using ZeroMQ.lib;
 
 namespace ZeroMQ.Monitoring
 {
 
-	/// <summary>
-	/// Monitors state change events on another socket within the same context.
-	/// </summary>
-	public class ZMonitor : ZThread
+    /// <summary>
+    /// Monitors state change events on another socket within the same context.
+    /// </summary>
+    public class ZMonitor : ZThread
 	{
 		/// <summary>
 		/// The polling interval in milliseconds.
@@ -31,7 +27,6 @@ namespace ZeroMQ.Monitoring
 		{ }
 
 		protected ZMonitor(ZContext context, ZSocket socket, string endpoint)
-			: base()
 		{
             // TODO: remove socket argument and create socket within Run?
 			_socket = socket;
@@ -62,7 +57,7 @@ namespace ZeroMQ.Monitoring
 		{
 			ZError error;
 			ZMonitor monitor;
-			if (null == (monitor = ZMonitor.Create(context, endpoint, out error)))
+			if (null == (monitor = Create(context, endpoint, out error)))
 			{
 				throw new ZException(error);
 			}
@@ -161,12 +156,9 @@ namespace ZeroMQ.Monitoring
 		/// <summary>
 		/// Gets the endpoint to which the monitor socket is connected.
 		/// </summary>
-		public string Endpoint
-		{
-			get { return _endpoint; }
-		}
+		public string Endpoint => _endpoint;
 
-		// private static readonly int sizeof_MonitorEventData = Marshal.SizeOf(typeof(ZMonitorEventData));
+	    // private static readonly int sizeof_MonitorEventData = Marshal.SizeOf(typeof(ZMonitorEventData));
 
 	    /// <summary>
 	    /// Begins monitoring for state changes, raising the appropriate events as they arrive.

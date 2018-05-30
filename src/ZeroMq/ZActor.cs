@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace ZeroMQ
+﻿namespace ZeroMQ
 {
-	public delegate void ZAction0(ZSocket backend, System.Threading.CancellationTokenSource cancellor, object[] args);
+    public delegate void ZAction0(ZSocket backend, System.Threading.CancellationTokenSource cancellor, object[] args);
 
 	public delegate void ZAction(ZContext context, ZSocket backend, System.Threading.CancellationTokenSource cancellor, object[] args);
 
@@ -27,17 +25,16 @@ namespace ZeroMQ
 		{
 			var rnd0 = new byte[8];
 			using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider()) rng.GetNonZeroBytes(rnd0);
-			this.Endpoint = string.Format("inproc://{0}", ZContext.Encoding.GetString(rnd0));
+			Endpoint = $"inproc://{ZContext.Encoding.GetString(rnd0)}";
 		}
 
 		public ZActor(ZContext context, string endpoint, ZAction action, params object[] args)
-			: base()
 		{
-			this.Context = context;
+			Context = context;
 
-			this.Endpoint = endpoint;
-			this.Action = action;
-			this.Arguments = args;
+			Endpoint = endpoint;
+			Action = action;
+			Arguments = args;
 		}
 
 		/// <summary>
@@ -48,20 +45,19 @@ namespace ZeroMQ
 		{
 			var rnd0 = new byte[8];
 			using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider()) rng.GetNonZeroBytes(rnd0);
-			this.Endpoint = string.Format("inproc://{0}", ZContext.Encoding.GetString(rnd0));
+			Endpoint = $"inproc://{ZContext.Encoding.GetString(rnd0)}";
 		}
 
 		/// <summary>
 		/// You are using ZContext.Current!
 		/// </summary>
 		public ZActor(string endpoint, ZAction0 action, params object[] args)
-			: base()
 		{
-			this.Context = ZContext.Current;
+			Context = ZContext.Current;
 
-			this.Endpoint = endpoint;
-			this.Action0 = action;
-			this.Arguments = args;
+			Endpoint = endpoint;
+			Action0 = action;
+			Arguments = args;
 		}
 
 		protected override void Run()

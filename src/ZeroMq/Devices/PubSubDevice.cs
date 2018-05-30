@@ -1,11 +1,9 @@
 ﻿namespace ZeroMQ.Devices
 {
-	using System;
-
-	/// <summary>
-	/// Device for a Publisher and Subscribers
-	/// </summary>
-	public class PubSubDevice : ZDevice
+    /// <summary>
+    /// Device for a Publisher and Subscribers
+    /// </summary>
+    public class PubSubDevice : ZDevice
 	{
 		/// <summary>
 		/// The frontend <see cref="ZSocketType"/> for a forwarder device.

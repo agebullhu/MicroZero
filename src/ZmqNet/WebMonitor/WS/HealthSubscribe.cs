@@ -38,7 +38,7 @@ namespace ZeroNet.Http.Route
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                StationConsole.WriteError("ApiCounter", args.Content);
+                ZeroTrace.WriteError("ApiCounter", args.Content);
             }
         }
         /// <summary>
@@ -101,7 +101,7 @@ namespace ZeroNet.Http.Route
 
                 if (!station.Items.TryGetValue(data.HostName, out var host))
                 {
-                    var config = ZeroApplication.GetConfig(data.HostName);
+                    var config = ZeroApplication.GetLocalConfig(data.HostName);
                     station.Items.Add(data.HostName, host = new CountItem
                     {
                         Id = station.Id + "/" + data.HostName,

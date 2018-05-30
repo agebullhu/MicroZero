@@ -44,7 +44,7 @@ namespace agebull
 		{
 
 		}
-		
+
 		/**
 		* \brief 初始化
 		*/
@@ -202,7 +202,6 @@ namespace agebull
 						if (poll_items_[idx].socket == request_scoket_tcp_)
 						{
 							config_->request_in++;
-							//cout << ">>" << station_name_ << config_->request_in << endl;
 							request(poll_items_[idx].socket, false);
 						}
 						else if (poll_items_[idx].socket == request_socket_ipc_)
@@ -213,7 +212,6 @@ namespace agebull
 						else if (poll_items_[idx].socket == response_socket_tcp_)
 						{
 							config_->worker_in++;
-							//cout << "<<"<< station_name_ << config_->worker_in << endl;
 							response();
 						}
 						if (zmq_state_ > zmq_socket_state::Succeed)
@@ -240,8 +238,9 @@ namespace agebull
 					//}
 					if (poll_items_[idx].revents & ZMQ_POLLERR)
 					{
-						cout << "error";
-						//ERROR
+						const zmq_socket_state err_state = check_zmq_error();
+						const char* err_msg = state_str(err_state);
+						log_error2("zmq error %d:%s", err_state, err_msg);
 					}
 				}
 			}

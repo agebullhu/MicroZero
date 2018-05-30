@@ -1,9 +1,6 @@
 namespace ZeroMQ
 {
-	using System;
-	using System.Threading;
-
-	public class ZPollItem
+    public class ZPollItem
 	{
 		public ZPoll Events;
 

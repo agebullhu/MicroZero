@@ -36,6 +36,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1701;1702;1705；1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0</DefineConstants>
+    <DocumentationFile />
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,6 +55,15 @@
 
   <ItemGroup>
     <Compile Remove="AssemblyInfo.cs" />
+    <Compile Remove="lib\DispoIntPtr.Ansi.cs" />
+    <Compile Remove="lib\DispoIntPtr.cs" />
+    <Compile Remove="lib\Platform.MacOSX.cs" />
+    <Compile Remove="lib\Platform.Posix.cs" />
+    <Compile Remove="lib\Platform.Win32.cs" />
+    <Compile Remove="lib\Platform.__Internal.cs" />
+    <Compile Remove="lib\UnmanagedLibrary.cs" />
+    <Compile Remove="MemoryCheck.cs" />
+    <Compile Remove="ZFrame - 复制.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,42 +85,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="amd64\curve_keygen">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="amd64\libsodium.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="amd64\libzmq.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="amd64\libzmq.dylib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="amd64\libzmq.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="amd64\libzmq.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\curve_keygen">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\libsodium.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\libzmq.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\libzmq.dylib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\libzmq.lib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="i386\libzmq.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="libzmq.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

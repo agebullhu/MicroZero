@@ -70,6 +70,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name)
 		{
+			log_msg3("%s(%d) :%s", name, type, addr);
 			const ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
@@ -91,6 +92,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_res_socket(const char* addr, int type, const char* name)
 		{
+			log_msg3("%s(%d) :%s", name, type, addr);
 			const ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
@@ -147,7 +149,7 @@ namespace agebull
 		{
 			char address[MAX_PATH];
 			if (config::get_global_bool("use_ipc_protocol"))
-				sprintf(address, "ipc:///usr/zero/%s.ipc", name);
+				sprintf(address, "ipc://%sipc/%s.ipc", config::root_path.c_str(), name);
 			else
 				sprintf(address, "inproc://%s", name);
 			return create_req_socket(address, type, name);
@@ -159,7 +161,7 @@ namespace agebull
 		{
 			char address[MAX_PATH];
 			if (config::get_global_bool("use_ipc_protocol"))
-				sprintf(address, "ipc:///usr/zero/%s.ipc", name);
+				sprintf(address, "ipc://%sipc/%s.ipc", config::root_path.c_str(), name);
 			else
 				sprintf(address, "inproc://%s", name);
 			return create_res_socket(address, type, name);
@@ -282,7 +284,7 @@ namespace agebull
 			{
 				descirpt[idx++] = ZERO_FRAME_GLOBAL_ID;
 			}
-			descirpt[0] = static_cast<char>(idx-2);
+			descirpt[0] = static_cast<char>(idx - 2);
 			descirpt[idx] = ZERO_FRAME_END;
 
 			int descirpt_flags = ZMQ_SNDMORE;
@@ -365,10 +367,10 @@ namespace agebull
 		/**
 		* \brief 发送
 		*/
-		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, int first_index = 0)
+		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>& ls, size_t first_index = 0)
 		{
-			if(first_index >= ls.size())
-				return send_late(socket,"");
+			if (first_index >= ls.size())
+				return send_late(socket, "");
 			size_t idx = first_index;
 			for (; idx < ls.size() - 1; idx++)
 			{
@@ -383,7 +385,7 @@ namespace agebull
 		/**
 		* \brief 发送
 		*/
-		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls, int first_index = 0)
+		inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls, size_t first_index = 0)
 		{
 			if (first_index >= ls.size())
 				return send_late(socket, "");

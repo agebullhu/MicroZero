@@ -28,9 +28,7 @@ namespace agebull
 
 		//正常状态
 #define ZERO_STATUS_SUCCESS '+'
-		//错误状态
-#define ZERO_STATUS_BAD  '-'
-//正常状态
+
 #define ZERO_STATUS_OK  "+ok"
 #define ZERO_STATUS_PLAN  "+plan"
 #define ZERO_STATUS_RUNING  "+runing"
@@ -54,7 +52,9 @@ namespace agebull
 #define ZERO_STATUS_VOTE_START_ID char(7)
 #define ZERO_STATUS_VOTE_END_ID char(8)
 #define ZERO_STATUS_VOTE_CLOSED_ID char(9)
+
 //错误状态
+#define ZERO_STATUS_BAD  '-'
 #define ZERO_STATUS_NO_FIND  "-no find"
 #define ZERO_STATUS_FRAME_INVALID  "-invalid" 
 #define ZERO_STATUS_TIMEOUT  "-time out"
@@ -79,6 +79,8 @@ namespace agebull
 
 //终止符号
 #define ZERO_FRAME_END  '\0'
+//全局标识
+#define ZERO_FRAME_GLOBAL_ID  '\1'
 //执行计划
 #define ZERO_FRAME_PLAN  'P'
 //参数
@@ -94,7 +96,7 @@ namespace agebull
 //回复者/浪费者
 #define ZERO_FRAME_RESPONSER  'G'
 //订阅者/浪费者
-#define ZERO_FRAME_SUBSCRIBER  zero_responser
+#define ZERO_FRAME_SUBSCRIBER  ZERO_FRAME_RESPONSER
 //广播主题
 #define ZERO_FRAME_PUB_TITLE  '*'
 //广播副题
@@ -103,16 +105,11 @@ namespace agebull
 #define ZERO_FRAME_CONTEXT  'T'
 //状态
 #define ZERO_FRAME_STATUS  'S'
-//状态
+//内容
 #define ZERO_FRAME_TEXT  'T'
 #define ZERO_FRAME_JSON  'J'
 #define ZERO_FRAME_BIN  'B'
 #define ZERO_FRAME_XML  'X'
-
-//全局标识
-#define ZERO_FRAME_GLOBAL_ID  '\1'
-
-
 
 /**
 * \brief 心跳退出

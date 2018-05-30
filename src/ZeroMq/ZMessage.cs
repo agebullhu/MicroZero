@@ -10,6 +10,9 @@ namespace ZeroMQ
     /// </summary>
     public class ZMessage : MemoryCheck, IList<ZFrame>, ICloneable
     {
+#if UNMANAGE_MONEY_CHECK
+        protected override string TypeName => nameof(ZMessage);
+#endif
         private List<ZFrame> _frames;
 
         /// <summary>
@@ -42,19 +45,11 @@ namespace ZeroMQ
         /// </summary>
         protected override void DoDispose()
         {
-            Dismiss();
-        }
-
-        /// <summary>
-        /// 析构
-        /// </summary>
-        public void Dismiss()
-        {
             if (_frames != null)
             {
                 foreach (ZFrame frame in _frames)
                 {
-                    frame.Dismiss();
+                    frame.Dispose();
                 }
             }
             _frames = null;
@@ -249,14 +244,8 @@ namespace ZeroMQ
 
         public ZFrame this[int index]
         {
-            get
-            {
-                return _frames[index];
-            }
-            set
-            {
-                _frames[index] = value;
-            }
+            get => _frames[index];
+            set => _frames[index] = value;
         }
 
         #endregion
@@ -299,7 +288,7 @@ namespace ZeroMQ
 
         void ICollection<ZFrame>.CopyTo(ZFrame[] array, int arrayIndex)
         {
-            int i = 0, count = this.Count;
+            int i = 0, count = Count;
             foreach (ZFrame frame in this)
             {
                 array[arrayIndex + i] = ZFrame.CopyFrom(frame);
@@ -330,9 +319,9 @@ namespace ZeroMQ
             return item;
         }
 
-        public int Count { get { return _frames.Count; } }
+        public int Count => _frames.Count;
 
-        bool ICollection<ZFrame>.IsReadOnly { get { return false; } }
+        bool ICollection<ZFrame>.IsReadOnly => false;
 
         #endregion
 

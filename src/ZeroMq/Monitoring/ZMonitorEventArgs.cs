@@ -14,8 +14,8 @@ namespace ZeroMQ.Monitoring
 		/// <param name="address">The peer address.</param>
 		public ZMonitorEventArgs(ZMonitor monitor, ZMonitorEventData ed)
 		{
-			this.Monitor = monitor;
-			this.Event = ed;
+			Monitor = monitor;
+			Event = ed;
 		}
 
 		public ZMonitorEventData Event { get; private set; }

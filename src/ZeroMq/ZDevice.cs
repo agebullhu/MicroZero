@@ -1,18 +1,17 @@
 ﻿namespace ZeroMQ
 {
-	using System;
-	using System.Threading;
-	using System.Collections.Generic;
+    using System;
+    using System.Threading;
 
-	/// <summary>
-	/// Forwards messages received by a front-end socket to a back-end socket, from which
-	/// they are then sent.
-	/// </summary>
-	/// <remarks>
-	/// The base implementation of <see cref="ZDevice"/> is <b>not</b> threadsafe. Do not construct
-	/// a device with sockets that were created in separate threads or separate contexts.
-	/// </remarks>
-	public abstract class ZDevice : ZThread
+    /// <summary>
+    /// Forwards messages received by a front-end socket to a back-end socket, from which
+    /// they are then sent.
+    /// </summary>
+    /// <remarks>
+    /// The base implementation of <see cref="ZDevice"/> is <b>not</b> threadsafe. Do not construct
+    /// a device with sockets that were created in separate threads or separate contexts.
+    /// </remarks>
+    public abstract class ZDevice : ZThread
 	{
 		/// <summary>
 		/// The polling interval in milliseconds.
@@ -42,7 +41,6 @@
 		{ }
 
 		protected ZDevice(ZContext context)
-			: base()
 		{
 			Context = context;
 		}
@@ -73,7 +71,6 @@
 		/// </param>
 		/// <param name="mode">The <see cref="DeviceMode"/> for the current device.</param>
 		protected ZDevice(ZContext context, ZSocketType frontendType, ZSocketType backendType)
-			: base()
 		{
 			Context = context;
 

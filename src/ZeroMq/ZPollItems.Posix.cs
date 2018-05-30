@@ -1,18 +1,16 @@
 ﻿namespace ZeroMQ
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Diagnostics;
-	using System.Linq;
-	using System.Threading;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-	using lib;
+    using lib;
 
-	public static partial class ZPollItems // : IDisposable, IList<ZmqPollItem>
+    public static partial class ZPollItems // : IDisposable, IList<ZmqPollItem>
 	{
 		public static class Posix
 		{
-			unsafe internal static bool PollMany(
+			internal static unsafe bool PollMany(
 				IEnumerable<ZSocket> sockets, 
 				IEnumerable<ZPollItem> items, ZPoll pollEvents, 
 				out ZError error, TimeSpan? timeout = null)
@@ -60,7 +58,7 @@
 				return result;
 			}
 
-			unsafe internal static bool PollSingle(
+			internal static unsafe bool PollSingle(
 				ZSocket socket,
 				ZPollItem item, ZPoll pollEvents,
 				out ZError error, TimeSpan? timeout = null)

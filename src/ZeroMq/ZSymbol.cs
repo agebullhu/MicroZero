@@ -1,6 +1,7 @@
 ﻿namespace ZeroMQ
 {
-	using System;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    using System;
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
@@ -12,15 +13,15 @@
     /// </summary>
     public class ZSymbol
 	{
-		internal protected ZSymbol(int errno)
+		protected internal ZSymbol(int errno)
 		{
-			this._num = errno;
+			_num = errno;
 		}
 
 		private int _num;
-		public int Number { get { return _num; } }
+		public int Number => _num;
 
-        public string Name
+	    public string Name
         {
             get
             {
@@ -29,9 +30,9 @@
             }
         }
 
-        public string Text { get { return Marshal.PtrToStringAnsi(zmq.strerror(_num)); }  }
+        public string Text => Marshal.PtrToStringAnsi(zmq.strerror(_num));
 
-		private static void PickupConstantSymbols<T>(ref IDictionary<ZSymbol, string> symbols)
+	    private static void PickupConstantSymbols<T>(ref IDictionary<ZSymbol, string> symbols)
             where T : ZSymbol
 		{
 			Type type = typeof(T);
@@ -96,12 +97,12 @@
 
 		public override bool Equals(object obj)
 		{
-			return ZSymbol.Equals(this, obj);
+			return Equals(this, obj);
 		}
 
 	    public new static bool Equals(object a, object b)
 	    {
-	        if (object.ReferenceEquals(a, b))
+	        if (ReferenceEquals(a, b))
 	        {
 	            return true;
 	        }

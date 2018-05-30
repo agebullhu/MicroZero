@@ -39,10 +39,21 @@ namespace agebull
 	///C端命令调用队列锁
 	boost::mutex server_cmd_mutex;
 
+	/*
+	* 输出到DEBUG窗口
+	*/
+	inline void out_debug(string msg)
+	{
+//		msg = "\r\n" + msg;
+//#ifdef WIN32
+//		OutputDebugStringA(msg.c_str());
+//#endif
+		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+		cout << endl << msg.c_str();
+	}
 	void log_acl_msg(const char* msg)
 	{
 		{
-			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
 		}
 		acl::log::msg1(msg);
@@ -50,7 +61,6 @@ namespace agebull
 	void log_acl_msg(const string& msg)
 	{
 		{
-			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
 		}
 		acl::log::msg1(msg.c_str());
@@ -63,7 +73,6 @@ namespace agebull
 	void log_acl_error(const char* fname, int line, const char* func, const string& msg)
 	{
 		{
-			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
 		}
 		acl::log::error4(fname, line, func, msg.c_str());
@@ -76,7 +85,6 @@ namespace agebull
 	{
 		//if (level < 2)
 		{
-			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
 		}
 		acl::log::msg6(section, level, fname, line, func, msg.c_str());
@@ -85,7 +93,6 @@ namespace agebull
 	{
 		//if (level < 2)
 		{
-			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
 			out_debug(msg);
 		}
 		acl::log::msg1(msg.c_str());

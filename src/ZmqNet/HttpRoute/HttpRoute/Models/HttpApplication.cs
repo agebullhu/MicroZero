@@ -28,8 +28,9 @@ namespace ZeroNet.Http.Route
             if (AppConfig.Config.SystemConfig.FireZero)
             {
                 LogRecorder.Initialize(new RemoteRecorder());
-                ZeroApplication.Launch();
+                ZeroApplication.Initialize();
                 RouteCommand.RefreshStationConfig();
+                ZeroApplication.RunBySuccess();
             }
             else
             {
@@ -109,7 +110,7 @@ namespace ZeroNet.Http.Route
             {
                 router.Data.Status = RouteStatus.LocalError;
                 LogRecorder.Exception(e);
-                StationConsole.WriteException("Route", e);
+                ZeroTrace.WriteException("Route", e);
                 RuntimeWaring.Waring("Route", router.Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
             }

@@ -17,6 +17,11 @@ namespace agebull
 		static void init();
 	public:
 		/**
+		* \brief 系统根目录
+		*/
+		static acl::string root_path;
+
+		/**
 		 * \brief 取全局配置
 		 * \param name 名称
 		 * \return 值
@@ -31,27 +36,44 @@ namespace agebull
 		/**
 		* \brief 取全局配置
 		* \param name 名称
-		* \return 值
+		* \return 文本
 		*/
 		static std::string& get_global_string(const char * name);
 	private:
-		std::map<std::string, std::string> m_cfg;
-		static void read(acl::string str, std::map<std::string, std::string>& cfg);
+		/**
+		* \brief 配置内容
+		*/
+		std::map<std::string, std::string> value_map_;
+		/**
+		* \brief 读取配置内容
+		*/
+		static void read(const char* json, std::map<std::string, std::string>& cfg);
 	public:
+		/**
+		* \brief 构造
+		* \param json JSON内容
+		*/
 		config(const char* json);
-		
+
+		/**
+		* \brief 取配置
+		* \param name 名称
+		* \return 数字
+		*/
 		int number(const char * name);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		* \return 布尔
+		*/
 		bool boolean(const char * name);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		* \return 文本
+		*/
 		std::string& operator[](const char * name);
 	};
-
-	/* 功  能：获取指定进程所对应的可执行（EXE）文件全路径
-	* 参  数：hProcess - 进程句柄。必须具有PROCESS_QUERY_INFORMATION 或者
-	PROCESS_QUERY_LIMITED_INFORMATION 权限
-	*         sFilePath - 进程句柄hProcess所对应的可执行文件路径
-	* 返回值：
-	*/
-	void get_process_file_path(string& sFilePath);
 
 	/**
 	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）

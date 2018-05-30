@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,93 +6,29 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using ZeroMQ;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.PubSub
 {
     /// <summary>
     ///     消息发布
     /// </summary>
-    public class ZeroPublisher
+    public class ZeroPublisher : IZeroObject
     {
+        #region 单例
         /// <summary>
-        ///     保持长连接的连接池
+        /// 防止构造
         /// </summary>
-        private static readonly Dictionary<string, KeyValuePair<StationConfig, ZSocket>> Publishers =
-            new Dictionary<string, KeyValuePair<StationConfig, ZSocket>>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// 请求队列
-        /// </summary>
-        private static readonly SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
-
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        private static int _state;
-
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        public static int State
+        private ZeroPublisher()
         {
-            get => _state;
-            protected set => Interlocked.Exchange(ref _state, value);
+
         }
 
         /// <summary>
-        /// 缓存文件名称
+        /// 单例
         /// </summary>
-        private static string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, "zero_publish_queue.json");
-        /// <summary>
-        ///     启动
-        /// </summary>
-        public static void Initialize()
-        {
-            State = StationState.Start;
-            try
-            {
-                var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
-                if (old == null)
-                    return;
-                foreach (var val in old.Queue)
-                    Items.Push(val);
-            }
-            catch(Exception ex)
-            {
-                StationConsole.WriteException("Publisher", ex);
-            }
-        }
-        /// <summary>
-        ///     启动
-        /// </summary>
-        internal static void Start()
-        {
-            Task.Factory.StartNew(SendTask);
-        }
-        /// <summary>
-        /// 关闭
-        /// </summary>
-        /// <returns></returns>
-        public static bool Stop()
-        {
-            lock (Publishers)
-            {
-                foreach (var vl in Publishers.Values)
-                    vl.Value.CloseSocket();
-                Publishers.Clear();
-            }
-            //未运行状态
-            if (State < StationState.Start || State > StationState.Pause)
-                return true;
-            StationConsole.WriteInfo("Publisher","closing....");
-            State = StationState.Closing;
-            do
-            {
-                Thread.Sleep(20);
-            } while (State != StationState.Closed);
-            return true;
-        }
+        public static readonly ZeroPublisher Instance = new ZeroPublisher();
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -104,6 +39,117 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         public static void Publish(string station, string title, string sub, string value)
         {
+            Instance.DoPublish(station, title, sub, value);
+        }
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static void Publish<T>(string station, string title, string sub, T value)
+        where T : class
+        {
+            Instance.DoPublish(station, title, sub, value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
+        }
+        #endregion
+
+        #region IZeroObject
+
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name => "ZeroPublisher";
+
+        /// <summary>
+        /// 系统初始化时调用
+        /// </summary>
+        void IZeroObject.OnZeroInitialize()
+        {
+            var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
+            if (old == null)
+                return;
+            foreach (var val in old.Queue)
+                Items.Push(val);
+        }
+
+
+        /// <summary>
+        /// 系统启动时调用
+        /// </summary>
+        void IZeroObject.OnZeroStart()
+        {
+            Task.Factory.StartNew(SendTask);
+        }
+
+        /// <summary>
+        /// 系统关闭时调用
+        /// </summary>
+        void IZeroObject.OnZeroEnd()
+        {
+            if (State <= StationState.Start && State >= StationState.Pause)
+            {
+                ZeroTrace.WriteInfo(Name, "closing....");
+                State = StationState.Closing;
+                do
+                {
+                    Thread.Sleep(20);
+                } while (State != StationState.Closed);
+            }
+            else
+            {
+                State = StationState.Closed;
+            }
+        }
+
+        void IZeroObject.OnZeroDistory()
+        {
+            State = StationState.Destroy;
+            Items.Save(CacheFileName);
+        }
+
+        void IZeroObject.OnStationStateChanged(StationConfig config)
+        {
+        }
+
+        #endregion
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        private int _state;
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        public int State
+        {
+            get => _state;
+            protected set => Interlocked.Exchange(ref _state, value);
+        }
+
+        /// <summary>
+        /// 缓存文件名称
+        /// </summary>
+        private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, "zero_publish_queue.json");
+        
+        /// <summary>
+        /// 请求队列
+        /// </summary>
+        private readonly SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
+
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private void DoPublish(string station, string title, string sub, string value)
+        {
             Items.Push(new PublishItem
             {
                 Station = station,
@@ -112,72 +158,73 @@ namespace Agebull.ZeroNet.PubSub
                 RequestId = ApiContext.RequestContext.RequestId,
                 Content = value ?? "{}"
             });
-            if (State == StationState.Closed)
+            if (State == StationState.Destroy)
                 Items.Save(CacheFileName);
         }
+
         /// <summary>
         /// 广播总数
         /// </summary>
-        public static ulong PubCount { get; private set; }
+        public ulong PubCount { get; private set; }
+
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
-        private static void SendTask()
+        private void SendTask()
         {
+            if (State == StationState.Run)
+                return;
             State = StationState.Run;
-            StationConsole.WriteInfo("Publisher", "run...");
-            while (ZeroApplication.ApplicationState < StationState.Closing && State == StationState.Run)
+            ZeroTrace.WriteInfo(Name, "run...");
+            while (ZeroApplication.CanDo && State == StationState.Run)
             {
-                if (ZeroApplication.ApplicationState != StationState.Run)
-                {
-                    Thread.Sleep(1000);
-                    continue;
-                }
                 if (!Items.StartProcess(out var item, 100))
                     continue;
-
-                if (!ZeroApplication.Configs.TryGetValue(item.Station, out var config))
-                {
-                    StationConsole.WriteError($"ZeroPublisher:{item.Station}-{item.Title}", "因为无法找到站点而导致消息被遗弃");
-                    LogRecorder.Trace(LogType.Error, "Publish",
-                        $@"因为无法找到站点而导致向[{item.Station}]广播的主题为[{item.Title}]的消息被遗弃，内容为：
-{item.Content}");
-                    Items.EndProcess();
-                    continue;
-                }
-                var socket = config.GetSocket();
+                var socket = ZeroConnectionPool.GetSocket(item.Station);
                 if (socket == null)
                 {
                     Thread.Sleep(100);
                     continue;
                 }
+
                 try
                 {
                     if (!socket.Publish(item))
                     {
-                        StationConsole.WriteError($"ZeroPublisher:{item.Station}-{item.Title}", "消息发送失败");
-                        LogRecorder.Trace(LogType.Warning, "Publish",
-                            $@"向[{item.Station}]广播的主题为[{item.Title}]的消息发送失败，内容为：
-{item.Content}");
+                        ZeroTrace.WriteError(Name, "消息发送失败", JsonConvert.SerializeObject(item));
+                        ZeroConnectionPool.Close(ref socket);
+                    }
+                    else
+                    {
+                        PubCount++;
                     }
                 }
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
-                    StationConsole.WriteException($"ZeroPublisher:{item.Station}-{item.Title}",e);
-                    config.Close(ref socket);
+                    ZeroTrace.WriteError(Name, "Exception", $"{item.Station}-{item.Title}", e);
+                    ZeroConnectionPool.Close(ref socket);
                 }
                 finally
                 {
-                    config.Free(socket);
+                    ZeroConnectionPool.Free(socket);
                 }
+
                 Items.EndProcess();
-                PubCount++;
             }
-            State = StationState.Closed;
-            StationConsole.WriteInfo("Publisher", "closed");
+
+            if (State <= StationState.Closing)
+                State = StationState.Closed;
+            ZeroTrace.WriteInfo(Name, "closed");
         }
 
+        #region IDisposable
+        /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
+        void IDisposable.Dispose()
+        {
+            State = StationState.Destroy;
+        }
+        #endregion
 
     }
 }

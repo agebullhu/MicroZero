@@ -2,24 +2,23 @@ using System.Runtime.InteropServices;
 
 namespace ZeroMQ.Monitoring
 {
-	using System;
-	using lib;
+    using System;
 
-	/// <summary>
-	/// Provides data for <see cref="ZMonitor.Connected"/>, <see cref="ZMonitor.Listening"/>, <see cref="ZMonitor.Accepted"/>, <see cref="ZMonitor.Closed"/> and <see cref="ZMonitor.Disconnected"/> events.
-	/// </summary>
-	public class ZMonitorFileDescriptorEventArgs : ZMonitorEventArgs
+    /// <summary>
+    /// Provides data for <see cref="ZMonitor.Connected"/>, <see cref="ZMonitor.Listening"/>, <see cref="ZMonitor.Accepted"/>, <see cref="ZMonitor.Closed"/> and <see cref="ZMonitor.Disconnected"/> events.
+    /// </summary>
+    public class ZMonitorFileDescriptorEventArgs : ZMonitorEventArgs
 	{
 		internal ZMonitorFileDescriptorEventArgs(ZMonitor monitor, ZMonitorEventData data)
 			: base(monitor, data)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{
-				this.FileDescriptor_Posix = data.EventValue;
+				FileDescriptor_Posix = data.EventValue;
 			}
 			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
-				this.FileDescriptor_Windows = new IntPtr(data.EventValue);
+				FileDescriptor_Windows = new IntPtr(data.EventValue);
 			}
 			else
 			{

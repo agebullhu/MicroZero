@@ -1,13 +1,11 @@
-using System;
-
 namespace ZeroMQ
 {
-	using lib;
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
+    using lib;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-	public static partial class ZPollItems
+    public static partial class ZPollItems
 	{
 
 		// unsafe native delegate
@@ -199,7 +197,7 @@ namespace ZeroMQ
 				ZPollItem item = items.ElementAt(i);
 				ZMessage message = send ? messages[i] : null;
 
-				if (ZPollItems.PollSingleResult(socket, item, pollEvents, ref message))
+				if (PollSingleResult(socket, item, pollEvents, ref message))
 				{
 					++readyCount;
 				}

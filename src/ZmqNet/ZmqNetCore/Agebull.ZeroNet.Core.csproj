@@ -67,12 +67,11 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
     <Compile Remove="PubSub\LogQueue.cs" />
     <Compile Remove="ZeroApi\ApiStationItem.cs" />
-    <Compile Remove="ZeroNet\ZeroHelper.cs" />
+    <Compile Remove="Application\ZeroHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="Ext\" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

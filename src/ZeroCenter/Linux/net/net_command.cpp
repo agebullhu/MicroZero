@@ -96,7 +96,7 @@ namespace agebull
 		//启动网络命令环境
 		int start_zero_center()
 		{
-			log_msg("start system stations ...");
+			log_msg(" start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
 
 			zmq_net::station_dispatcher::run();
@@ -106,31 +106,29 @@ namespace agebull
 				if (station_dispatcher::instance == nullptr ||
 					station_dispatcher::instance->get_config().station_state_ == station_state::Failed)
 				{
-					cout << endl << "dispatcher failed";
+					log_msg(" system dispatcher failed ...");
 					return	net_state = NET_STATE_FAILED;
 				}
-				cout << ".";
 			}
 			cout << endl << "waiting connect";
 
 			for (int i = 0; i < 10; i++)
 			{
-				cout << ".";
 				station_dispatcher::monitor("SystemManage", "worker_sound_off", "*");
-				thread_sleep(300);
+				thread_sleep(200);
 			}
 			cout << endl;
 			zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
 
-			log_msg("start business stations...");
-			int cnt = zmq_net::station_warehouse::restore() + 1;
+			log_msg(" start business stations...");
+			const int cnt = zmq_net::station_warehouse::restore() + 1;
 			while (zero_thread_count < cnt)
 			{
 				cout << ".";
 				thread_sleep(50);
 			}
 			cout << endl;
-			log_msg("all station in service");
+			log_msg(" all station in service");
 			return net_state;
 		}
 
@@ -161,11 +159,10 @@ namespace agebull
 			//zmq_ctx_term(net_context);
 			
 			net_context = nullptr;
-			log_msg("zero center destoried");
 #ifndef _DEBUG
 			delete guard;
 #endif
-			std::cout << endl << "bye bye";
+			log_msg("zero center destoried");
 		}
 	}
 }

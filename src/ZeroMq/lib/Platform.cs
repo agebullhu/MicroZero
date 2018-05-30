@@ -1,14 +1,13 @@
 namespace ZeroMQ.lib
 {
-	using System;
-	using System.Collections.Generic;
-    using System.Diagnostics;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    using System;
+    using System.Collections.Generic;
     using System.IO;
-	using System.Linq;
-	using System.Reflection;
-	using System.Runtime.InteropServices;
+    using System.Linq;
+    using System.Reflection;
 
-	/* Common CLR type System.Runtime.InteropServices.ImageFileMachine *
+    /* Common CLR type System.Runtime.InteropServices.ImageFileMachine *
 	public enum ImageFileMachine
 	{
 		i386    = 0x014C,
@@ -18,7 +17,7 @@ namespace ZeroMQ.lib
 		
 	} /**/
 
-	public enum PlatformKind : int
+    public enum PlatformKind : int
 	{
 		__Internal = 0,
 		Posix,
@@ -53,14 +52,8 @@ namespace ZeroMQ.lib
 
 		public static readonly string[] LibraryPaths;
 
-		public delegate UnmanagedLibrary LoadUnmanagedLibraryDelegate(string libraryName);
-		public static readonly LoadUnmanagedLibraryDelegate LoadUnmanagedLibrary;
 
-		public delegate SafeLibraryHandle OpenHandleDelegate(string filename);
-		public static readonly OpenHandleDelegate OpenHandle;
 
-		public delegate IntPtr LoadProcedureDelegate(SafeLibraryHandle handle, string functionName);
-		public static readonly LoadProcedureDelegate LoadProcedure;
 
 		public delegate bool ReleaseHandleDelegate(IntPtr handle);
 		public static readonly ReleaseHandleDelegate ReleaseHandle;
@@ -242,11 +235,11 @@ namespace ZeroMQ.lib
 		public static void SetupImplementation(Type platformDependant)
 		{
 			// Baseline by PlatformKind
-			string platformKind = Enum.GetName(typeof(PlatformKind), Platform.Kind);
+			string platformKind = Enum.GetName(typeof(PlatformKind), Kind);
 			AssignImplementations(platformDependant, platformKind);
 
 			// Overwrite by PlatformName
-			string platformName = Enum.GetName(typeof(PlatformName), Platform.Name);
+			string platformName = Enum.GetName(typeof(PlatformName), Name);
 			if (platformName != platformKind)
 			{
 				AssignImplementations(platformDependant, platformName);

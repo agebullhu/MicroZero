@@ -106,7 +106,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void SendTask()
         {
-            StationConsole.WriteInfo("RemoteLogcorder", "start...");
+            ZeroTrace.WriteInfo("RemoteLogcorder", "start...");
             while (ZeroApplication.ApplicationState != StationState.Run)
             {
                 Thread.Sleep(100);
@@ -116,7 +116,7 @@ namespace Agebull.ZeroNet.Log
             {
                 Thread.Sleep(100);
             }
-            StationConsole.WriteInfo("RemoteLogcorder", "run...");
+            ZeroTrace.WriteInfo("RemoteLogcorder", "run...");
             _state = StationState.Run;
             while (ZeroApplication.IsAlive && _state == StationState.Run)
             {
@@ -191,8 +191,8 @@ namespace Agebull.ZeroNet.Log
             _socket.CloseSocket();
             string real = ZeroIdentityHelper.CreateRealName(_config.ShortName ?? _config.StationName, RandomOperate.Generate(3)); ;
             var identity = real.ToAsciiBytes();
-            StationConsole.WriteInfo("RemoteLogcorder", _config.RequestAddress);
-            StationConsole.WriteInfo("RemoteLogcorder", real);
+            ZeroTrace.WriteInfo("RemoteLogcorder", _config.RequestAddress);
+            ZeroTrace.WriteInfo("RemoteLogcorder", real);
             _socket = ZeroHelper.CreateRequestSocket(_config.RequestAddress, identity);
             return _socket != null;
         }

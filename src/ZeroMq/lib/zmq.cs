@@ -1,6 +1,7 @@
 ﻿namespace ZeroMQ.lib
 {
-	using System;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    using System;
 	using System.Runtime.InteropServices;
 
 	public static unsafe class zmq
@@ -59,19 +60,19 @@
 
 				sizeof_zmq_msg_t = sizeof_zmq_msg_t_v3;
 
-				zmq.ctx_shutdown = (ctxPtr) 
+				ctx_shutdown = (ctxPtr) 
 					=> { throw VersionNotSupported("zmq_ctx_shutdown", "v4"); };
-				zmq.msg_gets = (msgPtr, propertyPtr) 
+				msg_gets = (msgPtr, propertyPtr) 
 					=> { throw VersionNotSupported("zmq_msg_gets", "v4"); };
-				zmq.has = (capabilityPtr) 
+				has = (capabilityPtr) 
 					=> { throw VersionNotSupported("zmq_has", "v4"); };
-				zmq.proxy_steerable = (frontendPtr, backendPtr, capturePtr, controlPtr)
+				proxy_steerable = (frontendPtr, backendPtr, capturePtr, controlPtr)
 					=> { throw VersionNotSupported("zmq_proxy_steerable", "v4"); };
-				zmq.curve_keypair = (z85_public_key, z85_secret_key) 
+				curve_keypair = (z85_public_key, z85_secret_key) 
 					=> { throw VersionNotSupported("zmq_curve_keypair", "v4"); };
-				zmq.z85_encode = (dest, data, size) 
+				z85_encode = (dest, data, size) 
 					=> { throw VersionNotSupported("zmq_z85_encode", "v4"); };
-				zmq.z85_decode = (dest, data) 
+				z85_decode = (dest, data) 
 					=> { throw VersionNotSupported("zmq_z85_decode", "v4"); };
 
 				//if (!Platform.Is__Internal)
@@ -188,10 +189,7 @@
 	    private static NotSupportedException VersionNotSupported(string methodName, string requiredVersion)
 		{
 			return new NotSupportedException(
-				string.Format(
-					"{0}libzmq version not supported. Required version {1}",
-					methodName == null ? string.Empty : methodName + ": ",
-					requiredVersion));
+			    $"{(methodName == null ? string.Empty : methodName + ": ")}libzmq version not supported. Required version {requiredVersion}");
 		}
 
 		// (2) Declare privately the extern entry point

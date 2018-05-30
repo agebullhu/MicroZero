@@ -16,14 +16,7 @@ namespace agebull
 	/*
 	* 输出到DEBUG窗口
 	*/
-	inline void out_debug(string msg)
-	{
-		msg = "\r\n" + msg;
-#ifdef WIN32
-		OutputDebugStringA(msg.c_str());
-#endif
-		cout << msg.c_str();
-	}
+	void out_debug(string msg);
 
 #define DEBUG_BASE			100
 #define DEBUG_TIMER		    (DEBUG_BASE + 1)

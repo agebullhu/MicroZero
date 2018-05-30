@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 using ZeroMQ.lib;
 
 namespace ZeroMQ.Monitoring
 {
 
-	/// <summary>
-	/// Defines extension methods related to monitoring for <see cref="ZSocket"/> instances.
-	/// </summary>
-	public static class ZMonitors
+    /// <summary>
+    /// Defines extension methods related to monitoring for <see cref="ZSocket"/> instances.
+    /// </summary>
+    public static class ZMonitors
 	{
 		/// <summary>
 		/// Spawns a <see cref="ZSocketType.PAIR"/> socket that publishes all events for

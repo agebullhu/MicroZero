@@ -13,7 +13,7 @@ namespace WebMonitor
         {
             BuildWebHost(args).Run();
             WebSocketPooler.Instance.Dispose();
-            ZeroApplication.Destroy();
+            ZeroApplication.Shutdown();
         }
 
         public static IWebHost BuildWebHost(string[] args)

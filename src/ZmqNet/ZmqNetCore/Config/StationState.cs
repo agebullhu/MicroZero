@@ -12,15 +12,19 @@
         /// <summary>
         /// 配置错误
         /// </summary>
-        public const int ConfigError = 2;
+        public const int ConfigError = 1;
         /// <summary>
         /// 错误状态
         /// </summary>
-        public const int Failed = 3;
+        public const int Failed = 2;
+        /// <summary>
+        /// 已初始化
+        /// </summary>
+        public const int Initialized = 3;
         /// <summary>
         /// 正在启动
         /// </summary>
-        public const int Start = 4;
+        public const int Start = 4; 
         /// <summary>
         /// 正在运行
         /// </summary>

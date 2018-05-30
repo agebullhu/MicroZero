@@ -6,16 +6,37 @@ using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
     /// <summary>
     ///     Sends and receives messages, single frames and byte frames across ZeroMQ.
     /// </summary>
-    public class ZSocket : IDisposable
+    public class ZSocket : MemoryCheck
     {
+#if UNMANAGE_MONEY_CHECK
+        protected override string TypeName => nameof(ZMessage);
+#endif
+        /// <summary>
+        /// 关联的站点名称（仅用于ZeroNet）
+        /// </summary>
+        public string StationName
+        {
+            get;
+            set;
+        }
+        /// <summary>
+        /// 是否使用中（仅用于ZeroNet）
+        /// </summary>
+        public bool IsUsing
+        {
+            get;
+            set;
+        }
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
         // From options.hpp: unsigned char identity [256];
         private const int MaxBinaryOptionSize = 256;
 
         public const int BinaryKeySize = 32;
+        
 
         /// <summary>
         ///     已绑定地址
@@ -450,11 +471,6 @@ namespace ZeroMQ
             set => SetOption(ZSocketOption.IPV4_ONLY, value ? 1 : 0);
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
         /// <summary>
         ///     Create a <see cref="ZSocket" /> instance.
@@ -524,22 +540,13 @@ namespace ZeroMQ
         /// </summary>
         ~ZSocket()
         {
-            Dispose(false);
+            Dispose();
         }
 
-        /// <summary>
-        ///     Releases the unmanaged resources used by the <see cref="ZSocket" />, and optionally disposes of the managed
-        ///     resources.
-        /// </summary>
-        /// <param name="disposing">
-        ///     true to release both managed and unmanaged resources; false to release only unmanaged
-        ///     resources.
-        /// </param>
-        protected virtual void Dispose(bool disposing)
+        protected override void DoDispose()
         {
-            if (disposing) Close(out _error);
+            Close(out _error);
         }
-
         /// <summary>
         ///     Close the current socket.
         /// </summary>
@@ -940,7 +947,7 @@ namespace ZeroMQ
                         continue;
                     }
 
-                    frame.Dispose();
+                    frame.Close();
                     return false;
                 }
 
@@ -1089,7 +1096,7 @@ namespace ZeroMQ
             var more = (flags & ZSocketFlags.More) == ZSocketFlags.More;
             flags = flags | ZSocketFlags.More;
 
-            //var framesIsList = frames is IList<ZFrame> list && !list.IsReadOnly;
+            var framesIsList = frames is IList<ZFrame> list && !list.IsReadOnly;
             var array = frames.ToArray();
 
             for (int i = 0, l = array.Length; i < l; ++i)
@@ -1102,11 +1109,11 @@ namespace ZeroMQ
                 if (!SendFrame(frame, flags, out error))
                     return false;
 
-                //if (framesIsList)
-                //{
-                //    ((IList<ZFrame>)frames).Remove(frame);
-                //    frame.Dismiss();
-                //}
+                if (framesIsList)
+                {
+                    ((IList<ZFrame>)frames).Remove(frame);
+                    frame.Close();
+                }
 
                 ++sent;
             }
@@ -1171,7 +1178,7 @@ namespace ZeroMQ
             }
 
             // Tell IDisposable to not unallocate zmq_msg
-            frame.Dismiss();
+            frame.Close();
             return true;
         }
 

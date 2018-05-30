@@ -1,7 +1,6 @@
 #ifndef ___STDINC_H
 #define ___STDINC_H
 #pragma once
-
 #include <cassert>
 #include <stdio.h>
 #include <stddef.h>
@@ -26,14 +25,14 @@
 #include <assert.h>
 #include <memory>
 #include <queue>
-#include <uuid/uuid.h>  
+//#include <uuid/uuid.h>  
 
 #include "acl/acl_cpp/lib_acl.hpp"
 #include "acl/lib_acl.h"
 #include "zeromq/zmq.h"
 #include "boostinc.h"
 
-typedef uuid_t GUID;
+//typedef uuid_t GUID;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -54,4 +53,6 @@ typedef void* HANDLE;
 
 
 using namespace std;
+#define var auto
+#define astring acl::string;
 #endif

@@ -472,7 +472,7 @@ namespace agebull
 		acl::string vl2;
 		if (!m_redis_cmd->get(key, vl2))
 		{
-			log_error3("(%s)read_from_redis(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)read_from_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		m_local_values[key] = vl2;
@@ -481,8 +481,6 @@ namespace agebull
 	}
 	void trans_redis::set(const char* key, acl::string&vl)
 	{
-		log_debug2(DEBUG_BASE, 5, "redis->set %s(%s)", key, vl.c_str());
-
 		if (m_trans_num > 0)
 		{
 			m_local_values[key] = vl;
@@ -492,14 +490,12 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl.c_str(), vl.length()))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
 	void trans_redis::set(const char* key, const char* vl)
 	{
-		log_debug2(DEBUG_BASE, 5, "redis->set %s(%s)", key, vl);
-
 		if (m_trans_num > 0)
 		{
 			m_local_values[key] = vl;
@@ -509,14 +505,12 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl, strlen(vl)))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
 	void trans_redis::set(const char* key, const char* vl, size_t len)
 	{
-		log_debug2(DEBUG_BASE, 5, "redis->set %s(binary %d)", key, len);
-
 		if (m_trans_num > 0)
 		{
 			acl::string svl;
@@ -529,7 +523,7 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl, len))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
@@ -556,13 +550,13 @@ namespace agebull
 		vector<acl::string> keys;
 		if (m_redis_cmd->keys_pattern(key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 		}
 		if (!keys.empty())
 		{
 			if (!get(keys.begin()->c_str(), str))
 			{
-				log_error3("(%s)read_first_from_redis(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+				log_error3("(%s)read_first_from_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			}
 		}
 		return str;
@@ -572,7 +566,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (json[strlen(json) - 1] != '}')
 		{
-			log_error3("(%s)write_json_to_redis(%s)时(%s)不是JSON", redis_ip, key, json);
+			log_error3("(%s)write_json_to_redis(%s)时(%s)不是JSON", redis_ip.c_str(), key, json);
 		}
 		else
 		{
@@ -593,7 +587,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip, find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
 		}
 		return keys;
 	}
@@ -604,7 +598,7 @@ namespace agebull
 		//m_redis_cmd->clear();
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip, find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
 			return values;
 		}
 		if (!keys.empty())
@@ -614,7 +608,7 @@ namespace agebull
 				acl::string* str = new acl::string();
 				if (get(key, *str) == false)
 				{
-					log_error3("(%s)get(%s)时发生错误(%s)", redis_ip, key.c_str(), m_redis_cmd->result_error());
+					log_error3("(%s)get(%s)时发生错误(%s)", redis_ip.c_str(), key.c_str(), m_redis_cmd->result_error());
 					continue;
 				}
 				values.emplace_back(str);
@@ -628,16 +622,16 @@ namespace agebull
 		vector<acl::string> keys;
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip, find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
 		}
 		if (!keys.empty())
 		{
-			for(auto key : keys)
+			for(auto&key : keys)
 			{
 				m_redis_cmd->clear();
 				if (m_redis_cmd->del(key) < 0)
 				{
-					log_error3("(%s)del(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+					log_error3("(%s)del(%s)时发生错误(%s)", redis_ip.c_str(), key.c_str(), m_redis_cmd->result_error());
 				}
 			}
 		}
@@ -649,7 +643,7 @@ namespace agebull
 		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (!m_redis_cmd->incr(key, &id))
 		{
-			log_error3("(%s)incr(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)incr(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			id = 0LL;
 		}
 		return static_cast<size_t>(id);
@@ -663,7 +657,7 @@ namespace agebull
 		const int re = m_redis_cmd->setnx(key, vl);
 		if (re < 0)
 		{
-			log_error3("(%s)setnx(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)setnx(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 		}
 		if (re == 1)
 		{
@@ -676,7 +670,7 @@ namespace agebull
 		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (m_redis_cmd->del(key) < 0)
 		{
-			log_error3("(%s)del(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)del(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 		}
 		return true;
 	}
@@ -686,7 +680,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (!m_redis_cmd->hget(key, sub_key, vl))
 		{
-			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug3(DEBUG_BASE, 5, "redis->hget %s:%s(%s)", key, sub_key, vl.c_str());
@@ -699,7 +693,7 @@ namespace agebull
 		acl::string vl2;
 		if (m_redis_cmd->hset(key, sub_key, vl) < 0)
 		{
-			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug3(DEBUG_BASE, 5, "redis->hset %s:%s(%s)", key, sub_key, vl);
@@ -710,7 +704,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (!m_redis_cmd->hgetall(key, vl))
 		{
-			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug1(DEBUG_BASE, 5, "redis->hget %s", key);
@@ -739,7 +733,7 @@ namespace agebull
 		acl::string vl2;
 		if (m_redis_cmd->hdel(key, sub_key) < 0)
 		{
-			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip, key, m_redis_cmd->result_error());
+			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug2(DEBUG_BASE, 5, "redis->hdel %s:%s", key, sub_key);

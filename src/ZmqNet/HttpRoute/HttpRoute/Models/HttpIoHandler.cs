@@ -137,7 +137,7 @@ namespace ZeroNet.Http.Route
                 Status = state,
                 Requester = $"Web://{ApiContext.RequestContext.Ip}:{ApiContext.RequestContext.Port}"
             });
-            StationConsole.WriteLoop("Run", $"count:{count} success{success} error{error}");
+            ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
         }
     }
 }

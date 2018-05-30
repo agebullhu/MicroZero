@@ -12,6 +12,7 @@ namespace ApiTest
     {
         static void Main(string[] args)
         {
+            ZeroApplication.AppName = "ApiTest";
             ZeroApplication.Initialize();
             //LogRecorder.Initialize(new RemoteRecorder());
             LogRecorder.LogMonitor = true;
@@ -19,7 +20,6 @@ namespace ApiTest
             ZeroApplication.Discove();
             //Task.Factory.StartNew(Counter);
             ZeroApplication.RunAwaite();
-            LogRecorder.Shutdown();
         }
     }
 }

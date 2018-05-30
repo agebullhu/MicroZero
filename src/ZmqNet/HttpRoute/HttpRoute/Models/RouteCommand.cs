@@ -116,7 +116,7 @@ namespace ZeroNet.Http.Route
 
         private static void StationJoin(StationConfig station)
         {
-            StationConsole.WriteInfo("Api Station", $"Join:{station.StationName}");
+            ZeroTrace.WriteInfo("Api Station", $"Join:{station.StationName}");
 
             if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host))
             {
@@ -152,7 +152,7 @@ namespace ZeroNet.Http.Route
 
         private static void StationLeft(StationConfig station)
         {
-            StationConsole.WriteInfo("Api Station", $"Left:{station.StationName}");
+            ZeroTrace.WriteInfo("Api Station", $"Left:{station.StationName}");
 
             if (AppConfig.Config.RouteMap.TryGetValue(station.StationName, out var host))
             {
@@ -166,7 +166,7 @@ namespace ZeroNet.Http.Route
         {
             foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
             {
-                StationConsole.WriteInfo("Api Station", $"Left:{host.Key}");
+                ZeroTrace.WriteInfo("Api Station", $"Left:{host.Key}");
                 host.Value.Failed = true;
                 host.Value.ByZero = true;
             }

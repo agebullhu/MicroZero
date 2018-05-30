@@ -57,26 +57,20 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         public abstract void Handle(PublishItem args);
 
-        /// <inheritdoc />
         /// <summary>
-        /// 命令轮询
+        /// 初始化
         /// </summary>
-        /// <returns></returns>
-        protected sealed override bool Run()
+        protected sealed override void Initialize()
         {
-            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", Config.WorkerAddress);
-            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", RealName);
-            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", "start...");
-            State = StationState.Start;
-            InPoll = false;
-
-            State = StationState.Run;
-            if (!IsRealModel)
-                Items = SyncQueue<PublishItem>.Load(CacheFileName);
-
+            try
+            {
+                if (!IsRealModel)
+                    Items = SyncQueue<PublishItem>.Load(CacheFileName);
+            }
+            catch
+            {
+            }
             Task.Factory.StartNew(HandleTask);
-            Task.Factory.StartNew(PollTask).ContinueWith(task => OnTaskStop());
-            return true;
         }
 
         /// <summary>
@@ -90,89 +84,45 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
+        /// <inheritdoc />
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        private void PollTask()
+        protected sealed override bool Run()
         {
             Heartbeat(false);
-            if (!CreateSocket())
-            {
-                State = StationState.Failed;
-                return;
-            }
-            StationConsole.WriteInfo(StationName, "run...");
+            _socket = ZeroHelper.CreateSubscriberSocket(Config.WorkerAddress, Identity, Subscribe);
+            ZeroTrace.WriteInfo(StationName, "run...");
             InPoll = true;
-            while (State == StationState.Run)
+            State = StationState.Run;
+            while (CanRun)
             {
                 if (_socket.Subscribe(out var item))
+                {
                     Items.Push(item);
+                }
             }
+            _socket.CloseSocket();
             InPoll = false;
-            StationConsole.WriteInfo("Pub",$"{ StationName}:{Name}", "poll stop");
+            ZeroTrace.WriteInfo("Pub",$"{ StationName}:{Name}", "poll stop");
+            return true;
         }
 
         /// <summary>
-        /// 命令轮询
+        /// 析构
         /// </summary>
-        /// <returns></returns>
-        protected override void OnTaskStop()
+        protected override void DoDispose()
         {
-            CloseSocket();
-            if (!ZeroApplication.IsAlive)
-            {
-                if (!IsRealModel)
-                    Items.Save(CacheFileName);
-            }
-            base.OnTaskStop();
+            if (!IsRealModel)
+                Items.Save(CacheFileName);
         }
-
-        private bool CreateSocket()
-        {
-            try
-            {
-                _socket = ZeroHelper.CreateSubscriberSocket(Config.WorkerAddress, Identity, Subscribe);
-                return true;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                State = StationState.Failed;
-                CloseSocket();
-                StationConsole.WriteException("Pub",$"{ StationName}:{Name}", e);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// 关闭套接字
-        /// </summary>
-        private void CloseSocket()
-        {
-            lock (this)
-            {
-                if (_socket == null)
-                    return;
-                try
-                {
-                    _socket.Disconnect(Config.WorkerAddress);
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);//一般是无法连接服务器而出错
-                }
-                _socket.Close();
-                _socket = null;
-            }
-        }
-
         /// <summary>
         /// 命令处理任务
         /// </summary>
         protected virtual void HandleTask()
         {
-            while (State == StationState.Run)
+            while (ZeroApplication.IsAlive)
             {
                 if (!Items.StartProcess(out var item, 1000))
                     continue;
@@ -185,7 +135,7 @@ namespace Agebull.ZeroNet.PubSub
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
-                    StationConsole.WriteException("Pub",$"{ StationName}:{Name}", e);
+                    ZeroTrace.WriteException("Pub",$"{ StationName}:{Name}", e);
                     Thread.Sleep(5);
                 }
                 finally

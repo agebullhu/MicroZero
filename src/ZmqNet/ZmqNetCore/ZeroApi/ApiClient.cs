@@ -133,7 +133,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 ApiContext.Current.LastError = ErrorCode.NoFind;
                 return ZeroStatuValue.NoFindJson;
             }
-            var socket = config.GetSocket();
+            var socket = ZeroConnectionPool.GetSocket(station);
             if (socket == null)
             {
                 ApiContext.Current.LastError = ErrorCode.NoReady;
@@ -145,24 +145,24 @@ namespace Agebull.ZeroNet.ZeroApi
                 var result = socket.Send(GetGlobalIdDescription);
                 if (!result.InteractiveSuccess)
                 {
-                    StationConsole.WriteError("API", "Send Failed", station, commmand, argument);
+                    ZeroTrace.WriteError("GetGlobalId", "Send Failed", station, commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    config.Close(ref socket);
+                    ZeroConnectionPool.Close(ref socket);
                     return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text()));
                 }
                 result = socket.ReceiveString();
                 if (!result.InteractiveSuccess)
                 {
-                    StationConsole.WriteError("API", config.RequestAddress, "Call Failed", station, commmand, argument);
+                    ZeroTrace.WriteError("GlobalId", config.RequestAddress, "Recv  Failed", station, commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    config.Close(ref socket);
+                    ZeroConnectionPool.Close(ref socket);
                     return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text()));
                 }
                 if (result.TryGetValue(ZeroFrameType.GlobalId, out var globalId))
                     LogRecorder.MonitorTrace($"GlobalId:{long.Parse(globalId, NumberStyles.HexNumber)}");
                 
 
-                result = socket.Send(CallDescription,
+                result = socket.QuietSend(CallDescription,
                     commmand,
                     ZeroApplication.Config.StationName,
                     ApiContext.RequestContext.RequestId,
@@ -171,76 +171,57 @@ namespace Agebull.ZeroNet.ZeroApi
                     globalId);
                 if (!result.InteractiveSuccess)
                 {
-                    StationConsole.WriteError("API", "Send Failed", station, commmand, argument);
+                    ZeroTrace.WriteError(station, "Send Failed", commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    config.Close(ref socket);
+                    ZeroConnectionPool.Close(ref socket);
                     return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text()));
                 }
 
-                result = socket.ReceiveString();
+                result = socket.ReceiveString(5,false);
                 if (!result.InteractiveSuccess)
                 {
-                    StationConsole.WriteError("API", config.RequestAddress, "Call Failed", station, commmand, argument);
-                    ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    config.Close(ref socket);
-                    return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text()));
+                    bool finded = false;
+                    int cnt = 0;
+                    while (!finded && ++cnt < 5)
+                    {
+                        ZeroConnectionPool.Close(ref socket);
+
+                        Thread.Sleep(1000);
+                        socket = ZeroConnectionPool.GetSocket(station);
+                        result = socket.QuietSend(FindDescription, globalId);
+                        if (!result.InteractiveSuccess)
+                            continue;
+
+                        result = socket.ReceiveString(1, false);
+                        if (!result.InteractiveSuccess || result.State == ZeroOperatorStateType.NoWorker)
+                            continue;
+                        ZeroTrace.WriteInfo("API", config.RequestAddress, "deliverer", commmand, globalId, cnt.ToString());
+                        finded = true;
+                    }
+
+                    if (!finded)
+                    {
+                        ZeroTrace.WriteError("API", config.RequestAddress, "incorrigible", commmand, globalId);
+                        ApiContext.Current.LastError = ErrorCode.NetworkError;
+                        ZeroConnectionPool.Close(ref socket);
+                        return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.TimeOut, result.State.Text(), globalId));
+                    }
                 }
 
-                if (result.State == ZeroOperatorStateType.VoteWaiting)
+                var lr = socket.QuietSend(CloseDescription, globalId);
+                if (!lr.InteractiveSuccess)
                 {
-                    result = socket.Send(WaitingDescription);
-                    if (!result.InteractiveSuccess)
-                    {
-                        ApiContext.Current.LastError = ErrorCode.NetworkError;
-                        config.Close(ref socket);
-                        return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text(), globalId));
-                    }
-                    result = socket.ReceiveString(5,false);
-                    if (!result.InteractiveSuccess)
-                    {
-                        bool finded = false;
-                        int cnt = 0;
-                        while (!finded && ++cnt < 5)
-                        {
-                            config.Close(ref socket);
-                            
-                            Thread.Sleep(1000);
-                            socket = config.GetSocket();
-                            result = socket.QuietSend(FindDescription, globalId);
-                            if (!result.InteractiveSuccess)
-                                continue;
-
-                            result = socket.ReceiveString(1, false);
-                            if (!result.InteractiveSuccess || result.State == ZeroOperatorStateType.NoWorker)
-                                continue;
-                            StationConsole.WriteInfo("API", config.RequestAddress, "deliverer", station, commmand, globalId, cnt.ToString());
-                            finded = true;
-                        }
-
-                        if (!finded)
-                        {
-                            StationConsole.WriteError("API", config.RequestAddress, "incorrigible", station, commmand, globalId);
-                            ApiContext.Current.LastError = ErrorCode.NetworkError;
-                            config.Close(ref socket);
-                            return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.TimeOut,result.State.Text(), globalId));
-                        }
-                    }
-
-                    var lr = socket.QuietSend(CloseDescription, globalId);
-                    if (!lr.InteractiveSuccess)
-                    {
-                        StationConsole.WriteError("API", config.RequestAddress, "Close Failed", station, commmand, globalId);
-                    }
-                    lr = socket.ReceiveString(1, false);
-                    if (!lr.InteractiveSuccess)
-                    {
-                        StationConsole.WriteError("API", config.RequestAddress, "Close Failed", station, commmand, globalId);
-                    }
+                    ZeroTrace.WriteError(station, config.RequestAddress, "Close Failed", commmand, globalId);
+                }
+                lr = socket.ReceiveString(1, false);
+                if (!lr.InteractiveSuccess)
+                {
+                    ZeroTrace.WriteError(station, config.RequestAddress, "Close Failed", commmand, globalId);
                 }
                 //else
                 //{
                 //    ApiContext.Current.LastError = ErrorCode.CallApiError;
-                //    StationConsole.WriteError("API", config.RequestAddress, "No Waiting", station, commmand, argument);
+                //    StationConsole.WriteError("API", config.RequestAddress, "No Waiting", commmand, argument);
                 //}
                 switch (result.State)
                 {
@@ -280,7 +261,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             finally
             {
-                config.Free(socket);
+                ZeroConnectionPool.Free(socket);
             }
 
         }

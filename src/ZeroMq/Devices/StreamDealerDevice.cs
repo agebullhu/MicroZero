@@ -1,17 +1,14 @@
 ﻿namespace ZeroMQ.Devices
 {
-	using lib;
-	// using lib.sys;
+    using lib;
+    // using lib.sys;
 
-	using System;
-	using System.Net;
-	using System.Threading;
 
-	/// <summary>
-	/// The Stream to Dealer is a Device for reading 
-	/// and sending REPlies to TCP
-	/// </summary>
-	public class StreamDealerDevice : ZDevice
+    /// <summary>
+    /// The Stream to Dealer is a Device for reading 
+    /// and sending REPlies to TCP
+    /// </summary>
+    public class StreamDealerDevice : ZDevice
 	{
 		/// <summary>
 		/// The frontend <see cref="ZSocketType"/> for a queue device.
@@ -88,7 +85,6 @@
 				{
 					return false;
 				}
-				incoming.Dismiss();
 			}
 
 			return true;
@@ -119,7 +115,7 @@
 						continue;
 					}
 
-					frame.Dispose();
+					frame.Close();
 					return false;
 				}
 
@@ -214,8 +210,6 @@
 					return false;
 				}
 			}
-
-			msg.Dismiss();
 			return true;
 		}
 	}

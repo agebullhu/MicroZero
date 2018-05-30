@@ -13,20 +13,22 @@
 #include <time.h>
 #include <execinfo.h>
 #include <string>
+#include "net/station_warehouse.h"
+
 
 namespace agebull
 {
 	namespace zmq_net
 	{
 		/**
-		* \brief 取本机IP并显示在控制台
+		* \brief 取本机IP
 		*/
-		bool rpc_service::get_local_ips()
+		void get_local_ips(acl::string& host, vector<acl::string>& ips)
 		{
 			char hname[128];
 			memset(hname, 0, sizeof(hname));
 			gethostname(hname, sizeof(hname));
-			cout << "Host:" << hname << endl << "IPs:";
+			host = hname;
 			struct addrinfo hint {};
 			memset(&hint, 0, sizeof(hint));
 			hint.ai_family = AF_INET;
@@ -34,29 +36,75 @@ namespace agebull
 
 			addrinfo* info = nullptr;
 			char ipstr[16];
-			bool first = true;
 			if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
 			{
 				addrinfo* now = info;
 				do
 				{
 					inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
-					if (first)
-						first = false;
-					else
-						cout << ",";
-					cout << ipstr;
+					ips.emplace_back(ipstr);
 					now = now->ai_next;
 				} while (now != nullptr);
 				freeaddrinfo(info);
 			}
-			cout << endl;
-			return !first;
 		}
+
+		/**
+		* \brief 初始化
+		*/
+		bool rpc_service::initialize()
+		{
+			int major, minor, patch;
+			zmq_version(&major, &minor, &patch);
+
+			acl::acl_cpp_init();
+			// 在程序初始化时打开日志
+			char buf[512];
+			acl::string curpath = getcwd(buf, 512);
+			var list = curpath.split("/");
+			list.pop_back();
+			config::root_path = "/";
+			for (var& word : list)
+			{
+				config::root_path.append(word);
+				config::root_path.append("/");
+			}
+			auto log = config::root_path;
+			log.append("zero.log");
+
+			logger_open(log.c_str(), "zero_center", DEBUG_CONFIG);
+			log_msg3("ØMQ version:%d.%d.%d", major, minor, patch);
+			log_msg3("folder exec:%s\n    root:%s\n    log:%s", buf, config::root_path.c_str(), log.c_str());
+
+			acl::string host;
+			vector<acl::string> ips;
+			get_local_ips(host, ips);
+
+			acl::string ip_info;
+			ip_info.format_append("host:%s ips:", host.c_str());
+			bool first = true;
+			for (var& ip : ips)
+			{
+				if (first)
+					first = false;
+				else
+					ip_info.append(",");
+				ip_info.append(ip);
+			}
+			log_msg(ip_info);
+			if (!ping_redis())
+			{
+				log_error2("redis failed!\n   addr:%s default db:%d", config::get_global_string("redis_addr").c_str(), config::get_global_int("redis_defdb"));
+				return false;
+			}
+			log_msg2("redis addr:%s default db:%d", config::get_global_string("redis_addr").c_str(), config::get_global_int("redis_defdb"));
+			return station_warehouse::initialize();
+		}
+
 
 		void sig_crash(int sig);
 
-		char* sig_text(int sig)
+		const char* sig_text(int sig)
 		{
 			switch (sig)
 			{
@@ -112,9 +160,7 @@ namespace agebull
 		* \brief 系统信号处理
 		*/
 		void on_sig(int sig) {
-			log_debug2(DEBUG_BASE, 2, "on_sig: %d(%s)", sig, sig_text(sig));
 			sig_crash(sig);
-			cout << "SIG:" << sig << endl;
 			switch (sig)
 			{
 			case SIGABRT://由调用abort函数产生，进程非正常退出
@@ -200,7 +246,7 @@ namespace agebull
 			}
 			catch (...)
 			{
-				cout << "exception" << endl;
+				log_error("exception");
 			}
 		}
 	}

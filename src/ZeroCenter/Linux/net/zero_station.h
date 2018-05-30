@@ -291,7 +291,7 @@ namespace agebull
 			/**
 			*\brief 发送消息
 			*/
-			bool send_response(vector<sharp_char>& datas, int first_index = 0)
+			bool send_response(vector<sharp_char>& datas, size_t first_index = 0)
 			{
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->worker_out++;
@@ -300,19 +300,8 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				config_->worker_err++;
-				return false;
-			}
-			/**
-			* \brief 发送帧
-			*/
-			bool send_request_status(const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
-			{
-				boost::lock_guard<boost::mutex> guard(send_mutex_);
-				++config_->request_out;
-				zmq_state_ = send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
-				if (zmq_state_ == zmq_socket_state::Succeed)
-					return true;
-				++config_->request_err;
+				const char* err_msg = state_str(zmq_state_);
+				log_error2("send_response error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
 			/**
@@ -328,7 +317,8 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->worker_err;
-				cout << *ls[0] << "|" << config_->worker_err << "|" << config_->worker_in << endl;
+				const char* err_msg = state_str(zmq_state_);
+				log_error2("send_request_result error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
 
@@ -342,6 +332,23 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
+				const char* err_msg = state_str(zmq_state_);
+				log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
+				return false;
+			}
+			/**
+			* \brief 发送帧
+			*/
+			bool send_request_status(const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
+			{
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
+				++config_->request_out;
+				zmq_state_ = send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
+				if (zmq_state_ == zmq_socket_state::Succeed)
+					return true;
+				++config_->request_err;
+				const char* err_msg = state_str(zmq_state_);
+				log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
 		private:

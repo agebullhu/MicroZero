@@ -1,15 +1,12 @@
 ﻿namespace ZeroMQ
 {
-	using System;
-	using System.Runtime.Serialization;
+    using System;
+    using System.Runtime.Serialization;
 
-	using lib;
-	using System.Runtime.InteropServices;
-
-	/// <summary>
-	/// An exception thrown by the result of libzmq.
-	/// </summary>
-	[Serializable]
+    /// <summary>
+    /// An exception thrown by the result of libzmq.
+    /// </summary>
+    [Serializable]
 	public class ZException : Exception
 	{
 	    private ZError _error;
@@ -18,39 +15,21 @@
 		/// Gets the error code returned by libzmq.
 		/// </summary>
         [Obsolete("Use Error property instead")]
-        public int ErrNo
-		{
-            // TODO why is "0" the default?
-			get { return _error != null ? _error.Number : 0; }
-		}
-		/// <summary>
+        public int ErrNo => _error != null ? _error.Number : 0;
+
+	    /// <summary>
 		/// Gets the error code returned by libzmq.
 		/// </summary>
         [Obsolete("Use Error property instead")]
-        public string ErrName
-		{
-			get
-			{
-				return _error != null ? _error.Name : string.Empty;
-			}
-		}
+        public string ErrName => _error != null ? _error.Name : string.Empty;
 
-        /// <summary>
+	    /// <summary>
         /// Gets the error text returned by libzmq.
         /// </summary>
         [Obsolete("Use Error property instead")]
-        public string ErrText
-		{
-			get
-			{
-				return _error != null ? _error.Text : string.Empty;
-			}
-		}
+        public string ErrText => _error != null ? _error.Text : string.Empty;
 
-	    public ZError Error
-	    {
-	        get { return _error; }
-	    }
+	    public ZError Error => _error;
 
 	    /// <summary>
         /// Initializes a new instance of the <see cref="ZException"/> class.
@@ -78,7 +57,7 @@
 		public ZException(ZError errorSymbol, string message, Exception inner)
 			: base(MakeMessage(errorSymbol, message), inner)
 		{
-		    this._error = errorSymbol;
+		    _error = errorSymbol;
 		}
 
 		static string MakeMessage(ZError error, string additionalMessage)
@@ -86,7 +65,7 @@
 		    return error != null
 		        ? (string.IsNullOrEmpty(additionalMessage)
 		            ? error.ToString()
-		            : string.Format("{0}: {1}", error, additionalMessage))
+		            : $"{error}: {additionalMessage}")
 		        : additionalMessage;
 		}
 

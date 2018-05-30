@@ -1,51 +1,31 @@
 ﻿namespace ZeroMQ.lib
 {
-	using System;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    using System;
 	using System.Runtime.InteropServices;
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct zmq_pollitem_posix_t // : zmq_pollitem_i
 	{
-		private IntPtr socketPtr;
-		private int fileDescriptor; // POSIX fd is an Int32
-		private short events;
-		private short readyEvents;
-
-		public zmq_pollitem_posix_t(IntPtr socket, ZPoll pollEvents)
+	    public zmq_pollitem_posix_t(IntPtr socket, ZPoll pollEvents)
 		{
 			if (socket == IntPtr.Zero)
 			{
 				throw new ArgumentException("Expected a valid socket handle.", nameof(socket));
 			}
 
-			socketPtr = socket;
-			fileDescriptor = 0;
-			events = (short)pollEvents;
-			readyEvents = (short)ZPoll.None;
+			SocketPtr = socket;
+			FileDescriptor = 0;
+			Events = (short)pollEvents;
+			ReadyEvents = (short)ZPoll.None;
 		}
 
-		public IntPtr SocketPtr
-		{
-			get { return socketPtr; }
-			set { socketPtr = value; }
-		}
+		public IntPtr SocketPtr { get; set; }
 
-		public int FileDescriptor
-		{
-			get { return fileDescriptor; }
-			set { fileDescriptor = value; }
-		}
+	    public int FileDescriptor { get; set; }
 
-		public short Events
-		{
-			get { return events; }
-			set { events = value; }
-		}
+	    public short Events { get; set; }
 
-		public short ReadyEvents
-		{
-			get { return readyEvents; }
-			set { readyEvents = value; }
-		}
+	    public short ReadyEvents { get; set; }
 	}
 }

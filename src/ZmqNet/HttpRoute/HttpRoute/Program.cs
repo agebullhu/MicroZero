@@ -11,7 +11,7 @@ namespace ZeroNet.Http.Route
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
-            ZeroApplication.Destroy();
+            ZeroApplication.Shutdown();
         }
 
         public static IWebHost BuildWebHost(string[] args)

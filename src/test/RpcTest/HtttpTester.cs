@@ -11,7 +11,7 @@ namespace RpcTest
     {
         public void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            ZeroApplication.Destroy();
+            ZeroApplication.Shutdown();
         }
 
         long count = 0, error = 0;
@@ -24,10 +24,10 @@ namespace RpcTest
             DateTime dn = DateTime.Now;
             while (ZeroApplication.IsAlive)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 now = count;
                 var e = error;
-                StationConsole.WriteLoop("Run", $"{now:D8}|{e}  {(int)(now / tm):D5}/ms|{(int)(now / (DateTime.Now - dn).TotalMilliseconds):D5}/ms Last:{ now - pre}                           ");
+                ZeroTrace.WriteLoop("Run", $"{now:D8}|{e}  {(int)(now / tm):D5}/ms|{(int)(now / (DateTime.Now - dn).TotalMilliseconds):D5}/ms Last:{ now - pre}                           ");
                 pre = now;
             }
             Console.WriteLine($"{count:D8}|{error}  {(int)(count / tm):D5}/ms|{(int)(count / (DateTime.Now - dn).Milliseconds):D5}/ms Last:{ count - pre}                            ");
@@ -35,7 +35,7 @@ namespace RpcTest
         public void TestTask()
         {
             HttpApiCaller caller = new HttpApiCaller("http://192.168.240.132:5000/");
-            StationConsole.WriteInfo($"Test::{Task.CurrentId}", caller.Host);
+            ZeroTrace.WriteInfo($"Test::{Task.CurrentId}", caller.Host);
             while (ZeroApplication.IsAlive)
             {
                 if (!ZeroApplication.CanDo)

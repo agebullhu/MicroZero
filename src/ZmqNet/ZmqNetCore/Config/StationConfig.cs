@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using ZeroMQ;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -13,7 +12,7 @@ namespace Agebull.ZeroNet.Core
     /// 站点配置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    public class StationConfig : SimpleConfig, IDisposable, IApiResultData
+    public class StationConfig : SimpleConfig, IApiResultData
     {
         /// <summary>
         /// 站点名称
@@ -45,7 +44,7 @@ namespace Agebull.ZeroNet.Core
         /// 入站地址
         /// </summary>
         [DataMember, JsonProperty]
-        public string RequestAddress => ZeroIdentityHelper.GetRemoteAddress(StationName, RequestPort);
+        public string RequestAddress => ZeroIdentityHelper.GetRequestAddress(StationName, RequestPort);
 
         /// <summary>
         /// 入站端口
@@ -57,7 +56,7 @@ namespace Agebull.ZeroNet.Core
         /// 出站地址
         /// </summary>
         [DataMember, JsonProperty]
-        public string WorkerAddress => ZeroIdentityHelper.GetRemoteAddress(StationName, WorkerPort);
+        public string WorkerAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerPort);
 
         /// <summary>
         /// 请求入
@@ -95,22 +94,13 @@ namespace Agebull.ZeroNet.Core
         ///     运行状态
         /// </summary>
         [DataMember, JsonProperty("station_state")]
-        private int _state;
-
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        public int State
-        {
-            get => _state;
-            set => Interlocked.Exchange(ref _state, value);
-        }
+        public ZeroCenterState State { get; set; }
 
         /// <summary>
         /// 状态
         /// </summary>
         [DataMember, JsonProperty("state")]
-        public string __ => StationState.Text(State);
+        public string _ => State.ToString();
 
         /// <summary>
         /// 状态
@@ -162,127 +152,7 @@ namespace Agebull.ZeroNet.Core
             WorkerOut = src.WorkerOut;
             WorkerErr = src.WorkerErr;
             Workers = src.Workers;
-            lock (_sockets)
-            {
-                _sockets = src._sockets;
-            }
-            lock (_pools)
-            {
-                _pools = src._pools;
-            }
         }
 
-        /// <summary>
-        /// Socket名称标识
-        /// </summary>
-        private ulong _socketId;
-
-        /// <summary>
-        /// 所有连接
-        /// </summary>
-        [IgnoreDataMember, JsonIgnore] private List<ZSocket> _sockets = new List<ZSocket>();
-
-        /// <summary>
-        /// 连接池
-        /// </summary>
-        [IgnoreDataMember, JsonIgnore] private Queue<ZSocket> _pools = new Queue<ZSocket>();
-
-        /// <summary>
-        /// 取得一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        internal ZSocket GetSocket()
-        {
-            if (_isDisposed)
-                return null;
-            lock (_pools)
-            {
-                if (_pools.Count != 0)
-                    return _pools.Dequeue();
-            }
-            var socket = ZeroHelper.CreateRequestSocket(RequestAddress, ZeroIdentityHelper.ToZeroIdentity(ShortName ?? StationName, (++_socketId).ToString()));
-            if (socket == null) return null;
-            lock (_sockets)
-                _sockets.Add(socket);
-            return socket;
-        }
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        internal void Free(ZSocket socket)
-        {
-            if (socket == null)
-                return;
-            //Close(ref socket);
-            lock (_pools)
-            {
-                if (_isDisposed || socket.LastError != null || _pools.Count > 99)
-                {
-                    Close(ref socket);
-                }
-                else
-                {
-                    _pools.Enqueue(socket);
-                }
-            }
-        }
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        internal void Close(ref ZSocket socket)
-        {
-            if (socket == null)
-                return;
-            lock (_sockets)
-                _sockets.Remove(socket);
-            socket.CloseSocket();
-            socket = null;
-        }
-        /// <summary>
-        /// 是否已析构
-        /// </summary>
-        [IgnoreDataMember, JsonIgnore]
-        private bool _isDisposed;
-
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        public void Resume()
-        {
-            Dispose();
-            _isDisposed = false;
-        }
-
-        /// <inheritdoc />
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        public void Dispose()
-        {
-            if (_isDisposed)
-                return;
-            _isDisposed = true;
-            while (_pools.Count != _sockets.Count)
-            {
-                Thread.Sleep(10);
-            }
-            lock (_pools)
-            {
-                while (_pools.Count > 0)
-                    _pools.Dequeue().CloseSocket();
-            }
-            lock (_sockets)
-            {
-                foreach (var socket in _sockets)
-                {
-                    socket.CloseSocket();
-                }
-                _sockets.Clear();
-            }
-        }
     }
 }

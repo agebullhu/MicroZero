@@ -8,21 +8,26 @@
 namespace agebull
 {
 	std::map<std::string, std::string> config::global_cfg_;
+	/**
+	* \brief 系统根目录
+	*/
+	acl::string config::root_path;
 
-
+	/**
+	* \brief 全局配置初始化
+	*/
 	void config::init()
 	{
 		if (global_cfg_.empty())
 		{
-			std::string path;
-			get_process_file_path(path);
+			char buf[1024];
+			std::string path=getcwd(buf, 512);
 			path.append("/config.json");
 			//log_acl_trace(0, 3, path.c_str());
 
 			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
 			if (fp == nullptr)
 				return;
-			char buf[1024];
 			int ret = 0;
 			acl::string cfg;
 			while (ret != ACL_VSTREAM_EOF) {
@@ -30,11 +35,13 @@ namespace agebull
 				cfg += buf;
 			}
 			acl_vstream_fclose(fp);
-			read(cfg, global_cfg_);
+			read(cfg.c_str(), global_cfg_);
 		}
 	}
-
-	void config::read(acl::string str, std::map<std::string, std::string>& cfg)
+	/**
+	* \brief 读取配置内容
+	*/
+	void config::read(const char* str, std::map<std::string, std::string>& cfg)
 	{
 		cfg.clear();
 		acl::json json;
@@ -48,6 +55,14 @@ namespace agebull
 			}
 			iter = json.next_node();
 		}
+	}
+	/**
+	* \brief 构造
+	* \param json JSON内容
+	*/
+	config::config(const char* json)
+	{
+		read(acl::string(json), value_map_);
 	}
 	/**
 	* \brief 取全局配置
@@ -82,34 +97,42 @@ namespace agebull
 		auto vl = global_cfg_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
-
+	/**
+	* \brief 取配置
+	* \param name 名称
+	* \return 布尔
+	*/
 	bool config::boolean(const char * name)
 	{
 		init();
-		auto vl = m_cfg[name];
+		auto vl = value_map_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
+	/**
+	* \brief 取配置
+	* \param name 名称
+	* \return 数字
+	*/
 	int config::number(const char * name)
 	{
 		init();
-		auto vl = m_cfg[name];
+		auto vl = value_map_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
-
-	config::config(const char* json)
-	{
-		read(acl::string(json), m_cfg);
-	}
+	/**
+	* \brief 取配置
+	* \param name 名称
+	* \return 文本
+	*/
 	std::string& config::operator[](const char * name)
 	{
-		return m_cfg[name];
+		return value_map_[name];
 	}
-	/* 功  能：获取指定进程所对应的可执行（EXE）文件全路径
-	* 参  数：hProcess - 进程句柄。必须具有PROCESS_QUERY_INFORMATION 或者
-	PROCESS_QUERY_LIMITED_INFORMATION 权限
-	*         sFilePath - 进程句柄hProcess所对应的可执行文件路径
-	* 返回值：
-	*/
+
+	/**
+	* \brief 获取指定进程所对应的可执行（EXE）文件全路径
+	* \param sFilePath - 进程句柄hProcess所对应的可执行文件路径
+	* /
 	void get_process_file_path(string& sFilePath)
 	{
 #if WIN32
@@ -183,5 +206,6 @@ namespace agebull
 		getcwd(buf, 512);
 		sFilePath = buf;
 #endif
-	}
+	}*/
+
 }
