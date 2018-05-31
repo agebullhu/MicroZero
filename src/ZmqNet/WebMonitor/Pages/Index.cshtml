@@ -7,17 +7,30 @@
 }
 @section Scripts{
 
-<script>
+    <script>
         var data ={
-            configs: @(Html.Raw(JsonConvert.SerializeObject(ZeroApplication.Configs.Values.OrderBy(p=>p.StationType).ToArray())))
+            configs: @(Html.Raw(JsonConvert.SerializeObject(ZeroApplication.Config.Getonfigs().OrderBy(p=>p.StationType).ToArray())))
         };
         var vm = new Vue({
             el: '#vue',
-            data: data
+            data: data,
+            filters: {
+                formatDate(time) {
+                    var date = new Date(time);
+                    return formatDate(date, 'MM-dd hh:mm:ss');
+                },
+                formatNumber(number) {
+                    if (number){
+                        return number.toFixed(4);
+                    }else{
+                        return "0.0";
+                    }
+                }
+            }
         });
         var subscriber = new JSMQ.Subscriber();
         var index = 0;
-        subscriber.connect("ws://" + location.hostname + ":81");
+        subscriber.connect("ws://" + location.hostname + ":6001");
         subscriber.subscribe("config");
         subscriber.onMessage = function (message) {
             message.popString();
@@ -38,7 +51,7 @@
         };
 
 
-</script>
+    </script>
 }
 <div id="vue" class="row">
     <template v-for="config in configs">
@@ -55,7 +68,8 @@
                 <li>State:{{config.state}}</li>
                 <li>ClientAddress</li>{{config.RequestAddress}}
                 <li>WorkerAddress</li>{{config.WorkerAddress}}
-                <li>Client</li>call: {{config.request_in}}
+                <li>Client</li>
+                call: {{config.request_in}}
                 <template v-if="config.request_out > 0">
                     result: {{config.request_out}}
                 </template>
@@ -69,9 +83,29 @@
                 <template v-if="config.worker_err > 0">
                     err: {{config.worker_err}}
                 </template>
+                <li>
+                    Collection({{config.Count}})
+                    <ul>
+                        TPS
+                        <li>Total:{{config.TotalTps}}</li>
+                        <li>Avg:{{config.AvgTps}}/s</li>
+                        <li>Max:{{config.MaxTps}}/s</li>
+                        <li>Min:{{config.MinTps}}/s</li>
+                        <li>Last:{{config.LastTps}}/s</li>
+                    </ul>
+                    <ul>
+                        QPS
+                        <li>Total:{{config.TotalQps}}</li>
+                        <li>Avg:{{config.AvgQps}}/s</li>
+                        <li>Max:{{config.MaxQps}}/s</li>
+                        <li>Min:{{config.MinQps}}/s</li>
+                        <li>Last:{{config.LastQps}}/s</li>
+                    </ul>
+                </li>
                 <li>Workers</li>
                 <template v-for="worker in config.workers">
-                    {{worker}}<br/>
+                    {{worker}}
+                    <br />
                 </template>
             </ul>
         </div>

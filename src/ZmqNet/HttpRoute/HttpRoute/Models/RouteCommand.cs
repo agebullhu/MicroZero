@@ -108,10 +108,11 @@ namespace ZeroNet.Http.Route
         {
             if (ZeroApplication.ApplicationState != StationState.Run)
                 return;
-            foreach (var station in ZeroApplication.Configs.Values.Where(p => p.StationType == ZeroStation.StationTypeApi).ToArray())
+            ZeroApplication.Config.Foreach(config =>
             {
-                StationJoin(station);
-            }
+                if(config.StationType == ZeroStation.StationTypeApi)
+                    StationJoin(config);
+            });
         }
 
         private static void StationJoin(StationConfig station)

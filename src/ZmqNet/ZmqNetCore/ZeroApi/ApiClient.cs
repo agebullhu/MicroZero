@@ -128,10 +128,16 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!ZeroApplication.CanDo)
                 return ZeroStatuValue.NoReadyJson;
-            if (!ZeroApplication.Configs.TryGetValue(station, out var config))
+            var config = ZeroApplication.Config[station];
+            if (config == null)
             {
                 ApiContext.Current.LastError = ErrorCode.NoFind;
                 return ZeroStatuValue.NoFindJson;
+            }
+            if (config.State != ZeroCenterState.Run)
+            {
+                ApiContext.Current.LastError = ErrorCode.Unavailable;
+                return ZeroStatuValue.UnavailableJson;
             }
             var socket = ZeroConnectionPool.GetSocket(station);
             if (socket == null)
@@ -160,7 +166,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 if (result.TryGetValue(ZeroFrameType.GlobalId, out var globalId))
                     LogRecorder.MonitorTrace($"GlobalId:{long.Parse(globalId, NumberStyles.HexNumber)}");
-                
+
 
                 result = socket.QuietSend(CallDescription,
                     commmand,
@@ -177,7 +183,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError, result.State.Text()));
                 }
 
-                result = socket.ReceiveString(5,false);
+                result = socket.ReceiveString(5, false);
                 if (!result.InteractiveSuccess)
                 {
                     bool finded = false;

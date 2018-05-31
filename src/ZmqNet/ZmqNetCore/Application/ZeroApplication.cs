@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Agebull.Common;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using ZeroMQ;
@@ -24,82 +26,29 @@ namespace Agebull.ZeroNet.Core
     {
         #region Config
 
-        static string _zeroMonitorAddress;
-
-        /// <summary>
-        ///     监测中心广播地址
-        /// </summary>
-        public static string ZeroMonitorAddress => _zeroMonitorAddress;
-
-        static string _zeroManageAddress;
-
-        /// <summary>
-        ///     监测中心管理地址
-        /// </summary>
-        public static string ZeroManageAddress => _zeroManageAddress ;
-
-        /// <summary>
-        /// 本机IP地址
-        /// </summary>
-        public static string LocalIpAddress { get; private set; }
-
-        /// <summary>
-        ///     站点集合
-        /// </summary>
-        public static readonly Dictionary<string, StationConfig> Configs = new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
-
         /// <summary>
         ///     站点配置
         /// </summary>
         public static LocalStationConfig Config { get; set; }
 
         /// <summary>
-        ///     读取配置(不从服务器拉取)
-        /// </summary>
-        /// <returns></returns>
-        public static StationConfig GetLocalConfig(string stationName)
-        {
-            if (ApplicationState != StationState.Run)
-            {
-                return null;
-            }
-
-            lock (Configs)
-            {
-                if (Configs.TryGetValue(stationName, out var config))
-                {
-                    return config;
-                }
-            }
-            return null;
-        }
-        /// <summary>
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig GetConfig(string stationName, out ZeroCommandStatus status)
+        public static StationConfig GetConfig(string stationName)
         {
+            if (Config.TryGetConfig(stationName, out var config))
+            {
+                return config;
+            }
             if (ApplicationState != StationState.Run)
             {
-                status = ZeroCommandStatus.NoRun;
                 return null;
             }
-            StationConfig config;
-            lock (Configs)
-            {
-                if (Configs.TryGetValue(stationName, out config))
-                {
-                    status = ZeroCommandStatus.Success;
-                    return config;
-                }
-            }
-            config = SystemManager.GetConfig(stationName, out status);
+            config = SystemManager.LoadConfig(stationName, out _);
             if (config == null)
                 return null;
-            lock (Configs)
-            {
-                Configs.Add(stationName, config);
-            }
+            Config[stationName] = config;
             return config;
         }
         #endregion
@@ -119,7 +68,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     运行状态
         /// </summary>
-        private static int  _appState;
+        private static int _appState;
 
         /// <summary>
         /// 服务器状态
@@ -158,6 +107,45 @@ namespace Agebull.ZeroNet.Core
                 zero.OnZeroInitialize();
             if (CanDo)
                 zero.OnZeroStart();
+        }
+        /// <summary>
+        /// 系统启动时调用
+        /// </summary>
+        public static bool RegistZeroObject(IZeroObject obj)
+        {
+            if (ZeroObjects.Contains(obj))
+                return false;
+            ZeroTrace.WriteInfo(obj.Name, "Registed");
+            ZeroObjects.Add(obj);
+            if (ApplicationState >= StationState.Initialized)
+            {
+
+                try
+                {
+                    ZeroTrace.WriteInfo(obj.Name, "Initialize");
+                    obj.OnZeroInitialize();
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    ZeroTrace.WriteError(obj.Name, "Initialize", e);
+                }
+            }
+
+            if (CanDo)
+            {
+                try
+                {
+                    ZeroTrace.WriteInfo(obj.Name, "Start");
+                    obj.OnZeroStart();
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                    ZeroTrace.WriteError(obj.Name, "Start", e);
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -216,7 +204,7 @@ namespace Agebull.ZeroNet.Core
                     ZeroTrace.WriteError(obj.Name, "Start", e);
                 }
             }
-            SystemMonitor.RaiseEvent(Config, "program_run");
+            SystemMonitor.RaiseEvent("program_run");
         }
 
         /// <summary>
@@ -357,28 +345,38 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Initialize()
         {
+            if (ApplicationState != StationState.None)
+                return;
+            ApplicationState = StationState.Initialized;
             ZeroTrace.Initialize();
             ZeroTrace.WriteInfo("ZeroApplication", $"weconme {AppName ?? "zero net"}");
             Console.CursorVisible = false;
             //引发静态构造
             ZeroTrace.WriteInfo("ZeroApplication", "Initialize...");
-            ZContext.Initialize();
-            LogRecorder.Initialize();
-            ApiContext.SetLogRecorderDependency();
             InitializeConfig();
+            ApiContext.SetLogRecorderDependency();
+            LogRecorder.Initialize();
+            ZContext.Initialize();
             OnZeroInitialize();
-            ApplicationState = StationState.Initialized;
         }
 
 
         private static void InitializeConfig()
         {
-
+            var root = ApiContext.Configuration == null
+                ? Environment.CurrentDirectory
+                : ApiContext.Configuration["contentRoot"];
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                root = Path.GetDirectoryName(root);
+                IOHelper.CheckPath(root, "config");
+                IOHelper.CheckPath(root, "ipc");
+            }
             if (ApiContext.Configuration == null)
             {
                 ApiContext.SetConfiguration(new ConfigurationBuilder().AddJsonFile("host.json").Build());
+                // ReSharper disable once PossibleNullReferenceException
                 ApiContext.Configuration["contentRoot"] = Environment.CurrentDirectory;
-
             }
 
             bool isnew = false;
@@ -395,16 +393,59 @@ namespace Agebull.ZeroNet.Core
                     Config = new LocalStationConfig();
                 }
             }
-            Config.DataFolder = String.IsNullOrWhiteSpace(Config.DataFolder)
-                ? IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "datas")
-                : IOHelper.CheckPath(Config.DataFolder);
 
-            Config.ServiceName = Dns.GetHostName();
+            LocalStationConfig globalConfig;
+            var global = Path.Combine(root, "config", "zero.json");
+            if (File.Exists(global))
+            {
+                globalConfig = JsonConvert.DeserializeObject<LocalStationConfig>(File.ReadAllText(global)) ?? new LocalStationConfig();
+            }
+            else
+            {
+                globalConfig = new LocalStationConfig();
+            }
+            if (globalConfig.LogFolder == null)
+                globalConfig.LogFolder = IOHelper.CheckPath(root, "logs");
+            TxtRecorder.LogPath = globalConfig.LogFolder;
+            if (globalConfig.DataFolder == null)
+                globalConfig.DataFolder = IOHelper.CheckPath(root, "datas");
+            if (globalConfig.ServiceName == null)
+                globalConfig.ServiceName = Dns.GetHostName();
+            if (globalConfig.ZeroManagePort == 0)
+                globalConfig.ZeroManagePort = 8000;
+            if (globalConfig.ZeroMonitorPort == 0)
+                globalConfig.ZeroMonitorPort = 8001;
+
+            Config.ServiceName = globalConfig.ServiceName;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || String.IsNullOrWhiteSpace(Config.ZeroAddress))
+            {
+                Config.ZeroAddress = globalConfig.ZeroAddress;
+                Config.ZeroManagePort = globalConfig.ZeroManagePort;
+                Config.ZeroMonitorPort = globalConfig.ZeroMonitorPort;
+            }
+
+            Config.LocalIpAddress = GetHostIps();
+            Config.DataFolder = IOHelper.CheckPath(globalConfig.DataFolder, Config.StationName);
+            if (Config.ShortName == null)
+                Config.ShortName = Config.StationName;
+            if (Config.ServiceKey == null)
+                Config.ServiceKey = RandomOperate.Generate(4);
+            Config.RealName = ZeroIdentityHelper.CreateRealName();
+            Config.Identity = ZeroIdentityHelper.ToZeroIdentity();
 
             ApiContext.MyRealName = Config.RealName;
             ApiContext.MyServiceKey = Config.ServiceKey;
             ApiContext.MyServiceName = Config.ServiceName;
 
+
+            if (isnew)
+                File.WriteAllText(file, JsonConvert.SerializeObject(Config));
+            Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
+            Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
+        }
+
+        static string GetHostIps()
+        {
             StringBuilder ips = new StringBuilder();
             bool first = true;
             foreach (var address in Dns.GetHostAddresses(Config.ServiceName))
@@ -413,7 +454,7 @@ namespace Agebull.ZeroNet.Core
                     address.IsIPv6SiteLocal || address.IsIPv6Teredo)
                     continue;
                 string ip = address.ToString();
-                if (ip == "127.0.0.1" || ip == "::1" || ip == "-1")
+                if (ip == "127.0.0.1" || ip == "127.0.1.1" || ip == "::1" || ip == "-1")
                     continue;
                 if (first)
                     first = false;
@@ -421,24 +462,17 @@ namespace Agebull.ZeroNet.Core
                     ips.Append(" , ");
                 ips.Append(ip);
             }
-            LocalIpAddress = ips.ToString();
 
-            if (isnew)
-                File.WriteAllText(file, JsonConvert.SerializeObject(Config));
-            if (String.IsNullOrWhiteSpace(Config.ZeroAddress))
-                Config.ZeroAddress = "127.0.0.1";
-
-            _zeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
-            _zeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
+            return ips.ToString();
         }
         /// <summary>
         /// 发现
         /// </summary>
         public static void Discove(Assembly assembly = null)
         {
-            var discover = new ZeroApiDiscover { Assembly = assembly ?? Assembly.GetCallingAssembly() };
+            var discover = new ZeroDiscover { Assembly = assembly ?? Assembly.GetCallingAssembly() };
             discover.FindApies();
-            discover.FindSubs();
+            discover.FindZeroObjects();
         }
         #endregion
 
@@ -449,7 +483,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static Task Start()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", ZeroManageAddress);
+            ZeroTrace.WriteInfo("ZeroApplication", Config.ZeroManageAddress);
             ApplicationState = StationState.Start;
             Task task = Task.Factory.StartNew(SystemMonitor.Monitor);
             JoinCenter();
@@ -457,11 +491,18 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
+        ///     运行
+        /// </summary>
+        public static void Run()
+        {
+            Start();
+        }
+        /// <summary>
         ///     进入系统侦听
         /// </summary>
         internal static bool JoinCenter()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", $"try connect zero center ({ZeroManageAddress})...");
+            ZeroTrace.WriteInfo("ZeroApplication", $"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.PingCenter() || !SystemManager.HeartJoin())
             {
                 ApplicationState = StationState.Failed;
@@ -482,15 +523,6 @@ namespace Agebull.ZeroNet.Core
             ZerCenterStatus = ZeroCenterState.Run;
             OnZeroStart();
             return true;
-        }
-
-        /// <summary>
-        ///     执行(无挂起操作)
-        /// </summary>
-        public static void Launch()
-        {
-            Initialize();
-            Start();
         }
 
         /// <summary>

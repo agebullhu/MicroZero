@@ -50,7 +50,7 @@ namespace RpcTest
 
         public void TestTask()
         {
-            //ZeroTrace.WriteInfo($"Test::{Task.CurrentId}",ZeroApplication.Configs["Test"].RequestAddress);
+            //ZeroTrace.WriteInfo($"Test::{Task.CurrentId}",ZeroApplication.Config.Configs["Test"].RequestAddress);
             while (ZeroApplication.IsAlive)
             {
                 if (!ZeroApplication.CanDo)

@@ -12,7 +12,6 @@ namespace WebMonitor
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
-            WebSocketPooler.Instance.Dispose();
             ZeroApplication.Shutdown();
         }
 

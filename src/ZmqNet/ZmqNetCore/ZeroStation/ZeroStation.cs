@@ -143,7 +143,7 @@ namespace Agebull.ZeroNet.Core
             if (State >= StationState.Start)
                 return;
             State = StationState.Start;
-            Config = ZeroApplication.GetLocalConfig(StationName);
+            Config = ZeroApplication.Config[StationName];
             if (Config == null || Config.State == ZeroCenterState.Uninstall)
             {
                 ZeroTrace.WriteError(StationName, "No config");

@@ -5,17 +5,17 @@ namespace agebull
 {
 	class config
 	{
-		
 		/**
 		 * \brief 全局配置
 		 */
 		static std::map<std::string, std::string> global_cfg_;
 
+	public:
 		/**
 		* \brief 全局配置初始化
 		*/
 		static void init();
-	public:
+
 		/**
 		* \brief 系统根目录
 		*/
@@ -53,7 +53,7 @@ namespace agebull
 		* \brief 构造
 		* \param json JSON内容
 		*/
-		config(const char* json);
+		explicit config(const char* json);
 
 		/**
 		* \brief 取配置

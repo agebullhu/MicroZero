@@ -4,14 +4,21 @@
     <UserSecretsId>2eaf5a70-faab-43c4-8875-8975adfe10af</UserSecretsId>
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="datas\**" />
+    <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
     <Content Remove="datas\**" />
+    <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
     <EmbeddedResource Remove="datas\**" />
+    <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
     <None Remove="datas\**" />
+    <None Remove="Debug\**" />
     <None Remove="logs\**" />
   </ItemGroup>
   <ItemGroup>

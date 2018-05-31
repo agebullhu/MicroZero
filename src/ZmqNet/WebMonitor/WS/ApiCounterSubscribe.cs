@@ -101,7 +101,7 @@ namespace ZeroNet.Http.Route
 
                 if (!station.Items.TryGetValue(data.HostName, out var host))
                 {
-                    var config = ZeroApplication.GetLocalConfig(data.HostName);
+                    var config = ZeroApplication.Config[data.HostName];
                     station.Items.Add(data.HostName, host = new CountItem
                     {
                         Id = station.Id + "/" + data.HostName,
@@ -139,7 +139,7 @@ namespace ZeroNet.Http.Route
                 if (!Items.IsEmpty && ++_noCount <= 299)
                     return;
                 _noCount = 0;
-                WebSocketPooler.Instance?.Publish("Health", JsonConvert.SerializeObject(Root));
+                WebNotify.Publish("Health", JsonConvert.SerializeObject(Root));
             }
             catch (Exception e)
             {

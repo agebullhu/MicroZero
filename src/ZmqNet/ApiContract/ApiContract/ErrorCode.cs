@@ -99,11 +99,6 @@ namespace Agebull.ZeroNet.ZeroApi
         public const int Ignore = -7;
 
         /// <summary>
-        /// 方法不存在
-        /// </summary>
-        public const int NoFind = 404;
-
-        /// <summary>
         /// 访问超时
         /// </summary>
         public const int TimeOut = -8;
@@ -113,6 +108,16 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 系统未就绪
         /// </summary>
         public const int NoReady = -9;
+
+        /// <summary>
+        /// 方法不存在
+        /// </summary>
+        public const int NoFind = 404;
+
+        /// <summary>
+        /// 服务不可用
+        /// </summary>
+        public const int Unavailable = 503;
 
         /// <summary>
         /// 未知的RefreshToken

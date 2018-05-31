@@ -44,9 +44,6 @@
     <ClCompile Include="net\net_command.cpp">
       <Filter>rpc\net</Filter>
     </ClCompile>
-    <ClCompile Include="redis\TransRedis.cpp">
-      <Filter>sys\redis</Filter>
-    </ClCompile>
     <ClCompile Include="log\mylogger.cpp">
       <Filter>sys\log</Filter>
     </ClCompile>
@@ -80,6 +77,9 @@
     <ClCompile Include="net\station_warehouse.cpp">
       <Filter>rpc\dispatcher</Filter>
     </ClCompile>
+    <ClCompile Include="redis\redis.cpp">
+      <Filter>sys\redis</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h">
@@ -92,9 +92,6 @@
       <Filter>rpc\net</Filter>
     </ClInclude>
     <ClInclude Include="redis\redis.h">
-      <Filter>sys\redis</Filter>
-    </ClInclude>
-    <ClInclude Include="redis\TransRedis.h">
       <Filter>sys\redis</Filter>
     </ClInclude>
     <ClInclude Include="log\mylogger.h">
@@ -147,6 +144,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.json" />
+    <None Include="zero_center.json" />
   </ItemGroup>
 </Project>

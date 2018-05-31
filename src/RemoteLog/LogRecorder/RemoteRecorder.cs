@@ -175,12 +175,7 @@ namespace Agebull.ZeroNet.Log
 
         private bool InitSocket()
         {
-            _config = ZeroApplication.GetConfig("RemoteLog", out var status);
-            if (status != ZeroCommandStatus.Success || _config == null)
-            {
-                return false;
-            }
-            return CreateSocket();
+            return ZeroApplication.Config.TryGetConfig("RemoteLog",out _config) && CreateSocket();
         }
         /// <summary>
         ///     取得Socket对象

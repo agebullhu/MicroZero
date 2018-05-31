@@ -462,7 +462,7 @@ namespace agebull
 				station_warehouse::foreach_configs([&cfgs](shared_ptr<zero_config>& config)
 				{
 					config->check_works();
-					cfgs.insert(make_pair(config->station_name_, config->to_json().c_str()));
+					cfgs.insert(make_pair(config->station_name_, config->to_json(true).c_str()));
 				});
 				monitor("SystemManage", "worker_sound_off", "*");
 				for (auto& cfg : cfgs)

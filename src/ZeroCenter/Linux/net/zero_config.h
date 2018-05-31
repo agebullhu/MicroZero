@@ -345,7 +345,7 @@ namespace agebull
 			void active()
 			{
 				pre_time = time(nullptr);
-				level = 5;
+				level = 10;
 			}
 			/**
 			* \brief 检查
@@ -354,17 +354,25 @@ namespace agebull
 			{
 				const int64 tm = time(nullptr) - pre_time;
 				if (tm <= 1)
-					return level = 5;
+					return level = 10;
 				if (tm <= 3)
-					return level = 4;
+					return level = 9;
 				if (tm <= 5)
+					return level = 8;
+				if (tm <= 10)
+					return level = 7;
+				if (tm <= 30)
+					return level = 6;
+				if (tm <= 60)
+					return level = 5;
+				if (tm <= 120)
+					return level = 4;
+				if (tm <= 180)
 					return level = 3;
-				if (tm < 10)
+				if (tm <= 240)
 					return level = 2;
-				if (tm < 30)
+				if (tm <= 360)
 					return level = 1;
-				if (tm < 60)
-					return level = 0;
 				return level = -1;
 			}
 		};
@@ -529,7 +537,7 @@ namespace agebull
 				{
 					if (work.second.check() < 0)
 					{
-						//workers.erase(work.first);
+						workers.erase(work.first);
 					}
 				}
 			}
@@ -678,34 +686,37 @@ namespace agebull
 			/**
 			* \brief 写入JSON
 			*/
-			acl::string to_json()
+			acl::string to_json(bool simple = false)
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
 				acl::json json;
 				acl::json_node& node = json.create_node();
-				if (!station_name_.empty())
-					node.add_text("station_name", station_name_.c_str());
-				if (!short_name.empty())
-					node.add_text("short_name", short_name.c_str());
-				if (!station_description_.empty())
-					node.add_text("_description", station_description_.c_str());
-				if (!station_caption_.empty())
-					node.add_text("_caption", station_caption_.c_str());
-				if (alias_.size() > 0)
+				if (!simple)
 				{
-					acl::json_node& array = json.create_array();
-					for (auto alia : alias_)
+					if (!station_name_.empty())
+						node.add_text("station_name", station_name_.c_str());
+					if (!short_name.empty())
+						node.add_text("short_name", short_name.c_str());
+					if (!station_description_.empty())
+						node.add_text("_description", station_description_.c_str());
+					if (!station_caption_.empty())
+						node.add_text("_caption", station_caption_.c_str());
+					if (alias_.size() > 0)
 					{
-						array.add_array_text(alia.c_str());
+						acl::json_node& array = json.create_array();
+						for (auto alia : alias_)
+						{
+							array.add_array_text(alia.c_str());
+						}
+						node.add_child("station_alias", array);
 					}
-					node.add_child("station_alias", array);
+					if (station_type_ > 0)
+						node.add_number("station_type", station_type_);
+					if (request_port_ > 0)
+						node.add_number("request_port", request_port_);
+					if (worker_port_ > 0)
+						node.add_number("worker_port", worker_port_);
 				}
-				if (station_type_ > 0)
-					node.add_number("station_type", station_type_);
-				if (request_port_ > 0)
-					node.add_number("request_port", request_port_);
-				if (worker_port_ > 0)
-					node.add_number("worker_port", worker_port_);
 				node.add_number("station_state", static_cast<int>(station_state_));
 				node.add_number("request_in", request_in);
 				node.add_number("request_out", request_out);
@@ -797,7 +808,7 @@ namespace agebull
 					log_msg5("%s:%s(%d | %d) %s", type, station_name_.c_str(), request_port_, worker_port_, state)
 
 			}
-			
+
 		};
 	}
 }

@@ -1,3 +1,4 @@
+using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebMonitor.Pages
@@ -6,7 +7,7 @@ namespace WebMonitor.Pages
     {
         public void OnGet()
         {
-
+            ZeroApplication.Config.Foreach(p => p.Count = 0);
         }
         
     }

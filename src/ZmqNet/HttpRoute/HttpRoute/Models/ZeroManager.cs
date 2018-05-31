@@ -45,20 +45,15 @@ namespace ZeroNet.Http.Route
                 _result = ApiResult.Error(ErrorCode.ArgumentError);
                 return;
             }
-
-            var stationName = _words[2];
-            lock (ZeroApplication.Configs)
+            if (ZeroApplication.Config.TryGetConfig(_words[2], out var config))
             {
-                if (ZeroApplication.Configs.TryGetValue(stationName, out var config))
+                _result = ApiResult<StationConfig>.Succees(config);
+                _result.Status = new ApiStatsResult
                 {
-                    _result = ApiResult<StationConfig>.Succees(config);
-                    _result.Status = new ApiStatsResult
-                    {
-                        ErrorCode = ErrorCode.Success,
-                        ClientMessage = "站点已存在"
-                    };
-                    return;
-                }
+                    ErrorCode = ErrorCode.Success,
+                    ClientMessage = "站点已存在"
+                };
+                return;
             }
 
             if (ZeroApplication.ApplicationState != StationState.Run)
@@ -119,9 +114,9 @@ namespace ZeroNet.Http.Route
             //    _result = ApiResult.Error(ErrorCode.UnknowError, "返回值不正确");
             //    return;
             //}
-            //lock (ZeroApplication.Configs)
+            //lock (ZeroApplication.Config.Configs)
             //{
-            //    ZeroApplication.Configs.Add(stationName, config);
+            //    ZeroApplication.Config.Configs.Add(stationName, config);
             //}
             //_result = ApiResult<StationConfig>.Succees(config);
             //_result.Status = new ApiStatsResult

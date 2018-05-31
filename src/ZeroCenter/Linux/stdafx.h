@@ -2,7 +2,6 @@
 #include "stdinc.h"
 #include "cfg/config.h"
 #include "redis/redis.h"
-#include "redis/TransRedis.h"
 #include "log/mylogger.h"
 #include "tm_extend.h"
 #include "sharp_char.h"

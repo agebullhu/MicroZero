@@ -42,6 +42,18 @@ namespace agebull
 		* \brief 系统信号处理
 		*/
 		void on_sig(int sig);
+		/**
+		* \brief 取本机IP
+		*/
+		void get_local_ips(acl::string& host, vector<acl::string>& ips);
+		/**
+		* \brief 记录堆栈信息
+		*/
+		void sig_crash(int sig);
+		/**
+		* \brief sig对应的文本
+		*/
+		const char* sig_text(int sig);
 	}
 }
 #endif //!AGEBULL_RPCSERVICE_H

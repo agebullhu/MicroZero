@@ -18,7 +18,6 @@
     </style>
 }
 @section Scripts{
-    <script src="/js/JSMQ.js"></script>
     <script>
     var data = {
         hosts: [@(Html.Raw(JsonConvert.SerializeObject(ApiCounterSubscribe.Root)))]
@@ -47,35 +46,10 @@
             }
         }
         });
-        function formatDate(date, fmt) {
-            if (isNaN(date.getMonth()))
-                    return "*";
-        if (/(y+)/.test(fmt)) {
-            fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
-        }
-        var o = {
-            'M+': date.getMonth() + 1,
-            'd+': date.getDate(),
-            'h+': date.getHours(),
-            'm+': date.getMinutes(),
-            's+': date.getSeconds()
-        };
-        for (var k in o) {
-                if (o.hasOwnProperty(k)) {
-                    if (new RegExp(`(${k})`).test(fmt)) {
-                        var str = o[k] + '';
-                        fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
-                    }
-                }
-            }
-            return fmt;
-        }
-    function padLeftZero(str) {
-        return ('00' + str).substr(str.length);
-    }
+        
     var subscriber = new JSMQ.Subscriber();
     var index = 0;
-    subscriber.connect("ws://" + location.hostname + ":81");
+    subscriber.connect("ws://" + location.hostname + ":6001");
     subscriber.subscribe("Health");
     subscriber.onMessage = function (message) {
         message.popString();

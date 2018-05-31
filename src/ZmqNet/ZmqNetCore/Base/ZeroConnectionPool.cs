@@ -78,7 +78,8 @@ namespace Agebull.ZeroNet.Core
             {
                 pool.Resume();
             }
-            foreach (var config in ZeroApplication.Configs.Values)
+
+            ZeroApplication.Config.Foreach(config =>
             {
                 if (!Pools.ContainsKey(config.StationName))
                 {
@@ -87,7 +88,7 @@ namespace Agebull.ZeroNet.Core
                         Config = config
                     });
                 }
-            }
+            });
             CanDo = true;
         }
 
@@ -179,8 +180,7 @@ namespace Agebull.ZeroNet.Core
             }
             lock (Pools)
             {
-                var config = ZeroApplication.GetLocalConfig(station);
-                if (config == null)
+                if (!ZeroApplication.Config.TryGetConfig(station,out var config))
                     return null;
                 Pools.Add(station, pool = new StationConnectionPool
                 {

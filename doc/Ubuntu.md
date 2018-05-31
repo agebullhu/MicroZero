@@ -74,7 +74,7 @@ sudo /etc/init.d/redis-server restart #重启
 
 sudo apt-get install supervisor
 修改配置为HTTP
-
+supervisord -c /etc/supervisor/supervisord.conf
 
 supervisorctl status
 supervisorctl stop tomcat

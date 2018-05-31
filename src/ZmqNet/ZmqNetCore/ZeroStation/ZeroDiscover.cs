@@ -10,7 +10,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// ZeroStation发现工具
     /// </summary>
-    public class ZeroApiDiscover
+    internal class ZeroDiscover
     {
         #region API发现
         /// <summary>
@@ -90,17 +90,17 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #endregion
 
-        #region 订阅器发现
-        
+        #region ZeroObject发现
+
         /// <summary>
         /// 查找API
         /// </summary>
-        public void FindSubs()
+        public void FindZeroObjects()
         {
-            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(SubStation))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSupperInterface(typeof(IZeroObject))).ToArray();
             foreach (var type in types)
             {
-                ZeroApplication.RegistZeroObject(type.CreateObject() as SubStation);
+                ZeroApplication.RegistZeroObject(type.CreateObject() as IZeroObject);
             }
         }
 

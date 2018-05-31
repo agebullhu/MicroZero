@@ -13,10 +13,10 @@ namespace WebMonitor
         {
             Configuration = configuration;
             ApiContext.SetConfiguration(configuration);
+            ZeroApplication.AppName = "ZeroMonitor";
             ZeroApplication.Initialize();
             ZeroApplication.Discove();
-            ZeroApplication.Launch();
-            WebSocketPooler.Instance.Pool();
+            ZeroApplication.Run();
         }
 
         public IConfiguration Configuration { get; }

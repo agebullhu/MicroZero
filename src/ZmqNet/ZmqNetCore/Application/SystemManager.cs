@@ -60,7 +60,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static bool HeartJoin(string station, string realName)
         {
-            return ByteCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.LocalIpAddress);
+            return ByteCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
         }
 
         /// <summary>
@@ -125,27 +125,7 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
             ZeroTrace.WriteInfo("ZeroApplication", "LoadAllConfig", json);
-            try
-            {
-                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
-                foreach (var config in configs)
-                {
-                    lock (ZeroApplication.Configs)
-                    {
-                        if (ZeroApplication.Configs.ContainsKey(config.StationName))
-                            ZeroApplication.Configs[config.StationName].Copy(config);
-                        else
-                            ZeroApplication.Configs.Add(config.StationName, config);
-                    }
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                ZeroTrace.WriteError("读取站点配置", "Exception", json,e);
-                return false;
-            }
+            return ZeroApplication.Config.FlushConfigs(json);
         }
 
 
@@ -153,7 +133,7 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static StationConfig GetConfig(string stationName, out ZeroCommandStatus status)
+        internal static StationConfig LoadConfig(string stationName, out ZeroCommandStatus status)
         {
             var result = CallCommand("host", stationName);
             switch (result.State)
@@ -218,7 +198,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private static ZeroResultData<string> CallCommand(byte[] description, params string[] args)
         {
-            var socket = ZeroHelper.CreateRequestSocket(ZeroApplication.ZeroManageAddress,
+            var socket = ZeroHelper.CreateRequestSocket(ZeroApplication.Config.ZeroManageAddress,
                 ZeroIdentityHelper.ToZeroIdentity((++_id).ToString("X")));
             if (socket == null)
                 return new ZeroResultData<string>

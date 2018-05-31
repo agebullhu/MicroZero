@@ -5,19 +5,6 @@
 using namespace std;
 namespace agebull
 {
-	void log_acl_msg(const string& msg);
-	void log_acl_msg(const char* msg);
-	void log_acl_warn(const char* fname, int line, const char* func, const string& msg);
-	void log_acl_error(const char* fname, int line, const char* func, const string& msg);
-	void log_acl_fatal(const char* fname, int line, const char* func, const string& msg);
-	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const string& msg);
-	void log_acl_trace(int section, int  level, const string& msg);
-
-	/*
-	* 输出到DEBUG窗口
-	*/
-	void out_debug(string msg);
-
 #define DEBUG_BASE			100
 #define DEBUG_TIMER		    (DEBUG_BASE + 1)
 #define DEBUG_CALL			(DEBUG_BASE + 2)
@@ -26,6 +13,24 @@ namespace agebull
 #define DEBUG_SUB			(DEBUG_BASE + 5)
 #define DEBUG_QUOTE_NOTIFY	(DEBUG_BASE + 6)
 #define DEBUG_CONFIG		("100:6; 101:6; 102:6; 103:6; 104:6; 106:6; 106:6")
+
+	/**
+	* \bref 初始化日志
+	*/
+	acl::string log_init();
+
+	void log_acl_msg(const char* msg);
+	void log_acl_warn(const char* fname, int line, const char* func, const char* msg);
+	void log_acl_error(const char* fname, int line, const char* func, const char* msg);
+	void log_acl_fatal(const char* fname, int line, const char* func, const char* msg);
+	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const char* msg);
+	void log_acl_trace(int section, int  level, const char* msg);
+
+	/**
+	* \bref 输出到DEBUG窗口
+	*/
+	void out_debug(string msg);
+
 
 #ifndef LOG_SPRINTF_FORMAT
 

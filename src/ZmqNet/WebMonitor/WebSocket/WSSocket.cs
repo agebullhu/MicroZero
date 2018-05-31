@@ -141,7 +141,7 @@ namespace NetMQ.WebSockets
         /// <summary>
         /// 接收完成事件
         /// </summary>
-        public EventHandler<WsSocketEventArgs> ReceiveReady;
+        public event EventHandler<WsSocketEventArgs> ReceiveReady;
 
         #endregion
 

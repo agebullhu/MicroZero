@@ -20,45 +20,20 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		/**
-		* \brief 取本机IP
-		*/
-		void get_local_ips(acl::string& host, vector<acl::string>& ips)
-		{
-			char hname[128];
-			memset(hname, 0, sizeof(hname));
-			gethostname(hname, sizeof(hname));
-			host = hname;
-			struct addrinfo hint {};
-			memset(&hint, 0, sizeof(hint));
-			hint.ai_family = AF_INET;
-			hint.ai_socktype = SOCK_STREAM;
-
-			addrinfo* info = nullptr;
-			char ipstr[16];
-			if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
-			{
-				addrinfo* now = info;
-				do
-				{
-					inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
-					ips.emplace_back(ipstr);
-					now = now->ai_next;
-				} while (now != nullptr);
-				freeaddrinfo(info);
-			}
-		}
+		const int MAX_STACK_FRAMES = 128;
 
 		/**
 		* \brief 初始化
 		*/
 		bool rpc_service::initialize()
 		{
+			//系统信号发生回调绑定
+			for (int sig = SIGHUP; sig < SIGSYS; sig++)
+				signal(sig, agebull::zmq_net::on_sig);
+			//ØMQ版本号
 			int major, minor, patch;
 			zmq_version(&major, &minor, &patch);
-
-			acl::acl_cpp_init();
-			// 在程序初始化时打开日志
+			// 初始化配置
 			char buf[512];
 			acl::string curpath = getcwd(buf, 512);
 			var list = curpath.split("/");
@@ -69,17 +44,15 @@ namespace agebull
 				config::root_path.append(word);
 				config::root_path.append("/");
 			}
-			auto log = config::root_path;
-			log.append("zero.log");
-
-			logger_open(log.c_str(), "zero_center", DEBUG_CONFIG);
+			config::init();
+			// 初始化日志
+			var log = log_init();
 			log_msg3("ØMQ version:%d.%d.%d", major, minor, patch);
-			log_msg3("folder exec:%s\n    root:%s\n    log:%s", buf, config::root_path.c_str(), log.c_str());
-
+			log_msg3("folder exec:%s\n    root:%s\n    log:%s", curpath.c_str(), config::root_path.c_str(), log.c_str());
+			//本机IP信息
 			acl::string host;
 			vector<acl::string> ips;
 			get_local_ips(host, ips);
-
 			acl::string ip_info;
 			ip_info.format_append("host:%s ips:", host.c_str());
 			bool first = true;
@@ -92,18 +65,22 @@ namespace agebull
 				ip_info.append(ip);
 			}
 			log_msg(ip_info);
+			//REDIS环境检查
+			trans_redis::redis_ip = config::get_global_string("redis_addr");
+			trans_redis::redis_db = config::get_global_int("redis_defdb");
 			if (!ping_redis())
 			{
-				log_error2("redis failed!\n   addr:%s default db:%d", config::get_global_string("redis_addr").c_str(), config::get_global_int("redis_defdb"));
+				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip.c_str(), trans_redis::redis_db);
 				return false;
 			}
-			log_msg2("redis addr:%s default db:%d", config::get_global_string("redis_addr").c_str(), config::get_global_int("redis_defdb"));
+			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip.c_str(), trans_redis::redis_db);
+			//站点仓库管理初始化
 			return station_warehouse::initialize();
 		}
 
-
-		void sig_crash(int sig);
-
+		/**
+		* \brief sig对应的文本
+		*/
 		const char* sig_text(int sig)
 		{
 			switch (sig)
@@ -213,7 +190,9 @@ namespace agebull
 			}
 		}
 
-		const int MAX_STACK_FRAMES = 128;
+		/**
+		* \brief 记录堆栈信息
+		*/
 		void sig_crash(int sig)
 		{
 			try
@@ -249,5 +228,114 @@ namespace agebull
 				log_error("exception");
 			}
 		}
+
+		/**
+		* \brief 取本机IP
+		*/
+		void get_local_ips(acl::string& host, vector<acl::string>& ips)
+		{
+			char hname[128];
+			memset(hname, 0, sizeof(hname));
+			gethostname(hname, sizeof(hname));
+			host = hname;
+			struct addrinfo hint {};
+			memset(&hint, 0, sizeof(hint));
+			hint.ai_family = AF_INET;
+			hint.ai_socktype = SOCK_STREAM;
+
+			addrinfo* info = nullptr;
+			char ipstr[16];
+			if (getaddrinfo(hname, nullptr, &hint, &info) == 0 && info != nullptr)
+			{
+				addrinfo* now = info;
+				do
+				{
+					inet_ntop(AF_INET, &(reinterpret_cast<struct sockaddr_in *>(now->ai_addr)->sin_addr), ipstr, 16);
+					ips.emplace_back(ipstr);
+					now = now->ai_next;
+				} while (now != nullptr);
+				freeaddrinfo(info);
+			}
+		}
+
+		/**
+		* \brief 获取指定进程所对应的可执行（EXE）文件全路径
+		* \param sFilePath - 进程句柄hProcess所对应的可执行文件路径
+		* /
+		void get_process_file_path(string& sFilePath)
+		{
+		#if WIN32
+
+		char tsFileDosPath[MAX_PATH + 1];
+		ZeroMemory(tsFileDosPath, sizeof(char)*(MAX_PATH + 1));
+
+		HANDLE hProcess = GetCurrentProcess();
+		DWORD re = GetProcessImageFileNameA(hProcess, tsFileDosPath, MAX_PATH + 1);
+		CloseHandle(hProcess);
+		if (0 == re)
+		{
+		return;
+		}
+
+		// 获取Logic Drive String长度
+		UINT uiLen = GetLogicalDriveStrings(0, nullptr);
+		if (0 == uiLen)
+		{
+		return;
+		}
+
+		char* pLogicDriveString = new char[uiLen + 1];
+		ZeroMemory(pLogicDriveString, uiLen + 1);
+		uiLen = GetLogicalDriveStringsA(uiLen, pLogicDriveString);
+		if (0 == uiLen)
+		{
+		delete[]pLogicDriveString;
+		return;
+		}
+
+		char szDrive[3] = " :";
+		char* pDosDriveName = new char[MAX_PATH];
+		char* pLogicIndex = pLogicDriveString;
+
+		do
+		{
+		szDrive[0] = *pLogicIndex;
+		uiLen = QueryDosDeviceA(szDrive, pDosDriveName, MAX_PATH);
+		if (0 == uiLen)
+		{
+		if (ERROR_INSUFFICIENT_BUFFER != GetLastError())
+		{
+		break;
+		}
+
+		delete[]pDosDriveName;
+		pDosDriveName = new char[uiLen + 1];
+		uiLen = QueryDosDeviceA(szDrive, pDosDriveName, uiLen + 1);
+		if (0 == uiLen)
+		{
+		break;
+		}
+		}
+
+		uiLen = strlen(pDosDriveName);
+		if (0 == _strnicmp(tsFileDosPath, pDosDriveName, uiLen))
+		{
+		sFilePath.append(szDrive);
+		sFilePath.append(tsFileDosPath + uiLen);
+		break;
+		}
+
+		while (*pLogicIndex++);
+		} while (*pLogicIndex);
+
+		delete[]pLogicDriveString;
+		delete[]pDosDriveName;
+		#else
+		char buf[512];
+		getcwd(buf, 512);
+		sFilePath = buf;
+		#endif
+		}*/
+
 	}
 }

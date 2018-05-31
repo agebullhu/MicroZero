@@ -154,5 +154,135 @@ namespace Agebull.ZeroNet.Core
             Workers = src.Workers;
         }
 
+        #region 性能统计
+
+
+        /// <summary>
+        /// 设置计数值
+        /// </summary>
+        public void CheckValue(StationConfig src)
+        {
+            if (Count == 0)
+            {
+                TotalQps = 0;
+                TotalTps = 0;
+                AvgQps = 0;
+                AvgTps = 0;
+                MaxQps = 0;
+                MinQps = 0;
+                MaxTps = 0;
+                MinTps = 0;
+            }
+            else if (Count == 1)
+            {
+                TotalQps = src.RequestOut - RequestOut;
+                AvgQps = TotalQps;
+                MaxQps = TotalQps;
+                MinQps = TotalQps;
+                LastQps = TotalQps;
+                TotalTps = src.WorkerOut - WorkerOut;
+                AvgTps = TotalTps;
+                MaxTps = TotalTps;
+                MinTps = TotalTps;
+                LastTps = TotalTps;
+            }
+            else
+            {
+                LastQps = src.RequestOut - RequestOut;
+                TotalQps += LastQps;
+                AvgQps = TotalQps / Count;
+                if (MaxQps < LastQps)
+                    MaxQps = LastQps;
+                if (MinQps > LastQps)
+                    MinQps = LastQps;
+
+                LastTps = src.WorkerOut - WorkerOut;
+                TotalTps += LastTps;
+                AvgTps = TotalTps / Count;
+                if (MaxTps < LastTps)
+                    MaxTps = LastTps;
+                if (MinTps > LastTps)
+                    MinTps = LastTps;
+            }
+            Count += 1;
+
+            State = src.State;
+            RequestIn = src.RequestIn;
+            RequestOut = src.RequestOut;
+            RequestErr = src.RequestErr;
+            WorkerIn = src.WorkerIn;
+            WorkerOut = src.WorkerOut;
+            WorkerErr = src.WorkerErr;
+            Workers = src.Workers;
+        }
+
+        /// <summary>
+        /// 心跳数（即秒数）
+        /// </summary>
+        [DataMember, JsonProperty]
+        public int Count { get; set; }
+
+        /// <summary>
+        /// 总数
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long TotalQps { get; set; }
+
+        /// <summary>
+        /// 总数
+        /// </summary>
+        [DataMember, JsonProperty]
+
+        public long TotalTps { get; set; }
+
+        /// <summary>
+        /// 平均
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long AvgQps { get; set; }
+
+        /// <summary>
+        /// 平均
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long AvgTps { get; set; }
+
+        /// <summary>
+        /// 最后
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long LastTps { get; set; }
+
+        /// <summary>
+        /// 最后
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long LastQps { get; set; }
+
+        /// <summary>
+        /// 最大
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long MaxTps { get; set; }
+
+        /// <summary>
+        /// 最大
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long MaxQps { get; set; }
+
+        /// <summary>
+        /// 最小
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long MinTps { get; set; }
+
+        /// <summary>
+        /// 最小
+        /// </summary>
+        [DataMember, JsonProperty]
+        public long MinQps { get; set; }
+
+        #endregion
     }
 }

@@ -1,1 +1,1 @@
-{"serviceKey":"*","shortName":"monitor","serviceName":"AgebullMac","stationName":"WebMonitor","zeroAddr":"192.168.240.132","monitorPort":8001,"managePort":8000,"dataFolder":"Z:\\datas\\WebMonitor"}
+{"serviceName":"AgebullMac","shortName":"monitor","stationName":"WebMonitor","zeroAddr":"47.96.137.126","monitorPort":8001,"managePort":8000,"logFolder":null,"dataFolder":"C:\\Projects\\Agebull\\ZeroNet\\src\\ZmqNet\\WebMonitor\\datas\\WebMonitor","serviceKey":"*"}

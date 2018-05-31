@@ -1,9 +1,4 @@
 #include "config.h"
-#if WIN32
-#include "Psapi.h"
-#else
-#include <unistd.h>  
-#endif
 
 namespace agebull
 {
@@ -18,24 +13,28 @@ namespace agebull
 	*/
 	void config::init()
 	{
-		if (global_cfg_.empty())
-		{
-			char buf[1024];
-			std::string path=getcwd(buf, 512);
-			path.append("/config.json");
-			//log_acl_trace(0, 3, path.c_str());
+		acl::string path;
+		path.format("%sconfig/zero_center.json", root_path.c_str());
 
-			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
-			if (fp == nullptr)
-				return;
-			int ret = 0;
+		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
+		if (fp != nullptr)
+		{
 			acl::string cfg;
+			int ret = 0;
+			char buf[1024];
 			while (ret != ACL_VSTREAM_EOF) {
 				ret = acl_vstream_gets_nonl(fp, buf, sizeof(buf));
 				cfg += buf;
 			}
 			acl_vstream_fclose(fp);
 			read(cfg.c_str(), global_cfg_);
+		}
+		else
+		{
+			global_cfg_.insert(make_pair("base_tcp_port", "7999"));
+			global_cfg_.insert(make_pair("use_ipc_protocol", "true"));
+			global_cfg_.insert(make_pair("redis_addr", "127.0.0.1:6379"));
+			global_cfg_.insert(make_pair("redis_defdb", "15"));
 		}
 	}
 	/**
@@ -71,7 +70,7 @@ namespace agebull
 	*/
 	std::string& config::get_global_string(const char * name)
 	{
-		init();
+		
 		return global_cfg_[name];
 	}
 
@@ -82,7 +81,7 @@ namespace agebull
 	*/
 	int config::get_global_int(const char * name)
 	{
-		init();
+		
 		auto vl = global_cfg_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
@@ -93,7 +92,7 @@ namespace agebull
 	*/
 	bool config::get_global_bool(const char * name)
 	{
-		init();
+		
 		auto vl = global_cfg_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
@@ -104,7 +103,7 @@ namespace agebull
 	*/
 	bool config::boolean(const char * name)
 	{
-		init();
+		
 		auto vl = value_map_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
@@ -115,7 +114,7 @@ namespace agebull
 	*/
 	int config::number(const char * name)
 	{
-		init();
+		
 		auto vl = value_map_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
@@ -128,84 +127,5 @@ namespace agebull
 	{
 		return value_map_[name];
 	}
-
-	/**
-	* \brief 获取指定进程所对应的可执行（EXE）文件全路径
-	* \param sFilePath - 进程句柄hProcess所对应的可执行文件路径
-	* /
-	void get_process_file_path(string& sFilePath)
-	{
-#if WIN32
-
-		char tsFileDosPath[MAX_PATH + 1];
-		ZeroMemory(tsFileDosPath, sizeof(char)*(MAX_PATH + 1));
-
-		HANDLE hProcess = GetCurrentProcess();
-		DWORD re = GetProcessImageFileNameA(hProcess, tsFileDosPath, MAX_PATH + 1);
-		CloseHandle(hProcess);
-		if (0 == re)
-		{
-			return;
-		}
-
-		// 获取Logic Drive String长度
-		UINT uiLen = GetLogicalDriveStrings(0, nullptr);
-		if (0 == uiLen)
-		{
-			return;
-		}
-
-		char* pLogicDriveString = new char[uiLen + 1];
-		ZeroMemory(pLogicDriveString, uiLen + 1);
-		uiLen = GetLogicalDriveStringsA(uiLen, pLogicDriveString);
-		if (0 == uiLen)
-		{
-			delete[]pLogicDriveString;
-			return;
-		}
-
-		char szDrive[3] = " :";
-		char* pDosDriveName = new char[MAX_PATH];
-		char* pLogicIndex = pLogicDriveString;
-
-		do
-		{
-			szDrive[0] = *pLogicIndex;
-			uiLen = QueryDosDeviceA(szDrive, pDosDriveName, MAX_PATH);
-			if (0 == uiLen)
-			{
-				if (ERROR_INSUFFICIENT_BUFFER != GetLastError())
-				{
-					break;
-				}
-
-				delete[]pDosDriveName;
-				pDosDriveName = new char[uiLen + 1];
-				uiLen = QueryDosDeviceA(szDrive, pDosDriveName, uiLen + 1);
-				if (0 == uiLen)
-				{
-					break;
-				}
-			}
-
-			uiLen = strlen(pDosDriveName);
-			if (0 == _strnicmp(tsFileDosPath, pDosDriveName, uiLen))
-			{
-				sFilePath.append(szDrive);
-				sFilePath.append(tsFileDosPath + uiLen);
-				break;
-			}
-
-			while (*pLogicIndex++);
-		} while (*pLogicIndex);
-
-		delete[]pLogicDriveString;
-		delete[]pDosDriveName;
-#else
-		char buf[512];
-		getcwd(buf, 512);
-		sFilePath = buf;
-#endif
-	}*/
 
 }

@@ -1,16 +1,20 @@
 #include "stdafx.h"
 #include "service.h"
 #include "net/zero_station.h"
-#include "net/station_dispatcher.h"
+#include <mcheck.h>  
 
 int main(int argc, char *argv[])
 {
+	//加入内存检测
+	//setenv("MALLOC_TRACE", "output", 1);
+	//mtrace();
+	//初始化
 	if (!agebull::zmq_net::rpc_service::initialize())
 		return 0;
+	//测试用
 	agebull::zmq_net::station_warehouse::clear();
+	//启动
 	agebull::zmq_net::rpc_service::start();
-	for(int sig= SIGHUP;sig < SIGSYS;sig++)
-		signal(sig, agebull::zmq_net::on_sig);
 #ifdef _DEBUG
 	while (agebull::zmq_net::get_net_state() == agebull::zmq_net::NET_STATE_RUNING)
 	{
