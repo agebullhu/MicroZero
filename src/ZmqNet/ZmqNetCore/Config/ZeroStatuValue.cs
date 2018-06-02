@@ -173,19 +173,16 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 页面不存在的Json文本
         /// </summary>
-        /// <remarks>方法未注册</remarks>
         public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "页面不存在"));
 
         /// <summary>
-        /// 页面不存在的Json文本
+        /// 服务不可用的Json文本
         /// </summary>
-        /// <remarks>方法未注册</remarks>
         public static readonly string UnavailableJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Unavailable, "服务不可用"));
         
         /// <summary>
         /// 系统未就绪的Json文本
         /// </summary>
-        /// <remarks>方法未注册</remarks>
         public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "系统未就绪"));
 
         /// <summary>

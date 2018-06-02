@@ -11,6 +11,10 @@
   <ItemGroup>
     <Compile Remove="PerformanceCounter.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNet\HttpRoute\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />

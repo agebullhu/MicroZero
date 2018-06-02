@@ -10,8 +10,8 @@ namespace NetMQ.WebSockets
         /// <summary>
         /// 构造
         /// </summary>
-        public WsRouter()
-            : base(id => new RouterShimHandler(id))
+        public WsRouter(string addr)
+            : base(addr,(id,add) => new RouterShimHandler(add,id))
         {
         }
 
@@ -23,8 +23,8 @@ namespace NetMQ.WebSockets
             /// <summary>
             /// 构造
             /// </summary>
-            public RouterShimHandler(int id)
-                : base(id)
+            public RouterShimHandler(string addr,int id)
+                : base(addr, id)
             {
             }
 

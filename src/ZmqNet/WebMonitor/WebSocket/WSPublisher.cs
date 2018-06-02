@@ -11,9 +11,10 @@ namespace NetMQ.WebSockets
         /// <summary>
         /// 构造
         /// </summary>
-        public WsPublisher() : base(id => new PublisherShimHandler(id))
+        public WsPublisher(string address) : base(address,(id, addr) => new PublisherShimHandler(addr, id))
         {
         }
+
         /// <summary>
         /// 发布垫片
         /// </summary>
@@ -58,8 +59,8 @@ namespace NetMQ.WebSockets
             }
 
 
-            public PublisherShimHandler(int id)
-                : base(id)
+            public PublisherShimHandler(string addr,int id)
+                : base(addr, id)
             {
                 _identities = new List<byte[]>();
                 _subscriptions = new Mtrie();

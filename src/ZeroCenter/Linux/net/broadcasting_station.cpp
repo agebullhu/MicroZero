@@ -33,7 +33,7 @@ namespace agebull
 			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, nullptr, *list[4]);
 			list[2] = list[3];
 			list[3] = description;
-			char* buf = *description;
+			char* buf = description.get_buffer();
 			for (size_t i = 2; i < description.size(); i++)
 				buf[i] = buf[i + 1];
 			send_response(list, 2);
@@ -71,9 +71,9 @@ namespace agebull
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
 			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(16);
-			sprintf(*g, "%llx", id);
-			datas.emplace_back(g);
+			sharp_char global_id(32);
+			sprintf(global_id.get_buffer(), "%llx", id);
+			datas.emplace_back(global_id);
 			return send_response(datas);
 		}
 		/**
@@ -99,9 +99,9 @@ namespace agebull
 			datas.emplace_back(sub.c_str());
 			datas.emplace_back(arg.c_str());
 			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(16);
-			sprintf(*g, "%llx", id);
-			datas.emplace_back(g);
+			sharp_char global_id(32);
+			sprintf(global_id.get_buffer(), "%llx", id);
+			datas.emplace_back(global_id);
 
 			return send_response(datas);
 		}
@@ -115,12 +115,12 @@ namespace agebull
 			if (!can_do() || publiher.length() == 0)
 				return false;
 			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(16);
-			sprintf(*g, "%llx", id);
+			sharp_char global_id(32);
+			sprintf(global_id.get_buffer(), "%llx", id);
 
 			plan_message message;
 			message.request_caller = publiher.c_str();
-			message.request_id = g;
+			message.request_id = global_id;
 			message.plan_id = id;
 			vector<sharp_char> datas;
 			message.messages_description.alloc(8);
@@ -135,12 +135,12 @@ namespace agebull
 			buf[8] = ZERO_FRAME_GLOBAL_ID;
 			message.messages.emplace_back(message.messages_description);
 			message.messages.emplace_back(title.c_str());
-			message.messages.emplace_back(g);
+			message.messages.emplace_back(global_id);
 			message.messages.emplace_back(plan.c_str());
 			message.messages.emplace_back(sub.c_str());
 			message.messages.emplace_back(arg.c_str());
 			message.messages.emplace_back(publiher.c_str());
-			message.messages.emplace_back(g);
+			message.messages.emplace_back(global_id);
 
 
 			message.read_plan(plan.c_str());
@@ -157,12 +157,12 @@ namespace agebull
 			config.log_start();
 			if (!station_warehouse::join(station.get()))
 			{
-				config.log_failed();
+				config.log_failed("join warehouse");
 				return;
 			}
 			if (!station->initialize())
 			{
-				config.log_failed();
+				config.log_failed("initialize");
 				return;
 			}
 			station->poll();
@@ -177,7 +177,7 @@ namespace agebull
 			{
 				config.log_closed();
 			}
-			thread_sleep(1000);
+			set_command_thread_end(config.station_name_.c_str());
 		}
 	}
 }

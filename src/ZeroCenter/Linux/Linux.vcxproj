@@ -48,7 +48,7 @@
     <ClCompile />
     <Link>
       <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>

@@ -70,7 +70,7 @@ namespace Agebull.ZeroNet.LogService
         /// <summary>
         /// 任务结束,环境销毁
         /// </summary>
-        protected override void OnTaskStop()
+        protected sealed override void OnRunStop()
         {
             foreach (var writer in _writers.Values)
             {
@@ -78,7 +78,7 @@ namespace Agebull.ZeroNet.LogService
                 writer.Dispose();
             }
             _writers.Clear();
-            base.OnTaskStop();
+            base.OnRunStop();
         }
 
         /// <inheritdoc />

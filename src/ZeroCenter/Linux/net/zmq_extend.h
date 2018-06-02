@@ -10,6 +10,12 @@ namespace agebull
 	{
 
 		/**
+		* \brief 生成用于本机调用的套接字
+		*/
+#define ipc_address(addr,name)\
+			char addr[MAX_PATH];\
+			sprintf(address, "ipc://%sipc/%s.ipc", config::root_path.c_str(), name)
+		/**
 		*\brief 广播内容(异步)
 		*/
 		bool monitor_async(string publiher, string state, string content);
@@ -147,11 +153,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_req_socket_ipc(const char* name, int type = ZMQ_REQ)
 		{
-			char address[MAX_PATH];
-			if (config::get_global_bool("use_ipc_protocol"))
-				sprintf(address, "ipc://%sipc/%s.ipc", config::root_path.c_str(), name);
-			else
-				sprintf(address, "inproc://%s", name);
+			ipc_address(address, name);
 			return create_req_socket(address, type, name);
 		}
 		/**
@@ -159,11 +161,7 @@ namespace agebull
 		*/
 		inline ZMQ_HANDLE create_res_socket_ipc(const char* name, int type = ZMQ_REQ)
 		{
-			char address[MAX_PATH];
-			if (config::get_global_bool("use_ipc_protocol"))
-				sprintf(address, "ipc://%sipc/%s.ipc", config::root_path.c_str(), name);
-			else
-				sprintf(address, "inproc://%s", name);
+			ipc_address(address, name);
 			return create_res_socket(address, type, name);
 		}
 		/**

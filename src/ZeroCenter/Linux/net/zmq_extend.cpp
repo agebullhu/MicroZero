@@ -96,8 +96,7 @@ namespace agebull
 			assert(inproc);
 			int iRcvTimeout = 1000;
 			zmq_setsockopt(inproc, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(iRcvTimeout));
-			const int rc = zmq_connect(inproc, address);
-			assert(rc == 0);
+			zmq_connect(inproc, address);
 			while (get_net_state() == NET_STATE_RUNING)
 			{
 				if (read_event_msg(inproc, &event) == 1)

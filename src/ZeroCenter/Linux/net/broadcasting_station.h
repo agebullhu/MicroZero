@@ -20,7 +20,7 @@ namespace agebull
 			 * \param name 
 			 */
 			broadcasting_station(string name)
-				: zero_station(std::move(name), STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB, -1)
+				: zero_station(std::move(name), STATION_TYPE_PUBLISH, ZMQ_ROUTER)
 			{
 			}
 
@@ -29,7 +29,7 @@ namespace agebull
 			 * \param config 
 			 */
 			broadcasting_station(shared_ptr<zero_config>& config)
-				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB, -1)
+				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER)
 			{
 			}
 			/**

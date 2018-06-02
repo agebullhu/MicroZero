@@ -1,27 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Agebull.Common.Logging;
 using NetMQ.Sockets;
-using ZeroMQ;
 
 namespace NetMQ.WebSockets
 {
-    internal abstract class BaseShimHandler : IShimHandler
+    public abstract class BaseShimHandler : IShimHandler
     {
-        private int m_id;
+        public int Id { get; set; }
+        public StreamSocket Stream { get; set; }
+        public NetMQPoller Poller { get; set; }
 
-        private PairSocket m_messagesPipe;
-        private StreamSocket m_stream;
+        internal Dictionary<byte[], WebSocketClient> Clients { get; } = new Dictionary<byte[], WebSocketClient>(new ByteArrayEqualityComparer());
+        public PairSocket MessagesPipe { get; set; }
 
-        private NetMQPoller m_poller;
+        /// <summary>
+        /// µÿ÷∑
+        /// </summary>
+        public string Address { get; }
 
-        private Dictionary<byte[], WebSocketClient> m_clients;
-
-        protected BaseShimHandler(int id)
+        protected BaseShimHandler(string addr,int id)
         {
-            m_id = id;
-
-            m_clients = new Dictionary<byte[], WebSocketClient>(new ByteArrayEqualityComparer());
+            Id = id;
+            Address = addr.Replace( "ws://","tcp://");
         }
 
         protected abstract void OnOutgoingMessage(NetMQMessage message);
@@ -34,46 +36,73 @@ namespace NetMQ.WebSockets
         {
             var outgoingData = Encode(message, more);
 
-            m_stream.SendMoreFrame(identity).SendFrame(outgoingData);
+            Stream.SendMoreFrame(identity).SendFrame(outgoingData);
         }
 
         protected void WriteIngoing(NetMQMessage message)
         {
-            m_messagesPipe.SendMultipartMessage(message);
+            MessagesPipe.SendMultipartMessage(message);
         }
 
         public void Close()
         {
-            m_messagesPipe?.Close();
-            m_messagesPipe = null;
+            if (!isRuning)
+                return;
+            isRuning = true;
+            Stream.Unbind(Address);
+            MessagesPipe.Disconnect($"inproc://wsrouter-{Id}");
+
+            Poller.Dispose();
+            Monitor.Enter(this);
+            try
+            {
+                Stream.Dispose();
+                MessagesPipe.Dispose();
+            }
+            finally
+            {
+                Monitor.Exit(this);
+            }
         }
+
+        private bool isRuning;
         public void Run(PairSocket shim)
         {
-
-            shim.SignalOK();
-
-            shim.ReceiveReady += OnShimReady;
-
-            m_messagesPipe = new PairSocket();
-            m_messagesPipe.Connect($"inproc://wsrouter-{m_id}");
-            m_messagesPipe.ReceiveReady += OnMessagePipeReady;
-
-            m_stream = new StreamSocket();
-            m_stream.ReceiveReady += OnStreamReady;
-
-            m_poller = new NetMQPoller
+            string shimAdd = $"inproc://wsrouter-{Id}";
+            Monitor.Enter(this);
+            try
             {
-                m_messagesPipe,
-                shim,
-                m_stream
-            };
-            m_messagesPipe.SignalOK();
+                isRuning = true;
+                shim.SignalOK();
 
-            m_poller.Run();
-            m_poller.Dispose();
-            m_poller = null;
-            m_messagesPipe.Dispose();
-            m_stream.Dispose();
+                shim.ReceiveReady += OnShimReady;
+
+                MessagesPipe = new PairSocket();
+                MessagesPipe.Connect(shimAdd);
+                MessagesPipe.ReceiveReady += OnMessagePipeReady;
+
+                Stream = new StreamSocket();
+                Stream.Bind(Address);
+                Stream.ReceiveReady += OnStreamReady;
+
+                Poller = new NetMQPoller
+                {
+                    MessagesPipe,
+                    shim,
+                    Stream
+                };
+                MessagesPipe.SignalOK();
+                Poller.Run();
+                shim.Dispose();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                Monitor.Exit(this);
+            }
         }
 
         private void OnShimReady(object sender, NetMQSocketEventArgs e)
@@ -82,55 +111,21 @@ namespace NetMQ.WebSockets
 
             switch (command)
             {
-                case WsSocket.BindCommand:
-                    {
-                        string address = e.Socket.ReceiveFrameString();
-
-                        int errorCode = 0;
-
-                        try
-                        {
-                            m_stream.Bind(address.Replace("ws://", "tcp://"));
-                        }
-                        catch (NetMQException ex)
-                        {
-                            errorCode = (int)ex.ErrorCode;
-                            LogRecorder.Exception(ex);
-                            Console.Error.WriteLine(ex);
-                        }
-
-                        byte[] bytes = BitConverter.GetBytes(errorCode);
-                        e.Socket.SendFrame(bytes);
-                    }
-                    break;
-                case WsSocket.UnBindCommand:
-                    {
-                        string address = e.Socket.ReceiveFrameString();
-                        try
-                        {
-                            m_stream.Unbind(address.Replace("ws://", "tcp://"));
-                        }
-                        catch (NetMQException ex)
-                        {
-                            LogRecorder.Exception(ex);
-                        }
-                    }
-                    break;
                 case NetMQActor.EndShimMessage:
-                    m_poller.Stop();
+                    Poller.Stop();
                     break;
             }
         }
 
         private void OnStreamReady(object sender, NetMQSocketEventArgs e)
         {
-            byte[] identity = m_stream.ReceiveFrameBytes();
+            byte[] identity = Stream.ReceiveFrameBytes();
 
-            if (!m_clients.TryGetValue(identity, out var client))
+            if (!Clients.TryGetValue(identity, out var client))
             {
-                client = new WebSocketClient(m_stream, identity);
+                client = new WebSocketClient(Stream, identity);
                 client.IncomingMessage += OnIncomingMessage;
-                m_clients.Add(identity, client);
+                Clients.Add(identity, client);
 
                 OnNewClient(identity);
             }
@@ -139,7 +134,7 @@ namespace NetMQ.WebSockets
 
             if (client.State == WebSocketClientState.Closed)
             {
-                m_clients.Remove(identity);
+                Clients.Remove(identity);
                 client.IncomingMessage -= OnIncomingMessage;
                 OnClientRemoved(identity);
             }
@@ -155,7 +150,7 @@ namespace NetMQ.WebSockets
             NetMQMessage request;
             try
             {
-                request=m_messagesPipe.ReceiveMultipartMessage();
+                request = MessagesPipe.ReceiveMultipartMessage();
             }
             catch (Exception exception)
             {
@@ -221,5 +216,6 @@ namespace NetMQ.WebSockets
             Buffer.BlockCopy(data, 0, outgoingData, payloadStartIndex, data.Length);
             return outgoingData;
         }
+
     }
 }

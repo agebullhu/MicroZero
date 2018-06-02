@@ -21,11 +21,6 @@ namespace agebull
 			*/
 			int request_zmq_type_;
 
-			/**
-			* \brief 工作SOCKET类型
-			*/
-			int response_zmq_type_;
-
 			/*
 			*\brief 轮询节点
 			*/
@@ -74,7 +69,11 @@ namespace agebull
 			/**
 			* \brief 工作句柄
 			*/
-			ZMQ_HANDLE response_socket_tcp_;
+			ZMQ_HANDLE worker_in_socket_tcp_;
+			/**
+			* \brief 工作句柄
+			*/
+			ZMQ_HANDLE worker_out_socket_tcp_;
 		protected:
 			/**
 			* \brief 实例队列访问锁
@@ -88,12 +87,20 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			zero_station(string name, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type);
+			zero_station(string name, int type, int request_zmq_type);
 
 			/**
 			* \brief 构造
 			*/
-			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type, int response_zmq_type, int heart_zmq_type);
+			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type);
+
+			/**
+			* \brief 析构
+			*/
+			virtual ~zero_station()
+			{
+				zero_station::close(true);
+			}
 
 		public:
 			/**
@@ -149,22 +156,6 @@ namespace agebull
 			const char* get_station_name() const
 			{
 				return config_->station_name_.c_str();
-			}
-
-			/**
-			* \brief 外部地址
-			*/
-			string get_out_address() const
-			{
-				return config_->get_out_address();
-			}
-
-			/**
-			* \brief 工作地址
-			*/
-			string get_inner_address() const
-			{
-				return config_->get_inner_address();
 			}
 
 			/**
@@ -227,16 +218,6 @@ namespace agebull
 			*/
 			virtual sharp_char command(const char* caller, vector<sharp_char> lines) = 0;
 		public:
-
-
-			/**
-			* \brief 析构
-			*/
-			virtual ~zero_station()
-			{
-				zero_station::close(true);
-			}
-
 			/**
 			* \brief 能否继续工作
 			*/
@@ -295,7 +276,7 @@ namespace agebull
 			{
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->worker_out++;
-				zmq_state_ = send(response_socket_tcp_, datas, first_index);
+				zmq_state_ = send(worker_out_socket_tcp_, datas, first_index);
 
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
@@ -410,12 +391,12 @@ namespace agebull
 				return;
 			}
 			const size_t list_size = list.size();
-			if (list_size < 3)
+			if (list_size < 3 || list[2].size() < 2)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-			char* description = *list[2];
+			char* description = list[2].get_buffer();
 			const size_t size = list[2].size();
 			const auto frame_size = static_cast<size_t>(description[0]);
 			if (frame_size >= size || (frame_size + 3) != list_size || (description[size - 1] != ZERO_FRAME_END && description[size - 1] != ZERO_FRAME_GLOBAL_ID))
@@ -429,9 +410,9 @@ namespace agebull
 			//sprintf(*global_id, "%llx", id);
 			if (description[1] == ZERO_COMMAND_GLOBAL_ID)
 			{
-				sharp_char global_id(32);
-				sprintf(*global_id, "%llx", station_warehouse::get_glogal_id());
-				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *global_id);
+				char global_id[32];
+				sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
+				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, global_id);
 			}
 			else if (description[1] == ZERO_STATE_CODE_PLAN)
 			{
@@ -451,7 +432,7 @@ namespace agebull
 		inline void zero_station::response()
 		{
 			vector<sharp_char> list;
-			zmq_state_ = recv(response_socket_tcp_, list);
+			zmq_state_ = recv(worker_in_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
 				config_->worker_err++;
@@ -460,7 +441,7 @@ namespace agebull
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
 				config_->worker_err++;
-				log_error3("接收结果失败%s(%d)%s", get_station_name(), config_->worker_port_, state_str(zmq_state_));
+				config_->error("接收结果失败",state_str(zmq_state_));
 				return;
 			}
 			job_end(list);

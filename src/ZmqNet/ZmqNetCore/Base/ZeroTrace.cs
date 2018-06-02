@@ -18,7 +18,7 @@ namespace Agebull.ZeroNet.Core
             public int Type { get; set; }
         }
 
-        private static SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
+        private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
 
         internal static void Initialize()
@@ -27,50 +27,56 @@ namespace Agebull.ZeroNet.Core
             new Thread(Show)
             {
                 IsBackground=true,
-                Priority = ThreadPriority.BelowNormal
+                Priority = ThreadPriority.AboveNormal
             }.Start();
         }
 
         static void Show()
         {
-            while (ZeroApplication.IsAlive)
+            while (ZeroApplication.ApplicationState < StationState.Destroy)
             {
-                if (!ConsoleMessages.StartProcess(out var message, 100))
+                if (!ConsoleMessages.StartProcess(out var message))
                     continue;
+                if (message.Title == null)
+                    message.Title = "???";
                 int childNewLine = 1;
                 switch (message.Type)
                 {
                     case 0:
-                        if (Console.CursorLeft != 0)
-                            Console.WriteLine();
+                        Console.WriteLine();
                         Console.Write(message.Title);
                         break;
                     case 1:
+                        if (Console.CursorLeft != 0)
+                            Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.Blue;
                         Console.Write($"[{message.Title}] ");
                         Console.ForegroundColor = ConsoleColor.White;
                         childNewLine = 0;
                         break;
                     case 2:
-                        if (Console.CursorLeft != 0)
-                            Console.WriteLine();
+                        Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write($"[{message.Title}] ");
                         Console.ForegroundColor = ConsoleColor.White;
                         break;
                     case 3:
-                        if (Console.CursorLeft != 0)
-                            Console.WriteLine();
+                        Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write($"[{message.Title}] ");
                         Console.ForegroundColor = ConsoleColor.White;
                         break;
                 }
+
+                if (ZeroApplication.ApplicationState == StationState.Destroy)
+                    return;
                 if (message.Messages != null && message.Messages.Length > 0)
                 {
                     foreach (var line in message.Messages)
                     {
-                        if(childNewLine ==2)
+                        if (ZeroApplication.ApplicationState == StationState.Destroy)
+                            return;
+                        if (childNewLine ==2)
                             Console.WriteLine();
                         else if (childNewLine == 1)
                             childNewLine = 2;
@@ -79,6 +85,8 @@ namespace Agebull.ZeroNet.Core
                     }
                 }
 
+                if (ZeroApplication.ApplicationState == StationState.Destroy)
+                    return;
                 if (message.Type == 1)
                     Console.CursorLeft = 0;
                 ConsoleMessages.EndProcess();

@@ -96,39 +96,44 @@ namespace agebull
 		//启动网络命令环境
 		int start_zero_center()
 		{
-			log_msg(" start system dispatcher ...");
+			log_msg("=>start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
 
-			zmq_net::station_dispatcher::run();
+			station_dispatcher::run();
 			while (zero_thread_count < 1)
 			{
 				thread_sleep(10);
 				if (station_dispatcher::instance == nullptr ||
 					station_dispatcher::instance->get_config().station_state_ == station_state::Failed)
 				{
-					log_msg(" system dispatcher failed ...");
+					log_msg("=>system dispatcher failed ...");
 					return	net_state = NET_STATE_FAILED;
 				}
 			}
-			cout << endl << "waiting connect";
+			//cout << endl << "waiting connect";
+
+			//zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
+			//for (int i = 0; i < 5; i++)
+			//{
+			//	thread_sleep(200);
+			//	zmq_net::monitor_sync("*", "system_start", "*");
+			//}
+			//cout << endl;
+
+			log_msg("=>start business stations...");
+			const int cnt = station_warehouse::restore() + 1;
+			while (zero_thread_count < cnt)
+			{
+				thread_sleep(10);
+			}
+			cout << endl;
+			log_msg("=>all station in service");
 
 			for (int i = 0; i < 10; i++)
 			{
-				station_dispatcher::monitor("SystemManage", "worker_sound_off", "*");
-				thread_sleep(200);
-			}
-			cout << endl;
-			zmq_net::monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
-
-			log_msg(" start business stations...");
-			const int cnt = zmq_net::station_warehouse::restore() + 1;
-			while (zero_thread_count < cnt)
-			{
-				cout << ".";
 				thread_sleep(50);
+				monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
 			}
-			cout << endl;
-			log_msg(" all station in service");
 			return net_state;
 		}
 
@@ -138,9 +143,11 @@ namespace agebull
 			if (net_state != NET_STATE_RUNING)
 				return;
 			log_msg("zero center closing...");
-			zmq_net::monitor_sync("*", "system_stop", "*");
-			thread_sleep(10);
-
+			for (int i = 0; i < 10; i++)
+			{
+				thread_sleep(50);
+				monitor_sync("*", "system_stop", "*************Close ZeroNet,see you late!*************");
+			}
 			net_state = NET_STATE_CLOSING;
 			while (wait && zero_thread_count > 1)
 				thread_sleep(10);
@@ -152,8 +159,6 @@ namespace agebull
 		{
 			if (net_state < NET_STATE_CLOSING)
 				close_net_command();
-			zmq_net::monitor_sync("*", "system_distory", "*************ZeroNet is closed, see you late!*************");
-			thread_sleep(10000);
 			net_state = NET_STATE_DISTORY;
 			zmq_ctx_shutdown(net_context);
 			//zmq_ctx_term(net_context);

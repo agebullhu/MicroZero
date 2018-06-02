@@ -27,7 +27,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetRequestAddress(string station, int port)
         {
-            if(!IsLocalhost)
+            if (!IsLocalhost)
                 return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
             var path = Path.GetDirectoryName(ApiContext.Configuration["contentRoot"]);
             return $"ipc://{path}/ipc/{station}.ipc";
@@ -45,12 +45,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 格式化身份名称
         /// </summary>
+        /// <param name="isService"></param>
         /// <param name="ranges"></param>
         /// <returns></returns>
-        public static string CreateRealName(params string[] ranges)
+        public static string CreateRealName(bool isService, params string[] ranges)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(IsLocalhost ? '-' : '+');
+            sb.Append(isService ? "<" : ">");
             sb.Append(ZeroApplication.Config.ServiceName);
             sb.Append("-");
             sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);
@@ -66,18 +68,22 @@ namespace Agebull.ZeroNet.Core
                 sb.Append("-");
                 sb.Append(range);
             }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(6));
             return sb.ToString();
         }
 
         /// <summary>
         /// 格式化身份名称
         /// </summary>
+        /// <param name="isService"></param>
         /// <param name="ranges"></param>
         /// <returns></returns>
-        public static byte[] ToZeroIdentity(params string[] ranges)
+        public static byte[] ToZeroIdentity(bool isService, params string[] ranges)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append('+');//IsLocalhost ? "-" : "+"
+            sb.Append(IsLocalhost ? "-" : "+");
+            sb.Append(isService ? "<" : ">");
             sb.Append(ZeroApplication.Config.ServiceName);
             sb.Append("-");
             sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);

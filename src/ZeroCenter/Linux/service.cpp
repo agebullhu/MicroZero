@@ -199,24 +199,22 @@ namespace agebull
 			{
 				time_t t = time(nullptr);
 				tm* now = localtime(&t);
-				log_error7(
-					"#########################################################\n[%04d-%02d-%02d %02d:%02d:%02d][crash signal number:%d]\n",
+				log_error8(
+					"#########################################################\n[%04d-%02d-%02d %02d:%02d:%02d][crash signal number:%d]\n[%s]",
 					now->tm_year + 1900,
 					now->tm_mon + 1,
 					now->tm_mday,
 					now->tm_hour,
 					now->tm_min,
 					now->tm_sec,
-					sig);
+					sig, sig_text(sig));
 #ifdef __linux
-				void* array[MAX_STACK_FRAMES];
-				size_t size = 0;
-				char** strings = NULL;
-				size_t i;
 				signal(sig, SIG_DFL);
-				size = backtrace(array, MAX_STACK_FRAMES);
+				void* array[MAX_STACK_FRAMES];
+				char** strings = nullptr;
+				var size = backtrace(array, MAX_STACK_FRAMES);
 				strings = (char**)backtrace_symbols(array, size);
-				for (i = 0; i < size; ++i)
+				for (int i = 0; i < size; ++i)
 				{
 					log_error2("%d %s", i, strings[i]);
 				}

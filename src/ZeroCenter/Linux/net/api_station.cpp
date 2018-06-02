@@ -33,12 +33,12 @@ namespace agebull
 			config.log_start();
 			if (!station_warehouse::join(station.get()))
 			{
-				config.log_failed();
+				config.log_failed("join warehouse");
 				return;
 			}
 			if (!station->initialize())
 			{
-				config.log_failed();
+				config.log_failed("initialize");
 				return;
 			}
 			station->poll();
@@ -53,7 +53,7 @@ namespace agebull
 			{
 				config.log_closed();
 			}
-			thread_sleep(1000);
+			set_command_thread_end(config.station_name_.c_str());
 		}
 
 		/**
@@ -97,7 +97,9 @@ namespace agebull
 				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *list[3]);
 			}break;
 			default:
-				if (!send_response(list))
+				if(get_config().workers.size() == 0)
+					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID);
+				else if (!send_response(list))
 				{
 					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID);//, *global_id
 				}

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using ZeroMQ;
@@ -14,11 +15,7 @@ namespace Agebull.ZeroNet.Core
         /// 对应的配置
         /// </summary>
         public StationConfig Config { get; set; }
-        /// <summary>
-        /// Socket名称标识
-        /// </summary>
-        private ulong _socketId;
-
+        
         /// <summary>
         /// 所有连接
         /// </summary>
@@ -31,7 +28,7 @@ namespace Agebull.ZeroNet.Core
 
         private byte[] CreateIdentity()
         {
-            return ZeroIdentityHelper.ToZeroIdentity(Config.ShortName ?? Config.StationName, (++_socketId).ToString());
+            return ZeroIdentityHelper.CreateRealName(false,Config.ShortName ?? Config.StationName).ToAsciiBytes();
         }
         /// <summary>
         /// 取得一个连接对象

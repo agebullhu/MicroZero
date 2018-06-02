@@ -7,8 +7,15 @@ namespace ApiTest
 {
     partial class Program
     {
-        public class LoginControler : ZeroApiController
+        public class LoginStation : ApiStation
         {
+            public LoginStation()
+            {
+                StationName = "Test";
+                var action =  RegistAction("api/login", arg => Login((Arg) arg),ApiAccessOption.Anymouse);
+                action.ArgumenType = typeof(Arg);
+            }
+
             [Route("api/login")]
             public ApiResult Login(Arg user)
             {

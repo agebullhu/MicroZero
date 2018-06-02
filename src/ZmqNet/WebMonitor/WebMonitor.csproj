@@ -11,18 +11,23 @@
     <Compile Remove="datas\**" />
     <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
+    <Compile Remove="WebSocket\**" />
     <Content Remove="datas\**" />
     <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
+    <Content Remove="WebSocket\**" />
     <EmbeddedResource Remove="datas\**" />
     <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="WebSocket\**" />
     <None Remove="datas\**" />
     <None Remove="Debug\**" />
     <None Remove="logs\**" />
+    <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="WS\LogSubscribe.cs" />
+    <Compile Remove="WS\WebNotify.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="host.json" />
@@ -32,7 +37,6 @@
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.1" />
-    <PackageReference Include="NetMQ" Version="4.0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />

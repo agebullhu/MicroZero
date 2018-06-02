@@ -2,5 +2,6 @@
   "zeroAddr": "192.168.240.132", /*192.168.240.132*/
   "monitorPort": 8001,
   "managePort": 8000,
-  "stationName": "Client"
+  "stationName": "Client",
+  "task_count": 99999
 }

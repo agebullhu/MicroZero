@@ -18,20 +18,16 @@ namespace ZeroMQ
 		/// Gets and protected sets the default Encoding.
 		/// Note: Do not set the Encoding after ZContext.Create.
 		/// </summary>
-		public static Encoding Encoding { get; } = Encoding.UTF8;
+		public static Encoding Encoding { get; } = Encoding.ASCII;
 
-        private static readonly object SyncObject = new object();
         /// <summary>
         /// 初始化
         /// </summary>
 	    public static void Initialize()
         {
-            lock (SyncObject)
+            if (!IsAlive)
             {
-                if (_current == null)
-                {
-                    _current = new ZContext();
-                }
+                _current = new ZContext();
             }
         }
 
@@ -41,7 +37,13 @@ namespace ZeroMQ
         public static void Destroy()
         {
             _current?.Dispose();
+            _current = null;
         }
+
+        /// <summary>
+        /// 是否存活
+        /// </summary>
+        public static bool IsAlive => _current != null && _current._contextPtr != IntPtr.Zero;
 
         private static ZContext _current;
         /// <summary>
@@ -51,16 +53,9 @@ namespace ZeroMQ
         {
             get
             {
-                if (_current == null)
+                if (!IsAlive)
                 {
-                    // INFO: This is the ZContext who is the one, running this program.
-                    lock (SyncObject)
-                    {
-                        if (_current == null)
-                        {
-                            _current = new ZContext();
-                        }
-                    }
+                    throw new Exception("do not run Initialize?");
                 }
                 return _current;
             }
@@ -70,7 +65,7 @@ namespace ZeroMQ
         /// Create a <see cref="ZContext"/> instance.
         /// </summary>
         /// <returns><see cref="ZContext"/></returns>
-        public ZContext()
+        private ZContext()
         {
             _contextPtr = zmq.ctx_new();
 
@@ -80,22 +75,13 @@ namespace ZeroMQ
             }
         }
 
-        /// <summary>
-        /// Create a <see cref="ZContext"/> instance.
-        /// </summary>
-        /// <returns><see cref="ZContext"/></returns>
-        public static ZContext Create()
-        {
-            return new ZContext();
-        }
-
         private IntPtr _contextPtr;
 
         /// <summary>
         /// Gets a handle to the native ZeroMQ context.
         /// </summary>
         public IntPtr ContextPtr => _contextPtr;
-
+        ///
         public static bool Has(string capability)
         {
             using (var capabilityPtr = DispoIntPtr.AllocString(capability))
@@ -286,7 +272,8 @@ namespace ZeroMQ
         /// <inheritdoc />
         protected override void DoDispose()
         {
-            Terminate(out var error);
+            if (_contextPtr != IntPtr.Zero)
+                Terminate(out var error);
         }
 
         /// <summary>

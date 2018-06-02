@@ -68,7 +68,8 @@ namespace ZeroMQ
             {
                 if (null == value)
                 {
-                    _framePtr.Dispose();
+                    _framePtr?.Dispose();
+                    _framePtr = null;
                     return;
                 }
                 if (_framePtr == value)
@@ -246,10 +247,7 @@ namespace ZeroMQ
 
         protected override void Dispose(bool disposing)
         {
-            if (framePtr != null)
-            {
-                Close();
-            }
+            Close();
             base.Dispose(disposing);
         }
 
@@ -753,6 +751,8 @@ namespace ZeroMQ
                 return;
             var ptr = _framePtr;
             _framePtr = null;
+            if(ptr.IsDisposed)
+                return;
             //ZError error;
             while (-1 == zmq.msg_close(ptr))
             {

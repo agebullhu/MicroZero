@@ -12,7 +12,7 @@ namespace Gboxt.Common.DataModel.ZeroNet
     /// <summary>
     /// 实体事件代理,实现网络广播功能
     /// </summary>
-    public class EntityEventProxy : Publisher<EntityEventItem>, IEntityEventProxy
+    public class EntityEventProxy : SignlePublisher<EntityEventItem>, IEntityEventProxy
     {
         /// <summary>
         /// 防止构造

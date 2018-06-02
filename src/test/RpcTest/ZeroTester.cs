@@ -1,86 +1,91 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using ZeroMQ;
 
 namespace RpcTest
 {
     class ZeroTester
     {
-        public void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        long _count, _error;
+        double _runTime;
+        private DateTime _start;
+        public void Count()
         {
-            ZeroApplication.Shutdown();
+            var now = _count;
+            var err = _error;
+            ZeroTrace.WriteInfo("Count", $"{now:D8}|{err}  {(int)(now / _runTime):D5}/ms|{(int)(now / (DateTime.Now - _start).TotalMilliseconds)}/ms");
         }
 
-        long count = 0, error = 0;
-        //DateTime start = DateTime.Now;
-        double tm;
-        public void Counter()
+        public void Sync()
         {
-            long pre = 0, now,err;
-            double tl;
-            DateTime start = DateTime.Now;
-            while (ZeroApplication.IsAlive)
-            {
-                Thread.Sleep(1000);
-                now = count;
-                err = error;
-                tl = (DateTime.Now - start).TotalSeconds;
-
-
-                ZeroTrace.WriteLoop("Run", $"{now:D8}|{err}  {(int)(now / tm):D5}/ms|{(now / tl)}/ms Last:{ now - pre}                           ");
-                pre = now;
-                
-            }
-            now = count;
-            err = error;
-            tl = (DateTime.Now - start).TotalMilliseconds;
-            ZeroTrace.WriteLoop("End", $"{now:D8}|{err}  {(int)(now / tm):D5}/ms|{(int)(now / tl)}/ms Last:{ now - pre}                           ");
-            
         }
 
-        public void TestOnce()
+        public void Async()
         {
-            ApiClient.Call("Test", "api/login", "{}");
-        }
+            //var json = caller.GetResult().Result;
+            //StationConsole.WriteInfo($"Test::{Task.CurrentId}", json);
 
-        public void TestTask()
+            //Thread.Sleep(100000);
+            //ApiCounter.Instance.Publish(new CountData
+            //{
+            //    Start = s,
+            //    End = DateTime.Now,
+            //    Machine = "Test",
+            //    HostName = "Test",
+            //    ApiName = "api/login",
+            //    Status = caller.Status == WebExceptionStatus.Success ? OperatorStatus.Success : OperatorStatus.RemoteError,
+
+            //});
+        }
+        private int waitCount;
+
+        public void TestAsync()
         {
-            //ZeroTrace.WriteInfo($"Test::{Task.CurrentId}",ZeroApplication.Config.Configs["Test"].RequestAddress);
+            _start = DateTime.Now;
             while (ZeroApplication.IsAlive)
             {
                 if (!ZeroApplication.CanDo)
                 {
-                    Console.Write(".");
                     Thread.Sleep(1000);
                     continue;
                 }
                 DateTime s = DateTime.Now;
+                Interlocked.Increment(ref waitCount);
                 ApiClient.Call("Test", "api/login", "{}");
-                Interlocked.Exchange(ref tm, (DateTime.Now - s).TotalMilliseconds);
-                if (ApiContext.Current.LastError != 0)
-                    Interlocked.Increment(ref error);
-                Interlocked.Increment(ref count);
-
-                //var json = caller.GetResult().Result;
-                //StationConsole.WriteInfo($"Test::{Task.CurrentId}", json);
-
-                //Thread.Sleep(100000);
-                //ApiCounter.Instance.Publish(new CountData
-                //{
-                //    Start = s,
-                //    End = DateTime.Now,
-                //    Machine = "Test",
-                //    HostName = "Test",
-                //    ApiName = "api/login",
-                //    Status = caller.Status == WebExceptionStatus.Success ? OperatorStatus.Success : OperatorStatus.RemoteError,
-
-                //});
+                DoCount(s);
             }
+        }
+        public void TestSync()
+        {
+            _start = DateTime.Now;
+            while (ZeroApplication.IsAlive)
+            {
+                if (!ZeroApplication.CanDo)
+                {
+                    Thread.Sleep(1000);
+                    continue;
+                }
+                if (waitCount > ZeroApplication.Config.MaxWait)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
+
+                DateTime s = DateTime.Now;
+                Interlocked.Increment(ref waitCount);
+                var task = ApiClient.CallTask("Test", "api/login", "{}");
+                task.ContinueWith(t => DoCount(s));
+            }
+        }
+
+        void DoCount(DateTime s)
+        {
+            Interlocked.Decrement(ref waitCount);
+            Interlocked.Exchange(ref _runTime, (DateTime.Now - s).TotalMilliseconds);
+            if (ApiContext.Current.LastError != 0)
+                Interlocked.Increment(ref _error);
+            Interlocked.Increment(ref _count);
         }
     }
 }

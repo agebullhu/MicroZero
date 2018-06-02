@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.Log;
@@ -13,12 +10,11 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.AppName = "ApiTest";
+            //ApiCounter.HookApi();
+            //RemoteLogRecorder.Regist();
+            LogRecorder.LogMonitor = false;
             ZeroApplication.Initialize();
-            //LogRecorder.Initialize(new RemoteRecorder());
-            LogRecorder.LogMonitor = true;
-            //ApiCounter.Instance.HookApi();
             ZeroApplication.Discove();
-            //Task.Factory.StartNew(Counter);
             ZeroApplication.RunAwaite();
         }
     }

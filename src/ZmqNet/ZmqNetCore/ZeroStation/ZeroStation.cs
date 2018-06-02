@@ -12,19 +12,26 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 构造
         /// </summary>
-        /// <param name="type"></param>
-        protected ZeroStation(int type)
+        /// <param name="type">站点类型</param>
+        /// <param name="isService">是否服务</param>
+        protected ZeroStation(int type,bool isService)
         {
             StationType = type;
+            IsService = isService;
         }
+
+        /// <summary>
+        /// 是否服务
+        /// </summary>
+        public bool IsService {get;}
         /// <summary>
         /// 调度器
         /// </summary>
         public const int StationTypeDispatcher = 1;
         /// <summary>
-        /// 监视器
+        /// 广播
         /// </summary>
-        public const int StationTypeMonitor = 2;
+        public const int StationTypePublish = 2;
         /// <summary>
         /// API
         /// </summary>
@@ -33,10 +40,6 @@ namespace Agebull.ZeroNet.Core
         /// 投票器
         /// </summary>
         public const int StationTypeVote = 4;
-        /// <summary>
-        /// 广播
-        /// </summary>
-        public const int StationTypePublish = 5;
 
         /// <summary>
         /// 类型
@@ -55,7 +58,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 实例名称
         /// </summary>
-        public string RealName{ get; protected set; }
+        public string RealName { get; protected set; }
         /// <summary>
         /// 实例名称
         /// </summary>
@@ -83,47 +86,53 @@ namespace Agebull.ZeroNet.Core
         /// 能不能运行
         /// </summary>
         public bool CanRun => ZeroApplication.CanDo && State == StationState.Run;
-        /// <summary>
-        /// 正在侦听的状态开关
-        /// </summary>
-        protected bool InPoll { get; set; }
 
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        protected abstract bool Run();
-
-        private void SystemMonitor_StationEvent(object sender, SystemMonitor.StationEventArgument e)
+        void Run(object objToken)
         {
-            Heartbeat(false);
-        }
-
-        /// <summary>
-        /// 心跳
-        /// </summary>
-        protected void Heartbeat(bool left)
-        {
-            if (left)
-                SystemManager.HeartLeft(Config.StationName, RealName);
-            else
-                SystemManager.Heartbeat(Config.StationName, RealName);
-        }
-
-        /// <summary>
-        /// 命令轮询
-        /// </summary>
-        /// <returns></returns>
-        protected virtual void OnTaskStop()
-        {
-            if (ZeroApplication.CanDo && State == StationState.Failed)
+            Monitor.Enter(this);
+            try
             {
-                ZeroTrace.WriteInfo(RealName, "ReStart");
-                Start();//自动重启
-                return;
+                CancellationToken token = (CancellationToken)objToken;
+                ZeroTrace.WriteInfo(StationName, "Runing");
+                State = StationState.Run;
+                if (RunInner(token))
+                    State = StationState.Closed;
+                else
+                    State = StationState.Failed;
+                SystemManager.HeartLeft(Config.StationName, RealName);
+                OnRunStop();
+                if (ZeroApplication.CanDo && State == StationState.Failed)
+                {
+                    //自动重启
+                    ZeroTrace.WriteInfo(StationName, "ReStart");
+                    Start();
+                }
+                else
+                {
+                    ZeroTrace.WriteInfo(StationName, "Stop");
+                }
             }
-            State = StationState.Closed;
-            ZeroTrace.WriteInfo(RealName, "Closed");
+            finally
+            {
+                Monitor.Exit(this);
+            }
+        }
+        /// <summary>
+        /// 命令轮询
+        /// </summary>
+        /// <returns></returns>
+        protected abstract bool RunInner(CancellationToken token);
+
+        /// <summary>
+        /// 命令轮询
+        /// </summary>
+        /// <returns></returns>
+        protected virtual void OnRunStop()
+        {
         }
         /// <summary>
         /// 初始化
@@ -138,6 +147,7 @@ namespace Agebull.ZeroNet.Core
         protected virtual void OnStart()
         {
         }
+        private CancellationTokenSource RunTaskCancel;
         void Start()
         {
             if (State >= StationState.Start)
@@ -150,29 +160,38 @@ namespace Agebull.ZeroNet.Core
                 State = StationState.ConfigError;
                 return;
             }
-            RealName = ZeroIdentityHelper.CreateRealName(Config?.ShortName ?? StationName, Name);
-            Identity = ZeroIdentityHelper.ToZeroIdentity(Config?.ShortName ?? StationName, Name);
-            ZeroTrace.WriteInfo(StationName, Config.WorkerAddress, Name, RealName);
+            RealName = ZeroIdentityHelper.CreateRealName(IsService, Config?.ShortName ?? StationName, Name);
+            Identity = RealName.ToAsciiBytes();
+            ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
             OnStart();
-            Task.Factory.StartNew(Run).ContinueWith(task => OnTaskStop());
-            Heartbeat(false);
-            SystemMonitor.StationEvent += SystemMonitor_StationEvent;
+            RunTaskCancel = new CancellationTokenSource();
+            //取消时执行回调
+            RunTaskCancel.Token.Register(RunTaskCancel.Dispose);
+            Task.Factory.StartNew(Run, RunTaskCancel.Token).ContinueWith(task => OnRunStop());
+            SystemManager.HeartJoin(Config.StationName, RealName);
         }
 
         void Close()
         {
-            SystemMonitor.StationEvent -= SystemMonitor_StationEvent;
-            Heartbeat(true);
-            if (State < StationState.Start || State > StationState.Pause)
+            if (RunTaskCancel == null)
                 return;
             ZeroTrace.WriteInfo(StationName, "closing....");
             State = StationState.Closing;
-            do
-            {
-                Thread.Sleep(20);
-            } while (State != StationState.Closed);
+            RunTaskCancel.Cancel();
+            Monitor.Enter(this);
+            RunTaskCancel = null;
+            Monitor.Exit(this);
         }
+
         #region IZeroObject
+        /// <summary>
+        ///     要求心跳
+        /// </summary>
+        void IZeroObject.OnHeartbeat()
+        {
+            if (State == StationState.Run)
+                SystemManager.Heartbeat(Config.StationName, RealName);
+        }
 
         string IZeroObject.Name => StationName;
 
@@ -189,14 +208,12 @@ namespace Agebull.ZeroNet.Core
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            if (config.State == ZeroCenterState.Run)
-            {
-                Start();
-            }
-            else
-            {
+            if (config != Config)
+                return;
+            if (State == StationState.Run)
                 Close();
-            }
+            if (config.State == ZeroCenterState.Run)
+                Start();
         }
 
         void IZeroObject.OnZeroEnd()

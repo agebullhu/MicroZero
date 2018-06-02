@@ -24,17 +24,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="App.config">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="host.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="zero.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

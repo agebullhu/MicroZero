@@ -212,7 +212,7 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto& kv : configs_)
 			{
-				if (kv.second->station_type_ < STATION_TYPE_API)
+				if (kv.second->station_type_ < STATION_TYPE_PUBLISH)
 					continue;
 				if (restore(kv.second))
 					cnt++;
@@ -303,7 +303,12 @@ namespace agebull
 			redis->incr(port_redis_key, &port);
 			config->request_port_ = static_cast<int>(port);
 			redis->incr(port_redis_key, &port);
-			config->worker_port_ = static_cast<int>(port);
+			config->worker_out_port_ = static_cast<int>(port);
+			if (station_type >= STATION_TYPE_API)
+			{
+				redis->incr(port_redis_key, &port);
+				config->worker_in_port_ = static_cast<int>(port);
+			}
 			json = config->to_json();
 			redis->set(key.c_str(), json);
 			insert_config(config, false);

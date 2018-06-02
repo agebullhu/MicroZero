@@ -340,6 +340,15 @@ namespace agebull
 
 			}
 			/**
+			* \brief 构造
+			*/
+			worker(int lev)
+				: pre_time(time(nullptr))
+				, level(lev)
+			{
+
+			}
+			/**
 			* \brief 激活
 			*/
 			void active()
@@ -420,9 +429,14 @@ namespace agebull
 			int request_port_;
 
 			/**
-			* \brief 工作地址
+			* \brief 工作出站地址
 			*/
-			int worker_port_;
+			int worker_out_port_;
+
+			/**
+			* \brief 工作返回地址
+			*/
+			int worker_in_port_;
 
 			/**
 			* \brief 当前站点状态
@@ -445,7 +459,8 @@ namespace agebull
 			zero_config()
 				: station_type_(0)
 				, request_port_(0)
-				, worker_port_(0)
+				, worker_out_port_(0)
+				, worker_in_port_(0)
 				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
@@ -465,7 +480,8 @@ namespace agebull
 			zero_config(const string& name, int type)
 				: station_name_(std::move(name))
 				, request_port_(0)
-				, worker_port_(0)
+				, worker_out_port_(0)
+				, worker_in_port_(0)
 				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
@@ -485,7 +501,7 @@ namespace agebull
 				auto iter = workers.find(w);
 				if (iter == workers.end())
 				{
-					worker wk;
+					worker wk(10);
 					wk.ips = ips;
 					{
 						boost::lock_guard<boost::mutex> guard(mutex_);
@@ -507,7 +523,7 @@ namespace agebull
 				auto iter = workers.find(w);
 				if (iter == workers.end())
 				{
-					worker wk;
+					worker wk(10);
 					{
 						boost::lock_guard<boost::mutex> guard(mutex_);
 						workers.insert(make_pair(w, wk));
@@ -567,9 +583,9 @@ namespace agebull
 			}
 
 			/**
-			* \brief 外部地址
+			* \brief 调用地址
 			*/
-			string get_out_address() const
+			string get_request_address() const
 			{
 				string addr("tcp://*:");
 				addr += std::to_string(request_port_);
@@ -579,10 +595,20 @@ namespace agebull
 			/**
 			* \brief 工作地址
 			*/
-			string get_inner_address() const
+			string get_work_out_address() const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(worker_port_);
+				addr += std::to_string(worker_out_port_);
+				return addr;
+			}
+
+			/**
+			* \brief 工作地址
+			*/
+			string get_work_in_address() const
+			{
+				string addr("tcp://*:");
+				addr += std::to_string(worker_in_port_);
 				return addr;
 			}
 			/**
@@ -606,8 +632,8 @@ namespace agebull
 						, "station_name"
 						, "station_type"
 						, "request_port"
-						, "worker_port"
-						, "heart_port"
+						, "worker_out_port"
+						, "worker_in_port"
 						, "description"
 						, "caption"
 						, "station_alias"
@@ -631,7 +657,10 @@ namespace agebull
 						request_port_ = static_cast<int>(*iter->get_int64());
 						break;
 					case 3:
-						worker_port_ = static_cast<int>(*iter->get_int64());
+						worker_out_port_ = static_cast<int>(*iter->get_int64());
+						break;
+					case 4:
+						worker_in_port_ = static_cast<int>(*iter->get_int64());
 						break;
 					case 5:
 						station_description_ = iter->get_string();
@@ -714,8 +743,10 @@ namespace agebull
 						node.add_number("station_type", station_type_);
 					if (request_port_ > 0)
 						node.add_number("request_port", request_port_);
-					if (worker_port_ > 0)
-						node.add_number("worker_port", worker_port_);
+					if (worker_in_port_ > 0)
+						node.add_number("worker_in_port", worker_in_port_);
+					if (worker_out_port_ > 0)
+						node.add_number("worker_out_port", worker_out_port_);
 				}
 				node.add_number("station_state", static_cast<int>(station_state_));
 				node.add_number("request_in", request_in);
@@ -749,9 +780,9 @@ namespace agebull
 			/**
 			* \brief 开机失败日志
 			*/
-			void log_failed()
+			void log_failed(const char* msg)
 			{
-				log("con`t launch");
+				error("con`t launch", msg);
 				station_state_ = station_state::Failed;
 			}
 			/**
@@ -787,28 +818,58 @@ namespace agebull
 				switch (station_type_)
 				{
 				case STATION_TYPE_API:
-					type = "      API";
+					type = "API";
 					break;
 				case STATION_TYPE_VOTE:
-					type = "      VOTE";
+					type = "VOTE";
 					break;
 				case STATION_TYPE_PUBLISH:
-					type = "   PUBLISH";
+					type = "PUBLISH";
 					break;
 				case  STATION_TYPE_DISPATCHER:
 					type = "DISPATCHER";
 					break;
 				default:
-					type = "       ERR";
+					type = "ERR";
 					break;
 				}
-				if (station_state_ == station_state::ReStart)
-					log_msg5("%s:%s(%d | %d) %s", type, station_name_.c_str(), request_port_, worker_port_, state)
+				if(worker_in_port_ > 0)
+					log_msg6("%s(%s:%d | %d<=>%d) %s", station_name_.c_str(), type, request_port_, worker_out_port_, worker_in_port_, state)
 				else
-					log_msg5("%s:%s(%d | %d) %s", type, station_name_.c_str(), request_port_, worker_port_, state)
+					log_msg5("%s(%s:%d | %d) %s",  station_name_.c_str(), type, request_port_, worker_out_port_, state)
 
 			}
 
+			/**
+			* \brief 日志
+			*/
+			void error(const char* state, const char* msg) const
+			{
+				const char* type;
+				switch (station_type_)
+				{
+				case STATION_TYPE_API:
+					type = "API";
+					break;
+				case STATION_TYPE_VOTE:
+					type = "VOTE";
+					break;
+				case STATION_TYPE_PUBLISH:
+					type = "PUBLISH";
+					break;
+				case  STATION_TYPE_DISPATCHER:
+					type = "DISPATCHER";
+					break;
+				default:
+					type = "ERR";
+					break;
+				}
+				if (worker_in_port_ > 0)
+					log_error7("%s(%s:%d | %d<=>%d) %s\n%s", station_name_.c_str(), type, request_port_, worker_out_port_, worker_in_port_, state, msg)
+				else
+					log_error6("%s(%s:%d | %d) %s\n%s", station_name_.c_str(), type, request_port_, worker_out_port_, state, msg)
+
+			}
 		};
 	}
 }

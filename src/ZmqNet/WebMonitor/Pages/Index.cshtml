@@ -28,9 +28,35 @@
                 }
             }
         });
-        var subscriber = new JSMQ.Subscriber();
+        var uri = "ws://" + location.host + "/ws";
+        var socket = new WebSocket(uri);  
+        socket.onopen = function (e) {
+            console.log("opened " + uri);
+            socket.send("+config");
+        };  
+        socket.onclose = function (e) { console.log("closed"); };  
+        socket.onmessage = function (e) {
+            try {
+                var config = eval('(' + e.data + ')');
+                if (config != null) {
+                    for (var idx = 0; idx < data.configs.length; idx++) {
+                        var cfg = data.configs[idx];
+                        if (cfg.station_name === config.station_name) {
+                            Vue.set(data.configs, idx, config);
+                            return;
+                        }
+                    }
+                    data.configs.push(config);
+                }
+            } catch (e) {
+
+            } 
+            
+        };  
+        socket.onerror = function (e) { write("Error: " + e.data); };  
+        /*subscriber.connect();
         var index = 0;
-        subscriber.connect("ws://" + location.hostname + ":6001");
+        subscriber.connect();
         subscriber.subscribe("config");
         subscriber.onMessage = function (message) {
             message.popString();
@@ -48,7 +74,7 @@
                 }
                 data.configs.push(config);
             }
-        };
+        };*/
 
 
     </script>

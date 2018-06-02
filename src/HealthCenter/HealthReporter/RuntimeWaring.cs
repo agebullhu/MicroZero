@@ -35,7 +35,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 运行时警告
     /// </summary>
-    public class RuntimeWaring : Publisher<WaringItem>
+    public class RuntimeWaring : SignlePublisher<WaringItem>
     {
         private static readonly RuntimeWaring Instance = new RuntimeWaring
         {

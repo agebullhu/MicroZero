@@ -28,6 +28,11 @@ namespace Agebull.ZeroNet.Core
         void OnZeroStart();
 
         /// <summary>
+        ///     要求心跳
+        /// </summary>
+        void OnHeartbeat();
+
+        /// <summary>
         /// 系统关闭时调用
         /// </summary>
         void OnZeroEnd();

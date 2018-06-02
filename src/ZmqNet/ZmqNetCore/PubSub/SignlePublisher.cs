@@ -1,8 +1,6 @@
-using System;
+using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.Common;
-using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
 
@@ -11,14 +9,14 @@ namespace Agebull.ZeroNet.PubSub
     /// <summary>
     ///     消息发布器
     /// </summary>
-    public abstract class Publisher<TData> : ZeroStation
+    public abstract class SignlePublisher<TData> : ZeroStation
         where TData : class, IPublishData
     {
         #region 广播
         /// <summary>
         /// 构造
         /// </summary>
-        protected Publisher() : base (StationTypePublish)
+        protected SignlePublisher() : base(StationTypePublish, false)
         {
         }
         /// <summary>
@@ -48,6 +46,19 @@ namespace Agebull.ZeroNet.PubSub
         #region Task
 
         /// <summary>
+        /// 缓存文件名称
+        /// </summary>
+        private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, $"{StationName}.{Name}.sub.json");
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected sealed override void Initialize()
+        {
+            Items.Load(CacheFileName);
+        }
+
+        /// <summary>
         /// 数据进入的处理
         /// </summary>
         protected virtual void OnSend(TData data)
@@ -59,30 +70,29 @@ namespace Agebull.ZeroNet.PubSub
         ///     命令轮询
         /// </summary>
         /// <returns></returns>
-        protected sealed override bool Run()
+        protected sealed override bool RunInner(CancellationToken token)
         {
-            ZeroTrace.WriteInfo("Pub", $"{ StationName}:{Name}", "run...");
             _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
             State = StationState.Run;
-            while (CanRun)
+            while (!token.IsCancellationRequested && CanRun)
             {
                 if (!Items.StartProcess(out TData data, 100))
                 {
-                    Thread.Sleep(10);
                     continue;
                 }
-
+                if (token.IsCancellationRequested)
+                    break;
                 OnSend(data);
                 if (!_socket.Publish(data))
                 {
-                    State = StationState.Failed;
+                    _socket.CloseSocket();
+                    Thread.Sleep(100);
+                    _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
                     continue;
                 }
                 Items.EndProcess();
             }
             _socket.CloseSocket();
-            
-            ZeroTrace.WriteInfo("Pub", $"{ StationName}:{Name}", "closed");
             return State != StationState.Failed;
         }
 

@@ -10,7 +10,7 @@
         /// </summary>
         public const int None = 0;
         /// <summary>
-        /// 配置错误
+        /// 需要重启
         /// </summary>
         public const int ConfigError = 1;
         /// <summary>

@@ -29,14 +29,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 请求格式说明
         /// </summary>
-        private static readonly byte[] WaitingDescription = {
-            0,
-            ZeroByteCommand.Waiting,
-            ZeroFrameType.End
-        };
-        /// <summary>
-        /// 请求格式说明
-        /// </summary>
         private static readonly byte[] GetGlobalIdDescription = {
             0,
             ZeroByteCommand.GetGlobalId,
@@ -77,10 +69,9 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="commmand"></param>
         /// <param name="argument"></param>
         /// <returns></returns>
-        private static Task<string> CallTask(string station, string commmand, string argument)
+        public static Task<string> CallTask(string station, string commmand, string argument)
         {
-            var task = Task.Factory.StartNew(() => CallCommand(station, commmand, argument));
-            return task;
+            return Task.Factory.StartNew(() => CallCommand(station, commmand, argument));
         }
 
         /// <summary>
@@ -151,6 +142,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 var result = socket.Send(GetGlobalIdDescription);
                 if (!result.InteractiveSuccess)
                 {
+                    if (!ZeroApplication.CanDo)
+                        return ZeroStatuValue.NoReadyJson;
                     ZeroTrace.WriteError("GetGlobalId", "Send Failed", station, commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
                     ZeroConnectionPool.Close(ref socket);
@@ -159,6 +152,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 result = socket.ReceiveString();
                 if (!result.InteractiveSuccess)
                 {
+                    if (!ZeroApplication.CanDo)
+                        return ZeroStatuValue.NoReadyJson;
                     ZeroTrace.WriteError("GlobalId", config.RequestAddress, "Recv  Failed", station, commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
                     ZeroConnectionPool.Close(ref socket);
@@ -177,6 +172,8 @@ namespace Agebull.ZeroNet.ZeroApi
                     globalId);
                 if (!result.InteractiveSuccess)
                 {
+                    if (!ZeroApplication.CanDo)
+                        return ZeroStatuValue.NoReadyJson;
                     ZeroTrace.WriteError(station, "Send Failed", commmand, argument);
                     ApiContext.Current.LastError = ErrorCode.NetworkError;
                     ZeroConnectionPool.Close(ref socket);
@@ -190,13 +187,19 @@ namespace Agebull.ZeroNet.ZeroApi
                     int cnt = 0;
                     while (!finded && ++cnt < 5)
                     {
+                        if (!ZeroApplication.CanDo)
+                            return ZeroStatuValue.NoReadyJson;
                         ZeroConnectionPool.Close(ref socket);
 
                         Thread.Sleep(1000);
                         socket = ZeroConnectionPool.GetSocket(station);
                         result = socket.QuietSend(FindDescription, globalId);
                         if (!result.InteractiveSuccess)
+                        {
+                            if (!ZeroApplication.CanDo)
+                                return ZeroStatuValue.NoReadyJson;
                             continue;
+                        }
 
                         result = socket.ReceiveString(1, false);
                         if (!result.InteractiveSuccess || result.State == ZeroOperatorStateType.NoWorker)
@@ -222,7 +225,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 lr = socket.ReceiveString(1, false);
                 if (!lr.InteractiveSuccess)
                 {
-                    ZeroTrace.WriteError(station, config.RequestAddress, "Close Failed", commmand, globalId);
+                    ZeroTrace.WriteError(station, config.RequestAddress, "Close Failed", commmand, globalId,lr.ZmqErrorMessage);
                 }
                 //else
                 //{

@@ -7,12 +7,13 @@ using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
 {
+
     /// <summary>
     /// 本地站点配置
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class LocalStationConfig
+    public class ZeroAppConfig
     {
         /// <summary>
         /// 服务名称
@@ -33,19 +34,19 @@ namespace Agebull.ZeroNet.Core
         public string StationName { get; set; }
 
         /// <summary>
-        /// ZeroNet消息中心主机IP地址
+        /// ZeroCenter主机IP地址
         /// </summary>
         [DataMember, JsonProperty("zeroAddr")]
         public string ZeroAddress { get; set; }
 
         /// <summary>
-        /// ZeroNet消息中心监测站端口号
+        /// ZeroCenter监测端口号
         /// </summary>
         [DataMember, JsonProperty("monitorPort")]
         public int ZeroMonitorPort { get; set; }
 
         /// <summary>
-        /// ZeroNet消息中心管理站端口号
+        /// ZeroCenter管理端口号
         /// </summary>
         [DataMember, JsonProperty("managePort")]
         public int ZeroManagePort { get; set; }
@@ -67,6 +68,25 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember, JsonProperty("serviceKey")]
         public string ServiceKey { get; set; }
+
+        /// <summary>
+        /// 限速模式（0 单线程 1 按线程数限制 2 按等待数限制）
+        /// </summary>
+        [DataMember, JsonProperty("speed_limit_model")]
+        public SpeedLimitType SpeedLimitModel { get; set; }
+
+        /// <summary>
+        /// 最大等待数
+        /// </summary>
+        [DataMember, JsonProperty("max_wait")]
+        public int MaxWait { get; set; }
+
+
+        /// <summary>
+        /// 最大Task与Cpu核心数的倍数关系
+        /// </summary>
+        [DataMember, JsonProperty("task_cpu_multiple")]
+        public int TaskCpuMultiple { get; set; }
 
         /// <summary>
         /// 本机IP地址
@@ -213,6 +233,11 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public bool UpdateConfig(string stationName,string json, out StationConfig stationConfig)
         {
+            if (stationName == null || string.IsNullOrEmpty(json) || json[0] != '{')
+            {
+                stationConfig = null;
+                return false;
+            }
             try
             {
                 stationConfig=this[stationName] = JsonConvert.DeserializeObject<StationConfig>(json);

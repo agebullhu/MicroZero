@@ -38,7 +38,7 @@ namespace ZeroNet.Http.Route
         /// 站点配置
         /// </summary>
         [DataMember, JsonProperty("zeroConfig")]
-        public LocalStationConfig StationConfig
+        public ZeroAppConfig StationConfig
         {
             get => ZeroApplication.Config;
             set => ZeroApplication.Config = value;

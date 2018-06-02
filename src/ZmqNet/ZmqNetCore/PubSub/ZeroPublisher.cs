@@ -68,20 +68,19 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         void IZeroObject.OnZeroInitialize()
         {
-            var old = MulitToOneQueue<PublishItem>.Load(CacheFileName);
-            if (old == null)
-                return;
-            foreach (var val in old.Queue)
-                Items.Push(val);
+            Items.Load(CacheFileName);
         }
 
-
+        private CancellationTokenSource SendTaskCancel;
         /// <summary>
         /// 系统启动时调用
         /// </summary>
         void IZeroObject.OnZeroStart()
         {
-            Task.Factory.StartNew(SendTask);
+            SendTaskCancel = new CancellationTokenSource();
+            //取消时执行回调
+            SendTaskCancel.Token.Register(SendTaskCancel.Dispose);
+            Task.Factory.StartNew(SendTask, SendTaskCancel.Token);
         }
 
         /// <summary>
@@ -89,14 +88,14 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         void IZeroObject.OnZeroEnd()
         {
-            if (State <= StationState.Start && State >= StationState.Pause)
+            if (SendTaskCancel != null)
             {
                 ZeroTrace.WriteInfo(Name, "closing....");
                 State = StationState.Closing;
-                do
-                {
-                    Thread.Sleep(20);
-                } while (State != StationState.Closed);
+                SendTaskCancel.Cancel();
+                Monitor.Enter(this);
+                SendTaskCancel = null;
+                Monitor.Exit(this);
             }
             else
             {
@@ -111,6 +110,12 @@ namespace Agebull.ZeroNet.PubSub
         }
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
+        {
+        }
+        /// <summary>
+        ///     要求心跳
+        /// </summary>
+        void IZeroObject.OnHeartbeat()
         {
         }
 
@@ -134,7 +139,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 缓存文件名称
         /// </summary>
         private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, "zero_publish_queue.json");
-        
+
         /// <summary>
         /// 请求队列
         /// </summary>
@@ -170,52 +175,60 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
-        private void SendTask()
+        private void SendTask(object objToken)
         {
-            if (State == StationState.Run)
-                return;
-            State = StationState.Run;
-            ZeroTrace.WriteInfo(Name, "run...");
-            while (ZeroApplication.CanDo && State == StationState.Run)
-            {
-                if (!Items.StartProcess(out var item, 100))
-                    continue;
-                var socket = ZeroConnectionPool.GetSocket(item.Station);
-                if (socket == null)
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
+            CancellationToken token = (CancellationToken)objToken;
 
-                try
+            State = StationState.Run;
+            ZeroTrace.WriteInfo(Name, "send task run...");
+            Monitor.Enter(this);
+            try
+            {
+                while (!token.IsCancellationRequested && ZeroApplication.CanDo && State == StationState.Run)
                 {
-                    if (!socket.Publish(item))
+                    if (!Items.StartProcess(out var item, 100))
+                        continue;
+                    var socket = ZeroConnectionPool.GetSocket(item.Station);
+                    if (socket == null)
                     {
-                        ZeroTrace.WriteError(Name, "消息发送失败", JsonConvert.SerializeObject(item));
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
+                    if (token.IsCancellationRequested)
+                        break;
+                    try
+                    {
+                        if (!socket.Publish(item))
+                        {
+                            ZeroTrace.WriteError(Name, "消息发送失败", JsonConvert.SerializeObject(item));
+                            ZeroConnectionPool.Close(ref socket);
+                        }
+                        else
+                        {
+                            PubCount++;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(Name, "Exception", $"{item.Station}-{item.Title}", e);
                         ZeroConnectionPool.Close(ref socket);
                     }
-                    else
+                    finally
                     {
-                        PubCount++;
+                        ZeroConnectionPool.Free(socket);
                     }
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(Name, "Exception", $"{item.Station}-{item.Title}", e);
-                    ZeroConnectionPool.Close(ref socket);
-                }
-                finally
-                {
-                    ZeroConnectionPool.Free(socket);
-                }
 
-                Items.EndProcess();
+                    Items.EndProcess();
+                }
             }
-
-            if (State <= StationState.Closing)
+            finally
+            {
                 State = StationState.Closed;
-            ZeroTrace.WriteInfo(Name, "closed");
+                ZeroTrace.WriteInfo(Name, "send task close...");
+                Monitor.Exit(this);
+            }
         }
 
         #region IDisposable

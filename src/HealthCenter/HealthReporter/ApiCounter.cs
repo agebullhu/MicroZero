@@ -1,39 +1,40 @@
 using System;
 using System.Collections.Generic;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
-using Newtonsoft.Json;
-using ZeroNet.Http.Route;
+using Agebull.ZeroNet.Log;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
     /// 性能计数器
     /// </summary>
-    public class ApiCounter : Publisher<CountData>
+    public class ApiCounter : BatchPublisher<CountData>
     {
+        private ApiCounter()
+        {
+            Name = "ApiCounter";
+            StationName = "HealthCenter";
+            ZeroApplication.RegistZeroObject(this);
+        }
         /// <summary>
         /// 实例
         /// </summary>
-        public static readonly ApiCounter Instance = new ApiCounter
-        {
-            Name = "ApiCounter",
-            StationName = "HealthCenter"
-        };
+        public static readonly ApiCounter Instance = new ApiCounter();
 
-        protected override void OnSend(CountData data)
+        protected override void OnSend(List<CountData> datas)
         {
-            data.Title = "ApiCounter";
+            foreach (var  data in datas)
+            {
+                data.Title = "ApiCounter";
+            }
         }
-
         /// <summary>
         /// 设置Api调用注入
         /// </summary>
-        public void HookApi()
+        public static void HookApi()
         {
-            ApiStation.PreActions.Add(OnPre);
-            ApiStation.EndActions.Add(OnEnd);
+            ApiStation.PreActions.Add(Instance.OnPre);
+            ApiStation.EndActions.Add(Instance.OnEnd);
         }
 
         private readonly Dictionary<string, CountData> _handlers = new Dictionary<string, CountData>();

@@ -259,9 +259,9 @@ namespace agebull
 				binding(fri, fri == nullptr ? 0 : strlen(fri));
 				return *this;
 			}
-			char* operator*() const
+			const char* operator*() const
 			{
-				return buffer_;
+				return buffer_ == nullptr ? "" : buffer_;
 			}
 			operator std::string() const
 			{

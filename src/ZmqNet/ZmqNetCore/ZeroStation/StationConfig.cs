@@ -49,14 +49,25 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 入站端口
         /// </summary>
-        [DataMember, JsonProperty("worker_port")]
-        public int WorkerPort { get; set; }
+        [DataMember, JsonProperty("worker_out_port")]
+        public int WorkerCallPort { get; set; }
+
+        /// <summary>
+        /// 入站端口
+        /// </summary>
+        [DataMember, JsonProperty("worker_in_port")]
+        public int WorkerResultPort { get; set; }
 
         /// <summary>
         /// 出站地址
         /// </summary>
         [DataMember, JsonProperty]
-        public string WorkerAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerPort);
+        public string WorkerResultAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerResultPort);
+        /// <summary>
+        /// 出站地址
+        /// </summary>
+        [DataMember, JsonProperty]
+        public string WorkerCallAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerCallPort);
 
         /// <summary>
         /// 请求入
@@ -124,8 +135,6 @@ namespace Agebull.ZeroNet.Core
                         return "API";
                     case ZeroStation.StationTypeDispatcher:
                         return "Dispatcher";
-                    case ZeroStation.StationTypeMonitor:
-                        return "Monitor";
                     case ZeroStation.StationTypePublish:
                         return "Publish";
                     case ZeroStation.StationTypeVote:
@@ -143,7 +152,8 @@ namespace Agebull.ZeroNet.Core
             StationAlias = src.StationAlias;
             StationType = src.StationType;
             RequestPort = src.RequestPort;
-            WorkerPort = src.WorkerPort;
+            WorkerCallPort = src.WorkerCallPort;
+            WorkerResultPort = src.WorkerResultPort;
             State = src.State;
             RequestIn = src.RequestIn;
             RequestOut = src.RequestOut;

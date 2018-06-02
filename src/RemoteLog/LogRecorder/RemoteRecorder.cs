@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using ZeroMQ;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Log
@@ -13,10 +11,17 @@ namespace Agebull.ZeroNet.Log
     /// <summary>
     ///   远程记录器
     /// </summary>
-    public sealed class RemoteRecorder : ILogRecorder
+    public sealed class RemoteLogRecorder : ILogRecorder, IZeroObject
     {
         #region Override
-
+        /// <summary>
+        /// 注册
+        /// </summary>
+        public static void Regist()
+        {
+            LogRecorder.Regist<RemoteLogRecorder>();
+            ZeroApplication.RegistZeroObject((RemoteLogRecorder)LogRecorder.Recorder);
+        }
 
         /// <inheritdoc />
         /// <summary>
@@ -24,10 +29,9 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void ILogRecorder.Initialize()
         {
-            LogRecorder.LogByTask = true;
+            LogRecorder.LogByTask = false;
             LogRecorder.TraceToConsole = false;
-            _state = 0;
-            Task.Factory.StartNew(SendTask);
+            _state = StationState.Initialized;
         }
         /// <inheritdoc />
         /// <summary>
@@ -35,11 +39,9 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void ILogRecorder.Shutdown()
         {
-            if (_state != StationState.Run)
-                return;
             _state = StationState.Closing;
-            while (_state != StationState.Closed)
-                Thread.Sleep(3);
+            Monitor.Enter(this);
+            Monitor.Exit(this);
             _state = StationState.Destroy;
         }
 
@@ -54,8 +56,7 @@ namespace Agebull.ZeroNet.Log
             info.Machine = ZeroApplication.Config.RealName;
             using (LogRecordingScope.CreateScope())
             {
-                int state = ZeroApplication.ApplicationState;
-                if (state < StationState.Closing && state > StationState.Start)
+                if (ZeroApplication.ApplicationState < StationState.Destroy)
                 {
                     Items.Push(info);
                 }
@@ -69,14 +70,11 @@ namespace Agebull.ZeroNet.Log
         #endregion
 
         #region Field
+
         /// <summary>
         /// 配置
         /// </summary>
-        private StationConfig _config;
-        /// <summary>
-        /// 连接对象
-        /// </summary>
-        private ZSocket _socket;
+        private StationConfig Config;
 
         /// <summary>
         /// 请求队列
@@ -84,19 +82,61 @@ namespace Agebull.ZeroNet.Log
         public static readonly LogQueue Items = new LogQueue();
 
         /// <summary>
+        /// 节点名称
+        /// </summary>
+        string IZeroObject.Name => "RemoteLogRecorder";
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        internal string RealName { get; private set; }
+        /// <summary>
+        /// 实例名称
+        /// </summary>
+        internal byte[] Identity { get; private set; }
+
+        /// <summary>
         ///     运行状态
         /// </summary>
-        private static int _state;
+        private int _state;
 
         /// <summary>
-        /// 广播总数
+        ///     运行状态
         /// </summary>
-        public static long PubCount { get; private set; }
-        /// <summary>
-        /// 广播总数
-        /// </summary>
-        public static long DataCount { get; private set; }
+        public int State
+        {
+            get => _state;
+            set => Interlocked.Exchange(ref _state, value);
+        }
+        private CancellationTokenSource RunTaskCancel;
 
+        void Start()
+        {
+            if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
+            {
+                ZeroTrace.WriteError("RemoteLogRecorder", "No config");
+                State = StationState.ConfigError;
+                return;
+            }
+            RunTaskCancel = new CancellationTokenSource();
+            //取消时执行回调
+            RunTaskCancel.Token.Register(RunTaskCancel.Dispose);
+            RealName = ZeroIdentityHelper.CreateRealName(false,Config.ShortName ?? Config.StationName);
+            Identity = RealName.ToAsciiBytes();
+            Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
+        }
+        void Close()
+        {
+            if (State != StationState.Run)
+            {
+                State = StationState.Closed;
+            }
+            else
+            {
+                State = StationState.Closing;
+                Monitor.Enter(this);
+                Monitor.Exit(this);
+            }
+        }
         #endregion
 
         #region Task
@@ -104,94 +144,122 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
-        private void SendTask()
+        private void SendTask(object objToken)
         {
-            ZeroTrace.WriteInfo("RemoteLogcorder", "start...");
-            while (ZeroApplication.ApplicationState != StationState.Run)
+            CancellationToken token = (CancellationToken)objToken;
+            ZeroTrace.WriteInfo("RemoteLogRecorder", Config.RequestAddress, RealName);
+            ZeroTrace.WriteInfo("RemoteLogRecorder", "Runing");
+            Monitor.Enter(this);
+            try
             {
-                Thread.Sleep(100);
-            }
-
-            while (_socket == null && InitSocket())
-            {
-                Thread.Sleep(100);
-            }
-            ZeroTrace.WriteInfo("RemoteLogcorder", "run...");
-            _state = StationState.Run;
-            while (ZeroApplication.IsAlive && _state == StationState.Run)
-            {
-                if (!ZeroApplication.CanDo)
+                State = StationState.Run;
+                var socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                while (!token.IsCancellationRequested && ZeroApplication.CanDo && State == StationState.Run)
                 {
-                    Thread.Sleep(1000);
-                    continue;
-                }
-                if (!Items.StartProcess(out var title, out var items, 100))
-                {
-                    continue;
-                }
-                try
-                {
-                    if (!_socket.Publish(title.ToString(), ZeroApplication.Config.StationName,
-                        JsonConvert.SerializeObject(items)))
+                    if (!Items.StartProcess(out var title, out var items, 100))
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        if (!socket.Publish(title.ToString(), ZeroApplication.Config.StationName, JsonConvert.SerializeObject(items)))
+                        {
+                            LogRecorder.BaseRecorder.RecordLog(new RecordInfo
+                            {
+                                Type = LogType.Error,
+                                Name = "RemoteLogRecorder",
+                                Message = "日志发送失败"
+                            });
+                            socket.CloseSocket();
+                            socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                            continue;
+                        }
+                    }
+                    catch (Exception e)
                     {
                         LogRecorder.BaseRecorder.RecordLog(new RecordInfo
                         {
                             Type = LogType.Error,
-                            Name = "RemoteLog",
-                            Message = "日志发送失败"
+                            Name = "RemoteLogRecorder",
+                            Message = $"日志发送失败，异常为：\r\n{e}"
                         });
-                        CreateSocket();
+                        socket.CloseSocket();
+                        socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
                         continue;
                     }
+                    Items.EndProcess();
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.BaseRecorder.RecordLog(new RecordInfo
-                    {
-                        Type = LogType.Error,
-                        Name = "RemoteLog",
-                        Message = $"日志发送失败，异常为：\r\n{e}"
-                    });
-                    CreateSocket();
-                    continue;
-                }
-                Items.EndProcess();
-                PubCount += 1;
-                DataCount += items.Count;
-                if (DataCount == long.MaxValue)
-                    DataCount = 0;
-                if (PubCount == long.MaxValue)
-                    PubCount = 0;
+                socket.CloseSocket();
+                State = StationState.Closed;
             }
-            _socket.CloseSocket();
-            _state = StationState.Closed;
+            finally
+            {
+                Monitor.Exit(this);
+            }
         }
 
 
         #endregion
 
-        #region Socket
+        #region IZeroObject
 
-
-        private bool InitSocket()
-        {
-            return ZeroApplication.Config.TryGetConfig("RemoteLog",out _config) && CreateSocket();
-        }
         /// <summary>
-        ///     取得Socket对象
+        ///     要求心跳
         /// </summary>
-        /// <returns></returns>
-        private bool CreateSocket()
+        void IZeroObject.OnHeartbeat()
         {
-            _socket.CloseSocket();
-            string real = ZeroIdentityHelper.CreateRealName(_config.ShortName ?? _config.StationName, RandomOperate.Generate(3)); ;
-            var identity = real.ToAsciiBytes();
-            ZeroTrace.WriteInfo("RemoteLogcorder", _config.RequestAddress);
-            ZeroTrace.WriteInfo("RemoteLogcorder", real);
-            _socket = ZeroHelper.CreateRequestSocket(_config.RequestAddress, identity);
-            return _socket != null;
+            if (State == StationState.Run)
+                SystemManager.Heartbeat("RemoteLogRecorder", RealName);
         }
 
+        void IZeroObject.OnZeroInitialize()
+        {
+            State = StationState.Initialized;
+        }
+
+        void IZeroObject.OnZeroStart()
+        {
+            Start();
+        }
+
+        void IZeroObject.OnStationStateChanged(StationConfig config)
+        {
+            if (config != Config)
+                return;
+            if (config.State == ZeroCenterState.Run && State != StationState.Run)
+            {
+                Start();
+            }
+            else if (State == StationState.Run)
+            {
+                Close();
+            }
+        }
+
+        void IZeroObject.OnZeroEnd()
+        {
+            Close();
+        }
+
+        void IZeroObject.OnZeroDistory()
+        {
+            foreach (var items in Items.DoItems.Values)
+            {
+                foreach (var item in items)
+                    LogRecorder.BaseRecorder.RecordLog(item);
+            }
+            foreach (var items in Items.Items.Values)
+            {
+                foreach (var item in items)
+                    LogRecorder.BaseRecorder.RecordLog(item);
+            }
+        }
+
+        /// <inheritdoc />
+        void IDisposable.Dispose()
+        {
+        }
         #endregion
+
     }
 }

@@ -39,7 +39,7 @@ namespace WebMonitor
             {
                 app.UseExceptionHandler("/Error");
             }
-
+            app.Map("/ws", WebNotify.Map);
             app.UseStaticFiles();
 
             app.UseMvc();

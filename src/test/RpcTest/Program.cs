@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using ZeroMQ;
 
 namespace RpcTest
 {
@@ -14,37 +9,32 @@ namespace RpcTest
         //private static Recorder recorder;
         private static void Main(string[] args)
         {
+            ZeroApplication.AppName = "RpcTest";
             ZeroApplication.Initialize();
-            ZeroApplication.RunBySuccess();
-            Console.CursorVisible = false;
-            var tester = new ZeroTester();
-            //var tester = new HtttpTester();
-            //do
-            //{
-            //    tester.TestOnce();
-
-            //} while (Console.ReadKey().Key == ConsoleKey.A);
-
-
-            Console.CancelKeyPress += tester.Console_CancelKeyPress;
-            int cnt = 0;
-            while (++cnt <= 16)
-                Task.Factory.StartNew(tester.TestTask);
-            Task.Factory.StartNew(tester.Counter);
-
-            while (Console.ReadKey().Key != ConsoleKey.Q)
+            switch (ZeroApplication.Config.SpeedLimitModel)
             {
-                //KeyValuePair<string, int>[] array;
-                //lock (MemoryCheck.Alocs)
-                //    array = MemoryCheck.Alocs.ToArray();
-                //Console.Clear();
-                //ZeroTrace.WriteInfo("Unmanage Money", MemoryCheck.AliveCount);
-                //foreach (var kv in array)
-                //{
-                //    ZeroTrace.WriteInfo(kv.Key, kv.Value);
-                //}
-                //ZeroTrace.WriteInfo("Trace","End");
+                default:
+                    var tester = new ZeroTester();
+                    Task.Factory.StartNew(tester.TestSync);
+                    break;
+                case SpeedLimitType.Single:
+                    tester = new ZeroTester();
+                    new Thread(tester.TestSync)
+                    {
+                        IsBackground = true
+                    }.Start();
+                    break;
+                case SpeedLimitType.ThreadCount:
+                    int cnt = 0;
+                    while (++cnt <= ZeroApplication.Config.MaxWait)
+                    {
+                        tester = new ZeroTester();
+                        Task.Factory.StartNew(tester.TestAsync);
+                    }
+
+                    break;
             }
+            ZeroApplication.RunAwaite();
         }
     }
 }

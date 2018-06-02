@@ -68,8 +68,8 @@ namespace agebull
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
 			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(16);
-			sprintf(*g, "%llx", id);
+			sharp_char g(32);
+			sprintf(g.get_buffer(), "%llx", id);
 			datas.emplace_back(g);
 			return send_response(datas);
 		}
@@ -370,7 +370,8 @@ namespace agebull
 			case ZERO_COMMAND_HEART_LEFT:
 			case ZERO_COMMAND_HEART_JOIN:
 			case ZERO_COMMAND_HEART_PITPAT:
-				send_request_status(socket, *list[0], heartbeat(buf[1], list) ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID);
+				const bool success = heartbeat(buf[1], list);
+				send_request_status(socket, *list[0], success ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID);
 				return;
 			}
 			const char* cmd = nullptr;
@@ -419,34 +420,32 @@ namespace agebull
 			if (!station_warehouse::join(station.get()))
 			{
 				instance = nullptr;
-				config.log_failed();
+				config.log_failed("join warehouse");
 				return;
 			}
 			if (!station->initialize())
 			{
 				instance = nullptr;
-				config.log_failed();
+				config.log_failed("initialize");
 				return;
 			}
 			boost::thread(boost::bind(monitor_poll));
 			station->poll();
+			instance = nullptr;
 			station_warehouse::left(station.get());
-			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
+			station->destruct();
+			if (get_net_state() == NET_STATE_RUNING)
 			{
-				instance = nullptr;
-				station->destruct();
 				config.station_state_ = station_state::ReStart;
 				run(station->get_config_ptr());
 			}
 			else
 			{
-				while (get_net_state() <= NET_STATE_CLOSED)
-					thread_sleep(1000);
-				instance = nullptr;
-				station->destruct();
+				while(config.station_state_ != station_state::Destroy)
+					thread_sleep(10);
 				config.log_closed();
 			}
-			thread_sleep(1000);
+			set_command_thread_end(config.station_name_.c_str());
 		}
 
 		/**
@@ -454,7 +453,8 @@ namespace agebull
 		*/
 		void station_dispatcher::monitor_poll()
 		{
-			instance->get_config().log("monitor poll start");
+			zero_config& config = instance->get_config();
+			config.log("monitor poll start");
 			while (instance != nullptr &&  get_net_state() <= NET_STATE_CLOSED)
 			{
 				thread_sleep(1000);
@@ -470,11 +470,15 @@ namespace agebull
 					monitor(cfg.first, "station_state", cfg.second);
 				}
 			}
-			station_warehouse::foreach_configs([](shared_ptr<zero_config>& config)
 			{
-				config->station_state_ = station_state::Destroy;
-			});
-			station_warehouse::save_configs();
+				station_warehouse::foreach_configs([](shared_ptr<zero_config>& config)
+				{
+					config->station_state_ = station_state::Closed;
+					monitor(config->station_name_, "station_state", config->to_json(true).c_str());
+				});
+				station_warehouse::save_configs();
+				config.station_state_ = station_state::Destroy;
+			}
 		}
 	}
 }

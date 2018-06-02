@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 构造
         /// </summary>
-        protected SubStation() : base(StationTypePublish)
+        protected SubStation() : base(StationTypePublish, true)
         {
 
         }
@@ -31,9 +30,6 @@ namespace Agebull.ZeroNet.PubSub
         /// 是否实时数据(如为真,则不保存未处理数据)
         /// </summary>
         public bool IsRealModel { get; set; }
-
-
-        private ZSocket _socket;
 
         /*// <summary>
         /// 命令处理方法 
@@ -58,22 +54,6 @@ namespace Agebull.ZeroNet.PubSub
         public abstract void Handle(PublishItem args);
 
         /// <summary>
-        /// 初始化
-        /// </summary>
-        protected sealed override void Initialize()
-        {
-            try
-            {
-                if (!IsRealModel)
-                    Items = SyncQueue<PublishItem>.Load(CacheFileName);
-            }
-            catch
-            {
-            }
-            Task.Factory.StartNew(HandleTask);
-        }
-
-        /// <summary>
         /// 缓存文件名称
         /// </summary>
         private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
@@ -89,34 +69,38 @@ namespace Agebull.ZeroNet.PubSub
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        protected sealed override bool Run()
+        protected sealed override bool RunInner(CancellationToken token)
         {
-            Heartbeat(false);
-            _socket = ZeroHelper.CreateSubscriberSocket(Config.WorkerAddress, Identity, Subscribe);
-            ZeroTrace.WriteInfo(StationName, "run...");
-            InPoll = true;
-            State = StationState.Run;
-            while (CanRun)
+            var subscriber = ZeroHelper.CreateSubscriberSocket(Config.WorkerCallAddress, ZeroApplication.Config.Identity, "");
+            var sockets = new[] { subscriber };
+            var pollItems = new[] { ZPollItem.CreateReceiver() };
+            while (!token.IsCancellationRequested && CanRun)
             {
-                if (_socket.Subscribe(out var item))
+                if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
                 {
-                    Items.Push(item);
+                    if (error == null)
+                        continue;
+                    if (Equals(error, ZError.ETERM))
+                        break;
+                    if (!Equals(error, ZError.EAGAIN))
+                        ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                    continue;
                 }
+                if (messages == null || messages.Length == 0)
+                    continue;
+                if (token.IsCancellationRequested)
+                {
+                    messages[0].Dispose();
+                    continue;
+                }
+                if (!messages[0].Subscribe(out var item))
+                    continue;
+                Items.Push(item);
             }
-            _socket.CloseSocket();
-            InPoll = false;
-            ZeroTrace.WriteInfo("Pub",$"{ StationName}:{Name}", "poll stop");
+            subscriber.CloseSocket();
             return true;
         }
 
-        /// <summary>
-        /// 析构
-        /// </summary>
-        protected override void DoDispose()
-        {
-            if (!IsRealModel)
-                Items.Save(CacheFileName);
-        }
         /// <summary>
         /// 命令处理任务
         /// </summary>
@@ -135,7 +119,7 @@ namespace Agebull.ZeroNet.PubSub
                 catch (Exception e)
                 {
                     LogRecorder.Exception(e);
-                    ZeroTrace.WriteException("Pub",$"{ StationName}:{Name}", e);
+                    ZeroTrace.WriteException("Pub", $"{ StationName}:{Name}", e);
                     Thread.Sleep(5);
                 }
                 finally
@@ -144,6 +128,26 @@ namespace Agebull.ZeroNet.PubSub
                         Items.EndProcess();
                 }
             }
+        }
+
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected sealed override void Initialize()
+        {
+            if (!IsRealModel)
+                Items.Load(CacheFileName);
+            Task.Factory.StartNew(HandleTask);
+        }
+
+        /// <summary>
+        /// 析构
+        /// </summary>
+        protected override void DoDispose()
+        {
+            if (!IsRealModel)
+                Items.Save(CacheFileName);
         }
     }
 }

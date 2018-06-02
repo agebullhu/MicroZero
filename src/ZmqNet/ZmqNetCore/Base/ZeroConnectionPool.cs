@@ -70,6 +70,14 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
+        ///     要求心跳
+        /// </summary>
+        void IZeroObject.OnHeartbeat()
+        {
+        }
+    
+
+        /// <summary>
         /// 系统启动时调用
         /// </summary>
         public void OnZeroStart()

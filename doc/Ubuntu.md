@@ -82,3 +82,14 @@ supervisorctl start tomcat
 supervisorctl restart tomcat
 supervisorctl reread
 supervisorctl update
+
+关闭防火墙的方法为：
+ 查看防火墙状态
+
+sudo ufw status
+​
+
+开启/关闭防火墙 (默认设置是’disable’)
+
+sudo ufw enable|disable
+sudo ufw disable

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Agebull.ZeroNet.Log;
 using Agebull.ZeroNet.ZeroApi;
 
@@ -27,7 +26,7 @@ namespace ZeroNet.Http.Route
             ApiContext.SetLogRecorderDependency();
             if (AppConfig.Config.SystemConfig.FireZero)
             {
-                LogRecorder.Initialize(new RemoteRecorder());
+                RemoteLogRecorder.Regist();
                 ZeroApplication.Initialize();
                 RouteCommand.RefreshStationConfig();
                 ZeroApplication.RunBySuccess();

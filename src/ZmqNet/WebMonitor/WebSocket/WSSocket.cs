@@ -34,7 +34,8 @@ namespace NetMQ.WebSockets
         /// <summary>
         /// 基础标识
         /// </summary>
-        private static int _id = 0;
+        private static int _id;
+
         /// <summary>
         /// 绑定命令
         /// </summary>
@@ -46,11 +47,11 @@ namespace NetMQ.WebSockets
         /// <summary>
         /// 行为处理器
         /// </summary>
-        private readonly NetMQActor _actor;
+        protected readonly NetMQActor _actor;
         /// <summary>
         /// 内部PairSocket对象
         /// </summary>
-        private readonly PairSocket _messagesPipe;
+        protected readonly PairSocket _messagesPipe;
 
         /// <summary>
         /// 内部Socket对象
@@ -61,26 +62,26 @@ namespace NetMQ.WebSockets
 
         #region 构造与析构
 
+        public int Id { get; }
+
+        protected internal BaseShimHandler ShimHandler;
+
         /// <summary>
         /// 构造
         /// </summary>
+        /// <param name="address"></param>
         /// <param name="shimCreator"></param>
-        protected WsSocket(Func<int, IShimHandler> shimCreator)
+        protected WsSocket(string address, Func<int,string, BaseShimHandler> shimCreator)
         {
-            int id = Interlocked.Increment(ref _id);
+            Id = Interlocked.Increment(ref _id);
 
             _messagesPipe = new PairSocket();
-            _messagesPipe.Bind($"inproc://wsrouter-{id}");
+            _messagesPipe.Bind($"inproc://wsrouter-{Id}");
             _messagesPipe.ReceiveReady += OnMessagePipeReceiveReady;
-
-            _actor = NetMQActor.Create(shimCreator(id));
+            _actor = NetMQActor.Create(ShimHandler = shimCreator(Id, address));
 
             _messagesPipe.ReceiveSignal();
         }
-        /// <summary>
-        /// 地址
-        /// </summary>
-        public string Address { get; set; }
 
         /// <summary>
         /// Gets whether the object has been disposed.
@@ -103,10 +104,13 @@ namespace NetMQ.WebSockets
                 Console.Error.WriteLine($"Bind {address} Failed");
                 return false;
             }
-
-            Address = address;
             return true;
         }
+
+        /// <summary>
+        /// 地址
+        /// </summary>
+        public string Address => ShimHandler.Address;
 
         /// <summary>
         /// 析构
@@ -116,12 +120,9 @@ namespace NetMQ.WebSockets
             if (IsDisposed)
                 return;
             IsDisposed = true;
-            if (Address != null)
-            {
-                _actor.SendMoreFrame(UnBindCommand).SendFrame(Address);
-            }
-            _actor.SendFrame(NetMQActor.EndShimMessage);
-            
+            ShimHandler.Close();
+            Monitor.Enter(ShimHandler);
+            Monitor.Exit(ShimHandler);
             _actor.Dispose();
             _messagesPipe.Options.Linger = TimeSpan.Zero;
             _messagesPipe.Dispose();

@@ -130,6 +130,12 @@ namespace agebull
 		sprintf(_msg_,msg,arg1 , arg2 , arg3 , arg4 , arg5 , arg6 , arg7);\
 		log_acl_error(__FILE__, __LINE__, __FUNCTION__, _msg_);\
 	}
+#define log_error8(msg,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8) \
+	{\
+		char _msg_[4096];\
+		sprintf(_msg_,msg,arg1 , arg2 , arg3 , arg4 , arg5 , arg6 , arg7,arg8);\
+		log_acl_error(__FILE__, __LINE__, __FUNCTION__, _msg_);\
+	}
 
 #define log_debug(section, level, msg) \
 	log_acl_debug(section, level, __FILE__, __LINE__, __FUNCTION__, msg)
