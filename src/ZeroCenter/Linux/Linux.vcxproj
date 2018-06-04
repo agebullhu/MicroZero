@@ -47,42 +47,46 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
-      <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
       <LibraryDependencies>boost_thread;boost_system;boost_filesystem;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
+    <ClCompile>
+      <DebugInformationFormat>FullDebug</DebugInformationFormat>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
+      <AdditionalOptions>-fopenmp %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cfg\config.cpp" />
+    <ClCompile Include="cfg\json_config.cpp" />
     <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="net\api_station.cpp" />
     <ClCompile Include="net\net_crc.cpp" />
     <ClCompile Include="net\station_dispatcher.cpp" />
     <ClCompile Include="net\station_warehouse.cpp" />
-    <ClCompile Include="net\net_command.cpp" />
     <ClCompile Include="net\broadcasting_station.cpp" />
     <ClCompile Include="net\zero_station.cpp" />
     <ClCompile Include="net\zmq_extend.cpp" />
     <ClCompile Include="redis\redis.cpp" />
     <ClCompile Include="service.cpp" />
+    <ClCompile Include="sig.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
-    <ClInclude Include="cfg\config.h" />
+    <ClInclude Include="cfg\json_config.h" />
     <ClInclude Include="log\mylogger.h" />
     <ClInclude Include="net\api_station.h" />
     <ClInclude Include="net\ipc_request_socket.h" />
@@ -90,7 +94,6 @@
     <ClInclude Include="net\net_default.h" />
     <ClInclude Include="net\zero_station.h" />
     <ClInclude Include="net\station_warehouse.h" />
-    <ClInclude Include="net\net_command.h" />
     <ClInclude Include="net\broadcasting_station.h" />
     <ClInclude Include="net\zero_config.h" />
     <ClInclude Include="net\zero_plan.h" />

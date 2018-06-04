@@ -3,7 +3,7 @@
 #include "../stdinc.h"
 namespace agebull
 {
-	class config
+	class json_config
 	{
 		/**
 		 * \brief 全局配置
@@ -11,6 +11,10 @@ namespace agebull
 		static std::map<std::string, std::string> global_cfg_;
 
 	public:
+		static int base_tcp_port;
+		static bool use_ipc_protocol;
+		static char redis_addr[512];
+		static int redis_defdb;
 		/**
 		* \brief 全局配置初始化
 		*/
@@ -53,7 +57,7 @@ namespace agebull
 		* \brief 构造
 		* \param json JSON内容
 		*/
-		explicit config(const char* json);
+		explicit json_config(const char* json);
 
 		/**
 		* \brief 取配置

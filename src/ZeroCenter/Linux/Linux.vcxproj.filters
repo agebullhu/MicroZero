@@ -41,23 +41,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="net\net_command.cpp">
-      <Filter>rpc\net</Filter>
-    </ClCompile>
     <ClCompile Include="log\mylogger.cpp">
       <Filter>sys\log</Filter>
-    </ClCompile>
-    <ClCompile Include="cfg\config.cpp">
-      <Filter>sys\cfg</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="service.cpp">
       <Filter>main</Filter>
-    </ClCompile>
-    <ClCompile Include="net\net_crc.cpp">
-      <Filter>rpc\net</Filter>
     </ClCompile>
     <ClCompile Include="net\zmq_extend.cpp">
       <Filter>rpc\net</Filter>
@@ -80,6 +71,15 @@
     <ClCompile Include="redis\redis.cpp">
       <Filter>sys\redis</Filter>
     </ClCompile>
+    <ClCompile Include="net\net_crc.cpp">
+      <Filter>sys</Filter>
+    </ClCompile>
+    <ClCompile Include="cfg\json_config.cpp">
+      <Filter>sys\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="sig.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h">
@@ -88,17 +88,11 @@
     <ClInclude Include="stdinc.h">
       <Filter>std</Filter>
     </ClInclude>
-    <ClInclude Include="net\net_command.h">
-      <Filter>rpc\net</Filter>
-    </ClInclude>
     <ClInclude Include="redis\redis.h">
       <Filter>sys\redis</Filter>
     </ClInclude>
     <ClInclude Include="log\mylogger.h">
       <Filter>sys\log</Filter>
-    </ClInclude>
-    <ClInclude Include="cfg\config.h">
-      <Filter>sys\cfg</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>std</Filter>
@@ -141,6 +135,9 @@
     </ClInclude>
     <ClInclude Include="net\zero_plan.h">
       <Filter>rpc\base</Filter>
+    </ClInclude>
+    <ClInclude Include="cfg\json_config.h">
+      <Filter>sys\cfg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

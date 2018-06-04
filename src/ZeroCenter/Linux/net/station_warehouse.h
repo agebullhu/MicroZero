@@ -65,6 +65,13 @@ namespace agebull
 			* \brief 保存配置
 			*/
 			static void save_configs();
+			/**
+			* \brief 取得站点总数
+			*/
+			static size_t get_station_count()
+			{
+				return configs_.size();
+			}
 
 			/**
 			* \brief 取得配置
@@ -105,6 +112,10 @@ namespace agebull
 			* \brief 取机器信息
 			*/
 			static char host_info(const string& stattion, string& json);
+			/**
+			* \brief 设置关闭
+			*/
+			static void set_close_info();
 		protected:
 			/**
 			* \brief 遍历配置

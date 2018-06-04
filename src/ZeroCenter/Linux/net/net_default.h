@@ -25,6 +25,19 @@ namespace agebull
 		const NET_STATE NET_STATE_DISTORY = 4;
 		const NET_STATE NET_STATE_FAILED = 5;
 
+		//ZMQ上下文对象
+		ZMQ_HANDLE get_zmq_context();
+		//运行状态
+		NET_STATE get_net_state();
+		//线程计数清零
+		void reset_command_thread(int count);
+		//登记线程失败
+		void set_command_thread_bad(const char* name);
+		//登记线程开始
+		void set_command_thread_run(const char* name);
+		//登记线程关闭
+		void set_command_thread_end(const char* name);
+
 		//正常状态
 #define ZERO_STATUS_SUCCESS '+'
 

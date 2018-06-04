@@ -5,13 +5,14 @@ namespace agebull
 {
 	namespace zmq_net
 	{
+		int socket_ex::create_=0, socket_ex::close_=0;
 		/**
 		* \brief 配置ZMQ连接对象
 		* \param socket
 		* \param name
 		* \return
 		*/
-		void set_sockopt(const ZMQ_HANDLE& socket, const char* name)
+		void socket_ex::set_sockopt(ZMQ_HANDLE& socket, const char* name)
 		{
 			int iRcvTimeout;
 			if (name != nullptr)
@@ -22,7 +23,7 @@ namespace agebull
 			//assert(zmq_result == 0);
 			int iZMQ_IMMEDIATE = 1;//列消息只作用于已完成的链接
 			zmq_setsockopt(socket, ZMQ_IMMEDIATE, &iZMQ_IMMEDIATE, sizeof(int));
-			int iLINGER = 500;//关闭设置停留时间,毫秒
+			int iLINGER = 50;//关闭设置停留时间,毫秒
 			zmq_setsockopt(socket, ZMQ_LINGER, &iLINGER, sizeof(int));
 			iRcvTimeout = 3000;
 			zmq_setsockopt(socket, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(int));
@@ -38,10 +39,42 @@ namespace agebull
 			zmq_setsockopt(socket, ZMQ_BACKLOG, &iBackLog, sizeof(int));
 		}
 
+		ZMQ_HANDLE socket_ex::create_req_socket(const char* addr, int type, const char* name)
+		{
+			++create_;
+			log_msg3("%s(%d) :%s", name, type, addr);
+			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+			if (socket == nullptr)
+			{
+				return nullptr;
+			}
+			set_sockopt(socket, name);
+			if (zmq_connect(socket, addr) >= 0)
+				return socket;
+			zmq_close(socket);
+			return nullptr;
+		}
+
+		ZMQ_HANDLE socket_ex::create_res_socket(const char* addr, int type, const char* name)
+		{
+			++create_;
+			log_msg3("%s(%d) :%s", name, type, addr);
+			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+			if (socket == nullptr)
+			{
+				return nullptr;
+			}
+			set_sockopt(socket, name);
+			if (zmq_bind(socket, addr) >= 0)
+				return socket;
+			zmq_close(socket);
+			return nullptr;
+		}
+
 		/**
 		* \brief 生成用于TCP的套接字
 		*/
-		bool set_tcp_nodelay(ZMQ_HANDLE socket)
+		bool socket_ex::set_tcp_nodelay(ZMQ_HANDLE socket)
 		{
 			//boost::asio::detail::socket_type fd = 0;
 			//size_t sz = sizeof(boost::asio::detail::socket_type);
@@ -88,7 +121,7 @@ namespace agebull
 			return 0;
 		}
 		//网络监控
-		DWORD zmq_monitor(const char * address)
+		DWORD socket_ex::zmq_monitor(const char * address)
 		{
 			zmq_event_t event;
 			printf("starting monitor...\n");
@@ -144,6 +177,24 @@ namespace agebull
 			}
 			zmq_close(inproc);
 			return 0;
+		}
+
+		void socket_ex::close_res_socket(ZMQ_HANDLE& socket, const char* addr)
+		{
+			++close_;
+			zmq_unbind(socket, addr);
+			while (zmq_close(socket) == -1)
+				log_error(state_str(check_zmq_error()));
+			socket = nullptr;
+		}
+
+		void socket_ex::close_req_socket(ZMQ_HANDLE& socket, const char* addr)
+		{
+			++close_;
+			zmq_disconnect(socket, addr);
+			while (zmq_close(socket) == -1)
+				log_error(state_str(check_zmq_error()));
+			socket = nullptr;
 		}
 	}
 }

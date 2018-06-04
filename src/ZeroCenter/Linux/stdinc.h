@@ -1,6 +1,7 @@
 #ifndef ___STDINC_H
 #define ___STDINC_H
 #pragma once
+#include <omp.h>
 #include <cassert>
 #include <stdio.h>
 #include <stddef.h>
@@ -54,7 +55,7 @@ typedef void* HANDLE;
 	boost::thread thread_xxx(boost::bind<DWORD>(&func, args));\
 }
 
-#define MAX_PATH 256
+#define MAX_PATH 512
 
 
 using namespace std;

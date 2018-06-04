@@ -6,37 +6,14 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		class rpc_service
-		{
-		public:
-			/**
-			* \brief 初始化
-			*/
-			static bool initialize();
-
-			/**
-			* \brief
-			*/
-			static void start()
-			{
-				config_zero_center();
-				start_zero_center();
-
-				log_msg("zero center in service");
-			}
-
-			/**
-			* \brief 中止
-			*/
-			static void stop()
-			{
-				close_net_command();
-				distory_net_command();
-				thread_sleep(50);
-				acl::log::close();
-			}
-
-		};
+		//初始化网络命令环境
+		int config_zero_center();
+		//启动网络命令环境
+		int start_zero_center();
+		//销毁网络命令环境
+		void close_net_command();
+		//生成CRC校验码
+		ushort get_crc(const char *msg, size_t len);
 
 		/**
 		* \brief 系统信号处理
@@ -54,6 +31,34 @@ namespace agebull
 		* \brief sig对应的文本
 		*/
 		const char* sig_text(int sig);
+
+		class rpc_service
+		{
+		public:
+			/**
+			* \brief 主线程等待信号量
+			*/
+			static boost::interprocess::interprocess_semaphore wait_semaphore;
+			/**
+			* \brief 初始化
+			*/
+			static bool initialize();
+
+			/**
+			* \brief
+			*/
+			static void start();
+
+			/**
+			*\brief 等待结束
+			*/
+			static void wait_zero();
+
+			/**
+			* \brief 中止
+			*/
+			static void stop();
+		};
 	}
 }
 #endif //!AGEBULL_RPCSERVICE_H

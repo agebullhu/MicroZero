@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
 		const string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);
 		std::cout << result << endl;
 	}
-	/*agebull::zmq_net::rpc_service::stop();*/
-	thread_sleep(200);
-#else
-	agebull::zmq_net::wait_zero();
 #endif
+	//等待
+	agebull::zmq_net::rpc_service::wait_zero();
+	//关闭
+	agebull::zmq_net::rpc_service::stop();
 	return 0;
 }

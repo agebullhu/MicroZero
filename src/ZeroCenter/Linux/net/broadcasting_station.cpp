@@ -158,24 +158,27 @@ namespace agebull
 			if (!station_warehouse::join(station.get()))
 			{
 				config.log_failed("join warehouse");
+				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			if (!station->initialize())
 			{
 				config.log_failed("initialize");
+				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
+			boost::thread(boost::bind(plan_poll, station.get()));
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
 			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
 			{
-				config.station_state_ = station_state::ReStart;
+				config.restart();
 				run(station->get_config_ptr());
 			}
 			else
 			{
-				config.log_closed();
+				config.closed();
 			}
 			set_command_thread_end(config.station_name_.c_str());
 		}

@@ -64,8 +64,7 @@ namespace agebull
 			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 			trans_redis& redis = trans_redis::get_context();
 			acl::string val;
-			auto port = config::get_global_string(port_config_key);
-			if (redis.get(port_redis_key, val) && atol(val.c_str()) >= atol(port.c_str()))
+			if (redis.get(port_redis_key, val) && atol(val.c_str()) >= json_config::base_tcp_port)
 			{
 				int cursor = 0;
 				do
@@ -86,7 +85,7 @@ namespace agebull
 			}
 			else
 			{
-				redis.set(port_redis_key, port.c_str());
+				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
 				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
 				install("RemoteLog", STATION_TYPE_DISPATCHER, "log");
 				install("HealthCenter", STATION_TYPE_DISPATCHER, "hea");
@@ -231,7 +230,7 @@ namespace agebull
 				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
 				trans_redis& redis = trans_redis::get_context();
 				redis->flushdb();
-				redis.set(port_redis_key, config::get_global_string(port_config_key).c_str());
+				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
 			}
 			{
 				boost::lock_guard<boost::mutex> guard(config_mutex_);
@@ -360,5 +359,17 @@ namespace agebull
 			return iter->second;
 		}
 
+		/**
+		* \brief 设置关闭
+		*/
+		void station_warehouse::set_close_info()
+		{
+			foreach_configs([](shared_ptr<zero_config>& config)
+			{
+				boost::lock_guard<boost::mutex> guard(config->mutex_);
+				config->station_state_ = station_state::Closed;
+			});
+			save_configs();
+		}
 	}
 }

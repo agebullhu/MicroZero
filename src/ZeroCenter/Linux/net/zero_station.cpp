@@ -14,15 +14,16 @@ namespace agebull
 			: request_zmq_type_(request_zmq_type)
 			, poll_items_(nullptr)
 			, poll_count_(0)
+			, task_semaphore_(0)
 			, station_name_(name)
 			, station_type_(type)
-			, in_plan_poll_(false)
 			, state_semaphore_(1)
 			, config_(station_warehouse::get_config(name))
 			, request_scoket_tcp_(nullptr)
 			, request_socket_ipc_(nullptr)
 			, worker_in_socket_tcp_(nullptr)
 			, worker_out_socket_tcp_(nullptr)
+			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
 			assert(request_zmq_type_ != ZMQ_PUB);
@@ -31,15 +32,16 @@ namespace agebull
 			: request_zmq_type_(request_zmq_type)
 			, poll_items_(nullptr)
 			, poll_count_(0)
+			, task_semaphore_(0xFF)
 			, station_name_(config->station_name_)
 			, station_type_(type)
-			, in_plan_poll_(false)
 			, state_semaphore_(1)
 			, config_(config)
 			, request_scoket_tcp_(nullptr)
 			, request_socket_ipc_(nullptr)
 			, worker_in_socket_tcp_(nullptr)
 			, worker_out_socket_tcp_(nullptr)
+			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
 			assert(request_zmq_type_ != ZMQ_PUB);
@@ -64,57 +66,68 @@ namespace agebull
 			{
 				poll_count_ = 2;
 			}
+			const char* station_name = get_station_name();
 			poll_items_ = new zmq_pollitem_t[poll_count_];
 			memset(poll_items_, 0, sizeof(zmq_pollitem_t) * poll_count_);
-			request_scoket_tcp_ = create_res_socket_tcp(get_station_name(), request_zmq_type_, config_->request_port_);
+			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, request_zmq_type_, config_->request_port_);
 			if (request_scoket_tcp_ == nullptr)
 			{
 				config_->station_state_ = station_state::Failed;
 				config_->error("initialize request tpc", zmq_strerror(zmq_errno()));
-				set_command_thread_bad(get_station_name());
 				return false;
 			}
-			request_socket_ipc_ = create_res_socket_ipc(get_station_name(), request_zmq_type_);
-			if (request_socket_ipc_ == nullptr)
+			int cnt = 0;
+			poll_items_[cnt++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
+			if(json_config::use_ipc_protocol)
 			{
-				config_->station_state_ = station_state::Failed;
-				config_->error("initialize request ipc",zmq_strerror(zmq_errno()));
-				set_command_thread_bad(get_station_name());
-				return false;
+				request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", request_zmq_type_);
+				if (request_socket_ipc_ == nullptr)
+				{
+					config_->station_state_ = station_state::Failed;
+					config_->error("initialize request ipc", zmq_strerror(zmq_errno()));
+					return false;
+				}
+				poll_items_[cnt++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
 			}
-			poll_items_[0] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
-			poll_items_[1] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
+			
 
 			if (station_type_ >= STATION_TYPE_API)
 			{
-				worker_out_socket_tcp_ = create_res_socket_tcp(get_station_name(), ZMQ_PUSH, config_->worker_out_port_);
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUSH, config_->worker_out_port_);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->station_state_ = station_state::Failed;
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
-					set_command_thread_bad(get_station_name());
 					return false;
 				}
 
-				worker_in_socket_tcp_ = create_res_socket_tcp(get_station_name(),ZMQ_DEALER, config_->worker_in_port_);
+				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port_);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->station_state_ = station_state::Failed;
 					config_->error("initialize worker in", zmq_strerror(zmq_errno()));
-					set_command_thread_bad(get_station_name());
 					return false;
 				}
-				poll_items_[2] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
+				poll_items_[cnt++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
 			else
 			{
-				worker_out_socket_tcp_ = create_res_socket_tcp(get_station_name(), ZMQ_PUB, config_->worker_out_port_);
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port_);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->station_state_ = station_state::Failed;
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
-					set_command_thread_bad(get_station_name());
 					return false;
+				}
+				if (json_config::use_ipc_protocol)
+				{
+					worker_out_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "sub", ZMQ_PUB);
+					if (worker_out_socket_ipc_ == nullptr)
+					{
+						config_->station_state_ = station_state::Failed;
+						config_->error("initialize worker out", zmq_strerror(zmq_errno()));
+						return false;
+					}
 				}
 			}
 			config_->station_state_ = station_state::Run;
@@ -130,28 +143,30 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(mutex_);
 			if (poll_items_ == nullptr)
 				return true;
-			config_->station_state_ = station_state::Closing;
-			delete[]poll_items_;
-			poll_items_ = nullptr;
 			if (request_scoket_tcp_ != nullptr)
 			{
-				close_res_socket(request_scoket_tcp_, config_->get_request_address().c_str());
+				socket_ex::close_res_socket(request_scoket_tcp_, config_->get_request_address().c_str());
 			}
 			if (request_socket_ipc_ != nullptr)
 			{
-				ipc_address(address, get_station_name());
-				close_res_socket(request_socket_ipc_, address);
+				make_ipc_address(address, get_station_name(), "req");
+				socket_ex::close_res_socket(request_socket_ipc_, address);
 			}
 			if (worker_in_socket_tcp_ != nullptr)
 			{
-				close_res_socket(worker_in_socket_tcp_, config_->get_work_in_address().c_str());
+				socket_ex::close_res_socket(worker_in_socket_tcp_, config_->get_work_in_address().c_str());
 			}
 			if (worker_out_socket_tcp_ != nullptr)
 			{
-				close_res_socket(worker_out_socket_tcp_, config_->get_work_out_address().c_str());
+				socket_ex::close_res_socket(worker_out_socket_tcp_, config_->get_work_out_address().c_str());
 			}
-			//登记线程关闭
-			config_->station_state_ = station_state::Closed;
+			if (worker_out_socket_ipc_ != nullptr)
+			{
+				make_ipc_address(address, get_station_name(), "sub");
+				socket_ex::close_res_socket(worker_out_socket_ipc_, address);
+			}
+			delete[]poll_items_;
+			poll_items_ = nullptr;
 			return true;
 		}
 		/**
@@ -161,11 +176,10 @@ namespace agebull
 
 		bool zero_station::poll()
 		{
-			config_->log_runing();
-			boost::thread(boost::bind(plan_poll, this));
-			config_->log("net pool start");
+			config_->runing();
+			task_semaphore_.wait();
 			//登记线程开始
-			set_command_thread_start(get_station_name());
+			set_command_thread_run(get_station_name());
 			while (true)
 			{
 				if (!can_do())
@@ -182,17 +196,17 @@ namespace agebull
 				}
 
 				const int state = zmq_poll(poll_items_, poll_count_, 1000);
-				if (state == 0)//超时
+				if (state == 0|| !can_do())//超时或需要关闭
 					continue;
 				if (state < 0)
 				{
-					if ((zmq_state_ = check_zmq_error()) > zmq_socket_state::Succeed)
-					{
-						if (zmq_state_ < zmq_socket_state::Again)
-							continue;
-						break;
-					}
+					zmq_state_ = check_zmq_error();
+					if (zmq_state_ < zmq_socket_state::Again)
+						continue;
+					break;
 				}
+				zmq_state_ = zmq_socket_state::Succeed;
+#pragma omp parallel  for schedule(dynamic,3)
 				for (int idx = 0; idx < poll_count_; idx++)
 				{
 					if (poll_items_[idx].revents & ZMQ_POLLIN)
@@ -211,12 +225,6 @@ namespace agebull
 						{
 							config_->worker_in++;
 							response();
-						}
-						if (zmq_state_ > zmq_socket_state::Succeed)
-						{
-							if (zmq_state_ < zmq_socket_state::Again)
-								continue;
-							break;
 						}
 					}
 					//if (poll_items_[idx].revents & ZMQ_POLLOUT)
@@ -237,17 +245,13 @@ namespace agebull
 					if (poll_items_[idx].revents & ZMQ_POLLERR)
 					{
 						const zmq_socket_state err_state = check_zmq_error();
-						config_->error("ZMQ_POLLERR",state_str(err_state));
+						config_->error("ZMQ_POLLERR", state_str(err_state));
 					}
 				}
 			}
 			const zmq_socket_state state = zmq_state_;
-			config_->log_closing();
-			while (in_plan_poll_)
-			{
-				sleep(10);
-			}
-			config_->log("net pool end");
+			config_->closing();
+			task_semaphore_.wait();
 			return state < zmq_socket_state::Term && state > zmq_socket_state::Empty;
 		}
 
@@ -291,7 +295,7 @@ namespace agebull
 			state_semaphore_.post();
 			monitor_async(config_->station_name_, "station_closing", "");
 			while (waiting && config_->station_state_ == station_state::Closing)
-				boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+				thread_sleep(200);
 			return true;
 		}
 
@@ -353,8 +357,8 @@ namespace agebull
 		*/
 		void zero_station::plan_poll_()
 		{
-			in_plan_poll_ = true;
 			config_->log("plan poll start");
+			task_semaphore_.post();
 			while (can_do())
 			{
 				bool doit = true;
@@ -381,7 +385,7 @@ namespace agebull
 				}
 			}
 			config_->log("plan poll end");
-			in_plan_poll_ = false;
+			task_semaphore_.post();
 		}
 
 		/**

@@ -1,6 +1,7 @@
 #ifndef AGEBULL_REDIS_H
 #define AGEBULL_REDIS_H
 #pragma once
+#include "../cfg/json_config.h"
 #ifndef CLIENT
 #include "../stdinc.h"
 namespace agebull
@@ -59,11 +60,17 @@ namespace agebull
 		/**
 		* \brief 配置文件中的redis的地址
 		*/
-		static string redis_ip;
+		static const char* redis_ip()
+		{
+			return json_config::redis_addr;
+		}
 		/**
 		* \brief 配置文件中的redis的db
 		*/
-		static int redis_db;
+		static int redis_db()
+		{
+			return json_config::redis_defdb;
+		}
 		/**
 		* \brief 构造
 		*/

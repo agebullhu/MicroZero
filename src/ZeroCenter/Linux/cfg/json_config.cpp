@@ -1,17 +1,21 @@
-#include "config.h"
+#include "json_config.h"
 
 namespace agebull
 {
-	std::map<std::string, std::string> config::global_cfg_;
+	std::map<std::string, std::string> json_config::global_cfg_;
+	int json_config::base_tcp_port;
+	bool json_config::use_ipc_protocol;
+	char json_config::redis_addr[512];
+	int json_config::redis_defdb;
 	/**
 	* \brief 系统根目录
 	*/
-	acl::string config::root_path;
+	acl::string json_config::root_path;
 
 	/**
 	* \brief 全局配置初始化
 	*/
-	void config::init()
+	void json_config::init()
 	{
 		acl::string path;
 		path.format("%sconfig/zero_center.json", root_path.c_str());
@@ -36,11 +40,15 @@ namespace agebull
 			global_cfg_.insert(make_pair("redis_addr", "127.0.0.1:6379"));
 			global_cfg_.insert(make_pair("redis_defdb", "15"));
 		}
+		base_tcp_port = get_global_int("base_tcp_port");
+		use_ipc_protocol = get_global_bool("use_ipc_protocol");
+		strcpy(redis_addr, get_global_string("redis_addr").c_str());
+		redis_defdb = get_global_int("redis_defdb");
 	}
 	/**
 	* \brief 读取配置内容
 	*/
-	void config::read(const char* str, std::map<std::string, std::string>& cfg)
+	void json_config::read(const char* str, std::map<std::string, std::string>& cfg)
 	{
 		cfg.clear();
 		acl::json json;
@@ -59,7 +67,7 @@ namespace agebull
 	* \brief 构造
 	* \param json JSON内容
 	*/
-	config::config(const char* json)
+	json_config::json_config(const char* json)
 	{
 		read(acl::string(json), value_map_);
 	}
@@ -68,9 +76,8 @@ namespace agebull
 	* \param name 名称
 	* \return 值
 	*/
-	std::string& config::get_global_string(const char * name)
+	std::string& json_config::get_global_string(const char * name)
 	{
-		
 		return global_cfg_[name];
 	}
 
@@ -79,9 +86,8 @@ namespace agebull
 	* \param name 名称
 	* \return 值
 	*/
-	int config::get_global_int(const char * name)
+	int json_config::get_global_int(const char * name)
 	{
-		
 		auto vl = global_cfg_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
@@ -90,9 +96,8 @@ namespace agebull
 	* \param name 名称
 	* \return 值
 	*/
-	bool config::get_global_bool(const char * name)
+	bool json_config::get_global_bool(const char * name)
 	{
-		
 		auto vl = global_cfg_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
@@ -101,9 +106,8 @@ namespace agebull
 	* \param name 名称
 	* \return 布尔
 	*/
-	bool config::boolean(const char * name)
+	bool json_config::boolean(const char * name)
 	{
-		
 		auto vl = value_map_[name];
 		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
 	}
@@ -112,9 +116,8 @@ namespace agebull
 	* \param name 名称
 	* \return 数字
 	*/
-	int config::number(const char * name)
+	int json_config::number(const char * name)
 	{
-		
 		auto vl = value_map_[name];
 		return vl.empty() ? 0 : atoi(vl.c_str());
 	}
@@ -123,7 +126,7 @@ namespace agebull
 	* \param name 名称
 	* \return 文本
 	*/
-	std::string& config::operator[](const char * name)
+	std::string& json_config::operator[](const char * name)
 	{
 		return value_map_[name];
 	}

@@ -1,32 +1,25 @@
-#include "redis.h"
-#include "../cfg/config.h"
-#include "../log/mylogger.h"
+#include "../stdafx.h"
 
 namespace agebull
 {
+	boost::mutex lock_mutex_;
 	/**
 	* \brief 当前线程静态唯一
 	*/
-	static __thread  trans_redis* context = nullptr;
-
+	static __thread  trans_redis* thread_context_ = nullptr;
 	/**
-	* \brief 配置文件中的redis的地址
+	* \brief 构造
 	*/
-	string trans_redis::redis_ip;
-	/**
-	* \brief 配置文件中的redis的db
-	*/
-	int trans_redis::redis_db;
-
 	redis_db_scope::redis_db_scope(int db): redis_(trans_redis::get_context())
 	{
 		redis_->select(db);
-	} /**
+	}
+	/**
 	* \brief 析构
 	*/
 	redis_db_scope::~redis_db_scope()
 	{
-		redis_->select(trans_redis::redis_db);
+		redis_->select(trans_redis::redis_db());
 	}
 
 	redis_trans_scope::redis_trans_scope()
@@ -36,8 +29,7 @@ namespace agebull
 
 	redis_trans_scope::~redis_trans_scope()
 	{
-		trans_redis* context = trans_redis::get_current();
-		if (context != nullptr)
+		if (thread_context_ != nullptr)
 			trans_redis::end_trans();
 	}
 
@@ -46,49 +38,47 @@ namespace agebull
 	*/
 	bool trans_redis::open_context()
 	{
-		const bool is_new = context == nullptr;
-		if (is_new)
+		boost::lock_guard<boost::mutex> guard(lock_mutex_);
+		if (thread_context_ == nullptr)
 		{
-			redis_ip = config::get_global_string("redis_addr");
-			redis_db = config::get_global_int("redis_defdb");
-			context = new trans_redis();
+			thread_context_ = new trans_redis();
 #if _DEBUG
-			context->m_last_status = context->m_redis_cmd->ping();
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 #endif
-			(*context)->select(redis_db);
+			(*thread_context_)->select(redis_db());
+			return true;
 		}
 #if _DEBUG
 		else
 		{
-			context->m_last_status = context->m_redis_cmd->ping();
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 		}
 #endif
-		return is_new;
+		return false;
 	}
 	/**
 	* \brief 生成当前线程上下文的事务Redis对象
 	*/
 	bool trans_redis::open_context(int db)
 	{
-		const bool is_new = context == nullptr;
-		if (is_new)
+		boost::lock_guard<boost::mutex> guard(lock_mutex_);
+		if (thread_context_ == nullptr)
 		{
-			redis_ip = config::get_global_string("redis_addr");
-			redis_db = config::get_global_int("redis_defdb");
-			context = new trans_redis();
+			thread_context_ = new trans_redis();
 #if _DEBUG
-			context->m_last_status = context->m_redis_cmd->ping();
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 #endif
-			(*context)->select(db);
+			(*thread_context_)->select(db);
+			return true;
 		}
 		else
 		{
 #if _DEBUG
-			(*context)->select(db);
-			context->m_last_status = context->m_redis_cmd->ping();
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 #endif
+			(*thread_context_)->select(db);
 		}
-		return is_new;
+		return false;
 	}
 	/**
 	* \brief 取得当前线程上下文的事务Redis对象
@@ -97,7 +87,7 @@ namespace agebull
 	trans_redis& trans_redis::get_context()
 	{
 		open_context();
-		return *context;
+		return *thread_context_;
 	}
 	/**
 	* \brief 取得当前线程上下文的事务Redis对象
@@ -105,17 +95,17 @@ namespace agebull
 	*/
 	trans_redis* trans_redis::get_current()
 	{
-		return context;
+		return thread_context_;
 	}
 	/**
 	* \brief 关闭当前线程上下文的事务Redis对象
 	*/
 	void trans_redis::close_context()
 	{
-		if (context != nullptr)
+		if (thread_context_ != nullptr)
 		{
-			delete context;
-			context = nullptr;
+			delete thread_context_;
+			thread_context_ = nullptr;
 		}
 	}
 	/**
@@ -126,9 +116,9 @@ namespace agebull
 		, m_failed(false)
 		, m_last_status(true)
 	{
-		m_redis_client = new acl::redis_client(redis_ip.c_str());
+		m_redis_client = new acl::redis_client(redis_ip());
 		m_redis_cmd = new acl::redis(m_redis_client);
-		m_redis_cmd->select(redis_db);
+		m_redis_cmd->select(redis_db());
 	}
 	/**
 	* \brief 析构
@@ -149,8 +139,8 @@ namespace agebull
 		m_redis_client->close();
 		delete m_redis_client;
 		m_redis_client = nullptr;
-		if (context == this)
-			context = nullptr;
+		if (thread_context_ == this)
+			thread_context_ = nullptr;
 	}
 
 	/**
@@ -160,8 +150,8 @@ namespace agebull
 	trans_redis& trans_redis::begin_trans()
 	{
 		get_context();
-		context->m_trans_num += 1;
-		return *context;
+		thread_context_->m_trans_num += 1;
+		return *thread_context_;
 	}
 	/**
 	* \brief 提交事务,如果不是最先启用事务的地方调用,只是减少事务启用次数,最后一次调用(对应最早调用begin_trans)时,如果之前m_failed已设置,内部还是会调用rollback,除非ignore_failed设置为true
@@ -170,15 +160,15 @@ namespace agebull
 	void trans_redis::end_trans(bool ignore_failed)
 	{
 		log_debug(DEBUG_BASE, 5, "关闭redis事务");
-		if (context == nullptr)
+		if (thread_context_ == nullptr)
 			return;
-		context->m_trans_num--;
-		if (context->m_trans_num > 0)
+		thread_context_->m_trans_num--;
+		if (thread_context_->m_trans_num > 0)
 			return;
-		if (ignore_failed || !context->m_failed)
-			context->commit_inner();
-		delete context;
-		context = nullptr;
+		if (ignore_failed || !thread_context_->m_failed)
+			thread_context_->commit_inner();
+		delete thread_context_;
+		thread_context_ = nullptr;
 	}
 	/**
 	* \brief 回退事务
@@ -194,7 +184,7 @@ namespace agebull
 			acl::string&vl = m_local_values[start->first];
 			if (!m_redis_cmd->set(start->first.c_str(), start->first.length(), vl.c_str(), vl.length()))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), start->first.c_str(), m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip(), start->first.c_str(), m_redis_cmd->result_error());
 				break;
 			}
 			++start;
@@ -475,7 +465,7 @@ namespace agebull
 		acl::string vl2;
 		if (!m_redis_cmd->get(key, vl2))
 		{
-			log_error3("(%s)read_from_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)read_from_redis(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		m_local_values[key] = vl2;
@@ -493,7 +483,7 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl.c_str(), vl.length()))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
@@ -508,7 +498,7 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl, strlen(vl)))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
@@ -526,7 +516,7 @@ namespace agebull
 		{
 			if (!m_redis_cmd->set(key, strlen(key), vl, len))
 			{
-				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+				log_error3("(%s)write_to_redis(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			}
 		}
 	}
@@ -553,13 +543,13 @@ namespace agebull
 		vector<acl::string> keys;
 		if (m_redis_cmd->keys_pattern(key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 		}
 		if (!keys.empty())
 		{
 			if (!get(keys.begin()->c_str(), str))
 			{
-				log_error3("(%s)read_first_from_redis(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+				log_error3("(%s)read_first_from_redis(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			}
 		}
 		return str;
@@ -569,7 +559,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (json[strlen(json) - 1] != '}')
 		{
-			log_error3("(%s)write_json_to_redis(%s)时(%s)不是JSON", redis_ip.c_str(), key, json);
+			log_error3("(%s)write_json_to_redis(%s)时(%s)不是JSON", redis_ip(), key, json);
 		}
 		else
 		{
@@ -590,7 +580,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip(), find_key, m_redis_cmd->result_error());
 		}
 		return keys;
 	}
@@ -601,7 +591,7 @@ namespace agebull
 		//m_redis_cmd->clear();
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip(), find_key, m_redis_cmd->result_error());
 			return values;
 		}
 		if (!keys.empty())
@@ -611,7 +601,7 @@ namespace agebull
 				acl::string* str = new acl::string();
 				if (get(key, *str) == false)
 				{
-					log_error3("(%s)get(%s)时发生错误(%s)", redis_ip.c_str(), key.c_str(), m_redis_cmd->result_error());
+					log_error3("(%s)get(%s)时发生错误(%s)", redis_ip(), key.c_str(), m_redis_cmd->result_error());
 					continue;
 				}
 				values.emplace_back(str);
@@ -625,7 +615,7 @@ namespace agebull
 		vector<acl::string> keys;
 		if (m_redis_cmd->keys_pattern(find_key, &keys) < 0)
 		{
-			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip.c_str(), find_key, m_redis_cmd->result_error());
+			log_error3("(%s)keys_pattern(%s)时发生错误(%s)", redis_ip(), find_key, m_redis_cmd->result_error());
 		}
 		if (!keys.empty())
 		{
@@ -634,7 +624,7 @@ namespace agebull
 				m_redis_cmd->clear();
 				if (m_redis_cmd->del(key) < 0)
 				{
-					log_error3("(%s)del(%s)时发生错误(%s)", redis_ip.c_str(), key.c_str(), m_redis_cmd->result_error());
+					log_error3("(%s)del(%s)时发生错误(%s)", redis_ip(), key.c_str(), m_redis_cmd->result_error());
 				}
 			}
 		}
@@ -646,7 +636,7 @@ namespace agebull
 		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (!m_redis_cmd->incr(key, &id))
 		{
-			log_error3("(%s)incr(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)incr(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			id = 0LL;
 		}
 		return static_cast<size_t>(id);
@@ -660,7 +650,7 @@ namespace agebull
 		const int re = m_redis_cmd->setnx(key, vl);
 		if (re < 0)
 		{
-			log_error3("(%s)setnx(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)setnx(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 		}
 		if (re == 1)
 		{
@@ -673,7 +663,7 @@ namespace agebull
 		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (m_redis_cmd->del(key) < 0)
 		{
-			log_error3("(%s)del(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)del(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 		}
 		return true;
 	}
@@ -683,7 +673,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (!m_redis_cmd->hget(key, sub_key, vl))
 		{
-			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug3(DEBUG_BASE, 5, "redis->hget %s:%s(%s)", key, sub_key, vl.c_str());
@@ -696,7 +686,7 @@ namespace agebull
 		acl::string vl2;
 		if (m_redis_cmd->hset(key, sub_key, vl) < 0)
 		{
-			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug3(DEBUG_BASE, 5, "redis->hset %s:%s(%s)", key, sub_key, vl);
@@ -707,7 +697,7 @@ namespace agebull
 		m_redis_cmd->clear();
 		if (!m_redis_cmd->hgetall(key, vl))
 		{
-			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)get_hash(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug1(DEBUG_BASE, 5, "redis->hget %s", key);
@@ -736,7 +726,7 @@ namespace agebull
 		acl::string vl2;
 		if (m_redis_cmd->hdel(key, sub_key) < 0)
 		{
-			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip.c_str(), key, m_redis_cmd->result_error());
+			log_error3("(%s)set_hash(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
 			return false;
 		}
 		log_debug2(DEBUG_BASE, 5, "redis->hdel %s:%s", key, sub_key);

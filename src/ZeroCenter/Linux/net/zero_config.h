@@ -551,7 +551,7 @@ namespace agebull
 				boost::lock_guard<boost::mutex> guard(mutex_);
 				for (auto & work : workers)
 				{
-					if (work.second.check() < 0)
+					if (work.second.check() < 5)
 					{
 						workers.erase(work.first);
 					}
@@ -788,26 +788,34 @@ namespace agebull
 			/**
 			* \brief 开机正常日志
 			*/
-			void log_runing()
+			void runing()
 			{
 				log("runing");
 				station_state_ = station_state::Run;
 			}
 			/**
-			* \brief 关机日志
+			* \brief 正在关机日志
 			*/
-			void log_closing()
+			void closing()
 			{
-				log("closed");
 				station_state_ = station_state::Closing;
+				log("closing...");
+			}
+			/**
+			* \brief 重启日志
+			*/
+			void restart()
+			{
+				log("restart");
+				station_state_ = station_state::ReStart;
 			}
 			/**
 			* \brief 关机日志
 			*/
-			void log_closed()
+			void closed()
 			{
-				log("closed");
 				station_state_ = station_state::Closed;
+				log("closed");
 			}
 			/**
 			* \brief 日志

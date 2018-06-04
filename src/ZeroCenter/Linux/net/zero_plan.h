@@ -3,7 +3,7 @@
 #define _ZERO_PLAN_H_
 #include "../stdinc.h"
 #include "../sharp_char.h"
-#include "../cfg/config.h"
+#include "../cfg/json_config.h"
 
 namespace agebull
 {

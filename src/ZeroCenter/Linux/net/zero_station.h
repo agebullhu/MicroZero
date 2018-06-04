@@ -11,6 +11,15 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
+		*\brief 广播内容(异步)
+		*/
+		bool monitor_async(string publiher, string state, string content);
+		/**
+		*\brief 广播内容(同步)
+		*/
+		bool monitor_sync(string publiher, string state, string content);
+
+		/**
 		* \brief 表示一个基于ZMQ的网络站点
 		*/
 		class zero_station
@@ -29,6 +38,12 @@ namespace agebull
 			*\brief 节点数量
 			*/
 			int poll_count_;
+		protected:
+			/**
+			* \brief 子任务同步结束使用的信号量
+			*/
+			boost::interprocess::interprocess_semaphore task_semaphore_;
+		private:
 			/**
 			* \brief 实例队列访问锁
 			*/
@@ -37,18 +52,16 @@ namespace agebull
 			* \brief 实例队列访问锁
 			*/
 			boost::mutex mutex_;
+		protected:
 			/**
 			* \brief 站点名称
 			*/
 			string station_name_;
+		private:
 			/**
 			* \brief 站点类型
 			*/
 			int station_type_;
-			/**
-			* \brief 任务计划轮询状态
-			*/
-			bool in_plan_poll_;
 			/**
 			* \brief 状态信号量
 			*/
@@ -74,11 +87,18 @@ namespace agebull
 			* \brief 工作句柄
 			*/
 			ZMQ_HANDLE worker_out_socket_tcp_;
+			/**
+			* \brief 工作句柄
+			*/
+			ZMQ_HANDLE worker_out_socket_ipc_;
 		protected:
 			/**
 			* \brief 实例队列访问锁
 			*/
 			static boost::mutex results_mutex_;
+			/**
+			* \brief 所有返回值
+			*/
 			static map<int64, vector<sharp_char>> results;
 			/**
 			* \brief 当前ZMQ执行状态
@@ -221,16 +241,17 @@ namespace agebull
 			/**
 			* \brief 能否继续工作
 			*/
-			virtual bool can_do() const
+			bool can_do() const
 			{
-				return (config_->station_state_ == station_state::Run || config_->station_state_ == station_state::Pause) && get_net_state() ==
-					NET_STATE_RUNING;
+				return (config_->station_state_ == station_state::Run ||
+					config_->station_state_ == station_state::Pause) &&
+					get_net_state() == NET_STATE_RUNING;
 			}
 
 			/**
 			* \brief 检查是否暂停
 			*/
-			bool check_pause() 
+			bool check_pause()
 			{
 				if (config_->station_state_ == station_state::Pause)
 				{
@@ -267,17 +288,15 @@ namespace agebull
 			* \brief 结束
 			*/
 			virtual bool close(bool waiting);
-		protected:
-
+		private:
 			/**
 			*\brief 发送消息
 			*/
-			bool send_response(vector<sharp_char>& datas, size_t first_index = 0)
+			bool send_response(ZMQ_HANDLE socket, const  vector<sharp_char>& datas, const  size_t first_index = 0)
 			{
-				boost::lock_guard<boost::mutex> guard(send_mutex_);
-				config_->worker_out++;
-				zmq_state_ = send(worker_out_socket_tcp_, datas, first_index);
-
+				if (socket == nullptr)
+					return false;
+				zmq_state_ = socket_ex::send(socket, datas, first_index);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				config_->worker_err++;
@@ -285,15 +304,32 @@ namespace agebull
 				log_error2("send_response error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
+		protected:
+			/**
+			*\brief 发送消息
+			*/
+			bool send_response(const vector<sharp_char>& datas, const  size_t first_index = 0)
+			{
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
+				config_->worker_out++;
+				ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
+#pragma omp parallel  for schedule(static,2)
+				for (int i = 0; i < 2; i++)
+				{
+					send_response(socket[i], datas, first_index);
+				}
+				return zmq_state_ == zmq_socket_state::Succeed;
+			}
 			/**
 			* \brief 发送
 			*/
 			bool send_request_result(vector<sharp_char>& ls)
 			{
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
+
 				config_->request_out++;
 				void* socket = ls[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_;
-				zmq_state_ = send(socket, ls);
+				zmq_state_ = socket_ex::send(socket, ls);
 
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
@@ -309,7 +345,7 @@ namespace agebull
 			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
 			{
 				++config_->request_out;
-				zmq_state_ = send_status(socket, addr, code, global_id, reqId, msg);
+				zmq_state_ = socket_ex::send_status(socket, addr, code, global_id, reqId, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -324,7 +360,7 @@ namespace agebull
 			{
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				++config_->request_out;
-				zmq_state_ = send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
+				zmq_state_ = socket_ex::send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -354,7 +390,6 @@ namespace agebull
 			virtual void job_end(vector<sharp_char>& list)
 			{
 			}
-		private:
 			/**
 			* \brief 计划轮询
 			*/
@@ -362,6 +397,7 @@ namespace agebull
 			{
 				station->plan_poll_();
 			}
+		private:
 			/**
 			* \brief 保存计划
 			*/
@@ -384,7 +420,7 @@ namespace agebull
 		inline void zero_station::request(ZMQ_HANDLE socket, bool inner)
 		{
 			vector<sharp_char> list;
-			zmq_state_ = recv(socket, list);
+			zmq_state_ = socket_ex::recv(socket, list);
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
 				config_->log(state_str(zmq_state_));
@@ -432,7 +468,7 @@ namespace agebull
 		inline void zero_station::response()
 		{
 			vector<sharp_char> list;
-			zmq_state_ = recv(worker_in_socket_tcp_, list);
+			zmq_state_ = socket_ex::recv(worker_in_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
 			{
 				config_->worker_err++;
@@ -441,7 +477,7 @@ namespace agebull
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
 				config_->worker_err++;
-				config_->error("接收结果失败",state_str(zmq_state_));
+				config_->error("接收结果失败", state_str(zmq_state_));
 				return;
 			}
 			job_end(list);

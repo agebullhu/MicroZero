@@ -91,7 +91,7 @@ namespace agebull
 		*/
 		char station_dispatcher::exec_command(const char* command, vector<sharp_char>& arguments, string& json)
 		{
-			const int idx = strmatchi(10, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall", "exit");
+			const int idx = strmatchi(10, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall");
 			if (idx <= 0)
 				return (ZERO_STATUS_NO_SUPPORT_ID);
 			switch (idx)
@@ -139,11 +139,6 @@ namespace agebull
 				if (arguments.empty())
 					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID;
 				return uninstall(arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID;
-			}
-			case 8:
-			{
-				boost::thread(boost::bind(distory_net_command));
-				return ZERO_STATUS_OK_ID;
 			}
 			default:
 				return ZERO_STATUS_NO_SUPPORT_ID;
@@ -421,12 +416,14 @@ namespace agebull
 			{
 				instance = nullptr;
 				config.log_failed("join warehouse");
+				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			if (!station->initialize())
 			{
 				instance = nullptr;
 				config.log_failed("initialize");
+				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			boost::thread(boost::bind(monitor_poll));
@@ -436,18 +433,21 @@ namespace agebull
 			station->destruct();
 			if (get_net_state() == NET_STATE_RUNING)
 			{
-				config.station_state_ = station_state::ReStart;
+				config.restart();
 				run(station->get_config_ptr());
 			}
 			else
 			{
-				while(config.station_state_ != station_state::Destroy)
-					thread_sleep(10);
-				config.log_closed();
+				config.closed();
 			}
 			set_command_thread_end(config.station_name_.c_str());
 		}
-
+#define check_cando(can,ins)\
+	if (get_net_state() >= NET_STATE_CLOSING || !ins->can_do())\
+	{\
+		can = false;\
+		break;\
+	}
 		/**
 		* \brief 监控轮询
 		*/
@@ -455,30 +455,39 @@ namespace agebull
 		{
 			zero_config& config = instance->get_config();
 			config.log("monitor poll start");
-			while (instance != nullptr &&  get_net_state() <= NET_STATE_CLOSED)
+			instance->task_semaphore_.post();
+			while (get_net_state() < NET_STATE_DISTORY)
 			{
-				thread_sleep(1000);
-				map<string, string> cfgs;//复制避免锁定时间过长
-				station_warehouse::foreach_configs([&cfgs](shared_ptr<zero_config>& config)
+				bool cando = true;
+				for (int i = 0; i < 10; i++)
 				{
-					config->check_works();
-					cfgs.insert(make_pair(config->station_name_, config->to_json(true).c_str()));
+					thread_sleep(100);
+					check_cando(cando, instance)
+				}
+				if (!cando)
+					break;
+				vector<string> cfgs;//复制避免锁定时间过长
+				vector<string> names;//复制避免锁定时间过长
+				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<zero_config>& cfg)
+				{
+					cfg->check_works();
+					names.emplace_back(cfg->station_name_);
+					cfgs.emplace_back(cfg->to_json(true).c_str());
 				});
 				monitor("SystemManage", "worker_sound_off", "*");
-				for (auto& cfg : cfgs)
+
+				for (size_t i = 0; i < names.size(); i++)
 				{
-					monitor(cfg.first, "station_state", cfg.second);
+					monitor(names[i], "station_state", cfgs[i]);
+					check_cando(cando, instance)
 				}
 			}
+			station_warehouse::set_close_info();
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				station_warehouse::foreach_configs([](shared_ptr<zero_config>& config)
-				{
-					config->station_state_ = station_state::Closed;
-					monitor(config->station_name_, "station_state", config->to_json(true).c_str());
-				});
-				station_warehouse::save_configs();
-				config.station_state_ = station_state::Destroy;
-			}
+				monitor(cfg->station_name_, "station_state", cfg->to_json(true).c_str());
+			});
+			instance->task_semaphore_.post();
 		}
 	}
 }

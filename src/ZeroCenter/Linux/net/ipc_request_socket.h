@@ -2,7 +2,6 @@
 #ifndef _IPC_REQUEST_SOCKET_H
 #define _IPC_REQUEST_SOCKET_H
 #include "net_default.h"
-#include "net_command.h"
 #include "zero_config.h"
 namespace agebull
 {
@@ -13,28 +12,23 @@ namespace agebull
 		*/
 		template<int zmq_type = ZMQ_REQ> class ipc_request_socket
 		{
-			char address_[MAX_PATH];
 			ZMQ_HANDLE socket_;
 			zmq_socket_state state_;
-#ifdef TIMER
 			char station_[MAX_PATH];
-#endif
+			char caller_[MAX_PATH];
 		public:
 			/**
 			* \brief 构造
-			* \param name
+			* \param caller
 			* \param station
 			*/
-			ipc_request_socket(const char* name, const char* station) : state_(zmq_socket_state::Succeed)
+			ipc_request_socket(const char* caller, const char* station) : state_(zmq_socket_state::Succeed)
 			{
-				if (false)//config::get_global_bool("use_ipc_protocol")
-					sprintf(address_, "ipc:///tmp/zero_%s", station);
-				else
-					sprintf(address_, "inproc://%s", station);
-#ifdef TIMER
 				strcpy(station_, station);
-#endif
-				socket_ = create_req_socket(address_, ZMQ_REQ, name);
+				strcpy(caller_, caller);
+				make_ipc_address(address, station, "req");
+				make_zmq_identity(identity, station, caller);
+				socket_ = socket_ex::create_req_socket(address, ZMQ_REQ, identity);
 			}
 
 
@@ -43,7 +37,8 @@ namespace agebull
 			*/
 			~ipc_request_socket()
 			{
-				zmq_disconnect(socket_, address_);
+				make_ipc_address(address, station_, caller_);
+				zmq_disconnect(socket_, address);
 				zmq_close(socket_);
 			}
 			/**
@@ -58,7 +53,7 @@ namespace agebull
 			*/
 			zmq_socket_state recv(sharp_char& data, int flag = 0) const
 			{
-				return agebull::zmq_net::recv(socket_, data, flag);
+				return socket_ex::recv(socket_, data, flag);
 			}
 
 			/**
@@ -66,7 +61,7 @@ namespace agebull
 			*/
 			zmq_socket_state recv(vector<sharp_char>& ls, int flag = 0) const
 			{
-				return agebull::zmq_net::recv(socket_, ls, flag);
+				return socket_ex::recv(socket_, ls, flag);
 			}
 
 			/**
@@ -74,7 +69,7 @@ namespace agebull
 			*/
 			zmq_socket_state send_late(const char* string) const
 			{
-				return agebull::zmq_net::send_late(socket_, string);
+				return socket_ex::send_late(socket_, string);
 			}
 
 			/**
@@ -82,21 +77,21 @@ namespace agebull
 			*/
 			zmq_socket_state send_more(const char* string) const
 			{
-				return agebull::zmq_net::send_more(socket_, string);
+				return socket_ex::send_more(socket_, string);
 			}
 			/**
 			* \brief 发送
 			*/
 			zmq_socket_state send(vector<sharp_char>& ls) const
 			{
-				return agebull::zmq_net::send(socket_, ls);
+				return socket_ex::send(socket_, ls);
 			}
 			/**
 			* \brief 发送
 			*/
 			zmq_socket_state send(vector<string>& ls) const
 			{
-				return agebull::zmq_net::send(socket_, ls);
+				return socket_ex::send(socket_, ls);
 			}
 			/**
 			* \brief 进行一次请求
@@ -133,7 +128,7 @@ namespace agebull
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 				return state_ == zmq_socket_state::Succeed;
-					}
+			}
 			/**
 			* \brief 进行一次请求
 			* @return 如果返回为false,请检查state.
@@ -169,9 +164,9 @@ namespace agebull
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 				return state_ == zmq_socket_state::Succeed;
-					}
-				};
-
 			}
-				}
+		};
+
+	}
+}
 #endif //!_IPC_REQUEST_SOCKET_H
