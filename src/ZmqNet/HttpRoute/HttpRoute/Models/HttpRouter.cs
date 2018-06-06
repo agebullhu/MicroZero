@@ -84,7 +84,7 @@ namespace ZeroNet.Http.Route
             if (!FindHost() || Data.RouteHost.Failed)
             {
                 Data.Status = RouteStatus.FormalError;
-                Data.ResultMessage = RouteRuntime.NoFindJson;
+                Data.ResultMessage = ApiResult.NoFindJson;
                 return;
             }
             // 2 安全检查
@@ -98,7 +98,19 @@ namespace ZeroNet.Http.Route
                 return;
             }
             // 4 远程调用
-            Data.ResultMessage = Data.RouteHost.ByZero ? CallZero().Result : CallHttp().Result;
+            if (Data.RouteHost.ByZero)
+            {
+                if (!ZeroApplication.IsRun)
+                {
+                    Data.ResultMessage = ApiResult.NoReadyJson;
+                }
+                else
+                {
+                    Data.ResultMessage = CallZero().Result;
+                }
+            }
+            else
+                Data.ResultMessage = CallHttp().Result;
             // 5 结果检查
             //if (!CheckResult(Data))
             //    Data.Status = RouteStatus.RemoteError;
@@ -114,7 +126,7 @@ namespace ZeroNet.Http.Route
             if (words.Length <= 1)
             {
                 Data.Status = RouteStatus.FormalError;
-                Data.ResultMessage = RouteRuntime.DenyAccessJson;
+                Data.ResultMessage = ApiResult.DenyAccessJson;
                 return false;
             }
             Data.HostName = words[0];
@@ -160,7 +172,7 @@ namespace ZeroNet.Http.Route
             if (Data.Redirect)
                 return;
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = RouteRuntime.RemoteEmptyErrorJson), Encoding.UTF8);
+            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResult.RemoteEmptyErrorJson), Encoding.UTF8);
         }
 
         #endregion
@@ -293,7 +305,7 @@ namespace ZeroNet.Http.Route
             {
                 LogRecorder.Exception(ex);
                 LogRecorder.MonitorTrace($"发生异常：{ex.Message}");
-                Data.ResultMessage = RouteRuntime.NetworkErrorJson;
+                Data.ResultMessage = ApiResult.NetworkErrorJson;
                 Data.Status = RouteStatus.RemoteError;
             }
             finally

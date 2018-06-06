@@ -101,7 +101,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     当前调用上下文
         /// </summary>
-        public static CallContext RequestContext => Current._requestContext;
+        public static RequestContext RequestContext => Current._requestContext;
 
         /// <summary>
         ///     当前调用的客户信息
@@ -120,7 +120,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     当前调用上下文
         /// </summary>
-        [JsonProperty("r")] private CallContext _requestContext;
+        [JsonProperty("r")] private RequestContext _requestContext;
 
         /// <summary>
         ///     当前调用上下文
@@ -131,7 +131,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     当前调用上下文
         /// </summary>
-        public CallContext Request => _requestContext ?? (_requestContext = new CallContext());
+        public RequestContext Request => _requestContext ?? (_requestContext = new RequestContext());
 
         #endregion
 
@@ -142,7 +142,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private ApiContext()
         {
-            _requestContext = new CallContext($"{MyRealName}-{RandomOperate.Generate(8)}", MyServiceKey);
+            _requestContext = new RequestContext($"{MyRealName}-{RandomOperate.Generate(8)}", MyServiceKey);
             _user = LoginUserInfo.CreateAnymouse("<error>", "<error>", "<error>");
         }
 

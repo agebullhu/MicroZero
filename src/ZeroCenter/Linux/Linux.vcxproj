@@ -78,6 +78,7 @@
     <ClCompile Include="net\station_dispatcher.cpp" />
     <ClCompile Include="net\station_warehouse.cpp" />
     <ClCompile Include="net\broadcasting_station.cpp" />
+    <ClCompile Include="net\zero_config.cpp" />
     <ClCompile Include="net\zero_station.cpp" />
     <ClCompile Include="net\zmq_extend.cpp" />
     <ClCompile Include="redis\redis.cpp" />

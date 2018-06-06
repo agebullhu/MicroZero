@@ -38,16 +38,21 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 心跳加入
         /// </summary>
-        public const byte HeartJoin = (byte)'@';
+        public const byte HeartJoin = (byte)'J';
+
+        /// <summary>
+        /// 心跳加入
+        /// </summary>
+        public const byte HeartReady = (byte)'R';
 
         /// <summary>
         /// 心跳进行
         /// </summary>
-        public const byte HeartPitpat = (byte)'$';
+        public const byte HeartPitpat = (byte)'P';
 
         /// <summary>
         /// 心跳退出
         /// </summary>
-        public const byte HeartLeft = (byte)'!';
+        public const byte HeartLeft = (byte)'L';
     }
 }

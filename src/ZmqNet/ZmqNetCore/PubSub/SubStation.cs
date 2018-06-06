@@ -71,9 +71,10 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            var subscriber = ZeroHelper.CreateSubscriberSocket(Config.WorkerCallAddress, ZeroApplication.Config.Identity, "");
+            var subscriber = ZeroHelper.CreateSubscriberSocket(Config.SubAddress,Identity, Subscribe);
             var sockets = new[] { subscriber };
             var pollItems = new[] { ZPollItem.CreateReceiver() };
+            SystemManager.HeartReady(StationName, RealName);
             while (!token.IsCancellationRequested && CanRun)
             {
                 if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
@@ -93,10 +94,11 @@ namespace Agebull.ZeroNet.PubSub
                     messages[0].Dispose();
                     continue;
                 }
-                if (!messages[0].Subscribe(out var item))
+                if (!messages[0].Unpack(out var item))
                     continue;
                 Items.Push(item);
             }
+            SystemManager.HeartLeft(StationName, RealName);
             subscriber.CloseSocket();
             return true;
         }
@@ -118,8 +120,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteException("Pub", $"{ StationName}:{Name}", e);
+                    ZeroTrace.WriteException(StationName,e, Name);
                     Thread.Sleep(5);
                 }
                 finally

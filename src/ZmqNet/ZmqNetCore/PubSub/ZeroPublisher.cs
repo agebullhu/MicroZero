@@ -75,32 +75,35 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 系统启动时调用
         /// </summary>
-        void IZeroObject.OnZeroStart()
+        bool IZeroObject.OnZeroStart()
         {
-            SendTaskCancel = new CancellationTokenSource();
-            //取消时执行回调
-            SendTaskCancel.Token.Register(SendTaskCancel.Dispose);
-            Task.Factory.StartNew(SendTask, SendTaskCancel.Token);
+            using (OnceScope.CreateScope(this))
+            {
+                State = StationState.Start;
+                SendTaskCancel = new CancellationTokenSource();
+                Task.Factory.StartNew(SendTask, SendTaskCancel.Token);
+            }
+            return true;
         }
 
         /// <summary>
         /// 系统关闭时调用
         /// </summary>
-        void IZeroObject.OnZeroEnd()
+        bool IZeroObject.OnZeroEnd()
         {
             if (SendTaskCancel != null)
             {
                 ZeroTrace.WriteInfo(Name, "closing....");
                 State = StationState.Closing;
                 SendTaskCancel.Cancel();
-                Monitor.Enter(this);
-                SendTaskCancel = null;
-                Monitor.Exit(this);
+                using (OnceScope.CreateScope(this))
+                {
+                    SendTaskCancel.Dispose();
+                    SendTaskCancel = null;
+                }
             }
-            else
-            {
-                State = StationState.Closed;
-            }
+            State = StationState.Closed;
+            return true;
         }
 
         void IZeroObject.OnZeroDistory()
@@ -172,6 +175,20 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public ulong PubCount { get; private set; }
 
+
+        private void OnTaskStart()
+        {
+            ZeroTrace.WriteInfo(Name, "Run");
+            State = StationState.Run;
+            ZeroApplication.OnObjectActive();
+        }
+        private void OnTaskEnd()
+        {
+            State = StationState.Closed;
+            ZeroTrace.WriteInfo(Name, "Closed");
+            ZeroApplication.OnObjectClose();
+        }
+
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
@@ -179,24 +196,19 @@ namespace Agebull.ZeroNet.PubSub
         {
             CancellationToken token = (CancellationToken)objToken;
 
-            State = StationState.Run;
-            ZeroTrace.WriteInfo(Name, "send task run...");
-            Monitor.Enter(this);
-            try
+            using (OnceScope.CreateScope(this, OnTaskStart, OnTaskEnd))
             {
                 while (!token.IsCancellationRequested && ZeroApplication.CanDo && State == StationState.Run)
                 {
-                    if (!Items.StartProcess(out var item, 100))
+                    if (!Items.StartProcess(out var item))
                         continue;
+                    if (token.IsCancellationRequested)
+                        break;
                     var socket = ZeroConnectionPool.GetSocket(item.Station);
                     if (socket == null)
                     {
-                        Thread.Sleep(100);
                         continue;
                     }
-
-                    if (token.IsCancellationRequested)
-                        break;
                     try
                     {
                         if (!socket.Publish(item))
@@ -207,27 +219,19 @@ namespace Agebull.ZeroNet.PubSub
                         else
                         {
                             PubCount++;
+                            Items.EndProcess();
                         }
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(Name, "Exception", $"{item.Station}-{item.Title}", e);
+                        ZeroTrace.WriteError(Name,e, $"{item.Station}-{item.Title}");
                         ZeroConnectionPool.Close(ref socket);
                     }
                     finally
                     {
                         ZeroConnectionPool.Free(socket);
                     }
-
-                    Items.EndProcess();
                 }
-            }
-            finally
-            {
-                State = StationState.Closed;
-                ZeroTrace.WriteInfo(Name, "send task close...");
-                Monitor.Exit(this);
             }
         }
 

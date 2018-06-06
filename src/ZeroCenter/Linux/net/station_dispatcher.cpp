@@ -92,8 +92,6 @@ namespace agebull
 		char station_dispatcher::exec_command(const char* command, vector<sharp_char>& arguments, string& json)
 		{
 			const int idx = strmatchi(10, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall");
-			if (idx <= 0)
-				return (ZERO_STATUS_NO_SUPPORT_ID);
 			switch (idx)
 			{
 			case 0:
@@ -107,6 +105,7 @@ namespace agebull
 				//arguments.erase(arguments.begin());
 
 				//return call_station(host, arguments);
+				return ZERO_STATUS_NO_SUPPORT_ID;
 			}
 			case 1:
 			{
@@ -176,25 +175,27 @@ namespace agebull
 		*/
 		bool station_dispatcher::heartbeat(char cmd, vector<sharp_char> list)
 		{
-			auto config = station_warehouse::get_config(list[3], false);
+			auto config = station_warehouse::get_config(list[2], false);
 			if (config == nullptr)
 				return false;
 			switch (cmd)
 			{
-			case ZERO_COMMAND_HEART_JOIN:
-				config->worker_join(*list[4], *list[5]);
+			case ZERO_BYTE_COMMAND_HEART_JOIN:
+				config->worker_join(*list[3], *list[4]);
 				return true;
-			case ZERO_COMMAND_HEART_PITPAT:
-				config->worker_heartbeat(*list[4]);
+			case ZERO_BYTE_COMMAND_HEART_READY:
+				config->worker_ready(*list[3]);
 				return true;
-			case ZERO_COMMAND_HEART_LEFT:
-				config->worker_left(*list[4]);
+			case ZERO_BYTE_COMMAND_HEART_PITPAT:
+				config->worker_heartbeat(*list[3]);
+				return true;
+			case ZERO_BYTE_COMMAND_HEART_LEFT:
+				config->worker_left(*list[3]);
 				return true;
 			default:
 				return false;
 			}
 		}
-
 		/**
 		* 当远程调用进入时的处理
 		*/
@@ -356,73 +357,78 @@ namespace agebull
 		*/
 		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
 		{
-			char* const buf = list[2].get_buffer();
+			char* const buf = list[1].get_buffer();
 			switch (buf[1])
 			{
-			case ZERO_COMMAND_PING:
+			case ZERO_BYTE_COMMAND_PING:
 				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID);
 				return;
-			case ZERO_COMMAND_HEART_LEFT:
-			case ZERO_COMMAND_HEART_JOIN:
-			case ZERO_COMMAND_HEART_PITPAT:
+			case ZERO_BYTE_COMMAND_HEART_JOIN:
+			case ZERO_BYTE_COMMAND_HEART_READY:
+			case ZERO_BYTE_COMMAND_HEART_PITPAT:
+			case ZERO_BYTE_COMMAND_HEART_LEFT:
 				const bool success = heartbeat(buf[1], list);
 				send_request_status(socket, *list[0], success ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID);
 				return;
 			}
 			const char* cmd = nullptr;
-			size_t rqid_index = 0, glid = 0;
+			size_t rqid_index = 0, glid_index = 0, reqer_index=0;
 			vector<sharp_char> arg;
-			const auto frame_size = list[2].size();
+			const auto frame_size = list[1].size();
 			for (size_t idx = 2; idx <= frame_size; idx++)
 			{
 				switch (buf[idx])
 				{
 				case ZERO_FRAME_COMMAND:
-					cmd = *list[idx + 1];
+					cmd = *list[idx];
 					break;
 				case ZERO_FRAME_REQUEST_ID:
-					rqid_index = idx + 1;
+					rqid_index = idx;
+					break;
+				case ZERO_FRAME_REQUESTER:
+					reqer_index = idx;
 					break;
 				case ZERO_FRAME_ARG:
-					arg.emplace_back(list[idx + 1]);
+					arg.emplace_back(list[idx]);
 					break;
 				case ZERO_FRAME_GLOBAL_ID:
-					glid = idx + 1;
+					glid_index = idx;
 					break;
 				}
 			}
-			const sharp_char global_id = glid == 0 ? nullptr : list[glid];
 			if (cmd == nullptr)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid_index == 0 ? nullptr : *list[rqid_index], "need command frame");
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
+					glid_index == 0 ? nullptr : *list[glid_index],
+					rqid_index == 0 ? nullptr : *list[rqid_index], 
+					reqer_index == 0 ? nullptr : *list[reqer_index]);
 				return;
 			}
 			string json;
 			const char code = exec_command(cmd, arg, json);
 
-			send_request_status(socket, *list[0], code, *global_id, rqid_index == 0 ? nullptr : *list[rqid_index],
-				code == ZERO_STATUS_OK_ID
-				? json.length() > 0
-				? json.c_str()
-				: nullptr
-				: nullptr);
+			send_request_status(socket, *list[0], code,
+				glid_index == 0 ? nullptr : *list[glid_index],
+				rqid_index == 0 ? nullptr : *list[rqid_index],
+				reqer_index == 0 ? nullptr : *list[reqer_index],
+				code == ZERO_STATUS_OK_ID && json.length() > 0 ? json.c_str() : nullptr);
 		}
 
 		void station_dispatcher::launch(shared_ptr<station_dispatcher>& station)
 		{
 			zero_config& config = station->get_config();
-			config.log_start();
+			config.start();
 			if (!station_warehouse::join(station.get()))
 			{
 				instance = nullptr;
-				config.log_failed("join warehouse");
+				config.failed("join warehouse");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			if (!station->initialize())
 			{
 				instance = nullptr;
-				config.log_failed("initialize");
+				config.failed("initialize");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
@@ -462,7 +468,11 @@ namespace agebull
 				for (int i = 0; i < 10; i++)
 				{
 					thread_sleep(100);
-					check_cando(cando, instance)
+					if (get_net_state() >= NET_STATE_CLOSING || !instance->can_do())
+					{
+						cando = false; 
+						break; 
+					}
 				}
 				if (!cando)
 					break;

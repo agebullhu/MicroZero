@@ -14,7 +14,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         /// <param name="type">站点类型</param>
         /// <param name="isService">是否服务</param>
-        protected ZeroStation(int type,bool isService)
+        protected ZeroStation(int type, bool isService)
         {
             StationType = type;
             IsService = isService;
@@ -23,7 +23,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 是否服务
         /// </summary>
-        public bool IsService {get;}
+        public bool IsService { get; }
         /// <summary>
         /// 调度器
         /// </summary>
@@ -83,28 +83,114 @@ namespace Agebull.ZeroNet.Core
             set => Interlocked.Exchange(ref _state, value);
         }
         /// <summary>
+        /// 取消标记
+        /// </summary>
+        private CancellationTokenSource RunTaskCancel;
+        /// <summary>
         /// 能不能运行
         /// </summary>
         public bool CanRun => ZeroApplication.CanDo && State == StationState.Run;
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected virtual void Initialize()
+        {
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected virtual bool OnNofindConfig()
+        {
+            string type;
+            switch (this.StationType)
+            {
+                case StationTypePublish:
+                    type = "pub";
+                    break;
+                case StationTypeApi:
+                    type = "api";
+                    break;
+                default:
+                    type = null;
+                    break;
+            }
+            ZeroTrace.WriteError(StationName, "No find,try install ...");
+            var result = SystemManager.CallCommand("install", type, StationName, StationName);
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                return false;
+            ZeroTrace.WriteError(StationName, "Is install ,try start it ...");
+            result = SystemManager.CallCommand("start", StationName);
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                return false;
+            Config = SystemManager.LoadConfig(StationName, out _);
+            if (Config == null)
+                return false;
+            Config.State = ZeroCenterState.Run;
+            ZeroTrace.WriteError(StationName, "successfully");
+            return true;
+        }
+
+        /// <summary>
+        /// 开始
+        /// </summary>
+        /// <returns></returns>
+        bool Start()
+        {
+            using (OnceScope.CreateScope(this))
+            {
+                State = StationState.Start;
+                //取配置
+                Config = ZeroApplication.Config[StationName];
+                if (Config == null && !OnNofindConfig())
+                {
+                    ZeroApplication.OnObjectFailed();
+                    ZeroTrace.WriteError(StationName, "No config");
+                    State = StationState.ConfigError;
+                    return false;
+                }
+                if (Config.State == ZeroCenterState.Uninstall)
+                {
+                    ZeroApplication.OnObjectFailed();
+                    ZeroTrace.WriteError(StationName, "Uninstall");
+                    State = StationState.ConfigError;
+                    return false;
+                }
+                ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
+                //名称初始化
+                RealName = ZeroIdentityHelper.CreateRealName(IsService, Config?.ShortName ?? StationName, Name);
+                Identity = RealName.ToAsciiBytes();
+                SystemManager.HeartJoin(Config.StationName, RealName);
+                //扩展动作
+                OnStart();
+                //执行主任务
+                RunTaskCancel = new CancellationTokenSource();
+                Task.Factory.StartNew(Run, RunTaskCancel.Token);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected virtual void OnStart()
+        {
+        }
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
         void Run(object objToken)
         {
-            Monitor.Enter(this);
-            try
+            CancellationToken token = (CancellationToken)objToken;
+            using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
-                CancellationToken token = (CancellationToken)objToken;
-                ZeroTrace.WriteInfo(StationName, "Runing");
-                State = StationState.Run;
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (RunInner(token))
                     State = StationState.Closed;
                 else
                     State = StationState.Failed;
-                SystemManager.HeartLeft(Config.StationName, RealName);
-                OnRunStop();
                 if (ZeroApplication.CanDo && State == StationState.Failed)
                 {
                     //自动重启
@@ -115,10 +201,6 @@ namespace Agebull.ZeroNet.Core
                 {
                     ZeroTrace.WriteInfo(StationName, "Stop");
                 }
-            }
-            finally
-            {
-                Monitor.Exit(this);
             }
         }
         /// <summary>
@@ -131,56 +213,46 @@ namespace Agebull.ZeroNet.Core
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
+        void OnRun()
+        {
+            State = StationState.Run;
+            ZeroTrace.WriteInfo(StationName, "Run");
+            ZeroApplication.OnObjectActive();
+        }
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        /// <returns></returns>
+        void OnStop()
+        {
+            OnRunStop();
+            ZeroTrace.WriteInfo(StationName, "Closed");
+            ZeroApplication.OnObjectClose();
+        }
+
+        /// <summary>
+        /// 关闭时的处理
+        /// </summary>
+        /// <returns></returns>
         protected virtual void OnRunStop()
         {
         }
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected virtual void Initialize()
+        bool Close()
         {
-        }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected virtual void OnStart()
-        {
-        }
-        private CancellationTokenSource RunTaskCancel;
-        void Start()
-        {
-            if (State >= StationState.Start)
-                return;
-            State = StationState.Start;
-            Config = ZeroApplication.Config[StationName];
-            if (Config == null || Config.State == ZeroCenterState.Uninstall)
+            SystemManager.HeartLeft(StationName, RealName);
+            if (RunTaskCancel != null)
             {
-                ZeroTrace.WriteError(StationName, "No config");
-                State = StationState.ConfigError;
-                return;
+                ZeroTrace.WriteInfo(StationName, "closing....");
+                State = StationState.Closing;
+                RunTaskCancel.Cancel();
+                using (OnceScope.CreateScope(this))
+                {
+                    RunTaskCancel.Dispose();
+                    RunTaskCancel = null;
+                }
             }
-            RealName = ZeroIdentityHelper.CreateRealName(IsService, Config?.ShortName ?? StationName, Name);
-            Identity = RealName.ToAsciiBytes();
-            ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
-            OnStart();
-            RunTaskCancel = new CancellationTokenSource();
-            //取消时执行回调
-            RunTaskCancel.Token.Register(RunTaskCancel.Dispose);
-            Task.Factory.StartNew(Run, RunTaskCancel.Token).ContinueWith(task => OnRunStop());
-            SystemManager.HeartJoin(Config.StationName, RealName);
-        }
-
-        void Close()
-        {
-            if (RunTaskCancel == null)
-                return;
-            ZeroTrace.WriteInfo(StationName, "closing....");
-            State = StationState.Closing;
-            RunTaskCancel.Cancel();
-            Monitor.Enter(this);
-            RunTaskCancel = null;
-            Monitor.Exit(this);
+            State = StationState.Closed;
+            return true;
         }
 
         #region IZeroObject
@@ -201,9 +273,9 @@ namespace Agebull.ZeroNet.Core
             Initialize();
         }
 
-        void IZeroObject.OnZeroStart()
+        bool IZeroObject.OnZeroStart()
         {
-            Start();
+            return Start();
         }
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
@@ -216,9 +288,9 @@ namespace Agebull.ZeroNet.Core
                 Start();
         }
 
-        void IZeroObject.OnZeroEnd()
+        bool IZeroObject.OnZeroEnd()
         {
-            Close();
+            return Close();
         }
 
         void IZeroObject.OnZeroDistory()

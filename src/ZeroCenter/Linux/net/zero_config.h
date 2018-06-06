@@ -3,6 +3,8 @@
 #define _ZERO_CONFIG_H_
 #include "../stdinc.h"
 #include <utility>
+#include "../log/mylogger.h"
+#include "net_command.h"
 
 namespace agebull
 {
@@ -315,10 +317,13 @@ namespace agebull
 		struct worker
 		{
 			/**
+			* \brief 实名
+			*/
+			string real_name;
+			/**
 			* \brief 上报的IP地址
 			*/
-			string ips;
-
+			string ip_address;
 
 			/**
 			* \brief 上次心跳的时间
@@ -331,20 +336,17 @@ namespace agebull
 			int level;
 
 			/**
+			* \brief 状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
+			*/
+			int state;
+
+			/**
 			 * \brief 构造
 			 */
 			worker()
 				: pre_time(0)
 				, level(-1)
-			{
-
-			}
-			/**
-			* \brief 构造
-			*/
-			worker(int lev)
-				: pre_time(time(nullptr))
-				, level(lev)
+				, state(-1)
 			{
 
 			}
@@ -355,6 +357,7 @@ namespace agebull
 			{
 				pre_time = time(nullptr);
 				level = 10;
+				state = 1;
 			}
 			/**
 			* \brief 检查
@@ -363,26 +366,81 @@ namespace agebull
 			{
 				const int64 tm = time(nullptr) - pre_time;
 				if (tm <= 1)
+				{
+					if (state == -1)
+						state = 1;
 					return level = 10;
+				}
 				if (tm <= 3)
+				{
+					if (state == -1)
+						state = 1;
 					return level = 9;
+				}
 				if (tm <= 5)
+				{
+					if (state == -1)
+						state = 1;
 					return level = 8;
+				}
 				if (tm <= 10)
+				{
+					if (state == -1)
+						state = 1;
 					return level = 7;
+				}
 				if (tm <= 30)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 6;
+				}
 				if (tm <= 60)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 5;
+				}
 				if (tm <= 120)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 4;
+				}
 				if (tm <= 180)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 3;
+				}
 				if (tm <= 240)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 2;
+				}
 				if (tm <= 360)
+				{
+					if (state == 1)
+						state = -1;
 					return level = 1;
+				}
+				if (state == 1)
+					state = -1;
 				return level = -1;
+			}
+
+			/**
+			* \brief 写入JSON
+			*/
+			acl::string to_json(acl::json_node& node) const
+			{
+				node.add_text("real_name", real_name.c_str());
+				node.add_text("ip_address", ip_address.c_str());
+				node.add_number("pre_time", pre_time);
+				node.add_number("level", level);
+				node.add_number("state", state);
+				return node.to_string();
 			}
 		};
 		class zero_station;
@@ -392,6 +450,11 @@ namespace agebull
 		class zero_config
 		{
 			friend class zero_station;
+			/**
+			* \brief 已就绪的站点数量
+			*/
+			int ready_works_;
+			const char* type_name_;
 		public:
 			/**
 			* \brief 实例队列访问锁
@@ -457,7 +520,9 @@ namespace agebull
 			* \brief 构造
 			*/
 			zero_config()
-				: station_type_(0)
+				: ready_works_(0)
+				, type_name_("ERR")
+				, station_type_(0)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
@@ -469,7 +534,6 @@ namespace agebull
 				, worker_out(0)
 				, worker_err(0)
 			{
-
 			}
 
 			/**
@@ -478,7 +542,9 @@ namespace agebull
 			* \param type
 			*/
 			zero_config(const string& name, int type)
-				: station_name_(std::move(name))
+				: ready_works_(0)
+				, station_name_(std::move(name))
+				, station_type_(type)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
@@ -490,57 +556,104 @@ namespace agebull
 				, worker_out(0)
 				, worker_err(0)
 			{
-
+				check_type_name();
 			}
 
 			/**
-			* \brief 心跳
+			* \brief 工作站点加入
 			*/
-			void worker_join(const char* w, const char* ips)
-			{
-				auto iter = workers.find(w);
-				if (iter == workers.end())
-				{
-					worker wk(10);
-					wk.ips = ips;
-					{
-						boost::lock_guard<boost::mutex> guard(mutex_);
-						workers.insert(make_pair(w, wk));
-					}
-				}
-				else
-				{
-					iter->second.ips = ips;
-					iter->second.active();
-				}
-			}
-
-			/**
-			* \brief 心跳
-			*/
-			void worker_heartbeat(const char* w)
-			{
-				auto iter = workers.find(w);
-				if (iter == workers.end())
-				{
-					worker wk(10);
-					{
-						boost::lock_guard<boost::mutex> guard(mutex_);
-						workers.insert(make_pair(w, wk));
-					}
-				}
-				else
-				{
-					iter->second.active();
-				}
-			}
-			/**
-			* \brief 心跳
-			*/
-			void worker_left(const char* w)
+			void worker_join(const char* real_name, const char* ip)
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
-				workers.erase(w);
+				auto iter = workers.find(real_name);
+				if (iter == workers.end())
+				{
+					worker wk;
+					wk.real_name = real_name;
+					wk.ip_address = ip;
+					wk.level = 0;
+					wk.state = 0;
+					workers.insert(make_pair(real_name, wk));
+				}
+				else
+				{
+					iter->second.ip_address = ip;
+					iter->second.level = -1;
+					if (iter->second.state == 1)
+					{
+						--ready_works_;
+					}
+					iter->second.state = 0;
+				}
+				log("worker_join", real_name);
+			}
+
+
+			/**
+			* \brief 工作站点就绪
+			*/
+			void worker_ready(const char* real_name)
+			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				auto iter = workers.find(real_name);
+				if (iter == workers.end())
+				{
+					worker wk;
+					wk.real_name = real_name;
+					wk.state = 1;
+					wk.level = 10;
+					workers.insert(make_pair(real_name, wk));
+					++ready_works_;
+				}
+				else
+				{
+					if (iter->second.state != 1)//曾经失联
+					{
+						++ready_works_;
+						iter->second.state = 1;
+					}
+					iter->second.active();
+				}
+				log("worker_ready", real_name);
+			}
+			/**
+			* \brief 心跳
+			*/
+			void worker_heartbeat(const char* real_name)
+			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				auto iter = workers.find(real_name);
+				if (iter == workers.end())
+				{
+					worker wk;
+					wk.real_name = real_name;
+					wk.state = 1;
+					wk.level = 10;
+					workers.insert(make_pair(real_name, wk));
+					++ready_works_;
+				}
+				else
+				{
+					if (iter->second.state != 1)//曾经失联
+					{
+						++ready_works_;
+					}
+					iter->second.active();
+				}
+			}
+			/**
+			* \brief 心跳
+			*/
+			void worker_left(const char* real_name)
+			{
+				boost::lock_guard<boost::mutex> guard(mutex_);
+				auto iter = workers.find(real_name);
+				if (iter == workers.end())
+					return;
+				if (iter->second.state == 1)
+					--ready_works_;
+				workers.erase(real_name);
+				log("worker_left", real_name);
 			}
 
 			/**
@@ -549,13 +662,26 @@ namespace agebull
 			void check_works()
 			{
 				boost::lock_guard<boost::mutex> guard(mutex_);
-				for (auto & work : workers)
+				auto copy = workers;
+				int ready = 0;
+				for (auto & work : copy)
 				{
-					if (work.second.check() < 5)
+					work.second.check();
+					if (work.second.level < 0)
 					{
 						workers.erase(work.first);
 					}
+					else if (work.second.state == 1)
+						++ready;
 				}
+				ready_works_ = ready;
+			}
+			/**
+			* \brief 是否有准备就绪的工作站(广播模式时都有)
+			*/
+			bool hase_ready_works() const
+			{
+				return station_type_ <= STATION_TYPE_PUBLISH || ready_works_ > 1;
 			}
 
 			/**
@@ -614,173 +740,47 @@ namespace agebull
 			/**
 			* \brief 从JSON中读取
 			*/
-			void read_json(const char* val)
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				acl::json json;
-				json.update(val);
-				acl::json_node* iter = json.first_node();
-				while (iter)
-				{
-					const char* tag = iter->tag_name();
-					if (tag == nullptr || tag[0] == 0)
-					{
-						iter = json.next_node();
-						continue;
-					}
-					const int idx = strmatchi(16, tag
-						, "station_name"
-						, "station_type"
-						, "request_port"
-						, "worker_out_port"
-						, "worker_in_port"
-						, "description"
-						, "caption"
-						, "station_alias"
-						, "station_state"
-						, "request_in"
-						, "request_out"
-						, "request_err"
-						, "worker_in"
-						, "worker_out"
-						, "worker_err"
-						, "short_name");
-					switch (idx)
-					{
-					case 0:
-						station_name_ = iter->get_string();
-						break;
-					case 1:
-						station_type_ = static_cast<int>(*iter->get_int64());
-						break;
-					case 2:
-						request_port_ = static_cast<int>(*iter->get_int64());
-						break;
-					case 3:
-						worker_out_port_ = static_cast<int>(*iter->get_int64());
-						break;
-					case 4:
-						worker_in_port_ = static_cast<int>(*iter->get_int64());
-						break;
-					case 5:
-						station_description_ = iter->get_string();
-						break;
-					case 6:
-						station_caption_ = iter->get_string();
-						break;
-					case 7:
-						alias_.clear();
-						{
-							auto ajson = iter->get_obj();
-							if (!ajson->is_array())
-								break;
-							auto it = ajson->first_child();
-							while (it)
-							{
-								alias_.emplace_back(it->get_string());
-								it = ajson->next_child();
-							}
-						}
-						break;
-					case 8:
-						station_state_ = static_cast<station_state>(*iter->get_int64());
-						break;
-					case 9:
-						request_in = *iter->get_int64();
-						break;
-					case 10:
-						request_out = *iter->get_int64();
-						break;
-					case 11:
-						worker_err = *iter->get_int64();
-						break;
-					case 12:
-						worker_in = *iter->get_int64();
-						break;
-					case 13:
-						worker_out = *iter->get_int64();
-						break;
-					case 14:
-						worker_err = *iter->get_int64();
-						break;
-					case 15:
-						short_name = *iter->get_string();
-						break;
-					default: break;
-					}
-					iter = json.next_node();
-				}
+			void read_json(const char* val);
 
+			void check_type_name()
+			{
+				switch (station_type_)
+				{
+				case STATION_TYPE_API:
+					type_name_ = "API";
+					break;
+				case STATION_TYPE_VOTE:
+					type_name_ = "VOTE";
+					break;
+				case STATION_TYPE_PUBLISH:
+					type_name_ = "PUBLISH";
+					break;
+				case  STATION_TYPE_DISPATCHER:
+					type_name_ = "DISPATCHER";
+					break;
+				default:
+					type_name_ = "ERR";
+					break;
+				}
 			}
 			/**
 			* \brief 写入JSON
+			* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
 			*/
-			acl::string to_json(bool simple = false)
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				acl::json json;
-				acl::json_node& node = json.create_node();
-				if (!simple)
-				{
-					if (!station_name_.empty())
-						node.add_text("station_name", station_name_.c_str());
-					if (!short_name.empty())
-						node.add_text("short_name", short_name.c_str());
-					if (!station_description_.empty())
-						node.add_text("_description", station_description_.c_str());
-					if (!station_caption_.empty())
-						node.add_text("_caption", station_caption_.c_str());
-					if (alias_.size() > 0)
-					{
-						acl::json_node& array = json.create_array();
-						for (auto alia : alias_)
-						{
-							array.add_array_text(alia.c_str());
-						}
-						node.add_child("station_alias", array);
-					}
-					if (station_type_ > 0)
-						node.add_number("station_type", station_type_);
-					if (request_port_ > 0)
-						node.add_number("request_port", request_port_);
-					if (worker_in_port_ > 0)
-						node.add_number("worker_in_port", worker_in_port_);
-					if (worker_out_port_ > 0)
-						node.add_number("worker_out_port", worker_out_port_);
-				}
-				node.add_number("station_state", static_cast<int>(station_state_));
-				node.add_number("request_in", request_in);
-				node.add_number("request_out", request_out);
-				node.add_number("request_err", request_err);
-				node.add_number("worker_in", worker_in);
-				node.add_number("worker_out", worker_out);
-				node.add_number("worker_err", worker_err);
-				if (workers.size() > 0)
-				{
-					acl::json_node& array = json.create_array();
-					for (auto& worker : workers)
-					{
-						acl::string str;
-						//str.format("%s (%s) [%d]", worker.first.c_str(), worker.second.ips.c_str(), worker.second.level);
-						str.format("%s [%d]", worker.first.c_str(), worker.second.level);
-						array.add_array_text(str);
-					}
-					node.add_child("workers", array);
-				}
-				return node.to_string();
-			}
+			acl::string to_json(int type);
+
 			/**
 			* \brief 开机日志
 			*/
-			void log_start()
+			void start()
 			{
-				log(station_state_ == station_state::ReStart ? "restart" : "start");
+				full_log(station_state_ == station_state::ReStart ? "restart" : "start");
 				station_state_ = station_state::Start;
 			}
 			/**
 			* \brief 开机失败日志
 			*/
-			void log_failed(const char* msg)
+			void failed(const char* msg)
 			{
 				error("con`t launch", msg);
 				station_state_ = station_state::Failed;
@@ -790,7 +790,7 @@ namespace agebull
 			*/
 			void runing()
 			{
-				log("runing");
+				full_log("runing");
 				station_state_ = station_state::Run;
 			}
 			/**
@@ -799,14 +799,14 @@ namespace agebull
 			void closing()
 			{
 				station_state_ = station_state::Closing;
-				log("closing...");
+				full_log("closing...");
 			}
 			/**
 			* \brief 重启日志
 			*/
 			void restart()
 			{
-				log("restart");
+				full_log("restart");
 				station_state_ = station_state::ReStart;
 			}
 			/**
@@ -815,68 +815,40 @@ namespace agebull
 			void closed()
 			{
 				station_state_ = station_state::Closed;
-				log("closed");
+				full_log("closed");
 			}
 			/**
 			* \brief 日志
 			*/
-			void log(const char* state) const
+			void full_log(const char* state) const
 			{
-				const char* type;
-				switch (station_type_)
-				{
-				case STATION_TYPE_API:
-					type = "API";
-					break;
-				case STATION_TYPE_VOTE:
-					type = "VOTE";
-					break;
-				case STATION_TYPE_PUBLISH:
-					type = "PUBLISH";
-					break;
-				case  STATION_TYPE_DISPATCHER:
-					type = "DISPATCHER";
-					break;
-				default:
-					type = "ERR";
-					break;
-				}
-				if(worker_in_port_ > 0)
-					log_msg6("%s(%s:%d | %d<=>%d) %s", station_name_.c_str(), type, request_port_, worker_out_port_, worker_in_port_, state)
-				else
-					log_msg5("%s(%s:%d | %d) %s",  station_name_.c_str(), type, request_port_, worker_out_port_, state)
-
-			}
-
-			/**
-			* \brief 日志
-			*/
-			void error(const char* state, const char* msg) const
-			{
-				const char* type;
-				switch (station_type_)
-				{
-				case STATION_TYPE_API:
-					type = "API";
-					break;
-				case STATION_TYPE_VOTE:
-					type = "VOTE";
-					break;
-				case STATION_TYPE_PUBLISH:
-					type = "PUBLISH";
-					break;
-				case  STATION_TYPE_DISPATCHER:
-					type = "DISPATCHER";
-					break;
-				default:
-					type = "ERR";
-					break;
-				}
 				if (worker_in_port_ > 0)
-					log_error7("%s(%s:%d | %d<=>%d) %s\n%s", station_name_.c_str(), type, request_port_, worker_out_port_, worker_in_port_, state, msg)
+					log_msg6("[%s]: > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
 				else
-					log_error6("%s(%s:%d | %d) %s\n%s", station_name_.c_str(), type, request_port_, worker_out_port_, state, msg)
+					log_msg5("[%s]: > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
 
+			}
+			/**
+			* \brief 日志
+			*/
+			void log(const char* msg) const
+			{
+				log_msg3("[%s]: > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_);
+			}
+
+			/**
+			* \brief 日志
+			*/
+			void log(const char* title, const char* msg) const
+			{
+				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
+			}
+			/**
+			* \brief 日志
+			*/
+			void error(const char* title, const char* msg) const
+			{
+				log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
 			}
 		};
 	}

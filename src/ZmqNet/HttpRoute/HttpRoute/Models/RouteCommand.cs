@@ -106,8 +106,6 @@ namespace ZeroNet.Http.Route
 
         static void BindZeroStation()
         {
-            if (ZeroApplication.ApplicationState != StationState.Run)
-                return;
             ZeroApplication.Config.Foreach(config =>
             {
                 if(config.StationType == ZeroStation.StationTypeApi)

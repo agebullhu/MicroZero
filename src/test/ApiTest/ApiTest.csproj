@@ -10,8 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
-    <ProjectReference Include="..\..\RemoteLog\LogRecorder\ZeroNet.LogRecorder.csproj" />
+    <Compile Remove="bin\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <None Remove="bin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -60,7 +60,7 @@ namespace Agebull.Common
         /// </summary>
         /// <param name="t">返回内容（如果返回True)</param>
         /// <param name="waitMs">等待时长</param>
-        public bool StartProcess(out T t, int waitMs = 100)
+        public bool StartProcess(out T t, int waitMs = 1000)
         {
             lock (this)
             {

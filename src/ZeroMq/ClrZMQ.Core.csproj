@@ -55,13 +55,13 @@
 
   <ItemGroup>
     <Compile Remove="AssemblyInfo.cs" />
-    <Compile Remove="lib\DispoIntPtr.Ansi.cs" />
-    <Compile Remove="lib\DispoIntPtr.cs" />
-    <Compile Remove="lib\Platform.MacOSX.cs" />
-    <Compile Remove="lib\Platform.Posix.cs" />
-    <Compile Remove="lib\Platform.Win32.cs" />
-    <Compile Remove="lib\Platform.__Internal.cs" />
-    <Compile Remove="lib\UnmanagedLibrary.cs" />
+    <Compile Remove="zmq\DispoIntPtr.Ansi.cs" />
+    <Compile Remove="zmq\DispoIntPtr.cs" />
+    <Compile Remove="zmq\Platform.MacOSX.cs" />
+    <Compile Remove="zmq\Platform.Posix.cs" />
+    <Compile Remove="zmq\Platform.Win32.cs" />
+    <Compile Remove="zmq\Platform.__Internal.cs" />
+    <Compile Remove="zmq\UnmanagedLibrary.cs" />
     <Compile Remove="MemoryCheck.cs" />
     <Compile Remove="ZFrame - 复制.cs" />
   </ItemGroup>
@@ -86,6 +86,9 @@
 
   <ItemGroup>
     <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.pdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="libzmq.so">

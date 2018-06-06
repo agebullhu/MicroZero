@@ -150,13 +150,41 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             Interlocked.Increment(ref CallCount);
             if (LogRecorder.LogMonitor)
-                ApiCallByMonitor(ref socket,item);
+                ApiCallByMonitor(ref socket, item);
             else
                 ApiCallNoMonitor(ref socket, item);
             Interlocked.Decrement(ref waitCount);
         }
 
+        void Prepare(ApiCallItem item)
+        {
+            foreach (var p in PreActions)
+            {
+                try
+                {
+                    p(this, item);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(StationName, e, "PreActions", item.ApiName);
+                }
+            }
+        }
 
+        void End(ApiCallItem item)
+        {
+            foreach (var p in EndActions)
+            {
+                try
+                {
+                    p(this, item);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(StationName, e, "EndActions", item.ApiName);
+                }
+            }
+        }
         private void ApiCallByMonitor(ref ZSocket socket, ApiCallItem item)
         {
             using (MonitorScope.CreateScope(item.ApiName))
@@ -164,30 +192,11 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.MonitorTrace($"Caller:{item.Caller}");
                 LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
                 LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
-                try
-                {
-                    PreActions.ForEach(p => p(this, item));
-                }
-                catch (Exception e)
-                {
-                    ZeroTrace.WriteError(item.ApiName, "PreActions");
-                    ZeroTrace.WriteException(item.ApiName, e);
-                }
+                Prepare(item);
                 bool success;
-                try
+                using (MonitorStepScope.CreateScope("Do"))
                 {
-                    using (MonitorStepScope.CreateScope("Do"))
-                    {
-                        success = ExecCommand(item);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogRecorder.Exception(ex);
-                    LogRecorder.MonitorTrace(ex.Message);
-                    ZeroTrace.WriteException(StationName, ex);
-                    success = false;
-                    item.Result = ZeroStatuValue.InnerErrorJson;
+                    success = ExecCommand(item);
                 }
                 if (!success)
                     Interlocked.Increment(ref ErrorCount);
@@ -196,45 +205,16 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.MonitorTrace(item.Result);
                 if (!SendResult(ref socket, item, success))
                 {
-                    ZeroTrace.WriteError(item.ApiName, "PreActions");
+                    ZeroTrace.WriteError(item.ApiName, "SendResult");
                 }
-
-                try
-                {
-                    EndActions.ForEach(p => p(this, item));
-                }
-                catch (Exception e)
-                {
-                    ZeroTrace.WriteError(item.ApiName, "EndActions");
-                    ZeroTrace.WriteException(item.ApiName, e);
-                }
+                End(item);
             }
         }
-        private void ApiCallNoMonitor(ref ZSocket socket,ApiCallItem item)
+        private void ApiCallNoMonitor(ref ZSocket socket, ApiCallItem item)
         {
-            try
-            {
-                PreActions.ForEach(p => p(this, item));
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteError(item.ApiName, "PreActions");
-                ZeroTrace.WriteException(item.ApiName, e);
-            }
+            Prepare(item);
 
-            bool success;
-            try
-            {
-                success = ExecCommand(item);
-            }
-            catch (Exception ex)
-            {
-                LogRecorder.Exception(ex);
-                LogRecorder.MonitorTrace(ex.Message);
-                ZeroTrace.WriteException(StationName, ex);
-                success = false;
-                item.Result = ZeroStatuValue.InnerErrorJson;
-            }
+            bool success = ExecCommand(item);
 
             if (!success)
                 Interlocked.Increment(ref ErrorCount);
@@ -244,19 +224,9 @@ namespace Agebull.ZeroNet.ZeroApi
             if (!SendResult(ref socket, item, success))
             {
                 Interlocked.Increment(ref SendError);
-                ZeroTrace.WriteError(item.ApiName, "PreActions");
+                ZeroTrace.WriteError(item.ApiName, "SendResult");
             }
-
-
-            try
-            {
-                EndActions.ForEach(p => p(this, item));
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteError(item.ApiName, "EndActions");
-                ZeroTrace.WriteException(item.ApiName, e);
-            }
+            End(item);
         }
 
         /// <summary>
@@ -285,9 +255,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:restory context", e);
-                ZeroTrace.WriteError($"{StationName}:{item.ApiName}:restory context", item.ContextJson);
+                ZeroTrace.WriteException(StationName, e, item.ApiName, "restory context", item.ContextJson);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
                 return false;
@@ -313,11 +281,9 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException(StationName, e, item.ApiName, "restory argument", item.Argument);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
-                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:restory argument", e);
-                ZeroTrace.WriteError($"{StationName}:{item.ApiName}:restory argument", item.Argument);
                 return false;
             }
 
@@ -333,10 +299,9 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException(StationName, e, item.ApiName, "invalidate argument", item.Argument);
                 item.Result = ZeroStatuValue.ArgumentErrorJson;
                 item.Status = OperatorStatus.FormalError;
-                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:invalidate argument", e);
                 return false;
             }
 
@@ -358,10 +323,9 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException(StationName, e, item.ApiName, "execute", JsonConvert.SerializeObject(item));
                 item.Result = ZeroStatuValue.InnerErrorJson;
                 item.Status = OperatorStatus.LocalError;
-                ZeroTrace.WriteException($"{StationName}:{item.ApiName}:execuest", e);
                 return false;
             }
         }
@@ -405,6 +369,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         IsBackground = true
                     }.Start(token);
             }
+            SystemManager.HeartReady(StationName, RealName);
             while (!token.IsCancellationRequested && CanRun)
             {
                 if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
@@ -420,17 +385,21 @@ namespace Agebull.ZeroNet.ZeroApi
                     continue;
                 }
 
-                if (messages[0] == null)
+                if (messages[0] == null || messages[0].Count == 0)
                     continue;
                 Interlocked.Increment(ref RecvCount);
-                ReceiveApiCall(messages[0], out var item);
+                if (!Unpack(messages[0], out var item))
+                {
+                    SendLayoutErrorResult(ref _resultSocket, item.Caller,item.Requester);
+                    continue;
+                }
                 messages[0].Dispose();
                 if (item == null)
                     continue;
                 switch (ZeroApplication.Config.SpeedLimitModel)
                 {
                     default:
-                    case SpeedLimitType.Single:
+                    //case SpeedLimitType.Single:
                         ApiCall(ref _resultSocket, item);
                         break;
                     case SpeedLimitType.ThreadCount:
@@ -460,7 +429,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
 
             }
-
+            SystemManager.HeartLeft(StationName, RealName);
             return true;
         }
 
@@ -468,7 +437,7 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ApiCallTask(object item)
         {
-            ApiCall(ref _resultSocket,(ApiCallItem)item);
+            ApiCall(ref _resultSocket, (ApiCallItem)item);
         }
 
         #endregion
@@ -476,14 +445,15 @@ namespace Agebull.ZeroNet.ZeroApi
         #region 限定Task数量模式
         private int ptocessTaskCount;
 
+        private readonly SemaphoreSlim _processSemaphore = new SemaphoreSlim(0);
 
         readonly TaskQueue<ApiCallItem> Quote = new TaskQueue<ApiCallItem>();
 
         /// <inheritdoc />
         protected sealed override void OnRunStop()
         {
-            while (ptocessTaskCount > 0)
-                Thread.Sleep(10);
+            if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
+                _processSemaphore.Wait();
             if (ZContext.IsAlive)
             {
                 while (!Quote.IsEmpty)
@@ -511,24 +481,33 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     continue;
                 }
-                if (token.IsCancellationRequested)
-                    continue;
                 ApiCall(ref socket, item);
                 Quote.EndProcess();
             }
             socket.CloseSocket();
-            Interlocked.Decrement(ref ptocessTaskCount);
+            if (Interlocked.Decrement(ref ptocessTaskCount) == 0)
+                _processSemaphore.Release();
         }
         #endregion
 
         #region IO
 
-
-        private bool ReceiveApiCall(ZMessage messages, out ApiCallItem item)
+        /// <summary>
+        /// 解析数据
+        /// </summary>
+        /// <param name="messages"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private bool Unpack(ZMessage messages, out ApiCallItem item)
         {
+            item = new ApiCallItem
+            {
+                Caller = Encoding.ASCII.GetString(messages[0].Read())
+            };
             try
             {
-                var description = messages[2].Read();
+
+                var description = messages[1].Read();
                 if (description.Length < 2)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
@@ -537,7 +516,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     return false;
                 }
 
-                int end = description[0] + 3;
+                int end = description[0] + 2;
                 if (end != messages.Count)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
@@ -547,17 +526,13 @@ namespace Agebull.ZeroNet.ZeroApi
                     return false;
                 }
 
-                item = new ApiCallItem
-                {
-                    Caller = Encoding.ASCII.GetString(messages[0].Read())
-                };
-                for (int idx = 3; idx < end; idx++)
+                for (int idx = 2; idx < end; idx++)
                 {
                     var bytes = messages[idx].Read();
                     if (bytes.Length == 0)
                         continue;
                     var val = Encoding.UTF8.GetString(bytes);
-                    switch (description[idx - 1])
+                    switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
                             item.GlobalId = val;
@@ -579,16 +554,12 @@ namespace Agebull.ZeroNet.ZeroApi
                             break;
                     }
                 }
-
-                return true;
+                return item.ApiName != null && item.RequestId != null && item.GlobalId != null && item.ContextJson != null;
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", "Exception", Config.WorkerResultAddress,
-                    $"FrameSize{messages.Count}.Socket Ptr:{_callSocket.SocketPtr}.");
-                ZeroTrace.WriteException("ReceiveApiCall", e);
-                LogRecorder.Exception(e);
-                item = null;
+                ZeroTrace.WriteException("Receive", e,
+                    Config.WorkerResultAddress, $"FrameSize{messages.Count}", $"Socket Ptr:{_callSocket.SocketPtr}");
                 return false;
             }
             finally
@@ -604,7 +575,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="item"></param>
         /// <param name="success"></param>
         /// <returns></returns>
-        private bool SendResult(ref ZSocket socket,ApiCallItem item, bool success)
+        private bool SendResult(ref ZSocket socket, ApiCallItem item, bool success)
         {
             if (!CanRun)
             {
@@ -613,34 +584,45 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             var description = new byte[]
             {
-                2, (byte) (success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Error), ZeroFrameType.JsonValue,ZeroFrameType.GlobalId
+                3, (byte) (success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Error), ZeroFrameType.JsonValue,ZeroFrameType.Requester,ZeroFrameType.GlobalId
             };
-            var message = new ZMessage
+            return SendResult(ref socket, new ZMessage
             {
                 new ZFrame(item.Caller.ToAsciiBytes()),
-                new ZFrame("".ToAsciiBytes()),
+                //new ZFrame("".ToAsciiBytes()),
                 new ZFrame(description),
-                new ZFrame((item.Result ?? "").ToAsciiBytes()),
-                new ZFrame((item.GlobalId ?? "").ToAsciiBytes())
-            };
-            //lock (_inprocCallSocket)
-            //{
-            //    using (var frames = new ZMessage
-            //    {
-            //        new ZFrame(item.Caller.ToAsciiBytes()),
-            //        new ZFrame("".ToAsciiBytes()),
-            //        new ZFrame(description),
-            //        new ZFrame((item.Result ?? "").ToAsciiBytes()),
-            //        new ZFrame((item.GlobalId ?? "").ToAsciiBytes())
-            //    })
-            //    {
-            //        var ok = _inprocCallSocket.Send(frames, out var error);
-            //        if (error != null)
-            //            ZeroTrace.WriteError("SendResult", error.Text);
-            //        return ok;
-            //    }
-            //}
+                new ZFrame((item.Result ?? "").ToUtf8Bytes()),
+                new ZFrame(item.Requester.ToAsciiBytes()),
+                new ZFrame((item.GlobalId ?? "").ToUtf8Bytes())
+            });
+        }
 
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="caller"></param>
+        /// <param name="requester"></param>
+        /// <returns></returns>
+        private bool SendLayoutErrorResult(ref ZSocket socket, string caller, string requester)
+        {
+            return SendResult(ref socket, new ZMessage
+            {
+                new ZFrame(caller.ToAsciiBytes()),
+                //new ZFrame("".ToAsciiBytes()),
+                new ZFrame(new byte[]{1, (byte)ZeroOperatorStateType.Failed, ZeroFrameType.Requester, ZeroFrameType.End}),
+                new ZFrame(caller.ToAsciiBytes())
+            });
+        }
+
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        private bool SendResult(ref ZSocket socket, ZMessage message)
+        {
             ZError error;
             using (message)
             {

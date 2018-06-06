@@ -75,6 +75,7 @@ namespace Agebull.ZeroNet.Log
         protected sealed override bool RunInner(CancellationToken token)
         {
             _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+            SystemManager.HeartReady(StationName, RealName);
             State = StationState.Run;
             while (!token.IsCancellationRequested && CanRun)
             {
@@ -106,6 +107,7 @@ namespace Agebull.ZeroNet.Log
                 }
                 Items.EndProcess();
             }
+            SystemManager.HeartLeft(StationName, RealName);
             _socket.CloseSocket();
             return State != StationState.Failed;
         }

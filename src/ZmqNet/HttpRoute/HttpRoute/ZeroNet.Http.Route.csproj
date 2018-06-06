@@ -63,8 +63,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\HealthCenter\HealthReporter\Agebull.ZeroNet.HealthReporter.csproj" />
-    <ProjectReference Include="..\..\..\RemoteLog\LogRecorder\ZeroNet.LogRecorder.csproj" />
     <ProjectReference Include="..\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
   </ItemGroup>
 

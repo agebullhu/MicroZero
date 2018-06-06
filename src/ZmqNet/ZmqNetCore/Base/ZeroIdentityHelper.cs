@@ -15,10 +15,12 @@ namespace Agebull.ZeroNet.Core
         /// 是否本机
         /// </summary>
         /// <returns></returns>
-        public static bool IsLocalhost => string.IsNullOrWhiteSpace(ZeroApplication.Config.ZeroAddress) ||
+        public static bool UseIpc {get ; set; }
+        
+        /*string.IsNullOrWhiteSpace(ZeroApplication.Config.ZeroAddress) ||
                                           ZeroApplication.Config.ZeroAddress == "127.0.0.1" ||
                                           ZeroApplication.Config.ZeroAddress == "::1" ||
-                                          ZeroApplication.Config.ZeroAddress.Equals("localhost", StringComparison.OrdinalIgnoreCase);
+                                          ZeroApplication.Config.ZeroAddress.Equals("localhost", StringComparison.OrdinalIgnoreCase)*/
         /// <summary>
         /// 格式化地址
         /// </summary>
@@ -27,10 +29,23 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetRequestAddress(string station, int port)
         {
-            if (!IsLocalhost)
+            if (!UseIpc)
                 return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
             var path = Path.GetDirectoryName(ApiContext.Configuration["contentRoot"]);
-            return $"ipc://{path}/ipc/{station}.ipc";
+            return $"ipc://{path}/ipc/{station}_req.ipc";
+        }
+        /// <summary>
+        /// 格式化地址
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        public static string GetSubscriberAddress(string station, int port)
+        {
+            if (!UseIpc)
+                return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
+            var path = Path.GetDirectoryName(ApiContext.Configuration["contentRoot"]);
+            return $"ipc://{path}/ipc/{station}_sub.ipc";
         }
         /// <summary>
         /// 格式化地址
@@ -51,7 +66,7 @@ namespace Agebull.ZeroNet.Core
         public static string CreateRealName(bool isService, params string[] ranges)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(IsLocalhost ? '-' : '+');
+            sb.Append(UseIpc ? '-' : '+');
             sb.Append(isService ? "<" : ">");
             sb.Append(ZeroApplication.Config.ServiceName);
             sb.Append("-");
@@ -82,7 +97,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] ToZeroIdentity(bool isService, params string[] ranges)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(IsLocalhost ? "-" : "+");
+            sb.Append(UseIpc ? "-" : "+");
             sb.Append(isService ? "<" : ">");
             sb.Append(ZeroApplication.Config.ServiceName);
             sb.Append("-");

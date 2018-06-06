@@ -80,7 +80,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 系统启动时调用
         /// </summary>
-        public void OnZeroStart()
+        public bool OnZeroStart()
         {
             foreach (var pool in Pools.Values)
             {
@@ -98,14 +98,18 @@ namespace Agebull.ZeroNet.Core
                 }
             });
             CanDo = true;
+            ZeroApplication.OnObjectActive();
+            return true;
         }
 
         /// <summary>
         /// 系统关闭时调用
         /// </summary>
-        public void OnZeroEnd()
+        public bool OnZeroEnd()
         {
             Dispose();
+            ZeroApplication.OnObjectClose();
+            return true;
         }
         /// <summary>
         /// 系统启动时调用

@@ -15,7 +15,7 @@ namespace Agebull.ZeroNet.Core
         /// 对应的配置
         /// </summary>
         public StationConfig Config { get; set; }
-        
+
         /// <summary>
         /// 所有连接
         /// </summary>
@@ -28,7 +28,7 @@ namespace Agebull.ZeroNet.Core
 
         private byte[] CreateIdentity()
         {
-            return ZeroIdentityHelper.CreateRealName(false,Config.ShortName ?? Config.StationName).ToAsciiBytes();
+            return ZeroIdentityHelper.CreateRealName(false, Config.ShortName ?? Config.StationName).ToAsciiBytes();
         }
         /// <summary>
         /// 取得一个连接对象
@@ -38,26 +38,34 @@ namespace Agebull.ZeroNet.Core
         {
             if (_isDisposed)
                 return null;
+            ZSocket socket;
             lock (_pools)
             {
-                if (_pools.Count != 0)
+                if (_pools.Count > 0)
                 {
-                    var socket = _pools.Dequeue();
-                    socket.IsUsing = true;
-                    return socket;
+                    do
+                    {
+                        socket = _pools.Dequeue();
+                    } while (_pools.Count != 0 && (socket?.IsDisposed ?? true));
+
+                    if (socket != null && !socket.IsDisposed)
+                    {
+                        socket.IsUsing = true;
+                        return socket;
+                    }
                 }
             }
-            {
-                var socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, CreateIdentity());
-                if (socket == null)
-                    return null;
-                socket.IsUsing = true;
-                socket.StationName = Config.StationName;
-                lock (_sockets)
-                    _sockets.Add(socket);
-                return socket;
-            }
+
+            socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, CreateIdentity());
+            if (socket == null)
+                return null;
+            socket.IsUsing = true;
+            socket.StationName = Config.StationName;
+            lock (_sockets)
+                _sockets.Add(socket);
+            return socket;
         }
+
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
@@ -67,14 +75,14 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             socket.IsUsing = false;
-            if (_isDisposed)
+            if (_isDisposed || socket.IsDisposed || socket.LastError != null)
             {
                 Close(ref socket);
             }
             //Close(ref socket);
             lock (_pools)
             {
-                if (_isDisposed || socket.LastError != null || _pools.Count > 99)
+                if (_pools.Count > 99)
                 {
                     Close(ref socket);
                 }

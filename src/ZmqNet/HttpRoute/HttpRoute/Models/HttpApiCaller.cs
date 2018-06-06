@@ -172,7 +172,7 @@ namespace ZeroNet.Http.Route
         {
             var task = Task<string>.Factory.StartNew(GetResponse);
             var jsonResult = await task;
-            return string.IsNullOrWhiteSpace(jsonResult) ? RouteRuntime.RemoteEmptyErrorJson : jsonResult;
+            return string.IsNullOrWhiteSpace(jsonResult) ? ApiResult.RemoteEmptyErrorJson : jsonResult;
         }
 
         /// <summary>
@@ -296,12 +296,12 @@ namespace ZeroNet.Http.Route
             using (response)
             {
                 if (response.ContentLength == 0)
-                    result= RouteRuntime.RemoteEmptyErrorJson;
+                    result= ApiResult.RemoteEmptyErrorJson;
                 else
                 {
                     var receivedStream = response.GetResponseStream();
                     if (receivedStream == null)
-                        result = RouteRuntime.RemoteEmptyErrorJson;
+                        result = ApiResult.RemoteEmptyErrorJson;
                     else
                     {
                         using (receivedStream)

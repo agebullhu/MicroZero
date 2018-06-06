@@ -142,7 +142,7 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_run++;
 			check_semaphore_start();
-			log_msg2("zero thread join [%s](%d)", name, zero_thread_run);
+			log_msg2("[%s] zero thread join(%d)", name, zero_thread_run);
 		}
 		//登记线程失败
 		void set_command_thread_bad(const char* name)
@@ -150,7 +150,7 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_bad++;
 			check_semaphore_start();
-			log_msg2("zero thread bad [%s](%d)", name, zero_thread_bad);
+			log_msg2("[%s] zero thread bad(%d)", name, zero_thread_bad);
 		}
 		//登记线程关闭
 		void set_command_thread_end(const char* name)
@@ -159,7 +159,7 @@ namespace agebull
 			zero_thread_run--;
 			if (zero_thread_run <= 1)
 				task_semaphore.post();
-			log_msg2("zero thread left [%s](%d)", name, zero_thread_run);
+			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
 		}
 		//运行状态
 		NET_STATE get_net_state()
@@ -170,19 +170,20 @@ namespace agebull
 		//初始化网络命令环境
 		int config_zero_center()
 		{
-			log_msg("zero center initiate...");
+			log_msg("[zero_center]=>initiate...");
 			net_state = NET_STATE_NONE;
 			net_context = zmq_ctx_new();
 			assert(net_context != nullptr);
 			//zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 65536);
 			//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 32);
 			//zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 32767);
-			log_msg("zero center initiated");
+			log_msg("[zero_center]=>initiated");
 			return net_state;
 		}
 		//启动网络命令环境
 		int start_zero_center()
 		{
+			boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 			log_msg("[zero_center]=>start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
@@ -199,8 +200,8 @@ namespace agebull
 			log_msg("[zero_center]=>all stations in service");
 			for (int i = 0; i < 10; i++)
 			{
-				thread_sleep(50);
 				monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
+				thread_sleep(50);
 			}
 			log_msg("[zero_center]=>success");
 			return net_state;
@@ -211,11 +212,11 @@ namespace agebull
 		{
 			if (net_state != NET_STATE_RUNING)
 				return;
-			log_msg("zero center closing...");
+			log_msg("[zero_center]=>closing...");
 			for (int i = 0; i < 10; i++)
 			{
-				thread_sleep(50);
 				monitor_sync("*", "system_stop", "*************Close ZeroNet,see you late!*************");
+				thread_sleep(50);
 			}
 			net_state = NET_STATE_CLOSING;
 			task_semaphore.wait();
@@ -227,7 +228,7 @@ namespace agebull
 
 			net_context = nullptr;
 
-			log_msg("zero center closed");
+			log_msg("[zero_center]=>closed");
 		}
 	}
 }

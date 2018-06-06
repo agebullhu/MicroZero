@@ -30,16 +30,16 @@ namespace agebull
 		void api_station::launch(shared_ptr<api_station>& station)
 		{
 			zero_config& config = station->get_config();
-			config.log_start();
+			config.start();
 			if (!station_warehouse::join(station.get()))
 			{
-				config.log_failed("join warehouse");
+				config.failed("join warehouse");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			if (!station->initialize())
 			{
-				config.log_failed("initialize");
+				config.failed("initialize");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
@@ -75,36 +75,66 @@ namespace agebull
 			//	zmq_state_ = send_status(socket, *caller, ZERO_STATUS_API_NOT_WORKER);
 			//	return zmq_state_ == zmq_socket_state::Succeed;
 			//}
-			//if (list[2][1] == ZERO_COMMAND_WAITING)
+			//if (list[2][1] == ZERO_BYTE_COMMAND_WAITING)
 			//	return;
-			switch (list[2][1])
+			int reqid = 0, reqer = 0, glid_index = 0;
+			for (size_t i = 2; i <= list[1][0] + 2; i++)
 			{
-			case ZERO_COMMAND_FIND_RESULT:
+				switch (list[1][i])
+				{
+				case ZERO_FRAME_REQUESTER:
+					reqer = i;
+					break;
+				case ZERO_FRAME_REQUEST_ID:
+					reqid = i;
+					break;
+				case ZERO_FRAME_GLOBAL_ID:
+					glid_index = i;
+					break;
+				}
+			}
+			if (glid_index == 0)
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
+					nullptr,
+					reqid == 0 ? nullptr : *list[reqid],
+					reqer == 0 ? nullptr : *list[reqer]);
+			}
+			switch (list[1][1])
+			{
+			case ZERO_BYTE_COMMAND_FIND_RESULT:
 			{
 				boost::lock_guard<boost::mutex> guard(results_mutex_);
-				auto iter = results.find(atoll(*list[3]));
+				auto iter = results.find(atoll(*list[glid_index]));
 				if (iter == results.end())
-					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID, *list[3]);
+					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID,
+						*list[glid_index],
+						reqid == 0 ? nullptr : *list[reqid],
+						reqer == 0 ? nullptr : *list[reqer]);
 				else
 				{
 					iter->second[0] = list[0];
 					send_request_result(iter->second);
 				}
 			}break;
-			case ZERO_COMMAND_CLOSE_RESULT:
+			case ZERO_BYTE_COMMAND_CLOSE_REQUEST:
 			{
 				boost::lock_guard<boost::mutex> guard(results_mutex_);
-				const auto iter = results.find(atoll(*list[3]));
+				const auto iter = results.find(atoll(*list[glid_index]));
 				if (iter != results.end())
 					results.erase(iter);
-				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, *list[3]);
+				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
+					*list[glid_index],
+					reqid == 0 ? nullptr : *list[reqid],
+					reqer == 0 ? nullptr : *list[reqer]);
 			}break;
 			default:
-				if(get_config().workers.size() == 0)
-					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID);
-				else if (!send_response(list))
+				if (!send_response(list))
 				{
-					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID);//, *global_id
+					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID,
+						*list[glid_index],
+						reqid == 0 ? nullptr : *list[reqid],
+						reqer == 0 ? nullptr : *list[reqer]);
 				}
 				break;
 			}

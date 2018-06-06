@@ -120,7 +120,7 @@ namespace agebull
 						first = false;
 					else
 						json += ",";
-					json += config.second->to_json().c_str();
+					json += config.second->to_json(0).c_str();
 				}
 				json += "]";
 				return ZERO_STATUS_OK_ID;
@@ -130,7 +130,7 @@ namespace agebull
 			{
 				return ZERO_STATUS_NO_FIND_ID;
 			}
-			json = iter->second->to_json().c_str();
+			json = iter->second->to_json(0).c_str();
 			return ZERO_STATUS_OK_ID;
 		}
 
@@ -149,7 +149,7 @@ namespace agebull
 				boost::format fmt("net:host:%1%");
 				fmt % config->station_name_;
 				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis::get_context()->set(fmt.str().c_str(), config->to_json());
+				trans_redis::get_context()->set(fmt.str().c_str(), config->to_json(2));
 				return *config;
 			}
 			config.swap(iter->second);
@@ -168,7 +168,7 @@ namespace agebull
 			{
 				boost::format fmt("net:host:%1%");
 				fmt % iter.first;
-				redis->set(fmt.str().c_str(), iter.second->to_json());
+				redis->set(fmt.str().c_str(), iter.second->to_json(2));
 			}
 		}
 		shared_ptr<zero_config> empty_config;
@@ -239,7 +239,6 @@ namespace agebull
 			install("SystemManage", STATION_TYPE_DISPATCHER, "man");
 			install("RemoteLog", STATION_TYPE_PUBLISH, "log");
 			install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
-			install("Test", STATION_TYPE_API, "test");
 		}
 
 		/**
@@ -308,7 +307,7 @@ namespace agebull
 				redis->incr(port_redis_key, &port);
 				config->worker_in_port_ = static_cast<int>(port);
 			}
-			json = config->to_json();
+			json = config->to_json(2);
 			redis->set(key.c_str(), json);
 			insert_config(config, false);
 			monitor_async(station_name, "station_install", json.c_str());
@@ -326,7 +325,7 @@ namespace agebull
 					return false;
 				examples_.insert(make_pair(station->config_->station_name_, station));
 			}
-			monitor_async(station->config_->station_name_, "station_join", string(station->config_->to_json()));
+			monitor_async(station->config_->station_name_, "station_join", string(station->config_->to_json(0)));
 			return true;
 		}
 

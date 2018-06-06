@@ -37,10 +37,9 @@ namespace agebull
 		void set_command_thread_run(const char* name);
 		//登记线程关闭
 		void set_command_thread_end(const char* name);
-
+		
 		//正常状态
 #define ZERO_STATUS_SUCCESS '+'
-
 #define ZERO_STATUS_OK  "+ok"
 #define ZERO_STATUS_PLAN  "+plan"
 #define ZERO_STATUS_RUNING  "+runing"
@@ -52,19 +51,6 @@ namespace agebull
 #define ZERO_STATUS_VOTE_BYE  "+bye"
 #define ZERO_STATUS_VOTE_START  "+start"
 #define ZERO_STATUS_VOTE_END  "+end"
-
-#define ZERO_STATUS_OK_ID char(0)
-#define ZERO_STATUS_PLAN_ID char(1)
-#define ZERO_STATUS_RUNING_ID char(2)
-#define ZERO_STATUS_BYE_ID char(3)
-#define ZERO_STATUS_WECOME_ID char(4)
-#define ZERO_STATUS_VOTE_SENDED_ID char(5)
-#define ZERO_STATUS_VOTE_BYE_ID char(3)
-#define ZERO_STATUS_WAITING_ID char(6)
-#define ZERO_STATUS_VOTE_START_ID char(7)
-#define ZERO_STATUS_VOTE_END_ID char(8)
-#define ZERO_STATUS_VOTE_CLOSED_ID char(9)
-
 //错误状态
 #define ZERO_STATUS_BAD  '-'
 #define ZERO_STATUS_NO_FIND  "-no find"
@@ -77,18 +63,8 @@ namespace agebull
 #define ZERO_STATUS_API_NOT_WORKER  "-not work"
 #define ZERO_STATUS_MANAGE_ARG_ERROR  "-ArgumentError! must like : call[name][command][argument]"
 #define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
-
-#define ZERO_STATUS_ERROR_ID char(0x81)
-#define ZERO_STATUS_FAILED_ID char(0x82)
-#define ZERO_STATUS_NO_FIND_ID char(0x83)
-#define ZERO_STATUS_NO_SUPPORT_ID char(0x84)
-#define ZERO_STATUS_FRAME_INVALID_ID char(0x85)
-#define ZERO_STATUS_TIMEOUT_ID char(0x86)
-#define ZERO_STATUS_NET_ERROR_ID char(0x87)
-#define ZERO_STATUS_NOT_WORKER_ID char(0x88)
-#define ZERO_STATUS_MANAGE_ARG_ERROR_ID char(0x89)
-#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID char(0x8A)
-
+		
+		/*! 以下为帧类型说明符号*/
 //终止符号
 #define ZERO_FRAME_END  '\0'
 //全局标识
@@ -123,45 +99,77 @@ namespace agebull
 #define ZERO_FRAME_BIN  'B'
 #define ZERO_FRAME_XML  'X'
 
+//以下为返回时的快捷状态:说明帧的第二节字([1])
+
+#define ZERO_STATUS_OK_ID char(0)
+#define ZERO_STATUS_PLAN_ID char(1)
+#define ZERO_STATUS_RUNING_ID char(2)
+#define ZERO_STATUS_BYE_ID char(3)
+#define ZERO_STATUS_WECOME_ID char(4)
+#define ZERO_STATUS_VOTE_SENDED_ID char(5)
+#define ZERO_STATUS_VOTE_BYE_ID char(3)
+#define ZERO_STATUS_WAITING_ID char(6)
+#define ZERO_STATUS_VOTE_START_ID char(7)
+#define ZERO_STATUS_VOTE_END_ID char(8)
+#define ZERO_STATUS_VOTE_CLOSED_ID char(9)
+
+#define ZERO_STATUS_ERROR_ID char(0x81)
+#define ZERO_STATUS_FAILED_ID char(0x82)
+#define ZERO_STATUS_NO_FIND_ID char(0x83)
+#define ZERO_STATUS_NO_SUPPORT_ID char(0x84)
+#define ZERO_STATUS_FRAME_INVALID_ID char(0x85)
+#define ZERO_STATUS_TIMEOUT_ID char(0x86)
+#define ZERO_STATUS_NET_ERROR_ID char(0x87)
+#define ZERO_STATUS_NOT_WORKER_ID char(0x88)
+#define ZERO_STATUS_MANAGE_ARG_ERROR_ID char(0x89)
+#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID char(0x8A)
+#define ZERO_STATUS_FRAME_PLANERROR_ID char(0x8B)
+
+		//以下为请求时的快捷命令:说明帧的第二节字([1])
 /**
-* \brief 心跳退出
+* \brief 取全局标识
 */
-#define  ZERO_COMMAND_GLOBAL_ID  '>' 
+#define  ZERO_BYTE_COMMAND_GLOBAL_ID  '>' 
 
 /**
 * \brief 等待结果
 */
-#define ZERO_COMMAND_WAITING '#'
+#define ZERO_BYTE_COMMAND_WAITING '#'
 
 /**
 * \brief 查找结果
 */
-#define ZERO_COMMAND_FIND_RESULT '%'
+#define ZERO_BYTE_COMMAND_FIND_RESULT '%'
 
 /**
 * \brief 关闭结果
 */
-#define ZERO_COMMAND_CLOSE_RESULT '-'
+#define ZERO_BYTE_COMMAND_CLOSE_REQUEST '-'
 
 /**
 * \brief Ping
 */
-#define ZERO_COMMAND_PING '*'
+#define ZERO_BYTE_COMMAND_PING '*'
 
 /**
 * \brief 心跳加入
 */
-#define  ZERO_COMMAND_HEART_JOIN  '@' 
+#define  ZERO_BYTE_COMMAND_HEART_JOIN  'J' 
+
+/**
+* \brief 心跳已就绪
+*/
+#define  ZERO_BYTE_COMMAND_HEART_READY  'R' 
 
 /**
 * \brief 心跳进行
 */
-#define  ZERO_COMMAND_HEART_PITPAT  '$' 
+#define  ZERO_BYTE_COMMAND_HEART_PITPAT  'P' 
 
 /**
 * \brief 心跳退出
 */
-#define  ZERO_COMMAND_HEART_LEFT  '!' 
+#define  ZERO_BYTE_COMMAND_HEART_LEFT  'L' 
 
 //状态说明符
 

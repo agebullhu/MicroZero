@@ -6,9 +6,9 @@
   "managePort": 8000,
   /*ZeroCenter管理端口号*/
   /*限速模式（0 单线程 1 按线程数限制 2 按等待数限制）*/
-  "speed_limit_model": 1,
+  "speed_limit_model": 3,
   /*最大等待数*/
-  "max_wait": 65536,
+  "max_wait": 9999,
   /*最大Task与Cpu核心数的倍数关系*/
-  "task_cpu_multiple": 8
+  "task_cpu_multiple": 1
 }

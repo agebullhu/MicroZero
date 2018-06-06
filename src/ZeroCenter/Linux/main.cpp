@@ -11,8 +11,6 @@ int main(int argc, char *argv[])
 	//初始化
 	if (!agebull::zmq_net::rpc_service::initialize())
 		return 0;
-	//测试用
-	agebull::zmq_net::station_warehouse::clear();
 	//启动
 	agebull::zmq_net::rpc_service::start();
 #ifdef _DEBUG

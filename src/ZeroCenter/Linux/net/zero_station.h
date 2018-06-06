@@ -310,6 +310,10 @@ namespace agebull
 			*/
 			bool send_response(const vector<sharp_char>& datas, const  size_t first_index = 0)
 			{
+				if (!config_->hase_ready_works())
+				{
+					return false;
+				}
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->worker_out++;
 				ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
@@ -342,25 +346,10 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
+			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr)
 			{
 				++config_->request_out;
-				zmq_state_ = socket_ex::send_status(socket, addr, code, global_id, reqId, msg);
-				if (zmq_state_ == zmq_socket_state::Succeed)
-					return true;
-				++config_->request_err;
-				const char* err_msg = state_str(zmq_state_);
-				log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
-				return false;
-			}
-			/**
-			* \brief 发送帧
-			*/
-			bool send_request_status(const char* addr, char code = ZERO_STATUS_ERROR_ID, const char* global_id = nullptr, const char* reqId = nullptr, const char* msg = nullptr)
-			{
-				boost::lock_guard<boost::mutex> guard(send_mutex_);
-				++config_->request_out;
-				zmq_state_ = socket_ex::send_status(addr[0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, addr, code, global_id, reqId, msg);
+				zmq_state_ = socket_ex::send_status(socket, addr, code, global_id, req_id, reqer, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -427,35 +416,49 @@ namespace agebull
 				return;
 			}
 			const size_t list_size = list.size();
-			if (list_size < 3 || list[2].size() < 2)
+			if (list_size < 2 || list[1].size() < 2)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-			char* description = list[2].get_buffer();
-			const size_t size = list[2].size();
+			char* description = list[1].get_buffer();
+			const size_t size = list[1].size();
 			const auto frame_size = static_cast<size_t>(description[0]);
-			if (frame_size >= size || (frame_size + 3) != list_size || (description[size - 1] != ZERO_FRAME_END && description[size - 1] != ZERO_FRAME_GLOBAL_ID))
+			if (frame_size >= size || (frame_size + 2) != list_size || (description[size - 1] != ZERO_FRAME_END && description[size - 1] != ZERO_FRAME_GLOBAL_ID))
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-
 			//const int64 id = station_warehouse::get_glogal_id();
 			//sharp_char global_id(16);
 			//sprintf(*global_id, "%llx", id);
-			if (description[1] == ZERO_COMMAND_GLOBAL_ID)
+			if (description[1] == ZERO_BYTE_COMMAND_GLOBAL_ID)
 			{
 				char global_id[32];
 				sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
-				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, global_id);
+
+				int reqid = 0, reqer = 0;
+				for (size_t i = 2; i <= frame_size + 2; i++)
+				{
+					switch (description[i])
+					{
+					case ZERO_FRAME_REQUESTER:
+						reqer = i;
+						break;
+					case ZERO_FRAME_REQUEST_ID:
+						reqid = i;
+						break;
+					}
+				}
+
+				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, global_id, reqid == 0 ? nullptr : *list[reqid], reqer == 0 ? nullptr : *list[reqer]);
 			}
 			else if (description[1] == ZERO_STATE_CODE_PLAN)
 			{
 				//job_plan(socket, id, global_id, list);
 				job_plan(socket, list);
 			}
-			else//ZERO_COMMAND_GLOBAL_ID
+			else//ZERO_BYTE_COMMAND_GLOBAL_ID
 			{
 				//job_start(socket, global_id, list);
 				job_start(socket, list);
@@ -477,7 +480,7 @@ namespace agebull
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
 				config_->worker_err++;
-				config_->error("接收结果失败", state_str(zmq_state_));
+				config_->error("read work result", state_str(zmq_state_));
 				return;
 			}
 			job_end(list);

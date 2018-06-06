@@ -190,7 +190,7 @@ namespace Agebull.Common.OAuth
         /// <summary>
         /// 系统用户
         /// </summary>
-        private static readonly LoginUserInfo _system = new LoginUserInfo
+        public static LoginUserInfo System { get; } = new LoginUserInfo
         {
             UserId = -1,
             Account = "system",
@@ -201,10 +201,6 @@ namespace Agebull.Common.OAuth
             LoginType = 0,
             DataState = DataStateType.Enable
         };
-        /// <summary>
-        /// 系统用户
-        /// </summary>
-        public static LoginUserInfo System => _system;
 
         #endregion
 

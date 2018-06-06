@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using Agebull.Common;
+using Agebull.Common.Logging;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -20,86 +22,110 @@ namespace Agebull.ZeroNet.Core
 
         private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
+        private static Thread thread;
 
         internal static void Initialize()
         {
             Console.CursorVisible = false;
-            new Thread(Show)
+            thread = new Thread(Show)
             {
-                IsBackground=true,
+                IsBackground = true,
                 Priority = ThreadPriority.AboveNormal
-            }.Start();
+            };
+            thread.Start();
         }
 
+        internal static void Shutdown()
+        {
+            //thread?.Abort();
+        }
         static void Show()
         {
-            while (ZeroApplication.ApplicationState < StationState.Destroy)
+            while (ZeroApplication.IsAlive)
             {
                 if (!ConsoleMessages.StartProcess(out var message))
                     continue;
-                if (message.Title == null)
-                    message.Title = "???";
-                int childNewLine = 1;
-                switch (message.Type)
-                {
-                    case 0:
-                        Console.WriteLine();
-                        Console.Write(message.Title);
-                        break;
-                    case 1:
-                        if (Console.CursorLeft != 0)
-                            Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        childNewLine = 0;
-                        break;
-                    case 2:
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        break;
-                    case 3:
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        break;
-                }
-
-                if (ZeroApplication.ApplicationState == StationState.Destroy)
-                    return;
-                if (message.Messages != null && message.Messages.Length > 0)
-                {
-                    foreach (var line in message.Messages)
-                    {
-                        if (ZeroApplication.ApplicationState == StationState.Destroy)
-                            return;
-                        if (childNewLine ==2)
-                            Console.WriteLine();
-                        else if (childNewLine == 1)
-                            childNewLine = 2;
-                        Console.CursorLeft = message.Title.Length + 3;
-                        Console.Write(line);
-                    }
-                }
-
-                if (ZeroApplication.ApplicationState == StationState.Destroy)
-                    return;
-                if (message.Type == 1)
-                    Console.CursorLeft = 0;
+                Write(message);
                 ConsoleMessages.EndProcess();
             }
+
+            thread = null;
+        }
+
+        private static void Write(ConsoleMessage message)
+        {
+            if (message.Title == null)
+                message.Title = "???";
+            int childNewLine = 1;
+            switch (message.Type)
+            {
+                case 0:
+                    Console.WriteLine();
+                    Console.Write(message.Title);
+                    break;
+                case 1:
+                    if (Console.CursorLeft != 0)
+                        Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.Write($"[{message.Title}] ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    childNewLine = 0;
+                    break;
+                case 2:
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.Write($"[{message.Title}] ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+                case 3:
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write($"[{message.Title}] ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+            }
+
+            if (message.Messages != null && message.Messages.Length > 0)
+            {
+                foreach (var line in message.Messages)
+                {
+                    if (childNewLine == 1)
+                        childNewLine = 2;
+                    else if (childNewLine == 2)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write(" > ");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    Console.Write(line);
+                }
+            }
+
+            if (message.Type == 1)
+                Console.CursorLeft = 0;
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="message"></param>
+        static void Push(ConsoleMessage message)
+        {
+            if (ZeroApplication.IsRun)
+                ConsoleMessages.Push(message);
+            else
+            {
+                lock (ConsoleMessages)
+                    Write(message);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
         public static void WriteLine(string message)
         {
-            ConsoleMessages.Push(new ConsoleMessage { Title = message });
+            Push(new ConsoleMessage { Title = message });
         }
 
         /// <summary>
@@ -109,7 +135,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteLoop(string title, params object[] messages)
         {
-            ConsoleMessages.Push(new ConsoleMessage
+            Push(new ConsoleMessage
             {
                 Type = 1,
                 Title = title,
@@ -123,7 +149,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteInfo(string title, params object[] messages)
         {
-            ConsoleMessages.Push(new ConsoleMessage
+            Push(new ConsoleMessage
             {
                 Type = 2,
                 Title = title,
@@ -137,7 +163,8 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            ConsoleMessages.Push(new ConsoleMessage
+            LogRecorder.Error(messages.LinkToString(title,"\r\n"));
+            Push(new ConsoleMessage
             {
                 Type = 3,
                 Title = title,
@@ -148,50 +175,22 @@ namespace Agebull.ZeroNet.Core
         /// 
         /// </summary>
         /// <param name="title"></param>
-        /// <param name="message"></param>
+        /// <param name="messages"></param>
         /// <param name="exception"></param>
-        public static void WriteException(string title, Exception exception, string message)
+        public static void WriteException(string title, Exception exception, params object[] messages)
         {
-            ConsoleMessages.Push(new ConsoleMessage
+            var msgs = messages.ToList();
+            msgs.Insert(0,"Exception");
+            msgs.Add("\r\n");
+            msgs.Add(exception);
+            LogRecorder.Exception(exception, messages.LinkToString(title, "\r\n"));
+            Push(new ConsoleMessage
             {
                 Type = 3,
                 Title = title,
-                Messages = new object[] { "Exception", message, exception }
+                Messages = msgs.ToArray()
             });
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="message"></param>
-        /// <param name="exception"></param>
-        public static void WriteException(string title, string message, Exception exception)
-        {
-            ConsoleMessages.Push(new ConsoleMessage
-            {
-                Type = 3,
-                Title = title,
-                Messages = new object[] { "Exception", message, exception }
-            });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="exception"></param>
-        public static void WriteException(string title, Exception exception)
-        {
-            ConsoleMessages.Push(new ConsoleMessage
-            {
-                Type = 3,
-                Title = title,
-                Messages = new object[] { "Exception", exception }
-            });
-        }
-
-
 
     }
 }

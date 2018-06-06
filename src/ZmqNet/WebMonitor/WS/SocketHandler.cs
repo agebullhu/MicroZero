@@ -76,37 +76,47 @@ namespace WebMonitor
             var seg = new ArraySegment<byte>(buffer);
             while (this.socket.State == WebSocketState.Open)
             {
-                string value;
-                using (var mem = new MemoryStream())
+                try
                 {
-                    var incoming = await this.socket.ReceiveAsync(seg, CancellationToken.None);
-                    if (!incoming.EndOfMessage)
+                    string value;
+                    using (var mem = new MemoryStream())
                     {
-                        await this.socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, "内容太大", CancellationToken.None);
-                        break;
+                        var incoming = await this.socket.ReceiveAsync(seg, CancellationToken.None);
+                        if (!incoming.EndOfMessage)
+                        {
+                            await this.socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, "内容太大", CancellationToken.None);
+                            break;
+                        }
+                        if (incoming.Count == 0)
+                            continue;
+                        mem.Write(seg.Array, 0, incoming.Count);
+                        mem.Flush();
+                        mem.Position = 0;
+                        TextReader reader = new StreamReader(mem);
+                        value = reader.ReadToEnd();
                     }
-                    if (incoming.Count == 0)
-                        continue;
-                    mem.Write(seg.Array, 0, incoming.Count);
-                    mem.Flush();
-                    mem.Position = 0;
-                    TextReader reader = new StreamReader(mem);
-                    value = reader.ReadToEnd();
 
-
+                    string title = value.Length == 0 ? "" : value.Substring(1);
+                    if (value[0] == '+')
+                    {
+                        if (!Subscriber.Contains(title))
+                            Subscriber.Add(title);
+                    }
+                    else if (value[0] == '-')
+                    {
+                        Subscriber.Remove(title);
+                    }
                 }
-
-                string title = value.Length == 0 ? "" : value.Substring(1);
-                if (value[0] == '+')
+                catch (WebSocketException)
                 {
-                    if (!Subscriber.Contains(title))
-                        Subscriber.Add(title);
+                    break;
                 }
-                else if (value[0] == '-')
+                catch (Exception)
                 {
-                    Subscriber.Remove(title);
+                    break;
                 }
             }
+            Handlers.Remove(this);
         }
         async void Send(ArraySegment<byte> title, ArraySegment<byte> array)
         {

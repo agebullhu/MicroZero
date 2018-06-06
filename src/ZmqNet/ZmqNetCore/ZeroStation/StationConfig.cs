@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Threading;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
@@ -70,6 +69,12 @@ namespace Agebull.ZeroNet.Core
         public string WorkerCallAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerCallPort);
 
         /// <summary>
+        /// 出站地址
+        /// </summary>
+        [DataMember, JsonProperty]
+        public string SubAddress => ZeroIdentityHelper.GetSubscriberAddress(StationName, WorkerCallPort);
+
+        /// <summary>
         /// 请求入
         /// </summary>
         [DataMember, JsonProperty("request_in")]
@@ -117,7 +122,13 @@ namespace Agebull.ZeroNet.Core
         /// 状态
         /// </summary>
         [DataMember, JsonProperty("workers")]
-        public List<string> Workers { get; set; }
+        public List<ZeroWorker> Workers { get; set; }
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        [DataMember, JsonProperty("worker_count")]
+        public int WorkersCount => Workers?.Count ?? 0;
 
         /// <summary>
         /// 站点类型
@@ -172,50 +183,60 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public void CheckValue(StationConfig src)
         {
-            if (Count == 0)
+            switch (Count)
             {
-                TotalQps = 0;
-                TotalTps = 0;
-                AvgQps = 0;
-                AvgTps = 0;
-                MaxQps = 0;
-                MinQps = 0;
-                MaxTps = 0;
-                MinTps = 0;
-            }
-            else if (Count == 1)
-            {
-                TotalQps = src.RequestOut - RequestOut;
-                AvgQps = TotalQps;
-                MaxQps = TotalQps;
-                MinQps = TotalQps;
-                LastQps = TotalQps;
-                TotalTps = src.WorkerOut - WorkerOut;
-                AvgTps = TotalTps;
-                MaxTps = TotalTps;
-                MinTps = TotalTps;
-                LastTps = TotalTps;
-            }
-            else
-            {
-                LastQps = src.RequestOut - RequestOut;
-                TotalQps += LastQps;
-                AvgQps = TotalQps / Count;
-                if (MaxQps < LastQps)
-                    MaxQps = LastQps;
-                if (MinQps > LastQps)
-                    MinQps = LastQps;
+                //小于0表示ZeroCenter重启
+                case 0:
+                    TotalQps = 0;
+                    TotalTps = 0;
+                    AvgQps = 0;
+                    AvgTps = 0;
+                    MaxQps = 0;
+                    MinQps = 0;
+                    MaxTps = 0;
+                    MinTps = 0;
+                    break;
+                case 1:
+                    TotalQps = src.RequestOut - RequestOut;
+                    AvgQps = TotalQps;
+                    MaxQps = TotalQps;
+                    MinQps = TotalQps;
+                    LastQps = TotalQps;
+                    TotalTps = src.WorkerOut - WorkerOut;
+                    AvgTps = TotalTps;
+                    MaxTps = TotalTps;
+                    MinTps = TotalTps;
+                    LastTps = TotalTps;
+                    break;
+                default:
+                    var last = src.RequestOut - RequestOut;
+                    if (last >= 0)
+                    {
+                        LastQps = last;
+                        TotalQps += LastQps;
+                        AvgQps = TotalQps / Count;
+                        if (last > 0)
+                        {
+                            if (MaxQps < LastQps)
+                                MaxQps = LastQps;
+                            if (MinQps > LastQps)
+                                MinQps = LastQps;
+                        }
 
-                LastTps = src.WorkerOut - WorkerOut;
-                TotalTps += LastTps;
-                AvgTps = TotalTps / Count;
-                if (MaxTps < LastTps)
-                    MaxTps = LastTps;
-                if (MinTps > LastTps)
-                    MinTps = LastTps;
+                        LastTps = src.WorkerOut - WorkerOut;
+                        TotalTps += LastTps;
+                        AvgTps = TotalTps / Count;
+                        if (LastTps > 0)
+                        {
+                            if (MaxTps < LastTps)
+                                MaxTps = LastTps;
+                            if (MinTps > LastTps)
+                                MinTps = LastTps;
+                        }
+                    }
+                    break;
             }
             Count += 1;
-
             State = src.State;
             RequestIn = src.RequestIn;
             RequestOut = src.RequestOut;
@@ -294,5 +315,63 @@ namespace Agebull.ZeroNet.Core
         public long MinQps { get; set; }
 
         #endregion
+    }
+
+
+    /// <summary>
+    /// 工作对象
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
+    public class ZeroWorker
+    {
+        /// <summary>
+        ///  实名
+        /// </summary>
+        [DataMember, JsonProperty("real_name")]
+        public string RealName { get; set; }
+
+        /// <summary>
+        ///  上报的IP地址
+        /// </summary>
+        [DataMember, JsonProperty("ip_address")]
+        public string IpAddress { get; set; }
+
+        /// <summary>
+        ///  上次心跳的时间
+        /// </summary>
+        [DataMember, JsonProperty("pre_time")] public string pre_time;
+
+        /// <summary>
+        ///  健康等级
+        /// </summary>
+        [DataMember, JsonProperty("level")]
+        public int Level { get; set; }
+
+        /// <summary>
+        ///  状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
+        /// </summary>
+        [DataMember, JsonProperty("state")] int _state;
+
+        /// <summary>
+        ///  状态
+        /// </summary>
+        [DataMember, JsonProperty("state_text")]
+        public string StateText
+        {
+            get
+            {
+                switch (_state)
+                {
+                    case 0:
+                        return "Prepare";
+                    case 1:
+                        return "Ready";
+                    case 2:
+                        return "Left";
+                    default:
+                        return "Lost";
+                }
+            }
+        }
     }
 }

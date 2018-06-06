@@ -21,7 +21,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void CloseSocket(this ZSocket socket)
         {
-            if (socket == null)
+            if (socket == null || socket.IsDisposed)
                 return;
             if (ZContext.IsAlive)
             {
@@ -115,22 +115,27 @@ namespace Agebull.ZeroNet.Core
             if (identity == null)
                 identity = ZeroIdentityHelper.CreateRealName(false).ToAsciiBytes();
             socket.SetOption(ZSocketOption.IDENTITY, identity);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, 10);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
-            socket.SetOption(ZSocketOption.LINGER, 1000);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL, 50);
+            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, 50);
+            //socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
+            socket.SetOption(ZSocketOption.LINGER, 100);
             socket.SetOption(ZSocketOption.RCVTIMEO, 5000);
+            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, 200);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, 200);
+
             //socket.SetOption(ZSocketOption.RCVHWM, 4096);
             //socket.SetOption(ZSocketOption.SNDHWM, 4096);
-            //socket.Options.TcpKeepalive = true;
-            //socket.Options.TcpKeepaliveIdle = new TimeSpan(0, 0, 10);
-            //socket.Options.TcpKeepaliveInterval = new TimeSpan(0, 0, 0, 30);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 10);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, 1);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, 5);
             if (type == ZSocketType.SUB)
             {
                 socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe ?? "");
             }
             else
             {
-                socket.SetOption(ZSocketOption.SNDTIMEO, 500);
+                socket.SetOption(ZSocketOption.SNDTIMEO, 5000);
             }
 
             if (socket.Connect(address, out error))
@@ -149,7 +154,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static ZSocket CreateRequestSocket(string address, byte[] identity = null)
         {
-            return CreateClientSocket(address, ZSocketType.REQ, identity);
+            return CreateClientSocket(address, ZSocketType.DEALER, identity);
         }
 
         /// <summary>
@@ -158,7 +163,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="address"></param>
         /// <param name="identity"></param>
         /// <returns></returns>
-        public static ZSocket CreateDealerSocket(string address, byte[] identity)
+        public static ZSocket CreateDealerSocket(string address, byte[] identity = null)
         {
             return CreateClientSocket(address, ZSocketType.DEALER, identity);
         }
@@ -171,7 +176,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="identity"></param>
         /// <param name="subscribe"></param>
         /// <returns></returns>
-        public static ZSocket CreateSubscriberSocket(string address, byte[] identity, string subscribe)
+        public static ZSocket CreateSubscriberSocket(string address, byte[] identity=null, string subscribe="")
         {
             return CreateClientSocket(address, ZSocketType.SUB, identity, subscribe);
         }
@@ -272,9 +277,8 @@ namespace Agebull.ZeroNet.Core
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteError("Send", "Exception", socket.Connects.LinkToString(','),
-                        $"Socket Ptr:{socket.SocketPtr}", e);
-                    LogRecorder.Exception(e);
+                    ZeroTrace.WriteException("Send",e, socket.Connects.LinkToString(','),
+                        $"Socket Ptr:{socket.SocketPtr}");
                     return new ZeroResultData<string>
                     {
                         State = ZeroOperatorStateType.Exception,
@@ -381,7 +385,8 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static bool Publish(this ZSocket socket, string title, string subTitle, string content)
         {
-
+            if (socket == null)
+                return false;
             try
             {
                 using (var frames = new ZMessage
@@ -407,8 +412,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Pub", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteError("Pub", e, socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
                 return false;
             }
         }
@@ -436,23 +440,22 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Sub", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("Sub",e, "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
                 item = null;
                 return false;
             }
 
-            return Subscribe(messages, out item, showError);
+            return Unpack(messages, out item, showError);
         }
 
         /// <summary>
-        ///     接收广播
+        ///     广播消息解包
         /// </summary>
         /// <param name="messages"></param>
         /// <param name="item"></param>
         /// <param name="showError"></param>
         /// <returns></returns>
-        public static bool Subscribe(this ZMessage messages, out PublishItem item, bool showError = true)
+        public static bool Unpack(this ZMessage messages, out PublishItem item, bool showError = true)
         {
             if (messages == null)
             {
@@ -509,8 +512,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Sub", "Exception", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("Sub", e);
                 item = null;
                 return false;
             }
@@ -534,44 +536,30 @@ namespace Agebull.ZeroNet.Core
         public static ZeroResultData<string> ReceiveString(this ZSocket socket, out ZError error, int tryCnt = 0, bool showError = true)
         {
 
-            //tryCnt = 0;
+            tryCnt = 5;
             ZMessage messages;
+            var sockets = new[] {socket};
             int doCnt = 0;
-            try
+            var pollItems = new[] { ZPollItem.CreateReceiver() };
+            if (!sockets.PollIn(pollItems, out var mes, out error, new TimeSpan(0, 0, 5)))
             {
-                while (true)
+                if (error != null && !Equals(error, ZError.EAGAIN))
                 {
-                    messages = socket.ReceiveMessage(out error);
-                    if (error == null)
-                    {
-                        if (doCnt > 0 && showError)
-                            ZeroTrace.WriteInfo("Receive", socket.Connects.LinkToString(','), "Slow", $"ReTry:{doCnt}.Socket Ptr:{ socket.SocketPtr}");
-                        break;
-                    }
-                    if (++doCnt < tryCnt && Equals(error, ZError.EAGAIN))
-                        continue;
                     if (showError)
                         ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), error.Text, $"ReTry:{doCnt}.Socket Ptr:{ socket.SocketPtr}");
-                    return new ZeroResultData<string>
-                    {
-                        State = ZeroOperatorStateType.LocalRecvError,
-                        ZmqErrorMessage = error.Text,
-                        ZmqErrorCode = error.Number
-                    };
+                    
                 }
-            }
-            catch (Exception e)
-            {
-                error = null;
-                if (showError)
-                    ZeroTrace.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"ReTry:{doCnt}.Socket Ptr:{ socket.SocketPtr}.", e);
-                LogRecorder.Exception(e);
+
+                socket.CloseSocket();
                 return new ZeroResultData<string>
                 {
-                    State = ZeroOperatorStateType.Exception,
-                    Exception = e
+                    State = ZeroOperatorStateType.LocalRecvError,
+                    ZmqErrorMessage = error?.Text,
+                    ZmqErrorCode = error?.Number??0
                 };
             }
+
+            messages = mes[0];
 
             try
             {
@@ -615,9 +603,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                if (showError)
-                    ZeroTrace.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.", e);
+                ZeroTrace.WriteException("Receive",e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<string>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -726,8 +712,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteError("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -796,8 +781,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", "Exception", socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteError("Receive",e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,

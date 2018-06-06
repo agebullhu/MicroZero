@@ -29,6 +29,13 @@ namespace Agebull.ZeroNet.Core
             return HeartLeft("SystemManage", ZeroApplication.Config.RealName);
         }
 
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public static bool HeartReady()
+        {
+            return HeartReady("SystemManage", ZeroApplication.Config.RealName);
+        }
 
         /// <summary>
         ///     连接到
@@ -53,6 +60,13 @@ namespace Agebull.ZeroNet.Core
             return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartLeft, station, realName);
         }
 
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public static bool HeartReady(string station, string realName)
+        {
+            return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartReady, station, realName);
+        }
 
         /// <summary>
         ///     连接到
@@ -100,30 +114,17 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static bool LoadAllConfig()
         {
-            ZeroResultData<string> re;
-            int trycnt = 0;
-            while (true)
+            var re = CallCommand("host", "*");
+            if (!re.InteractiveSuccess)
             {
-                re = CallCommand("host", "*");
-                if (re.InteractiveSuccess)
-                {
-                    break;
-                }
-
-                if (++trycnt > 5)
-                {
-                    ZeroTrace.WriteError("读取站点配置", "服务器无响应");
-                    return false;
-                }
-                Thread.Sleep(10);
-            }
-
-            if (!re.TryGetValue(ZeroFrameType.TextValue, out var json))
-            {
-                ZeroTrace.WriteError("ZeroApplication", "LoadAllConfig", "Empty");
+                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Network failed");
                 return false;
             }
-            ZeroTrace.WriteInfo("ZeroApplication", "LoadAllConfig", json);
+            if (!re.TryGetValue(ZeroFrameType.TextValue, out var json))
+            {
+                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Empty");
+                return false;
+            }
             return ZeroApplication.Config.FlushConfigs(json);
         }
 
@@ -197,25 +198,34 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private static ZeroResultData<string> CallCommand(byte[] description, params string[] args)
         {
-            var socket = ZeroHelper.CreateRequestSocket(ZeroApplication.Config.ZeroManageAddress);
+            var socket = ZeroConnectionPool.GetSocket("SystemManage");
             if (socket == null)
-                return new ZeroResultData<string>
-                {
-                    State = ZeroOperatorStateType.Error,
-                    ZmqErrorMessage = "con't creat socket"
-                };
-            using (socket)
+                socket = ZeroHelper.CreateRequestSocket(ZeroApplication.Config.ZeroManageAddress);
+            try
             {
                 var result = SendCommand(socket, description, args);
                 if (!result.InteractiveSuccess)
                 {
-                    socket.CloseSocket();
+                    ZeroConnectionPool.Close(ref socket);
                     return result;
                 }
 
                 result = socket.ReceiveString();
-                socket.CloseSocket();
+                //socket.CloseSocket();
                 return result;
+            }
+            catch (Exception e)
+            {
+                ZeroConnectionPool.Close(ref socket);
+                return new ZeroResultData<string>
+                {
+                    InteractiveSuccess = false,
+                    Exception = e
+                };
+            }
+            finally
+            {
+                ZeroConnectionPool.Free(socket);
             }
         }
 

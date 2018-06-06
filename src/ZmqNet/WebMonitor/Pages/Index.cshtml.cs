@@ -7,7 +7,7 @@ namespace WebMonitor.Pages
     {
         public void OnGet()
         {
-            ZeroApplication.Config.Foreach(p => p.Count = 0);
+            //ZeroApplication.Config.Foreach(p => p.Count = 0);
         }
         
     }

@@ -304,30 +304,33 @@ namespace agebull
 		*/
 		void zero_station::job_plan(ZMQ_HANDLE socket, vector<sharp_char>& list)//const int64 id, sharp_char& global_id, 
 		{
-			sharp_char& description = list[2];
+			sharp_char& description = list[1];
 			char* const buf = description.get_buffer();
 			const auto frame_size = description.size();
 			buf[1] = ZERO_STATE_CODE_PLAN;
-			size_t plan = 0, rqid = 0, glid = 0;
+			size_t plan = 0, rqid = 0, glid = 0, reqer=0;
 			for (size_t idx = 2; idx <= frame_size; idx++)
 			{
 				switch (buf[idx])
 				{
 				case ZERO_FRAME_PLAN:
-					plan = idx + 1;
+					plan = idx;
 					break;
 				case ZERO_FRAME_REQUEST_ID:
-					rqid = idx + 1;
+					rqid = idx;
+					break;
+				case ZERO_FRAME_REQUESTER:
+					reqer = idx;
 					break;
 				case ZERO_FRAME_GLOBAL_ID:
-					glid = idx + 1;
+					glid = idx;
 					break;
 				}
 			}
 			const sharp_char global_id = glid == 0 ? nullptr : list[glid];
 			if (plan == 0)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID, *global_id, rqid == 0 ? nullptr : *list[rqid], "plan frame no find");
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_PLANERROR_ID, *global_id, rqid == 0 ? nullptr : *list[rqid], reqer == 0 ? nullptr : *list[reqer]);
 				return;
 			}
 			plan_message message;
@@ -339,7 +342,7 @@ namespace agebull
 			message.messages_description = description;
 			message.messages = list;
 			plan_next(message, true);
-			send_request_status(socket, *list[0], ZERO_STATUS_PLAN_ID, *global_id, rqid == 0 ? nullptr : *list[rqid]);
+			send_request_status(socket, *list[0], ZERO_STATUS_PLAN_ID, *global_id, rqid == 0 ? nullptr : *list[rqid], reqer == 0 ? nullptr : *list[reqer]);
 		}
 
 		void zero_station::save_plan(ZMQ_HANDLE socket, vector<sharp_char> list) const

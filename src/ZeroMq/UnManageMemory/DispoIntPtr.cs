@@ -7,7 +7,7 @@ namespace ZeroMQ.lib
     /// <summary>
     /// 非托管内存的管理类
     /// </summary>
-    internal sealed partial class DispoIntPtr : MemoryCheck
+    public sealed partial class DispoIntPtr : MemoryCheck
     {
 #if UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(DispoIntPtr);

@@ -42,7 +42,7 @@ namespace Agebull.ZeroNet.Core
             {
                 return config;
             }
-            if (ApplicationState != StationState.Run)
+            if (!IsRun)
             {
                 return null;
             }
@@ -59,12 +59,27 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 运行状态（本地与服务器均正常）
         /// </summary>
-        public static bool CanDo => ApplicationState == StationState.Run && ZerCenterStatus == ZeroCenterState.Run;
+        public static bool CanDo => (ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run) && ZerCenterStatus == ZeroCenterState.Run;
 
         /// <summary>
         /// 运行状态（本地未关闭）
         /// </summary>
         public static bool IsAlive => ApplicationState < StationState.Closing;
+
+        /// <summary>
+        /// 已关闭
+        /// </summary>
+        public static bool IsDestroy => ApplicationState == StationState.Destroy;
+
+        /// <summary>
+        /// 已关闭
+        /// </summary>
+        public static bool IsClosed => ApplicationState >= StationState.Closed;
+        
+        /// <summary>
+        /// 是否正在运行
+        /// </summary>
+        public static bool IsRun => ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run;
 
         /// <summary>
         ///     运行状态
@@ -100,38 +115,96 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool RegistZeroObject<TZeroObject>() where TZeroObject : class, IZeroObject, new()
         {
-            if (ZeroObjects.Any(p => p is TZeroObject))
-                return false;
-            return RegistZeroObject(new TZeroObject());
+            using (OnceScope.CreateScope(ZeroObjects))
+            {
+                return !ZeroObjects.Any(p => p is TZeroObject) && RegistZeroObject(new TZeroObject());
+            }
+        }
+
+        /// <summary>
+        /// 对象活动状态记录器锁定
+        /// </summary>
+        static readonly SemaphoreSlim ObjectsSemaphore = new SemaphoreSlim(0, short.MaxValue);
+        /// <summary>
+        /// 当前活动对象数量
+        /// </summary>
+        private static int ActiveCount;
+        /// <summary>
+        /// 当前活动对象数量
+        /// </summary>
+        private static int FailedCount;
+        /// <summary>
+        /// 重置当前活动数量
+        /// </summary>
+        public static void ResetObjectActive()
+        {
+            Interlocked.Exchange(ref ActiveCount, 0);
+        }
+        /// <summary>
+        /// 对象活动时登记
+        /// </summary>
+        public static void OnObjectActive()
+        {
+            if (Interlocked.Increment(ref ActiveCount) == ZeroObjects.Count - FailedCount)
+                ObjectsSemaphore.Release();//发出完成信号
+        }
+        /// <summary>
+        /// 对象关闭时登记
+        /// </summary>
+        public static void OnObjectClose()
+        {
+            if (Interlocked.Decrement(ref ActiveCount) == 0)
+                ObjectsSemaphore.Release();//所有对象均关闭时发出信号
+        }
+
+        /// <summary>
+        /// 对象关闭时登记
+        /// </summary>
+        public static void OnObjectFailed()
+        {
+            if (Interlocked.Decrement(ref FailedCount) == 0)
+                ObjectsSemaphore.Release();//所有对象均关闭时发出信号
+        }
+
+        /// <summary>
+        /// 等待所有对象关闭
+        /// </summary>
+        public static bool HaseActiveObject => ActiveCount > 0;
+
+        /// <summary>
+        /// 等待所有对象关闭
+        /// </summary>
+        public static void WaitAllObjectSemaphore()
+        {
+            ObjectsSemaphore.Wait();
         }
         /// <summary>
         /// 系统启动时调用
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
-            if (ZeroObjects.Contains(obj))
-                return false;
-            ZeroTrace.WriteInfo("ZeroApplication", $"RegistZeroObject:{obj.Name}");
-            Monitor.Enter(ZeroObjects);
-            ZeroObjects.Add(obj);
-            Monitor.Exit(ZeroObjects);
-            if (ApplicationState >= StationState.Initialized)
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-
-                try
+                if (ZeroObjects.Contains(obj))
+                    return false;
+                ZeroTrace.WriteInfo(AppName, $"RegistZeroObject:{obj.Name}");
+                ZeroObjects.Add(obj);
+                if (ApplicationState >= StationState.Initialized)
                 {
-                    ZeroTrace.WriteInfo(obj.Name, "Initialize");
-                    obj.OnZeroInitialize();
+                    try
+                    {
+                        ZeroTrace.WriteInfo(obj.Name, "Initialize");
+                        obj.OnZeroInitialize();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "Initialize", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "Initialize", e);
-                }
-            }
 
-            if (CanDo)
-            {
+                if (!CanDo)
+                    return true;
                 try
                 {
                     ZeroTrace.WriteInfo(obj.Name, "Start");
@@ -152,24 +225,25 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroInitialize()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroInitialize....");
-            RegistZeroObject(ZeroPublisher.Instance);
-            RegistZeroObject(ZeroConnectionPool.Instance);
-            Monitor.Enter(ZeroObjects);
-            foreach (var obj in ZeroObjects)
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-                try
+                ZeroTrace.WriteInfo(AppName, "OnZeroInitialize....");
+                RegistZeroObject(ZeroPublisher.Instance);
+                RegistZeroObject(ZeroConnectionPool.Instance);
+                foreach (var obj in ZeroObjects)
                 {
-                    obj.OnZeroInitialize();
+                    try
+                    {
+                        obj.OnZeroInitialize();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "*Initialize", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "*Initialize", e);
-                }
+                ZeroTrace.WriteInfo(AppName, "OnZeroInitialize");
             }
-            Monitor.Exit(ZeroObjects);
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroInitialize");
         }
 
         /// <summary>
@@ -177,24 +251,29 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroStart()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroStart....");
-            Monitor.Enter(ZeroObjects);
-            foreach (var obj in ZeroObjects)
+            using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
             {
-                try
+                ZeroTrace.WriteInfo(AppName, "OnZeroStart....");
+                foreach (var obj in ZeroObjects)
                 {
-                    ZeroTrace.WriteInfo(obj.Name, "*Start");
-                    obj.OnZeroStart();
+                    try
+                    {
+                        ZeroTrace.WriteInfo(obj.Name, "*Start");
+                        obj.OnZeroStart();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "*Start", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "*Start", e);
-                }
+                WaitAllObjectSemaphore();
+                ApplicationState = StationState.Run;
+                SystemMonitor.RaiseEvent("program_run");
+                SystemManager.HeartReady();
+                ZeroTrace.WriteInfo(AppName, "OnZeroStart");
+                ZeroTrace.WriteInfo(AppName, "All ZeroObject actived");
             }
-            Monitor.Exit(ZeroObjects);
-            SystemMonitor.RaiseEvent("program_run");
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroStart");
         }
 
 
@@ -203,70 +282,87 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnStationStateChanged(StationConfig config)
         {
-            ZeroTrace.WriteInfo("ZeroApplication", "OnStationStateChanged...");
-            Monitor.Enter(ZeroObjects);
-            foreach (var obj in ZeroObjects)
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-                try
+                if (!HaseActiveObject)
+                    return;
+                ZeroTrace.WriteInfo(AppName, "OnStationStateChanged...");
+                foreach (var obj in ZeroObjects)
                 {
-                    obj.OnStationStateChanged(config);
+                    try
+                    {
+                        obj.OnStationStateChanged(config);
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "OnStationStateChanged", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "OnStationStateChanged", e);
-                }
+                ZeroTrace.WriteInfo(AppName, "OnStationStateChanged");
             }
-            Monitor.Exit(ZeroObjects);
-            ZeroTrace.WriteInfo("ZeroApplication", "OnStationStateChanged");
         }
 
         /// <summary>
-        ///     要求心跳
+        ///     心跳
         /// </summary>
         internal static void OnHeartbeat()
         {
-            Monitor.Enter(ZeroObjects);
-            SystemManager.Heartbeat();
-            foreach (var obj in ZeroObjects)
+            if (!IsRun)
+                return;
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-                try
+                if (!IsRun)
+                    return;
+                SystemManager.Heartbeat();
+                if (!HaseActiveObject)
+                    return;
+                foreach (var obj in ZeroObjects)
                 {
-                    obj.OnHeartbeat();
-                }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "OnHeartbeat", e);
+                    if (!IsRun)
+                        return;
+                    try
+                    {
+                        obj.OnHeartbeat();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "OnHeartbeat", e);
+                    }
                 }
             }
-            Monitor.Exit(ZeroObjects);
         }
         /// <summary>
         /// 系统关闭时调用
         /// </summary>
         internal static void OnZeroEnd()
         {
-            SystemManager.HeartLeft();
-            ApplicationState = StationState.Closing;
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroEnd....");
-            Monitor.Enter(ZeroObjects);
-            foreach (var obj in ZeroObjects)
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-                try
+                ZeroTrace.WriteInfo(AppName, "OnZeroEnd....");
+                SystemManager.HeartLeft();
+                ApplicationState = StationState.Closing;
+                if (HaseActiveObject)
                 {
-                    ZeroTrace.WriteInfo(obj.Name, "*Close");
-                    obj.OnZeroEnd();
+                    foreach (var obj in ZeroObjects)
+                    {
+                        try
+                        {
+                            ZeroTrace.WriteInfo(obj.Name, "*Close");
+                            obj.OnZeroEnd();
+                        }
+                        catch (Exception e)
+                        {
+                            LogRecorder.Exception(e);
+                            ZeroTrace.WriteError(obj.Name, "*Close", e);
+                        }
+                    }
+                    WaitAllObjectSemaphore();
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "*Close", e);
-                }
+                ApplicationState = StationState.Closed;
+                ZeroTrace.WriteInfo(AppName, "OnZeroEnd");
             }
-            Monitor.Exit(ZeroObjects);
-            ApplicationState = StationState.Closed;
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroEnd");
         }
 
         /// <summary>
@@ -274,50 +370,42 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroDistory()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroDistory....");
+            ZeroTrace.WriteInfo(AppName, "OnZeroDistory....");
             if (!Monitor.TryEnter(ZeroObjects))
                 return;
-            IZeroObject[] array;
-            Monitor.Enter(ZeroObjects);
-            try
+            using (OnceScope.CreateScope(ZeroObjects))
             {
-                array = ZeroObjects.ToArray();
+                var array = ZeroObjects.ToArray();
                 ZeroObjects.Clear();
-            }
-            finally
-            {
-                Monitor.Exit(ZeroObjects);
-            }
-            foreach (var obj in array)
-            {
-                try
+                foreach (var obj in array)
                 {
-                    ZeroTrace.WriteInfo(obj.Name, "*Distory");
-                    obj.OnZeroDistory();
+                    try
+                    {
+                        ZeroTrace.WriteInfo(obj.Name, "*Distory");
+                        obj.OnZeroDistory();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "*Distory", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "*Distory", e);
-                }
-            }
 
-            foreach (var obj in array)
-            {
-                try
+                foreach (var obj in array)
                 {
-                    ZeroTrace.WriteInfo(obj.Name, "*Dispose");
-                    obj.Dispose();
+                    try
+                    {
+                        ZeroTrace.WriteInfo(obj.Name, "*Dispose");
+                        obj.Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                        ZeroTrace.WriteError(obj.Name, "*Dispose", e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "*Dispose", e);
-                }
+                ZeroTrace.WriteInfo(AppName, "OnZeroDistory");
             }
-
-            ZeroTrace.WriteInfo("ZeroApplication", "OnZeroDistory");
-
         }
         #endregion
 
@@ -383,15 +471,15 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Initialize()
         {
-            if (ApplicationState != StationState.None)
-                return;
+            if (AppName == null)
+                AppName = "zero net";
             ApplicationState = StationState.Initialized;
             ZeroTrace.Initialize();
-            ZeroTrace.WriteInfo("ZeroApplication", $"weconme {AppName ?? "zero net"}");
-            ZeroTrace.WriteInfo("ZeroApplication", zmq.LibraryVersion);
+            ZeroTrace.WriteInfo(AppName, $"weconme {AppName ?? "zero net"}");
+            ZeroTrace.WriteInfo(AppName, zmq.LibraryVersion);
             Console.CursorVisible = false;
             //引发静态构造
-            ZeroTrace.WriteInfo("ZeroApplication", "Initialize...");
+            ZeroTrace.WriteInfo(AppName, "Initialize...");
             InitializeConfig();
             ApiContext.SetLogRecorderDependency();
             LogRecorder.Initialize();
@@ -407,14 +495,14 @@ namespace Agebull.ZeroNet.Core
                 : ApiContext.Configuration["contentRoot"];
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                ZeroTrace.WriteInfo("ZeroApplication", "Linux");
+                ZeroTrace.WriteInfo(AppName, "Linux");
                 root = Path.GetDirectoryName(root);
                 IOHelper.CheckPath(root, "config");
                 IOHelper.CheckPath(root, "ipc");
             }
             else
             {
-                ZeroTrace.WriteInfo("ZeroApplication", "Windows");
+                ZeroTrace.WriteInfo(AppName, "Windows");
             }
             if (ApiContext.Configuration == null)
             {
@@ -422,7 +510,7 @@ namespace Agebull.ZeroNet.Core
                 // ReSharper disable once PossibleNullReferenceException
                 ApiContext.Configuration["contentRoot"] = Environment.CurrentDirectory;
             }
-
+            
             bool isnew = false;
             var file = Path.Combine(ApiContext.Configuration["contentRoot"], "host.json");
             if (Config == null)
@@ -477,9 +565,9 @@ namespace Agebull.ZeroNet.Core
             switch (globalConfig.SpeedLimitModel)
             {
                 default:
-                case SpeedLimitType.Single:
+                //case SpeedLimitType.Single:
                     globalConfig.MaxWait = 0;
-                    model = $"单线程:线程(1) 等待(0)";
+                    model = "单线程:线程(1) 等待(0)";
                     break;
                 case SpeedLimitType.ThreadCount:
                     if (globalConfig.MaxWait < 0xFF)
@@ -499,7 +587,7 @@ namespace Agebull.ZeroNet.Core
             }
 
             ZeroTrace.WriteInfo("SpeedLimitModel", model);
-            
+
             Config.ServiceName = globalConfig.ServiceName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || String.IsNullOrWhiteSpace(Config.ZeroAddress))
             {
@@ -569,13 +657,15 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     启动
         /// </summary>
-        private static Task Start()
+        private static void Start()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", Config.ZeroManageAddress);
-            ApplicationState = StationState.Start;
-            var task = Task.Factory.StartNew(SystemMonitor.Monitor);
-            JoinCenter();
-            return task;
+            using (OnceScope.CreateScope(Config))
+            {
+                ZeroTrace.WriteInfo(AppName, Config.ZeroManageAddress);
+                ApplicationState = StationState.Start;
+                Task.Factory.StartNew(SystemMonitor.Monitor);
+                JoinCenter();
+            }
         }
 
         /// <summary>
@@ -590,31 +680,30 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static bool JoinCenter()
         {
-            ZeroTrace.WriteInfo("ZeroApplication", $"try connect zero center ({Config.ZeroManageAddress})...");
+            ZeroTrace.WriteInfo(AppName, $"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.PingCenter())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
-                ZeroTrace.WriteError("ZeroApplication", "zero center can`t connection.");
+                ZeroTrace.WriteError(AppName, "zero center can`t connection.");
                 return false;
             }
-            ApplicationState = StationState.Run;
             ZerCenterStatus = ZeroCenterState.Run;
+            ApplicationState = StationState.BeginRun;
             if (!SystemManager.HeartJoin())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
-                ZeroTrace.WriteError("ZeroApplication", "zero center can`t connection.");
+                ZeroTrace.WriteError(AppName, "zero center can`t connection.");
                 return false;
             }
             if (!SystemManager.LoadAllConfig())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
-                ZeroTrace.WriteError("ZeroApplication", "configs can`t load.");
                 return false;
             }
-            ZeroTrace.WriteInfo("ZeroApplication", "be connected successfully");
+            ZeroTrace.WriteInfo(AppName, "be connected successfully");
             OnZeroStart();
             return true;
         }
@@ -624,12 +713,9 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static Task RunBySuccess()
         {
-            ZeroTrace.WriteLine("Application started. Press Ctrl+C to shut down.");
             Console.CancelKeyPress += OnCancelKeyPress;
-            ApplicationState = StationState.Start;
-            while (!JoinCenter())
-                Thread.Sleep(1000);
-            return Task.Factory.StartNew(SystemMonitor.Monitor);
+            Start();
+            return Task.Factory.StartNew(WaitTask);
         }
 
         /// <summary>
@@ -637,11 +723,26 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void RunAwaite()
         {
-            ZeroTrace.WriteLine("Application started. Press Ctrl+C to shut down.");
             Console.CancelKeyPress += OnCancelKeyPress;
-            var task = Start();
-            task.GetAwaiter().GetResult();
+            Start();
+            Task.Factory.StartNew(WaitTask).Wait();
         }
+
+        /// <summary>
+        /// 应用程序等待结果的信号量对象
+        /// </summary>
+        private static readonly SemaphoreSlim WaitToken = new SemaphoreSlim(0, 1);
+
+        /// <summary>
+        ///     执行直到连接成功
+        /// </summary>
+        static void WaitTask()
+        {
+            ZeroTrace.WriteLine("Application started. Press Ctrl+C to shutdown.");
+            WaitToken.Wait();
+            ZeroTrace.WriteLine("Application shutdown ,see you late.");
+        }
+
         #endregion
 
         #region Destroy
@@ -651,22 +752,27 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Shutdown()
         {
-            SystemManager.HeartLeft();
             switch (ApplicationState)
             {
                 case StationState.Destroy:
                     return;
+                case StationState.BeginRun:
                 case StationState.Run:
                     OnZeroEnd();
+                    break;
+                case StationState.Failed:
+                    SystemManager.HeartLeft();
                     break;
             }
 
             ApplicationState = StationState.Closed;
+            SystemMonitor.WaitSafeClose();
             OnZeroDistory();
-            ZeroTrace.WriteInfo("ZeroApplication", "Destroy");
+            ZeroTrace.WriteInfo(AppName, "Destroy");
             LogRecorder.Shutdown();
-            ZContext.Destroy();
             ApplicationState = StationState.Destroy;
+            ZContext.Destroy();
+            WaitToken.Release();
         }
 
         private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)

@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
+using Newtonsoft.Json;
 
 namespace RpcTest
 {
@@ -40,19 +41,30 @@ namespace RpcTest
         }
         private int waitCount;
 
-        public void TestAsync()
+        private readonly string json = JsonConvert.SerializeObject(new
+        {
+            MobilePhone = "15618965007",
+            UserPassword = "123456A",
+            VerificationCode = "9999"
+        });
+        public void Test()
         {
             _start = DateTime.Now;
             while (ZeroApplication.IsAlive)
             {
-                if (!ZeroApplication.CanDo)
+                if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZerCenterStatus != ZeroCenterState.Run)
                 {
                     Thread.Sleep(1000);
                     continue;
                 }
+                if (waitCount > ZeroApplication.Config.MaxWait)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
                 DateTime s = DateTime.Now;
                 Interlocked.Increment(ref waitCount);
-                ApiClient.Call("Test", "api/login", "{}");
+                var result =ApiClient.Call("Test", "api/login", "{}");//"UserCenter", "v2/login/account", json
                 DoCount(s);
             }
         }

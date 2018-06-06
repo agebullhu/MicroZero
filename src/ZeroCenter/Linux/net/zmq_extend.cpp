@@ -1,11 +1,13 @@
 #include "../stdafx.h"
 #include "net_command.h"
+#include <arpa/inet.h>
 using namespace std;
 namespace agebull
 {
 	namespace zmq_net
 	{
 		int socket_ex::create_=0, socket_ex::close_=0;
+
 		/**
 		* \brief 配置ZMQ连接对象
 		* \param socket
@@ -17,26 +19,25 @@ namespace agebull
 			int iRcvTimeout;
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
-			//char monitor[MAX_PATH];
-			//sprintf(monitor,"inproc://_%s_monitor.rep", name);
-			//int zmq_result = zmq_socket_monitor(socket, monitor, ZMQ_EVENT_ALL);
 			//assert(zmq_result == 0);
-			int iZMQ_IMMEDIATE = 1;//列消息只作用于已完成的链接
-			zmq_setsockopt(socket, ZMQ_IMMEDIATE, &iZMQ_IMMEDIATE, sizeof(int));
-			int iLINGER = 50;//关闭设置停留时间,毫秒
-			zmq_setsockopt(socket, ZMQ_LINGER, &iLINGER, sizeof(int));
-			iRcvTimeout = 3000;
-			zmq_setsockopt(socket, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(int));
-			int iHwm = 4096;
-			zmq_setsockopt(socket, ZMQ_SNDHWM, &iHwm, sizeof(int));
-			zmq_setsockopt(socket, ZMQ_RCVHWM, &iHwm, sizeof(int));
-			int iBuf =  0xFFFFFF;
-			zmq_setsockopt(socket, ZMQ_SNDBUF, &iBuf, sizeof(int));
-			zmq_setsockopt(socket, ZMQ_RCVBUF, &iBuf, sizeof(int));
-			int iSndTimeout = 3000;
-			zmq_setsockopt(socket, ZMQ_SNDTIMEO, &iSndTimeout, sizeof(int));
-			int iBackLog = 10000;
-			zmq_setsockopt(socket, ZMQ_BACKLOG, &iBackLog, sizeof(int));
+			setsockopt(socket, ZMQ_IMMEDIATE, 1);//列消息只作用于已完成的链接
+			setsockopt(socket, ZMQ_LINGER, 50);//关闭设置停留时间,毫秒
+			setsockopt(socket, ZMQ_RCVTIMEO, 3000);
+			setsockopt(socket, ZMQ_SNDHWM, 4096);
+			setsockopt(socket, ZMQ_RCVHWM, 4096);
+			setsockopt(socket, ZMQ_SNDBUF, 0xFFFFFF);
+			setsockopt(socket, ZMQ_RCVBUF, 0xFFFFFF);
+			setsockopt(socket, ZMQ_SNDTIMEO, 3000);
+			setsockopt(socket, ZMQ_BACKLOG, 8192);
+
+			setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
+			setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
+			setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);
+			setsockopt(socket, ZMQ_TCP_KEEPALIVE, 30);
+			setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 10);
+			setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 5);
+
+			//int zmq_result = zmq_socket_monitor(socket, "inproc://zer_monitor.rep", ZMQ_EVENT_ALL);
 		}
 
 		ZMQ_HANDLE socket_ex::create_req_socket(const char* addr, int type, const char* name)
@@ -121,16 +122,16 @@ namespace agebull
 			return 0;
 		}
 		//网络监控
-		DWORD socket_ex::zmq_monitor(const char * address)
+		void socket_ex::zmq_monitor(void*)
 		{
+			sockaddr their_addr; /* 用于存储连接对方的地址信息*/
 			zmq_event_t event;
 			printf("starting monitor...\n");
 			void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 			assert(inproc);
-			int iRcvTimeout = 1000;
-			zmq_setsockopt(inproc, ZMQ_RCVTIMEO, &iRcvTimeout, sizeof(iRcvTimeout));
-			zmq_connect(inproc, address);
-			while (get_net_state() == NET_STATE_RUNING)
+			setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
+			zmq_connect(inproc, "inproc://zer_monitor.rep");
+			while (get_net_state() < NET_STATE_DISTORY)
 			{
 				if (read_event_msg(inproc, &event) == 1)
 					continue;
@@ -139,15 +140,15 @@ namespace agebull
 				case ZMQ_EVENT_CLOSED:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:连接已关闭", event.value);
 					zmq_close(inproc);
-					return 0;
+					return ;
 				case ZMQ_EVENT_CLOSE_FAILED:
 					log_error1("ZMQ网络监控%d:连接关闭失败", event.value);
 					zmq_close(inproc);
-					return 0;
+					return ;
 				case ZMQ_EVENT_MONITOR_STOPPED:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:监控关闭", event.value);
 					zmq_close(inproc);
-					return 0;
+					return ;
 				case ZMQ_EVENT_LISTENING:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:正在侦听数据", event.value);
 					break;
@@ -176,7 +177,6 @@ namespace agebull
 				}
 			}
 			zmq_close(inproc);
-			return 0;
 		}
 
 		void socket_ex::close_res_socket(ZMQ_HANDLE& socket, const char* addr)

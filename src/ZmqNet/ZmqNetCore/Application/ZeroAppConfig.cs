@@ -185,12 +185,12 @@ namespace Agebull.ZeroNet.Core
                 {
                     this[config.StationName] = config;
                 }
+                ZeroTrace.WriteInfo(ZeroApplication.AppName, "LoadAllConfig", json);
                 return true;
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                ZeroTrace.WriteError("读取站点配置", "Exception", json, e);
+                ZeroTrace.WriteException(ZeroApplication.AppName,e, "LoadAllConfig", json);
                 return false;
             }
         }
@@ -245,8 +245,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                ZeroTrace.WriteError("UpdateConfig", "Exception", stationName, json, e);
+                ZeroTrace.WriteException("UpdateConfig", e, stationName, json);
                 stationConfig = null;
                 return false;
             }

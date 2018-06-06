@@ -93,7 +93,7 @@ namespace ZeroNet.Http.Route
                 if (!router.SecurityChecker.PreCheck())
                 {
                     router.Data.Status = RouteStatus.DenyAccess;
-                    context.Response.WriteAsync(RouteRuntime.Inner2ErrorJson, Encoding.UTF8);
+                    context.Response.WriteAsync(ApiResult.Inner2ErrorJson, Encoding.UTF8);
                 }
                 else
                 {
@@ -108,10 +108,9 @@ namespace ZeroNet.Http.Route
             catch (Exception e)
             {
                 router.Data.Status = RouteStatus.LocalError;
-                LogRecorder.Exception(e);
                 ZeroTrace.WriteException("Route", e);
                 RuntimeWaring.Waring("Route", router.Data.Uri.LocalPath, e.Message);
-                context.Response.WriteAsync(RouteRuntime.InnerErrorJson, Encoding.UTF8);
+                context.Response.WriteAsync(ApiResult.InnerErrorJson, Encoding.UTF8);
             }
             finally
             {
@@ -161,7 +160,7 @@ namespace ZeroNet.Http.Route
                 }
                 for (; index < datas.Count; index++)
                 {
-                    RouteRuntime.CacheData(datas[index]);
+                    ApiResult.CacheData(datas[index]);
                 }
             }
         }*/

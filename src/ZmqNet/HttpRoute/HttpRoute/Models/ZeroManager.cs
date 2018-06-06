@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
@@ -16,12 +15,17 @@ namespace ZeroNet.Http.Route
         private ApiResult _result;
         public void Command(RouteData data)
         {
+            if (!ZeroApplication.IsRun)
+            {
+                _result = ApiResult.Error(ErrorCode.NoReady);
+                return;
+            }
             _data = data;
             _words = data.ApiName.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             if (_words.Length == 0)
             {
                 data.Status = RouteStatus.FormalError;
-                data.ResultMessage = RouteRuntime.ArgumentErrorJson;
+                data.ResultMessage = ApiResult.ArgumentErrorJson;
                 return;
             }
 
@@ -56,11 +60,6 @@ namespace ZeroNet.Http.Route
                 return;
             }
 
-            if (ZeroApplication.ApplicationState != StationState.Run)
-            {
-                _result = ApiResult.Error(ErrorCode.NoReady);
-                return;
-            }
 
             string type = _words[1];
             try
@@ -128,6 +127,11 @@ namespace ZeroNet.Http.Route
 
         private void Call()
         {
+            if (!ZeroApplication.IsRun)
+            {
+                _result = ApiResult.Error(ErrorCode.NoReady);
+                return;
+            }
             if (_words.Length < 2)
             {
                 _data.Status = RouteStatus.FormalError;
@@ -135,11 +139,6 @@ namespace ZeroNet.Http.Route
                 return;
             }
             
-            if (ZeroApplication.ApplicationState != StationState.Run)
-            {
-                _result = ApiResult.Error(ErrorCode.NoReady);
-                return;
-            }
 
             var value = SystemManager.CallCommand(_words);
             if (!value.InteractiveSuccess)

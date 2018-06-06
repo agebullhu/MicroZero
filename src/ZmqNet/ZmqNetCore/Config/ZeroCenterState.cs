@@ -1,7 +1,7 @@
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    ///   站点配置状态
+    ///   站点中心状态
     /// </summary>
     public enum ZeroCenterState
     {

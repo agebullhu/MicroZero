@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 系统启动时调用
         /// </summary>
-        void OnZeroStart();
+        bool OnZeroStart();
 
         /// <summary>
         ///     要求心跳
@@ -35,7 +35,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 系统关闭时调用
         /// </summary>
-        void OnZeroEnd();
+        bool OnZeroEnd();
 
         /// <summary>
         /// 注销时调用

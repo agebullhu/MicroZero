@@ -30,14 +30,14 @@
     <Filter Include="rpc\notify">
       <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rpc\base">
-      <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="rpc\dispatcher">
       <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rpc\net">
+    <Filter Include="rpc\Ømq">
       <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\zero">
+      <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +51,7 @@
       <Filter>main</Filter>
     </ClCompile>
     <ClCompile Include="net\zmq_extend.cpp">
-      <Filter>rpc\net</Filter>
+      <Filter>rpc\Ømq</Filter>
     </ClCompile>
     <ClCompile Include="net\station_dispatcher.cpp">
       <Filter>rpc\dispatcher</Filter>
@@ -60,7 +60,7 @@
       <Filter>rpc\notify</Filter>
     </ClCompile>
     <ClCompile Include="net\zero_station.cpp">
-      <Filter>rpc\base</Filter>
+      <Filter>rpc\zero</Filter>
     </ClCompile>
     <ClCompile Include="net\api_station.cpp">
       <Filter>rpc\api</Filter>
@@ -79,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="sig.cpp">
       <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="net\zero_config.cpp">
+      <Filter>rpc\zero</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,10 +110,10 @@
       <Filter>sys</Filter>
     </ClInclude>
     <ClInclude Include="net\net_default.h">
-      <Filter>rpc\net</Filter>
+      <Filter>rpc\Ømq</Filter>
     </ClInclude>
     <ClInclude Include="net\zmq_extend.h">
-      <Filter>rpc\net</Filter>
+      <Filter>rpc\Ømq</Filter>
     </ClInclude>
     <ClInclude Include="net\station_dispatcher.h">
       <Filter>rpc\dispatcher</Filter>
@@ -119,7 +122,7 @@
       <Filter>rpc\notify</Filter>
     </ClInclude>
     <ClInclude Include="net\zero_station.h">
-      <Filter>rpc\base</Filter>
+      <Filter>rpc\zero</Filter>
     </ClInclude>
     <ClInclude Include="net\api_station.h">
       <Filter>rpc\api</Filter>
@@ -127,17 +130,17 @@
     <ClInclude Include="net\station_warehouse.h">
       <Filter>rpc\dispatcher</Filter>
     </ClInclude>
-    <ClInclude Include="net\ipc_request_socket.h">
-      <Filter>rpc\base</Filter>
-    </ClInclude>
     <ClInclude Include="net\zero_config.h">
-      <Filter>rpc\base</Filter>
+      <Filter>rpc\zero</Filter>
     </ClInclude>
     <ClInclude Include="net\zero_plan.h">
-      <Filter>rpc\base</Filter>
+      <Filter>rpc\zero</Filter>
     </ClInclude>
     <ClInclude Include="cfg\json_config.h">
       <Filter>sys\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="net\ipc_request_socket.h">
+      <Filter>rpc\Ømq</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

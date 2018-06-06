@@ -20,19 +20,41 @@ namespace agebull
 		*/
 		void broadcasting_station::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
 		{
+			size_t rqid = 0, glid = 0, reqer = 0;
+			const sharp_char description = list[1];
+			for (size_t idx = 2; idx <= description[0] + 2; idx++)
+			{
+				switch (description[idx])
+				{
+				case ZERO_FRAME_REQUEST_ID:
+					rqid = idx;
+					break;
+				case ZERO_FRAME_REQUESTER:
+					reqer = idx;
+					break;
+				case ZERO_FRAME_GLOBAL_ID:
+					glid = idx;
+					break;
+				}
+			}
 			if (list.size() < 5)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
+					glid == 0 ? nullptr : *list[glid],
+					rqid == 0 ? nullptr : *list[rqid],
+					reqer == 0 ? nullptr : *list[reqer]);
 				return;
 			}
-			const sharp_char description = list[2];
 #if _DEBUG_
-			assert(description[2] == ZERO_FRAME_PUB_TITLE);
-			assert(description[3] == ZERO_FRAME_REQUEST_ID);
+			assert(description[1] == ZERO_FRAME_PUB_TITLE);
+			assert(description[1] == ZERO_FRAME_REQUEST_ID);
 #endif // _DEBUG_
-			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID, nullptr, *list[4]);
-			list[2] = list[3];
-			list[3] = description;
+			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
+				glid == 0 ? nullptr : *list[glid], 
+				rqid == 0 ? nullptr : *list[rqid], 
+				reqer == 0 ? nullptr : *list[reqer]);
+			list[1] = list[2];
+			list[2] = description;
 			char* buf = description.get_buffer();
 			for (size_t i = 2; i < description.size(); i++)
 				buf[i] = buf[i + 1];
@@ -154,16 +176,16 @@ namespace agebull
 		void broadcasting_station::launch(shared_ptr<broadcasting_station> station)
 		{
 			zero_config& config = station->get_config();
-			config.log_start();
+			config.start();
 			if (!station_warehouse::join(station.get()))
 			{
-				config.log_failed("join warehouse");
+				config.failed("join warehouse");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
 			if (!station->initialize())
 			{
-				config.log_failed("initialize");
+				config.failed("initialize");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}

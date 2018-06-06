@@ -102,6 +102,50 @@ namespace Agebull.ZeroNet.ZeroApi
                 Success = true
             };
         }
+
+        /// <summary>
+        ///     页面不存在的Json字符串
+        /// </summary>
+        public static readonly string NoFindJson = JsonConvert.SerializeObject(Error(ErrorCode.NoFind, "*页面不存在*"));
+
+        /// <summary>
+        ///     页面不存在的Json字符串
+        /// </summary>
+        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.ArgumentError));
+
+        /// <summary>
+        ///     拒绝访问的Json字符串
+        /// </summary>
+        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(Error(ErrorCode.DenyAccess, "*拒绝访问*"));
+
+        /// <summary>
+        ///     服务器无返回值的字符串
+        /// </summary>
+        public static readonly string RemoteEmptyErrorJson =
+            JsonConvert.SerializeObject(Error(ErrorCode.UnknowError, "*服务器无返回值*"));
+
+        /// <summary>
+        ///     服务器访问异常
+        /// </summary>
+        public static readonly string NetworkErrorJson =
+            JsonConvert.SerializeObject(Error(ErrorCode.NetworkError, "*服务器访问异常*"));
+
+        /// <summary>
+        ///     服务器访问异常
+        /// </summary>
+        public static readonly string Inner2ErrorJson =
+            JsonConvert.SerializeObject(Error(ErrorCode.InnerError, "**系统内部错误**"));
+
+        /// <summary>
+        ///     服务器访问异常
+        /// </summary>
+        public static readonly string InnerErrorJson =
+            JsonConvert.SerializeObject(Error(ErrorCode.InnerError, "*系统内部错误*"));
+        /// <summary>
+        ///     系统未就绪
+        /// </summary>
+        public static readonly string NoReadyJson =
+            JsonConvert.SerializeObject(Error(ErrorCode.NoReady, "*系统未就绪*")); 
     }
 
 
