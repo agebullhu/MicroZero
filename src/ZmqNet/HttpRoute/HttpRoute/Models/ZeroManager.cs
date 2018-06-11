@@ -15,7 +15,7 @@ namespace ZeroNet.Http.Route
         private ApiResult _result;
         public void Command(RouteData data)
         {
-            if (!ZeroApplication.IsRun)
+            if (!ZeroApplication.ZerCenterIsRun)
             {
                 _result = ApiResult.Error(ErrorCode.NoReady);
                 return;
@@ -127,7 +127,7 @@ namespace ZeroNet.Http.Route
 
         private void Call()
         {
-            if (!ZeroApplication.IsRun)
+            if (!ZeroApplication.ZerCenterIsRun)
             {
                 _result = ApiResult.Error(ErrorCode.NoReady);
                 return;

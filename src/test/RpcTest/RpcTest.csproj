@@ -18,9 +18,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoRegister.cs" />
+    <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
     <Compile Remove="StationTester.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AddIn\Agebull.ZeroNet.Extend.dll" />
+    <None Remove="AddIn\Agebull.ZeroNet.Extend.pdb" />
+    <None Remove="appsettings.Development.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.Development.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -28,12 +42,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="zero.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AddIn\" />
   </ItemGroup>
 
 </Project>

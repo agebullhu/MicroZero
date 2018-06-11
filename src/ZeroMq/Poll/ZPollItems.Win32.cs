@@ -54,8 +54,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message,1);
         }
 
         public bool CheckOut(int index, out ZMessage message)
@@ -71,8 +70,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message, 1);
         }
 
         protected override void DoDispose()

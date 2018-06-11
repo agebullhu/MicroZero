@@ -49,6 +49,10 @@
         /// 已销毁，析构已调用
         /// </summary>
         public const int Destroy = 10;
+        /// <summary>
+        /// 已销毁，析构已调用
+        /// </summary>
+        public const int Disposed = 11;
 
         /// <summary>
         /// 返回状态文本

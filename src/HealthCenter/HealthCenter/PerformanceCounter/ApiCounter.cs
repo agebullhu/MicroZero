@@ -3,6 +3,7 @@ using System.IO;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -31,7 +32,7 @@ namespace ZeroNet.Http.Route
             {
                 try
                 {
-                    var data = JsonConvert.DeserializeObject<RouteData>(args.Content);
+                    var data = JsonConvert.DeserializeObject<CountData>(args.Content);
                     End(data);
                 }
                 catch (Exception e)
@@ -66,16 +67,13 @@ namespace ZeroNet.Http.Route
         /// 开始计数
         /// </summary>
         /// <returns></returns>
-        public static void End(RouteData data)
+        void End(CountData data)
         {
             try
             {
                 var tm = (data.End - data.Start).TotalMilliseconds;
                 if (tm > 200)
-                    LogRecorder.Warning($"{data.HostName}/{data.ApiName}:执行时间异常({tm:F2}ms):");
-
-                //if (tm > AppConfig.Config.SystemConfig.WaringTime)
-                //    RuntimeWaring.Instance.Waring(data.HostName, data.ApiName, $"执行时间异常({tm:F0}ms)");
+                    RuntimeWaring.Instance.Waring(data.HostName, data.ApiName, $"执行时间异常({tm:F0}ms)");
 
                 long unit = DateTime.Today.Year * 1000000 + DateTime.Today.Month * 10000 + DateTime.Today.Day * 100 + DateTime.Now.Hour;
                 if (unit != Unit)

@@ -40,7 +40,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 注销时调用
         /// </summary>
-        void OnZeroDistory();
+        void OnZeroDestory();
 
         /// <summary>
         /// 系统启动时调用

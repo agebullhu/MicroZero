@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -16,16 +17,16 @@ namespace ZeroNet.Http.Route
         /// </summary>
         /// <param name="tm"></param>
         /// <param name="data"></param>
-        public void SetValue(double tm, RouteData data)
+        public void SetValue(double tm, CountData data)
         {
             LastTime = tm;
             Count += 1;
 
-            if (data.Status == RouteStatus.DenyAccess)
+            if (data.Status == OperatorStatus.DenyAccess)
             {
                 Deny += 1;
             }
-            else if (data.Status >= RouteStatus.LocalError)
+            else if (data.Status >= OperatorStatus.LocalError)
             {
                 Error += 1;
             }

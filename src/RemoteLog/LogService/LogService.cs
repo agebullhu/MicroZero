@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Agebull.Common;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.LogService
@@ -33,8 +36,8 @@ namespace Agebull.ZeroNet.LogService
             StationName = "RemoteLog";
             Subscribe = "";
             Station = this;
-            _logPath = ApiContext.Configuration["logPath"] ??
-                       IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "Logs");
+            var sec = ConfigurationManager.Get("LogRecorder");
+            _logPath = sec["txtPath"];
 
             try
             {
@@ -45,10 +48,10 @@ namespace Agebull.ZeroNet.LogService
             }
             catch
             {
-                _logPath = IOHelper.CheckPath(ApiContext.Configuration["contentRoot"], "Logs");
+                sec["txtPath"] = _logPath = IOHelper.CheckPath(ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory), "Logs");
             }
 
-            Console.WriteLine($"LogPath:{_logPath}");
+            ZeroTrace.WriteInfo("RemoteLog", "LogPath", _logPath);
         }
 
         /// <summary>
@@ -67,6 +70,7 @@ namespace Agebull.ZeroNet.LogService
         private readonly Dictionary<string, StreamWriter> _writers =
             new Dictionary<string, StreamWriter>(StringComparer.OrdinalIgnoreCase);
 
+        /// <inheritdoc />
         /// <summary>
         /// 任务结束,环境销毁
         /// </summary>

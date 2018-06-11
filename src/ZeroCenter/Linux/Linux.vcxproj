@@ -37,6 +37,7 @@
     <LibraryPath>
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <OutDir>/root/zero/center/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>

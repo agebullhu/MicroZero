@@ -87,12 +87,29 @@ namespace agebull
 			{
 				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
 				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
-				install("RemoteLog", STATION_TYPE_DISPATCHER, "log");
-				install("HealthCenter", STATION_TYPE_DISPATCHER, "hea");
+				install("RemoteLog", STATION_TYPE_PUBLISH, "log");
+				install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
 			}
 			return true;
 		}
 
+		/**
+		* \brief 清除所有站点
+		*/
+		void station_warehouse::clear()
+		{
+			glogal_id_ = 0LL;
+			{
+				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+				trans_redis& redis = trans_redis::get_context();
+				redis->flushdb();
+			}
+			{
+				boost::lock_guard<boost::mutex> guard(config_mutex_);
+				configs_.clear();
+			}
+			initialize();
+		}
 		/**
 		* \brief 遍历配置
 		*/
@@ -219,27 +236,6 @@ namespace agebull
 			return cnt;
 		}
 
-		/**
-		* \brief 清除所有站点
-		*/
-		void station_warehouse::clear()
-		{
-			glogal_id_ = 0LL;
-			//assert(examples_.empty());
-			{
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis& redis = trans_redis::get_context();
-				redis->flushdb();
-				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
-			}
-			{
-				boost::lock_guard<boost::mutex> guard(config_mutex_);
-				configs_.clear();
-			}
-			install("SystemManage", STATION_TYPE_DISPATCHER, "man");
-			install("RemoteLog", STATION_TYPE_PUBLISH, "log");
-			install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
-		}
 
 		/**
 		* \brief 站点卸载

@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
@@ -10,17 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="RuntimeWaring\**" />
-    <EmbeddedResource Remove="RuntimeWaring\**" />
-    <None Remove="RuntimeWaring\**" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Remove="Program.cs" />
     <Compile Remove="RouteCounter.cs" />
     <Compile Remove="RuntimeWaring.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="host.json" />
     <None Remove="sms.json" />
   </ItemGroup>
 
@@ -35,14 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
-    <ProjectReference Include="..\..\ZmqNet\HttpRoute\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="host.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 

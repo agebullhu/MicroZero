@@ -7,6 +7,7 @@ namespace agebull
 	bool json_config::use_ipc_protocol;
 	char json_config::redis_addr[512];
 	int json_config::redis_defdb;
+	int json_config::worker_sound_ivl;
 	/**
 	* \brief 系统根目录
 	*/
@@ -19,7 +20,7 @@ namespace agebull
 	{
 		acl::string path;
 		path.format("%sconfig/zero_center.json", root_path.c_str());
-
+		std::cout << path.c_str() << endl;
 		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
 		if (fp != nullptr)
 		{
@@ -36,14 +37,17 @@ namespace agebull
 		else
 		{
 			global_cfg_.insert(make_pair("base_tcp_port", "7999"));
-			global_cfg_.insert(make_pair("use_ipc_protocol", "true"));
+			global_cfg_.insert(make_pair("use_ipc_protocol", "false"));
 			global_cfg_.insert(make_pair("redis_addr", "127.0.0.1:6379"));
 			global_cfg_.insert(make_pair("redis_defdb", "15"));
+			global_cfg_.insert(make_pair("worker_sound_ivl", "1000"));
+			
 		}
 		base_tcp_port = get_global_int("base_tcp_port");
 		use_ipc_protocol = get_global_bool("use_ipc_protocol");
 		strcpy(redis_addr, get_global_string("redis_addr").c_str());
 		redis_defdb = get_global_int("redis_defdb");
+		worker_sound_ivl = get_global_int("worker_sound_ivl");
 	}
 	/**
 	* \brief 读取配置内容

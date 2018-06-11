@@ -287,7 +287,6 @@ namespace ZeroMQ
                 Console.WriteLine(string.Join(",", alive.Connects));
                 Console.WriteLine(string.Join(",", alive.Binds));
                 alive.Dispose();
-                ZSocket.AliveSockets.Remove(alive);
             }
             if (zmq.ctx_shutdown(ptr) != -1)
             {

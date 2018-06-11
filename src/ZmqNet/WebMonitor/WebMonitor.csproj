@@ -30,6 +30,7 @@
     <Compile Remove="WS\WebNotify.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Remove="appsettings.json" />
     <Content Remove="host.json" />
   </ItemGroup>
   <ItemGroup>
@@ -39,6 +40,9 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="host.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

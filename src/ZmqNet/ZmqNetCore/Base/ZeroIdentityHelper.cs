@@ -1,8 +1,9 @@
 using System;
 using System.IO;
 using System.Text;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.Common.Configuration;
 using Gboxt.Common.DataModel;
+using Microsoft.Extensions.Configuration;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -31,7 +32,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (!UseIpc)
                 return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-            var path = Path.GetDirectoryName(ApiContext.Configuration["contentRoot"]);
+            var path = Path.GetDirectoryName(ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory));
             return $"ipc://{path}/ipc/{station}_req.ipc";
         }
         /// <summary>
@@ -44,7 +45,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (!UseIpc)
                 return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-            var path = Path.GetDirectoryName(ApiContext.Configuration["contentRoot"]);
+            var path = Path.GetDirectoryName(ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory));
             return $"ipc://{path}/ipc/{station}_sub.ipc";
         }
         /// <summary>

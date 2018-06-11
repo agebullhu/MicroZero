@@ -5,23 +5,16 @@ using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.Log
 {
     /// <summary>
     ///   远程记录器
     /// </summary>
-    public sealed class RemoteLogRecorder : ILogRecorder, IZeroObject
+    internal sealed class RemoteLogRecorder : ILogRecorder, IZeroObject
     {
         #region Override
-        /// <summary>
-        /// 注册
-        /// </summary>
-        public static void Regist()
-        {
-            LogRecorder.Regist<RemoteLogRecorder>();
-            ZeroApplication.RegistZeroObject((RemoteLogRecorder)LogRecorder.Recorder);
-        }
 
         /// <inheritdoc />
         /// <summary>
@@ -29,7 +22,6 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void ILogRecorder.Initialize()
         {
-            LogRecorder.LogByTask = false;
             LogRecorder.TraceToConsole = false;
             _state = StationState.Initialized;
         }
@@ -39,9 +31,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void ILogRecorder.Shutdown()
         {
-            _state = StationState.Closing;
-            Monitor.Enter(this);
-            Monitor.Exit(this);
+            Close();
             _state = StationState.Destroy;
         }
 
@@ -56,10 +46,10 @@ namespace Agebull.ZeroNet.Log
             info.Machine = ZeroApplication.Config.RealName;
             using (LogRecordingScope.CreateScope())
             {
-                if (ZeroApplication.IsDestroy)
-                    LogRecorder.BaseRecorder.RecordLog(info);
-                else
+                if (ZeroApplication.IsAlive)
                     Items.Push(info);
+                else
+                    LogRecorder.BaseRecorder.RecordLog(info);
             }
         }
 
@@ -115,25 +105,24 @@ namespace Agebull.ZeroNet.Log
                     State = StationState.ConfigError;
                     return false;
                 }
-                RunTaskCancel = new CancellationTokenSource();
-                //取消时执行回调
-                RunTaskCancel.Token.Register(RunTaskCancel.Dispose);
                 RealName = ZeroIdentityHelper.CreateRealName(false, Config.ShortName ?? Config.StationName);
                 Identity = RealName.ToAsciiBytes();
+                RunTaskCancel = new CancellationTokenSource();
                 Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
             }
             return true;
         }
+        /// <summary>
+        /// 应用程序等待结果的信号量对象
+        /// </summary>
+        private readonly SemaphoreSlim _waitToken = new SemaphoreSlim(0, 1);
         bool Close()
         {
             if (RunTaskCancel != null)
             {
-                State = StationState.Closing;
-                using (OnceScope.CreateScope(this))
-                {
-                    RunTaskCancel.Dispose();
-                    RunTaskCancel = null;
-                }
+                _waitToken.Release();
+                RunTaskCancel.Dispose();
+                RunTaskCancel = null;
             }
             State = StationState.Closed;
             return true;
@@ -161,16 +150,18 @@ namespace Agebull.ZeroNet.Log
             State = StationState.Closed;
             ZeroApplication.OnObjectClose();
         }
+        private bool CanRun => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested &&
+                               ZeroApplication.CanDo && State == StationState.Run;
+
         /// <summary>
         ///     发送广播的后台任务
         /// </summary>
         private void SendTask(object objToken)
         {
-            CancellationToken token = (CancellationToken)objToken;
             using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
-                var socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
-                while (!token.IsCancellationRequested && ZeroApplication.CanDo && State == StationState.Run)
+                var socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
+                while (CanRun)
                 {
                     if (!Items.StartProcess(out var title, out var items, 100))
                     {
@@ -186,8 +177,8 @@ namespace Agebull.ZeroNet.Log
                                 Name = "RemoteLogRecorder",
                                 Message = "日志发送失败"
                             });
-                            socket.CloseSocket();
-                            socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                            socket.TryClose();
+                            socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
                             continue;
                         }
                     }
@@ -199,20 +190,27 @@ namespace Agebull.ZeroNet.Log
                             Name = "RemoteLogRecorder",
                             Message = $"日志发送失败，异常为：\r\n{e}"
                         });
-                        socket.CloseSocket();
-                        socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                        socket.TryClose();
+                        socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
                         continue;
                     }
                     Items.EndProcess();
                 }
-                socket.CloseSocket();
+                socket.TryClose();
             }
+
+            _waitToken.Release();
         }
 
 
         #endregion
 
         #region IZeroObject
+        /// <summary>
+        /// 实例
+        /// </summary>
+        public static readonly RemoteLogRecorder Instance = new RemoteLogRecorder();
+
 
         /// <summary>
         ///     要求心跳
@@ -239,7 +237,7 @@ namespace Agebull.ZeroNet.Log
                 return;
             if (State == StationState.Run)
                 Close();
-            if (config.State == ZeroCenterState.Run)
+            if (config.State == ZeroCenterState.Run && CanRun)
                 Start();
         }
 
@@ -248,7 +246,7 @@ namespace Agebull.ZeroNet.Log
             return Close();
         }
 
-        void IZeroObject.OnZeroDistory()
+        void IZeroObject.OnZeroDestory()
         {
             foreach (var items in Items.DoItems.Values)
             {

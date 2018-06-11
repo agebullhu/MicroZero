@@ -9,7 +9,7 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     /// 站点连接池
     /// </summary>
-    class StationConnectionPool
+    class StationSocketPool
     {
         /// <summary>
         /// 对应的配置
@@ -56,7 +56,7 @@ namespace Agebull.ZeroNet.Core
                 }
             }
 
-            socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, CreateIdentity());
+            socket = ZSocket.CreateRequestSocket(Config.RequestAddress, CreateIdentity());
             if (socket == null)
                 return null;
             socket.IsUsing = true;
@@ -103,7 +103,7 @@ namespace Agebull.ZeroNet.Core
             if (!_isDisposed)
                 lock (_sockets)
                     _sockets.Remove(socket);
-            socket.CloseSocket();
+            socket.TryClose();
             socket = null;
         }
 
@@ -146,14 +146,14 @@ namespace Agebull.ZeroNet.Core
             lock (_pools)
             {
                 while (_pools.Count > 0)
-                    _pools.Dequeue().CloseSocket();
+                    _pools.Dequeue().TryClose();
             }
             lock (_sockets)
             {
                 foreach (var socket in _sockets.ToArray())
                 {
                     if (!socket.IsUsing)
-                        socket.CloseSocket();
+                        socket.TryClose();
                 }
                 _sockets.Clear();
             }

@@ -56,7 +56,7 @@ namespace agebull
 	/**
 	* 输出到DEBUG窗口
 	*/
-	void out_debug(string msg)
+	void out_debug(const char* msg)
 	{
 		//		msg = "\r\n" + msg;
 		//#ifdef WIN32

@@ -1,10 +1,8 @@
 using System;
 using System.Threading;
 using Agebull.Common.Base;
-using Agebull.Common.Logging;
 using Agebull.Common.OAuth;
 using Gboxt.Common.DataModel;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -46,27 +44,7 @@ namespace Agebull.ZeroNet.ZeroApi
         #endregion
 
         #region 全局属性
-        /// <summary>
-        /// 设置LogRecorder的依赖属性
-        /// </summary>
-        public static void SetLogRecorderDependency()
-        {
-            LogRecorder.GetMachineNameFunc = () => MyServiceName;
-            LogRecorder.GetUserNameFunc = () => Customer?.Account ?? "Unknow";
-            LogRecorder.GetRequestIdFunc = () => RequestContext?.RequestId ?? Guid.NewGuid().ToString();
-        }
-        /// <summary>
-        /// 显示式设置配置对象(依赖)
-        /// </summary>
-        /// <param name="configuration"></param>
-        public static void SetConfiguration(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-        /// <summary>
-        /// 全局
-        /// </summary>
-        public static IConfiguration Configuration { get; private set; }
+
         /// <summary>
         ///     当前线程的调用上下文
         /// </summary>

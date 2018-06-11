@@ -350,7 +350,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///  状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
         /// </summary>
-        [DataMember, JsonProperty("state")] int _state;
+        [DataMember, JsonProperty("state")] private int _state;
 
         /// <summary>
         ///  状态

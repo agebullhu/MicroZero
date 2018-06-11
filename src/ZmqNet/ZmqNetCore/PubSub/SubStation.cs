@@ -64,18 +64,17 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
-        /// <inheritdoc />
         /// <summary>
-        /// 命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
+        /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            var subscriber = ZeroHelper.CreateSubscriberSocket(Config.SubAddress,Identity, Subscribe);
+            var subscriber = ZSocket.CreateSubscriberSocket(Config.SubAddress,Identity, Subscribe);
             var sockets = new[] { subscriber };
             var pollItems = new[] { ZPollItem.CreateReceiver() };
             SystemManager.HeartReady(StationName, RealName);
-            while (!token.IsCancellationRequested && CanRun)
+            while (CanRun)
             {
                 if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
                 {
@@ -99,7 +98,7 @@ namespace Agebull.ZeroNet.PubSub
                 Items.Push(item);
             }
             SystemManager.HeartLeft(StationName, RealName);
-            subscriber.CloseSocket();
+            subscriber.TryClose();
             return true;
         }
 
@@ -110,7 +109,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             while (ZeroApplication.IsAlive)
             {
-                if (!Items.StartProcess(out var item, 1000))
+                if (!Items.StartProcess(out var item))
                     continue;
                 try
                 {

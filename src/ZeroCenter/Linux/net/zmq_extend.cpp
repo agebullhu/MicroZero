@@ -16,28 +16,28 @@ namespace agebull
 		*/
 		void socket_ex::set_sockopt(ZMQ_HANDLE& socket, const char* name)
 		{
-			int iRcvTimeout;
+			
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
 			//assert(zmq_result == 0);
 			setsockopt(socket, ZMQ_IMMEDIATE, 1);//列消息只作用于已完成的链接
 			setsockopt(socket, ZMQ_LINGER, 50);//关闭设置停留时间,毫秒
-			setsockopt(socket, ZMQ_RCVTIMEO, 3000);
+			setsockopt(socket, ZMQ_RCVTIMEO, 500);
 			setsockopt(socket, ZMQ_SNDHWM, 4096);
 			setsockopt(socket, ZMQ_RCVHWM, 4096);
 			setsockopt(socket, ZMQ_SNDBUF, 0xFFFFFF);
 			setsockopt(socket, ZMQ_RCVBUF, 0xFFFFFF);
-			setsockopt(socket, ZMQ_SNDTIMEO, 3000);
+			setsockopt(socket, ZMQ_SNDTIMEO, 500);
 			setsockopt(socket, ZMQ_BACKLOG, 8192);
 
-			setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
-			setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
-			setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);
-			setsockopt(socket, ZMQ_TCP_KEEPALIVE, 30);
-			setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 10);
-			setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 5);
+			//setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
+			//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
+			//setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);
 
-			//int zmq_result = zmq_socket_monitor(socket, "inproc://zer_monitor.rep", ZMQ_EVENT_ALL);
+			//setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
+			//setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
+			//setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
+
 		}
 
 		ZMQ_HANDLE socket_ex::create_req_socket(const char* addr, int type, const char* name)
@@ -89,12 +89,6 @@ namespace agebull
 			//	return re == 0;
 			return true;
 		}
-		typedef struct
-		{
-			ushort event;
-			int value;
-			char address[256];
-		}zmq_event_t;
 
 		int read_event_msg(void* s, zmq_event_t* event)
 		{
@@ -122,15 +116,14 @@ namespace agebull
 			return 0;
 		}
 		//网络监控
-		void socket_ex::zmq_monitor(void*)
+		void do_monitor(sharp_char addr)
 		{
-			sockaddr their_addr; /* 用于存储连接对方的地址信息*/
 			zmq_event_t event;
 			printf("starting monitor...\n");
 			void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 			assert(inproc);
 			setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
-			zmq_connect(inproc, "inproc://zer_monitor.rep");
+			zmq_connect(inproc, *addr);
 			while (get_net_state() < NET_STATE_DISTORY)
 			{
 				if (read_event_msg(inproc, &event) == 1)
@@ -140,15 +133,15 @@ namespace agebull
 				case ZMQ_EVENT_CLOSED:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:连接已关闭", event.value);
 					zmq_close(inproc);
-					return ;
+					return;
 				case ZMQ_EVENT_CLOSE_FAILED:
 					log_error1("ZMQ网络监控%d:连接关闭失败", event.value);
 					zmq_close(inproc);
-					return ;
+					return;
 				case ZMQ_EVENT_MONITOR_STOPPED:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:监控关闭", event.value);
 					zmq_close(inproc);
-					return ;
+					return;
 				case ZMQ_EVENT_LISTENING:
 					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:正在侦听数据", event.value);
 					break;
@@ -177,6 +170,11 @@ namespace agebull
 				}
 			}
 			zmq_close(inproc);
+		}
+		//网络监控
+		void socket_ex::zmq_monitor(sharp_char addr)
+		{
+			boost::thread thread_xxx(boost::bind(&do_monitor, addr));
 		}
 
 		void socket_ex::close_res_socket(ZMQ_HANDLE& socket, const char* addr)

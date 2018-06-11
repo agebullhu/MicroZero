@@ -8,7 +8,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// 性能计数器
     /// </summary>
-    public class ApiCounter : BatchPublisher<CountData>
+    internal sealed class ApiCounter : BatchPublisher<CountData>, IApiCounter
     {
         private ApiCounter()
         {
@@ -21,6 +21,9 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public static readonly ApiCounter Instance = new ApiCounter();
 
+        /// <summary>
+        /// 数据进入的处理
+        /// </summary>
         protected override void OnSend(List<CountData> datas)
         {
             foreach (var  data in datas)
@@ -28,16 +31,38 @@ namespace Agebull.ZeroNet.ZeroApi
                 data.Title = "ApiCounter";
             }
         }
+
         /// <summary>
         /// 设置Api调用注入
         /// </summary>
-        public static void HookApi()
+        public void HookApi()
         {
             ApiStation.PreActions.Add(Instance.OnPre);
             ApiStation.EndActions.Add(Instance.OnEnd);
+            ZeroApplication.RegistZeroObject(Instance);
+            _isEnable = true;
+        }
+
+        /// <summary>
+        /// 统计
+        /// </summary>
+        /// <param name="data"></param>
+        void IApiCounter.Count(CountData data)
+        {
+            throw new NotImplementedException();
         }
 
         private readonly Dictionary<string, CountData> _handlers = new Dictionary<string, CountData>();
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        private bool _isEnable;
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        bool IApiCounter.IsEnable => _isEnable;
 
         private void OnPre(ApiStation station, ApiCallItem item)
         {

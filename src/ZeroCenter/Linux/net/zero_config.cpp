@@ -6,6 +6,145 @@ namespace agebull
 {
 	namespace zmq_net
 	{
+		int worker::check()
+		{
+			const int64 tm = time(nullptr) - pre_time;
+
+			if (tm <= 15)
+			{
+				if (state == -1)
+					state = 1;
+				if (tm <= 2)
+				{
+					return level = 10;
+				}
+				if (tm <= 6)
+				{
+					return level = 9;
+				}
+				if (tm <= 10)
+				{
+					return level = 8;
+				}
+				return level = 7;
+			}
+			if (state == 1)
+				state = -1;
+			if (tm <= 30)
+			{
+				return level = 6;
+			}
+			if (tm <= 60)
+			{
+				return level = 5;
+			}
+			if (tm <= 120)
+			{
+				return level = 4;
+			}
+			if (tm <= 180)
+			{
+				return level = 3;
+			}
+			if (tm <= 240)
+			{
+				return level = 2;
+			}
+			if (tm <= 360)
+			{
+				return level = 1;
+			}
+			return level = -1;
+		}
+
+		void zero_config::worker_join(const char* real_name, const char* ip)
+		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
+			auto iter = workers.find(real_name);
+			if (iter == workers.end())
+			{
+				worker wk;
+				wk.real_name = real_name;
+				wk.ip_address = ip;
+				workers.insert(make_pair(real_name, wk));
+			}
+			else
+			{
+				iter->second.ip_address = ip;
+				iter->second.level = -1;
+				iter->second.pre_time = time(nullptr);
+				if (iter->second.state == 1)
+				{
+					--ready_works_;
+				}
+				iter->second.state = 0;
+			}
+			log("worker_join", real_name);
+		}
+
+		void zero_config::worker_ready(const char* real_name)
+		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
+			auto iter = workers.find(real_name);
+			if (iter == workers.end())
+			{
+				worker wk;
+				wk.real_name = real_name;
+				wk.state = 1;
+				wk.level = 10;
+				workers.insert(make_pair(real_name, wk));
+				++ready_works_;
+				log("worker_ready", real_name);
+			}
+			else
+			{
+				if (iter->second.state != 1) //Ôø¾­Ê§Áª
+				{
+					++ready_works_;
+					iter->second.state = 1;
+					log("worker_ready", real_name);
+				}
+				iter->second.active();
+			}
+		}
+
+		void zero_config::worker_left(const char* real_name)
+		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
+			auto iter = workers.find(real_name);
+			if (iter == workers.end())
+				return;
+			if (iter->second.state == 1)
+				--ready_works_;
+			workers.erase(real_name);
+			log("worker_left", real_name);
+		}
+
+		void zero_config::check_works()
+		{
+			boost::lock_guard<boost::mutex> guard(mutex_);
+			int ready = 0;
+			vector<string> lefts;
+			for (auto& work : workers)
+			{
+				work.second.check();
+				if (work.second.level < 0)
+				{
+					lefts.emplace_back(work.first);
+				}
+				else if (work.second.state == 1)
+				{
+					++ready;
+				}
+			}
+			for (auto& worker : lefts)
+			{
+				workers.erase(worker);
+				log("worker_left", worker.c_str());
+			}
+			ready_works_ = ready;
+		}
+
 		void zero_config::read_json(const char* val)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex_);
@@ -148,18 +287,18 @@ namespace agebull
 				node.add_number("worker_in", worker_in);
 				node.add_number("worker_out", worker_out);
 				node.add_number("worker_err", worker_err);
-				if (workers.size() > 0)
+				acl::json_node& array = json.create_array();
+				for (auto& worker : workers)
 				{
-					acl::json_node& array = json.create_array();
-					for (auto& worker : workers)
-					{
-						acl::json_node& work = json.create_node();
-						worker.second.to_json(work);
-						array.add_child(work);
-					}
-					acl::json_node& workers_n = node.add_child("workers", array);
-
+					acl::json_node& work = json.create_node();
+					work.add_number("level", worker.second.level);
+					work.add_number("state", worker.second.state);
+					work.add_number("pre_time", worker.second.pre_time);
+					work.add_text("real_name", worker.second.real_name.c_str());
+					work.add_text("ip_address", worker.second.ip_address.c_str());
+					array.add_child(work);
 				}
+				acl::json_node& workers_n = node.add_child("workers", array);
 			}
 			return node.to_string();
 		}

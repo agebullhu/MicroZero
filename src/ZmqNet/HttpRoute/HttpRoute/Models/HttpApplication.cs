@@ -2,10 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Agebull.Common.Logging;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Http;
-using Agebull.ZeroNet.Log;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace ZeroNet.Http.Route
@@ -23,18 +22,9 @@ namespace ZeroNet.Http.Route
         public static void Initialize()
         {
             AppConfig.Initialize(Path.Combine(Startup.Configuration["contentRoot"], "route_config.json"));
-            ApiContext.SetLogRecorderDependency();
-            if (AppConfig.Config.SystemConfig.FireZero)
-            {
-                RemoteLogRecorder.Regist();
-                ZeroApplication.Initialize();
-                RouteCommand.RefreshStationConfig();
-                ZeroApplication.RunBySuccess();
-            }
-            else
-            {
-                LogRecorder.Initialize();
-            }
+            ZeroApplication.Initialize();
+            RouteCommand.RefreshStationConfig();
+            ZeroApplication.Run();
             RouteChahe.Flush();
         }
         #endregion
@@ -109,7 +99,7 @@ namespace ZeroNet.Http.Route
             {
                 router.Data.Status = RouteStatus.LocalError;
                 ZeroTrace.WriteException("Route", e);
-                RuntimeWaring.Waring("Route", router.Data.Uri.LocalPath, e.Message);
+                IocHelper.Create<IRuntimeWaring>()?.Waring("Route", router.Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(ApiResult.InnerErrorJson, Encoding.UTF8);
             }
             finally

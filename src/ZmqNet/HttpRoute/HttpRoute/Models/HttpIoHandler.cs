@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
@@ -93,39 +94,42 @@ namespace ZeroNet.Http.Route
             }
         }
 
-        private static int count, error, success;
+        //private static int count, error, success;
         /// <summary>
         /// 开始计数
         /// </summary>
         /// <returns></returns>
         private static void CountApi(RouteData data)
         {
-            Interlocked.Increment(ref count);
+            var counter = IocHelper.Create<IApiCounter>();
+            if (counter == null || !counter.IsEnable)
+                return;
+            //Interlocked.Increment(ref count);
             OperatorStatus state;
             switch (data.Status)
             {
                 case RouteStatus.FormalError:
-                    Interlocked.Increment(ref error);
+                    //Interlocked.Increment(ref error);
                     state = OperatorStatus.FormalError;
                     break;
                 case RouteStatus.LocalError:
-                    Interlocked.Increment(ref error);
+                    //Interlocked.Increment(ref error);
                     state = OperatorStatus.LocalError;
                     break;
                 case RouteStatus.RemoteError:
-                    Interlocked.Increment(ref error);
+                    //Interlocked.Increment(ref error);
                     state = OperatorStatus.RemoteError;
                     break;
                 case RouteStatus.DenyAccess:
-                    Interlocked.Increment(ref error);
+                    //Interlocked.Increment(ref error);
                     state = OperatorStatus.DenyAccess;
                     break;
                 default:
                     state = OperatorStatus.Success;
-                    Interlocked.Increment(ref success);
+                    //Interlocked.Increment(ref success);
                     break;
             }
-            ApiCounter.Instance.Publish(new CountData
+            IocHelper.Create<IApiCounter>()?.Count(new CountData
             {
                 Machine = ZeroApplication.Config.StationName,
                 User = ApiContext.Customer?.Account ?? "Unknow",
@@ -137,7 +141,7 @@ namespace ZeroNet.Http.Route
                 Status = state,
                 Requester = $"Web://{ApiContext.RequestContext.Ip}:{ApiContext.RequestContext.Port}"
             });
-            ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
+            //ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
         }
     }
 }

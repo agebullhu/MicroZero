@@ -1,6 +1,7 @@
 {
   "base_tcp_port": "7999",
-  "use_ipc_protocol": "true",
+  "use_ipc_protocol": "false",
   "redis_addr": "127.0.0.1:6379",
-  "redis_defdb": "15"
+  "redis_defdb": "15",
+  "worker_sound_ivl": 2000
 }

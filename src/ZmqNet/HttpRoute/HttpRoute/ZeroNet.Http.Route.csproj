@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.json" />
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
     <Content Remove="cache.json" />
@@ -51,11 +52,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.1" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
-    <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,7 +60,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RouteBasics\ZeroNet.Http.RouteBasics.csproj" />
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
 </Project>

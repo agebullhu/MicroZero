@@ -65,17 +65,16 @@ namespace Agebull.ZeroNet.PubSub
         {
 
         }
-        /// <inheritdoc />
         /// <summary>
-        ///     命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
+        /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+            _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
             SystemManager.HeartReady(StationName, RealName);
             State = StationState.Run;
-            while (!token.IsCancellationRequested && CanRun)
+            while (CanRun)
             {
                 if (!Items.StartProcess(out TData data))
                 {
@@ -86,16 +85,16 @@ namespace Agebull.ZeroNet.PubSub
                 OnSend(data);
                 if (!_socket.Publish(data))
                 {
-                    _socket.CloseSocket();
+                    _socket.TryClose();
                     Thread.Sleep(100);
-                    _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                    _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
                     continue;
                 }
                 Items.EndProcess();
             }
             SystemManager.HeartLeft(StationName, RealName);
-            _socket.CloseSocket();
-            return State != StationState.Failed;
+            _socket.TryClose();
+            return true;
         }
 
         #endregion

@@ -15,6 +15,7 @@ namespace agebull
 		static bool use_ipc_protocol;
 		static char redis_addr[512];
 		static int redis_defdb;
+		static int worker_sound_ivl;
 		/**
 		* \brief 全局配置初始化
 		*/

@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Agebull.Common.Base;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
@@ -100,14 +101,9 @@ namespace ZeroNet.Http.Route
             // 4 远程调用
             if (Data.RouteHost.ByZero)
             {
-                if (!ZeroApplication.IsRun)
-                {
-                    Data.ResultMessage = ApiResult.NoReadyJson;
-                }
-                else
-                {
-                    Data.ResultMessage = CallZero().Result;
-                }
+                Data.ResultMessage = !ZeroApplication.ZerCenterIsRun
+                    ? ApiResult.NoReadyJson 
+                    : CallZero().Result;
             }
             else
                 Data.ResultMessage = CallHttp().Result;
@@ -190,7 +186,7 @@ namespace ZeroNet.Http.Route
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
             {
-                RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                 return false;
             }
 
@@ -201,7 +197,7 @@ namespace ZeroNet.Http.Route
                 case '[':
                     break;
                 default:
-                    RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                    IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                     return true;
             }
             ApiResult result;
@@ -210,13 +206,13 @@ namespace ZeroNet.Http.Route
                 result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
                 if (result == null)
                 {
-                    RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                    IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                     return false;
                 }
             }
             catch
             {
-                RuntimeWaring.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
+                IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");
                 return false;
             }
             if (result.Status == null || result.Success)
@@ -238,7 +234,7 @@ namespace ZeroNet.Http.Route
                     return false;
             }
 
-            RuntimeWaring.Waring(data.HostName, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
+            IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
             return false;
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
@@ -9,6 +10,7 @@ using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
 using Aliyun.Net.SDK.Core.Exceptions;
 using Aliyun.Net.SDK.Core.Profile;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -31,27 +33,13 @@ namespace ZeroNet.Http.Route
             Instance = this;
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
-            string file = Path.Combine(ApiContext.Configuration["contentRoot"], "sms.json");
-            if (!File.Exists(file))
-                return;
-            string json;
             try
             {
-                json = File.ReadAllText(file);
+                SmsConfig = ConfigurationManager.Root.GetSection("RuntimeWaring").Get<SmsConfig>();
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                return;
-            }
-            try
-            {
-                SmsConfig = JsonConvert.DeserializeObject<SmsConfig>(json);
-            }
-            catch (Exception e)
-            {
-                StationConsole.WriteError($"{e.Message}\r\n{json}");
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("RuntimeWaring",e,"ResetConfig");
             }
         }
         /// <inheritdoc />
@@ -74,7 +62,7 @@ namespace ZeroNet.Http.Route
             }
             catch (Exception e)
             {
-                StationConsole.WriteError($"{e.Message}\r\n{args.Content}");
+                ZeroTrace.WriteException("RuntimeWaring", e, args.Content);
                 Console.WriteLine(e);
             }
         }
@@ -231,7 +219,7 @@ namespace ZeroNet.Http.Route
                 LogRecorder.Exception(e);
                 return false;
             }
-            return sendSmsResponse.Message == ZeroNetStatus.ZeroCommandOk;
+            return sendSmsResponse.Message == "+ok";
         }
 
     }
