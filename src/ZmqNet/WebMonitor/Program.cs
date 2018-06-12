@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using Agebull.Common.Configuration;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -17,13 +19,13 @@ namespace WebMonitor
 
         public static IWebHost BuildWebHost(string[] args)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("hosting.json", optional: true)
-                .Build();
+            //var config = new ConfigurationBuilder()
+            //    .SetBasePath(Directory.GetCurrentDirectory())
+            //    .AddJsonFile("hosting.json", optional: true)
+            //    .Build();
 
             return WebHost.CreateDefaultBuilder(args)
-                .UseConfiguration(config)
+                .UseConfiguration(ConfigurationManager.Root)
                 .UseStartup<Startup>()
                 .Build();
         }

@@ -29,7 +29,7 @@ namespace Agebull.ZeroNet.Core
         {
             using (OnceScope.CreateScope(ZeroApplication.Config))
             {
-                ZeroTrace.WriteInfo(ZeroApplication.AppName, "zero center in monitor...");
+                ZeroTrace.WriteLine("Zero center in monitor...");
             }
             var sockets = new[] { ZSocket.CreateSubscriberSocket(ZeroApplication.Config.ZeroMonitorAddress) };
             var pollItems = new[] { ZPollItem.CreateReceiver() };

@@ -94,12 +94,12 @@ namespace agebull
 		protected:
 			/**
 			* \brief 实例队列访问锁
-			* /
-			static boost::mutex results_mutex_;
+			*/
+			//static boost::mutex results_mutex_;
 			/**
 			* \brief 所有返回值
-			
-			static map<int64, vector<sharp_char>> results;*/
+			*/
+			//static map<int64, vector<sharp_char>> results;
 			/**
 			* \brief 当前ZMQ执行状态
 			*/

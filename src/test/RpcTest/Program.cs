@@ -1,8 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
 {
@@ -11,10 +13,11 @@ namespace RpcTest
         //private static Recorder recorder;
         private static void Main(string[] args)
         {
-            ZeroApplication.AppName = "RpcTest";
             ZeroApplication.CheckOption();
-            ZeroApplication.Initialize(); 
+            ZeroApplication.Initialize();
+            //IocHelper.Create<IApiCounter>().HookApi();
             SystemMonitor.StationEvent += SystemMonitor_StationEvent;
+            Console.WriteLine(LogRecorder.LogMonitor );
             ZeroApplication.RunAwaite();
         }
 
@@ -44,7 +47,7 @@ namespace RpcTest
             switch (ZeroApplication.Config.SpeedLimitModel)
             {
                 default:
-                    tester = new ZeroTester {Token = cancel.Token};
+                    tester = new ZeroTester { Token = cancel.Token };
                     Task.Factory.StartNew(tester.TestSync, cancel.Token);
                     break;
                 case SpeedLimitType.Single:
@@ -55,7 +58,8 @@ namespace RpcTest
                     }.Start();
                     break;
                 case SpeedLimitType.ThreadCount:
-                    int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple);
+                    int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple); if (max < 1)
+                        max = 1;
                     for (int idx = 0; idx < max; idx++)
                     {
                         tester = new ZeroTester { Token = cancel.Token };

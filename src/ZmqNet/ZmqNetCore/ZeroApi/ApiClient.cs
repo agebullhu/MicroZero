@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
@@ -131,12 +130,12 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         public void CallCommand()
         {
-            using (MonitorStepScope.CreateScope("内部Zero调用"))
+            using (MonitorScope.CreateScope("内部Zero调用"))
             {
-                ApiContext.Current.LastError = 0;
+                //ApiContext.Current.LastError = 0;
                 LogRecorder.MonitorTrace($"Station:{Station},Command:{Commmand}");
                 Call();
-                LogRecorder.MonitorTrace($"Result:{Result}");
+                //LogRecorder.MonitorTrace($"Result:{Result}");
             }
         }
         /// <summary>

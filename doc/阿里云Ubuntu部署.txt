@@ -1,0 +1,42 @@
+# 阿里云Ubuntu部署
+
+# 1 系统更新
+
+sudo apt-get update
+
+# 2 Net Core
+> https://www.microsoft.com/net/download/linux-package-manager/ubuntu16-04/sdk-2.0.3
+wget -q packages-microsoft-prod.deb https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt-get install apt-transport-https
+sudo apt-get update
+sudo apt-get install dotnet-sdk-2.0.3 
+
+# 3 安装 supervisor
+
+sudo apt-get install supervisor
+修改配置为HTTP
+supervisord -c /etc/supervisor/supervisord.conf
+
+supervisorctl status
+supervisorctl stop tomcat
+supervisorctl start tomcat
+supervisorctl restart tomcat
+supervisorctl reread
+supervisorctl update
+
+# 4 安装redis
+> https://www.cnblogs.com/zongfa/p/7808807.html
+
+sudo apt-get install redis-server
+
+注意：使用了16以外的库ID所以要修改Redis.Conf(/etc/redis/Redis.Conf) 
+databases 16 => 32
+sudo /etc/init.d/redis-server restart #重启
+
+
+# 5 防火墙
+sudo ufw status
+​
+sudo ufw enable|disable
+sudo ufw disable

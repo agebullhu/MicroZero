@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
@@ -23,9 +24,9 @@ namespace WebMonitor
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            IocHelper.SetServiceCollection(services);
-            ZeroApplication.Discove();
+            //IocHelper.SetServiceCollection(services);
             ZeroApplication.Initialize();
+            ZeroApplication.Discove();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,13 +41,13 @@ namespace WebMonitor
             {
                 app.UseExceptionHandler("/Error");
             }
-            ZeroApplication.Run();
 
             app.Map("/ws", WebNotify.Map);
             app.UseStaticFiles();
 
             app.UseMvc();
-
+            
+            Task.Factory.StartNew(ZeroApplication.Run);
         }
     }
 }

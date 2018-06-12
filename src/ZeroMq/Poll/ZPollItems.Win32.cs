@@ -19,6 +19,7 @@
         public DispoIntPtr Ptr { get; set; }
         public void Prepare(ZSocket[] sockets, ZPollEvent events)
         {
+            TimeoutMs = 1000;
             Sockets = sockets;
             error = null;
             Size = sockets.Length;

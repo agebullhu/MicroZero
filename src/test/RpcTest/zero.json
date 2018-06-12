@@ -1,4 +1,5 @@
 {
+  "ASPNETCORE_ENVIRONMENT_": "Production",
   "Zero": {
     "Global": {
       /*ZeroCenter主机IP地址*/

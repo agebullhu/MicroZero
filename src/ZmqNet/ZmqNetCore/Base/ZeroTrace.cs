@@ -24,35 +24,35 @@ namespace Agebull.ZeroNet.Core
 
         private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
-        private static Thread thread;
+        //private static Thread thread;
 
         internal static void Initialize()
         {
-            Console.CursorVisible = false;
+            //Console.CursorVisible = false;
             //thread = new Thread(Show)
             //{
             //    IsBackground = true,
-            //    //Priority = ThreadPriority.AboveNormal
+            //    Priority = ThreadPriority.AboveNormal
             //};
             //thread.Start();
         }
 
-        internal static void Shutdown()
-        {
-            //thread?.Abort();
-        }
-        static void Show()
-        {
-            while (ZeroApplication.IsAlive)
-            {
-                if (!ConsoleMessages.StartProcess(out var message))
-                    continue;
-                Write(message);
-                ConsoleMessages.EndProcess();
-            }
-            Console.WriteLine();
-            thread = null;
-        }
+        //internal static void Shutdown()
+        //{
+        //    //thread?.Abort();
+        //}
+        //static void Show()
+        //{
+        //    while (ZeroApplication.IsAlive)
+        //    {
+        //        if (!ConsoleMessages.StartProcess(out var message))
+        //            continue;
+        //        Write(message);
+        //        ConsoleMessages.EndProcess();
+        //    }
+        //    Console.WriteLine();
+        //    thread = null;
+        //}
 
         private static void Write(ConsoleMessage message)
         {
@@ -122,33 +122,35 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
-        private static void ShowTrace(ConsoleMessage message)
-        {
-            switch (message.Type)
-            {
-                case 0:
-                    LogRecorder.Trace(message.Title);
-                    break;
-                default:
-                    LogRecorder.Trace(message.Messages.LinkToString(message.Title, " > "));
-                    break;
-            }
-        }
+        //private static void ShowTrace(ConsoleMessage message)
+        //{
+        //    switch (message.Type)
+        //    {
+        //        case 0:
+        //            LogRecorder.Trace(message.Title);
+        //            break;
+        //        default:
+        //            LogRecorder.Trace(message.Messages.LinkToString(message.Title, " > "));
+        //            break;
+        //    }
+        //}
         /// <summary>
         /// 
         /// </summary>
         /// <param name="message"></param>
         static void Push(ConsoleMessage message)
         {
+            if (ZeroApplication.IsDisposed)
+                return;
             //if (ZeroApplication.IsAlive)
             //    ConsoleMessages.Push(message);
             //else
-            //{
-            //if(!ZeroApplication.Config.IsLinux)
-            lock (ConsoleMessages)
-                Write(message);
-            //}
-            
+            {
+                // if (!ZeroApplication.Config.IsLinux)
+                lock (ConsoleMessages)
+                    Write(message);
+            }
+
             //ShowTrace(message);
         }
         /// <summary>
@@ -195,7 +197,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            LogRecorder.Error(messages.LinkToString(title,"\r\n"));
+            LogRecorder.Error(messages.LinkToString(title, "\r\n"));
             Push(new ConsoleMessage
             {
                 Type = 3,
@@ -212,7 +214,7 @@ namespace Agebull.ZeroNet.Core
         public static void WriteException(string title, Exception exception, params object[] messages)
         {
             var msgs = messages.ToList();
-            msgs.Insert(0,"Exception");
+            msgs.Insert(0, "Exception");
             msgs.Add("\r\n");
             msgs.Add(exception);
             LogRecorder.Exception(exception, messages.LinkToString(title, "\r\n"));

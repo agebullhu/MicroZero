@@ -44,3 +44,5 @@ packages
 /src/ZeroMonitor
 /src/ZmqNet/HttpRoute/HttpRoute/Datas
 /src/ZmqNet/WebMonitor/datas/WebMonitor
+/src/test/RpcTest/AddIn
+/test

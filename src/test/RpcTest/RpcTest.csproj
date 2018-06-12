@@ -26,9 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="AddIn\Agebull.ZeroNet.Extend.dll" />
-    <None Remove="AddIn\Agebull.ZeroNet.Extend.pdb" />
     <None Remove="appsettings.Development.json" />
+    <None Remove="host.json" />
+    <None Remove="zero.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,23 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="host.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="zero.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="AddIn\" />
+    <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
 </Project>

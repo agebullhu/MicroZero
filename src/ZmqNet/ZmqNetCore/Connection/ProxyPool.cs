@@ -69,7 +69,7 @@ namespace Agebull.ZeroNet.Core
                 //});
                 //Parallel.ForEach(proxys.Values, proxy => proxy.Start());
             }
-            ZeroApplication.OnObjectActive();
+            ZeroApplication.OnObjectActive(this);
             return true;
         }
 
@@ -78,7 +78,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public bool OnZeroEnd()
         {
-            ZeroApplication.OnObjectClose();
+            ZeroApplication.OnObjectClose(this);
             return true;
         }
         /// <summary>

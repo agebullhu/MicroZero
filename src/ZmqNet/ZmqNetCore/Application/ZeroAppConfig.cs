@@ -190,12 +190,12 @@ namespace Agebull.ZeroNet.Core
                 {
                     this[config.StationName] = config;
                 }
-                ZeroTrace.WriteInfo(ZeroApplication.AppName, "LoadAllConfig", json);
+                ZeroTrace.WriteInfo("LoadAllConfig", json);
                 return true;
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException(ZeroApplication.AppName,e, "LoadAllConfig", json);
+                ZeroTrace.WriteException("LoadAllConfig", e, json);
                 return false;
             }
         }
@@ -247,7 +247,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="json"></param>
         /// <param name="stationConfig"></param>
         /// <returns></returns>
-        public bool UpdateConfig(string stationName,string json, out StationConfig stationConfig)
+        public bool UpdateConfig(string stationName, string json, out StationConfig stationConfig)
         {
             if (stationName == null || string.IsNullOrEmpty(json) || json[0] != '{')
             {
@@ -256,7 +256,7 @@ namespace Agebull.ZeroNet.Core
             }
             try
             {
-                stationConfig=this[stationName] = JsonConvert.DeserializeObject<StationConfig>(json);
+                stationConfig = this[stationName] = JsonConvert.DeserializeObject<StationConfig>(json);
                 return true;
             }
             catch (Exception e)

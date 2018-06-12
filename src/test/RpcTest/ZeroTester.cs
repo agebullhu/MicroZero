@@ -7,24 +7,34 @@ using Newtonsoft.Json;
 
 namespace RpcTest
 {
-    class ZeroTester
+    internal class ZeroTester
     {
         public CancellationToken Token;
-        static long _count, _blError, _netError, _exError, _tmError;
-        static long _runTime;
-        static DateTime _start;
+        private static long _count;
+        private static long _blError;
+        private static long _netError;
+        private static long _exError;
+        private static long _tmError;
+        private static long _runTime;
+        private static DateTime _start;
 
         //System.Collections.Generic.Dictionary< int ,int >
 
+        private readonly string json = JsonConvert.SerializeObject(new
+        {
+            MobilePhone = "15618965007",
+            UserPassword = "123456A",
+            VerificationCode = "9999"
+        });
         public void Async()
         {
             DateTime s = DateTime.Now;
             Interlocked.Increment(ref waitCount);
             ApiClient client = new ApiClient
             {
-                Station = "Test",
-                Commmand = "api/login",
-                Argument = "{}"
+                Station = "UserCenter",
+                Commmand = "v2/login/account",
+                Argument = json
             };
             client.CallCommand();
             switch (client.State)
@@ -48,12 +58,6 @@ namespace RpcTest
         }
         private int waitCount;
 
-        private readonly string json = JsonConvert.SerializeObject(new
-        {
-            MobilePhone = "15618965007",
-            UserPassword = "123456A",
-            VerificationCode = "9999"
-        });
         public void Test()
         {
             _start = DateTime.Now;

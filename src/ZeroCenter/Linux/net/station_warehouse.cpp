@@ -121,6 +121,7 @@ namespace agebull
 				look(config.second);
 			}
 		}
+		string host_json;
 		/**
 		* \brief 取机器信息
 		*/
@@ -129,6 +130,11 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			if (stattion == "*")
 			{
+				if (host_json.length() > 0)
+				{
+					json = host_json;
+					return ZERO_STATUS_OK_ID;
+				}
 				json = "[";
 				bool first = true;
 				for (auto& config : configs_)
@@ -137,9 +143,10 @@ namespace agebull
 						first = false;
 					else
 						json += ",";
-					json += config.second->to_json(0).c_str();
+					json += config.second->to_json(2).c_str();
 				}
 				json += "]";
+				host_json = json;
 				return ZERO_STATUS_OK_ID;
 			}
 			const auto iter = configs_.find(stattion);
@@ -147,7 +154,7 @@ namespace agebull
 			{
 				return ZERO_STATUS_NO_FIND_ID;
 			}
-			json = iter->second->to_json(0).c_str();
+			json = iter->second->to_json(2).c_str();
 			return ZERO_STATUS_OK_ID;
 		}
 

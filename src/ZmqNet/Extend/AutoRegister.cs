@@ -24,9 +24,9 @@ namespace Agebull.ZeroNet.Log
         void IAutoRegister.Initialize()
         {
             IocHelper.ServiceCollection.AddSingleton<ILogRecorder>(provider => RemoteLogRecorder.Instance);
-            IocHelper.ServiceCollection.AddSingleton<IEntityEventProxy>(provider => EntityEventProxy.Instance);
-            IocHelper.ServiceCollection.AddSingleton<IApiCounter>(provider => ApiCounter.Instance);
-            IocHelper.ServiceCollection.AddSingleton<IRuntimeWaring>(provider => RuntimeWaring.Instance);
+            //IocHelper.ServiceCollection.AddSingleton<IEntityEventProxy>(provider => EntityEventProxy.Instance);
+            //IocHelper.ServiceCollection.AddSingleton<IApiCounter>(provider => ApiCounter.Instance);
+            //IocHelper.ServiceCollection.AddSingleton<IRuntimeWaring>(provider => RuntimeWaring.Instance);
         }
 
         /// <summary>
@@ -35,8 +35,8 @@ namespace Agebull.ZeroNet.Log
         void IAutoRegister.AutoRegist()
         {
             ZeroApplication.RegistZeroObject(RemoteLogRecorder.Instance);
-            ZeroApplication.RegistZeroObject(RuntimeWaring.Instance);
-            ZeroApplication.RegistZeroObject(EntityEventProxy.Instance);
+            //ZeroApplication.RegistZeroObject(RuntimeWaring.Instance);
+            //ZeroApplication.RegistZeroObject(EntityEventProxy.Instance);
         }
     }
 }

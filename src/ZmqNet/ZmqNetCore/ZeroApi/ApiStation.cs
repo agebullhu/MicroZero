@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
@@ -334,21 +335,6 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #region 网络与执行
 
-        //private ZSocket  _resultSocket , _inprocCallSocket/*, _callSocket,_inprocPollSocket*/;
-
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected sealed override void OnStart()
-        {
-            base.OnStart();
-            //Identity = RealName.ToAsciiBytes();
-            //_inprocCallSocket = ZeroHelper.CreateClientSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
-            //_inprocCallSocket = ZSocket.CreateServiceSocket($"inproc://{StationName}_api.route", ZSocketType.ROUTER);
-            //_resultSocket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
-        }
-
         /// <summary>
         /// 初始化
         /// </summary>
@@ -397,22 +383,24 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             waitCount = 0;
             SystemManager.HeartReady(StationName, RealName);
-            if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
+            switch (ZeroApplication.Config.SpeedLimitModel)
             {
-                int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple);
-                _processSemaphore = new SemaphoreSlim(0, max);
-                for (int idx = 0; idx < max; idx++)
-                    RunSignle(idx);
-                for (int idx = 0; idx < max; idx++)
-                    _processSemaphore.Wait();
-            }
-            else if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.WaitCount)
-            {
-                RunWaite();
-            }
-            else
-            {
-                RunSignle(0);
+                case SpeedLimitType.ThreadCount:
+                    int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple);
+                    if (max < 1)
+                        max = 1;
+                    _processSemaphore = new SemaphoreSlim(0, max);
+                    for (int idx = 0; idx < max; idx++)
+                        Task.Factory.StartNew(RunSignle, token);
+                    for (int idx = 0; idx < max; idx++)
+                        _processSemaphore.Wait(token);
+                    break;
+                case SpeedLimitType.WaitCount:
+                    RunWaite();
+                    break;
+                default:
+                    RunSignle();
+                    break;
             }
             SystemManager.HeartLeft(StationName, RealName);
             return true;
@@ -432,32 +420,34 @@ namespace Agebull.ZeroNet.ZeroApi
         private void RunWaite()
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-            var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
-            while (CanRun)
+            using (var pool = ZmqPool.CreateZmqPool())
             {
-                if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
+                while (CanRun)
                 {
-                    continue;
-                }
-                Interlocked.Increment(ref RecvCount);
-                using (message)
-                {
-                    if (!Unpack(message, out var item))
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
                     {
-                        SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
                         continue;
                     }
+                    Interlocked.Increment(ref RecvCount);
+                    using (message)
+                    {
+                        if (!Unpack(message, out var item))
+                        {
+                            SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
+                            continue;
+                        }
 
-                    Interlocked.Increment(ref waitCount);
-                    if (waitCount > ZeroApplication.Config.MaxWait)
-                    {
-                        item.Result = ZeroStatuValue.UnavailableJson;
-                        SendResult(ref socket, item, false);
-                    }
-                    else
-                    {
-                        Task.Factory.StartNew(ApiCallTask, item);
+                        Interlocked.Increment(ref waitCount);
+                        if (waitCount > ZeroApplication.Config.MaxWait)
+                        {
+                            item.Result = ZeroStatuValue.UnavailableJson;
+                            SendResult(ref socket, item, false);
+                        }
+                        else
+                        {
+                            Task.Factory.StartNew(ApiCallTask, item);
+                        }
                     }
                 }
             }
@@ -469,28 +459,32 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 具体执行
         /// </summary>
-        private void RunSignle(int idx)
+        private void RunSignle()
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-            var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
-            while (CanRun)
+            using (var pool = ZmqPool.CreateZmqPool())
             {
-                if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
+                while (CanRun)
                 {
-                    continue;
-                }
-                Interlocked.Increment(ref RecvCount);
-                using (message)
-                {
-                    if (!Unpack(message, out var item))
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
                     {
-                        SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
                         continue;
                     }
-                    ApiCall(ref socket, item);
+                    Interlocked.Increment(ref RecvCount);
+                    using (message)
+                    {
+                        if (!Unpack(message, out var item))
+                        {
+                            SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
+                            continue;
+                        }
+                        ApiCall(ref socket, item);
+                    }
                 }
             }
+
+            IocHelper.DisposeScope();
             _processSemaphore?.Release();
         }
         #endregion

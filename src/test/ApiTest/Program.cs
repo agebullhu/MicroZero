@@ -11,6 +11,7 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.AppName = "ApiTest";
+            ZeroApplication.CheckOption();
             LogRecorder.LogMonitor = false;
             ZeroApplication.Initialize();
             ZeroApplication.Discove();

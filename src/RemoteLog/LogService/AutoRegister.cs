@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.Composition;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.LogService;
 using Agebull.ZeroNet.ZeroApi;

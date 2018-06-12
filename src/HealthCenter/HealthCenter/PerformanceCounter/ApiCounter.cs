@@ -18,6 +18,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public ApiCounter()
         {
+            Name = "ApiCounter";
             StationName = "HealthCenter";
             Subscribe = "";//ApiCounter
         }

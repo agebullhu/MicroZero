@@ -49,7 +49,7 @@ namespace ZeroMQ
             {
                 foreach (ZFrame frame in _frames)
                 {
-                    frame.Dispose();
+                    frame.Close();
                 }
             }
             _frames = null;

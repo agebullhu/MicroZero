@@ -244,6 +244,10 @@ namespace agebull
 			check_type_name();
 		}
 
+		/**
+		* \brief 写入JSON
+		* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
+		*/
 		acl::string zero_config::to_json(int type)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex_);

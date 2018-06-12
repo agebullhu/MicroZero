@@ -4,8 +4,10 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using Agebull.Common;
 using Agebull.Common.Configuration;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -22,7 +24,8 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 插件对象
         /// </summary>
-        [ImportMany(typeof(IAutoRegister))] public IEnumerable<IAutoRegister> Registers {get; set; }
+        [ImportMany(typeof(IAutoRegister))]
+        public IEnumerable<IAutoRegister> Registers {get; set; }
 
         /// <summary>
         /// 导入
@@ -32,13 +35,19 @@ namespace Agebull.ZeroNet.ZeroApi
             if (Instance != null)
                 return;
             string path = ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory);
-            if (string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
-                path = IOHelper.CheckPath(path, "AddIn");
+            if (!string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
+                path = IOHelper.CheckPath(path, ZeroApplication.Config.AddInPath);
+            ZeroTrace.WriteInfo("AddIn", path);
             Instance = new AddInImporter();
+            IocHelper.ServiceCollection.AddSingleton(pro => Instance);
             // 通过容器对象将宿主和部件组装到一起。 
             DirectoryCatalog directoryCatalog = new DirectoryCatalog(path);
             var container = new CompositionContainer(directoryCatalog);
             container.ComposeParts(Instance);
+            foreach (var reg in Instance.Registers)
+            {
+                ZeroTrace.WriteInfo("AddIn", reg.GetType().Assembly.FullName);
+            }
         }
 
         /// <summary>
@@ -47,7 +56,9 @@ namespace Agebull.ZeroNet.ZeroApi
         public void Initialize()
         {
             foreach (var reg in Registers)
+            {
                 reg.Initialize();
+            }
         }
 
         /// <summary>

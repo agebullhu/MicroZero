@@ -127,12 +127,12 @@ namespace Agebull.ZeroNet.Core
             var re = CallCommand("host", "*");
             if (!re.InteractiveSuccess)
             {
-                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Network failed");
+                ZeroTrace.WriteError("LoadConfig", "Network failed");
                 return false;
             }
             if (!re.TryGetValue(ZeroFrameType.TextValue, out var json))
             {
-                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Empty");
+                ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
             return ZeroApplication.Config.FlushConfigs(json);

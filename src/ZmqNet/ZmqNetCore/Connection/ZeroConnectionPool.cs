@@ -9,7 +9,7 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public class PoolSocket : ScopeBase
     {
-        private ZSocket _socket;
+        internal ZSocket _socket;
         internal string Station, Name;
         /// <summary>
         /// 连接对象
@@ -55,7 +55,7 @@ namespace Agebull.ZeroNet.Core
             //if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
             //    Pool = new ProxyPool();
             //else
-                Pool = new SocketPool();
+            Pool = new SocketPool();
             return Pool;
         }
 
@@ -93,6 +93,18 @@ namespace Agebull.ZeroNet.Core
         public static void Free(ZSocket socket)
         {
             Pool.FreeSocket(socket);
+        }
+
+        /// <summary>
+        /// 释放一个连接对象
+        /// </summary>
+        /// <returns></returns>
+        public static void Free(PoolSocket socket)
+        {
+            if (socket.HaseFailed)
+                Pool.CloseSocket(ref socket._socket);
+            else
+                Pool.FreeSocket(socket.Socket);
         }
 
         /// <summary>

@@ -14,7 +14,7 @@
 1 Api站点
 2 消息发布与订阅
 3 网络投票（并行工作流）</Description>
-    <Version>1.0.5.2</Version>
+    <Version>1.0.6</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -33,8 +33,8 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.5.2</AssemblyVersion>
-    <FileVersion>1.0.5.2</FileVersion>
+    <AssemblyVersion>1.0.6</AssemblyVersion>
+    <FileVersion>1.0.6</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -77,5 +77,8 @@
     <ProjectReference Include="..\..\ZeroMq\ClrZMQ.Core.csproj" />
     <ProjectReference Include="..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\hotfix\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\hotfix\ /y" />
+  </Target>
 
 </Project>

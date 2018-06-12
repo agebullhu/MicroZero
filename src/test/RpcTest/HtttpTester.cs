@@ -13,7 +13,6 @@ namespace RpcTest
         {
             ZeroApplication.Shutdown();
         }
-
         long count = 0, error = 0;
         //DateTime start = DateTime.Now;
         double tm;

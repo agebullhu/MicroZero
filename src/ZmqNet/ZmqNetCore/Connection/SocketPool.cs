@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.Core
                 }
             });
             CanDo = true;
-            ZeroApplication.OnObjectActive();
+            ZeroApplication.OnObjectActive(this);
             return true;
         }
 
@@ -67,7 +67,7 @@ namespace Agebull.ZeroNet.Core
         public bool OnZeroEnd()
         {
             Dispose();
-            ZeroApplication.OnObjectClose();
+            ZeroApplication.OnObjectClose(this);
             return true;
         }
         /// <summary>

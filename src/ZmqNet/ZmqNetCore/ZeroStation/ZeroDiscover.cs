@@ -23,22 +23,39 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public void FindApies()
         {
+            var apiItems = new Dictionary<string, ApiActionInfo>(StringComparer.OrdinalIgnoreCase);
             var types = Assembly.GetTypes().Where( p=>p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
             foreach (var type in types)
             {
-                FindApi(type);
+                FindApi(type, apiItems);
             }
+            if (apiItems.Count == 0)
+                return;
+            var station = new ApiStation
+            {
+                Name = ZeroApplication.Config.StationName,
+                StationName = ZeroApplication.Config.StationName
+            };
+            foreach (var action in apiItems)
+            {
+                var a = action.Value.HaseArgument
+                    ? station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption)
+                    : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
+                a.ArgumenType = action.Value.ArgumenType;
+            }
+            ZeroApplication.RegistZeroObject(station);
         }
+
         /// <summary>
         /// 查找API
         /// </summary>
         /// <param name="type"></param>
-        private void FindApi(Type  type)
+        /// <param name="apiItems"></param>
+        private void FindApi(Type  type, Dictionary<string, ApiActionInfo> apiItems)
         {
             var methods = type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance 
                                                                     | BindingFlags.Public 
                                                                     | BindingFlags.NonPublic);
-            var apiItems = new Dictionary<string, ApiActionInfo>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var method in methods)
             {
@@ -72,20 +89,6 @@ namespace Agebull.ZeroNet.ZeroApi
                     info.AccessOption = accessOption.Option;
                 apiItems.Add(info.RouteName, info);
             }
-            if (apiItems.Count == 0)
-                return;
-            var station = new ApiStation
-            {
-                StationName = ZeroApplication.Config.StationName
-            };
-            foreach (var action in apiItems)
-            {
-                var a = action.Value.HaseArgument
-                    ? station.RegistAction(action.Key, action.Value.ArgumentAction, action.Value.AccessOption)
-                    : station.RegistAction(action.Key, action.Value.Action, action.Value.AccessOption);
-                a.ArgumenType = action.Value.ArgumenType;
-            }
-            ZeroApplication.RegistZeroObject(station);
         }
 
         #endregion
