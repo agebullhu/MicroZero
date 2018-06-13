@@ -135,6 +135,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void CheckOption()
         {
+            ZeroTrace.WriteLine("Weconme ZeroNet");
             ZeroTrace.Initialize();
             CheckConfig();
             InitializeDependency();

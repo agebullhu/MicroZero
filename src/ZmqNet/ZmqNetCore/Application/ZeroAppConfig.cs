@@ -412,7 +412,7 @@ namespace Agebull.ZeroNet.Core
             Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
             Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
             Config.LocalIpAddress = GetHostIps();
-            Config.ShortName = string.IsNullOrWhiteSpace(Config.ZeroAddress) ? Config.StationName : Config.ShortName.Trim();
+            Config.ShortName = string.IsNullOrWhiteSpace(Config.ShortName) ? Config.StationName : Config.ShortName.Trim();
             Config.RealName = ZeroIdentityHelper.CreateRealName(false);
             Config.Identity = Config.RealName.ToAsciiBytes();
             //模式选择
@@ -435,8 +435,8 @@ namespace Agebull.ZeroNet.Core
 
         static void ShowOptionInfo(string root)
         {
-            ZeroTrace.WriteLine($"Weconme {AppName}");
             ZeroTrace.WriteInfo("Option", "ZeroMQ", zmq.LibraryVersion);
+            ZeroTrace.WriteInfo("Option", "AppName", AppName);
             ZeroTrace.WriteInfo("Option", "RootPath", root);
             string model;
             switch (Config.SpeedLimitModel)
