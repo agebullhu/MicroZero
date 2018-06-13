@@ -116,7 +116,7 @@ namespace agebull
 			* \brief 设置关闭
 			*/
 			static void set_close_info();
-		protected:
+		public:
 			/**
 			* \brief 遍历配置
 			*/

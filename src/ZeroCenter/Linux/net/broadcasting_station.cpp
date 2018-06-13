@@ -56,9 +56,10 @@ namespace agebull
 			list[1] = list[2];
 			list[2] = description;
 			char* buf = description.get_buffer();
+			buf[0] -= 1;
 			for (size_t i = 2; i < description.size(); i++)
 				buf[i] = buf[i + 1];
-			send_response(list, 2);
+			send_response(list, 1);
 		}
 
 		/**

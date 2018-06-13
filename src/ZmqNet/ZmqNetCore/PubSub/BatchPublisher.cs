@@ -56,7 +56,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override void Initialize()
+        protected override void Initialize()
         {
             Items.Load(CacheFileName);
         }
@@ -67,17 +67,16 @@ namespace Agebull.ZeroNet.Log
         protected virtual void OnSend(List<TData> data)
         {
         }
-        /// <inheritdoc />
         /// <summary>
-        ///     命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
+        /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+            _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
             SystemManager.HeartReady(StationName, RealName);
             State = StationState.Run;
-            while (!token.IsCancellationRequested && CanRun)
+            while (CanRun)
             {
                 if (!Items.StartProcess(out List<TData> data, 100))
                 {
@@ -95,9 +94,9 @@ namespace Agebull.ZeroNet.Log
                         Content = JsonConvert.SerializeObject(batch)
                     }))
                     {
-                        _socket.CloseSocket();
+                        _socket.TryClose();
                         Thread.Sleep(100);
-                        _socket = ZeroHelper.CreateRequestSocket(Config.RequestAddress, Identity);
+                        _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
                         continue;
                     }
                     if (data.Count > 36)
@@ -108,8 +107,8 @@ namespace Agebull.ZeroNet.Log
                 Items.EndProcess();
             }
             SystemManager.HeartLeft(StationName, RealName);
-            _socket.CloseSocket();
-            return State != StationState.Failed;
+            _socket.TryClose();
+            return true;
         }
 
         #endregion

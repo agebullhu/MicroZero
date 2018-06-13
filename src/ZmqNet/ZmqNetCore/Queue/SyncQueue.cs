@@ -32,7 +32,7 @@ namespace Agebull.Common
         /// <summary>
         /// 用于同步的信号量
         /// </summary>
-        private readonly Semaphore _semaphore = new Semaphore(0, Int32.MaxValue);
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(0, Int32.MaxValue);
 
         /// <summary>
         /// 是否为空
@@ -51,7 +51,7 @@ namespace Agebull.Common
             lock (this)
             {
                 Queue.Enqueue(t);
-                _semaphore.Release();
+                _semaphore.Release(1);
             }
         }
 
@@ -70,7 +70,7 @@ namespace Agebull.Common
                     Interlocked.Increment(ref ProcessCount);
                     return true;
                 }
-                if (!_semaphore.WaitOne(waitMs))
+                if (!_semaphore.Wait(waitMs))
                 {
                     t = default(T);
                     return false;

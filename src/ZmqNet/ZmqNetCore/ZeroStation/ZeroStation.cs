@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,7 +54,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 节点名称
         /// </summary>
-        public string Name { get; protected set; }
+        public string Name { get;protected internal set; }
 
         /// <summary>
         /// 实例名称
@@ -89,13 +90,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 能不能运行
         /// </summary>
-        public bool CanRun => ZeroApplication.CanDo && State == StationState.Run;
-
+        public bool CanRun => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested &&
+                              ZeroApplication.CanDo && State == StationState.Run;
         /// <summary>
         /// 初始化
         /// </summary>
         protected virtual void Initialize()
         {
+            Debug.Assert(Name != null);
         }
 
         /// <summary>
@@ -103,40 +105,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         protected virtual bool OnNofindConfig()
         {
-            string type;
-            switch (this.StationType)
-            {
-                case StationTypePublish:
-                    type = "pub";
-                    break;
-                case StationTypeApi:
-                    type = "api";
-                    break;
-                default:
-                    type = null;
-                    break;
-            }
-            ZeroTrace.WriteError(StationName, "No find,try install ...");
-            var result = SystemManager.CallCommand("install", type, StationName, StationName);
-            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
-                return false;
-            ZeroTrace.WriteError(StationName, "Is install ,try start it ...");
-            result = SystemManager.CallCommand("start", StationName);
-            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
-                return false;
-            Config = SystemManager.LoadConfig(StationName, out _);
-            if (Config == null)
-                return false;
-            Config.State = ZeroCenterState.Run;
-            ZeroTrace.WriteError(StationName, "successfully");
-            return true;
+            return false;
         }
 
         /// <summary>
         /// 开始
         /// </summary>
         /// <returns></returns>
-        bool Start()
+        private bool Start()
         {
             using (OnceScope.CreateScope(this))
             {
@@ -145,89 +121,103 @@ namespace Agebull.ZeroNet.Core
                 Config = ZeroApplication.Config[StationName];
                 if (Config == null && !OnNofindConfig())
                 {
-                    ZeroApplication.OnObjectFailed();
+                    ZeroApplication.OnObjectFailed(this);
                     ZeroTrace.WriteError(StationName, "No config");
                     State = StationState.ConfigError;
                     return false;
                 }
+
                 if (Config.State == ZeroCenterState.Uninstall)
                 {
-                    ZeroApplication.OnObjectFailed();
+                    ZeroApplication.OnObjectFailed(this);
                     ZeroTrace.WriteError(StationName, "Uninstall");
                     State = StationState.ConfigError;
                     return false;
                 }
+
                 ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
                 //名称初始化
                 RealName = ZeroIdentityHelper.CreateRealName(IsService, Config?.ShortName ?? StationName, Name);
                 Identity = RealName.ToAsciiBytes();
-                SystemManager.HeartJoin(Config.StationName, RealName);
                 //扩展动作
-                OnStart();
+                if (!OnStart())
+                {
+                    ZeroApplication.OnObjectFailed(this);
+                    State = StationState.Failed;
+                    return false;
+                }
+                //可执行
+                SystemManager.HeartJoin(Config.StationName, RealName);
                 //执行主任务
                 RunTaskCancel = new CancellationTokenSource();
                 Task.Factory.StartNew(Run, RunTaskCancel.Token);
             }
+            _waitToken.Wait();
             return true;
         }
 
         /// <summary>
-        /// 初始化
+        /// 将要开始
         /// </summary>
-        protected virtual void OnStart()
+        protected virtual bool OnStart()
         {
+            return true;
         }
+
+        /// <summary>
+        /// 应用程序等待结果的信号量对象
+        /// </summary>
+        private readonly SemaphoreSlim _waitToken = new SemaphoreSlim(0, 1);
+
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        void Run(object objToken)
+        private void Run()
         {
-            CancellationToken token = (CancellationToken)objToken;
+            bool success;
             using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
-                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                if (RunInner(token))
-                    State = StationState.Closed;
-                else
-                    State = StationState.Failed;
-                if (ZeroApplication.CanDo && State == StationState.Failed)
-                {
-                    //自动重启
-                    ZeroTrace.WriteInfo(StationName, "ReStart");
-                    Start();
-                }
-                else
-                {
-                    ZeroTrace.WriteInfo(StationName, "Stop");
-                }
+                success = RunInner(RunTaskCancel.Token);
+            }
+            if (ZeroApplication.CanDo && !success)
+            {
+                //自动重启
+                ZeroTrace.WriteInfo(StationName, "ReStart");
+                Task.Factory.StartNew(Start);
+            }
+            else
+            {
+                _waitToken.Release();
             }
         }
+
         /// <summary>
-        /// 命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
+        /// <returns>返回False表明需要重启</returns>
         protected abstract bool RunInner(CancellationToken token);
 
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        void OnRun()
+        private void OnRun()
         {
             State = StationState.Run;
-            ZeroTrace.WriteInfo(StationName, "Run");
-            ZeroApplication.OnObjectActive();
+            ZeroApplication.OnObjectActive(this);
+            _waitToken.Release();
         }
         /// <summary>
         /// 关闭
         /// </summary>
         /// <returns></returns>
-        void OnStop()
+        private void OnStop()
         {
             OnRunStop();
-            ZeroTrace.WriteInfo(StationName, "Closed");
-            ZeroApplication.OnObjectClose();
+            RunTaskCancel.Dispose();
+            RunTaskCancel = null;
+            ZeroApplication.OnObjectClose(this);
         }
 
         /// <summary>
@@ -237,35 +227,47 @@ namespace Agebull.ZeroNet.Core
         protected virtual void OnRunStop()
         {
         }
-        bool Close()
+
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        /// <returns></returns>
+        private bool Close()
         {
-            SystemManager.HeartLeft(StationName, RealName);
             if (RunTaskCancel != null)
             {
-                ZeroTrace.WriteInfo(StationName, "closing....");
-                State = StationState.Closing;
+                SystemManager.HeartLeft(StationName, RealName);
+                ZeroTrace.WriteInfo(StationName, "Closing....");
                 RunTaskCancel.Cancel();
-                using (OnceScope.CreateScope(this))
-                {
-                    RunTaskCancel.Dispose();
-                    RunTaskCancel = null;
-                }
+                _waitToken.Wait();
             }
             State = StationState.Closed;
             return true;
         }
 
+        /// <summary>
+        /// 析构
+        /// </summary>
+        protected virtual void DoDispose()
+        {
+
+        }
+        /// <summary>
+        /// 析构
+        /// </summary>
+        protected virtual void DoDestory()
+        {
+
+        }
         #region IZeroObject
         /// <summary>
         ///     要求心跳
         /// </summary>
         void IZeroObject.OnHeartbeat()
         {
-            if (State == StationState.Run)
+            if (CanRun)
                 SystemManager.Heartbeat(Config.StationName, RealName);
         }
-
-        string IZeroObject.Name => StationName;
 
         void IZeroObject.OnZeroInitialize()
         {
@@ -280,12 +282,15 @@ namespace Agebull.ZeroNet.Core
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            if (config != Config)
+            if (config != Config || (State == StationState.Run && config.State == ZeroCenterState.Run))
                 return;
-            if (State == StationState.Run)
-                Close();
-            if (config.State == ZeroCenterState.Run)
+            if (config.State == ZeroCenterState.Run && CanRun)
+            {
+                ZeroTrace.WriteInfo(Name, "Start by config state changed");
                 Start();
+            }
+            else if (State == StationState.Run)
+                Close();
         }
 
         bool IZeroObject.OnZeroEnd()
@@ -293,24 +298,18 @@ namespace Agebull.ZeroNet.Core
             return Close();
         }
 
-        void IZeroObject.OnZeroDistory()
+        void IZeroObject.OnZeroDestory()
         {
+            DoDestory();
         }
 
-        private bool isDisposed;
+        private bool _isDisposed;
         void IDisposable.Dispose()
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
-            isDisposed = true;
+            _isDisposed = true;
             DoDispose();
-        }
-        /// <summary>
-        /// 析构
-        /// </summary>
-        protected virtual void DoDispose()
-        {
-
         }
         #endregion
     }

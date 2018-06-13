@@ -7,8 +7,8 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		map<int64, vector<sharp_char>> zero_station::results;
-		boost::mutex zero_station::results_mutex_;
+		//map<int64, vector<sharp_char>> zero_station::results;
+		//boost::mutex zero_station::results_mutex_;
 
 		zero_station::zero_station(const string name, int type, int request_zmq_type)
 			: request_zmq_type_(request_zmq_type)
@@ -69,6 +69,7 @@ namespace agebull
 			const char* station_name = get_station_name();
 			poll_items_ = new zmq_pollitem_t[poll_count_];
 			memset(poll_items_, 0, sizeof(zmq_pollitem_t) * poll_count_);
+			int cnt = 0;
 			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, request_zmq_type_, config_->request_port_);
 			if (request_scoket_tcp_ == nullptr)
 			{
@@ -76,7 +77,6 @@ namespace agebull
 				config_->error("initialize request tpc", zmq_strerror(zmq_errno()));
 				return false;
 			}
-			int cnt = 0;
 			poll_items_[cnt++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
 			if(json_config::use_ipc_protocol)
 			{
@@ -100,7 +100,10 @@ namespace agebull
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
 					return false;
 				}
-
+				//char addr[256];
+				//sprintf(addr, "inproc://%s_monitor.rep", config_->station_name_.c_str());
+				//zmq_socket_monitor(worker_out_socket_tcp_, addr, ZMQ_EVENT_ALL);
+				
 				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port_);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
@@ -108,7 +111,7 @@ namespace agebull
 					config_->error("initialize worker in", zmq_strerror(zmq_errno()));
 					return false;
 				}
-				poll_items_[cnt++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
+				poll_items_[cnt] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
 			else
 			{
@@ -131,6 +134,7 @@ namespace agebull
 				}
 			}
 			config_->station_state_ = station_state::Run;
+
 			return true;
 		}
 
@@ -195,7 +199,7 @@ namespace agebull
 					break;
 				}
 
-				const int state = zmq_poll(poll_items_, poll_count_, 1000);
+				const int state = zmq_poll(poll_items_, poll_count_, 10000);
 				if (state == 0|| !can_do())//超时或需要关闭
 					continue;
 				if (state < 0)
@@ -632,6 +636,70 @@ namespace agebull
 			sprintf(key, "zero:result:%s:%8x", get_station_name(), msgid);
 			trans_redis::get_context()->hgetall(key, result);
 			return result;
+		}
+
+
+		/**
+		* \brief 网络监控
+		* \return
+		*/
+		void zero_station::monitor()
+		{
+			char addr[256];
+			sprintf(addr, "inproc://%s_monitor.rep", config_->station_name_.c_str());
+
+			zmq_event_t event;
+			printf("starting monitor...\n");
+			void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
+			assert(inproc);
+			setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
+			zmq_connect(inproc, addr);
+			while (get_net_state() < NET_STATE_DISTORY)
+			{
+				if (read_event_msg(inproc, &event) == 1)
+					continue;
+				switch (event.event)
+				{
+				case ZMQ_EVENT_CLOSED:
+					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:连接已关闭", event.value);
+					zmq_close(inproc);
+					return;
+				case ZMQ_EVENT_CLOSE_FAILED:
+					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:连接关闭失败", event.value);
+					zmq_close(inproc);
+					return;
+				case ZMQ_EVENT_MONITOR_STOPPED:
+					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:监控关闭", event.value);
+					zmq_close(inproc);
+					return;
+				case ZMQ_EVENT_LISTENING:
+					log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:正在侦听数据", event.value);
+					break;
+				case ZMQ_EVENT_BIND_FAILED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:绑定端口失败%s", event.value, event.address);
+					break;
+				case ZMQ_EVENT_ACCEPTED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:接收到%s的数据", event.value, event.address);
+					break;
+				case ZMQ_EVENT_ACCEPT_FAILED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:接收%s的数据出错", event.value, event.address);
+					break;
+				case ZMQ_EVENT_CONNECTED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接成功", event.value, event.address);
+					break;
+				case ZMQ_EVENT_CONNECT_DELAYED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接发生延迟", event.value, event.address);
+					break;
+				case ZMQ_EVENT_CONNECT_RETRIED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:重新连接%s", event.value, event.address);
+					break;
+				case ZMQ_EVENT_DISCONNECTED:
+					log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接关闭", event.value, event.address);
+					break;
+				default: break;
+				}
+			}
+			zmq_close(inproc);
 		}
 	}
 }

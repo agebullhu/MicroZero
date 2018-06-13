@@ -13,19 +13,12 @@ namespace Agebull.ZeroNet.Core
     {
         #region 网络处理
 
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        private static int State
-        {
-            get; set;
-        }
-        static readonly SemaphoreSlim TaskEndSem = new SemaphoreSlim(0);
+        private static readonly SemaphoreSlim TaskEndSem = new SemaphoreSlim(0);
 
         /// <summary>
         /// 等待正常结束
         /// </summary>
-        internal static void WaitSafeClose()
+        internal static void WaitMe()
         {
             TaskEndSem.Wait();
         }
@@ -36,53 +29,48 @@ namespace Agebull.ZeroNet.Core
         {
             using (OnceScope.CreateScope(ZeroApplication.Config))
             {
-                State = StationState.Failed;
-                ZeroTrace.WriteInfo(ZeroApplication.AppName, "zero center in monitor...");
+                ZeroTrace.WriteLine("Zero center in monitor...");
             }
-            var sockets = new[] { ZeroHelper.CreateSubscriberSocket(ZeroApplication.Config.ZeroMonitorAddress) };
+            var sockets = new[] { ZSocket.CreateSubscriberSocket(ZeroApplication.Config.ZeroMonitorAddress) };
             var pollItems = new[] { ZPollItem.CreateReceiver() };
-            int errorCount = 0;
-            while (!ZeroApplication.IsClosed)
+
+            TaskEndSem.Release();
+
+            while (ZeroApplication.IsAlive)
             {
                 if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
                 {
-                    errorCount++;
+                    //errorCount++;
                     if (error != null && !Equals(error, ZError.EAGAIN))
                     {
                         if (Equals(error, ZError.ETERM))
                             break;
                         ZeroTrace.WriteError("SystemMonitor", error.Text, error.Name);
                     }
-                    State = StationState.Failed;
-                    if (errorCount > 10 && State == StationState.Run) //最少5秒与服务器失联
-                    {
-                        ReBoot(sockets);
-                    }
+
+                    //if (errorCount > 10 && State == StationState.Run) //最少5秒与服务器失联
+                    //{
+                    //    ReBoot(sockets);
+                    //}
                     continue;
                 }
 
                 if (messages == null || messages.Length == 0 || !messages[0].Unpack(out var item))
                     continue;
-                State = StationState.Run;
-                errorCount = 0;
+                //errorCount = 0;
                 OnMessagePush(item.Title, item.Station, item.Content);
-                if (item.Title == "system_stop")
-                    ReBoot(sockets);
             }
-            sockets[0].CloseSocket();
-            State = StationState.Closed;
+            sockets[0].TryClose();
             TaskEndSem.Release();
         }
 
         private static void ReBoot(ZSocket[] sockets)
         {
             ZeroTrace.WriteInfo(ZeroApplication.AppName, "Reboot...");
-            sockets[0].CloseSocket();
+            sockets[0].TryClose();
             ZeroApplication.OnZeroEnd();
-            ZContext.Destroy();
-            ZContext.Initialize();
             //重构路由
-            sockets[0] = ZeroHelper.CreateSubscriberSocket(ZeroApplication.Config.ZeroMonitorAddress);
+            sockets[0] = ZSocket.CreateSubscriberSocket(ZeroApplication.Config.ZeroMonitorAddress);
             ZeroApplication.JoinCenter();
             ZeroTrace.WriteInfo(ZeroApplication.AppName, "Reboot");
         }
@@ -104,11 +92,11 @@ namespace Agebull.ZeroNet.Core
                 case "system_stop":
                     system_stop(content);
                     return;
-                case "station_state":
-                    station_state(station, content);
+                case "worker_sound_off":
+                    worker_sound_off();
                     return;
             }
-            if (ZeroApplication.ZerCenterStatus != ZeroCenterState.Run)
+            if (!ZeroApplication.InRun)
                 return;
             switch (cmd)
             {
@@ -133,9 +121,8 @@ namespace Agebull.ZeroNet.Core
                 case "station_uninstall":
                     station_uninstall(station);
                     return;
-                case "worker_sound_off":
-                    if (ZeroApplication.IsRun)
-                        ZeroApplication.OnHeartbeat();
+                case "station_state":
+                    station_state(station, content);
                     return;
             }
         }
@@ -145,10 +132,11 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.WriteInfo("station_uninstall", name);
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
-            config.State = ZeroCenterState.Uninstall;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.Config[name] = null;
+            config.State = ZeroCenterState.Uninstall;
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_uninstall", null, config);
         }
 
@@ -157,8 +145,9 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.WriteInfo("station_install", name, content);
             if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
                 return;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_install", content, config);
         }
 
@@ -168,8 +157,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             config.State = ZeroCenterState.Closing;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_closing", null, config);
         }
 
@@ -179,7 +169,7 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             config.State = ZeroCenterState.Run;
-            if (ZeroApplication.IsRun)
+            if (ZeroApplication.InRun)
                 ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_resume", null, config);
         }
@@ -190,8 +180,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             config.State = ZeroCenterState.Pause;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_pause", null, config);
         }
 
@@ -201,8 +192,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             config.State = ZeroCenterState.Closed;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_left", null, config);
         }
 
@@ -212,20 +204,10 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
                 return;
             config.State = ZeroCenterState.Run;
-            if (ZeroApplication.IsRun)
-                ZeroApplication.OnStationStateChanged(config);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
             InvokeEvent("station_join", content, config);
-        }
-
-
-        private static void system_start(string content)
-        {
-            ZeroApplication.ZerCenterStatus = ZeroCenterState.Run;
-            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Initialized, StationState.Failed) == StationState.Failed)
-            {
-                ZeroTrace.WriteInfo("system_start", content);
-                ZeroApplication.JoinCenter();
-            }
         }
 
         /// <summary>
@@ -235,20 +217,14 @@ namespace Agebull.ZeroNet.Core
         /// <param name="content"></param>
         private static void station_state(string name, string content)
         {
-            //SystemManage对象重启时机
-            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Start, StationState.Failed) == StationState.Failed)
-            {
-                ZeroApplication.ZerCenterStatus = ZeroCenterState.Run;
-                ZeroApplication.JoinCenter();
-                return;
-            }
-
-            if (!ZeroApplication.IsRun || !ZeroApplication.Config.TryGetConfig(name, out var old))
+            if (!ZeroApplication.Config.TryGetConfig(name, out var old))
                 return;
             try
             {
                 var config = JsonConvert.DeserializeObject<StationConfig>(content);
                 old.CheckValue(config);
+                if (config.State != old.State)
+                    ZeroApplication.OnStationStateChanged(old);
                 InvokeEvent("station_state", content, old);
             }
             catch (Exception e)
@@ -258,17 +234,44 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
+
+        private static void system_start(string content)
+        {
+            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Initialized, StationState.Failed) == StationState.Failed)
+            {
+                ZeroTrace.WriteInfo("system_start", content);
+                ZeroApplication.JoinCenter();
+            }
+        }
+
+
         private static void system_stop(string content)
         {
-            ZeroApplication.ZerCenterStatus = ZeroCenterState.Closed;
             if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Closing, StationState.Run) == StationState.Run)
             {
+                RaiseEvent("system_stop");
+                ZeroApplication.ZerCenterStatus = ZeroCenterState.Closed;
                 ZeroTrace.WriteError("system_stop", content);
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
-                RaiseEvent("system_stop");
             }
         }
+
+        /// <summary>
+        /// 站点心跳
+        /// </summary>
+        private static void worker_sound_off()
+        {
+            //SystemManage对象重启时机
+            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Start, StationState.Failed) == StationState.Failed)
+            {
+                ZeroApplication.JoinCenter();
+                return;
+            }
+            if (ZeroApplication.InRun)
+                ZeroApplication.OnHeartbeat();
+        }
+
         #endregion
 
         #region 对外事件

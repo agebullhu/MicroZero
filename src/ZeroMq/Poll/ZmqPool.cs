@@ -13,6 +13,10 @@ namespace ZeroMQ
         /// </summary>
         int Size { get; set; }
         /// <summary>
+        /// Sockt数量
+        /// </summary>
+        ZSocket[] Sockets { get; }
+        /// <summary>
         /// 超时
         /// </summary>
         int TimeoutMs { get; set; }

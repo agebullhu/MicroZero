@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
@@ -11,38 +13,64 @@ namespace RpcTest
         //private static Recorder recorder;
         private static void Main(string[] args)
         {
-            ZeroApplication.AppName = "RpcTest";
-            ZeroApplication.RegistZeroObject(new ApiProxy()
-            {
-                StationName ="Test"
-            });
+            ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
-            var tester = new ZeroTester();
+            //IocHelper.Create<IApiCounter>().HookApi();
+            SystemMonitor.StationEvent += SystemMonitor_StationEvent;
+            Console.WriteLine(LogRecorder.LogMonitor );
+            ZeroApplication.RunAwaite();
+        }
+
+        private static CancellationTokenSource cancel;
+        private static void SystemMonitor_StationEvent(object sender, SystemMonitor.StationEventArgument e)
+        {
+            switch (e.EventName)
+            {
+                case "system_stop":
+                    ZeroTrace.WriteInfo("RpcTest", "Test is start");
+                    cancel.Cancel();
+                    cancel.Dispose();
+                    break;
+                case "program_run":
+                    ZeroTrace.WriteInfo("RpcTest", "Test is start");
+                    Task.Factory.StartNew(StartTest);
+                    break;
+            }
+        }
+
+        static void StartTest()
+        {
+            Thread.Sleep(1000);
+            ZeroTester tester;
+            cancel = new CancellationTokenSource();
             //Task.Factory.StartNew(tester.Test);
             switch (ZeroApplication.Config.SpeedLimitModel)
             {
                 default:
-                    tester = new ZeroTester();
-                    Task.Factory.StartNew(tester.TestSync);
+                    tester = new ZeroTester { Token = cancel.Token };
+                    Task.Factory.StartNew(tester.TestSync, cancel.Token);
                     break;
                 case SpeedLimitType.Single:
-                    tester = new ZeroTester();
+                    tester = new ZeroTester { Token = cancel.Token };
                     new Thread(tester.Test)
                     {
                         IsBackground = true
                     }.Start();
                     break;
                 case SpeedLimitType.ThreadCount:
-                    int cnt = 0;
-                    while (++cnt <= ZeroApplication.Config.TaskCpuMultiple * Environment.ProcessorCount)
+                    int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple); if (max < 1)
+                        max = 1;
+                    for (int idx = 0; idx < max; idx++)
                     {
-                        tester = new ZeroTester();
-                        Task.Factory.StartNew(tester.Test);
+                        tester = new ZeroTester { Token = cancel.Token };
+                        new Thread(tester.Test)
+                        {
+                            IsBackground = true
+                        }.Start();
                     }
 
                     break;
             }
-            ZeroApplication.RunAwaite();
         }
     }
 }

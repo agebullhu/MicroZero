@@ -87,12 +87,29 @@ namespace agebull
 			{
 				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
 				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
-				install("RemoteLog", STATION_TYPE_DISPATCHER, "log");
-				install("HealthCenter", STATION_TYPE_DISPATCHER, "hea");
+				install("RemoteLog", STATION_TYPE_PUBLISH, "log");
+				install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
 			}
 			return true;
 		}
 
+		/**
+		* \brief 清除所有站点
+		*/
+		void station_warehouse::clear()
+		{
+			glogal_id_ = 0LL;
+			{
+				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
+				trans_redis& redis = trans_redis::get_context();
+				redis->flushdb();
+			}
+			{
+				boost::lock_guard<boost::mutex> guard(config_mutex_);
+				configs_.clear();
+			}
+			initialize();
+		}
 		/**
 		* \brief 遍历配置
 		*/
@@ -104,6 +121,7 @@ namespace agebull
 				look(config.second);
 			}
 		}
+		string host_json;
 		/**
 		* \brief 取机器信息
 		*/
@@ -112,6 +130,11 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			if (stattion == "*")
 			{
+				if (host_json.length() > 0)
+				{
+					json = host_json;
+					return ZERO_STATUS_OK_ID;
+				}
 				json = "[";
 				bool first = true;
 				for (auto& config : configs_)
@@ -120,9 +143,10 @@ namespace agebull
 						first = false;
 					else
 						json += ",";
-					json += config.second->to_json(0).c_str();
+					json += config.second->to_json(2).c_str();
 				}
 				json += "]";
+				host_json = json;
 				return ZERO_STATUS_OK_ID;
 			}
 			const auto iter = configs_.find(stattion);
@@ -130,7 +154,7 @@ namespace agebull
 			{
 				return ZERO_STATUS_NO_FIND_ID;
 			}
-			json = iter->second->to_json(0).c_str();
+			json = iter->second->to_json(2).c_str();
 			return ZERO_STATUS_OK_ID;
 		}
 
@@ -219,27 +243,6 @@ namespace agebull
 			return cnt;
 		}
 
-		/**
-		* \brief 清除所有站点
-		*/
-		void station_warehouse::clear()
-		{
-			glogal_id_ = 0LL;
-			//assert(examples_.empty());
-			{
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis& redis = trans_redis::get_context();
-				redis->flushdb();
-				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
-			}
-			{
-				boost::lock_guard<boost::mutex> guard(config_mutex_);
-				configs_.clear();
-			}
-			install("SystemManage", STATION_TYPE_DISPATCHER, "man");
-			install("RemoteLog", STATION_TYPE_PUBLISH, "log");
-			install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
-		}
 
 		/**
 		* \brief 站点卸载

@@ -13,19 +13,18 @@ namespace RpcTest
         {
             ZeroApplication.Shutdown();
         }
-
         long count = 0, error = 0;
         //DateTime start = DateTime.Now;
         double tm;
         public void Counter()
         {
             Console.WriteLine();
-            long pre = 0, now;
+            long pre = 0;
             DateTime dn = DateTime.Now;
             while (ZeroApplication.IsAlive)
             {
                 Thread.Sleep(500);
-                now = count;
+                var now = count;
                 var e = error;
                 ZeroTrace.WriteLoop("Run", $"{now:D8}|{e}  {(int)(now / tm):D5}/ms|{(int)(now / (DateTime.Now - dn).TotalMilliseconds):D5}/ms Last:{ now - pre}                           ");
                 pre = now;
@@ -38,9 +37,8 @@ namespace RpcTest
             ZeroTrace.WriteInfo($"Test::{Task.CurrentId}", caller.Host);
             while (ZeroApplication.IsAlive)
             {
-                if (!ZeroApplication.CanDo)
+                if (!ZeroApplication.InRun )
                 {
-                    Console.Write(".");
                     Thread.Sleep(1000);
                     continue;
                 }

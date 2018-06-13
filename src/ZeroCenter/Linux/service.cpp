@@ -48,7 +48,7 @@ namespace agebull
 		{
 			//系统信号发生回调绑定
 			for (int sig = SIGHUP; sig < SIGSYS; sig++)
-				signal(sig, agebull::zmq_net::on_sig);
+				signal(sig, on_sig);
 			//ØMQ版本号
 			int major, minor, patch;
 			zmq_version(&major, &minor, &patch);
@@ -175,7 +175,7 @@ namespace agebull
 			net_context = zmq_ctx_new();
 			assert(net_context != nullptr);
 			//zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 65536);
-			//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 32);
+			//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 8);
 			//zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 32767);
 			log_msg("[zero_center]=>initiated");
 			return net_state;
@@ -183,9 +183,14 @@ namespace agebull
 		//启动网络命令环境
 		int start_zero_center()
 		{
-			boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
+			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
+
 			log_msg("[zero_center]=>start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
+			{
+				log_msg(cfg->to_json(0));
+			});
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			station_dispatcher::run();
 			task_semaphore.wait();
@@ -197,6 +202,7 @@ namespace agebull
 			log_msg("[zero_center]=>start business stations...");
 			station_warehouse::restore();
 			task_semaphore.wait();
+			
 			log_msg("[zero_center]=>all stations in service");
 			for (int i = 0; i < 10; i++)
 			{

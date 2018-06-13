@@ -1,25 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="LogService - 复制.cs" />
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove="host.json" />
+    <None Remove="test.json" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="host.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\netcoreapp2.0\AddIn\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\netcoreapp2.0\AddIn\ /y" />
+  </Target>
 
 </Project>

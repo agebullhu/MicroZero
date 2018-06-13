@@ -464,18 +464,19 @@ namespace agebull
 			instance->task_semaphore_.post();
 			while (get_net_state() < NET_STATE_DISTORY)
 			{
-				bool cando = true;
-				for (int i = 0; i < 10; i++)
-				{
-					thread_sleep(100);
-					if (get_net_state() >= NET_STATE_CLOSING || !instance->can_do())
-					{
-						cando = false; 
-						break; 
-					}
-				}
-				if (!cando)
-					break;
+				//bool cando = true;
+				//for (int i = 0; i < 10; i++)
+				//{
+				//	thread_sleep(100);
+				//	if (get_net_state() >= NET_STATE_CLOSING || !instance->can_do())
+				//	{
+				//		cando = false; 
+				//		break; 
+				//	}
+				//}
+				//if (!cando)
+				//	break;
+				thread_sleep(json_config::worker_sound_ivl);
 				vector<string> cfgs;//复制避免锁定时间过长
 				vector<string> names;//复制避免锁定时间过长
 				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<zero_config>& cfg)
@@ -489,7 +490,7 @@ namespace agebull
 				for (size_t i = 0; i < names.size(); i++)
 				{
 					monitor(names[i], "station_state", cfgs[i]);
-					check_cando(cando, instance)
+					//check_cando(cando, instance)
 				}
 			}
 			station_warehouse::set_close_info();

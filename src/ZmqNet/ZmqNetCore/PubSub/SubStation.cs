@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
-using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
 
@@ -31,6 +30,8 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         public bool IsRealModel { get; set; }
 
+
+
         /*// <summary>
         /// 命令处理方法 
         /// </summary>
@@ -57,49 +58,41 @@ namespace Agebull.ZeroNet.PubSub
         /// 缓存文件名称
         /// </summary>
         private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
-            $"zero_sub_queue_{StationName}.json");
+            $"zero_sub_queue_{Name}.json");
 
         /// <summary>
         /// 请求队列
         /// </summary>
         public SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
 
-        /// <inheritdoc />
+
+
         /// <summary>
-        /// 命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
-        protected sealed override bool RunInner(CancellationToken token)
+        /// <returns>返回False表明需要重启</returns>
+        protected  override bool RunInner(CancellationToken token)
         {
-            var subscriber = ZeroHelper.CreateSubscriberSocket(Config.SubAddress,Identity, Subscribe);
-            var sockets = new[] { subscriber };
-            var pollItems = new[] { ZPollItem.CreateReceiver() };
             SystemManager.HeartReady(StationName, RealName);
-            while (!token.IsCancellationRequested && CanRun)
+            using (var pool = ZmqPool.CreateZmqPool())
             {
-                if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
+                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe) }, ZPollEvent.In);
+                while (CanRun)
                 {
-                    if (error == null)
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    {
                         continue;
-                    if (Equals(error, ZError.ETERM))
-                        break;
-                    if (!Equals(error, ZError.EAGAIN))
-                        ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                    continue;
+                    }
+                    using (message)
+                    {
+                        if (message.Unpack(out var item))
+                        {
+                            Items.Push(item);
+                        }
+                    }
                 }
-                if (messages == null || messages.Length == 0)
-                    continue;
-                if (token.IsCancellationRequested)
-                {
-                    messages[0].Dispose();
-                    continue;
-                }
-                if (!messages[0].Unpack(out var item))
-                    continue;
-                Items.Push(item);
             }
             SystemManager.HeartLeft(StationName, RealName);
-            subscriber.CloseSocket();
             return true;
         }
 
@@ -108,9 +101,10 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         protected virtual void HandleTask()
         {
+            ZeroApplication.OnGlobalStart(this);
             while (ZeroApplication.IsAlive)
             {
-                if (!Items.StartProcess(out var item, 1000))
+                if (!Items.StartProcess(out var item))
                     continue;
                 try
                 {
@@ -120,7 +114,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException(StationName,e, Name);
+                    ZeroTrace.WriteException(StationName, e, Name);
                     Thread.Sleep(5);
                 }
                 finally
@@ -129,6 +123,7 @@ namespace Agebull.ZeroNet.PubSub
                         Items.EndProcess();
                 }
             }
+            ZeroApplication.OnGlobalEnd(this);
         }
 
 

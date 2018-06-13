@@ -24,7 +24,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public HttpApiCaller(string host)
         {
-            Host = host;
+            Host = host; 
         }
 
         /// <summary>

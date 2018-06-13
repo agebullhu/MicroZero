@@ -19,14 +19,21 @@ namespace agebull
 			char identity[MAX_PATH];\
 			sprintf(identity, "%s_%s", type, name)
 
+		inline void setsockopt(ZMQ_HANDLE& socket, int type, int value)
+		{
+			zmq_setsockopt(socket, type, &value, sizeof(int));
+		}
+		typedef struct
+		{
+			ushort event;
+			int value;
+			char address[256];
+		}zmq_event_t;
 
+		int read_event_msg(void* s, zmq_event_t* event);
 
 		class socket_ex
 		{
-			static void setsockopt(ZMQ_HANDLE& socket, int type, int value)
-			{
-				zmq_setsockopt(socket, type, &value, sizeof(int));
-			}
 		public:
 			static int create_, close_;
 			/**
@@ -34,7 +41,7 @@ namespace agebull
 			* \param address
 			* \return
 			*/
-			static void zmq_monitor(void* address);
+			static void zmq_monitor(sharp_char address);
 
 			/**
 			* \brief 关闭套接字

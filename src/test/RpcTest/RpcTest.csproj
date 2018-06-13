@@ -18,22 +18,34 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoRegister.cs" />
+    <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
     <Compile Remove="StationTester.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
+    <None Remove="appsettings.Development.json" />
+    <None Remove="host.json" />
+    <None Remove="zero.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="host.json">
+    <Content Include="appsettings.Development.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="zero.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
+    <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
 </Project>

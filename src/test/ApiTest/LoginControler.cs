@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace ApiTest
@@ -12,7 +11,14 @@ namespace ApiTest
             public LoginStation()
             {
                 StationName = "Test";
-                var action =  RegistAction("api/login", arg => Login((Arg) arg),ApiAccessOption.Anymouse);
+            }
+
+            /// <summary>
+            /// 初始化
+            /// </summary>
+            protected override void Initialize()
+            {
+                var action = RegistAction("api/login", arg => Login((Arg)arg), ApiAccessOption.Anymouse);
                 action.ArgumenType = typeof(Arg);
             }
 

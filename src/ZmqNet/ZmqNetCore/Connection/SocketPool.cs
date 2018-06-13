@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -7,48 +6,8 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     /// 站点连接池
     /// </summary>
-    public class ZeroConnectionPool : IZeroObject
+    public class SocketPool : IZeroConnectionPool
     {
-        #region 单例
-        /// <summary>
-        /// 阻止构造
-        /// </summary>
-        ZeroConnectionPool()
-        {
-
-        }
-        /// <summary>
-        /// 单例
-        /// </summary>
-        public static readonly ZeroConnectionPool Instance = new ZeroConnectionPool();
-
-        /// <summary>
-        /// 取得一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        public static ZSocket GetSocket(string station)
-        {
-            return Instance.GetPoolSocket(station);
-        }
-
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        public static void Free(ZSocket socket)
-        {
-            Instance.FreePoolSocket(socket);
-        }
-        /// <summary>
-        /// 释放一个连接对象
-        /// </summary>
-        /// <returns></returns>
-        public static void Close(ref ZSocket socket)
-        {
-            Instance.ClosePoolSocket(ref socket);
-        }
-        #endregion
-
         #region IZeroObject
 
         /// <summary>
@@ -75,7 +34,7 @@ namespace Agebull.ZeroNet.Core
         void IZeroObject.OnHeartbeat()
         {
         }
-    
+
 
         /// <summary>
         /// 系统启动时调用
@@ -91,14 +50,14 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!Pools.ContainsKey(config.StationName))
                 {
-                    Pools.Add(config.StationName, new StationConnectionPool
+                    Pools.Add(config.StationName, new StationSocketPool
                     {
                         Config = config
                     });
                 }
             });
             CanDo = true;
-            ZeroApplication.OnObjectActive();
+            ZeroApplication.OnObjectActive(this);
             return true;
         }
 
@@ -108,7 +67,7 @@ namespace Agebull.ZeroNet.Core
         public bool OnZeroEnd()
         {
             Dispose();
-            ZeroApplication.OnObjectClose();
+            ZeroApplication.OnObjectClose(this);
             return true;
         }
         /// <summary>
@@ -116,7 +75,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            StationConnectionPool pool;
+            StationSocketPool pool;
             lock (Pools)
             {
                 if (!Pools.TryGetValue(config.StationName, out pool))
@@ -134,7 +93,7 @@ namespace Agebull.ZeroNet.Core
                     {
                         if (!Pools.ContainsKey(config.StationName))
                         {
-                            Pools.Add(config.StationName, new StationConnectionPool
+                            Pools.Add(config.StationName, new StationSocketPool
                             {
                                 Config = config
                             });
@@ -151,7 +110,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 注销时调用
         /// </summary>
-        void IZeroObject.OnZeroDistory() => Dispose();
+        void IZeroObject.OnZeroDestory() => Dispose();
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
         public void Dispose()
@@ -167,9 +126,9 @@ namespace Agebull.ZeroNet.Core
 
         #endregion
 
-        #region 实现
+        #region IZeroConnectionPool
 
-        private readonly Dictionary<string, StationConnectionPool> Pools = new Dictionary<string, StationConnectionPool>();
+        private readonly Dictionary<string, StationSocketPool> Pools = new Dictionary<string, StationSocketPool>();
 
         /// <summary>
         /// 能否工作
@@ -180,7 +139,7 @@ namespace Agebull.ZeroNet.Core
         /// 取得一个连接对象
         /// </summary>
         /// <returns></returns>
-        private ZSocket GetPoolSocket(string station)
+        ZSocket IZeroConnectionPool.GetSocket(string station, string name)
         {
             if (!CanDo)
             {
@@ -192,9 +151,9 @@ namespace Agebull.ZeroNet.Core
             }
             lock (Pools)
             {
-                if (!ZeroApplication.Config.TryGetConfig(station,out var config))
+                if (!ZeroApplication.Config.TryGetConfig(station, out var config))
                     return null;
-                Pools.Add(station, pool = new StationConnectionPool
+                Pools.Add(station, pool = new StationSocketPool
                 {
                     Config = config
                 });
@@ -206,7 +165,7 @@ namespace Agebull.ZeroNet.Core
         /// 释放一个连接对象
         /// </summary>
         /// <returns></returns>
-        private void FreePoolSocket(ZSocket socket)
+        void IZeroConnectionPool.FreeSocket(ZSocket socket)
         {
             if (socket == null)
                 return;
@@ -216,14 +175,14 @@ namespace Agebull.ZeroNet.Core
             }
             else
             {
-                socket.CloseSocket();
+                socket.TryClose();
             }
         }
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
         /// <returns></returns>
-        private void ClosePoolSocket(ref ZSocket socket)
+        void IZeroConnectionPool.CloseSocket(ref ZSocket socket)
         {
             if (socket == null)
                 return;
@@ -233,7 +192,7 @@ namespace Agebull.ZeroNet.Core
             }
             else
             {
-                socket.CloseSocket();
+                socket.TryClose();
                 socket = null;
             }
         }

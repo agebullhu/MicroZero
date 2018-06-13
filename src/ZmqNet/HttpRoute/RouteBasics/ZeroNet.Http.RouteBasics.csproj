@@ -6,6 +6,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Config\SmsConfig.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
@@ -13,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Extend\Agebull.ZeroNet.Extend.csproj" />
+    <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
 </Project>

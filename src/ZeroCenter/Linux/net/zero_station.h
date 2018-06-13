@@ -95,11 +95,11 @@ namespace agebull
 			/**
 			* \brief 实例队列访问锁
 			*/
-			static boost::mutex results_mutex_;
+			//static boost::mutex results_mutex_;
 			/**
 			* \brief 所有返回值
 			*/
-			static map<int64, vector<sharp_char>> results;
+			//static map<int64, vector<sharp_char>> results;
 			/**
 			* \brief 当前ZMQ执行状态
 			*/
@@ -318,7 +318,7 @@ namespace agebull
 				config_->worker_out++;
 				ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
 #pragma omp parallel  for schedule(static,2)
-				for (int i = 0; i < 2; i++)
+				for (size_t i = 0; i < 2; i++)
 				{
 					send_response(socket[i], datas, first_index);
 				}
@@ -368,6 +368,20 @@ namespace agebull
 			*/
 			void request(ZMQ_HANDLE socket, bool inner);
 
+		protected:
+			/**
+			* \brief 计划轮询
+			*/
+			static void monitor_poll(zero_station* station)
+			{
+				station->monitor();
+			}
+		private:
+			/**
+			* \brief 网络监控
+			* \return
+			*/
+			void monitor();
 		protected:
 			/**
 			* \brief 工作开始（发送到工作者）
@@ -437,7 +451,7 @@ namespace agebull
 				char global_id[32];
 				sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
 
-				int reqid = 0, reqer = 0;
+				size_t reqid = 0, reqer = 0;
 				for (size_t i = 2; i <= frame_size + 2; i++)
 				{
 					switch (description[i])

@@ -7,7 +7,6 @@ namespace Agebull.ZeroNet.LogService
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Hello ZeroNet");
             ZeroApplication.Initialize();
             ZeroApplication.Discove();
             ZeroApplication.RunAwaite();

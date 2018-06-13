@@ -6,6 +6,7 @@
 #include "../log/mylogger.h"
 #include "net_command.h"
 
+#include<boost/unordered_map.hpp>
 namespace agebull
 {
 	namespace zmq_net
@@ -344,9 +345,9 @@ namespace agebull
 			 * \brief 构造
 			 */
 			worker()
-				: pre_time(0)
-				, level(-1)
-				, state(-1)
+				: pre_time(time(nullptr))
+				, level(10)
+				, state(0)
 			{
 
 			}
@@ -357,92 +358,13 @@ namespace agebull
 			{
 				pre_time = time(nullptr);
 				level = 10;
-				state = 1;
 			}
 			/**
 			* \brief 检查
 			*/
-			int check()
-			{
-				const int64 tm = time(nullptr) - pre_time;
-				if (tm <= 1)
-				{
-					if (state == -1)
-						state = 1;
-					return level = 10;
-				}
-				if (tm <= 3)
-				{
-					if (state == -1)
-						state = 1;
-					return level = 9;
-				}
-				if (tm <= 5)
-				{
-					if (state == -1)
-						state = 1;
-					return level = 8;
-				}
-				if (tm <= 10)
-				{
-					if (state == -1)
-						state = 1;
-					return level = 7;
-				}
-				if (tm <= 30)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 6;
-				}
-				if (tm <= 60)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 5;
-				}
-				if (tm <= 120)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 4;
-				}
-				if (tm <= 180)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 3;
-				}
-				if (tm <= 240)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 2;
-				}
-				if (tm <= 360)
-				{
-					if (state == 1)
-						state = -1;
-					return level = 1;
-				}
-				if (state == 1)
-					state = -1;
-				return level = -1;
-			}
-
-			/**
-			* \brief 写入JSON
-			*/
-			acl::string to_json(acl::json_node& node) const
-			{
-				node.add_text("real_name", real_name.c_str());
-				node.add_text("ip_address", ip_address.c_str());
-				node.add_number("pre_time", pre_time);
-				node.add_number("level", level);
-				node.add_number("state", state);
-				return node.to_string();
-			}
+			int check();
 		};
+
 		class zero_station;
 		/**
 		* \brief ZMQ的网络站点配置
@@ -562,126 +484,37 @@ namespace agebull
 			/**
 			* \brief 工作站点加入
 			*/
-			void worker_join(const char* real_name, const char* ip)
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto iter = workers.find(real_name);
-				if (iter == workers.end())
-				{
-					worker wk;
-					wk.real_name = real_name;
-					wk.ip_address = ip;
-					wk.level = 0;
-					wk.state = 0;
-					workers.insert(make_pair(real_name, wk));
-				}
-				else
-				{
-					iter->second.ip_address = ip;
-					iter->second.level = -1;
-					if (iter->second.state == 1)
-					{
-						--ready_works_;
-					}
-					iter->second.state = 0;
-				}
-				log("worker_join", real_name);
-			}
+			void worker_join(const char* real_name, const char* ip);
 
 
 			/**
 			* \brief 工作站点就绪
 			*/
-			void worker_ready(const char* real_name)
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto iter = workers.find(real_name);
-				if (iter == workers.end())
-				{
-					worker wk;
-					wk.real_name = real_name;
-					wk.state = 1;
-					wk.level = 10;
-					workers.insert(make_pair(real_name, wk));
-					++ready_works_;
-				}
-				else
-				{
-					if (iter->second.state != 1)//曾经失联
-					{
-						++ready_works_;
-						iter->second.state = 1;
-					}
-					iter->second.active();
-				}
-				log("worker_ready", real_name);
-			}
+			void worker_ready(const char* real_name);
+
 			/**
 			* \brief 心跳
 			*/
 			void worker_heartbeat(const char* real_name)
 			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto iter = workers.find(real_name);
-				if (iter == workers.end())
-				{
-					worker wk;
-					wk.real_name = real_name;
-					wk.state = 1;
-					wk.level = 10;
-					workers.insert(make_pair(real_name, wk));
-					++ready_works_;
-				}
-				else
-				{
-					if (iter->second.state != 1)//曾经失联
-					{
-						++ready_works_;
-					}
-					iter->second.active();
-				}
+				worker_ready(real_name);
 			}
 			/**
 			* \brief 心跳
 			*/
-			void worker_left(const char* real_name)
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto iter = workers.find(real_name);
-				if (iter == workers.end())
-					return;
-				if (iter->second.state == 1)
-					--ready_works_;
-				workers.erase(real_name);
-				log("worker_left", real_name);
-			}
+			void worker_left(const char* real_name);
 
 			/**
 			* \brief 检查工作对象
 			*/
-			void check_works()
-			{
-				boost::lock_guard<boost::mutex> guard(mutex_);
-				auto copy = workers;
-				int ready = 0;
-				for (auto & work : copy)
-				{
-					work.second.check();
-					if (work.second.level < 0)
-					{
-						workers.erase(work.first);
-					}
-					else if (work.second.state == 1)
-						++ready;
-				}
-				ready_works_ = ready;
-			}
+			void check_works();
+
 			/**
 			* \brief 是否有准备就绪的工作站(广播模式时都有)
 			*/
 			bool hase_ready_works() const
 			{
-				return station_type_ <= STATION_TYPE_PUBLISH || ready_works_ > 1;
+				return station_type_ <= STATION_TYPE_PUBLISH || ready_works_ > 0;
 			}
 
 			/**
@@ -763,6 +596,7 @@ namespace agebull
 					break;
 				}
 			}
+
 			/**
 			* \brief 写入JSON
 			* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
@@ -777,6 +611,7 @@ namespace agebull
 				full_log(station_state_ == station_state::ReStart ? "restart" : "start");
 				station_state_ = station_state::Start;
 			}
+
 			/**
 			* \brief 开机失败日志
 			*/
@@ -785,6 +620,7 @@ namespace agebull
 				error("con`t launch", msg);
 				station_state_ = station_state::Failed;
 			}
+
 			/**
 			* \brief 开机正常日志
 			*/
@@ -793,6 +629,7 @@ namespace agebull
 				full_log("runing");
 				station_state_ = station_state::Run;
 			}
+
 			/**
 			* \brief 正在关机日志
 			*/
@@ -801,6 +638,7 @@ namespace agebull
 				station_state_ = station_state::Closing;
 				full_log("closing...");
 			}
+
 			/**
 			* \brief 重启日志
 			*/
@@ -809,6 +647,7 @@ namespace agebull
 				full_log("restart");
 				station_state_ = station_state::ReStart;
 			}
+
 			/**
 			* \brief 关机日志
 			*/
@@ -817,6 +656,7 @@ namespace agebull
 				station_state_ = station_state::Closed;
 				full_log("closed");
 			}
+
 			/**
 			* \brief 日志
 			*/
@@ -826,8 +666,8 @@ namespace agebull
 					log_msg6("[%s]: > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
 				else
 					log_msg5("[%s]: > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
-
 			}
+
 			/**
 			* \brief 日志
 			*/
@@ -843,6 +683,7 @@ namespace agebull
 			{
 				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
 			}
+
 			/**
 			* \brief 日志
 			*/

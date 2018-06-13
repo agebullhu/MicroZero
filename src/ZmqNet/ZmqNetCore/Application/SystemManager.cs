@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using ZeroMQ;
 using Newtonsoft.Json;
@@ -57,7 +58,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool HeartLeft(string station, string realName)
         {
-            return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartLeft, station, realName);
+            return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartLeft, station, realName);
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool HeartReady(string station, string realName)
         {
-            return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartReady, station, realName);
+            return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartReady, station, realName);
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool HeartJoin(string station, string realName)
         {
-            return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
+            return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
         }
 
         /// <summary>
@@ -81,7 +82,16 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool Heartbeat(string station, string realName)
         {
-            return ZeroApplication.ZerCenterStatus == ZeroCenterState.Run && ByteCommand(ZeroByteCommand.HeartPitpat, station, realName);
+            return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartPitpat, station, realName);
+        }
+
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        private static bool HeartCommand(byte commmand, params string[] args)
+        {
+            Task.Factory.StartNew(()=> ByteCommand(commmand, args)).Wait();
+            return true;
         }
 
         /// <summary>
@@ -117,12 +127,12 @@ namespace Agebull.ZeroNet.Core
             var re = CallCommand("host", "*");
             if (!re.InteractiveSuccess)
             {
-                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Network failed");
+                ZeroTrace.WriteError("LoadConfig", "Network failed");
                 return false;
             }
             if (!re.TryGetValue(ZeroFrameType.TextValue, out var json))
             {
-                ZeroTrace.WriteError(ZeroApplication.AppName, "LoadAllConfig", "Empty");
+                ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
             return ZeroApplication.Config.FlushConfigs(json);
@@ -133,8 +143,12 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        internal static StationConfig LoadConfig(string stationName, out ZeroCommandStatus status)
+        internal static StationConfig LoadConfig(string stationName)
         {
+            if (!ZeroApplication.ZerCenterIsRun)
+            {
+                return null;
+            }
             var result = CallCommand("host", stationName);
             switch (result.State)
             {
@@ -143,28 +157,23 @@ namespace Agebull.ZeroNet.Core
                     if (json == null || json[0] != '{')
                     {
                         ZeroTrace.WriteError("GetConfig", stationName, "not a json", json);
-                        status = ZeroCommandStatus.ValueError;
                         return null;
                     }
                     try
                     {
-                        status = ZeroCommandStatus.Success;
                         return JsonConvert.DeserializeObject<StationConfig>(json);
                     }
                     catch (Exception e)
                     {
                         LogRecorder.Exception(e, json);
                         ZeroTrace.WriteError("GetConfig", stationName, "not a json", json);
-                        status = ZeroCommandStatus.ValueError;
                         return null;
                     }
                 case ZeroOperatorStateType.NoFind:
                     ZeroTrace.WriteError("GetConfig", stationName, "NoFind");
-                    status = ZeroCommandStatus.NoFind;
                     return null;
                 default:
                     ZeroTrace.WriteError("GetConfig", stationName, result.State.ToString());
-                    status = ZeroCommandStatus.Error;
                     return null;
             }
 
@@ -190,6 +199,9 @@ namespace Agebull.ZeroNet.Core
             return CallCommand(description, args);
         }
 
+        private static ZSocket _socket;
+
+        private static readonly object  LockObj = new object();
         /// <summary>
         ///     发起一次请求
         /// </summary>
@@ -198,49 +210,50 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private static ZeroResultData<string> CallCommand(byte[] description, params string[] args)
         {
-            var socket = ZeroConnectionPool.GetSocket("SystemManage");
-            if (socket == null)
-                socket = ZeroHelper.CreateRequestSocket(ZeroApplication.Config.ZeroManageAddress);
-            try
+            lock (LockObj)
             {
-                var result = SendCommand(socket, description, args);
-                if (!result.InteractiveSuccess)
+                if (_socket == null)
+                    _socket = ZSocket.CreateRequestSocket(ZeroApplication.Config.ZeroManageAddress);
+                try
                 {
-                    ZeroConnectionPool.Close(ref socket);
+                    var result = _socket.SendTo(description, args);
+                    if (!result.InteractiveSuccess)
+                    {
+                        _socket.TryClose();
+                        _socket = null;
+                        return result;
+                    }
+
+                    result = _socket.ReceiveString();
+                    if (result.InteractiveSuccess)
+                        return result;
+                    _socket.TryClose();
+                    _socket = null;
                     return result;
                 }
-
-                result = socket.ReceiveString();
-                //socket.CloseSocket();
-                return result;
-            }
-            catch (Exception e)
-            {
-                ZeroConnectionPool.Close(ref socket);
-                return new ZeroResultData<string>
+                catch (Exception e)
                 {
-                    InteractiveSuccess = false,
-                    Exception = e
-                };
-            }
-            finally
-            {
-                ZeroConnectionPool.Free(socket);
+                    _socket?.TryClose();
+                    _socket = null;
+                    return new ZeroResultData<string>
+                    {
+                        InteractiveSuccess = false,
+                        Exception = e
+                    };
+                }
             }
         }
-
-        /// <summary>
-        /// 发送命令
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="description"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        static ZeroResultData<string> SendCommand(ZSocket request, byte[] description, params string[] args)
-        {
-            return request.Send(description, args);
-        }
+        
 
         #endregion
+
+        /// <summary>
+        /// 关闭仅有的一个连接
+        /// </summary>
+        internal static void Destroy()
+        {
+            _socket?.Close();
+            _socket = null;
+        }
     }
 }

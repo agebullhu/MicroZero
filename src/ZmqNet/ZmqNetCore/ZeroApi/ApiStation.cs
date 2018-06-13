@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
@@ -334,100 +335,72 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #region 网络与执行
 
-        private ZSocket _callSocket, _resultSocket /*, _inprocCallSocket, _inprocPollSocket*/;
-
-
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override void OnStart()
+        protected sealed override bool OnNofindConfig()
         {
-            base.OnStart();
-            //Identity = RealName.ToAsciiBytes();
-            //string name = $"inproc://{StationName}";
-            //_inprocCallSocket = ZeroHelper.CreateClientSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
-            //_inprocPollSocket = ZeroHelper.CreateServiceSocket(name, ZSocketType.PAIR, name.ToAsciiBytes());
-            _callSocket = ZeroHelper.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity);
-            _resultSocket = ZeroHelper.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
+            string type;
+            switch (this.StationType)
+            {
+                case StationTypePublish:
+                    type = "pub";
+                    break;
+                case StationTypeApi:
+                    type = "api";
+                    break;
+                default:
+                    type = null;
+                    break;
+            }
+            ZeroTrace.WriteError(StationName, "No find,try install ...");
+            var result = SystemManager.CallCommand("install", type, StationName, StationName);
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                return false;
+            ZeroTrace.WriteError(StationName, "Is install ,try start it ...");
+            result = SystemManager.CallCommand("start", StationName);
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+            {
+                ZeroTrace.WriteError(StationName, $"Can't start {StationName}");
+                return false;
+            }
+            Config = SystemManager.LoadConfig(StationName);
+            if (Config == null)
+            {
+                ZeroTrace.WriteError(StationName, $"Can't load config  {StationName}");
+                return false;
+            }
+            Config.State = ZeroCenterState.Run;
+            ZeroTrace.WriteError(StationName, "successfully");
+            return true;
         }
 
-        /// <inheritdoc />
         /// <summary>
-        ///     命令轮询
+        /// 具体执行
         /// </summary>
-        /// <returns></returns>
+        /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
             waitCount = 0;
-            var sockets = new[] { _callSocket };
-            var pollItems = new[] { ZPollItem.CreateReceiver() };
-            if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
-            {
-                for (int i = 0; i < Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple; i++)
-                    new Thread(ProcessTask)
-                    {
-                        IsBackground = true
-                    }.Start(token);
-            }
             SystemManager.HeartReady(StationName, RealName);
-            while (!token.IsCancellationRequested && CanRun)
+            switch (ZeroApplication.Config.SpeedLimitModel)
             {
-                if (!sockets.PollIn(pollItems, out var messages, out var error, new TimeSpan(0, 0, 0, 0, 500)))
-                {
-                    if (error == null)
-                        continue;
-                    if (Equals(error, ZError.ETERM))
-                        break;
-                    if (!Equals(error, ZError.EAGAIN))
-                    {
-                        ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                    }
-                    continue;
-                }
-
-                if (messages[0] == null || messages[0].Count == 0)
-                    continue;
-                Interlocked.Increment(ref RecvCount);
-                if (!Unpack(messages[0], out var item))
-                {
-                    SendLayoutErrorResult(ref _resultSocket, item.Caller,item.Requester);
-                    continue;
-                }
-                messages[0].Dispose();
-                if (item == null)
-                    continue;
-                switch (ZeroApplication.Config.SpeedLimitModel)
-                {
-                    default:
-                    //case SpeedLimitType.Single:
-                        ApiCall(ref _resultSocket, item);
-                        break;
-                    case SpeedLimitType.ThreadCount:
-                        Interlocked.Increment(ref waitCount);
-                        if (waitCount > ZeroApplication.Config.MaxWait)
-                        {
-                            item.Result = ZeroStatuValue.UnavailableJson;
-                            SendResult(ref _resultSocket, item, false);
-                        }
-                        else
-                        {
-                            Quote.Push(item);
-                        }
-                        break;
-                    case SpeedLimitType.WaitCount:
-                        Interlocked.Increment(ref waitCount);
-                        if (waitCount > ZeroApplication.Config.MaxWait)
-                        {
-                            item.Result = ZeroStatuValue.UnavailableJson;
-                            SendResult(ref _resultSocket, item, false);
-                        }
-                        else
-                        {
-                            Task.Factory.StartNew(ApiCallTask, item, token);
-                        }
-                        break;
-                }
-
+                case SpeedLimitType.ThreadCount:
+                    int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple);
+                    if (max < 1)
+                        max = 1;
+                    _processSemaphore = new SemaphoreSlim(0, max);
+                    for (int idx = 0; idx < max; idx++)
+                        Task.Factory.StartNew(RunSignle, token);
+                    for (int idx = 0; idx < max; idx++)
+                        _processSemaphore.Wait(token);
+                    break;
+                case SpeedLimitType.WaitCount:
+                    RunWaite();
+                    break;
+                default:
+                    RunSignle();
+                    break;
             }
             SystemManager.HeartLeft(StationName, RealName);
             return true;
@@ -437,57 +410,146 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ApiCallTask(object item)
         {
-            ApiCall(ref _resultSocket, (ApiCallItem)item);
+            var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+            ApiCall(ref socket, (ApiCallItem)item);
         }
 
+        /// <summary>
+        /// 具体执行
+        /// </summary>
+        private void RunWaite()
+        {
+            var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+            using (var pool = ZmqPool.CreateZmqPool())
+            {
+                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
+                while (CanRun)
+                {
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    {
+                        continue;
+                    }
+                    Interlocked.Increment(ref RecvCount);
+                    using (message)
+                    {
+                        if (!Unpack(message, out var item))
+                        {
+                            SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
+                            continue;
+                        }
+
+                        Interlocked.Increment(ref waitCount);
+                        if (waitCount > ZeroApplication.Config.MaxWait)
+                        {
+                            item.Result = ZeroStatuValue.UnavailableJson;
+                            SendResult(ref socket, item, false);
+                        }
+                        else
+                        {
+                            Task.Factory.StartNew(ApiCallTask, item);
+                        }
+                    }
+                }
+            }
+
+            socket.TryClose();
+        }
+
+        private SemaphoreSlim _processSemaphore;
+        /// <summary>
+        /// 具体执行
+        /// </summary>
+        private void RunSignle()
+        {
+            var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+            using (var pool = ZmqPool.CreateZmqPool())
+            {
+                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
+                while (CanRun)
+                {
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    {
+                        continue;
+                    }
+                    Interlocked.Increment(ref RecvCount);
+                    using (message)
+                    {
+                        if (!Unpack(message, out var item))
+                        {
+                            SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
+                            continue;
+                        }
+                        ApiCall(ref socket, item);
+                    }
+                }
+            }
+
+            IocHelper.DisposeScope();
+            _processSemaphore?.Release();
+        }
         #endregion
 
         #region 限定Task数量模式
-        private int ptocessTaskCount;
 
-        private readonly SemaphoreSlim _processSemaphore = new SemaphoreSlim(0);
 
-        readonly TaskQueue<ApiCallItem> Quote = new TaskQueue<ApiCallItem>();
+        //readonly TaskQueue<ApiCallItem> Quote = new TaskQueue<ApiCallItem>();
 
         /// <inheritdoc />
         protected sealed override void OnRunStop()
         {
-            if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
-                _processSemaphore.Wait();
-            if (ZContext.IsAlive)
-            {
-                while (!Quote.IsEmpty)
-                {
-                    var t = Quote.Queue.Dequeue();
-                    t.Result = ZeroStatuValue.UnavailableJson;
-                    Interlocked.Increment(ref CallCount);
-                    Interlocked.Increment(ref ErrorCount);
-                    SendResult(ref _resultSocket, t, false);
-                }
-            }
-            _callSocket.CloseSocket();
-            _resultSocket.CloseSocket();
+            //if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
+            //    _processSemaphore.Wait();
+            //if (ZContext.IsAlive)
+            //{
+            //    while (!Quote.IsEmpty)
+            //    {
+            //        var t = Quote.Queue.Dequeue();
+            //        t.Result = ZeroStatuValue.UnavailableJson;
+            //        Interlocked.Increment(ref CallCount);
+            //        Interlocked.Increment(ref ErrorCount);
+            //        SendResult(ref _resultSocket, t, false);
+            //    }
+            //}
+
             base.OnRunStop();
         }
 
-        void ProcessTask(object obj)
-        {
-            Interlocked.Increment(ref ptocessTaskCount);
-            var socket = ZeroHelper.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-            var token = (CancellationToken)obj;
-            while (!token.IsCancellationRequested && CanRun)
-            {
-                if (!Quote.StartProcess(out var item))
-                {
-                    continue;
-                }
-                ApiCall(ref socket, item);
-                Quote.EndProcess();
-            }
-            socket.CloseSocket();
-            if (Interlocked.Decrement(ref ptocessTaskCount) == 0)
-                _processSemaphore.Release();
-        }
+        //void ProcessTask(object obj)
+        //{
+        //    Interlocked.Increment(ref ptocessTaskCount);
+        //    var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+
+        //    var pool = ZmqPool.CreateZmqPool();
+        //    pool.Prepare(new[] { ZSocket.CreateClientSocket($"inproc://{StationName}_api.route", ZSocketType.PAIR) }, ZPollEvent.In);
+        //    var token = (CancellationToken)obj;
+        //    while (!token.IsCancellationRequested && CanRun)
+        //    {
+        //        //if (!Quote.StartProcess(out var item))
+        //        //{
+        //        //    continue;
+        //        //}
+        //        //ApiCall(ref socket, item);
+        //        //Quote.EndProcess();
+
+        //        if (!pool.Poll() || !pool.CheckIn(0, out var message))
+        //        {
+        //            continue;
+        //        }
+
+        //        using (message)
+        //        {
+        //            if (!Unpack(message, out var item))
+        //            {
+        //                SendLayoutErrorResult(ref socket, item.Caller, item.Requester);
+        //                continue;
+        //            }
+        //            ApiCall(ref socket, item);
+        //        }
+        //    }
+        //    socket.TryClose();
+        //    if (Interlocked.Decrement(ref ptocessTaskCount) == 0)
+        //        _processSemaphore.Release();
+        //}
         #endregion
 
         #region IO
@@ -511,7 +573,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (description.Length < 2)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
-                        description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{_callSocket.SocketPtr}.");
+                        description.LinkToString(p => p.ToString("X2"), ""));
                     item = null;
                     return false;
                 }
@@ -520,8 +582,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (end != messages.Count)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
-                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
-                        $"Socket Ptr:{_callSocket.SocketPtr}.");
+                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""));
                     item = null;
                     return false;
                 }
@@ -559,7 +620,7 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 ZeroTrace.WriteException("Receive", e,
-                    Config.WorkerResultAddress, $"FrameSize{messages.Count}", $"Socket Ptr:{_callSocket.SocketPtr}");
+                    Config.WorkerResultAddress, $"FrameSize{messages.Count}");
                 return false;
             }
             finally
@@ -628,8 +689,8 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 if (socket.Send(message, out error))
                     return true;
-                socket.CloseSocket();
-                socket = ZeroHelper.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
+                socket.TryClose();
+                socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
             }
             ZeroTrace.WriteError(StationName, error.Text, error.Name);
             Interlocked.Increment(ref SendError);

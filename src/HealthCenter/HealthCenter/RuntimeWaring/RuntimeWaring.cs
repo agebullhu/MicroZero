@@ -1,62 +1,71 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
 using Aliyun.Net.SDK.Core.Exceptions;
 using Aliyun.Net.SDK.Core.Profile;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
 {
     /// <summary>
-    /// 运行时警告
+    ///     运行时警告
     /// </summary>
     public class RuntimeWaring : SubStation
     {
         /// <summary>
-        /// 实例
+        ///     所有运行时警告
         /// </summary>
-        public static RuntimeWaring Instance { get; private set; }
-        public SmsConfig SmsConfig { get; set; }
+        internal static readonly Dictionary<string, RuntimeWaringItem> WaringsTime =
+            new Dictionary<string, RuntimeWaringItem>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
-        ///     刷新
+        ///     构造
         /// </summary>
         public RuntimeWaring()
         {
+            Name = "RuntimeWaringService";
             Instance = this;
             StationName = "HealthCenter";
             Subscribe = "RuntimeWaring";
-            string file = Path.Combine(ApiContext.Configuration["contentRoot"], "sms.json");
-            if (!File.Exists(file))
-                return;
-            string json;
+        }
+
+        /// <summary>
+        ///     实例
+        /// </summary>
+        public static RuntimeWaring Instance { get; private set; }
+
+        /// <summary>
+        ///     警告短信配置
+        /// </summary>
+        public SmsConfig SmsConfig { get; set; }
+
+        /// <summary>
+        ///     将要开始
+        /// </summary>
+        protected override bool OnStart()
+        {
             try
             {
-                json = File.ReadAllText(file);
+                SmsConfig = ConfigurationManager.Root.GetSection("RuntimeWaring").Get<SmsConfig>();
+                return SmsConfig != null;
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                return;
-            }
-            try
-            {
-                SmsConfig = JsonConvert.DeserializeObject<SmsConfig>(json);
-            }
-            catch (Exception e)
-            {
-                StationConsole.WriteError($"{e.Message}\r\n{json}");
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("RuntimeWaring", e, "ResetConfig");
+                return false;
             }
         }
+
+
         /// <inheritdoc />
         /// <summary>
-        /// 执行命令
+        ///     执行命令
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -67,6 +76,7 @@ namespace ZeroNet.Http.Route
                 Flush();
                 return;
             }
+
             try
             {
                 var data = JsonConvert.DeserializeObject<WaringItem>(args.Content);
@@ -74,27 +84,24 @@ namespace ZeroNet.Http.Route
             }
             catch (Exception e)
             {
-                StationConsole.WriteError($"{e.Message}\r\n{args.Content}");
+                ZeroTrace.WriteException("RuntimeWaring", e, args.Content);
                 Console.WriteLine(e);
             }
         }
+
         /// <summary>
         ///     刷新
         /// </summary>
         internal static void Flush()
         {
             lock (WaringsTime)
+            {
                 WaringsTime.Clear();
+            }
         }
 
-
         /// <summary>
-        /// 所有运行时警告
-        /// </summary>
-        internal static readonly Dictionary<string, RuntimeWaringItem> WaringsTime = new Dictionary<string, RuntimeWaringItem>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// 运行时警告
+        ///     运行时警告
         /// </summary>
         /// <param name="host"></param>
         /// <param name="api"></param>
@@ -119,7 +126,8 @@ namespace ZeroNet.Http.Route
                 else
                 {
                     item.LastTime = DateTime.Now;
-                    if (item.MessageTime != DateTime.MinValue && (DateTime.Now - item.MessageTime).TotalHours > SmsConfig.CycleHours)
+                    if (item.MessageTime != DateTime.MinValue &&
+                        (DateTime.Now - item.MessageTime).TotalHours > SmsConfig.CycleHours)
                     {
                         item.SendCount = 0;
                         item.WaringCount = 1;
@@ -133,7 +141,7 @@ namespace ZeroNet.Http.Route
                 }
 
                 if (!item.Apis.ContainsKey(api))
-                    item.Apis.Add(api, new List<string> { message });
+                    item.Apis.Add(api, new List<string> {message});
                 else if (!item.Apis[api].Contains(message))
                     item.Apis[api].Add(message);
                 //已到最多发送数量阀值
@@ -163,6 +171,7 @@ namespace ZeroNet.Http.Route
                     }
                 }
             }
+
             if (api.Length >= 20)
                 api = api.Substring(api.Length - 19, 19);
             if (message.Length >= 20)
@@ -182,7 +191,7 @@ namespace ZeroNet.Http.Route
         }
 
         /// <summary>
-        /// 阿里短信发送
+        ///     阿里短信发送
         /// </summary>
         /// <param name="server"></param>
         /// <param name="phoneNumber"></param>
@@ -192,8 +201,10 @@ namespace ZeroNet.Http.Route
         /// <returns></returns>
         private bool SendSmsByAli(string server, string phoneNumber, string api, string message, int count)
         {
-            IClientProfile profile = DefaultProfile.GetProfile(SmsConfig.AliRegionId, SmsConfig.AliAccessKeyId, SmsConfig.AliAccessKeySecret);
-            DefaultProfile.AddEndpoint(SmsConfig.AliEndPointName, SmsConfig.AliRegionId, SmsConfig.AliProduct, SmsConfig.AliDomain);
+            IClientProfile profile = DefaultProfile.GetProfile(SmsConfig.AliRegionId, SmsConfig.AliAccessKeyId,
+                SmsConfig.AliAccessKeySecret);
+            DefaultProfile.AddEndpoint(SmsConfig.AliEndPointName, SmsConfig.AliRegionId, SmsConfig.AliProduct,
+                SmsConfig.AliDomain);
             IAcsClient acsClient = new DefaultAcsClient(profile);
             var request = new SendSmsRequest
             {
@@ -231,8 +242,8 @@ namespace ZeroNet.Http.Route
                 LogRecorder.Exception(e);
                 return false;
             }
-            return sendSmsResponse.Message == ZeroNetStatus.ZeroCommandOk;
-        }
 
+            return sendSmsResponse.Message == "+ok";
+        }
     }
 }

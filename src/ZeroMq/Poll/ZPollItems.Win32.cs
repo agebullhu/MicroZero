@@ -19,6 +19,7 @@
         public DispoIntPtr Ptr { get; set; }
         public void Prepare(ZSocket[] sockets, ZPollEvent events)
         {
+            TimeoutMs = 1000;
             Sockets = sockets;
             error = null;
             Size = sockets.Length;
@@ -54,8 +55,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message,1);
         }
 
         public bool CheckOut(int index, out ZMessage message)
@@ -71,8 +71,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message, 1);
         }
 
         protected override void DoDispose()

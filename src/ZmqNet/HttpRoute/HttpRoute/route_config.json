@@ -1,14 +1,4 @@
 {
-  /*ZeroNet站点配置（不要改）*/
-  "zeroConfig": {
-    "zeroAddr": "192.168.240.132",
-    "monitorPort": 8001,
-    "managePort": 8000,
-    "stationName": "HttpRoute",
-    "serviceName": "HttpRoute",
-    "serviceKey": "001",
-    "shortName": "route" 
-  },
   /*系统设置*/
   "sysConfig": {
     /*是否开启ZMQ网络（不要改）*/

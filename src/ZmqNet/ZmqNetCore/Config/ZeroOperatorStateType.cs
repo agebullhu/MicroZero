@@ -82,6 +82,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         InstallArgumentError = 0x8A,
         /// <summary>
+        /// 未准备好
+        /// </summary>
+        NoReady = 0xF0,
+        /// <summary>
+        /// 本地ZMQ发生错误
+        /// </summary>
+        LocalZmqError = 0xFC,
+        /// <summary>
         /// 本地发送错误
         /// </summary>
         LocalSendError = 0xFD,

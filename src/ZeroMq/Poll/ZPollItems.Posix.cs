@@ -88,8 +88,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message, 1);
         }
 
         /// <summary>
@@ -111,8 +110,7 @@
                 message = null;
                 return false;
             }
-            message = Sockets[index].ReceiveMessage(out error);
-            return true;
+            return Sockets[index].Recv(out message, 1);
         }
 
 

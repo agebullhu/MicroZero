@@ -10,11 +10,13 @@
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <Description>实现消息队列功能：
-1 Api站点
-2 消息发布与订阅
-3 网络投票（并行工作流）</Description>
-    <Version>1.0.4.4</Version>
+    <Description>
+      实现消息队列功能：
+      1 Api站点
+      2 消息发布与订阅
+      3 网络投票（并行工作流）
+    </Description>
+    <Version>1.0.6.1</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -23,8 +25,7 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    
-	<IncludeSymbols>true</IncludeSymbols> 
+    <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -33,8 +34,8 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.4.4</AssemblyVersion>
-    <FileVersion>1.0.4.4</FileVersion>
+    <AssemblyVersion>1.0.6.1</AssemblyVersion>
+    <FileVersion>1.0.6.1</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -77,5 +78,8 @@
     <ProjectReference Include="..\..\ZeroMq\ClrZMQ.Core.csproj" />
     <ProjectReference Include="..\ApiContract\Agebull.ZeroNet.Contract.csproj" />
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\hotfix\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\hotfix\ /y" />
+  </Target>
 
 </Project>

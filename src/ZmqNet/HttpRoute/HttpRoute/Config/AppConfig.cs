@@ -31,18 +31,14 @@ namespace ZeroNet.Http.Route
         [DataMember, JsonProperty("sysConfig")] private SystemConfig _systemConfig;
 
 #pragma warning restore CS0649
+        /// <summary>
+        /// 安全设置
+        /// </summary>
+        [DataMember, JsonProperty("security")]
+        public SecurityConfig Security { get; set; }
 
         public static AppConfig Config { get; set; }
 
-        /// <summary>
-        /// 站点配置
-        /// </summary>
-        [DataMember, JsonProperty("zeroConfig")]
-        public ZeroAppConfig StationConfig
-        {
-            get => ZeroApplication.Config;
-            set => ZeroApplication.Config = value;
-        }
 
         /// <summary>
         /// 系统配置
@@ -63,11 +59,6 @@ namespace ZeroNet.Http.Route
         /// 文件名称
         /// </summary>
         public static string FileName { get; private set; }
-        /// <summary>
-        /// 安全设置
-        /// </summary>
-        [DataMember, JsonProperty("security")]
-        public SecurityConfig Security { get; set; }
         /// <summary>
         /// 是否已初始化
         /// </summary>
