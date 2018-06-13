@@ -1,10 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Agebull.Common;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
+using Gboxt.Common.DataModel;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using ZeroMQ.lib;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -16,10 +24,22 @@ namespace Agebull.ZeroNet.Core
     public class ZeroAppConfig
     {
         /// <summary>
+        /// 站点孤立
+        /// </summary>
+        [DataMember]
+        public bool StationIsolate { get; set; }
+
+        /// <summary>
         /// 服务名称
         /// </summary>
         [DataMember]
         public string ServiceName { get; set; }
+
+        /// <summary>
+        /// 服务器唯一标识
+        /// </summary>
+        [DataMember]
+        public string ServiceKey { get; set; }
 
         /// <summary>
         /// 短名称
@@ -58,26 +78,34 @@ namespace Agebull.ZeroNet.Core
         public string DataFolder { get; set; }
 
         /// <summary>
-        /// 实例名称
+        /// 本地日志文件夹
         /// </summary>
         [DataMember]
-        public string ServiceKey { get; set; }
+        public string LogFolder { get; set; }
 
         /// <summary>
-        /// 限速模式（0 单线程 1 按线程数限制 2 按等待数限制）
+        /// ApiClient与ApiStation限速模式
         /// </summary>
+        /// <remarks>
+        /// Single：单线程无等待
+        /// ThreadCount:按线程数限制,线程内无等待
+        ///     线程数计算公式 : 机器CPU数量 X TaskCpuMultiple 最小为1,请合理设置并测试
+        /// WaitCount: 单线程,每个请求起一个新Task,直到最高未完成数量达MaxWait时,
+        ///     ApiClient休眠直到等待数量 低于 MaxWait
+        ///     ApiStation返回服务器忙(熔断)
+        /// </remarks>
         [DataMember]
         public SpeedLimitType SpeedLimitModel { get; set; }
 
         /// <summary>
-        /// 最大等待数
+        /// 最大等待数(0xFF-0xFFFFF)
         /// </summary>
         [DataMember]
         public int MaxWait { get; set; }
 
 
         /// <summary>
-        /// 最大Task与Cpu核心数的倍数关系
+        /// 最大Task与Cpu核心数的倍数关系(0-128)
         /// </summary>
         [DataMember]
         public decimal TaskCpuMultiple { get; set; }
@@ -268,5 +296,168 @@ namespace Agebull.ZeroNet.Core
 
         }
         #endregion
+    }
+
+    /// <summary>
+    ///     站点应用
+    /// </summary>
+    partial class ZeroApplication
+    {
+        /// <summary>
+        ///     当前应用名称
+        /// </summary>
+        public static string AppName { get; set; }
+
+        /// <summary>
+        ///     站点配置
+        /// </summary>
+        public static ZeroAppConfig Config { get; set; }
+
+        /// <summary>
+        ///     读取配置
+        /// </summary>
+        /// <returns></returns>
+        public static StationConfig GetConfig(string stationName)
+        {
+            if (Config.TryGetConfig(stationName, out var config)) return config;
+            config = SystemManager.LoadConfig(stationName);
+            if (config == null)
+                return null;
+            Config[stationName] = config;
+            return config;
+        }
+
+
+        /// <summary>
+        ///     配置校验
+        /// </summary>
+        private static void CheckConfig()
+        {
+            AppName = ConfigurationManager.Root["AppName"];
+            var curPath = ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory);
+            string rootPath;
+            if (ConfigurationManager.Root["ASPNETCORE_ENVIRONMENT_"] == "Development")
+            {
+                ZeroTrace.WriteInfo("Option", "Development");
+                rootPath = curPath;
+            }
+            else
+            {
+                ZeroTrace.WriteInfo("Option", RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Windows");
+                rootPath = Path.GetDirectoryName(curPath);
+                if (string.IsNullOrWhiteSpace(AppName))
+                {
+                    ConfigurationManager.Root["AppName"] = AppName = Path.GetFileName(curPath);
+                }
+                // ReSharper disable once AssignNullToNotNullAttribute
+                var file = Path.Combine(rootPath, "config", "zero.json");
+                if (File.Exists(file))
+                    ConfigurationManager.Load(file);
+            }
+
+            ConfigurationManager.Root["rootPath"] = rootPath;
+
+            var sec = ConfigurationManager.Get("Zero");
+
+            Config = string.IsNullOrWhiteSpace(AppName)
+                ? sec.Child<ZeroAppConfig>("Station")
+                : sec.Child<ZeroAppConfig>(AppName) ?? sec.Child<ZeroAppConfig>("Station");
+
+            if (Config == null)
+                throw new Exception($"无法找到主配置节点,路径为Zero.{AppName}或Zero.Station,在appsettings.json中设置");
+            if (string.IsNullOrWhiteSpace(AppName))
+                ConfigurationManager.Root["AppName"] = AppName = Config.StationName;
+
+            Config.IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var global = sec.Child<ZeroAppConfig>("Global");
+            global.LogFolder = global.LogFolder == null ? IOHelper.CheckPath(rootPath, "logs") : global.LogFolder.Trim();
+            global.DataFolder = global.DataFolder == null ? IOHelper.CheckPath(rootPath, "datas") : global.DataFolder.Trim();
+            global.ServiceName = global.ServiceName == null ? Dns.GetHostName() : global.ServiceName.Trim();
+            global.ServiceKey = string.IsNullOrWhiteSpace(global.ServiceKey) ? RandomOperate.Generate(8) : global.ServiceKey.Trim();
+
+            global.ZeroAddress = string.IsNullOrWhiteSpace(global.ZeroAddress) ? "127.0.0.1" : global.ZeroAddress.Trim();
+            if (global.ZeroManagePort <= 1024 || Config.ZeroManagePort >= 65000)
+                global.ZeroManagePort = 8000;
+            if (global.ZeroMonitorPort <= 1024 || Config.ZeroMonitorPort >= 65000)
+                global.ZeroMonitorPort = 8001;
+
+
+            if (global.StationIsolate || Config.StationIsolate)
+            {
+                Config.ServiceName = string.IsNullOrWhiteSpace(Config.ServiceName) ? global.ServiceName : Config.ServiceName.Trim();
+                Config.ServiceKey = string.IsNullOrWhiteSpace(Config.ServiceKey) ? global.ServiceKey : Config.ServiceKey.Trim();
+                Config.ZeroAddress = string.IsNullOrWhiteSpace(Config.ZeroAddress) ? global.ZeroAddress : Config.ZeroAddress.Trim();
+                if (Config.ZeroManagePort <= 1024 || Config.ZeroManagePort >= 65000)
+                    Config.ZeroManagePort = global.ZeroManagePort;
+                if (Config.ZeroMonitorPort <= 1024 || Config.ZeroMonitorPort >= 65000)
+                    Config.ZeroMonitorPort = global.ZeroMonitorPort;
+
+                Config.DataFolder = IOHelper.CheckPath(global.DataFolder, AppName);
+                Config.LogFolder = IOHelper.CheckPath(global.LogFolder, AppName);
+            }
+            else
+            {
+                Config.ServiceName = global.ServiceName;
+                Config.ServiceKey = global.ServiceKey;
+                Config.ZeroAddress = global.ZeroAddress;
+                Config.ZeroManagePort = global.ZeroManagePort;
+                Config.ZeroMonitorPort = global.ZeroMonitorPort;
+
+                Config.DataFolder = global.DataFolder;
+                Config.LogFolder = global.LogFolder;
+            }
+            TxtRecorder.LogPath = Config.LogFolder;
+            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
+
+            Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
+            Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
+            Config.LocalIpAddress = GetHostIps();
+            Config.ShortName = string.IsNullOrWhiteSpace(Config.ZeroAddress) ? Config.StationName : Config.ShortName.Trim();
+            Config.RealName = ZeroIdentityHelper.CreateRealName(false);
+            Config.Identity = Config.RealName.ToAsciiBytes();
+            //模式选择
+
+            if (Config.SpeedLimitModel < SpeedLimitType.Single || Config.SpeedLimitModel > SpeedLimitType.WaitCount)
+                Config.SpeedLimitModel = SpeedLimitType.ThreadCount;
+            
+            if (Config.TaskCpuMultiple <= 0)
+                Config.TaskCpuMultiple = 1;
+            else if (Config.TaskCpuMultiple > 128)
+                Config.TaskCpuMultiple = 128;
+
+            if (Config.MaxWait < 0xFF)
+                Config.MaxWait = 0xFF;
+            else if (Config.MaxWait > 0xFFFFF)
+                Config.MaxWait = 0xFFFFF;
+
+            ShowOptionInfo(rootPath);
+        }
+
+        static void ShowOptionInfo(string root)
+        {
+            ZeroTrace.WriteLine($"Weconme {AppName}");
+            ZeroTrace.WriteInfo("Option", "ZeroMQ", zmq.LibraryVersion);
+            ZeroTrace.WriteInfo("Option", "RootPath", root);
+            string model;
+            switch (Config.SpeedLimitModel)
+            {
+                default:
+                    model = "单线程:线程(1) 等待(0)";
+                    break;
+                case SpeedLimitType.ThreadCount:
+                    var max = (int)(Environment.ProcessorCount * Config.TaskCpuMultiple);
+                    if (max < 1)
+                        max = 1;
+                    model =
+                        $"按线程数限制:线程({Environment.ProcessorCount}×{Config.TaskCpuMultiple}={max}) 等待({Config.MaxWait})";
+                    break;
+                case SpeedLimitType.WaitCount:
+                    model = $"按等待数限制:线程(1) 等待({Config.MaxWait})";
+                    break;
+            }
+
+            ZeroTrace.WriteInfo("Option", model);
+            ZeroTrace.WriteInfo("Option", "ZeroCenter", Config.ZeroManageAddress, Config.ZeroMonitorAddress);
+        }
     }
 }

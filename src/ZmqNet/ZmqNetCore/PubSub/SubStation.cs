@@ -58,7 +58,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 缓存文件名称
         /// </summary>
         private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
-            $"zero_sub_queue_{StationName}.json");
+            $"zero_sub_queue_{Name}.json");
 
         /// <summary>
         /// 请求队列

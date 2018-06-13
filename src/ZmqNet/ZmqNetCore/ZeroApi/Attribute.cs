@@ -82,4 +82,5 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public string Name { get;}
     }
+
 }
