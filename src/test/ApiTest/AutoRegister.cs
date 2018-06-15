@@ -1,7 +1,7 @@
 using System.ComponentModel.Composition;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using RpcTest;
+using ApiTest;
 
 namespace Agebull.ZeroNet.Log
 {
@@ -24,7 +24,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            SystemMonitor.ZeroNetEvent += ZeroApiTestDispatcher.SystemMonitor_StationEvent;
+            ZeroApplication.RegistZeroObject<Program.LoginStation>();
         }
     }
 }

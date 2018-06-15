@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Configuration;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using Newtonsoft.Json;
 
 namespace RpcTest
 {
@@ -18,23 +18,29 @@ namespace RpcTest
         private static long _runTime;
         private static DateTime _start;
 
-        //System.Collections.Generic.Dictionary< int ,int >
+        private readonly string _station;
+        private readonly string _api;
+        private readonly string _arg;
 
-        private readonly string json = JsonConvert.SerializeObject(new
+        public ZeroTester()
         {
-            MobilePhone = "15618965007",
-            UserPassword = "123456A",
-            VerificationCode = "9999"
-        });
+            var sec = ConfigurationManager.Get("ApiTest");
+            if (sec.IsEmpty)
+                throw new Exception("ÕÒ²»µ½ApiTestÅäÖÃ½Ú");
+            _station = sec["Station"];
+            _api = sec["Api"];
+            _arg= sec["Argument"]; 
+        }
+
         public void Async()
         {
             DateTime s = DateTime.Now;
             Interlocked.Increment(ref waitCount);
             ApiClient client = new ApiClient
             {
-                Station = "UserCenter",
-                Commmand = "v2/login/account",
-                Argument = json
+                Station = _station,
+                Commmand = _api,
+                Argument = _arg
             };
             client.CallCommand();
             switch (client.State)
@@ -60,8 +66,9 @@ namespace RpcTest
 
         public void Test()
         {
+            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             _start = DateTime.Now;
-            while (ZeroApplication.IsAlive)
+            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
             {
                 if (waitCount > ZeroApplication.Config.MaxWait)
                 {
@@ -73,20 +80,23 @@ namespace RpcTest
             }
 
             Count();
+            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId,"Close");
         }
         public void TestSync()
         {
+            ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
             _start = DateTime.Now;
-            while (!Token.IsCancellationRequested && ZeroApplication.IsAlive)
+            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
             {
                 if (waitCount > ZeroApplication.Config.MaxWait)
                 {
                     Thread.Sleep(100);
                     continue;
                 }
-                Task.Factory.StartNew(Async, Token);
+                Task.Factory.StartNew(Async);
             }
             Count();
+            ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Close");
         }
 
         public static void Count()

@@ -10,49 +10,32 @@ namespace agebull
 		{
 			const int64 tm = time(nullptr) - pre_time;
 
-			if (tm <= 15)
-			{
-				if (state == -1)
-					state = 1;
-				if (tm <= 2)
-				{
-					return level = 10;
-				}
-				if (tm <= 6)
-				{
-					return level = 9;
-				}
-				if (tm <= 10)
-				{
-					return level = 8;
-				}
-				return level = 7;
-			}
-			if (state == 1)
-				state = -1;
-			if (tm <= 30)
-			{
-				return level = 6;
-			}
-			if (tm <= 60)
+			if (state == -1)
+				state = 1;
+			if (tm <= 2)
 			{
 				return level = 5;
 			}
-			if (tm <= 120)
+			if (tm <= 6)
 			{
 				return level = 4;
 			}
-			if (tm <= 180)
+			if (tm <= 10)
 			{
 				return level = 3;
 			}
-			if (tm <= 240)
+			state = -1;
+			if (tm <= 15)
 			{
 				return level = 2;
 			}
-			if (tm <= 360)
+			if (tm <= 30)
 			{
 				return level = 1;
+			}
+			if (tm <= 60)
+			{
+				return level = 0;
 			}
 			return level = -1;
 		}
@@ -91,7 +74,7 @@ namespace agebull
 				worker wk;
 				wk.real_name = real_name;
 				wk.state = 1;
-				wk.level = 10;
+				wk.level = 5;
 				workers.insert(make_pair(real_name, wk));
 				++ready_works_;
 				log("worker_ready", real_name);
@@ -253,16 +236,16 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(mutex_);
 			acl::json json;
 			acl::json_node& node = json.create_node();
+			node.add_text("station_name", station_name_.c_str());
+			node.add_number("station_state", static_cast<int>(station_state_));
 			if (type != 1)
 			{
-				if (!station_name_.empty())
-					node.add_text("station_name", station_name_.c_str());
 				if (!short_name.empty())
 					node.add_text("short_name", short_name.c_str());
-				if (!station_description_.empty())
-					node.add_text("_description", station_description_.c_str());
 				if (!station_caption_.empty())
 					node.add_text("_caption", station_caption_.c_str());
+				if (!station_description_.empty())
+					node.add_text("_description", station_description_.c_str());
 				if (alias_.size() > 0)
 				{
 					acl::json_node& array = json.create_array();
@@ -284,7 +267,6 @@ namespace agebull
 			}
 			if (type < 2)
 			{
-				node.add_number("station_state", static_cast<int>(station_state_));
 				node.add_number("request_in", request_in);
 				node.add_number("request_out", request_out);
 				node.add_number("request_err", request_err);
@@ -302,7 +284,7 @@ namespace agebull
 					work.add_text("ip_address", worker.second.ip_address.c_str());
 					array.add_child(work);
 				}
-				acl::json_node& workers_n = node.add_child("workers", array);
+				node.add_child("workers", array);
 			}
 			return node.to_string();
 		}

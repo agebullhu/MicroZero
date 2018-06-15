@@ -10,6 +10,7 @@ namespace ApiTest
         {
             public LoginStation()
             {
+                Name = "Test";
                 StationName = "Test";
             }
 
@@ -30,7 +31,7 @@ namespace ApiTest
                     Success = true,
                     Status = new ApiStatsResult
                     {
-                        ClientMessage = $"{Thread.CurrentThread.ManagedThreadId}:{Task.CurrentId}"
+                        ClientMessage = $"{Thread.CurrentThread.ManagedThreadId}<=>{Task.CurrentId}"
                     }
                 };
             }

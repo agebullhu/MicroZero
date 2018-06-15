@@ -1,0 +1,459 @@
+﻿@page
+@using Agebull.ZeroNet.Core
+@using Microsoft.ApplicationInsights.AspNetCore.Extensions
+@model WebMonitor.Pages.StationModel
+@{
+    var station = string.IsNullOrEmpty(Url.ActionContext.HttpContext.Request.QueryString.Value)
+        ? "RemoteLog"
+        : Url.ActionContext.HttpContext.Request.QueryString.Value.Trim('?');
+    var config = ZeroApplication.Config[station] ?? new StationConfig();
+
+    ViewData["Title"] = config.StationName ;
+    Layout = "~/Pages/_Layout.cshtml";
+}
+@section Scripts{
+    <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+    <script src="https://img.hcharts.cn/highcharts/highcharts-more.js"></script>
+    <script src="https://img.hcharts.cn/highcharts/modules/solid-gauge.js"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+    <script src="https://img.hcharts.cn/highcharts/themes/grid-light.js"></script>
+    <script>
+
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+        function activeLastPointToolip(chart) {
+            var points = chart.series[0].points;
+            chart.tooltip.refresh(points[points.length - 1]);
+        }
+
+
+        function update(chart, value) {
+            var point = chart.series[0].points[0];
+            point.update(value);
+        }
+
+
+        var paneA = {
+            startAngle: -150,
+            endAngle: 150,
+            background: [
+                {
+                    backgroundColor: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, '#FFF'],
+                            [1, '#333']
+                        ]
+                    },
+                    borderWidth: 0,
+                    outerRadius: '109%'
+                }, {
+                    backgroundColor: {
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                        stops: [
+                            [0, '#333'],
+                            [1, '#FFF']
+                        ]
+                    },
+                    borderWidth: 1,
+                    outerRadius: '107%'
+                }, {
+                    // default background
+
+                }, {
+                    backgroundColor: '#DDD',
+                    borderWidth: 0,
+                    outerRadius: '105%',
+                    innerRadius: '103%'
+                }
+            ]
+        };
+        var chartA = {
+            type: 'gauge',
+            plotBackgroundColor: null,
+            plotBackgroundImage: null,
+            plotBorderWidth: 0,
+            plotShadow: false
+        };
+        var yAxisA = {
+            min: 0,
+            max: @(config.MaxQps * 1.5),
+            minorTickInterval: 'auto',
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorTickPosition: 'inside',
+            minorTickColor: '#666',
+            tickPixelInterval: 30,
+            tickWidth: 2,
+            tickPosition: 'inside',
+            tickLength: 10,
+            tickColor: '#666',
+            labels: {
+                step: 2,
+                rotation: 'auto'
+            },
+            title: {
+                text: 'qps/s'
+            },
+            plotBands: [
+                {
+                    from: 0,
+                    to: 1000,
+                    color: '#55BF3B' // green
+                }, {
+                    from: 1000,
+                    to: 5000,
+                    color: '#DDDF0D' // yellow
+                }, {
+                    from: 5000,
+                    to: 20000,
+                    color: '#DF5353' // red
+                }
+            ]
+        };
+
+        // 转速仪表
+        var paneB = {
+            center: ['50%', '85%'],
+            size: '140%',
+            startAngle: -90,
+            endAngle: 90,
+            background: {
+                backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                innerRadius: '60%',
+                outerRadius: '100%',
+                shape: 'arc'
+            }
+        };
+        var chartB= {
+            type: 'solidgauge'
+        };
+        var yAxisB= {
+            min: 0,
+            max: @(config.MaxQps * 1.5),
+            stops: [
+                [0.1, '#55BF3B'], // green
+                [0.5, '#DDDF0D'], // yellow
+                [0.9, '#DF5353'] // red
+            ],
+            lineWidth: 0,
+            minorTickInterval: null,
+            tickPixelInterval: 400,
+            tickWidth: 0,
+            labels: {
+                y: 16
+            }
+        };
+        var plotOptionsB= {
+            solidgauge: {
+                dataLabels: {
+                    y: 5,
+                    borderWidth: 0,
+                    useHTML: true
+                }
+            }
+        };
+        var qps_chart = Highcharts.chart('qps_container',
+            {
+                chart: chartB,
+                title: {
+                    text: 'Last QPS'
+                },
+                pane: paneB,
+                // the value axis
+                yAxis: yAxisB,
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@config.LastQps],
+                        tooltip: {
+                            valueSuffix: '/s'
+                        }
+                    }
+                ]
+            });
+        var qavg_chart = Highcharts.chart('qavg_container',
+            {
+                chart: chartB,
+                title: {
+                    text: 'Avg QPS'
+                },
+                pane: paneB,
+                // the value axis
+                yAxis: yAxisB,
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@config.AvgQps],
+                        tooltip: {
+                            valueSuffix: '/s'
+                        }
+                    }
+                ]
+            });
+
+        var tps_chart = Highcharts.chart('tps_container',
+            {
+                chart: chartB,
+                title: {
+                    text: 'Last TPS'
+                },
+                pane: paneB,
+                // the value axis
+                yAxis: yAxisB,
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@config.LastTps],
+                        tooltip: {
+                            valueSuffix: '/s'
+                        }
+                    }
+                ]
+            });
+        var tavg_chart = Highcharts.chart('tavg_container',
+            {
+                chart: chartB,
+                title: {
+                    text: 'Avg TPS'
+                },
+                pane: paneB,
+                // the value axis
+                yAxis: yAxisB,
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@config.AvgTps],
+                        tooltip: {
+                            valueSuffix: '/s'
+                        }
+                    }
+                ]
+            });
+
+        var chart2 = Highcharts.chart('container-A',
+            {
+                chart: chartB,
+                pane: paneB,
+                yAxis: yAxisB,
+                plotOptions: plotOptionsB,
+                title: {
+                    text: '请求饥饿量'
+                },
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@(config.RequestIn- config.RequestOut)]
+                    }
+                ]
+            });
+        // 转速仪表
+        var chart3 = Highcharts.chart('container-B',
+            {
+                chart: chartB,
+                pane: paneB,
+                yAxis: yAxisB,
+                plotOptions: plotOptionsB,
+                title: {
+                    text: '执行饥饿量'
+                },
+                series: [
+                    {
+                        name: 'Speed',
+                        data: [@(config.TypeName == "API" ? config.WorkerOut - config.WorkerIn : 0 )]
+                    }
+                ]
+            });
+
+
+        var chartA = Highcharts.chart('containerA', {
+            chart: {
+                type: 'spline',
+                marginRight: 10
+            },
+            title: {
+                text: 'TPS'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: null
+                },
+                min: 0
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' +
+                        this.series.name +
+                        '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +
+                        '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: 'TPS',
+                    data: (function () {
+                        // 生成随机值
+                        var data = [],
+                            time = (new Date()).getTime();
+                        for (var i = -36; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: @config.LastTps
+                            });
+                        }
+                        return data;
+                    }())
+                }
+            ]
+        });
+
+        var chartB = Highcharts.chart('containerB', {
+            chart: {
+                type: 'spline',
+                marginRight: 10
+            },
+            title: {
+                text: 'QPS'
+            },
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: null
+                },
+                min: 0
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' +
+                        this.series.name +
+                        '</b><br/>' +
+                        Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +
+                        '<br/>' +
+                        Highcharts.numberFormat(this.y, 2);
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            series: [
+                {
+                    name: 'TPS',
+                    data: (function () {
+                        // 生成随机值
+                        var data = [],
+                            time = (new Date()).getTime();
+                        for (var i = -36; i <= 0; i += 1) {
+                            data.push({
+                                x: time + i * 1000,
+                                y: @config.LastQps
+                            });
+                        }
+                        return data;
+                    }())
+                }
+            ]
+        });
+        var ws = function (addr) {
+            var that = this;
+            that.state = "+open";
+            that.addr = addr;
+            that.open = function () {
+                console.log("try open " + that.addr);
+                that.socket = new WebSocket(that.addr);
+                that.socket.onopen = that.onopen;
+                that.socket.onclose = that.onclose;
+                that.socket.onmessage = that.onmessage;
+                that.socket.onerror = that.onerror;
+            }
+
+            that.onopen = function (e) {
+                that.state = "+ok";
+                console.log("opened " + that.addr);
+                socket.send("+config");
+            };
+            that.onclose = function (e) {
+                window.setTimeout(that.open, 500);
+            };
+            that.onmessage = function (e) {
+                try {
+                    var config = eval('(' + e.data + ')');
+                    if (config != null && config.station_name === '@config.StationName') {
+                        update(qps_chart, config.LastQps);
+                        update(qavg_chart, config.AvgQps);
+                        update(tps_chart, config.LastTps);
+                        update(tavg_chart, config.AvgTps);
+                        if (config.TypeName === "API") {
+                            update(chart2, config.request_in - config.request_out);
+                            update(chart3, config.worker_out - config.worker_in);
+                        }
+
+                        var date = (new Date()).getTime();
+                        chartA.series[0].addPoint([date, config.LastTps], true, true);
+                        activeLastPointToolip(chartA);
+                        chartB.series[0].addPoint([date, config.LastQps], true, true);
+                        activeLastPointToolip(chartB);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+
+            };
+            that.onerror = function (e) {
+                console.log("error: " + e.data);
+                that.state = "+error";
+            };
+            return this;
+        }
+
+        var uri = "ws://" + location.host + "/ws";
+        var socket = ws(uri);
+        socket.open();
+    </script>
+}
+
+<div>
+    <div style="display: inline-block;width : 49%">
+        <div id="containerA" style="min-width:400px;height:280px"></div>
+    </div>
+    <div style="display: inline-block;width : 49%">
+        <div id="containerB" style="min-width:400px;height:280px"></div>
+    </div>
+</div>
+<div>
+    <div style="display: inline-block;width : 33%">
+        <div id="container-B" style="min-width: 280px; height: 220px"></div>
+    </div>
+    <div style="display: inline-block;width : 33%">
+        <div id="qps_container" style="max-width: 280px; height: 220px; margin: 0 auto"></div>
+    </div>
+    <div style="display: inline-block;width : 33%">
+        <div id="qavg_container" style=" max-width: 280px; height: 220px; margin: 0 auto"></div>
+    </div>
+</div>
+<div>
+    <div style="display: inline-block;width : 33%">
+        <div id="container-A" style="min-width: 280px; height: 220px; "></div>
+    </div>
+    <div style="display: inline-block;width : 33%">
+        <div id="tps_container" style=" max-width: 280px; height: 220px; margin: 0 auto"></div>
+    </div>
+    <div style="display: inline-block;width : 33%">
+        <div id="tavg_container" style="max-width: 280px; height: 220px; margin: 0 auto"></div>
+    </div>
+</div>
+

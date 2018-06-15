@@ -22,14 +22,9 @@ namespace agebull
 		/**
 		*\brief 广播内容
 		*/
-		bool monitor_async(string publiher, string state, string content)
+		bool zero_event_async(string publiher, zero_net_event event_type, string content)
 		{
-			if (station_dispatcher::instance == nullptr ||
-				get_net_state() == NET_STATE_DISTORY ||
-				station_dispatcher::instance->get_config().get_station_state() != station_state::Run ||
-				publiher.length() == 0)
-				return false;
-			boost::thread thread_xxx(boost::bind(station_dispatcher::monitor, std::move(publiher), std::move(state), std::move(content)));
+			boost::thread thread_xxx(boost::bind(station_dispatcher::zero_event, std::move(publiher), event_type, std::move(content)));
 			return true;
 		}
 
@@ -37,16 +32,41 @@ namespace agebull
 		/**
 		*\brief 广播内容
 		*/
-		bool monitor_sync(string publiher, string state, string content)
+		bool zero_event_sync(string publiher, zero_net_event event_type, string content)
 		{
-			if (station_dispatcher::instance == nullptr ||
-				get_net_state() == NET_STATE_DISTORY ||
-				station_dispatcher::instance->get_config().get_station_state() != station_state::Run ||
-				publiher.length() == 0)
-				return false;
-			return station_dispatcher::monitor(std::move(publiher), std::move(state), std::move(content));
+			return station_dispatcher::zero_event(std::move(publiher), event_type, std::move(content));
 		}
-
+		/**
+		*\brief 广播内容
+		*/
+		bool station_dispatcher::zero_event(const string& publiher, const zero_net_event event_name, const string& content)
+		{
+			//boost::lock_guard<boost::mutex> guard(_mutex);
+			if (instance == nullptr || get_net_state() == NET_STATE_DISTORY)
+				return false;
+			sharp_char description;
+			description.alloc(6);
+			char* buf = description.get_buffer();
+			buf[1] = static_cast<char>(event_name);
+			buf[2] = ZERO_FRAME_PUBLISHER;
+			buf[4] = ZERO_FRAME_END;
+			vector<sharp_char> datas;
+			datas.emplace_back("zero_event");
+			datas.emplace_back(description);
+			datas.emplace_back(publiher.c_str());
+			if (content.length() == 0)
+			{
+				buf[0] = 1;
+				buf[3] = ZERO_FRAME_END;
+			}
+			else
+			{
+				buf[0] = 2;
+				buf[3] = ZERO_FRAME_ARG;
+				datas.emplace_back(content.c_str());
+			}
+			return instance->send_response(datas);
+		}
 		/**
 		*\brief 发布消息
 		*/
@@ -372,7 +392,7 @@ namespace agebull
 				return;
 			}
 			const char* cmd = nullptr;
-			size_t rqid_index = 0, glid_index = 0, reqer_index=0;
+			size_t rqid_index = 0, glid_index = 0, reqer_index = 0;
 			vector<sharp_char> arg;
 			const auto frame_size = list[1].size();
 			for (size_t idx = 2; idx <= frame_size; idx++)
@@ -400,7 +420,7 @@ namespace agebull
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
 					glid_index == 0 ? nullptr : *list[glid_index],
-					rqid_index == 0 ? nullptr : *list[rqid_index], 
+					rqid_index == 0 ? nullptr : *list[rqid_index],
 					reqer_index == 0 ? nullptr : *list[reqer_index]);
 				return;
 			}
@@ -436,24 +456,21 @@ namespace agebull
 			station->poll();
 			instance = nullptr;
 			station_warehouse::left(station.get());
-			station->destruct();
 			if (get_net_state() == NET_STATE_RUNING)
 			{
+				station->destruct();
 				config.restart();
 				run(station->get_config_ptr());
 			}
 			else
 			{
+				wait_close();
+				thread_sleep(json_config::SNDTIMEO < 0 ? 1000 : json_config::SNDTIMEO + 10);//让未发送数据完成发送
+				station->destruct();
 				config.closed();
 			}
 			set_command_thread_end(config.station_name_.c_str());
 		}
-#define check_cando(can,ins)\
-	if (get_net_state() >= NET_STATE_CLOSING || !ins->can_do())\
-	{\
-		can = false;\
-		break;\
-	}
 		/**
 		* \brief 监控轮询
 		*/
@@ -462,20 +479,8 @@ namespace agebull
 			zero_config& config = instance->get_config();
 			config.log("monitor poll start");
 			instance->task_semaphore_.post();
-			while (get_net_state() < NET_STATE_DISTORY)
+			while (get_net_state() < NET_STATE_CLOSING)
 			{
-				//bool cando = true;
-				//for (int i = 0; i < 10; i++)
-				//{
-				//	thread_sleep(100);
-				//	if (get_net_state() >= NET_STATE_CLOSING || !instance->can_do())
-				//	{
-				//		cando = false; 
-				//		break; 
-				//	}
-				//}
-				//if (!cando)
-				//	break;
 				thread_sleep(json_config::worker_sound_ivl);
 				vector<string> cfgs;//复制避免锁定时间过长
 				vector<string> names;//复制避免锁定时间过长
@@ -485,19 +490,13 @@ namespace agebull
 					names.emplace_back(cfg->station_name_);
 					cfgs.emplace_back(cfg->to_json(true).c_str());
 				});
-				monitor("SystemManage", "worker_sound_off", "*");
+				instance->zero_event("*", zero_net_event::event_worker_sound_off, "");
 
 				for (size_t i = 0; i < names.size(); i++)
 				{
-					monitor(names[i], "station_state", cfgs[i]);
-					//check_cando(cando, instance)
+					instance->zero_event(names[i], zero_net_event::event_station_state, cfgs[i]);
 				}
 			}
-			station_warehouse::set_close_info();
-			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
-			{
-				monitor(cfg->station_name_, "station_state", cfg->to_json(true).c_str());
-			});
 			instance->task_semaphore_.post();
 		}
 	}

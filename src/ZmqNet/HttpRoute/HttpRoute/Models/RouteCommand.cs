@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Text;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.PubSub;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -64,29 +65,24 @@ namespace ZeroNet.Http.Route
 
         #region OnZeroNetEvent
 
-        private static void OnZeroNetEvent(object sender, SystemMonitor.StationEventArgument e)
+        private static void OnZeroNetEvent(object sender, SystemMonitor.ZeroNetEventArgument e)
         {
-            switch (e.EventName)
+            switch (e.Event)
             {
-                case "program_run":
-                    BindZeroStation();
+                case ZeroNetEventType.AppRun:
+                    OnZeroNetRuning();
                     break;
-                case "system_start":
-                    OnSystemRun();
+                case ZeroNetEventType.AppStop:
+                    OnZeroNetClose();
                     break;
-                case "system_stop":
-                    OnSystemStop();
-                    break;
-                case "station_resume":
-                case "station_join":
+                case ZeroNetEventType.CenterStationResume:
+                case ZeroNetEventType.CenterStationJoin:
                     StationJoin(e.EventConfig);
                     break;
-                case "station_uninstall":
-                    StationLeft(e.EventConfig);
-                    break;
-                case "station_left":
-                case "station_pause":
-                case "station_closing":
+                case ZeroNetEventType.CenterStationLeft:
+                case ZeroNetEventType.CenterStationPause:
+                case ZeroNetEventType.CenterStationClosing:
+                case ZeroNetEventType.CenterStationUninstall:
                     StationLeft(e.EventConfig);
                     break;
             }
@@ -99,19 +95,29 @@ namespace ZeroNet.Http.Route
         {
             if (!AppConfig.Config.SystemConfig.FireZero)
                 return;
-            SystemMonitor.StationEvent -= OnZeroNetEvent;
-            BindZeroStation();
-            SystemMonitor.StationEvent += OnZeroNetEvent;
-        }
-
-        static void BindZeroStation()
-        {
+            SystemMonitor.ZeroNetEvent -= OnZeroNetEvent;
             ZeroApplication.Config.Foreach(config =>
             {
-                if(config.StationType == ZeroStation.StationTypeApi)
+                if (config.StationType == ZeroStation.StationTypeApi)
                     StationJoin(config);
             });
+            SystemMonitor.ZeroNetEvent += OnZeroNetEvent;
         }
+
+        static void OnZeroNetRuning()
+        {
+            RefreshStationConfig();
+        }
+        private static void OnZeroNetClose()
+        {
+            foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
+            {
+                ZeroTrace.WriteInfo("Api Station", $"Left:{host.Key}");
+                host.Value.Failed = true;
+                host.Value.ByZero = true;
+            }
+        }
+
 
         private static void StationJoin(StationConfig station)
         {
@@ -158,28 +164,6 @@ namespace ZeroNet.Http.Route
                 host.Failed = true;
                 host.ByZero = true;
             }
-        }
-
-
-        private static void OnSystemStop()
-        {
-            foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
-            {
-                ZeroTrace.WriteInfo("Api Station", $"Left:{host.Key}");
-                host.Value.Failed = true;
-                host.Value.ByZero = true;
-            }
-        }
-
-
-        private static void OnSystemRun()
-        {
-            //foreach (var host in AppConfig.Config.RouteMap.Where(p => p.Value.ByZero).ToArray())
-            //{
-            //    StationConsole.WriteInfo("Api Station", $"Left:{host.Key}");
-            //    host.Value.Failed = true;
-            //    host.Value.ByZero = true;
-            //}
         }
 
         #endregion

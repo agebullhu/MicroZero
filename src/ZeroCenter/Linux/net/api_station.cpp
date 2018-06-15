@@ -79,7 +79,7 @@ namespace agebull
 			//if (list[2][1] == ZERO_BYTE_COMMAND_WAITING)
 			//	return;
 			size_t reqid = 0, reqer = 0, glid_index = 0;
-			for (size_t i = 2; i <= list[1][0] + 2; i++)
+			for (size_t i = 2; i <= static_cast<size_t>(list[1][0] + 2); i++)
 			{
 				switch (list[1][i])
 				{

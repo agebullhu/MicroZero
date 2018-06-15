@@ -272,7 +272,7 @@ namespace agebull
 				sprintf(key, "net:host:%s", station_name.c_str());
 				redis.delete_from_redis(key);
 			}
-			monitor_async(station_name, "station_uninstall", station_name);
+			zero_event_async(station_name, zero_net_event::event_station_uninstall, "");
 			return true;
 		}
 		/**
@@ -313,7 +313,7 @@ namespace agebull
 			json = config->to_json(2);
 			redis->set(key.c_str(), json);
 			insert_config(config, false);
-			monitor_async(station_name, "station_install", json.c_str());
+			zero_event_async(station_name, zero_net_event::event_station_install, json.c_str());
 			return true;
 		}
 
@@ -326,9 +326,10 @@ namespace agebull
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
 				if (examples_.find(station->config_->station_name_) != examples_.end())
 					return false;
+				station->config_->station_state_ = station_state::Run;
 				examples_.insert(make_pair(station->config_->station_name_, station));
 			}
-			monitor_async(station->config_->station_name_, "station_join", string(station->config_->to_json(0)));
+			zero_event_async(station->config_->station_name_, zero_net_event::event_station_join, string(station->config_->to_json(0)));
 			return true;
 		}
 
@@ -342,9 +343,10 @@ namespace agebull
 				const auto iter = examples_.find(station->config_->station_name_);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
+				station->config_->station_state_ = station_state::Closed;
 				examples_.erase(iter);
 			}
-			monitor_async(station->config_->station_name_, "station_left", station->config_->station_name_);
+			zero_event_async(station->config_->station_name_, zero_net_event::event_station_left, "");
 
 			return true;
 		}

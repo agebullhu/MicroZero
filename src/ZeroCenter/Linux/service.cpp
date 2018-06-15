@@ -32,7 +32,8 @@ namespace agebull
 		/**
 		* \brief 任务信号量
 		*/
-		boost::interprocess::interprocess_semaphore task_semaphore(0);
+		boost::interprocess::interprocess_semaphore task_semaphore(1024);
+		boost::interprocess::interprocess_semaphore close_semaphore(1024);
 		boost::mutex task_mutex;
 
 
@@ -174,9 +175,12 @@ namespace agebull
 			net_state = NET_STATE_NONE;
 			net_context = zmq_ctx_new();
 			assert(net_context != nullptr);
-			//zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 65536);
-			//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 8);
-			//zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 32767);
+			if (json_config::MAX_SOCKETS >= 0)
+				zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, json_config::MAX_SOCKETS);
+			if (json_config::IO_THREADS >= 0)
+				zmq_ctx_set(net_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
+			if (json_config::MAX_MSGSZ >= 0)
+				zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
 			log_msg("[zero_center]=>initiated");
 			return net_state;
 		}
@@ -202,31 +206,36 @@ namespace agebull
 			log_msg("[zero_center]=>start business stations...");
 			station_warehouse::restore();
 			task_semaphore.wait();
-			
+
 			log_msg("[zero_center]=>all stations in service");
 			for (int i = 0; i < 10; i++)
 			{
-				monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
+				zero_event_sync("*", zero_net_event::event_system_start, ">>Wecome ZeroNet,luck every day!<<");
 				thread_sleep(50);
 			}
 			log_msg("[zero_center]=>success");
 			return net_state;
 		}
-
+		void wait_close()
+		{
+			task_semaphore.wait();
+		}
 		//关闭网络命令环境
 		void close_net_command()
 		{
 			if (net_state != NET_STATE_RUNING)
 				return;
 			log_msg("[zero_center]=>closing...");
-			for (int i = 0; i < 10; i++)
+			for (int i = 0; i < 5; i++)
 			{
-				monitor_sync("*", "system_stop", "*************Close ZeroNet,see you late!*************");
-				thread_sleep(50);
+				zero_event_sync("*", zero_net_event::event_system_closing, "*");
+				thread_sleep(40);
 			}
 			net_state = NET_STATE_CLOSING;
 			task_semaphore.wait();
 			net_state = NET_STATE_CLOSED;
+			zero_event_sync("*", zero_net_event::event_system_stop, ">>ZeroNet close,see you late!<<");
+			close_semaphore.post();
 			task_semaphore.wait();
 			net_state = NET_STATE_DISTORY;
 			zmq_ctx_shutdown(net_context);

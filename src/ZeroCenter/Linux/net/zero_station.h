@@ -11,15 +11,6 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		*\brief 广播内容(异步)
-		*/
-		bool monitor_async(string publiher, string state, string content);
-		/**
-		*\brief 广播内容(同步)
-		*/
-		bool monitor_sync(string publiher, string state, string content);
-
-		/**
 		* \brief 表示一个基于ZMQ的网络站点
 		*/
 		class zero_station

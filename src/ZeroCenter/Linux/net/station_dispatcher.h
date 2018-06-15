@@ -153,12 +153,7 @@ namespace agebull
 			/**
 			*\brief 广播内容
 			*/
-			static bool monitor(const string& publiher, const string& event_name, const string& content)
-			{
-				if (instance != nullptr)
-					return instance->publish(event_name, publiher, content);
-				return false;
-			}
+			static bool zero_event(const string& publiher, const zero_net_event event_name, const string& content);
 			/**
 			*\brief 广播内容
 			*/

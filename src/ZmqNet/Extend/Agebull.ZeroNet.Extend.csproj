@@ -13,4 +13,8 @@
     <ProjectReference Include="..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y" />
+  </Target>
+
 </Project>

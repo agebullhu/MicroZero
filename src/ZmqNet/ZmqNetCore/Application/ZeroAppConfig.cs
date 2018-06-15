@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
@@ -216,6 +215,7 @@ namespace Agebull.ZeroNet.Core
                 var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
                 foreach (var config in configs)
                 {
+                    config.State = ZeroCenterState.Run;
                     this[config.StationName] = config;
                 }
                 ZeroTrace.WriteInfo("LoadAllConfig", json);
@@ -237,17 +237,6 @@ namespace Agebull.ZeroNet.Core
             {
                 foreach (var config in _configs.Values)
                     action(config);
-            }
-        }
-        /// <summary>
-        /// 遍历
-        /// </summary>
-        /// <param name="action"></param>
-        public void ParallelForeach(Action<StationConfig> action)
-        {
-            lock (_configs)
-            {
-                Parallel.ForEach(_configs.Values, action);
             }
         }
         /// <summary>
@@ -362,7 +351,7 @@ namespace Agebull.ZeroNet.Core
             Config = string.IsNullOrWhiteSpace(AppName)
                 ? sec.Child<ZeroAppConfig>("Station")
                 : sec.Child<ZeroAppConfig>(AppName) ?? sec.Child<ZeroAppConfig>("Station");
-
+             
             if (Config == null)
                 throw new Exception($"无法找到主配置节点,路径为Zero.{AppName}或Zero.Station,在appsettings.json中设置");
             if (string.IsNullOrWhiteSpace(AppName))
@@ -370,9 +359,9 @@ namespace Agebull.ZeroNet.Core
 
             Config.IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             var global = sec.Child<ZeroAppConfig>("Global");
-            global.LogFolder = global.LogFolder == null ? IOHelper.CheckPath(rootPath, "logs") : global.LogFolder.Trim();
-            global.DataFolder = global.DataFolder == null ? IOHelper.CheckPath(rootPath, "datas") : global.DataFolder.Trim();
-            global.ServiceName = global.ServiceName == null ? Dns.GetHostName() : global.ServiceName.Trim();
+            global.LogFolder = string.IsNullOrWhiteSpace(global.LogFolder) ? IOHelper.CheckPath(rootPath, "logs") : global.LogFolder.Trim();
+            global.DataFolder = string.IsNullOrWhiteSpace(global.DataFolder) ? IOHelper.CheckPath(rootPath, "datas") : global.DataFolder.Trim();
+            global.ServiceName = string.IsNullOrWhiteSpace(global.ServiceName) ? Dns.GetHostName() : global.ServiceName.Trim();
             global.ServiceKey = string.IsNullOrWhiteSpace(global.ServiceKey) ? RandomOperate.Generate(8) : global.ServiceKey.Trim();
 
             global.ZeroAddress = string.IsNullOrWhiteSpace(global.ZeroAddress) ? "127.0.0.1" : global.ZeroAddress.Trim();

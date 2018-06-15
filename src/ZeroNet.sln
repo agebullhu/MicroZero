@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroNet.Http.Route", "ZmqNe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RpcTest", "test\RpcTest\RpcTest.csproj", "{AAC4FF96-B77A-42DE-BF05-064363D924D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroNet.LogService", "RemoteLog\LogService\ZeroNet.LogService.csproj", "{959006C6-2A1C-4282-964B-81969E396EA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.ZeroNet.LogService", "RemoteLog\LogService\Agebull.ZeroNet.LogService.csproj", "{959006C6-2A1C-4282-964B-81969E396EA6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.ZeroNet.HealthCenter", "HealthCenter\HealthCenter\Agebull.ZeroNet.HealthCenter.csproj", "{FAC9810E-3209-4097-A8E6-1F1F9C6910E1}"
 EndProject
@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClrZMQ.Core", "ZeroMq\ClrZM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extend", "Extend", "{742B9856-B85F-41CC-9F4A-C62419394190}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroService", "ZeroService\ZeroService.csproj", "{41D85732-219A-41DA-A52A-75A69744EC57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroService", "ZeroService\ZeroService.csproj", "{41D85732-219A-41DA-A52A-75A69744EC57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

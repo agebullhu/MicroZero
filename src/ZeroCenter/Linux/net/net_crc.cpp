@@ -1,5 +1,4 @@
 #include "../stdafx.h"
-#include "net_command.h"
 using namespace std;
 namespace agebull
 {

@@ -1,12 +1,12 @@
 #include "../stdafx.h"
-#include "net_command.h"
+#include "zmq_extend.h"
 #include <arpa/inet.h>
 using namespace std;
 namespace agebull
 {
 	namespace zmq_net
 	{
-		int socket_ex::create_=0, socket_ex::close_=0;
+		int socket_ex::create_ = 0, socket_ex::close_ = 0;
 
 		/**
 		* \brief 配置ZMQ连接对象
@@ -16,19 +16,29 @@ namespace agebull
 		*/
 		void socket_ex::set_sockopt(ZMQ_HANDLE& socket, const char* name)
 		{
-			
 			if (name != nullptr)
 				zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
 			//assert(zmq_result == 0);
-			setsockopt(socket, ZMQ_IMMEDIATE, 1);//列消息只作用于已完成的链接
-			setsockopt(socket, ZMQ_LINGER, 50);//关闭设置停留时间,毫秒
-			setsockopt(socket, ZMQ_RCVTIMEO, 500);
-			setsockopt(socket, ZMQ_SNDHWM, 4096);
-			setsockopt(socket, ZMQ_RCVHWM, 4096);
-			setsockopt(socket, ZMQ_SNDBUF, 0xFFFFFF);
-			setsockopt(socket, ZMQ_RCVBUF, 0xFFFFFF);
-			setsockopt(socket, ZMQ_SNDTIMEO, 500);
-			setsockopt(socket, ZMQ_BACKLOG, 8192);
+			//列消息只作用于已完成的链接
+			if (json_config::IMMEDIATE >= 0)
+				setsockopt(socket, ZMQ_IMMEDIATE, json_config::IMMEDIATE);
+			//关闭设置停留时间,毫秒
+			if (json_config::LINGER >= 0)
+				setsockopt(socket, ZMQ_LINGER, json_config::LINGER);
+			if (json_config::RCVTIMEO >= 0)
+				setsockopt(socket, ZMQ_RCVTIMEO, json_config::RCVTIMEO);
+			if (json_config::SNDHWM >= 0)
+				setsockopt(socket, ZMQ_SNDHWM, json_config::SNDHWM);
+			if (json_config::RCVHWM >= 0)
+				setsockopt(socket, ZMQ_RCVHWM, json_config::RCVHWM);
+			if (json_config::SNDBUF >= 0)
+				setsockopt(socket, ZMQ_SNDBUF, json_config::SNDBUF);
+			if (json_config::RCVBUF >= 0)
+				setsockopt(socket, ZMQ_RCVBUF, json_config::RCVBUF);
+			if (json_config::SNDTIMEO >= 0)
+				setsockopt(socket, ZMQ_SNDTIMEO, json_config::SNDTIMEO);
+			if (json_config::BACKLOG >= 0)
+				setsockopt(socket, ZMQ_BACKLOG, json_config::BACKLOG);
 
 			//setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
 			//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);

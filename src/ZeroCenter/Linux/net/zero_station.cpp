@@ -270,7 +270,7 @@ namespace agebull
 				return false;
 			config_->station_state_ = station_state::Pause;
 			state_semaphore_.post();
-			monitor_async(config_->station_name_, "station_pause", "");
+			zero_event_async(config_->station_name_, zero_net_event::event_station_pause, "");
 			return true;
 		}
 
@@ -283,7 +283,7 @@ namespace agebull
 				return false;
 			config_->station_state_ = station_state::Run;
 			state_semaphore_.post();
-			monitor_async(config_->station_name_, "station_resume", "");
+			zero_event_async(config_->station_name_, zero_net_event::event_station_resume, "");
 			return true;
 		}
 
@@ -297,7 +297,7 @@ namespace agebull
 				return false;
 			config_->station_state_ = station_state::Closing;
 			state_semaphore_.post();
-			monitor_async(config_->station_name_, "station_closing", "");
+			zero_event_async(config_->station_name_, zero_net_event::event_station_closing, "");
 			while (waiting && config_->station_state_ == station_state::Closing)
 				thread_sleep(200);
 			return true;

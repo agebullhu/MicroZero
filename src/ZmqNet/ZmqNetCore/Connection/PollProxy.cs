@@ -22,7 +22,7 @@ namespace Agebull.ZeroNet.Core
         {
             ZeroTrace.WriteInfo("ConnectionProxy", "Start");
             RunTaskCancel = new CancellationTokenSource();
-            Task.Factory.StartNew(Run, RunTaskCancel.Token);
+            Task.Factory.StartNew(Run);
             _waitToken.Wait();
         }
 

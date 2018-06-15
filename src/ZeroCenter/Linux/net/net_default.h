@@ -37,7 +37,269 @@ namespace agebull
 		void set_command_thread_run(const char* name);
 		//登记线程关闭
 		void set_command_thread_end(const char* name);
-		
+		//等待关闭(仅限station_dispatcher结束时使用一次)
+		void wait_close();
+
+
+
+		/// <summary>
+		/// 中心事件
+		/// </summary>
+		enum class zero_net_event
+		{
+			/// <summary>
+			/// 
+			/// </summary>
+			event_none = 0x0,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_system_start = 0x1,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_system_closing,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_system_stop,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_worker_sound_off,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_join,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_left,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_pause,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_resume,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_closing,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_install,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_uninstall,
+			/// <summary>
+			/// 
+			/// </summary>
+			event_station_state
+		};
+		/**
+		*\brief 事件广播(异步)
+		*/
+		bool zero_event_async(string publiher, zero_net_event event_type, string content);
+		/**
+		*\brief 事件广播(同步)
+		*/
+		bool zero_event_sync(string publiher, zero_net_event event_type, string content);
+
+		/**
+		* \brief  站点状态
+		*/
+		enum class station_state
+		{
+			/**
+			* \brief 无，刚构造
+			*/
+			None,
+			/**
+			* \brief 重新启动
+			*/
+			ReStart,
+			/**
+			* \brief 正在启动
+			*/
+			Start,
+			/**
+			* \brief 正在运行
+			*/
+			Run,
+			/**
+			* \brief 已暂停
+			*/
+			Pause,
+			/**
+			* \brief 错误状态
+			*/
+			Failed,
+			/**
+			* \brief 将要关闭
+			*/
+			Closing,
+			/**
+			* \brief 已关闭
+			*/
+			Closed,
+			/**
+			* \brief 已销毁，析构已调用
+			*/
+			Destroy,
+			/**
+			* \brief 已卸载
+			*/
+			Uninstall,
+			/**
+			* \brief 未知
+			*/
+			Unknow
+		};
+
+		/**
+		* \brief ZMQ套接字状态
+		*/
+		enum class zmq_socket_state
+		{
+			/**
+			* \brief 没问题
+			*/
+			Succeed,
+			/**
+			* \brief 后续还有消息
+			*/
+			More,
+
+			/**
+			* \brief 空帧
+			*/
+			Empty,
+
+			/**
+			* \brief 主机不可达
+			*/
+			HostUnReach,
+			/**
+			* \brief 网络关闭
+			*/
+			NetDown,
+
+			/**
+			* \brief 网络不可达
+			*/
+			NetUnReach,
+
+			/**
+			* \brief 网络重置
+			*/
+			NetReset,
+
+			/**
+			* \brief 未连接
+			*/
+			NotConn,
+			/**
+			* \brief 连接已在使用中？
+			*/
+			ConnRefUsed,
+			/**
+			* \brief 连接中断
+			*/
+			ConnAborted,
+
+			/**
+			* \brief 连接重置
+			*/
+			ConnReset,
+
+			/**
+			* \brief 超时
+			*/
+			TimedOut,
+
+			/**
+			* \brief 正在处理中？
+			*/
+			InProgress,
+
+			/**
+			* \brief 跨线程调用？
+			*/
+			Mthread,
+
+			/**
+			* \brief 指定的socket不可用
+			*/
+			NotSocket,
+
+			/**
+			* \brief 内存不足
+			*/
+			NoBufs,
+
+			/**
+			* \brief 消息大小不合适？
+			*/
+			MsgSize,
+
+			/**
+			* \brief 指定的socket相关联的context已关闭
+			*/
+			Term,
+
+			/**
+			* \brief 系统信号中断
+			*/
+			Intr,
+
+			/**
+			* \brief 不支持？
+			*/
+			NotSup,
+
+			/**
+			* \brief 不支持的协议
+			*/
+			ProtoNoSupport,
+
+			/**
+			* \brief 协议不兼容
+			*/
+			NoCompatProto,
+
+			/**
+			* \brief ？
+			*/
+			AfNoSupport,
+
+			/**
+			* \brief 地址问题？
+			*/
+			AddrNotAvAll,
+			/**
+			* \brief 地址已被使用
+			*/
+			AddrInUse,
+			/**
+			* \brief ？
+			*/
+			Fsm,
+
+			/**
+			* \brief 重启
+			*/
+			Again,
+			/**
+			* \brief 其它错误
+			*/
+			Unknow
+		};
+
+
 		//正常状态
 #define ZERO_STATUS_SUCCESS '+'
 #define ZERO_STATUS_OK  "+ok"
@@ -63,7 +325,7 @@ namespace agebull
 #define ZERO_STATUS_API_NOT_WORKER  "-not work"
 #define ZERO_STATUS_MANAGE_ARG_ERROR  "-ArgumentError! must like : call[name][command][argument]"
 #define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
-		
+
 		/*! 以下为帧类型说明符号*/
 //终止符号
 #define ZERO_FRAME_END  '\0'

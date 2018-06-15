@@ -3,7 +3,7 @@
 @using Newtonsoft.Json
 @model IndexModel
 @{
-    ViewData["Title"] = "基本信息";
+    ViewData["Title"] = "ZeroNet Monitor";
 }
 @section Styles{
 
@@ -85,14 +85,16 @@
         var uri = "ws://" + location.host + "/ws";
         var socket = ws(uri);
         socket.open();
+
     </script>
 }
 <div id="vue" class="row">
     <template v-for="config in configs">
         <div class="col-md-3">
-            <el-tooltip v-bind:content="config._description" placement="top" effect="light">
-                <h2>{{config.station_name}}</h2>
-            </el-tooltip>
+            
+            <h2><a v-bind:href="'/Station?' + config.station_name">{{config.station_name}}</a></h2>
+            @*<el-tooltip v-bind:content="config._description" placement="top" effect="light">
+            </el-tooltip>*@
             <ul>
                 <li>Alias</li>
                 <template v-for="alia in config.station_alias">
@@ -118,39 +120,43 @@
                     err: {{config.worker_err}}
                 </template>
                 <li>
-                    Collection({{config.Count}})
-                    <ul>
-                        TPS
-                        <li>Total:{{config.TotalTps}}</li>
-                        <li>Avg:{{config.AvgTps}}/s</li>
-                        <li>Max:{{config.MaxTps}}/s</li>
-                        <li>Min:{{config.MinTps}}/s</li>
-                        <li>Last:{{config.LastTps}}/s</li>
-                    </ul>
-                    <ul>
-                        QPS
-                        <li>Total:{{config.TotalQps}}</li>
-                        <li>Avg:{{config.AvgQps}}/s</li>
-                        <li>Max:{{config.MaxQps}}/s</li>
-                        <li>Min:{{config.MinQps}}/s</li>
-                        <li>Last:{{config.LastQps}}/s</li>
-                    </ul>
+
+                    Collection({{config.AvgQps}}|{{config.AvgTps}})
+                    @*<ul>
+            TPS
+            <li>Total:{{config.TotalTps}}</li>
+            <li>Avg:{{config.AvgTps}}/s</li>
+            <li>Max:{{config.MaxTps}}/s</li>
+            <li>Min:{{config.MinTps}}/s</li>
+            <li>Last:{{config.LastTps}}/s</li>
+        </ul>
+        <ul>
+            QPS
+            <li>Total:{{config.TotalQps}}</li>
+            <li>Avg:{{config.AvgQps}}/s</li>
+            <li>Max:{{config.MaxQps}}/s</li>
+            <li>Min:{{config.MinQps}}/s</li>
+            <li>Last:{{config.LastQps}}/s</li>
+        </ul>*@
                 </li>
                 <li>
-                    <el-dropdown trigger="click">
-                        <span class="el-dropdown-link">
-                            <el-badge v-bind:value="config.worker_count" class="item">
-                                <i class="el-icon-caret-bottom el-icon--right">Workers</i>
-                            </el-badge>
-                        </span>
-                        <el-dropdown-menu slot="dropdown">
-                            <template v-for="worker in config.workers">
-                                <el-dropdown-item class="clearfix">
-                                    {{worker.real_name}}:{{worker.state_text}}:{{worker.level}}
-                                </el-dropdown-item>
-                            </template>
-                        </el-dropdown-menu>
-                    </el-dropdown>
+                    <el-popover placement="right-end"
+                                title="活动站点"
+                                effect="light"
+                                visible-arrow="false"
+                                trigger="hover">
+                        <template v-for="worker in config.workers">
+                            <el-rate v-model="worker.level"
+                                     disabled
+                                     show-score
+                                     text-color="#ff9900"
+                                     score-template="{value}">
+                            </el-rate>
+                            {{worker.real_name}}:{{worker.state_text}}
+                        </template>
+                        <el-button slot="reference" type="text">Workers</el-button>
+                    </el-popover>
+
 
                 </li>
 

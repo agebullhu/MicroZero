@@ -45,12 +45,13 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private static bool DoPublish(string station, string title, string sub, string value)
         {
-            using (var socket = ZeroConnectionPool.GetSocket(station, RandomOperate.Generate(8)))
+            var socket = ZeroConnectionPool.GetSocket(station, RandomOperate.Generate(8));
+            if (socket.Socket == null)
             {
-                if (socket == null)
-                {
-                    return false;
-                }
+                return false;
+            }
+            using (socket)
+            {
                 return socket.Socket.Publish(new PublishItem
                 {
                     Station = station,

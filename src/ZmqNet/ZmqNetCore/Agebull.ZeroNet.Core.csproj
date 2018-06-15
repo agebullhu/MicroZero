@@ -16,7 +16,7 @@
       2 消息发布与订阅
       3 网络投票（并行工作流）
     </Description>
-    <Version>1.0.6.1</Version>
+    <Version>1.0.6.2</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -34,8 +34,8 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.6.1</AssemblyVersion>
-    <FileVersion>1.0.6.1</FileVersion>
+    <AssemblyVersion>1.0.6.2</AssemblyVersion>
+    <FileVersion>1.0.6.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -1,22 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common;
-using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Microsoft.Extensions.Configuration;
 using ZeroMQ;
-using ZeroMQ.lib;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -163,7 +153,7 @@ namespace Agebull.ZeroNet.Core
         {
             var ips = new StringBuilder();
             var first = true;
-            foreach (var address in Dns.GetHostAddresses(Config.ServiceName))
+            foreach (var address in Dns.GetHostAddresses(Dns.GetHostName()))
             {
                 if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
                     address.IsIPv6SiteLocal || address.IsIPv6Teredo)
@@ -281,7 +271,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
-                ZeroTrace.WriteError("JoinCenter", "zero center can`t connection.");
+                ZeroTrace.WriteError("JoinCenter", "zero center can`t join.");
                 return false;
             }
 

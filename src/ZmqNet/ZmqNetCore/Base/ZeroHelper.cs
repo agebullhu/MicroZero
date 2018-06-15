@@ -26,24 +26,23 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static ZeroResultData<string> QuietSend(this ZSocket socket, byte[] desicription, params string[] args)
         {
-            var frames = new ZMessage
-            {
-                new ZFrame(desicription)
-            };
+            var message = new ZMessage();
+            var frame = new ZFrame(desicription);
+            message.Add(frame);
             if (args != null)
             {
                 foreach (var arg in args)
                 {
-                    frames.Add(new ZFrame((arg ?? "").ToUtf8Bytes()));
+                    message.Add(new ZFrame((arg ?? "").ToUtf8Bytes()));
                 }
             }
-            using (frames)
+            using (message)
             {
 
 
                 try
                 {
-                    if (!socket.SendTo(frames))
+                    if (!socket.SendTo(message))
                     {
                         return new ZeroResultData<string>
                         {
@@ -109,7 +108,7 @@ namespace Agebull.ZeroNet.Core
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException("SendTo",e, socket.Connects.LinkToString(','),
+                    ZeroTrace.WriteException("SendTo", e, socket.Connects.LinkToString(','),
                         $"Socket Ptr:{socket.SocketPtr}");
                     return new ZeroResultData<string>
                     {
@@ -244,7 +243,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Pub", e, socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
+                ZeroTrace.WriteException("Pub", e, socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
                 return false;
             }
         }
@@ -271,7 +270,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Sub",e, "Exception", socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
+                ZeroTrace.WriteException("Sub", e, socket.Connects.LinkToString(','), $"Socket Ptr:{socket.SocketPtr}");
                 item = null;
                 return false;
             }
@@ -316,7 +315,8 @@ namespace Agebull.ZeroNet.Core
 
                 item = new PublishItem
                 {
-                    Title = messages[0].ReadString()
+                    Title = messages[0].ReadString(),
+                    ZeroEvent = (ZeroNetEventType)description[1]
                 };
 
                 for (int idx = 2; idx < end; idx++)
@@ -382,8 +382,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), "Exception", $"Socket Ptr:{ socket.SocketPtr}.", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<string>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -432,7 +431,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive",e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<string>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -470,8 +469,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), "Exception", $"Socket Ptr:{ socket.SocketPtr}.", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), "Exception", $"Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -519,7 +517,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -557,8 +555,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), "Exception", $", Socket Ptr:{ socket.SocketPtr}.", e);
-                LogRecorder.Exception(e);
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), "Exception", $", Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,
@@ -582,7 +579,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteError("Receive",e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.Exception,

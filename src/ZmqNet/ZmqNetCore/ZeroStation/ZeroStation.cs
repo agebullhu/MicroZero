@@ -150,7 +150,7 @@ namespace Agebull.ZeroNet.Core
                 SystemManager.HeartJoin(Config.StationName, RealName);
                 //执行主任务
                 RunTaskCancel = new CancellationTokenSource();
-                Task.Factory.StartNew(Run, RunTaskCancel.Token);
+                Task.Factory.StartNew(Run);
             }
             _waitToken.Wait();
             return true;

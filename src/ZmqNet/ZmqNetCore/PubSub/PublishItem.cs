@@ -1,3 +1,4 @@
+using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -15,6 +16,13 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         [JsonProperty]
         public bool IsBadValue { get; set; }
+
+
+        /// <summary>
+        /// 带外事件
+        /// </summary>
+        [JsonIgnore]
+        public ZeroNetEventType ZeroEvent { get; set; }
 
         /// <summary>
         /// 全局ID

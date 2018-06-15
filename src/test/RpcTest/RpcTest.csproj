@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="AutoRegister.cs" />
     <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
@@ -47,5 +46,11 @@
     <ProjectReference Include="..\..\ZmqNet\Extend\Agebull.ZeroNet.Extend.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="http://json.schemastore.org/circleciconfig" /></VisualStudio></ProjectExtensions>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y" />
+  </Target>
 
 </Project>

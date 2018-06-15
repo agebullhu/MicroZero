@@ -20,6 +20,7 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public ApiCounterSubscribe()
         {
+            Name = "ApiCounter";
             StationName = "HealthCenter";
             Subscribe = "ApiCounter";
             IsRealModel = true;
@@ -37,8 +38,7 @@ namespace ZeroNet.Http.Route
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
-                ZeroTrace.WriteError("ApiCounter", args.Content);
+                ZeroTrace.WriteException("ApiCounter",e, args.Content);
             }
         }
         /// <summary>

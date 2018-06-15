@@ -38,8 +38,7 @@ namespace ZeroNet.Http.Route
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    ZeroTrace.WriteError("HealthCenter", args.Content);
+                    ZeroTrace.WriteException("HealthCenter",e, args.Content);
                 }
             }
             catch (Exception e)

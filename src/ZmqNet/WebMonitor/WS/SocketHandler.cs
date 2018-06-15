@@ -26,21 +26,23 @@ namespace WebMonitor
                 if (handler.socket.State != WebSocketState.Open)
                 {
                     Handlers.Remove(handler);
+                    continue;
                 }
-                else if (handler.Subscriber.Count == 0)
+
+                if (handler.Subscriber.Count == 0)
                 {
-                    handler.Send(toutgoing, outgoing);
+                    if (handler.Send(outgoing).Result)
+                        Handlers.Remove(handler);
+                    continue;
                 }
-                else
+
+                foreach (var sub in handler.Subscriber)
                 {
-                    foreach (var sub in handler.Subscriber)
-                    {
-                        if (sub == "" || sub.Length <= title.Length || title.Substring(0, sub.Length) == sub)
-                        {
-                            handler.Send(toutgoing, outgoing);
-                            break;
-                        }
-                    }
+                    if (sub != "" && sub.Length > title.Length && title.Substring(0, sub.Length) != sub)
+                        continue;
+                    if (!handler.Send(outgoing).Result)
+                        Handlers.Remove(handler);
+                    break;
                 }
             }
         }
@@ -56,13 +58,14 @@ namespace WebMonitor
 
         static WebNotify()
         {
-            SystemMonitor.StationEvent += SystemMonitor_StationEvent;
+            SystemMonitor.ZeroNetEvent += SystemMonitor_StationEvent;
         }
 
-        private static void SystemMonitor_StationEvent(object sender, SystemMonitor.StationEventArgument e)
+        private static void SystemMonitor_StationEvent(object sender, SystemMonitor.ZeroNetEventArgument e)
         {
-            if (e.EventName != "station_state")
+            if (e.Event != ZeroNetEventType.CenterStationState)
                 return;
+            e.EventConfig.CheckValue(e.NewConfig);
             Publish("config", JsonConvert.SerializeObject(e.EventConfig));
         }
 
@@ -70,7 +73,8 @@ namespace WebMonitor
         {
             this.socket = socket;
         }
-        async Task EchoLoop()
+
+        private async Task EchoLoop()
         {
             var buffer = new byte[BufferSize];
             var seg = new ArraySegment<byte>(buffer);
@@ -84,7 +88,7 @@ namespace WebMonitor
                         var incoming = await this.socket.ReceiveAsync(seg, CancellationToken.None);
                         if (!incoming.EndOfMessage)
                         {
-                            await this.socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, "内容太大", CancellationToken.None);
+                            await socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, "Message too big", CancellationToken.None);
                             break;
                         }
                         if (incoming.Count == 0)
@@ -95,7 +99,8 @@ namespace WebMonitor
                         TextReader reader = new StreamReader(mem);
                         value = reader.ReadToEnd();
                     }
-
+                    if (string.IsNullOrEmpty(value))
+                        continue;
                     string title = value.Length == 0 ? "" : value.Substring(1);
                     if (value[0] == '+')
                     {
@@ -116,20 +121,29 @@ namespace WebMonitor
                     break;
                 }
             }
-            Handlers.Remove(this);
         }
-        async void Send(ArraySegment<byte> title, ArraySegment<byte> array)
+       async Task<bool> Send(ArraySegment<byte> array)
         {
-            await this.socket.SendAsync(array, WebSocketMessageType.Text, true, CancellationToken.None);
+            try
+            {
+                await this.socket.SendAsync(array, WebSocketMessageType.Text, true, CancellationToken.None);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
-        static async Task Acceptor(HttpContext hc, Func<Task> n)
+
+        private static async Task Acceptor(HttpContext hc, Func<Task> n)
         {
             if (!hc.WebSockets.IsWebSocketRequest)
                 return;
             var socket = await hc.WebSockets.AcceptWebSocketAsync();
-            var h = new WebNotify(socket);
-            Handlers.Add(h);
-            await h.EchoLoop();
+            var notify = new WebNotify(socket);
+            Handlers.Add(notify);
+            await notify.EchoLoop();
+            Handlers.Remove(notify);
         }
         /// <summary>  
         /// 路由绑定处理  
@@ -143,7 +157,7 @@ namespace WebMonitor
                 ReceiveBufferSize = 4096
             };
             app.UseWebSockets(option);
-            app.Use(WebNotify.Acceptor);
+            app.Use(Acceptor);
         }
     }
 }

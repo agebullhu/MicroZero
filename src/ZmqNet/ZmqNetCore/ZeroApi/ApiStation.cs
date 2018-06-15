@@ -195,7 +195,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
                 Prepare(item);
                 bool success;
-                using (MonitorStepScope.CreateScope("Do"))
+                using (MonitorScope.CreateScope("Do"))
                 {
                     success = ExecCommand(item);
                 }
@@ -338,6 +338,15 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 初始化
         /// </summary>
+        protected override void Initialize()
+        {
+            if (Name == null)
+                Name = StationName;
+        }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
         protected sealed override bool OnNofindConfig()
         {
             string type;
@@ -353,11 +362,11 @@ namespace Agebull.ZeroNet.ZeroApi
                     type = null;
                     break;
             }
-            ZeroTrace.WriteError(StationName, "No find,try install ...");
+            ZeroTrace.WriteInfo(StationName, "No find,try install ...");
             var result = SystemManager.CallCommand("install", type, StationName, StationName);
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
                 return false;
-            ZeroTrace.WriteError(StationName, "Is install ,try start it ...");
+            ZeroTrace.WriteInfo(StationName, "Is install ,try start it ...");
             result = SystemManager.CallCommand("start", StationName);
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
@@ -371,7 +380,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 return false;
             }
             Config.State = ZeroCenterState.Run;
-            ZeroTrace.WriteError(StationName, "successfully");
+            ZeroTrace.WriteInfo(StationName, "successfully");
             return true;
         }
 
@@ -391,9 +400,9 @@ namespace Agebull.ZeroNet.ZeroApi
                         max = 1;
                     _processSemaphore = new SemaphoreSlim(0, max);
                     for (int idx = 0; idx < max; idx++)
-                        Task.Factory.StartNew(RunSignle, token);
+                        Task.Factory.StartNew(RunSignle);
                     for (int idx = 0; idx < max; idx++)
-                        _processSemaphore.Wait(token);
+                        _processSemaphore.Wait();
                     break;
                 case SpeedLimitType.WaitCount:
                     RunWaite();
@@ -413,7 +422,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
             ApiCall(ref socket, (ApiCallItem)item);
         }
-
+         
         /// <summary>
         /// 具体执行
         /// </summary>

@@ -1,27 +1,30 @@
-ï»¿{
-  "server.urls": "http://*:6000",
-  "ASPNETCORE_ENVIRONMENT_": "Development",
-  "AppName": "WebMonitor",
+{
   "Zero": {
     "Global": {
-      /*ZeroCenterä¸»æœºIPåœ°å€*/
+      /*ZeroCenterÖ÷»úIPµØÖ·*/
       "ZeroAddress": "192.168.240.132",
-      /*ZeroCenterç›‘æµ‹ç«¯å£å·*/
+      /*ZeroCenter¼à²â¶Ë¿ÚºÅ*/
       "ZeroMonitorPort": 8001,
-      /*ZeroCenterç®¡ç†ç«¯å£å·*/
+      /*ZeroCenter¹ÜÀí¶Ë¿ÚºÅ*/
       "ZeroManagePort": 8000,
-      /*é™é€Ÿæ¨¡å¼ï¼ˆ0 å•çº¿ç¨‹ 1 æŒ‰çº¿ç¨‹æ•°é™åˆ¶ 2 æŒ‰ç­‰å¾…æ•°é™åˆ¶ï¼‰*/
+      /*ÏŞËÙÄ£Ê½£¨0 µ¥Ïß³Ì 1 °´Ïß³ÌÊıÏŞÖÆ 2 °´µÈ´ıÊıÏŞÖÆ£©*/
       "SpeedLimitModel": "ThreadCount",
-      /*æœ€å¤§ç­‰å¾…æ•°*/
+      /*×î´óµÈ´ıÊı*/
       "MaxWait": 512,
-      /*æœ€å¤§Taskä¸Cpuæ ¸å¿ƒæ•°çš„å€æ•°å…³ç³»*/
+      /*×î´óTaskÓëCpuºËĞÄÊıµÄ±¶Êı¹ØÏµ*/
       "TaskCpuMultiple": 1,
-      /*æœåŠ¡å™¨å”¯ä¸€æ ‡è¯†*/
+      /*·şÎñÆ÷Î¨Ò»±êÊ¶*/
       "ServiceKey": "77E6A88F"
     },
     "WebMonitor": {
       "StationName": "WebMonitor"
     }
+  },
+  "LogRecorder": {
+    /*ÊÇ·ñ¿ªÆô¸ú×ÙÈÕÖ¾*/
+    "monitor": false,
+    /*ÊÇ·ñ¿ªÆôSQLÓï¾äÈÕÖ¾*/
+    "sql": false
   },
   "Logging": {
     "IncludeScopes": false,

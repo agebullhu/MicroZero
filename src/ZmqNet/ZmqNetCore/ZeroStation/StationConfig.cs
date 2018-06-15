@@ -209,31 +209,33 @@ namespace Agebull.ZeroNet.Core
                     LastTps = TotalTps;
                     break;
                 default:
-                    var last = src.RequestOut - RequestOut;
-                    if (last >= 0)
-                    {
-                        LastQps = last;
-                        TotalQps += LastQps;
-                        AvgQps = TotalQps / Count;
-                        if (last > 0)
-                        {
-                            if (MaxQps < LastQps)
-                                MaxQps = LastQps;
-                            if (MinQps > LastQps)
-                                MinQps = LastQps;
-                        }
+                    TotalQps += src.RequestOut - RequestOut;
 
-                        LastTps = src.WorkerOut - WorkerOut;
-                        TotalTps += LastTps;
-                        AvgTps = TotalTps / Count;
-                        if (LastTps > 0)
-                        {
-                            if (MaxTps < LastTps)
-                                MaxTps = LastTps;
-                            if (MinTps > LastTps)
-                                MinTps = LastTps;
-                        }
+                    LastQps = (src.RequestOut - RequestOut) / 2;
+
+                    AvgQps = TotalQps / Count / 2;
+
+                    if (LastQps > 0)
+                    {
+                        if (MaxQps < LastQps)
+                            MaxQps = LastQps;
+                        if (MinQps > LastQps)
+                            MinQps = LastQps;
                     }
+
+                    LastTps = (src.WorkerOut - WorkerOut) / 2;
+                    TotalTps += src.WorkerOut - WorkerOut;
+
+                    AvgTps = TotalTps / Count / 2;
+
+                    if (LastTps > 0)
+                    {
+                        if (MaxTps < LastTps)
+                            MaxTps = LastTps;
+                        if (MinTps > LastTps)
+                            MinTps = LastTps;
+                    }
+
                     break;
             }
             Count += 1;

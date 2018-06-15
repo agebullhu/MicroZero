@@ -189,13 +189,14 @@ namespace Agebull.ZeroNet.Log
                 {
                     ZeroTrace.WriteError("RemoteLogRecorder", "No config");
                     State = StationState.ConfigError;
+                    ZeroApplication.OnObjectFailed(this);
                     return false;
                 }
                 RealName = ZeroIdentityHelper.CreateRealName(false, Config.ShortName ?? Config.StationName);
                 Identity = RealName.ToAsciiBytes();
                 RunTaskCancel = new CancellationTokenSource();
                 //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
-                Task.Factory.StartNew(RunWaite, RunTaskCancel.Token);
+                Task.Factory.StartNew(RunWaite);
             }
             return true;
         }
@@ -221,13 +222,6 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void OnRun()
         {
-            if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
-            {
-                ZeroTrace.WriteError("RemoteLogRecorder", "No config");
-                State = StationState.ConfigError;
-                ZeroApplication.OnObjectFailed(this);
-                return ;
-            }
             ZeroTrace.WriteInfo("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
             State = StationState.Run;
             ZeroApplication.OnObjectActive(this);

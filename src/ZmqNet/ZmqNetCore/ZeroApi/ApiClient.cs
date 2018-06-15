@@ -210,11 +210,11 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             }
             var socket = ZeroConnectionPool.GetSocket(Station, ApiContext.RequestContext.RequestId);
-            if (socket == null)
+            if (socket.Socket == null)
             {
                 ApiContext.Current.LastError = ErrorCode.NoReady;
                 _json = ZeroStatuValue.NoReadyJson;
-                State = ZeroOperatorStateType.LocalSendError;
+                State = ZeroOperatorStateType.NoReady;
                 return;
             }
             using (socket)
@@ -264,6 +264,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 State = ZeroOperatorStateType.LocalSendError;
                 return;
             }
+
             result = ReceiveString(socket.Socket);
             if (!result.InteractiveSuccess)
             {
