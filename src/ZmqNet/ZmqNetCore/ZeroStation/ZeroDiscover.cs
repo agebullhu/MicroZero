@@ -15,8 +15,9 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 主调用程序集
         /// </summary>
-        public Assembly Assembly;
+        public Assembly Assembly { get; set; }
 
+        public string StationName { get; set; }
         /// <summary>
         ///     Api方法的信息
         /// </summary>
@@ -72,8 +73,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             var station = new ApiStation
             {
-                Name = ZeroApplication.Config.StationName,
-                StationName = ZeroApplication.Config.StationName
+                Name = StationName,
+                StationName = StationName
             };
             foreach (var action in apiItems)
             {

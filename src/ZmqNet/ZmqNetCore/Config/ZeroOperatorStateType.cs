@@ -6,41 +6,54 @@ namespace Agebull.ZeroNet.Core
     public enum ZeroOperatorStateType : byte
     {
         /// <summary>
+        /// 未知状态
+        /// </summary>
+        None = 0x0,
+        /// <summary>
         /// 操作成功
         /// </summary>
-        Ok = 0,
+        Ok = 0x1,
         /// <summary>
         /// 计划执行
         /// </summary>
-        Plan = 1,
+        Plan = 0x2,
         /// <summary>
         /// 执行中
         /// </summary>
-        VoteRuning = 2,
+        Runing = 0x3,
         /// <summary>
-        /// 投票已退出
+        /// 告别
         /// </summary>
-        VoteBye = 3,
+        Bye = 0x4,
         /// <summary>
         /// 投票欢迎
         /// </summary>
-        VoteWecome = 4,
+        Wecome = 0x5,
         /// <summary>
         /// 投票已发送
         /// </summary>
-        VoteSend = 5,
+        VoteSend = 0x20,
+        /// <summary>
+        /// 投票告别
+        /// </summary>
+        VoteBye = 0x21,
         /// <summary>
         /// 投票等待执行
         /// </summary>
-        VoteWaiting = 6,
+        VoteWaiting = 0x22,
         /// <summary>
         /// 投票已开始
         /// </summary>
-        VoteStart = 7,
+        VoteStart = 0x23,
         /// <summary>
         /// 投票结束
         /// </summary>
-        VoteEnd = 8,
+        VoteEnd = 0x24,
+        /// <summary>
+        /// 投票关闭
+        /// </summary>
+        VoteClose = 0x25,
+
         /// <summary>
         /// 发生错误
         /// </summary>
@@ -52,11 +65,11 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 找不到站点
         /// </summary>
-        NoFind = 0x83,
+        NotFind = 0x83,
         /// <summary>
         /// 不支持的操作
         /// </summary>
-        NoSupport = 0x84,
+        NotSupport = 0x84,
         /// <summary>
         /// 参数校验失败
         /// </summary>
@@ -82,9 +95,21 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         InstallArgumentError = 0x8A,
         /// <summary>
+        /// 计划格式错误
+        /// </summary>
+        PlanArgumentError = 0x8B,
+        /// <summary>
+        /// 远端发送错误
+        /// </summary>
+        RemoteSendError = 0x8C,
+        /// <summary>
+        /// 远端接收错误
+        /// </summary>
+        RemoteRecvError = 0x8D,
+        /// <summary>
         /// 未准备好
         /// </summary>
-        NoReady = 0xF0,
+        LocalNoReady = 0xF0,
         /// <summary>
         /// 本地ZMQ发生错误
         /// </summary>
@@ -100,6 +125,6 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 发生异常
         /// </summary>
-        Exception = 0xFF
+        LocalException = 0xFF
     }
 }

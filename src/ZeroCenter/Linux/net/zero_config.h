@@ -285,10 +285,13 @@ namespace agebull
 					type_name_ = "VOTE";
 					break;
 				case STATION_TYPE_PUBLISH:
-					type_name_ = "PUBLISH";
+					type_name_ = "PUB";
 					break;
 				case  STATION_TYPE_DISPATCHER:
-					type_name_ = "DISPATCHER";
+					type_name_ = "DISP";
+					break;
+				case  STATION_TYPE_PLAN:
+					type_name_ = "PLAN";
 					break;
 				default:
 					type_name_ = "ERR";
@@ -386,9 +389,20 @@ namespace agebull
 			/**
 			* \brief 日志
 			*/
-			void error(const char* title, const char* msg) const
+			void error(const char* title, const char* msg, bool works = false) const
 			{
-				log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
+				if (works)
+					log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+				else
+					log_error3("[%s] > %s > %s", station_name_.c_str(), title, msg)
+			}
+
+			/**
+			* \brief 日志
+			*/
+			void error(const char* title, const int64 id) const
+			{
+				log_error3("[%s] > %s > %lld", station_name_.c_str(), title, id);
 			}
 		};
 	}

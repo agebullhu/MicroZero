@@ -8,132 +8,167 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
-    /// 站点配置
+    ///     站点配置
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
+    [DataContract]
+    [Serializable]
     public class StationConfig : SimpleConfig, IApiResultData
     {
         /// <summary>
-        /// 站点名称
+        ///     站点名称
         /// </summary>
-        [DataMember, JsonProperty("station_name")]
-        public string StationName { get => _name; set => _name = value; }
+        [DataMember]
+        [JsonProperty("station_name")]
+        public string StationName
+        {
+            get => _name;
+            set => _name = value;
+        }
+
         /// <summary>
-        /// 站点名称
+        ///     站点名称
         /// </summary>
-        [DataMember, JsonProperty("short_name")]
+        [DataMember]
+        [JsonProperty("short_name")]
         public string ShortName { get; set; }
+
         /// <summary>
-        /// 站点别名
+        ///     站点别名
         /// </summary>
-        [DataMember, JsonProperty("station_alias")]
+        [DataMember]
+        [JsonProperty("station_alias")]
         public List<string> StationAlias { get; set; }
+
         /// <summary>
-        /// 站点类型
+        ///     站点类型
         /// </summary>
-        [DataMember, JsonProperty("station_type")]
+        [DataMember]
+        [JsonProperty("station_type")]
         public int StationType { get; set; }
+
         /// <summary>
-        /// 入站端口
+        ///     入站端口
         /// </summary>
-        [DataMember, JsonProperty("request_port")]
+        [DataMember]
+        [JsonProperty("request_port")]
         public int RequestPort { get; set; }
 
         /// <summary>
-        /// 入站地址
+        ///     入站地址
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public string RequestAddress => ZeroIdentityHelper.GetRequestAddress(StationName, RequestPort);
 
         /// <summary>
-        /// 入站端口
+        ///     入站端口
         /// </summary>
-        [DataMember, JsonProperty("worker_out_port")]
+        [DataMember]
+        [JsonProperty("worker_out_port")]
         public int WorkerCallPort { get; set; }
 
         /// <summary>
-        /// 入站端口
+        ///     入站端口
         /// </summary>
-        [DataMember, JsonProperty("worker_in_port")]
+        [DataMember]
+        [JsonProperty("worker_in_port")]
         public int WorkerResultPort { get; set; }
 
         /// <summary>
-        /// 出站地址
+        ///     出站地址
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public string WorkerResultAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerResultPort);
+
         /// <summary>
-        /// 出站地址
+        ///     出站地址
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public string WorkerCallAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerCallPort);
 
         /// <summary>
-        /// 出站地址
+        ///     出站地址
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public string SubAddress => ZeroIdentityHelper.GetSubscriberAddress(StationName, WorkerCallPort);
 
         /// <summary>
-        /// 请求入
+        ///     请求入
         /// </summary>
-        [DataMember, JsonProperty("request_in")]
+        [DataMember]
+        [JsonProperty("request_in")]
         public long RequestIn { get; set; }
+
         /// <summary>
-        /// 请求出
+        ///     请求出
         /// </summary>
-        [DataMember, JsonProperty("request_out")]
+        [DataMember]
+        [JsonProperty("request_out")]
         public long RequestOut { get; set; }
+
         /// <summary>
-        /// 请求错误
+        ///     请求错误
         /// </summary>
-        [DataMember, JsonProperty("request_err")]
+        [DataMember]
+        [JsonProperty("request_err")]
         public long RequestErr { get; set; }
 
         /// <summary>
-        /// 调用回
+        ///     调用回
         /// </summary>
-        [DataMember, JsonProperty("worker_in")]
+        [DataMember]
+        [JsonProperty("worker_in")]
         public long WorkerIn { get; set; }
+
         /// <summary>
-        /// 调用出
+        ///     调用出
         /// </summary>
-        [DataMember, JsonProperty("worker_out")]
+        [DataMember]
+        [JsonProperty("worker_out")]
         public long WorkerOut { get; set; }
+
         /// <summary>
-        /// 调用错
+        ///     调用错
         /// </summary>
-        [DataMember, JsonProperty("worker_err")]
+        [DataMember]
+        [JsonProperty("worker_err")]
         public long WorkerErr { get; set; }
 
         /// <summary>
         ///     运行状态
         /// </summary>
-        [DataMember, JsonProperty("station_state")]
+        [DataMember]
+        [JsonProperty("station_state")]
         public ZeroCenterState State { get; set; }
 
         /// <summary>
-        /// 状态
+        ///     状态
         /// </summary>
-        [DataMember, JsonProperty("state")]
-        public string _ => State.ToString();
+        [DataMember]
+        [JsonProperty("state")] public string _ => State.ToString();
 
         /// <summary>
-        /// 状态
+        ///     状态
         /// </summary>
-        [DataMember, JsonProperty("workers")]
-        public List<ZeroWorker> Workers { get; set; }
+        [DataMember]
+        [JsonProperty("workers")] public List<ZeroWorker> Workers { get; set; }
 
         /// <summary>
-        /// 状态
+        ///     状态
         /// </summary>
-        [DataMember, JsonProperty("worker_count")]
+        [DataMember]
+        [JsonProperty("worker_count")]
         public int WorkersCount => Workers?.Count ?? 0;
 
         /// <summary>
-        /// 站点类型
+        ///     站点类型
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public string TypeName
         {
             get
@@ -153,8 +188,9 @@ namespace Agebull.ZeroNet.Core
                 }
             }
         }
+
         /// <summary>
-        /// 复制
+        ///     复制
         /// </summary>
         /// <param name="src"></param>
         public void Copy(StationConfig src)
@@ -177,9 +213,8 @@ namespace Agebull.ZeroNet.Core
 
         #region 性能统计
 
-
         /// <summary>
-        /// 设置计数值
+        ///     设置计数值
         /// </summary>
         public void CheckValue(StationConfig src)
         {
@@ -238,6 +273,7 @@ namespace Agebull.ZeroNet.Core
 
                     break;
             }
+
             Count += 1;
             State = src.State;
             RequestIn = src.RequestIn;
@@ -250,131 +286,82 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        /// 心跳数（即秒数）
+        ///     心跳数（即秒数）
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public int Count { get; set; }
 
         /// <summary>
-        /// 总数
+        ///     总数
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long TotalQps { get; set; }
 
         /// <summary>
-        /// 总数
+        ///     总数
         /// </summary>
-        [DataMember, JsonProperty]
-
+        [DataMember]
+        [JsonProperty]
         public long TotalTps { get; set; }
 
         /// <summary>
-        /// 平均
+        ///     平均
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long AvgQps { get; set; }
 
         /// <summary>
-        /// 平均
+        ///     平均
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long AvgTps { get; set; }
 
         /// <summary>
-        /// 最后
+        ///     最后
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long LastTps { get; set; }
 
         /// <summary>
-        /// 最后
+        ///     最后
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long LastQps { get; set; }
 
         /// <summary>
-        /// 最大
+        ///     最大
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long MaxTps { get; set; }
 
         /// <summary>
-        /// 最大
+        ///     最大
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long MaxQps { get; set; }
 
         /// <summary>
-        /// 最小
+        ///     最小
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long MinTps { get; set; }
 
         /// <summary>
-        /// 最小
+        ///     最小
         /// </summary>
-        [DataMember, JsonProperty]
+        [DataMember]
+        [JsonProperty]
         public long MinQps { get; set; }
 
         #endregion
-    }
-
-
-    /// <summary>
-    /// 工作对象
-    /// </summary>
-    [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
-    public class ZeroWorker
-    {
-        /// <summary>
-        ///  实名
-        /// </summary>
-        [DataMember, JsonProperty("real_name")]
-        public string RealName { get; set; }
-
-        /// <summary>
-        ///  上报的IP地址
-        /// </summary>
-        [DataMember, JsonProperty("ip_address")]
-        public string IpAddress { get; set; }
-
-        /// <summary>
-        ///  上次心跳的时间
-        /// </summary>
-        [DataMember, JsonProperty("pre_time")] public string pre_time;
-
-        /// <summary>
-        ///  健康等级
-        /// </summary>
-        [DataMember, JsonProperty("level")]
-        public int Level { get; set; }
-
-        /// <summary>
-        ///  状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
-        /// </summary>
-        [DataMember, JsonProperty("state")]
-        public int State { get; set; }
-
-        /// <summary>
-        ///  状态
-        /// </summary>
-        [DataMember, JsonProperty("state_text")]
-        public string StateText
-        {
-            get
-            {
-                switch (State)
-                {
-                    case 0:
-                        return "Prepare";
-                    case 1:
-                        return "Ready";
-                    case 2:
-                        return "Left";
-                    default:
-                        return "Lost";
-                }
-            }
-        }
     }
 }

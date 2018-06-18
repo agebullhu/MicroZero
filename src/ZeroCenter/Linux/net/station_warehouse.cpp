@@ -61,10 +61,9 @@ namespace agebull
 		*/
 		bool station_warehouse::initialize()
 		{
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-			trans_redis& redis = trans_redis::get_context();
+			redis_live_scope redis(REDIS_DB_ZERO_STATION);
 			acl::string val;
-			if (redis.get(port_redis_key, val) && atol(val.c_str()) >= json_config::base_tcp_port)
+			if (redis->get(port_redis_key, val) && atol(val.c_str()) >= json_config::base_tcp_port)
 			{
 				int cursor = 0;
 				do
@@ -85,8 +84,9 @@ namespace agebull
 			}
 			else
 			{
-				redis.set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
+				redis->set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
 				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
+				install("PlanDispatcher", STATION_TYPE_PLAN, "plan");
 				install("RemoteLog", STATION_TYPE_PUBLISH, "log");
 				install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
 			}
@@ -100,8 +100,7 @@ namespace agebull
 		{
 			glogal_id_ = 0LL;
 			{
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis& redis = trans_redis::get_context();
+				redis_live_scope redis(REDIS_DB_ZERO_STATION);
 				redis->flushdb();
 			}
 			{
@@ -152,7 +151,7 @@ namespace agebull
 			const auto iter = configs_.find(stattion);
 			if (iter == configs_.end())
 			{
-				return ZERO_STATUS_NO_FIND_ID;
+				return ZERO_STATUS_NOT_FIND_ID;
 			}
 			json = iter->second->to_json(2).c_str();
 			return ZERO_STATUS_OK_ID;
@@ -172,8 +171,8 @@ namespace agebull
 					return *config;
 				boost::format fmt("net:host:%1%");
 				fmt % config->station_name_;
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis::get_context()->set(fmt.str().c_str(), config->to_json(2));
+				redis_live_scope redis(REDIS_DB_ZERO_STATION);
+				redis->set(fmt.str().c_str(), config->to_json(2));
 				return *config;
 			}
 			config.swap(iter->second);
@@ -186,8 +185,7 @@ namespace agebull
 		void station_warehouse::save_configs()
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-			trans_redis& redis = trans_redis::get_context();
+			redis_live_scope redis(REDIS_DB_ZERO_STATION);
 			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
@@ -212,8 +210,7 @@ namespace agebull
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-			trans_redis& redis = trans_redis::get_context();
+			redis_live_scope redis(REDIS_DB_ZERO_STATION);
 			acl::string json;
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
@@ -235,7 +232,7 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto& kv : configs_)
 			{
-				if (kv.second->station_type_ < STATION_TYPE_PUBLISH)
+				if (kv.second->station_type_ <= STATION_TYPE_DISPATCHER || kv.second->station_type_ > STATION_TYPE_SPECIAL)
 					continue;
 				if (restore(kv.second))
 					cnt++;
@@ -249,28 +246,24 @@ namespace agebull
 		*/
 		bool station_warehouse::uninstall(const string& station_name)
 		{
-			shared_ptr<zero_config> config;
+			shared_ptr<zero_config> config = get_config(station_name);
+			if (config->station_type_ <= STATION_TYPE_DISPATCHER || config->station_type_ >= STATION_TYPE_SPECIAL)
+				return false;
 			auto station = instance(station_name);
 			if (station != nullptr)
 			{
-				config = station->config_;
 				station->close(true);
 				station->config_->station_state_ = station_state::Uninstall;
-			}
-			else
-			{
-				config = get_config(station_name);
 			}
 			{
 				boost::lock_guard<boost::mutex> guard(config_mutex_);
 				configs_.erase(station_name);
 			}
 			{
-				redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-				trans_redis& redis = trans_redis::get_context();
+				redis_live_scope redis(REDIS_DB_ZERO_STATION);
 				char key[256];
 				sprintf(key, "net:host:%s", station_name.c_str());
-				redis.delete_from_redis(key);
+				redis->del(key);
 			}
 			zero_event_async(station_name, zero_net_event::event_station_uninstall, "");
 			return true;
@@ -287,8 +280,7 @@ namespace agebull
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
-			redis_live_scope redis_live_scope(REDIS_DB_ZERO_STATION);
-			trans_redis& redis = trans_redis::get_context();
+			redis_live_scope redis(REDIS_DB_ZERO_STATION);
 			acl::string json;
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
@@ -314,6 +306,7 @@ namespace agebull
 			redis->set(key.c_str(), json);
 			insert_config(config, false);
 			zero_event_async(station_name, zero_net_event::event_station_install, json.c_str());
+			config->check_type_name();
 			return true;
 		}
 

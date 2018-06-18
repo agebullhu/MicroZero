@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -40,7 +39,7 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
 
             socket.SetOption(ZSocketOption.LINGER, 200);
-            socket.SetOption(ZSocketOption.RCVTIMEO, 500);
+            socket.SetOption(ZSocketOption.RCVTIMEO, 1000);
 
             socket.SetOption(ZSocketOption.BACKLOG, 100);
             socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
@@ -56,7 +55,7 @@ namespace ZeroMQ
             }
             else
             {
-                socket.SetOption(ZSocketOption.SNDTIMEO, 500);
+                socket.SetOption(ZSocketOption.SNDTIMEO, 1000);
                 //socket.SetOption(ZSocketOption.SNDHWM, 4096);
             }
 
@@ -182,139 +181,86 @@ namespace ZeroMQ
 
         #region MySend
 
-        public bool SendTo(ZMessage message)
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <param name="autoDispose">发送完成后是否自动销毁message对象</param>
+        /// <returns>是否发送成功</returns>
+        public bool SendTo(ZMessage message, bool autoDispose = true)
         {
+            _error = null;
             var array = message.ToArray();
             int i = 0;
+            bool first = true;
+            int retry = 5;
             for (; i < array.Length - 1; ++i)
             {
-                zmq.msg_send(array[i].Ptr, SocketPtr, 2);
+                if (!Send(array[i], first, 2, ref retry))
+                {
+                    if (autoDispose)
+                        message.Dispose();
+                    return false;
+                }
+                first = false;
             }
-            return zmq.msg_send(array[i].Ptr, SocketPtr, 1) != -1;
+            bool success = Send(array[i], first, 1, ref retry);
+            if (autoDispose)
+                message.Dispose();
+            return success;
         }
 
+        private bool Send(ZFrame frame, bool first, int flags, ref int retry)
+        {
+            while (zmq.msg_send(frame.Ptr, SocketPtr, flags) == -1)
+            {
+                _error = ZError.GetLastErr();
+                if (first || !Equals(_error, ZError.EAGAIN) || retry <= 0)
+                    return false;
+                --retry;
+            }
+            return true;
+        }
+        /// <summary>
+        /// 接收数据
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
         public bool Recv(out ZMessage message, int flags = 0)
         {
-            //flags |= 2;
             message = new ZMessage();
-            bool more = false;
+            bool more;
+            bool first = true;
+            int retry = 5;
             do
             {
+                _error = null;
                 var frame = ZFrame.CreateEmpty();
-
-                if (zmq.msg_recv(frame.Ptr, SocketPtr, flags) == -1)
+                while (zmq.msg_recv(frame.Ptr, SocketPtr, flags) == -1)
                 {
                     _error = ZError.GetLastErr();
-
-                    //if (Equals(_error, ZError.EAGAIN) && retry > 0)
-                    //{
-                    //    --retry;
-                    //    _error = default(ZError);
-                    //    more = false;
-                    //    continue;
-                    //}
+                    if (!first && Equals(_error, ZError.EAGAIN) && retry > 0)
+                    {
+                        --retry;
+                        more = true;
+                        continue;
+                    }
                     frame.Close();
                     return false;
                 }
                 message.Add(frame);
-
+                first = false;
                 more = ReceiveMore;
+                //retry = 0;
             } while (more);
 
             return true;
         }
         #endregion
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
-        // From options.hpp: unsigned char identity [256];
-        private const int MaxBinaryOptionSize = 256;
 
-        public const int BinaryKeySize = 32;
+        #region Option
 
-
-        /// <summary>
-        ///     已绑定地址
-        /// </summary>
-        public List<string> Binds = new List<string>();
-
-        /// <summary>
-        ///     已连接对象
-        /// </summary>
-        public List<string> Connects = new List<string>();
-
-
-        private ZError _error;
-
-        /// <summary>
-        ///     Create a <see cref="ZSocket" /> instance.
-        ///     You are using ZContext.Current!
-        /// </summary>
-        /// <returns>
-        ///     <see cref="ZSocket" />
-        /// </returns>
-        public ZSocket(ZSocketType socketType) : this(ZContext.Current, socketType)
-        {
-        }
-
-        /// <summary>
-        ///     Create a <see cref="ZSocket" /> instance.
-        /// </summary>
-        /// <returns>
-        ///     <see cref="ZSocket" />
-        /// </returns>
-        public ZSocket(ZContext context, ZSocketType socketType)
-        {
-            Context = context;
-            SocketType = socketType;
-
-            if (!Initialize(out _error)) throw new ZException(_error);
-        }
-
-        /// <summary>
-        ///     Create a <see cref="ZSocket" /> instance.
-        /// </summary>
-        /// <returns>
-        ///     <see cref="ZSocket" />
-        /// </returns>
-        public ZSocket(ZContext context, ZSocketType socketType, out ZError error)
-        {
-            Context = context;
-            SocketType = socketType;
-
-            Initialize(out error);
-        }
-
-
-        protected ZSocket()
-        {
-        }
-
-        /// <summary>
-        ///     是否为空
-        /// </summary>
-        public bool IsEmpty => SocketPtr == IntPtr.Zero;
-
-        public ZContext Context { get; private set; }
-
-        public IntPtr SocketPtr { get; private set; }
-
-        /// <summary>
-        ///     Gets the <see cref="ZeroMQ.ZSocketType" /> value for the current socket.
-        /// </summary>
-        public ZSocketType SocketType { get; private set; }
-
-        public ZError LastError => _error;
-
-        public ZError GetLastError()
-        {
-            return _error = ZError.GetLastErr();
-        }
-
-        /// <summary>
-        ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
-        /// </summary>
-        public bool ReceiveMore => GetOptionInt32(ZSocketOption.RCVMORE) == 1;
-
-        public string LastEndpoint => GetOptionString(ZSocketOption.LAST_ENDPOINT);
 
         /// <summary>
         ///     Gets or sets the I/O thread affinity for newly created connections on this socket.
@@ -669,6 +615,348 @@ namespace ZeroMQ
             get => GetOptionInt32(ZSocketOption.IPV4_ONLY) == 1;
             set => SetOption(ZSocketOption.IPV4_ONLY, value ? 1 : 0);
         }
+
+        private bool GetOption(ZSocketOption option, IntPtr optionValue, ref int optionLength)
+        {
+            //EnsureNotDisposed();
+
+            using (var optionLengthP = DispoIntPtr.Alloc(IntPtr.Size))
+            {
+                if (IntPtr.Size == 4)
+                    Marshal.WriteInt32(optionLengthP.Ptr, optionLength);
+                else if (IntPtr.Size == 8)
+                    Marshal.WriteInt64(optionLengthP.Ptr, optionLength);
+                else
+                    throw new PlatformNotSupportedException();
+
+
+                while (zmq.getsockopt(SocketPtr, (int)option, optionValue, optionLengthP.Ptr) == -1)
+                {
+                    _error = ZError.GetLastErr();
+
+                    if (Equals(_error, ZError.EINTR))
+                    {
+                        _error = default(ZError);
+                        continue;
+                    }
+
+                    throw new ZException(_error);
+                }
+
+                if (IntPtr.Size == 4)
+                    optionLength = Marshal.ReadInt32(optionLengthP.Ptr);
+                else if (IntPtr.Size == 8)
+                    optionLength = (int)Marshal.ReadInt64(optionLengthP.Ptr);
+                else
+                    throw new PlatformNotSupportedException();
+            }
+
+            return true;
+        }
+
+        public bool GetOption(ZSocketOption option, out byte[] value, int size)
+        {
+            value = null;
+
+            var optionLength = size;
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                if (GetOption(option, optionValue, ref optionLength))
+                {
+                    value = new byte[optionLength];
+                    Marshal.Copy(optionValue, value, 0, optionLength);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public byte[] GetOptionBytes(ZSocketOption option, int size = MaxBinaryOptionSize)
+        {
+            byte[] result;
+            if (GetOption(option, out result, size)) return result;
+            return null;
+        }
+
+        public bool GetOption(ZSocketOption option, out string value)
+        {
+            value = null;
+
+            var optionLength = MaxBinaryOptionSize;
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                if (GetOption(option, optionValue, ref optionLength))
+                {
+                    value = Marshal.PtrToStringAnsi(optionValue, optionLength);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public string GetOptionString(ZSocketOption option)
+        {
+            string result;
+            if (GetOption(option, out result)) return result;
+            return null;
+        }
+
+        public bool GetOption(ZSocketOption option, out int value)
+        {
+            value = default(int);
+
+            var optionLength = Marshal.SizeOf(typeof(int));
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                if (GetOption(option, optionValue.Ptr, ref optionLength))
+                {
+                    value = Marshal.ReadInt32(optionValue.Ptr);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public int GetOptionInt32(ZSocketOption option)
+        {
+            int result;
+            if (GetOption(option, out result)) return result;
+            return default(int);
+        }
+
+        public bool GetOption(ZSocketOption option, out uint value)
+        {
+            int resultValue;
+            var result = GetOption(option, out resultValue);
+            value = (uint)resultValue;
+            return result;
+        }
+
+        public uint GetOptionUInt32(ZSocketOption option)
+        {
+            uint result;
+            if (GetOption(option, out result)) return result;
+            return default(uint);
+        }
+
+        public bool GetOption(ZSocketOption option, out long value)
+        {
+            value = default(long);
+
+            var optionLength = Marshal.SizeOf(typeof(long));
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                if (GetOption(option, optionValue.Ptr, ref optionLength))
+                {
+                    value = Marshal.ReadInt64(optionValue);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public long GetOptionInt64(ZSocketOption option)
+        {
+            long result;
+            if (GetOption(option, out result)) return result;
+            return default(long);
+        }
+
+        public bool GetOption(ZSocketOption option, out ulong value)
+        {
+            long resultValue;
+            var result = GetOption(option, out resultValue);
+            value = (ulong)resultValue;
+            return result;
+        }
+
+        public ulong GetOptionUInt64(ZSocketOption option)
+        {
+            ulong result;
+            if (GetOption(option, out result)) return result;
+            return default(ulong);
+        }
+
+
+        private bool SetOption(ZSocketOption option, IntPtr optionValue, int optionLength)
+        {
+            //EnsureNotDisposed();
+
+
+            while (-1 == zmq.setsockopt(SocketPtr, (int)option, optionValue, optionLength))
+            {
+                _error = ZError.GetLastErr();
+
+                if (!Equals(_error, ZError.EINTR)) return false;
+                _error = default(ZError);
+            }
+
+            return true;
+        }
+
+        public bool SetOptionNull(ZSocketOption option)
+        {
+            return SetOption(option, IntPtr.Zero, 0);
+        }
+
+        public bool SetOption(ZSocketOption option, byte[] value)
+        {
+            if (value == null) return SetOptionNull(option);
+
+            var optionLength = /* Marshal.SizeOf(typeof(byte)) * */ value.Length;
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                Marshal.Copy(value, 0, optionValue.Ptr, optionLength);
+
+                return SetOption(option, optionValue.Ptr, optionLength);
+            }
+        }
+
+        public bool SetOption(ZSocketOption option, string value)
+        {
+            if (value == null) return SetOptionNull(option);
+
+            int optionLength;
+            using (var optionValue = DispoIntPtr.AllocString(value, out optionLength))
+            {
+                return SetOption(option, optionValue, optionLength);
+            }
+        }
+
+        public bool SetOption(ZSocketOption option, int value)
+        {
+            var optionLength = Marshal.SizeOf(typeof(int));
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                Marshal.WriteInt32(optionValue, value);
+
+                return SetOption(option, optionValue.Ptr, optionLength);
+            }
+        }
+
+        public bool SetOption(ZSocketOption option, uint value)
+        {
+            return SetOption(option, (int)value);
+        }
+
+        public bool SetOption(ZSocketOption option, long value)
+        {
+            var optionLength = Marshal.SizeOf(typeof(long));
+            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            {
+                Marshal.WriteInt64(optionValue, value);
+
+                return SetOption(option, optionValue.Ptr, optionLength);
+            }
+        }
+
+        public bool SetOption(ZSocketOption option, ulong value)
+        {
+            return SetOption(option, (long)value);
+        }
+        #endregion
+
+        #region 状态
+
+
+        /// <summary>
+        ///     已绑定地址
+        /// </summary>
+        public List<string> Binds = new List<string>();
+
+        /// <summary>
+        ///     已连接对象
+        /// </summary>
+        public List<string> Connects = new List<string>();
+
+
+        private ZError _error;
+
+        public ZError LastError => _error;
+
+        public ZError GetLastError()
+        {
+            return _error = ZError.GetLastErr();
+        }
+        #endregion
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        // From options.hpp: unsigned char identity [256];
+        private const int MaxBinaryOptionSize = 256;
+
+        public const int BinaryKeySize = 32;
+
+
+
+        /// <summary>
+        ///     Create a <see cref="ZSocket" /> instance.
+        ///     You are using ZContext.Current!
+        /// </summary>
+        /// <returns>
+        ///     <see cref="ZSocket" />
+        /// </returns>
+        public ZSocket(ZSocketType socketType) : this(ZContext.Current, socketType)
+        {
+        }
+
+        /// <summary>
+        ///     Create a <see cref="ZSocket" /> instance.
+        /// </summary>
+        /// <returns>
+        ///     <see cref="ZSocket" />
+        /// </returns>
+        public ZSocket(ZContext context, ZSocketType socketType)
+        {
+            Context = context;
+            SocketType = socketType;
+
+            if (!Initialize(out _error)) throw new ZException(_error);
+        }
+
+        /// <summary>
+        ///     Create a <see cref="ZSocket" /> instance.
+        /// </summary>
+        /// <returns>
+        ///     <see cref="ZSocket" />
+        /// </returns>
+        public ZSocket(ZContext context, ZSocketType socketType, out ZError error)
+        {
+            Context = context;
+            SocketType = socketType;
+
+            Initialize(out error);
+        }
+
+
+        protected ZSocket()
+        {
+        }
+
+        /// <summary>
+        ///     是否为空
+        /// </summary>
+        public bool IsEmpty => SocketPtr == IntPtr.Zero;
+
+        public ZContext Context { get; private set; }
+
+        public IntPtr SocketPtr { get; private set; }
+
+        /// <summary>
+        ///     Gets the <see cref="ZeroMQ.ZSocketType" /> value for the current socket.
+        /// </summary>
+        public ZSocketType SocketType { get; private set; }
+
+
+        /// <summary>
+        ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
+        /// </summary>
+        public bool ReceiveMore => GetOptionInt32(ZSocketOption.RCVMORE) == 1;
+
+        public string LastEndpoint => GetOptionString(ZSocketOption.LAST_ENDPOINT);
+
 
 
         /// <summary>
@@ -1452,248 +1740,6 @@ namespace ZeroMQ
             return true;
         }
 
-        private bool GetOption(ZSocketOption option, IntPtr optionValue, ref int optionLength)
-        {
-            //EnsureNotDisposed();
-
-            using (var optionLengthP = DispoIntPtr.Alloc(IntPtr.Size))
-            {
-                if (IntPtr.Size == 4)
-                    Marshal.WriteInt32(optionLengthP.Ptr, optionLength);
-                else if (IntPtr.Size == 8)
-                    Marshal.WriteInt64(optionLengthP.Ptr, optionLength);
-                else
-                    throw new PlatformNotSupportedException();
-
-
-                while (-1 == zmq.getsockopt(SocketPtr, (int)option, optionValue, optionLengthP.Ptr))
-                {
-                    _error = ZError.GetLastErr();
-
-                    if (Equals(_error, ZError.EINTR))
-                    {
-                        _error = default(ZError);
-                        continue;
-                    }
-
-                    throw new ZException(_error);
-                }
-
-                if (IntPtr.Size == 4)
-                    optionLength = Marshal.ReadInt32(optionLengthP.Ptr);
-                else if (IntPtr.Size == 8)
-                    optionLength = (int)Marshal.ReadInt64(optionLengthP.Ptr);
-                else
-                    throw new PlatformNotSupportedException();
-            }
-
-            return true;
-        }
-
-        public bool GetOption(ZSocketOption option, out byte[] value, int size)
-        {
-            value = null;
-
-            var optionLength = size;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                if (GetOption(option, optionValue, ref optionLength))
-                {
-                    value = new byte[optionLength];
-                    Marshal.Copy(optionValue, value, 0, optionLength);
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        public byte[] GetOptionBytes(ZSocketOption option, int size = MaxBinaryOptionSize)
-        {
-            byte[] result;
-            if (GetOption(option, out result, size)) return result;
-            return null;
-        }
-
-        public bool GetOption(ZSocketOption option, out string value)
-        {
-            value = null;
-
-            var optionLength = MaxBinaryOptionSize;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                if (GetOption(option, optionValue, ref optionLength))
-                {
-                    value = Marshal.PtrToStringAnsi(optionValue, optionLength);
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        public string GetOptionString(ZSocketOption option)
-        {
-            string result;
-            if (GetOption(option, out result)) return result;
-            return null;
-        }
-
-        public bool GetOption(ZSocketOption option, out int value)
-        {
-            value = default(int);
-
-            var optionLength = Marshal.SizeOf(typeof(int));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                if (GetOption(option, optionValue.Ptr, ref optionLength))
-                {
-                    value = Marshal.ReadInt32(optionValue.Ptr);
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        public int GetOptionInt32(ZSocketOption option)
-        {
-            int result;
-            if (GetOption(option, out result)) return result;
-            return default(int);
-        }
-
-        public bool GetOption(ZSocketOption option, out uint value)
-        {
-            int resultValue;
-            var result = GetOption(option, out resultValue);
-            value = (uint)resultValue;
-            return result;
-        }
-
-        public uint GetOptionUInt32(ZSocketOption option)
-        {
-            uint result;
-            if (GetOption(option, out result)) return result;
-            return default(uint);
-        }
-
-        public bool GetOption(ZSocketOption option, out long value)
-        {
-            value = default(long);
-
-            var optionLength = Marshal.SizeOf(typeof(long));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                if (GetOption(option, optionValue.Ptr, ref optionLength))
-                {
-                    value = Marshal.ReadInt64(optionValue);
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        public long GetOptionInt64(ZSocketOption option)
-        {
-            long result;
-            if (GetOption(option, out result)) return result;
-            return default(long);
-        }
-
-        public bool GetOption(ZSocketOption option, out ulong value)
-        {
-            long resultValue;
-            var result = GetOption(option, out resultValue);
-            value = (ulong)resultValue;
-            return result;
-        }
-
-        public ulong GetOptionUInt64(ZSocketOption option)
-        {
-            ulong result;
-            if (GetOption(option, out result)) return result;
-            return default(ulong);
-        }
-
-
-        private bool SetOption(ZSocketOption option, IntPtr optionValue, int optionLength)
-        {
-            //EnsureNotDisposed();
-
-
-            while (-1 == zmq.setsockopt(SocketPtr, (int)option, optionValue, optionLength))
-            {
-                _error = ZError.GetLastErr();
-
-                if (!Equals(_error, ZError.EINTR)) return false;
-                _error = default(ZError);
-            }
-
-            return true;
-        }
-
-        public bool SetOptionNull(ZSocketOption option)
-        {
-            return SetOption(option, IntPtr.Zero, 0);
-        }
-
-        public bool SetOption(ZSocketOption option, byte[] value)
-        {
-            if (value == null) return SetOptionNull(option);
-
-            var optionLength = /* Marshal.SizeOf(typeof(byte)) * */ value.Length;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                Marshal.Copy(value, 0, optionValue.Ptr, optionLength);
-
-                return SetOption(option, optionValue.Ptr, optionLength);
-            }
-        }
-
-        public bool SetOption(ZSocketOption option, string value)
-        {
-            if (value == null) return SetOptionNull(option);
-
-            int optionLength;
-            using (var optionValue = DispoIntPtr.AllocString(value, out optionLength))
-            {
-                return SetOption(option, optionValue, optionLength);
-            }
-        }
-
-        public bool SetOption(ZSocketOption option, int value)
-        {
-            var optionLength = Marshal.SizeOf(typeof(int));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                Marshal.WriteInt32(optionValue, value);
-
-                return SetOption(option, optionValue.Ptr, optionLength);
-            }
-        }
-
-        public bool SetOption(ZSocketOption option, uint value)
-        {
-            return SetOption(option, (int)value);
-        }
-
-        public bool SetOption(ZSocketOption option, long value)
-        {
-            var optionLength = Marshal.SizeOf(typeof(long));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
-            {
-                Marshal.WriteInt64(optionValue, value);
-
-                return SetOption(option, optionValue.Ptr, optionLength);
-            }
-        }
-
-        public bool SetOption(ZSocketOption option, ulong value)
-        {
-            return SetOption(option, (long)value);
-        }
 
         /// <summary>
         ///     Subscribe to all messages.

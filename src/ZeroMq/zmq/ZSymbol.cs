@@ -15,11 +15,10 @@
 	{
 		protected internal ZSymbol(int errno)
 		{
-			_num = errno;
+			Number = errno;
 		}
 
-		private int _num;
-		public int Number => _num;
+	    public int Number { get; }
 
 	    public string Name
         {
@@ -30,7 +29,7 @@
             }
         }
 
-        public string Text => Marshal.PtrToStringAnsi(zmq.strerror(_num));
+        public string Text => Marshal.PtrToStringAnsi(zmq.strerror(Number));
 
 	    private static void PickupConstantSymbols<T>(ref IDictionary<ZSymbol, string> symbols)
             where T : ZSymbol
@@ -92,7 +91,7 @@
 		public static IEnumerable<ZSymbol> Find(string ns, int num)
 		{
 			return _zsymbolToName
-				.Where(s => s.Value != null && (s.Value.StartsWith(ns) && s.Key._num == num)).Select(x => x.Key);
+				.Where(s => s.Value != null && (s.Value.StartsWith(ns) && s.Key.Number == num)).Select(x => x.Key);
 		}
 
 		public override bool Equals(object obj)
@@ -110,7 +109,7 @@
 	        var symbolA = a as ZSymbol;
 	        var symbolB = b as ZSymbol;
 
-	        return symbolA != null && symbolB != null && symbolA._num == symbolB._num;
+	        return symbolA != null && symbolB != null && symbolA.Number == symbolB.Number;
 	    }
 
 		public override int GetHashCode()
@@ -120,7 +119,7 @@
 
 		public override string ToString()
 		{
-			return Name + "(" + Number + "): " + Text;
+			return $"{Name}({Number}): {Text}";
 		}
 
 		public static implicit operator int(ZSymbol errnum)

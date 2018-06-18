@@ -3,20 +3,21 @@
 namespace agebull
 {
 	std::map<std::string, std::string> json_config::global_cfg_;
-	int json_config::base_tcp_port;
-	bool json_config::use_ipc_protocol;
-	char json_config::redis_addr[512];
-	int json_config::redis_defdb;
-	int json_config::worker_sound_ivl;
+	int json_config::base_tcp_port = 7999;
+	int json_config::plan_exec_timeout = 300;
+	bool json_config::use_ipc_protocol = false;
+	char json_config::redis_addr[512] = "127.0.0.1:6379";
+	int json_config::redis_defdb = 0x10;
+	int json_config::worker_sound_ivl = 2000;
 
 	int json_config::IMMEDIATE = 1;
 	int json_config::LINGER = -1;
 	int json_config::SNDHWM = -1;
 	int json_config::SNDBUF = -1;
-	int json_config::RCVTIMEO = -1;
+	int json_config::RCVTIMEO = 500;
 	int json_config::RCVHWM = -1;
 	int json_config::RCVBUF = -1;
-	int json_config::SNDTIMEO = -1;
+	int json_config::SNDTIMEO = 500;
 	int json_config::BACKLOG = -1;
 	int json_config::MAX_SOCKETS = -1;
 	int json_config::IO_THREADS = -1;
@@ -48,33 +49,28 @@ namespace agebull
 			acl_vstream_fclose(fp);
 			read(cfg.c_str(), global_cfg_);
 
-			IMMEDIATE = get_global_int("ZMQ_IMMEDIATE",-1);
-			LINGER = get_global_int("ZMQ_LINGER",-1);
-			RCVHWM = get_global_int("ZMQ_RCVHWM",-1);
-			RCVBUF = get_global_int("ZMQ_RCVBUF",-1);
-			RCVTIMEO = get_global_int("ZMQ_RCVTIMEO",-1);
-			SNDHWM = get_global_int("ZMQ_SNDHWM",-1);
-			SNDBUF = get_global_int("ZMQ_SNDBUF",-1);
-			SNDTIMEO = get_global_int("ZMQ_SNDTIMEO",-1);
-			BACKLOG = get_global_int("ZMQ_BACKLOG",-1);
-			MAX_SOCKETS = get_global_int("ZMQ_MAX_SOCKETS",-1);
-			IO_THREADS = get_global_int("ZMQ_IO_THREADS",-1);
-			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ",-1);
-		}
-		else
-		{
-			global_cfg_.insert(make_pair("base_tcp_port", "7999"));
-			global_cfg_.insert(make_pair("use_ipc_protocol", "false"));
-			global_cfg_.insert(make_pair("redis_addr", "127.0.0.1:6379"));
-			global_cfg_.insert(make_pair("redis_defdb", "15"));
-			global_cfg_.insert(make_pair("worker_sound_ivl", "1000"));
+			IMMEDIATE = get_global_int("ZMQ_IMMEDIATE", IMMEDIATE);
+			LINGER = get_global_int("ZMQ_LINGER", LINGER);
+			RCVHWM = get_global_int("ZMQ_RCVHWM", RCVHWM);
+			RCVBUF = get_global_int("ZMQ_RCVBUF", RCVBUF);
+			RCVTIMEO = get_global_int("ZMQ_RCVTIMEO", RCVTIMEO);
+			SNDHWM = get_global_int("ZMQ_SNDHWM", SNDHWM);
+			SNDBUF = get_global_int("ZMQ_SNDBUF", SNDBUF);
+			SNDTIMEO = get_global_int("ZMQ_SNDTIMEO", SNDTIMEO);
+			BACKLOG = get_global_int("ZMQ_BACKLOG", BACKLOG);
+			MAX_SOCKETS = get_global_int("ZMQ_MAX_SOCKETS", MAX_SOCKETS);
+			IO_THREADS = get_global_int("ZMQ_IO_THREADS", IO_THREADS);
+			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
 
+			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
+			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
+			use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
+			var addr = get_global_string("redis_addr");
+			if (addr.length() > 0)
+				strcpy(redis_addr, addr.c_str());
+			redis_defdb = get_global_int("redis_defdb", redis_defdb);
+			worker_sound_ivl = get_global_int("worker_sound_ivl", worker_sound_ivl);
 		}
-		base_tcp_port = get_global_int("base_tcp_port");
-		use_ipc_protocol = get_global_bool("use_ipc_protocol");
-		strcpy(redis_addr, get_global_string("redis_addr").c_str());
-		redis_defdb = get_global_int("redis_defdb");
-		worker_sound_ivl = get_global_int("worker_sound_ivl");
 	}
 	/**
 	* \brief 读取配置内容
@@ -118,7 +114,7 @@ namespace agebull
 	* \param def 缺省值
 	* \return 值
 	*/
-	int json_config::get_global_int(const char * name,int def)
+	int json_config::get_global_int(const char * name, int def)
 	{
 		auto vl = global_cfg_[name];
 		return vl.empty() ? def : atoi(vl.c_str());
@@ -165,18 +161,16 @@ namespace agebull
 
 	/**
 	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	* \param cnt 参数总数
-	* \param ... 第一个（0下标）为比较源，其它的为目标
+	* \param dests 目标
+	* \param src 比较源
 	* \return 目标的第一个算0，或小于0表示未找到
 	*/
-	int strmatch(int cnt, ...)
+	template<int N>
+	int strmatch(const char *src, const char* (&dests)[N])
 	{
-		va_list ap;
-		va_start(ap, cnt);
-		const char * src = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
-		for (int i = 1; i < cnt; i++)
+		for (int i = 1; i < N; i++)
 		{
-			const char * dest = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
+			const char * dest = dests[i];
 			int idx = 0;
 			for (; dest[idx] != 0 && src[idx] != 0; idx++)
 			{
@@ -188,26 +182,22 @@ namespace agebull
 			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
 				return i - 1;
 		}
-		va_end(ap);
 		return -1;
 	}
 
 
 	/**
 	* \brief 大小写不敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	* \param cnt 参数总数
-	* \param ... 第一个（0下标）为比较源，其它的为目标
+	* \param dests 目标
+	* \param src 比较源
 	* \return 目标的第一个算0，或小于0表示未找到
 	*/
-	int strmatchi(int cnt, ...)
+	template<int N>
+	int strmatchi(const char *src, const char* (&dests)[N])
 	{
-		va_list ap;
-		va_start(ap, cnt);
-		const char * src = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
-		for (int i = 1; i < cnt; i++)
+		for (int i = 1; i < N; i++)
 		{
-
-			const char * dest = va_arg(ap, const char *); //读取可变参数，的二个参数为可变参数的类型
+			const char * dest = dests[i];
 			int idx = 0;
 			for (; dest[idx] != 0 && src[idx] != 0; idx++)
 			{
@@ -227,7 +217,6 @@ namespace agebull
 			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
 				return i - 1;
 		}
-		va_end(ap);
 		return -1;
 	}
 }

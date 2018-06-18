@@ -4,6 +4,7 @@
   "redis_addr": "127.0.0.1:6379",
   "redis_defdb": "15",
   "worker_sound_ivl": 2000,
+  "plan_exec_timeout": 300,
 
   "ZMQ_MAX_SOCKETS": -1,
   "ZMQ_IO_THREADS": -1,

@@ -12,6 +12,7 @@ namespace agebull
 
 	public:
 		static int base_tcp_port;
+		static int plan_exec_timeout;
 		static bool use_ipc_protocol;
 		static char redis_addr[512];
 		static int redis_defdb;
@@ -98,18 +99,20 @@ namespace agebull
 
 	/**
 	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	* \param cnt 参数总数
-	 * \param ...  第一个（0下标）为比较源，其它的为目标
+	* \param dests 目标
+	* \param src 比较源
 	* \return 目标的第一个算0，或小于0表示未找到
 	*/
-	int strmatch(int cnt, ...);
+	template<int N>
+	int strmatch(const char *src, const char* (&dests)[N]);
 
 	/**
 	 * \brief 大小写不敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	 * \param cnt 参数总数
-	 * \param ...  第一个（0下标）为比较源，其它的为目标
+	* \param dests 目标
+	* \param src 比较源
 	 * \return 目标的第一个算0，或小于0表示未找到
 	 */
-	int strmatchi(int cnt, ...);
+	template<int N>
+	int strmatchi(const char *src, const char* (&dests)[N]);
 }
 #endif

@@ -142,23 +142,26 @@ namespace agebull
 					iter = json.next_node();
 					continue;
 				}
-				const int idx = strmatchi(16, tag
-				                          , "station_name"
-				                          , "station_type"
-				                          , "request_port"
-				                          , "worker_out_port"
-				                          , "worker_in_port"
-				                          , "description"
-				                          , "caption"
-				                          , "station_alias"
-				                          , "station_state"
-				                          , "request_in"
-				                          , "request_out"
-				                          , "request_err"
-				                          , "worker_in"
-				                          , "worker_out"
-				                          , "worker_err"
-				                          , "short_name");
+				const char* fields[] =
+				{
+					"station_name"
+					, "station_type"
+					, "request_port"
+					, "worker_out_port"
+					, "worker_in_port"
+					, "description"
+					, "caption"
+					, "station_alias"
+					, "station_state"
+					, "request_in"
+					, "request_out"
+					, "request_err"
+					, "worker_in"
+					, "worker_out"
+					, "worker_err"
+					, "short_name"
+				};
+				const int idx = strmatchi(tag, fields);
 				switch (idx)
 				{
 				case 0:

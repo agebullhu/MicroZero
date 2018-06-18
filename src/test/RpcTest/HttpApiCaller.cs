@@ -43,7 +43,7 @@ namespace ZeroNet.Http.Route
         public string Bearer { get; set; }
 
         #endregion
-
+         
         #region 辅助方法
 
         /// <summary>

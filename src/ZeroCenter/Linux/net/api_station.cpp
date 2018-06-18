@@ -9,19 +9,20 @@ namespace agebull
 		/**
 		* \brief 开始执行一条命令
 		*/
-		sharp_char api_station::command(const char* caller, vector<sharp_char> lines)
+		shared_char api_station::command(const char* caller, vector<shared_char> lines)
 		{
-			vector<sharp_char> response;
-			ipc_request_socket<ZMQ_REQ> socket(caller, get_station_name());
-			if (socket.request(lines, response))
-				return response.empty() ? ZERO_STATUS_ERROR : response[0];
-			switch (socket.get_state())
-			{
-			case zmq_socket_state::TimedOut:
-				return ZERO_STATUS_TIMEOUT;
-			default:
+			//vector<shared_char> response;
+			//ipc_request_socket<ZMQ_REQ> socket(caller, get_station_name());
+			//if (socket.request(lines, response))
+			//	return response.empty() ? ZERO_STATUS_ERROR : response[0];
+			//switch (socket.get_state())
+			//{
+			//case zmq_socket_state::TimedOut:
+			//	return ZERO_STATUS_TIMEOUT;
+			//default:
+			//	return ZERO_STATUS_NET_ERROR;
+			//}
 				return ZERO_STATUS_NET_ERROR;
-			}
 		}
 
 		/**
@@ -44,7 +45,7 @@ namespace agebull
 				return;
 			}
 			//boost::thread(boost::bind(monitor_poll, station.get()));
-			boost::thread(boost::bind(plan_poll, station.get()));
+			station->task_semaphore_.post();
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
@@ -63,34 +64,23 @@ namespace agebull
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		inline void api_station::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
+		inline void api_station::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
-			//路由到其中一个工作对象
-			//const char* worker;
-			//while(!_balance.get_host(worker))
-			//{
-			//	worker_left(worker);
-			//}
-			//if (worker == nullptr)
-			//{
-			//	zmq_state_ = send_status(socket, *caller, ZERO_STATUS_API_NOT_WORKER);
-			//	return zmq_state_ == zmq_socket_state::Succeed;
-			//}
-			//if (list[2][1] == ZERO_BYTE_COMMAND_WAITING)
-			//	return;
+			int frame_skip = inner ? 1 : 0;
+			var description = *list[inner ? 2 : 1];
 			size_t reqid = 0, reqer = 0, glid_index = 0;
-			for (size_t i = 2; i <= static_cast<size_t>(list[1][0] + 2); i++)
+			for (size_t i = 2; i <= static_cast<size_t>(description[0] + 2); i++)
 			{
-				switch (list[1][i])
+				switch (description[i])
 				{
 				case ZERO_FRAME_REQUESTER:
-					reqer = i;
+					reqer = i + frame_skip;
 					break;
 				case ZERO_FRAME_REQUEST_ID:
-					reqid = i;
+					reqid = i + frame_skip;
 					break;
 				case ZERO_FRAME_GLOBAL_ID:
-					glid_index = i;
+					glid_index = i + frame_skip;
 					break;
 				}
 			}
@@ -101,7 +91,7 @@ namespace agebull
 					reqid == 0 ? nullptr : *list[reqid],
 					reqer == 0 ? nullptr : *list[reqer]);
 			}
-			switch (list[1][1])
+			switch (description[1])
 			{
 			case ZERO_BYTE_COMMAND_FIND_RESULT:
 			{
@@ -137,13 +127,20 @@ namespace agebull
 						reqid == 0 ? nullptr : *list[reqid],
 						reqer == 0 ? nullptr : *list[reqer]);
 				}
+				else if(description[1] == ZERO_BYTE_COMMAND_PROXY)//必须返回信息到代理
+				{
+					send_request_status(socket, *list[0], ZERO_STATUS_RUNING_ID,
+						*list[glid_index],
+						reqid == 0 ? nullptr : *list[reqid],
+						reqer == 0 ? nullptr : *list[reqer]);
+				}
 				break;
 			}
 		}
 		/**
 		* \brief 工作结束(发送到请求者)
 		*/
-		void api_station::job_end(vector<sharp_char>& list)
+		void api_station::job_end(vector<shared_char>& list)
 		{
 			/*{
 				boost::lock_guard<boost::mutex> guard(results_mutex_);
@@ -153,7 +150,7 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			send_request_result(list);
+			send_request_result(list[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_,list);
 		}
 
 	}

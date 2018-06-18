@@ -18,18 +18,18 @@
     <PackageLicenseUrl>https://github.com/agebullhu/ZmqNet/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.6.2</PackageVersion>
+    <PackageVersion>1.0.6.3</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
-    <Version>1.0.6.2</Version>
+    <Version>1.0.6.3</Version>
     <Authors>Agebull</Authors>
     <Company>agebull</Company>
     <Description>ZeroNet中调用契约定义</Description>
     <PackageReleaseNotes>ZeroNet中调用契约定义</PackageReleaseNotes>
     <PackageId>Agebull.ZeroNet.Contract</PackageId>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.0.6.2</AssemblyVersion>
-    <FileVersion>1.0.6.2</FileVersion>
+    <AssemblyVersion>1.0.6.3</AssemblyVersion>
+    <FileVersion>1.0.6.3</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

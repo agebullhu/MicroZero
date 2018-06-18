@@ -2,13 +2,23 @@
 #ifndef _ZERO_PLAN_H_
 #define _ZERO_PLAN_H_
 #include "../stdinc.h"
-#include "../sharp_char.h"
+#include "../shared_char.h"
 #include "../cfg/json_config.h"
 
 namespace agebull
 {
 	namespace zmq_net
 	{
+
+#define zsco_key "plan:time:set"
+
+#define def_msg_key(key,msg)\
+			char key[MAX_PATH];\
+			sprintf(key, "zero:message:%s:%lld",*((msg)->station), (msg)->plan_id);
+
+#define def_msg_worker_key(key,msg)\
+			char key[MAX_PATH];\
+			sprintf(key, "zero:worker:%s:%lld", *((msg)->station), (msg)->plan_id);
 
 		/**
 		* \brief 计划类型
@@ -24,6 +34,10 @@ namespace agebull
 			*/
 			time,
 			/**
+			* \brief 秒间隔后发送
+			*/
+			second,
+			/**
 			* \brief 分钟间隔后发送
 			*/
 			minute,
@@ -36,27 +50,44 @@ namespace agebull
 			*/
 			day,
 			/**
-			* \brief 周间隔后发送
+			* \brief 每周几
 			*/
 			week,
 			/**
-			* \brief 月间隔后发送
+			* \brief 每月几号
 			*/
-			month,
-			/**
-			* \brief 年间隔后发送
-			*/
-			year
+			month
 		};
 		/**
 		* \brief 消息
 		*/
-		struct plan_message
+		class plan_message
 		{
+		public:
 			/**
 			* \brief 消息标识
 			*/
 			int64_t plan_id;
+
+			/**
+			* \brief 发起者提供的标识
+			*/
+			shared_char request_id;
+
+			/**
+			* \brief 站点
+			*/
+			shared_char station;
+
+			/**
+			* \brief 原始请求者
+			*/
+			shared_char caller;
+
+			/**
+			* \brief 计划说明
+			*/
+			shared_char description;
 
 			/**
 			* \brief 计划类型
@@ -77,127 +108,131 @@ namespace agebull
 			* \brief 执行次数
 			*/
 			int real_repet;
+			/**
+			* \brief 是否空跳
+			*/
+			bool no_keep;
 
 			/**
-			* \brief 发起者提供的标识
+			* \brief 最后一次执行状态
 			*/
-			sharp_char request_id;
+			int last_state;
 
 			/**
-			* \brief 发起者
+			* \brief 计划时间
 			*/
-			sharp_char request_caller;
+			time_t plan_time;
+
 			/**
-			* \brief 消息描述
+			* \brief 执行时间
 			*/
-			sharp_char messages_description;
+			time_t exec_time;
 
 			/**
 			* \brief 消息内容
 			*/
-			vector<sharp_char> messages;
+			vector<shared_char> messages;
+
 
 			/**
-			* \brief 从JSON中反序列化
+			* \brief 构造
 			*/
-			void read_plan(const char* plan)
+			plan_message(): plan_id(0), plan_type(), plan_value(0), plan_repet(0), real_repet(0), no_keep(false), last_state(0),
+			                plan_time(0), exec_time(0)
 			{
-				acl::json json;
-				json.update(plan);
-				acl::json_node* iter = json.first_node();
-				while (iter)
-				{
-					int idx = strmatchi(5, iter->tag_name(), "plan_type", "plan_value", "plan_repet");
-					switch (idx)
-					{
-					case 0:
-						plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-						break;
-					case 1:
-						plan_value = static_cast<int>(*iter->get_int64());
-						break;
-					case 2:
-						plan_repet = static_cast<int>(*iter->get_int64());
-						break;
-					default: break;
-					}
-					iter = json.next_node();
-				}
 			}
-			void read_json(acl::string& val)
-			{
-				acl::json json;
-				json.update(val);
-				acl::json_node* iter = json.first_node();
-				while (iter)
-				{
-					const int idx = strmatchi(10, iter->tag_name(), "plan_id", "plan_type", "plan_value", "plan_repet", "real_repet", "request_caller", "request_id", "messages_description", "messages");
-					switch (idx)
-					{
-					case 0:
-						plan_id = static_cast<int>(*iter->get_int64());
-						break;
-					case 1:
-						plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-						break;
-					case 2:
-						plan_value = static_cast<int>(*iter->get_int64());
-						break;
-					case 3:
-						plan_repet = static_cast<int>(*iter->get_int64());
-						break;
-					case 4:
-						real_repet = static_cast<int>(*iter->get_int64());
-						break;
-					case 5:
-						request_caller = iter->get_string();
-						break;
-					case 6:
-						request_id = iter->get_string();
-						break;
-					case 7:
-						messages_description = iter->get_string();
-						break;
-					case 8:
-					{
-						acl::json arr = iter->get_json();
-						acl::json_node* iter_arr = arr.first_node();
-						while (iter_arr)
-						{
-							messages.emplace_back(iter_arr->get_string());
-							iter_arr = arr.next_node();
-						}
-					}
-					break;
-					default: break;
-					}
-					iter = json.next_node();
-				}
-			}
-			acl::string write_json()
-			{
-				acl::json json;
-				acl::json_node& node = json.create_node();
-				node.add_number("plan_id", plan_id);
-				if (plan_type > plan_date_type::none)
-				{
-					node.add_number("plan_type", static_cast<int>(plan_type));
-					node.add_number("plan_value", plan_value);
-					node.add_number("plan_repet", plan_repet);
-					node.add_number("real_repet", real_repet);
-				}
-				node.add_text("request_id", *request_id);
-				node.add_text("request_caller", *request_caller);
-				node.add_text("messages_description", messages_description.get_buffer());
-				acl::json_node& array = node.add_array(true);
-				array.set_tag("messages");
-				for (const auto& line : messages)
-				{
-					array.add_array_text(*line);
-				}
-				return node.to_string();
-			}
+
+			/**
+			* \brief JSON读计划基本信息
+			*/
+			void read_plan(const char* plan);
+
+			/**
+			* \brief JSON反序列化
+			*/
+			void read_json(acl::string& val);
+
+			/**
+			* \brief JSON序列化
+			*/
+			acl::string write_json() const;
+			/**
+			* \brief 保存下一次执行时间
+			*/
+			bool save() ;
+			/**
+			* \brief 保存消息
+			*/
+			bool save_message() ;
+			/**
+			* \brief 保存下一次执行时间
+			*/
+			bool save_next() ;
+			/**
+			* \brief 读取消息
+			*/
+			bool load_message(const char* key);
+
+			/**
+			* \brief 删除一个计划
+			*/
+			bool remove() const;
+			/**
+			* \brief 删除一个计划
+			*/
+			bool remove_next() const;
+			/**
+			* \brief 删除消息
+			*/
+			bool remove_message() const;
+
+			/**
+			* \brief 保存消息参与者
+			*/
+			bool save_message_worker(vector<const char*>& workers) const;
+
+			/**
+			* \brief 保存消息参与者返回值
+			*/
+			bool save_message_result(const char* worker, vector<shared_char>& response) const;
+
+			/**
+			* \brief 取一个参与者的消息返回值
+			*/
+			vector<shared_char> get_message_result(const char* worker) const;
+
+			/**
+			* \brief 取一个参与者的消息返回值
+			*/
+			static void get_message_result(vector<shared_char>& result, acl::string& val);
+
+			/**
+			* \brief 取全部参与者消息返回值
+			*/
+			map<acl::string, vector<shared_char>> get_message_result() const;
+
+			/**
+			* \brief 计划下一次执行时间
+			*/
+			bool plan_next();
+
+			/**
+			* \brief 加入执行队列
+			*/
+			bool join_queue(time_t time) const;
+
+
+			/**
+			* \brief 检查延时
+			*/
+			bool check_delay(boost::posix_time::ptime& now ,boost::posix_time::time_duration delay);
+
+			/**
+			* \brief 载入现在到期的内容并回调
+			*/
+			static void load_now(std::function<int(plan_message&)> exec);
 		};
+
 	}
 }
 #endif //!_ZERO_PLAN_H_

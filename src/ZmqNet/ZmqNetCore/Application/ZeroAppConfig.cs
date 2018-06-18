@@ -268,6 +268,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (stationName == null || string.IsNullOrEmpty(json) || json[0] != '{')
             {
+                ZeroTrace.WriteError("UpdateConfig", "argument error", stationName, json);
                 stationConfig = null;
                 return false;
             }

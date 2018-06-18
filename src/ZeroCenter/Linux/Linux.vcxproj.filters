@@ -39,6 +39,9 @@
     <Filter Include="rpc\zero">
       <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rpc\plan">
+      <UniqueIdentifier>{b82920b1-a36b-45d2-a82e-cce913d80b1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
@@ -83,6 +86,12 @@
     <ClCompile Include="net\zero_config.cpp">
       <Filter>rpc\zero</Filter>
     </ClCompile>
+    <ClCompile Include="net\zero_plan.cpp">
+      <Filter>rpc\plan</Filter>
+    </ClCompile>
+    <ClCompile Include="net\plan_dispatcher.cpp">
+      <Filter>rpc\plan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h">
@@ -99,9 +108,6 @@
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>std</Filter>
-    </ClInclude>
-    <ClInclude Include="sharp_char.h">
-      <Filter>sys</Filter>
     </ClInclude>
     <ClInclude Include="service.h">
       <Filter>main</Filter>
@@ -133,14 +139,20 @@
     <ClInclude Include="net\zero_config.h">
       <Filter>rpc\zero</Filter>
     </ClInclude>
-    <ClInclude Include="net\zero_plan.h">
-      <Filter>rpc\zero</Filter>
-    </ClInclude>
     <ClInclude Include="cfg\json_config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
     <ClInclude Include="net\ipc_request_socket.h">
       <Filter>rpc\Ømq</Filter>
+    </ClInclude>
+    <ClInclude Include="net\zero_plan.h">
+      <Filter>rpc\plan</Filter>
+    </ClInclude>
+    <ClInclude Include="net\plan_dispatcher.h">
+      <Filter>rpc\plan</Filter>
+    </ClInclude>
+    <ClInclude Include="shared_char.h">
+      <Filter>sys</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

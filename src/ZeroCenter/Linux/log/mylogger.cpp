@@ -56,40 +56,54 @@ namespace agebull
 	/**
 	* 输出到DEBUG窗口
 	*/
-	void out_debug(const char* msg)
+	void out_debug(tm now,const char* msg)
 	{
 		//		msg = "\r\n" + msg;
 		//#ifdef WIN32
 		//		OutputDebugStringA(msg);
 		//#endif
-		boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-		cout << endl << msg;
+		char time_c[256];
+		time2string(now, time_c);
+		{
+			boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+			cout << endl << "[" << time_c << "] " << msg;
+		}
 	}
 	void log_acl_msg(const char* msg)
 	{
-		out_debug(msg);
+		tm now;
+		date_now(now);
+		out_debug(now, msg);
 		acl::log::msg1(msg);
 	}
 	void log_acl_warn(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(msg);
+		tm now;
+		date_now(now);
+		out_debug(now, msg);
 		acl::log::warn4(fname, line, func, msg);
 	}
 	void log_acl_error(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(msg);
+		tm now;
+		date_now(now);
+		out_debug(now, msg);
 		acl::log::error4(fname, line, func, msg);
 	}
 	void log_acl_fatal(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(msg);
+		tm now;
+		date_now(now);
+		out_debug(now, msg);
 		acl::log::fatal4(fname, line, func, msg);
 	}
 	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const char* msg)
 	{
 		if (level < 2)
 		{
-			out_debug(msg);
+			tm now;
+			date_now(now);
+			out_debug(now, msg);
 		}
 		acl::log::msg6(section, level, fname, line, func, msg);
 	}
@@ -97,7 +111,9 @@ namespace agebull
 	{
 		if (level < 2)
 		{
-			out_debug(msg);
+			tm now;
+			date_now(now);
+			out_debug(now, msg);
 		}
 		acl::log::msg1(msg);
 	}

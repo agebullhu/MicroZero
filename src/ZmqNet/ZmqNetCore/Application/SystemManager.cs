@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using ZeroMQ;
@@ -90,7 +89,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static bool HeartCommand(byte commmand, params string[] args)
         {
-            Task.Factory.StartNew(()=> ByteCommand(commmand, args)).Wait();
+            Task.Factory.StartNew(() => ByteCommand(commmand, args)).Wait();
             return true;
         }
 
@@ -118,77 +117,17 @@ namespace Agebull.ZeroNet.Core
         #region 命令支持
 
 
-        /// <summary>
-        ///     读取配置
-        /// </summary>
-        /// <returns></returns>
-        public static bool LoadAllConfig()
-        {
-            var re = CallCommand("host", "*");
-            if (!re.InteractiveSuccess)
-            {
-                ZeroTrace.WriteError("LoadConfig", "Network failed");
-                return false;
-            }
-            if (!re.TryGetValue(ZeroFrameType.TextValue, out var json))
-            {
-                ZeroTrace.WriteError("LoadAllConfig", "Empty");
-                return false;
-            }
-            return ZeroApplication.Config.FlushConfigs(json);
-        }
-
-
-        /// <summary>
-        ///     读取配置
-        /// </summary>
-        /// <returns></returns>
-        internal static StationConfig LoadConfig(string stationName)
-        {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                return null;
-            }
-            var result = CallCommand("host", stationName);
-            switch (result.State)
-            {
-                case ZeroOperatorStateType.Ok:
-                    var json = result.GetValue(ZeroFrameType.TextValue);
-                    if (json == null || json[0] != '{')
-                    {
-                        ZeroTrace.WriteError("GetConfig", stationName, "not a json", json);
-                        return null;
-                    }
-                    try
-                    {
-                        return JsonConvert.DeserializeObject<StationConfig>(json);
-                    }
-                    catch (Exception e)
-                    {
-                        LogRecorder.Exception(e, json);
-                        ZeroTrace.WriteError("GetConfig", stationName, "not a json", json);
-                        return null;
-                    }
-                case ZeroOperatorStateType.NoFind:
-                    ZeroTrace.WriteError("GetConfig", stationName, "NoFind");
-                    return null;
-                default:
-                    ZeroTrace.WriteError("GetConfig", stationName, result.State.ToString());
-                    return null;
-            }
-
-        }
-
 
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <param name="args">请求参数,第一个必须为命令名称</param>
         /// <returns></returns>
-        public static ZeroResultData<string> CallCommand(params string[] args)
+        public static ZeroResultData CallCommand(params string[] args)
         {
             byte[] description = new byte[3 + args.Length];
             description[0] = (byte)(args.Length);
+            description[1] = ZeroByteCommand.General;
             description[2] = ZeroFrameType.Command;
             int idx = 3;
             for (var index = 1; index < args.Length; index++)
@@ -201,14 +140,14 @@ namespace Agebull.ZeroNet.Core
 
         private static ZSocket _socket;
 
-        private static readonly object  LockObj = new object();
+        private static readonly object LockObj = new object();
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        private static ZeroResultData<string> CallCommand(byte[] description, params string[] args)
+        public static ZeroResultData CallCommand(byte[] description, params string[] args)
         {
             lock (LockObj)
             {
@@ -235,7 +174,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     _socket?.TryClose();
                     _socket = null;
-                    return new ZeroResultData<string>
+                    return new ZeroResultData
                     {
                         InteractiveSuccess = false,
                         Exception = e
@@ -243,9 +182,98 @@ namespace Agebull.ZeroNet.Core
                 }
             }
         }
-        
+
 
         #endregion
+
+        #region 系统支持
+
+        /// <summary>
+        /// 尝试安装站点
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static bool TryInstall(string station, string type = "api")
+        {
+            if (ZeroApplication.Config.TryGetConfig(station, out _))
+                return true;
+            ZeroTrace.WriteInfo(station, "No find,try install ...");
+            var r = CallCommand("install", type, station, station);
+            if (!r.InteractiveSuccess || r.State == ZeroOperatorStateType.NotSupport)
+            {
+                ZeroTrace.WriteError(station, "Test install failed");
+                return false;
+            }
+
+            if (r.State != ZeroOperatorStateType.Ok && r.TryGetValue(ZeroFrameType.Status, out var json))
+            {
+                ZeroApplication.Config.UpdateConfig(station, json, out _);
+            }
+            ZeroTrace.WriteInfo(station, "Is install ,try start it ...");
+            r = CallCommand("start", station);
+            if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
+            {
+                ZeroTrace.WriteError(station, "Can't start station");
+                return false;
+            }
+            ZeroTrace.WriteError(station, "Station runing");
+            return true;
+        }
+
+        /// <summary>
+        ///     读取配置
+        /// </summary>
+        /// <returns></returns>
+        public static bool LoadAllConfig()
+        {
+            var result = CallCommand("host", "*");
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+            {
+                ZeroTrace.WriteError("LoadConfig", result);
+                return false;
+            }
+            if (!result.TryGetValue(ZeroFrameType.Status, out var json))
+            {
+                ZeroTrace.WriteError("LoadAllConfig", "Empty");
+                return false;
+            }
+            return ZeroApplication.Config.FlushConfigs(json);
+        }
+
+
+        /// <summary>
+        ///     读取配置
+        /// </summary>
+        /// <returns></returns>
+        internal static StationConfig LoadConfig(string stationName)
+        {
+            if (!ZeroApplication.ZerCenterIsRun)
+            {
+                ZeroTrace.WriteError("LoadConfig", "No ready");
+                return null;
+            }
+            var result = CallCommand("host", stationName);
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+            {
+                ZeroTrace.WriteError("LoadConfig", result);
+                return null;
+            }
+
+            var json = result.GetValue(ZeroFrameType.Status);
+            if (json == null || json[0] != '{')
+            {
+                ZeroTrace.WriteError("LoadConfig", stationName, "not a json", json);
+                return null;
+            }
+
+            if (ZeroApplication.Config.UpdateConfig(stationName, json, out var config))
+            {
+                return config;
+            }
+            return null;
+        }
+
 
         /// <summary>
         /// 关闭仅有的一个连接
@@ -255,5 +283,6 @@ namespace Agebull.ZeroNet.Core
             _socket?.Close();
             _socket = null;
         }
+        #endregion
     }
 }

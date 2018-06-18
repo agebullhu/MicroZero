@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Agebull.Common.DataModel;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -23,17 +25,18 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// ZMQ错误码
         /// </summary>
-        public int ZmqErrorCode;
-
-        /// <summary>
-        /// 逻辑操作状态
-        /// </summary>
-        public string ZmqErrorMessage;
+        public ZError ZmqError;
 
         /// <summary>
         /// 异常
         /// </summary>
         public Exception Exception;
+
+
+        /// <summary>
+        /// 消息
+        /// </summary>
+        public string Message;
 
         /// <summary>
         /// 返回数据
@@ -90,16 +93,33 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public override string ToString()
         {
+            StringBuilder text = new StringBuilder();
+            text.Append($"{(InteractiveSuccess ? "网络请求成功" : "网络请求失败")} , 状态:{State}({State.Text()})");
             if (Exception != null)
             {
-                return $"发生异常：{Exception.Message}";
+                text.Append($" , 异常：{Exception.Message}");
             }
-
-            if (TryGetValue(ZeroFrameType.TextValue, out var value))
+            if (ZmqError != null)
             {
-                return InteractiveSuccess ? $"处理成功：{value}" : $"处理失败：{value}";
+                text.Append($" , ZmqError:{ZmqError}");
             }
-            return InteractiveSuccess ? $"处理成功：{State.Text()}" : $"处理失败：{State.Text()}";
+            if (InteractiveSuccess && Datas.Count > 0)
+            {
+                foreach (var data in Datas)
+                {
+                    text.Append($" , [{ZeroFrameType.FrameName(data.name)}] {data.value}");
+                }
+            }
+            return text.ToString();
         }
+    }
+
+
+    /// <summary>
+    /// 返回值
+    /// </summary>
+    public class ZeroResultData : ZeroResultData<string>
+    {
+
     }
 }

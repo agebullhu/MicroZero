@@ -47,11 +47,11 @@ namespace Agebull.ZeroNet.Core
 
                 var result = SystemManager.CallCommand(words);
                 if (result.InteractiveSuccess)
-                    ZeroTrace.WriteInfo("Console", result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                    ZeroTrace.WriteInfo("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
                         ? value
                         : result.State.Text());
                 else
-                    ZeroTrace.WriteError("Console", result.TryGetValue(ZeroFrameType.TextValue, out var value)
+                    ZeroTrace.WriteError("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
                         ? value
                         : result.State.Text());
             }
@@ -174,9 +174,13 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     发现
         /// </summary>
-        public static void Discove(Assembly assembly = null)
+        public static void Discove(Assembly assembly = null, string stationName = null)
         {
-            var discover = new ZeroDiscover { Assembly = assembly ?? Assembly.GetCallingAssembly() };
+            var discover = new ZeroDiscover
+            {
+                StationName = stationName ?? Config.StationName,
+                Assembly = assembly ?? Assembly.GetCallingAssembly()
+            };
             ZeroTrace.WriteInfo("Discove", discover.Assembly.FullName);
             discover.FindApies();
             discover.FindZeroObjects();

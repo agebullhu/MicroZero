@@ -4,7 +4,7 @@
     <Description>
       ClrZmq的.NetCore版本
     </Description>
-    <Version>4.1.0.28</Version>
+    <Version>4.1.0.29</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -13,7 +13,7 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/clrzmq4</RepositoryUrl>
-    <PackageVersion>4.1.0.28</PackageVersion>
+    <PackageVersion>4.1.0.29</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,8 +23,8 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>ClrZmq的.NetCore版本</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>4.1.0.28</AssemblyVersion>
-    <FileVersion>4.1.0.28</FileVersion>
+    <AssemblyVersion>4.1.0.29</AssemblyVersion>
+    <FileVersion>4.1.0.29</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>

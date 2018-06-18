@@ -117,16 +117,21 @@ namespace agebull
 		}
 
 
-		/**
-		* \brief 生成用于本机调用的套接字
-		*/
 #define make_ipc_address(addr,type,name)\
 			char addr[MAX_PATH];\
 			sprintf(addr, "ipc://%sipc/%s_%s.ipc", json_config::root_path.c_str(),type, name)
+
+#define make_inproc_address(addr,name)\
+			char addr[MAX_PATH];\
+			sprintf(addr, "inproc://%s.inp", name)
+
 #define make_zmq_identity(addr,type,name)\
 			char identity[MAX_PATH];\
 			sprintf(identity, "%s_%s", type, name)
 
+		/**
+		* \brief 生成用于本机调用的套接字
+		*/
 		inline void setsockopt(ZMQ_HANDLE& socket, int type, int value)
 		{
 			zmq_setsockopt(socket, type, &value, sizeof(int));
@@ -149,7 +154,7 @@ namespace agebull
 			* \param address
 			* \return
 			*/
-			static void zmq_monitor(sharp_char address);
+			static void zmq_monitor(shared_char address);
 
 			/**
 			* \brief 关闭套接字
@@ -249,9 +254,27 @@ namespace agebull
 				return create_res_socket(address, type, identity);
 			}
 			/**
+			* \brief 生成用于本机调用的套接字
+			*/
+			static ZMQ_HANDLE create_req_socket_inproc(const char* station, const char* name)
+			{
+				make_inproc_address(address, station);
+				make_zmq_identity(identity, station, name);
+				return create_req_socket(address, ZMQ_DEALER, identity);
+			}
+			/**
+			* \brief 生成用于本机调用的套接字
+			*/
+			static ZMQ_HANDLE create_res_socket_inproc(const char* station, int type)
+			{
+				make_inproc_address(address, station);
+				make_zmq_identity(identity, station, "inproc");
+				return create_res_socket(address, type, identity);
+			}
+			/**
 			* \brief 接收
 			*/
-			static zmq_socket_state recv(ZMQ_HANDLE socket, sharp_char& data, int flag = 0)
+			static zmq_socket_state recv(ZMQ_HANDLE socket, shared_char& data, int flag = 0)
 			{
 				//接收命令请求
 				zmq_msg_t msg_call;
@@ -276,7 +299,7 @@ namespace agebull
 			/**
 			* \brief 接收
 			*/
-			static zmq_socket_state recv(ZMQ_HANDLE socket, vector<sharp_char>& ls, int flag = 0)
+			static zmq_socket_state recv(ZMQ_HANDLE socket, vector<shared_char>& ls, int flag = 0)
 			{
 				size_t size = sizeof(int);
 				int more;
@@ -349,7 +372,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			static zmq_socket_state send(ZMQ_HANDLE socket, vector<sharp_char>::iterator& iter, const vector<sharp_char>::iterator& end)
+			static zmq_socket_state send(ZMQ_HANDLE socket, vector<shared_char>::iterator& iter, const vector<shared_char>::iterator& end)
 			{
 				while (iter != end)
 				{
@@ -365,7 +388,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			static zmq_socket_state send(ZMQ_HANDLE socket, const vector<sharp_char>& ls, const size_t first_index = 0)
+			static zmq_socket_state send(ZMQ_HANDLE socket, const vector<shared_char>& ls, const size_t first_index = 0)
 			{
 				if (first_index >= ls.size())
 					return send_late(socket, "");
@@ -378,7 +401,12 @@ namespace agebull
 						return check_zmq_error();
 					}
 				}
-				return send_late(socket, *ls[idx]);
+				const int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_DONTWAIT);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
+				return zmq_socket_state::Succeed;
 			}
 			/**
 			* \brief 发送
@@ -413,7 +441,7 @@ namespace agebull
 				}
 				if (msg != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_TEXT;;
+					descirpt[idx++] = ZERO_FRAME_STATUS;
 				}
 				if (req_id != nullptr)
 				{

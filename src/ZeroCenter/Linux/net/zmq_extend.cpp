@@ -39,6 +39,10 @@ namespace agebull
 				setsockopt(socket, ZMQ_SNDTIMEO, json_config::SNDTIMEO);
 			if (json_config::BACKLOG >= 0)
 				setsockopt(socket, ZMQ_BACKLOG, json_config::BACKLOG);
+			if (json_config::SNDTIMEO >= 0)
+				setsockopt(socket, ZMQ_SNDTIMEO, json_config::SNDTIMEO);
+			if (json_config::RCVTIMEO >= 0)
+				setsockopt(socket, ZMQ_RCVTIMEO, json_config::RCVTIMEO);
 
 			//setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
 			//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
@@ -53,7 +57,7 @@ namespace agebull
 		ZMQ_HANDLE socket_ex::create_req_socket(const char* addr, int type, const char* name)
 		{
 			++create_;
-			log_msg3("%s(%d) :%s", name, type, addr);
+			log_msg3("create_req_socket: %s(%d) > %s", name, type, addr);
 			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
@@ -69,7 +73,7 @@ namespace agebull
 		ZMQ_HANDLE socket_ex::create_res_socket(const char* addr, int type, const char* name)
 		{
 			++create_;
-			log_msg3("%s(%d) :%s", name, type, addr);
+			log_msg3("create_res_socket : %s(%d) > %s", name, type, addr);
 			ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 			if (socket == nullptr)
 			{
@@ -126,7 +130,7 @@ namespace agebull
 			return 0;
 		}
 		//网络监控
-		void do_monitor(sharp_char addr)
+		void do_monitor(shared_char addr)
 		{
 			zmq_event_t event;
 			printf("starting monitor...\n");
@@ -182,7 +186,7 @@ namespace agebull
 			zmq_close(inproc);
 		}
 		//网络监控
-		void socket_ex::zmq_monitor(sharp_char addr)
+		void socket_ex::zmq_monitor(shared_char addr)
 		{
 			boost::thread thread_xxx(boost::bind(&do_monitor, addr));
 		}

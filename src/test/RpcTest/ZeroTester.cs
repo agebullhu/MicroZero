@@ -48,17 +48,19 @@ namespace RpcTest
                 case ZeroOperatorStateType.NetError:
                     Interlocked.Increment(ref _netError);
                     break;
-                case ZeroOperatorStateType.Exception:
+                case ZeroOperatorStateType.LocalException:
                     Interlocked.Increment(ref _exError);
+                    break;
+                case ZeroOperatorStateType.Ok:
+                    break;
+                default:
+                    Interlocked.Increment(ref _blError);
                     break;
             }
             var sp = (DateTime.Now - s);
             if (sp.TotalMilliseconds > 500)
                 Interlocked.Increment(ref _tmError);
-
             Interlocked.Add(ref _runTime, sp.Ticks);
-            if (ApiContext.Current.LastError != 0)
-                Interlocked.Increment(ref _blError);
             Interlocked.Increment(ref _count);
             Interlocked.Decrement(ref waitCount);
         }

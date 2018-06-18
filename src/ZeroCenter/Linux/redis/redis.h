@@ -17,14 +17,14 @@ namespace agebull
 	//系统
 #define REDIS_DB_ZERO_SYSTEM 0x11
 
-	class redis_db_scope;
+	class redis_live_scope;
 	class redis_trans_scope;
 	/**
 	* \brief 事务Redis 在没有启用时,与普通使用一样,启用时调用begin_trans,提交调用commit,回退调用rollback,且必须成对调用
 	*/
 	class trans_redis
 	{
-		friend class redis_db_scope;
+		friend class redis_live_scope;
 		friend class redis_trans_scope;
 
 
@@ -49,6 +49,10 @@ namespace agebull
 		*/
 		acl::redis* m_redis_cmd;
 		/**
+		* \brief acl的redis命令对象
+		*/
+		int m_cur_db_;
+		/**
 		* \brief 事务中修改的内容
 		*/
 		map<acl::string, int> m_modifies;
@@ -64,17 +68,18 @@ namespace agebull
 		{
 			return json_config::redis_addr;
 		}
+
 		/**
 		* \brief 配置文件中的redis的db
 		*/
-		static int redis_db()
+		int cur_db() const
 		{
-			return json_config::redis_defdb;
+			return m_cur_db_;
 		}
 		/**
 		* \brief 构造
 		*/
-		trans_redis();
+		trans_redis(int db);
 		/**
 		* \brief 析构
 		*/
@@ -101,6 +106,16 @@ namespace agebull
 		* \brief 关闭当前线程上下文的事务Redis对象
 		*/
 		static void close_context();
+
+		/**
+		* 选择 redis-server 中的数据库 ID
+		* SELECT command to select the DB id in redis-server
+		* @param dbnum {int} redis 数据库 ID
+		*  the DB id
+		* @return {bool} 操作是否成功
+		*  return true if success, or false for failed.
+		*/
+		bool select(int dbnum);
 		/**
 		* \brief 启用事务
 		* @return 当前线程上下文的操作对象
@@ -243,13 +258,28 @@ namespace agebull
 	*/
 	class redis_live_scope
 	{
+		trans_redis* redis_;
 		bool open_by_me_;
+		int old_db_;
 	public:
 		/**
 		* \brief 构造
 		*/
 		redis_live_scope();
-
+		/**
+		* \brief 对象获取
+		*/
+		acl::redis* operator->() const
+		{
+			return redis_->m_redis_cmd;
+		}
+		/**
+		* \brief 对象获取
+		*/
+		trans_redis* t() const
+		{
+			return redis_;
+		}
 		/**
 		* \brief 构造
 		*/
@@ -259,22 +289,6 @@ namespace agebull
 		* \brief 析构
 		*/
 		~redis_live_scope();
-	};
-	/**
-	* \brief 自动恢复的数据ID范围
-	*/
-	class redis_db_scope
-	{
-		trans_redis& redis_;
-	public:
-		/**
-		* \brief 构造
-		*/
-		redis_db_scope(int db);
-		/**
-		* \brief 析构
-		*/
-		~redis_db_scope();
 	};
 	/**
 	* \brief 自动开启和提交的事务范围

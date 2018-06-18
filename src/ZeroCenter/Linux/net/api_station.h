@@ -64,16 +64,16 @@ namespace agebull
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<sharp_char> lines) final;
+			shared_char command(const char* caller, vector<shared_char> lines) final;
 
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
+			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
-			void job_end(vector<sharp_char>& list) final;
+			void job_end(vector<shared_char>& list) final;
 		};
 
 	}

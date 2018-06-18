@@ -145,7 +145,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             switch (State)
             {
-                case ZeroOperatorStateType.NoReady:
+                case ZeroOperatorStateType.LocalNoReady:
                 case ZeroOperatorStateType.LocalZmqError:
                     _json = ZeroStatuValue.NoReadyJson;
                     return;
@@ -153,13 +153,13 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.LocalRecvError:
                     _json = ZeroStatuValue.NetworkErrorJson;
                     return;
-                case ZeroOperatorStateType.Exception:
+                case ZeroOperatorStateType.LocalException:
                     _json = ZeroStatuValue.UnknowErrorJson;
                     return;
                 case ZeroOperatorStateType.Plan:
-                case ZeroOperatorStateType.VoteRuning:
+                case ZeroOperatorStateType.Runing:
                 case ZeroOperatorStateType.VoteBye:
-                case ZeroOperatorStateType.VoteWecome:
+                case ZeroOperatorStateType.Wecome:
                 case ZeroOperatorStateType.VoteSend:
                 case ZeroOperatorStateType.VoteWaiting:
                 case ZeroOperatorStateType.VoteStart:
@@ -169,8 +169,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.Error:
                     _json = ZeroStatuValue.InnerErrorJson;
                     return;
-                case ZeroOperatorStateType.NoSupport:
-                case ZeroOperatorStateType.NoFind:
+                case ZeroOperatorStateType.NotSupport:
+                case ZeroOperatorStateType.NotFind:
                 case ZeroOperatorStateType.NoWorker:
                     ApiContext.Current.LastError = ErrorCode.NoFind;
                     _json = ZeroStatuValue.NoFindJson;
@@ -206,7 +206,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                State = ZeroOperatorStateType.NoReady;
+                State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
             var socket = ZeroConnectionPool.GetSocket(Station, ApiContext.RequestContext.RequestId);
@@ -214,7 +214,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 ApiContext.Current.LastError = ErrorCode.NoReady;
                 _json = ZeroStatuValue.NoReadyJson;
-                State = ZeroOperatorStateType.NoReady;
+                State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
             using (socket)
@@ -317,8 +317,8 @@ namespace Agebull.ZeroNet.ZeroApi
             //    socket.HaseFailed = true;
             //    ZeroTrace.WriteError(station, "Close Failed", commmand, globalId, lr.ZmqErrorMessage);
             //}
-
             result.TryGetValue(ZeroFrameType.JsonValue, out _json);
+            State = result.State;
         }
 
         /// <summary>
@@ -326,10 +326,10 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        private ZeroResultData<string> ReceiveString(ZSocket socket)
+        private ZeroResultData ReceiveString(ZSocket socket)
         {
             if (!ZeroApplication.ZerCenterIsRun)
-                return new ZeroResultData<string>
+                return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
                     InteractiveSuccess = false
@@ -340,7 +340,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text, $"Socket Ptr:{ socket.SocketPtr}");
                 }
-                return new ZeroResultData<string>
+                return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
                     //ZmqErrorMessage = error?.Text,
@@ -354,11 +354,10 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (description.Length == 0)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{ socket.SocketPtr}.");
-                    return new ZeroResultData<string>
+                    return new ZeroResultData
                     {
                         State = ZeroOperatorStateType.Invalid,
-                        ZmqErrorMessage = "网络格式错误",
-                        ZmqErrorCode = -1
+                        Message = "网络格式错误"
                     };
                 }
 
@@ -366,15 +365,14 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (end != messages.Count)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{ socket.SocketPtr}.");
-                    return new ZeroResultData<string>
+                    return new ZeroResultData
                     {
                         State = ZeroOperatorStateType.Invalid,
-                        ZmqErrorMessage = "网络格式错误",
-                        ZmqErrorCode = -2
+                        Message = "网络格式错误"
                     };
                 }
 
-                var result = new ZeroResultData<string>
+                var result = new ZeroResultData
                 {
                     InteractiveSuccess = true,
                     State = (ZeroOperatorStateType)description[1]
@@ -389,9 +387,9 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
-                return new ZeroResultData<string>
+                return new ZeroResultData
                 {
-                    State = ZeroOperatorStateType.Exception,
+                    State = ZeroOperatorStateType.LocalException,
                     Exception = e
                 };
             }

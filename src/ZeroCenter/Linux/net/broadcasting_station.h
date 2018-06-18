@@ -35,21 +35,21 @@ namespace agebull
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector< sharp_char> lines) final
+			shared_char command(const char* caller, vector< shared_char> lines) final
 			{
 				const bool res = publish(caller, lines[0], lines[1], lines[1]);
-				return sharp_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
+				return shared_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
 			}
 
 
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
+			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list,bool inner) final;
 			/**
 			*\brief 发送消息
 			*/
-			bool publish(const sharp_char& title, const sharp_char& description, vector<sharp_char>& datas);
+			bool publish(const shared_char& title, const shared_char& description, vector<shared_char>& datas);
 
 			/**
 			*\brief 发布消息
@@ -59,12 +59,7 @@ namespace agebull
 			*\brief 广播内容
 			*/
 			bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
-			/**
-			*\brief 广播内容
-			*/
-			bool publish(const string& publiher, const string& title, const string& sub, const string& plan, const string& arg) const;
-
-
+			
 			/**
 			 * \brief 析构
 			 */

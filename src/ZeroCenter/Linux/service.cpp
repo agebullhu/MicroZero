@@ -15,6 +15,7 @@
 #include <string>
 #include "net/station_warehouse.h"
 #include "net/station_dispatcher.h"
+#include "net/plan_dispatcher.h"
 
 
 namespace agebull
@@ -32,8 +33,8 @@ namespace agebull
 		/**
 		* \brief 任务信号量
 		*/
-		boost::interprocess::interprocess_semaphore task_semaphore(1024);
-		boost::interprocess::interprocess_semaphore close_semaphore(1024);
+		boost::interprocess::interprocess_semaphore task_semaphore(0);
+		boost::interprocess::interprocess_semaphore close_semaphore(0);
 		boost::mutex task_mutex;
 
 
@@ -88,10 +89,10 @@ namespace agebull
 			//REDIS环境检查
 			if (!ping_redis())
 			{
-				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), trans_redis::redis_db());
+				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
 				return false;
 			}
-			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), trans_redis::redis_db());
+			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
 			//站点仓库管理初始化
 			return station_warehouse::initialize();
 		}
@@ -132,35 +133,36 @@ namespace agebull
 		}
 		void check_semaphore_start()
 		{
-			if (zero_thread_run + zero_thread_bad == 1)
+			if (zero_thread_run + zero_thread_bad <= 2)
 				task_semaphore.post();
-			else if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
-				task_semaphore.post();
+			else
+				if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
+					task_semaphore.post();
 		}
 		//登记线程开始
 		void set_command_thread_run(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_run++;
-			check_semaphore_start();
 			log_msg2("[%s] zero thread join(%d)", name, zero_thread_run);
+			check_semaphore_start();
 		}
 		//登记线程失败
 		void set_command_thread_bad(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_bad++;
-			check_semaphore_start();
 			log_msg2("[%s] zero thread bad(%d)", name, zero_thread_bad);
+			check_semaphore_start();
 		}
 		//登记线程关闭
 		void set_command_thread_end(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_run--;
+			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
 			if (zero_thread_run <= 1)
 				task_semaphore.post();
-			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
 		}
 		//运行状态
 		NET_STATE get_net_state()
@@ -181,6 +183,7 @@ namespace agebull
 				zmq_ctx_set(net_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
 			if (json_config::MAX_MSGSZ >= 0)
 				zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
+
 			log_msg("[zero_center]=>initiated");
 			return net_state;
 		}
@@ -189,13 +192,14 @@ namespace agebull
 		{
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
-			log_msg("[zero_center]=>start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
+			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
+			log_msg("[zero_center]=>start system dispatcher ...");
 			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				log_msg(cfg->to_json(0));
+				if (cfg->station_type_ == STATION_TYPE_DISPATCHER)
+					log_msg(cfg->to_json(2));
 			});
-			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			station_dispatcher::run();
 			task_semaphore.wait();
 			if (zero_thread_bad == 1)
@@ -203,10 +207,29 @@ namespace agebull
 				log_msg("[zero_center]=>system dispatcher failed ...");
 				return	net_state = NET_STATE_FAILED;
 			}
+			log_msg("[zero_center]=>start plan dispatcher ...");
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
+			{
+				if (cfg->station_type_ > STATION_TYPE_SPECIAL)
+					log_msg(cfg->to_json(2));
+			});
+			plan_dispatcher::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("[zero_center]=>plan dispatcher failed ...");
+				return	net_state = NET_STATE_FAILED;
+			}
 			log_msg("[zero_center]=>start business stations...");
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
+			{
+				if (cfg->station_type_ > STATION_TYPE_DISPATCHER && cfg->station_type_ <= STATION_TYPE_SPECIAL)
+				{
+					log_msg(cfg->to_json(2));
+				}
+			});
 			station_warehouse::restore();
 			task_semaphore.wait();
-
 			log_msg("[zero_center]=>all stations in service");
 			for (int i = 0; i < 10; i++)
 			{

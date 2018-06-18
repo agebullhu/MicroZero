@@ -35,6 +35,12 @@ namespace ZeroMQ
         /// <param name="events"></param>
         void Prepare(ZSocket[] sockets, ZPollEvent events);
         /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="sockets"></param>
+        /// <param name="events"></param>
+        void Prepare(ZPollEvent events,params ZSocket[] sockets);
+        /// <summary>
         /// 一次Pool
         /// </summary>
         /// <returns></returns>

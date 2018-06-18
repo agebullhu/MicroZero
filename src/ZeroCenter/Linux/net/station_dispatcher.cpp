@@ -1,7 +1,5 @@
 /**
- * ZMQ广播代理类
- *
- *
+ * 站点调度对象
  */
 
 #include "../stdafx.h"
@@ -44,27 +42,23 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (instance == nullptr || get_net_state() == NET_STATE_DISTORY)
 				return false;
-			sharp_char description;
-			description.alloc(6);
-			char* buf = description.get_buffer();
-			buf[1] = static_cast<char>(event_name);
-			buf[2] = ZERO_FRAME_PUBLISHER;
-			buf[4] = ZERO_FRAME_END;
-			vector<sharp_char> datas;
+			shared_char desc;
+			char* description = desc.alloc_desc(2, static_cast<char>(event_name));
+			description[2] = ZERO_FRAME_PUBLISHER;
+			vector<shared_char> datas;
 			datas.emplace_back("zero_event");
-			datas.emplace_back(description);
+			datas.emplace_back(desc);
 			datas.emplace_back(publiher.c_str());
 			if (content.length() == 0)
 			{
-				buf[0] = 1;
-				buf[3] = ZERO_FRAME_END;
+				description[0] = 1;
 			}
 			else
 			{
-				buf[0] = 2;
-				buf[3] = ZERO_FRAME_ARG;
+				description[3] = ZERO_FRAME_CONTENT;
 				datas.emplace_back(content.c_str());
 			}
+			desc.check_desc_size();
 			return instance->send_response(datas);
 		}
 		/**
@@ -75,22 +69,20 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (get_net_state() == NET_STATE_DISTORY)
 				return false;
-			sharp_char description;
-			description.alloc(6);
-			char* buf = description.get_buffer();
-			buf[0] = 3;
-			buf[2] = ZERO_FRAME_PUBLISHER;
-			buf[3] = ZERO_FRAME_ARG;
-			buf[4] = ZERO_FRAME_GLOBAL_ID;
-			vector<sharp_char> datas;
+			shared_char desc;
+			char* description = desc.alloc_desc(3);
+			description[2] = ZERO_FRAME_PUBLISHER;
+			description[3] = ZERO_FRAME_CONTENT;
+			description[4] = ZERO_FRAME_GLOBAL_ID;
+			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
-			datas.emplace_back(description);
+			datas.emplace_back(desc);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
-			const int64 id = station_warehouse::get_glogal_id();
-			sharp_char g(32);
-			sprintf(g.get_buffer(), "%llx", id);
-			datas.emplace_back(g);
+
+			shared_char global_id;
+			global_id.set_value(station_warehouse::get_glogal_id());
+			datas.emplace_back(global_id);
 			return send_response(datas);
 		}
 
@@ -109,9 +101,13 @@ namespace agebull
 		/**
 		* \brief 执行命令
 		*/
-		char station_dispatcher::exec_command(const char* command, vector<sharp_char>& arguments, string& json)
+		char station_dispatcher::exec_command(const char* command, vector<shared_char>& arguments, string& json)
 		{
-			const int idx = strmatchi(10, command, "call", "pause", "resume", "start", "close", "host", "install", "uninstall");
+			const char* commands[]=
+			{
+				"call", "pause", "resume", "start", "close", "host", "install", "uninstall"
+			};
+			const int idx = strmatchi(command, commands);
 			switch (idx)
 			{
 			case 0:
@@ -125,7 +121,7 @@ namespace agebull
 				//arguments.erase(arguments.begin());
 
 				//return call_station(host, arguments);
-				return ZERO_STATUS_NO_SUPPORT_ID;
+				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 			case 1:
 			{
@@ -160,7 +156,7 @@ namespace agebull
 				return uninstall(arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_ERROR_ID;
 			}
 			default:
-				return ZERO_STATUS_NO_SUPPORT_ID;
+				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 		}
 		/**
@@ -169,7 +165,7 @@ namespace agebull
 		string station_dispatcher::exec_command(const char* command, const char* argument)
 		{
 			acl::string str = command;
-			vector<sharp_char> args{ sharp_char(argument) };
+			vector<shared_char> args{ shared_char(argument) };
 			string json;
 			return exec_command(command, args, json) == '\0' ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
 		}
@@ -177,10 +173,10 @@ namespace agebull
 		/**
 		* \brief 执行一条命令
 		*/
-		sharp_char station_dispatcher::command(const char* caller, vector<sharp_char> lines)
+		shared_char station_dispatcher::command(const char* caller, vector<shared_char> lines)
 		{
 			const string val = call_station(caller, lines[0], lines[1]);
-			return sharp_char(val);
+			return shared_char(val);
 		}
 
 		/**
@@ -193,7 +189,7 @@ namespace agebull
 		/**
 		* 心跳的响应
 		*/
-		bool station_dispatcher::heartbeat(char cmd, vector<sharp_char> list)
+		bool station_dispatcher::heartbeat(char cmd, vector<shared_char> list)
 		{
 			auto config = station_warehouse::get_config(list[2], false);
 			if (config == nullptr)
@@ -233,7 +229,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return ZERO_STATUS_NO_FIND_ID;
+				return ZERO_STATUS_NOT_FIND_ID;
 			}
 			return station->pause(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -255,7 +251,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(arg);
 			if (station == nullptr)
 			{
-				return (ZERO_STATUS_NO_FIND_ID);
+				return (ZERO_STATUS_NOT_FIND_ID);
 			}
 			return station->resume(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -272,7 +268,7 @@ namespace agebull
 			}
 			shared_ptr<zero_config> config = station_warehouse::get_config(stattion);
 			if (config == nullptr)
-				return ZERO_STATUS_NO_FIND_ID;
+				return ZERO_STATUS_NOT_FIND_ID;
 			return station_warehouse::restore(config) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
 
@@ -281,7 +277,8 @@ namespace agebull
 		*/
 		char station_dispatcher::install_station(const char* type_name, const char* stattion, const char* short_name)
 		{
-			const int type = strmatchi(4, type_name, "api", "pub", "vote");
+			const char* types[]= { "api", "pub", "vote" };
+			const int type = strmatchi(type_name, types);
 			bool success;
 			switch (type)
 			{
@@ -292,7 +289,7 @@ namespace agebull
 			case 2:
 				success = station_warehouse::install(stattion, STATION_TYPE_VOTE, short_name); break;
 			default:
-				return ZERO_STATUS_NO_SUPPORT_ID;
+				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 			return success ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -313,9 +310,9 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return ZERO_STATUS_NO_FIND;
+				return ZERO_STATUS_NOT_FIND;
 			}
-			vector<sharp_char> lines;
+			vector<shared_char> lines;
 			lines.emplace_back(command);
 			lines.emplace_back(argument);
 			auto result = station->command("-system", lines);
@@ -326,14 +323,14 @@ namespace agebull
 		/**
 		* \brief 远程调用
 		*/
-		string station_dispatcher::call_station(const char* stattion, vector<sharp_char>& arguments)
+		string station_dispatcher::call_station(const char* stattion, vector<shared_char>& arguments)
 		{
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return ZERO_STATUS_NO_FIND;
+				return ZERO_STATUS_NOT_FIND;
 			}
-			const sharp_char empty;
+			const shared_char empty;
 			if (arguments.size() == 1)
 			{
 				arguments.emplace_back(empty);
@@ -367,7 +364,7 @@ namespace agebull
 			zero_station* station = station_warehouse::instance(stattion);
 			if (station == nullptr)
 			{
-				return (ZERO_STATUS_NO_FIND_ID);
+				return (ZERO_STATUS_NOT_FIND_ID);
 			}
 			return station->close(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -375,7 +372,7 @@ namespace agebull
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<sharp_char>& list)//, sharp_char& global_id
+		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
 			char* const buf = list[1].get_buffer();
 			switch (buf[1])
@@ -393,7 +390,7 @@ namespace agebull
 			}
 			const char* cmd = nullptr;
 			size_t rqid_index = 0, glid_index = 0, reqer_index = 0;
-			vector<sharp_char> arg;
+			vector<shared_char> arg;
 			const auto frame_size = list[1].size();
 			for (size_t idx = 2; idx <= frame_size; idx++)
 			{
@@ -454,8 +451,10 @@ namespace agebull
 			}
 			boost::thread(boost::bind(monitor_poll));
 			station->poll();
-			instance = nullptr;
+			//等待monitor_poll结束
+			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
+			instance = nullptr;
 			if (get_net_state() == NET_STATE_RUNING)
 			{
 				station->destruct();

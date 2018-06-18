@@ -92,7 +92,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
+			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
 			/**
 			*\brief 发布消息
 			*/
@@ -100,12 +100,12 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			static bool heartbeat(char cmd, vector<sharp_char> lines);
+			static bool heartbeat(char cmd, vector<shared_char> lines);
 		public:
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<sharp_char> lines) final;
+			shared_char command(const char* caller, vector<shared_char> lines) final;
 			/**
 			* \brief 取机器信息
 			*/
@@ -141,11 +141,11 @@ namespace agebull
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(const char* stattion, vector<sharp_char>& arguments);
+			static string call_station(const char* stattion, vector<shared_char>& arguments);
 			/**
 			* \brief 执行命令
 			*/
-			static char exec_command(const char* command, vector<sharp_char>& arguments, string& json);
+			static char exec_command(const char* command, vector<shared_char>& arguments, string& json);
 			/**
 			* \brief 执行命令
 			*/

@@ -16,8 +16,6 @@ namespace RpcTest
             ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
             //IocHelper.Create<IApiCounter>().HookApi();
-            SystemMonitor.ZeroNetEvent += ZeroApiTestDispatcher.SystemMonitor_StationEvent;
-            Console.WriteLine(LogRecorder.LogMonitor );
             ZeroApplication.RunAwaite();
         }
     }
@@ -31,6 +29,8 @@ namespace RpcTest
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
+                    if (cancel != null)
+                        break;
                     ZeroTrace.WriteInfo("RpcTest", "Test is start");
                     Task.Factory.StartNew(StartTest);
                     break;
@@ -38,15 +38,35 @@ namespace RpcTest
                     ZeroTrace.WriteInfo("RpcTest", "Test is start");
                     cancel.Cancel();
                     cancel.Dispose();
+                    cancel = null;
                     break;
             }
         }
 
         private static void StartTest()
         {
+            cancel = new CancellationTokenSource();
+            ZeroTrace.WriteInfo("LogMonitor", LogRecorder.LogMonitor);
+            if (!ZeroApplication.Config.TryGetConfig("Test", out _))
+            {
+                ZeroTrace.WriteInfo("Test", "No find,try install ...");
+                var result = SystemManager.CallCommand("install", "api", "Test", "Test");
+                if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                {
+                    ZeroTrace.WriteError("Test", "Test install failed");
+                    return;
+                }
+                ZeroTrace.WriteInfo("Test", "Is install ,try start it ...");
+                result = SystemManager.CallCommand("start", "Test");
+                if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                {
+                    ZeroTrace.WriteError("Test", "Can't start station");
+                    return;
+                }
+                ZeroTrace.WriteError("Test", "Station runing");
+            }
             Thread.Sleep(1000);
             ZeroTester tester;
-            cancel = new CancellationTokenSource();
             //Task.Factory.StartNew(tester.Test);
             switch (ZeroApplication.Config.SpeedLimitModel)
             {

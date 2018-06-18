@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 		boost::split(cmdline, line, boost::is_any_of(" \n\r\t"));
 		if (cmdline.empty())
 			break;
-		std::vector<agebull::zmq_net::sharp_char> arguments;
+		std::vector<agebull::zmq_net::shared_char> arguments;
 		for (size_t idx = 1; idx < cmdline.size(); idx++)
 			arguments.emplace_back(cmdline[idx]);
 		const string result = agebull::zmq_net::station_dispatcher::exec_command(cmdline[0].c_str(), arguments);

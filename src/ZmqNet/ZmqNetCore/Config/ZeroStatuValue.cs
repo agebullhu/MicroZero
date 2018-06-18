@@ -101,12 +101,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 参数错误
         /// </summary>
-        public const string ZeroCommandArgError = "-ArgumentError! must like : call[name][command][argument]";
+        public const string ZeroCommandArgError = "-invalid. argument error, must like : call [name] [command] [argument]";
 
         /// <summary>
         /// 安装时参数错误
         /// </summary>
-        public const string ZeroCommandInstallArgError = "-ArgumentError! must like :install [type] [name]";
+        public const string ZeroCommandInstallArgError = "-invalid. argument error, must like :install [type] [name]";
 
         /// <summary>
         /// 执行超时
@@ -198,27 +198,31 @@ namespace Agebull.ZeroNet.Core
                     return ZeroCommandOk;
                 case ZeroOperatorStateType.Plan:
                     return ZeroCommandPlan;
-                case ZeroOperatorStateType.VoteRuning:
+                case ZeroOperatorStateType.Runing:
                     return ZeroCommandRuning;
-                case ZeroOperatorStateType.VoteBye:
+                case ZeroOperatorStateType.Bye:
                     return ZeroCommandBye;
-                case ZeroOperatorStateType.VoteWecome:
+                case ZeroOperatorStateType.Wecome:
                     return ZeroCommandWecome;
                 case ZeroOperatorStateType.VoteSend:
                     return ZeroVoteSended;
                 case ZeroOperatorStateType.VoteWaiting:
                     return ZeroVoteWaiting;
+                case ZeroOperatorStateType.VoteBye:
+                    return ZeroCommandBye;
                 case ZeroOperatorStateType.VoteStart:
                     return ZeroVoteStart;
+                case ZeroOperatorStateType.VoteClose:
+                    return ZeroVoteClosed;
                 case ZeroOperatorStateType.VoteEnd:
                     return ZeroVoteEnd;
                 case ZeroOperatorStateType.Error:
                     return ZeroCommandError;
                 case ZeroOperatorStateType.Failed:
                     return ZeroCommandFailed;
-                case ZeroOperatorStateType.NoFind:
+                case ZeroOperatorStateType.NotFind:
                     return ZeroCommandNoFind;
-                case ZeroOperatorStateType.NoSupport:
+                case ZeroOperatorStateType.NotSupport:
                     return ZeroCommandNoSupport;
                 case ZeroOperatorStateType.Invalid:
                     return ZeroCommandInvalid;
@@ -233,11 +237,23 @@ namespace Agebull.ZeroNet.Core
                 case ZeroOperatorStateType.InstallArgumentError:
                     return ZeroCommandInstallArgError;
                 case ZeroOperatorStateType.LocalRecvError:
-                    return "-can't recv data";
+                    return "-failes. can't recv local data";
                 case ZeroOperatorStateType.LocalSendError:
-                    return "-can't send data";
-                case ZeroOperatorStateType.Exception:
-                    return "-exception";
+                    return "-failes. can't send local data";
+                case ZeroOperatorStateType.LocalException:
+                    return "-failes. local throw exception";
+                case ZeroOperatorStateType.None:
+                    return "*unknow";
+                case ZeroOperatorStateType.PlanArgumentError:
+                    return "-invalid. plan argument error, must have plan frame"; 
+                case ZeroOperatorStateType.RemoteSendError:
+                    return "-failes. remote station or ZeroCenter send error";
+                case ZeroOperatorStateType.RemoteRecvError:
+                    return "-failes. remote station or ZeroCenter recv error";
+                case ZeroOperatorStateType.LocalNoReady:
+                    return "-failes. ZeroApplication no ready.";
+                case ZeroOperatorStateType.LocalZmqError:
+                    return "-failes. ZeroMQ  error.";
                 default:
                     return ZeroCommandFailed;
             }

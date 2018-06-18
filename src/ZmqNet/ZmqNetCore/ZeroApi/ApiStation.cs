@@ -349,34 +349,11 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         protected sealed override bool OnNofindConfig()
         {
-            string type;
-            switch (this.StationType)
-            {
-                case StationTypePublish:
-                    type = "pub";
-                    break;
-                case StationTypeApi:
-                    type = "api";
-                    break;
-                default:
-                    type = null;
-                    break;
-            }
-            ZeroTrace.WriteInfo(StationName, "No find,try install ...");
-            var result = SystemManager.CallCommand("install", type, StationName, StationName);
-            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+            if (!SystemManager.TryInstall(StationName))
                 return false;
-            ZeroTrace.WriteInfo(StationName, "Is install ,try start it ...");
-            result = SystemManager.CallCommand("start", StationName);
-            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
-            {
-                ZeroTrace.WriteError(StationName, $"Can't start {StationName}");
-                return false;
-            }
             Config = SystemManager.LoadConfig(StationName);
             if (Config == null)
             {
-                ZeroTrace.WriteError(StationName, $"Can't load config  {StationName}");
                 return false;
             }
             Config.State = ZeroCenterState.Run;
