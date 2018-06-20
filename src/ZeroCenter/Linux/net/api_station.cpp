@@ -1,6 +1,6 @@
 #include "../stdafx.h"
 #include "api_station.h"
-#include "ipc_request_socket.h"
+#include "inner_socket.h"
 
 namespace agebull
 {

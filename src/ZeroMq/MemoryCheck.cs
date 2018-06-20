@@ -6,7 +6,7 @@ namespace ZeroMQ
     /// <summary>
     /// 内存检查对象
     /// </summary>
-    public abstract class MemoryCheck : IDisposable
+    public abstract partial class MemoryCheck : IDisposable
     {
         /// <summary>
         /// 存活量

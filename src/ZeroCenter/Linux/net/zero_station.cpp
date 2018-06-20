@@ -66,24 +66,27 @@ namespace agebull
 			poll_items_ = new zmq_pollitem_t[5];
 			memset(poll_items_, 0, sizeof(zmq_pollitem_t) * 5);
 			poll_count_ = 0;
-			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, request_zmq_type_, config_->request_port_);
-			if (request_scoket_tcp_ == nullptr)
+			if(station_type_ < STATION_TYPE_PLAN)//没有外部访问接口
 			{
-				config_->station_state_ = station_state::Failed;
-				config_->error("initialize request tpc", zmq_strerror(zmq_errno()));
-				return false;
-			}
-			poll_items_[poll_count_++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
-			if (json_config::use_ipc_protocol)
-			{
-				request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", request_zmq_type_);
-				if (request_socket_ipc_ == nullptr)
+				request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, request_zmq_type_, config_->request_port_);
+				if (request_scoket_tcp_ == nullptr)
 				{
 					config_->station_state_ = station_state::Failed;
-					config_->error("initialize request ipc", zmq_strerror(zmq_errno()));
+					config_->error("initialize request tpc", zmq_strerror(zmq_errno()));
 					return false;
 				}
-				poll_items_[poll_count_++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
+				poll_items_[poll_count_++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
+				if (json_config::use_ipc_protocol)
+				{
+					request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", request_zmq_type_);
+					if (request_socket_ipc_ == nullptr)
+					{
+						config_->station_state_ = station_state::Failed;
+						config_->error("initialize request ipc", zmq_strerror(zmq_errno()));
+						return false;
+					}
+					poll_items_[poll_count_++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
+				}
 			}
 
 			request_socket_inproc_ = socket_ex::create_res_socket_inproc(station_name, request_zmq_type_);
@@ -332,23 +335,23 @@ namespace agebull
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
-			int desc_idx = inner ? 2 : 1;
-			char* description = list[desc_idx].get_buffer();
-			const size_t descr_size = list[desc_idx].size();
-			const size_t frame_size = description[0];
-			if (description[1] < ZERO_BYTE_COMMAND_NONE || frame_size >= descr_size || (frame_size + 2) != list_size)
+			shared_char& description = list[inner ? 2 : 1];
+			const size_t descr_size = description.desc_size();
+			const size_t frame_size = description.frame_size();
+			char status = description.status();
+			if (status < ZERO_BYTE_COMMAND_NONE || frame_size >= descr_size || (frame_size + 2) != list_size)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
 			}
 			if (station_type_ > STATION_TYPE_DISPATCHER && station_type_ < STATION_TYPE_SPECIAL)
 			{
-				if (description[1] == ZERO_BYTE_COMMAND_PLAN)
+				if (status == ZERO_BYTE_COMMAND_PLAN)
 				{
 					job_plan(socket, list);
 					return;
 				}
-				if (description[1] == ZERO_BYTE_COMMAND_GLOBAL_ID)
+				if (status == ZERO_BYTE_COMMAND_GLOBAL_ID)
 				{
 					char global_id[32];
 					sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
@@ -378,11 +381,9 @@ namespace agebull
 		*/
 		void zero_station::job_plan(ZMQ_HANDLE socket, vector<shared_char>& list)
 		{
-			char* const description = list[1].get_buffer();
+			shared_char& description = list[1];
 			list.emplace_back(station_name_);
-			description[description[0] + 2] = ZERO_FRAME_STATION_ID;
-			description[0] += 1;
-			list[1].check_desc_size();
+			description.append_frame(ZERO_FRAME_STATION_ID);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::Succeed)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_SEND_ERROR_ID);
@@ -405,15 +406,12 @@ namespace agebull
 		*/
 		void zero_station::plan_end(vector<shared_char>& list)
 		{
-			char* const description = list[1].get_buffer();
+			shared_char& description = list[1];
 			list.emplace_back(station_name_);
-			description[description[0] + 2] = ZERO_FRAME_STATION_ID;
-			description[0] += 1;
-			list[1].check_desc_size();
+			description.append_frame(ZERO_FRAME_STATION_ID);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::Succeed)
 			{
 				config_->error("send to plan dispatcher failed", desc_str(false, *list[1], list.size()));
-				return;
 			}
 		}
 		/**

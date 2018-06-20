@@ -98,21 +98,68 @@ namespace agebull
 	};
 
 	/**
-	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
+	* \brief 大小写敏感的文本匹配，返回匹配的下标
 	* \param dests 目标
 	* \param src 比较源
 	* \return 目标的第一个算0，或小于0表示未找到
 	*/
 	template<int N>
-	int strmatch(const char *src, const char* (&dests)[N]);
+	int strmatch(const char *src, const char*  (&dests)[N])
+	{
+		if (src == nullptr || src[0] == 0)
+			return -1;
+		for (int i = 0; i < N; i++)
+		{
+			const char * dest = dests[i];
+			int idx = 0;
+			for (; dest[idx] != 0 && src[idx] != 0; idx++)
+			{
+				if (dest[idx] == src[idx])
+					continue;
+				idx = -1;
+				break;
+			}
+			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
+				return i;
+		}
+		return -1;
+	}
+
 
 	/**
-	 * \brief 大小写不敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
+	* \brief 大小写不敏感的文本匹配，返回匹配的下标
 	* \param dests 目标
 	* \param src 比较源
-	 * \return 目标的第一个算0，或小于0表示未找到
-	 */
+	* \return 目标的第一个算0，或小于0表示未找到
+	*/
 	template<int N>
-	int strmatchi(const char *src, const char* (&dests)[N]);
+	int strmatchi(const char *src, const char*  (&dests)[N])
+	{
+		if (src == nullptr || src[0] == 0)
+			return -1;
+		for (int i = 0; i < N; i++)
+		{
+			const char * dest = dests[i];
+			int idx = 0;
+			for (; dest[idx] != 0 && src[idx] != 0; idx++)
+			{
+				if (dest[idx] == src[idx])
+					continue;
+				if (dest[idx] >= 'a' && dest[idx] <= 'z' && dest[idx] - 32 == src[idx])
+				{
+					continue;
+				}
+				if (dest[idx] >= 'A' && dest[idx] <= 'Z' && dest[idx] + 32 == src[idx])
+				{
+					continue;
+				}
+				idx = -1;
+				break;
+			}
+			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
+				return i;
+		}
+		return -1;
+	}
 }
 #endif

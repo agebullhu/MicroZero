@@ -93,7 +93,7 @@
     <ClInclude Include="cfg\json_config.h" />
     <ClInclude Include="log\mylogger.h" />
     <ClInclude Include="net\api_station.h" />
-    <ClInclude Include="net\ipc_request_socket.h" />
+    <ClInclude Include="net\inner_socket.h" />
     <ClInclude Include="net\plan_dispatcher.h" />
     <ClInclude Include="net\station_dispatcher.h" />
     <ClInclude Include="net\net_default.h" />

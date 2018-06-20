@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -12,6 +14,7 @@ namespace ZmqPlan
         private static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
+            ZeroApplication.RegistZeroObject<TestPlanSub>();
             ZeroApplication.Initialize();
             SystemMonitor.ZeroNetEvent += SystemMonitor_ZeroNetEvent;
             ZeroApplication.Run();
@@ -25,7 +28,25 @@ namespace ZmqPlan
         private static void SystemMonitor_ZeroNetEvent(object sender, SystemMonitor.ZeroNetEventArgument e)
         {
             if (e.Event == ZeroNetEventType.AppRun)
+            {
                 Task.Factory.StartNew(CallCommand);
+            }
+        }
+
+        public class TestPlanSub : SubStation
+        {
+            public TestPlanSub()
+            {
+                Name = "PlanDispatcher";
+                StationName = "PlanDispatcher";
+                IsRealModel = true;
+            }
+            public override void Handle(PublishItem args)
+            {
+                Console.Write("*");
+                //ZeroTrace.WriteInfo("PlanDispatcher", args.Title,args.State.Text(), args.SubTitle, args.Content, args.GlobalId,
+                //    args.Values.LinkToString(" > "));
+            }
         }
 
         /// <summary>
@@ -49,7 +70,8 @@ namespace ZmqPlan
             {
                 plan_type = plan_date_type.minute,
                 plan_value = 1,
-                plan_repet = 1
+                plan_repet = 1,
+                description = "test:plan"
             };
             ZeroTrace.WriteInfo("PlanTest","Start plan");
 
@@ -69,34 +91,7 @@ namespace ZmqPlan
             }
 
             var value = message.Unpack();
-            if (value.State != ZeroOperatorStateType.Ok)
-            {
-                ZeroTrace.WriteInfo("PlanTest", "Recv", result);
-                return;
-            }
-            ZeroTrace.WriteInfo("PlanTest", result);
-
-            for (int i = 100; i >= 0; i--)
-            {
-                if (!socket.Socket.Recv(out message))
-                {
-                    ZeroTrace.WriteInfo("PlanTest", "Wait", socket.Socket.LastError?.Text);
-                    Thread.Sleep(200);
-                    return;
-                }
-                result = message.Unpack();
-                Console.Write($"Message:{result}");
-                foreach (var data in result.Datas)
-                {
-                    Console.Write($" | {data.name}:{data.value}");
-                }
-                Console.WriteLine();
-            }
-            {
-                //if (!poller.Poll() || !poller.CheckIn(0, out var message))
-                //    return;
-                    
-            }
+            ZeroTrace.WriteInfo("PlanTest", value);
         }
     }
 }

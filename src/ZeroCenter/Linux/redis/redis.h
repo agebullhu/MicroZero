@@ -6,17 +6,6 @@
 #include "../stdinc.h"
 namespace agebull
 {
-	//消息队列的消息内容
-#define REDIS_DB_ZERO_VOTE 0x15
-	//消息队列的消息内容
-#define REDIS_DB_ZERO_PLAN 0x14
-	//消息队列的消息内容
-#define REDIS_DB_ZERO_MESSAGE 0x13
-	//站点配置
-#define REDIS_DB_ZERO_STATION 0x12
-	//系统
-#define REDIS_DB_ZERO_SYSTEM 0x11
-
 	class redis_live_scope;
 	class redis_trans_scope;
 	/**

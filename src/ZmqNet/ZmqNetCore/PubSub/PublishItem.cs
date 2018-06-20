@@ -25,6 +25,13 @@ namespace Agebull.ZeroNet.PubSub
         [JsonIgnore]
         public ZeroNetEventType ZeroEvent { get; set; }
 
+
+        /// <summary>
+        /// 带外事件
+        /// </summary>
+        [JsonIgnore]
+        public ZeroOperatorStateType State { get; set; }
+
         /// <summary>
         /// 全局ID
         /// </summary>

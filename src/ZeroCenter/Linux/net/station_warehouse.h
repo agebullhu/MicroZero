@@ -18,7 +18,7 @@ namespace agebull
 			/**
 			* \brief 全局ID
 			*/
-			static int64_t glogal_id_;
+			static int64 glogal_id_, glogal_id_1;
 			/**
 			* \brief 实例队列访问锁
 			*/
@@ -40,12 +40,22 @@ namespace agebull
 			/**
 			* \brief 取全局ID
 			*/
-			static int64_t get_glogal_id()
+			static int64 get_glogal_id()
 			{
+				if (glogal_id_1 == 0)
+				{
+					redis_live_scope redis(json_config::redis_defdb);
+					redis->incr("sys:gid",&glogal_id_1);
+					if (glogal_id_1 > 0xFFFF)
+					{
+						glogal_id_1 = 1;
+						redis->set("sys:gid", "1");
+					}
+				}
 				boost::lock_guard<boost::mutex> grard(examples_mutex_);
-				if (glogal_id_ == 0xFFFFFFFFFFFFFFF)
+				if (glogal_id_ >= 0xFFFFFFFFFFFFF)
 					glogal_id_ = 0;
-				return ++glogal_id_;
+				return ((++glogal_id_) << 16) | glogal_id_1;
 			}
 			/**
 			* \brief 清除所有站点
@@ -121,7 +131,7 @@ namespace agebull
 			* \brief 遍历配置
 			*/
 			static void foreach_configs(std::function<void(shared_ptr<zero_config>&)> look);
-			
+
 		};
 	}
 }

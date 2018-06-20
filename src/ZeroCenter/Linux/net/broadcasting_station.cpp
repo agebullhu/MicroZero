@@ -20,9 +20,10 @@ namespace agebull
 		*/
 		void broadcasting_station::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
-			size_t rqid = 0, glid = 0, reqer = 0;
-			char* description = list[1].get_buffer();
-			for (size_t idx = 2; idx <= static_cast<size_t>(description[0] + 2); idx++)
+			size_t rqid = 0, glid = 0, reqer = 0, titleid = 0;
+			shared_char& description = list[1];
+
+			for (size_t idx = 2; idx <= description.frame_size() + 2; idx++)
 			{
 				switch (description[idx])
 				{
@@ -35,9 +36,12 @@ namespace agebull
 				case ZERO_FRAME_GLOBAL_ID:
 					glid = idx;
 					break;
+				case ZERO_FRAME_PUB_TITLE:
+					titleid = idx;
+					break;
 				}
 			}
-			if (list.size() < 5)
+			if (titleid == 0)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
 					glid == 0 ? nullptr : *list[glid],
@@ -45,19 +49,13 @@ namespace agebull
 					reqer == 0 ? nullptr : *list[reqer]);
 				return;
 			}
-#if _DEBUG_
-			assert(description[1] == ZERO_FRAME_PUB_TITLE);
-#endif // _DEBUG_
-			list[1].swap(list[2]);
+			list[1].swap(list[titleid]);
 
 			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
-				glid == 0 ? nullptr : *list[glid], 
-				rqid == 0 ? nullptr : *list[rqid], 
+				glid == 0 ? nullptr : *list[glid],
+				rqid == 0 ? nullptr : *list[rqid],
 				reqer == 0 ? nullptr : *list[reqer]);
-						
-			description[0] = static_cast<char>(description[0] - 1);
-			for (size_t i = 2; i < list[1].size(); i++)
-				description[i] = description[i + 1];
+
 			send_response(list, 1);
 		}
 
@@ -72,6 +70,7 @@ namespace agebull
 			return send_response(datas);
 		}
 
+		char frames1[] = { ZERO_FRAME_PUBLISHER, ZERO_FRAME_CONTENT, ZERO_FRAME_GLOBAL_ID };
 		/**
 		*\brief 发布消息
 		*/
@@ -80,11 +79,8 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.length() == 0)
 				return false;
-			shared_char des;
-			char* description = des.alloc_desc(3);
-			description[2] = ZERO_FRAME_PUBLISHER;
-			description[3] = ZERO_FRAME_CONTENT;
-			description[4] = ZERO_FRAME_GLOBAL_ID;
+			shared_char description;
+			description.alloc_frame(frames1);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
@@ -92,11 +88,12 @@ namespace agebull
 			datas.emplace_back(arg.c_str());
 
 			shared_char global_id;
-			global_id.set_value(station_warehouse::get_glogal_id());
+			global_id.set_int64x(station_warehouse::get_glogal_id());
 
 			datas.emplace_back(global_id);
 			return send_response(datas);
 		}
+		char frames2[] = { ZERO_FRAME_PUBLISHER,ZERO_FRAME_SUBTITLE, ZERO_FRAME_CONTENT, ZERO_FRAME_GLOBAL_ID };
 		/**
 		*\brief 发布消息
 		*/
@@ -105,21 +102,17 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (!can_do() || publiher.empty())
 				return false;
-			shared_char des;
-			char* description = des.alloc_desc(4);
-			description[2] = ZERO_FRAME_PUBLISHER;
-			description[3] = ZERO_FRAME_SUBTITLE;
-			description[4] = ZERO_FRAME_CONTENT;
-			description[5] = ZERO_FRAME_GLOBAL_ID;
+			shared_char description;
+			description.alloc_frame(frames2);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
-			datas.emplace_back(des);
+			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(sub.c_str());
 			datas.emplace_back(arg.c_str());
 
 			shared_char global_id;
-			global_id .set_value(station_warehouse::get_glogal_id());
+			global_id.set_int64x(station_warehouse::get_glogal_id());
 
 			datas.emplace_back(global_id);
 

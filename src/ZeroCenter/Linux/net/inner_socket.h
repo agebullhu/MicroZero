@@ -3,6 +3,9 @@
 #define _IPC_REQUEST_SOCKET_H
 #include "net_default.h"
 #include "zero_config.h"
+#include "zmq_extend.h"
+#include "../shared_char.h"
+
 namespace agebull
 {
 	namespace zmq_net
@@ -10,19 +13,20 @@ namespace agebull
 		/**
 		* \brief 连接的SOCKET简单封装
 		*/
-		class inproc_request_socket
+		class inner_socket
 		{
 			zmq_socket_state state_;
 			char station_[MAX_PATH];
 			char caller_[MAX_PATH];
 		public:
 			ZMQ_HANDLE socket_;
+
 			/**
 			* \brief 构造
 			* \param caller
 			* \param station
 			*/
-			inproc_request_socket(const char* caller, const char* station) : state_(zmq_socket_state::Succeed)
+			inner_socket(const char* caller, const char* station) : state_(zmq_socket_state::Succeed)
 			{
 				strcpy(station_, station);
 				strcpy(caller_, caller);
@@ -33,12 +37,13 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~inproc_request_socket()
+			~inner_socket()
 			{
 				make_inproc_address(address, station_);
 				zmq_disconnect(socket_, address);
 				zmq_close(socket_);
 			}
+
 			/**
 			* \brief 状态
 			*/
@@ -46,6 +51,7 @@ namespace agebull
 			{
 				return state_;
 			}
+
 			/**
 			* \brief 接收
 			*/
@@ -77,6 +83,7 @@ namespace agebull
 			{
 				return socket_ex::send_more(socket_, string);
 			}
+
 			/**
 			* \brief 发送
 			*/
@@ -84,6 +91,7 @@ namespace agebull
 			{
 				return socket_ex::send(socket_, ls);
 			}
+
 			/**
 			* \brief 发送
 			*/
@@ -91,6 +99,7 @@ namespace agebull
 			{
 				return socket_ex::send(socket_, ls);
 			}
+
 			/**
 			* \brief 进行一次请求
 			* @return 如果返回为false,请检查state.
@@ -120,13 +129,15 @@ namespace agebull
 					{
 						break;
 					}
-				} while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
+				}
+				while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 				return state_ == zmq_socket_state::Succeed;
 			}
+
 			/**
 			* \brief 进行一次请求
 			* @return 如果返回为false,请检查state.
@@ -156,7 +167,8 @@ namespace agebull
 					{
 						break;
 					}
-				} while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
+				}
+				while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
 
 #ifdef TIMER
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
@@ -164,7 +176,6 @@ namespace agebull
 				return state_ == zmq_socket_state::Succeed;
 			}
 		};
-
 	}
 }
 #endif //!_IPC_REQUEST_SOCKET_H

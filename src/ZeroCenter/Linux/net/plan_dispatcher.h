@@ -1,10 +1,10 @@
 #pragma once
-#ifndef _PLAN_STATION_H_
-#define _PLAN_STATION_H_
+#ifndef _PLAN_DISPATCHER_H_
+#define _PLAN_DISPATCHER_H_
 #include "../stdinc.h"
 #include "zero_plan.h"
 #include "zero_station.h"
-#include "ipc_request_socket.h"
+#include "inner_socket.h"
 
 namespace agebull
 {
@@ -15,7 +15,7 @@ namespace agebull
 		*/
 		class plan_dispatcher :public zero_station
 		{
-			map<string, shared_ptr<inproc_request_socket>> sockets_;
+			map<string, shared_ptr<inner_socket>> sockets_;
 		public:
 			/**
 			* \brief 单例
@@ -79,9 +79,12 @@ namespace agebull
 			void plan_poll();
 
 			/**
-			* \brief 执行一条命令
+			* \brief 开始执行一条命令
 			*/
-			shared_char command(const char* caller, vector<shared_char> lines) final;
+			shared_char command(const char* caller, vector<shared_char> lines) final
+			{
+				return ZERO_STATUS_NET_ERROR;
+			}
 
 			/**
 			*\brief 发布消息
@@ -94,7 +97,9 @@ namespace agebull
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
-			void job_end(vector<shared_char>& list) final;
+			void job_end(vector<shared_char>& list) final
+			{
+			}
 			/**
 			* \brief 执行计划
 			*/
@@ -102,13 +107,12 @@ namespace agebull
 			/**
 			* \brief 计划执行返回
 			*/
-			bool plan_dispatcher::on_plan_result(vector<shared_char>& list);
+			bool on_plan_result(vector<shared_char>& list);
 			/**
 			* \brief 计划进入
 			*/
 			bool on_plan_start(ZMQ_HANDLE socket, vector<shared_char>& list);
-
 		};
 	}
 }
-#endif //!_ZERO_PLAN_H_
+#endif //!_PLAN_DISPATCHER_H_

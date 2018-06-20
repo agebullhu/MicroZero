@@ -14,11 +14,11 @@ namespace agebull
 
 #define def_msg_key(key,msg)\
 			char key[MAX_PATH];\
-			sprintf(key, "zero:message:%s:%lld",*((msg)->station), (msg)->plan_id);
+			sprintf(key, "plan:msg:%s:%llx",*((msg)->station), (msg)->plan_id);
 
 #define def_msg_worker_key(key,msg)\
 			char key[MAX_PATH];\
-			sprintf(key, "zero:worker:%s:%lld", *((msg)->station), (msg)->plan_id);
+			sprintf(key, "plan:work:%s:%llx", *((msg)->station), (msg)->plan_id);
 
 		/**
 		* \brief 计划类型
@@ -137,8 +137,8 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			plan_message(): plan_id(0), plan_type(), plan_value(0), plan_repet(0), real_repet(0), no_keep(false), last_state(0),
-			                plan_time(0), exec_time(0)
+			plan_message() : plan_id(0), plan_type(), plan_value(0), plan_repet(0), real_repet(0), no_keep(false), last_state(0),
+				plan_time(0), exec_time(0)
 			{
 			}
 
@@ -155,19 +155,23 @@ namespace agebull
 			/**
 			* \brief JSON序列化
 			*/
+			acl::string write_info() const;
+			/**
+			* \brief JSON序列化
+			*/
 			acl::string write_json() const;
 			/**
 			* \brief 保存下一次执行时间
 			*/
-			bool save() ;
+			bool save();
 			/**
 			* \brief 保存消息
 			*/
-			bool save_message() ;
+			bool save_message() const;
 			/**
 			* \brief 保存下一次执行时间
 			*/
-			bool save_next() ;
+			bool save_next();
 			/**
 			* \brief 读取消息
 			*/
@@ -219,20 +223,29 @@ namespace agebull
 			/**
 			* \brief 加入执行队列
 			*/
-			bool join_queue(time_t time) const;
+			bool join_queue(time_t time);
 
+			/**
+			* \brief 检查几号
+			*/
+			bool check_month();
 
+			/**
+			* \brief 检查周几
+			*/
+			bool check_week();
 			/**
 			* \brief 检查延时
 			*/
-			bool check_delay(boost::posix_time::ptime& now ,boost::posix_time::time_duration delay);
+			bool check_delay(boost::posix_time::time_duration delay);
 
 			/**
-			* \brief 载入现在到期的内容并回调
+			* \brief 执行到期任务
 			*/
-			static void load_now(std::function<int(plan_message&)> exec);
+			static void exec_now(std::function<int(plan_message&)> exec);
 		};
 
 	}
 }
+
 #endif //!_ZERO_PLAN_H_

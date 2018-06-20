@@ -142,9 +142,6 @@
     <ClInclude Include="cfg\json_config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
-    <ClInclude Include="net\ipc_request_socket.h">
-      <Filter>rpc\Ømq</Filter>
-    </ClInclude>
     <ClInclude Include="net\zero_plan.h">
       <Filter>rpc\plan</Filter>
     </ClInclude>
@@ -153,6 +150,9 @@
     </ClInclude>
     <ClInclude Include="shared_char.h">
       <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="net\inner_socket.h">
+      <Filter>rpc\Ømq</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

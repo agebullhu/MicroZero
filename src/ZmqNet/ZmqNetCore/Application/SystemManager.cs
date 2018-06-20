@@ -217,6 +217,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteError(station, "Can't start station");
                 return false;
             }
+            LoadConfig(station);
             ZeroTrace.WriteError(station, "Station runing");
             return true;
         }

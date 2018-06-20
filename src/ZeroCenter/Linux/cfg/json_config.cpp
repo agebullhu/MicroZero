@@ -122,6 +122,7 @@ namespace agebull
 	/**
 	* \brief 取全局配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 值
 	*/
 	bool json_config::get_global_bool(const char * name, bool def)
@@ -132,6 +133,7 @@ namespace agebull
 	/**
 	* \brief 取配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 布尔
 	*/
 	bool json_config::boolean(const char * name, bool def)
@@ -142,6 +144,7 @@ namespace agebull
 	/**
 	* \brief 取配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 数字
 	*/
 	int json_config::number(const char * name, int def)
@@ -159,64 +162,4 @@ namespace agebull
 		return value_map_[name];
 	}
 
-	/**
-	* \brief 大小写敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	* \param dests 目标
-	* \param src 比较源
-	* \return 目标的第一个算0，或小于0表示未找到
-	*/
-	template<int N>
-	int strmatch(const char *src, const char* (&dests)[N])
-	{
-		for (int i = 1; i < N; i++)
-		{
-			const char * dest = dests[i];
-			int idx = 0;
-			for (; dest[idx] != 0 && src[idx] != 0; idx++)
-			{
-				if (dest[idx] == src[idx])
-					continue;
-				idx = -1;
-				break;
-			}
-			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
-				return i - 1;
-		}
-		return -1;
-	}
-
-
-	/**
-	* \brief 大小写不敏感的文本匹配，返回匹配的下标（目标的第一个算1，或小等于0表示未找到）
-	* \param dests 目标
-	* \param src 比较源
-	* \return 目标的第一个算0，或小于0表示未找到
-	*/
-	template<int N>
-	int strmatchi(const char *src, const char* (&dests)[N])
-	{
-		for (int i = 1; i < N; i++)
-		{
-			const char * dest = dests[i];
-			int idx = 0;
-			for (; dest[idx] != 0 && src[idx] != 0; idx++)
-			{
-				if (dest[idx] == src[idx])
-					continue;
-				if (dest[idx] >= 'a' && dest[idx] <= 'z' && dest[idx] - 32 == src[idx])
-				{
-					continue;
-				}
-				if (dest[idx] >= 'A' && dest[idx] <= 'Z' && dest[idx] + 32 == src[idx])
-				{
-					continue;
-				}
-				idx = -1;
-				break;
-			}
-			if (idx >= 0 && dest[idx] == 0 && src[idx] == 0)
-				return i - 1;
-		}
-		return -1;
-	}
 }

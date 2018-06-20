@@ -213,7 +213,7 @@ namespace agebull
 			*/
 			bool hase_ready_works() const
 			{
-				return station_type_ <= STATION_TYPE_PUBLISH || ready_works_ > 0;
+				return station_type_ <= STATION_TYPE_PUBLISH || station_type_ > STATION_TYPE_SPECIAL || ready_works_ > 0;
 			}
 
 			/**

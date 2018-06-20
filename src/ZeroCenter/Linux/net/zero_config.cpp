@@ -127,7 +127,44 @@ namespace agebull
 			}
 			ready_works_ = ready;
 		}
-
+		const char* fields[] =
+		{
+			"station_name"
+			, "station_type"
+			, "request_port"
+			, "worker_out_port"
+			, "worker_in_port"
+			, "_description"
+			, "_caption"
+			, "station_alias"
+			, "station_state"
+			, "request_in"
+			, "request_out"
+			, "request_err"
+			, "worker_in"
+			, "worker_out"
+			, "worker_err"
+			, "short_name"
+		}; 
+		enum class config_fields
+		{
+			station_name
+			, station_type
+			, request_port
+			, worker_out_port
+			, worker_in_port
+			, description
+			, caption
+			, station_alias
+			, station_state
+			, request_in
+			, request_out
+			, request_err
+			, worker_in
+			, worker_out
+			, worker_err
+			, short_name
+		};
 		void zero_config::read_json(const char* val)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex_);
@@ -142,50 +179,32 @@ namespace agebull
 					iter = json.next_node();
 					continue;
 				}
-				const char* fields[] =
-				{
-					"station_name"
-					, "station_type"
-					, "request_port"
-					, "worker_out_port"
-					, "worker_in_port"
-					, "description"
-					, "caption"
-					, "station_alias"
-					, "station_state"
-					, "request_in"
-					, "request_out"
-					, "request_err"
-					, "worker_in"
-					, "worker_out"
-					, "worker_err"
-					, "short_name"
-				};
+				
 				const int idx = strmatchi(tag, fields);
-				switch (idx)
+				switch ((config_fields)idx)
 				{
-				case 0:
+				case config_fields::station_name:
 					station_name_ = iter->get_string();
 					break;
-				case 1:
+				case config_fields::station_type:
 					station_type_ = static_cast<int>(*iter->get_int64());
 					break;
-				case 2:
+				case config_fields::request_port:
 					request_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case 3:
+				case config_fields::worker_out_port:
 					worker_out_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case 4:
+				case config_fields::worker_in_port:
 					worker_in_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case 5:
+				case config_fields::description:
 					station_description_ = iter->get_string();
 					break;
-				case 6:
+				case config_fields::caption:
 					station_caption_ = iter->get_string();
 					break;
-				case 7:
+				case config_fields::station_alias:
 					alias_.clear();
 					{
 						auto ajson = iter->get_obj();
@@ -199,28 +218,25 @@ namespace agebull
 						}
 					}
 					break;
-				case 8:
+				case config_fields::station_state:
 					station_state_ = static_cast<station_state>(*iter->get_int64());
 					break;
-				case 9:
+				case config_fields::request_in:
 					request_in = *iter->get_int64();
 					break;
-				case 10:
+				case config_fields::request_out:
 					request_out = *iter->get_int64();
 					break;
-				case 11:
+				case config_fields::worker_err:
 					worker_err = *iter->get_int64();
 					break;
-				case 12:
+				case config_fields::worker_in:
 					worker_in = *iter->get_int64();
 					break;
-				case 13:
+				case config_fields::worker_out:
 					worker_out = *iter->get_int64();
 					break;
-				case 14:
-					worker_err = *iter->get_int64();
-					break;
-				case 15:
+				case config_fields::short_name:
 					short_name = *iter->get_string();
 					break;
 				default: break;

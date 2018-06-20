@@ -11,7 +11,6 @@ namespace agebull
 		* \brief 端口自动分配的Redis键名
 		*/
 #define port_redis_key "net:port:next"
-#define port_config_key "base_tcp_port"
 
 		/**
 		 * \brief 活动实例集合
@@ -33,7 +32,12 @@ namespace agebull
 		/**
 		* \brief 全局ID
 		*/
-		int64_t station_warehouse::glogal_id_ = 0LL;
+		int64 station_warehouse::glogal_id_ = 0;
+		/**
+		* \brief 全局ID
+		*/
+		int64 station_warehouse::glogal_id_1 = 0;
+
 
 		/**
 		* \brief 还原站点
@@ -61,7 +65,7 @@ namespace agebull
 		*/
 		bool station_warehouse::initialize()
 		{
-			redis_live_scope redis(REDIS_DB_ZERO_STATION);
+			redis_live_scope redis(json_config::redis_defdb);
 			acl::string val;
 			if (redis->get(port_redis_key, val) && atol(val.c_str()) >= json_config::base_tcp_port)
 			{
@@ -73,9 +77,9 @@ namespace agebull
 					cursor = redis->scan(cursor, keys, "net:host:*", &count);
 					for (const acl::string& key : keys)
 					{
-						if (redis->get(key, val))
+						if (redis->get(key, val) && !val.empty())
 						{
-							shared_ptr<zero_config> config(new zero_config());
+							shared_ptr<zero_config> config = make_shared<zero_config>();
 							config->read_json(val);
 							insert_config(config, false);
 						}
@@ -84,7 +88,9 @@ namespace agebull
 			}
 			else
 			{
-				redis->set(port_redis_key, json_config::get_global_string(port_config_key).c_str());
+				acl::string port;
+				port.format_append("%d", json_config::base_tcp_port);
+				redis->set(port_redis_key, port);
 				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
 				install("PlanDispatcher", STATION_TYPE_PLAN, "plan");
 				install("RemoteLog", STATION_TYPE_PUBLISH, "log");
@@ -100,7 +106,7 @@ namespace agebull
 		{
 			glogal_id_ = 0LL;
 			{
-				redis_live_scope redis(REDIS_DB_ZERO_STATION);
+				redis_live_scope redis(json_config::redis_defdb);
 				redis->flushdb();
 			}
 			{
@@ -171,7 +177,7 @@ namespace agebull
 					return *config;
 				boost::format fmt("net:host:%1%");
 				fmt % config->station_name_;
-				redis_live_scope redis(REDIS_DB_ZERO_STATION);
+				redis_live_scope redis(json_config::redis_defdb);
 				redis->set(fmt.str().c_str(), config->to_json(2));
 				return *config;
 			}
@@ -185,7 +191,7 @@ namespace agebull
 		void station_warehouse::save_configs()
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
-			redis_live_scope redis(REDIS_DB_ZERO_STATION);
+			redis_live_scope redis(json_config::redis_defdb);
 			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
@@ -210,12 +216,12 @@ namespace agebull
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
-			redis_live_scope redis(REDIS_DB_ZERO_STATION);
+			redis_live_scope redis(json_config::redis_defdb);
 			acl::string json;
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
-				shared_ptr<zero_config> config(new zero_config());
-				config.reset();
+				shared_ptr<zero_config> config = make_shared<zero_config>();
+				
 				config->read_json(json);
 				configs_.insert(make_pair(station_name, config));
 				return configs_[station_name];
@@ -260,7 +266,7 @@ namespace agebull
 				configs_.erase(station_name);
 			}
 			{
-				redis_live_scope redis(REDIS_DB_ZERO_STATION);
+				redis_live_scope redis(json_config::redis_defdb);
 				char key[256];
 				sprintf(key, "net:host:%s", station_name.c_str());
 				redis->del(key);
@@ -280,7 +286,7 @@ namespace agebull
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
-			redis_live_scope redis(REDIS_DB_ZERO_STATION);
+			redis_live_scope redis(json_config::redis_defdb);
 			acl::string json;
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
@@ -293,11 +299,17 @@ namespace agebull
 			config->short_name = short_name;
 			config->station_type_ = station_type;
 			int64 port;
-			redis->incr(port_redis_key, &port);
-			config->request_port_ = static_cast<int>(port);
+			//计划以下有外部调用接口
+			if (station_type < STATION_TYPE_PLAN)//没有外部访问接口)
+			{
+				redis->incr(port_redis_key, &port);
+				config->request_port_ = static_cast<int>(port);
+			}
+			//所有都有工作出口(广播或调用)
 			redis->incr(port_redis_key, &port);
 			config->worker_out_port_ = static_cast<int>(port);
-			if (station_type >= STATION_TYPE_API)
+			//API与VOTE有返回值接口
+			if (station_type >= STATION_TYPE_API && station_type < STATION_TYPE_PLAN)
 			{
 				redis->incr(port_redis_key, &port);
 				config->worker_in_port_ = static_cast<int>(port);

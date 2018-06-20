@@ -79,16 +79,17 @@ namespace Agebull.ZeroNet.PubSub
                 pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe) }, ZPollEvent.In);
                 while (CanRun)
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    if (!pool.Poll() )
                     {
                         continue;
                     }
-                    using (message)
+                    if (!pool.CheckIn(0, out var message))
                     {
-                        if (message.Unpack(out var item))
-                        {
-                            Items.Push(item);
-                        }
+                        continue;
+                    }
+                    if (message.Unpack(out var item))
+                    {
+                        Items.Push(item);
                     }
                 }
             }

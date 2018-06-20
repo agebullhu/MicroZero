@@ -421,6 +421,7 @@ namespace agebull
 #define ZERO_STATUS_VOTE_END_ID char(0x24)
 #define ZERO_STATUS_VOTE_CLOSED_ID char(0x25)
 
+#define ZERO_STATUS_ERROR_FLAG char(0x80)
 #define ZERO_STATUS_ERROR_ID char(0x81)
 #define ZERO_STATUS_FAILED_ID char(0x82)
 #define ZERO_STATUS_NOT_FIND_ID char(0x83)

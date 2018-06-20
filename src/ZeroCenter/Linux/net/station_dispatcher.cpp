@@ -42,25 +42,24 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (instance == nullptr || get_net_state() == NET_STATE_DISTORY)
 				return false;
-			shared_char desc;
-			char* description = desc.alloc_desc(2, static_cast<char>(event_name));
-			description[2] = ZERO_FRAME_PUBLISHER;
+			shared_char description;
+
+			description.alloc_frame_1(static_cast<char>(event_name), ZERO_FRAME_PUBLISHER);
 			vector<shared_char> datas;
 			datas.emplace_back("zero_event");
-			datas.emplace_back(desc);
+			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
-			if (content.length() == 0)
+			if (content.length() != 0)
 			{
-				description[0] = 1;
+				description.append_frame(ZERO_FRAME_CONTENT);
 			}
-			else
-			{
-				description[3] = ZERO_FRAME_CONTENT;
-				datas.emplace_back(content.c_str());
-			}
-			desc.check_desc_size();
 			return instance->send_response(datas);
 		}
+		char frames[] = {
+			ZERO_FRAME_PUBLISHER,
+			ZERO_FRAME_CONTENT,
+			ZERO_FRAME_GLOBAL_ID
+		};
 		/**
 		*\brief 发布消息
 		*/
@@ -69,19 +68,16 @@ namespace agebull
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (get_net_state() == NET_STATE_DISTORY)
 				return false;
-			shared_char desc;
-			char* description = desc.alloc_desc(3);
-			description[2] = ZERO_FRAME_PUBLISHER;
-			description[3] = ZERO_FRAME_CONTENT;
-			description[4] = ZERO_FRAME_GLOBAL_ID;
+			shared_char description;
+			description.alloc_frame(frames);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
-			datas.emplace_back(desc);
+			datas.emplace_back(description);
 			datas.emplace_back(publiher.c_str());
 			datas.emplace_back(arg.c_str());
 
 			shared_char global_id;
-			global_id.set_value(station_warehouse::get_glogal_id());
+			global_id.set_int64x(station_warehouse::get_glogal_id());
 			datas.emplace_back(global_id);
 			return send_response(datas);
 		}
@@ -98,58 +94,50 @@ namespace agebull
 			return dynamic_cast<broadcasting_station*>(pub)->publish(publiher, title, sub, arg);
 		}
 
+		const char* station_commands_1[] =
+		{
+			"pause", "resume", "start", "close", "host", "install", "uninstall"
+		};
+
+		enum class station_commands_2
+		{
+			pause, resume, start, close, host, install, uninstall
+		};
 		/**
 		* \brief 执行命令
 		*/
 		char station_dispatcher::exec_command(const char* command, vector<shared_char>& arguments, string& json)
 		{
-			const char* commands[]=
+			int idx = strmatchi(command, station_commands_1);
+			switch (static_cast<station_commands_2>(idx))
 			{
-				"call", "pause", "resume", "start", "close", "host", "install", "uninstall"
-			};
-			const int idx = strmatchi(command, commands);
-			switch (idx)
-			{
-			case 0:
-			{
-				//if (arguments.size() < 2)
-				//{
-				//	return ZERO_STATUS_FRAME_INVALID_ID;
-				//}
-
-				//const auto host = *arguments[0];
-				//arguments.erase(arguments.begin());
-
-				//return call_station(host, arguments);
-				return ZERO_STATUS_NOT_SUPPORT_ID;
-			}
-			case 1:
+			case station_commands_2::pause:
 			{
 				return pause_station(arguments.empty() ? "*" : arguments[0]);
 			}
-			case 2:
+			case station_commands_2::resume:
 			{
 				return resume_station(arguments.empty() ? "*" : arguments[0]);
 			}
-			case 3:
+			case station_commands_2::start:
 			{
 				return start_station(arguments.empty() ? "*" : arguments[0]);
 			}
-			case 4:
+			case station_commands_2::close:
 			{
 				return close_station(arguments.empty() ? "*" : arguments[0]);
 			}
-			case 5:
+			case station_commands_2::host:
 			{
 				return host_info(arguments.empty() ? "*" : arguments[0], json);
 			}
-			case 6:
+			case station_commands_2::install:
 			{
 				if (arguments.size() < 3)
 					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID;
 				return install_station(*arguments[0], *arguments[1], *arguments[2]);
 			}
-			case 7:
+			case station_commands_2::uninstall:
 			{
 				if (arguments.empty())
 					return ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID;
@@ -272,21 +260,25 @@ namespace agebull
 			return station_warehouse::restore(config) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
 
+		const char* station_types_1[] = { "api", "pub", "vote" };
+		enum class station_types_2
+		{
+			api, pub, vote, none_ = -1
+		};
 		/**
 		* 当远程调用进入时的处理
 		*/
 		char station_dispatcher::install_station(const char* type_name, const char* stattion, const char* short_name)
 		{
-			const char* types[]= { "api", "pub", "vote" };
-			const int type = strmatchi(type_name, types);
 			bool success;
-			switch (type)
+			int idx = strmatchi(type_name, station_types_1);
+			switch ((station_types_2)idx)
 			{
-			case 0:
+			case station_types_2::api:
 				success = station_warehouse::install(stattion, STATION_TYPE_API, short_name); break;
-			case 1:
+			case station_types_2::pub:
 				success = station_warehouse::install(stattion, STATION_TYPE_PUBLISH, short_name); break;
-			case 2:
+			case station_types_2::vote:
 				success = station_warehouse::install(stattion, STATION_TYPE_VOTE, short_name); break;
 			default:
 				return ZERO_STATUS_NOT_SUPPORT_ID;

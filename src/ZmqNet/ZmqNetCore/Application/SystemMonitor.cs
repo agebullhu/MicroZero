@@ -250,6 +250,8 @@ namespace Agebull.ZeroNet.Core
                 ZeroApplication.JoinCenter();
                 return;
             }
+
+            return;
             if (ZeroApplication.InRun)
                 ZeroApplication.OnHeartbeat();
         }

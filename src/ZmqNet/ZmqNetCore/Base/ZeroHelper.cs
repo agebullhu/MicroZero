@@ -314,6 +314,7 @@ namespace Agebull.ZeroNet.Core
                 item = new PublishItem
                 {
                     Title = messages[0].ReadString(),
+                    State = (ZeroOperatorStateType)description[1],
                     ZeroEvent = (ZeroNetEventType)description[1]
                 };
 
@@ -335,7 +336,10 @@ namespace Agebull.ZeroNet.Core
                             item.Publisher = val;
                             break;
                         case ZeroFrameType.Content:
-                            item.Content = val;
+                            if (item.Content == null)
+                                item.Content = val;
+                            else
+                                item.Values.Add(val);
                             break;
                         default:
                             item.Values.Add(val);
