@@ -129,13 +129,13 @@ namespace agebull
 		}
 		const char* fields[] =
 		{
-			"station_name"
+			"name"
 			, "station_type"
 			, "request_port"
 			, "worker_out_port"
 			, "worker_in_port"
-			, "_description"
-			, "_caption"
+			, "description"
+			, "caption"
 			, "station_alias"
 			, "station_state"
 			, "request_in"
@@ -145,7 +145,7 @@ namespace agebull
 			, "worker_out"
 			, "worker_err"
 			, "short_name"
-		}; 
+		};
 		enum class config_fields
 		{
 			station_name
@@ -179,9 +179,9 @@ namespace agebull
 					iter = json.next_node();
 					continue;
 				}
-				
+
 				const int idx = strmatchi(tag, fields);
-				switch ((config_fields)idx)
+				switch (static_cast<config_fields>(idx))
 				{
 				case config_fields::station_name:
 					station_name_ = iter->get_string();
@@ -189,14 +189,8 @@ namespace agebull
 				case config_fields::station_type:
 					station_type_ = static_cast<int>(*iter->get_int64());
 					break;
-				case config_fields::request_port:
-					request_port_ = static_cast<int>(*iter->get_int64());
-					break;
-				case config_fields::worker_out_port:
-					worker_out_port_ = static_cast<int>(*iter->get_int64());
-					break;
-				case config_fields::worker_in_port:
-					worker_in_port_ = static_cast<int>(*iter->get_int64());
+				case config_fields::short_name:
+					short_name_ = iter->get_string();
 					break;
 				case config_fields::description:
 					station_description_ = iter->get_string();
@@ -207,38 +201,42 @@ namespace agebull
 				case config_fields::station_alias:
 					alias_.clear();
 					{
-						auto ajson = iter->get_obj();
-						if (!ajson->is_array())
-							break;
-						auto it = ajson->first_child();
-						while (it)
+						var ch = iter->first_child();
+						var iter_arr = ch->first_child();
+						while (iter_arr)
 						{
-							alias_.emplace_back(it->get_string());
-							it = ajson->next_child();
+							alias_.emplace_back(iter_arr->get_text());
+							iter_arr = ch->next_child();
 						}
 					}
 					break;
-				case config_fields::station_state:
-					station_state_ = static_cast<station_state>(*iter->get_int64());
+				case config_fields::request_port:
+					request_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case config_fields::request_in:
-					request_in = *iter->get_int64();
+				case config_fields::worker_out_port:
+					worker_out_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case config_fields::request_out:
-					request_out = *iter->get_int64();
+				case config_fields::worker_in_port:
+					worker_in_port_ = static_cast<int>(*iter->get_int64());
 					break;
-				case config_fields::worker_err:
-					worker_err = *iter->get_int64();
-					break;
-				case config_fields::worker_in:
-					worker_in = *iter->get_int64();
-					break;
-				case config_fields::worker_out:
-					worker_out = *iter->get_int64();
-					break;
-				case config_fields::short_name:
-					short_name = *iter->get_string();
-					break;
+					//case config_fields::station_state:
+					//	station_state_ = static_cast<station_state>(*iter->get_int64());
+					//	break;
+					//case config_fields::request_in:
+					//	request_in = *iter->get_int64();
+					//	break;
+					//case config_fields::request_out:
+					//	request_out = *iter->get_int64();
+					//	break;
+					//case config_fields::worker_err:
+					//	worker_err = *iter->get_int64();
+					//	break;
+					//case config_fields::worker_in:
+					//	worker_in = *iter->get_int64();
+					//	break;
+					//case config_fields::worker_out:
+					//	worker_out = *iter->get_int64();
+					//	break;
 				default: break;
 				}
 				iter = json.next_node();
@@ -248,59 +246,48 @@ namespace agebull
 
 		/**
 		* \brief 写入JSON
-		* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
+		* \param type 记录类型 0 全量 1 动态信息 2 基本信息
 		*/
 		acl::string zero_config::to_json(int type)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex_);
 			acl::json json;
 			acl::json_node& node = json.create_node();
-			node.add_text("station_name", station_name_.c_str());
-			node.add_number("station_state", static_cast<int>(station_state_));
+			json_add_str(node,"name", station_name_);
+			json_add_num(node,"station_state", static_cast<int>(station_state_));
 			if (type != 1)
 			{
-				if (!short_name.empty())
-					node.add_text("short_name", short_name.c_str());
-				if (!station_caption_.empty())
-					node.add_text("_caption", station_caption_.c_str());
-				if (!station_description_.empty())
-					node.add_text("_description", station_description_.c_str());
-				if (alias_.size() > 0)
+				json_add_str(node,"caption", station_caption_);
+				json_add_str(node, "short_name", short_name_);
+				json_add_str(node,"description", station_description_);
+				acl::json_node& array = json.create_array();
+				for (auto alia : alias_)
 				{
-					acl::json_node& array = json.create_array();
-					array.set_tag("station_alias");
-					array.add_array_text(short_name.c_str());
-					for (auto alia : alias_)
-					{
-						array.add_array_text(alia.c_str());
-					}
+					json_add_array_str(array, alia);
 				}
-				if (station_type_ > 0)
-					node.add_number("station_type", station_type_);
-				if (request_port_ > 0)
-					node.add_number("request_port", request_port_);
-				if (worker_in_port_ > 0)
-					node.add_number("worker_in_port", worker_in_port_);
-				if (worker_out_port_ > 0)
-					node.add_number("worker_out_port", worker_out_port_);
+				node.add_child("station_alias", array);
+				json_add_num(node,"station_type", station_type_);
+				json_add_num(node,"request_port", request_port_);
+				json_add_num(node,"worker_in_port", worker_in_port_);
+				json_add_num(node,"worker_out_port", worker_out_port_);
 			}
 			if (type < 2)
 			{
-				node.add_number("request_in", request_in);
-				node.add_number("request_out", request_out);
-				node.add_number("request_err", request_err);
-				node.add_number("worker_in", worker_in);
-				node.add_number("worker_out", worker_out);
-				node.add_number("worker_err", worker_err);
+				json_add_num(node,"request_in", request_in);
+				json_add_num(node,"request_out", request_out);
+				json_add_num(node,"request_err", request_err);
+				json_add_num(node,"worker_in", worker_in);
+				json_add_num(node,"worker_out", worker_out);
+				json_add_num(node,"worker_err", worker_err);
 				acl::json_node& array = json.create_array();
 				for (auto& worker : workers)
 				{
 					acl::json_node& work = json.create_node();
-					work.add_number("level", worker.second.level);
-					work.add_number("state", worker.second.state);
-					work.add_number("pre_time", worker.second.pre_time);
-					work.add_text("real_name", worker.second.real_name.c_str());
-					work.add_text("ip_address", worker.second.ip_address.c_str());
+					json_add_num(work,"level", worker.second.level);
+					json_add_num(work,"state", worker.second.state);
+					json_add_num(work,"pre_time", worker.second.pre_time);
+					json_add_str(work, "real_name", worker.second.real_name);
+					json_add_str(work, "ip_address", worker.second.ip_address);
 					array.add_child(work);
 				}
 				node.add_child("workers", array);

@@ -1,11 +1,12 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Agebull.Common;
+using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using ZeroMQ;
-using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Log
 {
@@ -19,7 +20,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 构造
         /// </summary>
-        protected BatchPublisher() : base(StationTypePublish,false)
+        protected BatchPublisher() : base(StationTypePublish, false)
         {
         }
         /// <summary>
@@ -43,6 +44,10 @@ namespace Agebull.ZeroNet.Log
         /// 请求队列
         /// </summary>
         private static readonly SyncBatchQueue<TData> Items = new SyncBatchQueue<TData>();
+        /// <summary>
+        /// TSON序列化操作器
+        /// </summary>
+        protected ITsonOperator<TData> TsonOperator { get; set; }
 
         #endregion
 
@@ -62,9 +67,17 @@ namespace Agebull.ZeroNet.Log
         }
 
         /// <summary>
+        /// 析构
+        /// </summary>
+        protected override void DoDispose()
+        {
+            Items.Save(CacheFileName);
+        }
+
+        /// <summary>
         /// 数据进入的处理
         /// </summary>
-        protected virtual void OnSend(List<TData> data)
+        protected virtual void OnSend(TData[] data)
         {
         }
         /// <summary>
@@ -74,39 +87,70 @@ namespace Agebull.ZeroNet.Log
         protected sealed override bool RunInner(CancellationToken token)
         {
             _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
-            SystemManager.HeartReady(StationName, RealName);
+            SystemManager.Instance.HeartReady(StationName, RealName);
             State = StationState.Run;
+            int cnt = 0;
+
             while (CanRun)
             {
-                if (!Items.StartProcess(out List<TData> data, 100))
-                {
-                    continue;
-                }
+                Thread.Sleep(10);
                 if (token.IsCancellationRequested)
                     break;
-                OnSend(data);
-                while (data.Count > 0)
+                if (++cnt == 36)
                 {
-                    var batch= data.GetRange(0, data.Count > 36 ? 36 :data.Count);
-                    if (!_socket.Publish(new PublishItem
-                    {
-                        Title = Name,
-                        Content = JsonConvert.SerializeObject(batch)
-                    }))
-                    {
-                        _socket.TryClose();
-                        Thread.Sleep(100);
-                        _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
-                        continue;
-                    }
-                    if (data.Count > 36)
-                        data.RemoveRange(0, 36);
-                    else
-                        break;
+                    GC.Collect();
+                    cnt = 0;
                 }
-                Items.EndProcess();
+                var array = Items.Switch();
+                if (array == null)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
+                if (TsonOperator == null)
+                {
+                    do
+                    {
+                        var datas = array.Count > 300 ? array.Take(255).ToArray() : array.ToArray();
+                        while (!_socket.Publish(Name, datas) && CanRun)
+                            Thread.Sleep(10);
+                        if (array.Count > 300)
+                            array.RemoveRange(0, 255);
+                    } while (array.Count > 300);
+                    continue;
+                }
+
+                int idx = 0;
+                while (idx < array.Count)
+                {
+                    byte[] buf;
+                    using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
+                    {
+                        serializer.WriteType(TsonDataType.Object);
+                        int size = array.Count - idx;
+                        if (size > 255)
+                            size = 255;
+                        serializer.WriteLen(size);
+                        for (; size > 0 && idx < array.Count; idx++, --size)
+                        {
+                            if (array[idx] == null)
+                            {
+                                serializer.WriteType(TsonDataType.Empty);
+                                continue;
+                            }
+                            using (TsonObjectSerializeScope.CreateScope(serializer))
+                            {
+                                if (array[idx] != null)
+                                    TsonOperator.ToTson(serializer, array[idx]);
+                            }
+                        }
+                        buf = serializer.Close();
+                    }
+                    while (!_socket.Publish(ZeroPublishExtend.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanRun)
+                        Thread.Sleep(10);
+                }
             }
-            SystemManager.HeartLeft(StationName, RealName);
+            SystemManager.Instance.HeartLeft(StationName, RealName);
             _socket.TryClose();
             return true;
         }

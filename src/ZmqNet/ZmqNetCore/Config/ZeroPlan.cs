@@ -1,4 +1,7 @@
-﻿namespace Agebull.ZeroNet.Core
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace Agebull.ZeroNet.Core
 {
 
     /// <summary>
@@ -15,7 +18,7 @@
         /// </summary>
         time,
         /// <summary>
-        ///  秒间隔后发送
+        /// 秒间隔后发送
         /// </summary>
         second,
         /// <summary>
@@ -38,12 +41,61 @@
         /// 每月几号
         /// </summary>
         month
-    };
+    }
+
+    /// <summary>
+    /// 计划状态
+    /// </summary>
+    public enum plan_message_state
+    {
+        /// <summary>
+        /// 无状态
+        /// </summary>
+        none,
+        /// <summary>
+        /// 排队
+        /// </summary>
+        queue,
+        /// <summary>
+        /// 正常执行
+        /// </summary>
+        execute,
+        /// <summary>
+        /// 重试执行
+        /// </summary>
+        retry,
+        /// <summary>
+        /// 跳过
+        /// </summary>
+        skip,
+        /// <summary>
+        /// 暂停
+        /// </summary>
+        pause,
+        /// <summary>
+        /// 正常关闭
+        /// </summary>
+        close,
+        /// <summary>
+        /// 错误关闭
+        /// </summary>
+        error,
+        /// <summary>
+        /// 删除
+        /// </summary>
+        remove
+    }
     /// <summary>
     /// 计划
     /// </summary>
-    public class ZeroPlan
+    [JsonObject(MemberSerialization.OptOut)]
+    public class ZeroPlanInfo
     {
+        /// <summary>
+        /// 跳过设置次数(1-n 跳过次数)
+        /// </summary>
+        public int skip_set;
+
         /// <summary>
         /// 计划类型
         /// </summary>
@@ -78,11 +130,10 @@
         /// </summary>
         public string description;
 
-
         /// <summary>
         /// 是否空跳
         /// </summary>
-        public bool no_keep;
+        public bool no_skip;
 
         /// <summary>
         /// 计划时间
@@ -97,5 +148,90 @@
         /// </remarks>
         public int plan_time;
 
+    }
+
+    /// <summary>
+    /// 计划
+    /// </summary>
+    [JsonObject(MemberSerialization.OptOut)]
+    public class ZeroPlan : ZeroPlanInfo
+    {
+        /// <summary>
+        /// 消息标识
+        /// </summary>
+        public long plan_id;
+
+        /// <summary>
+        /// 发起者提供的标识
+        /// </summary>
+        public string request_id;
+
+        /// <summary>
+        /// 站点
+        /// </summary>
+        public string station;
+
+        /// <summary>
+        /// 站点
+        /// </summary>
+        public int station_type;
+
+        /// <summary>
+        /// 原始请求者
+        /// </summary>
+        public string caller;
+
+
+        /// <summary>
+        /// 执行次数
+        /// </summary>
+        public int real_repet;
+
+
+
+        /// <summary>
+        /// 跳过次数计数,
+        /// 1 当no_skip=true时,空跳也会参与计数.
+        /// 2 此计数在执行时发生,
+        ///     2.1 skip_set &lt; 0 直接计算下一次执行时间,
+        ///     2.2 在skip_set &gt; 0时,skip_set &lt; skip_num时直接计算下一次执行时间,否则正常执行
+        /// </summary>
+        public int skip_num;
+
+        /// <summary>
+        /// 最后一次执行状态
+        /// </summary>
+        public int exec_state;
+
+        /// <summary>
+        /// 计划状态
+        /// </summary>
+        public plan_message_state plan_state;
+        
+        /// <summary>
+        /// 执行时间
+        /// </summary>
+        public long exec_time;
+
+        /// <summary>
+        /// 调用的API
+        /// </summary>
+        public string command;
+
+        /// <summary>
+        /// 调用使用的帧
+        /// </summary>
+        public List<string> frames = new List<string>();
+
+        /// <summary>
+        /// 上下文
+        /// </summary>
+        [JsonIgnore]
+        public string context;
+        /// <summary>
+        /// 调用的参数
+        /// </summary>
+        [JsonIgnore]
+        public string argument;
     }
 }

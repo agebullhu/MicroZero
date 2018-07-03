@@ -20,43 +20,38 @@ namespace agebull
 		*/
 		void broadcasting_station::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
-			size_t rqid = 0, glid = 0, reqer = 0, titleid = 0;
-			shared_char& description = list[1];
+			shared_char caller = list[0];
+			if (inner)
+				list.erase(list.begin());
+			var description = list[1];
+			size_t rid = 0, gid = 0, cid = 0, tid = 0;
 
 			for (size_t idx = 2; idx <= description.frame_size() + 2; idx++)
 			{
 				switch (description[idx])
 				{
 				case ZERO_FRAME_REQUEST_ID:
-					rqid = idx;
+					rid = idx;
 					break;
 				case ZERO_FRAME_REQUESTER:
-					reqer = idx;
+					cid = idx;
 					break;
 				case ZERO_FRAME_GLOBAL_ID:
-					glid = idx;
+					gid = idx;
 					break;
 				case ZERO_FRAME_PUB_TITLE:
-					titleid = idx;
+					tid = idx;
 					break;
 				}
 			}
-			if (titleid == 0)
+			if (tid == 0)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
-					glid == 0 ? nullptr : *list[glid],
-					rqid == 0 ? nullptr : *list[rqid],
-					reqer == 0 ? nullptr : *list[reqer]);
+				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID_ID, list, gid, rid, cid);
 				return;
 			}
-			list[1].swap(list[titleid]);
-
-			send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
-				glid == 0 ? nullptr : *list[glid],
-				rqid == 0 ? nullptr : *list[rqid],
-				reqer == 0 ? nullptr : *list[reqer]);
-
-			send_response(list, 1);
+			send_request_status(socket, *caller, ZERO_STATUS_OK_ID, list, gid, rid, cid);
+			list[0] = list[tid];
+			send_response(list, 0);
 		}
 
 		/**
@@ -125,23 +120,22 @@ namespace agebull
 		void broadcasting_station::launch(shared_ptr<broadcasting_station> station)
 		{
 			zero_config& config = station->get_config();
-			config.start();
-			if (!station_warehouse::join(station.get()))
-			{
-				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
-				return;
-			}
 			if (!station->initialize())
 			{
 				config.failed("initialize");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
+			if (!station_warehouse::join(station.get()))
+			{
+				config.failed("join warehouse");
+				set_command_thread_bad(config.station_name_.c_str());
+				return;
+			}
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
+			if (!config.is_state(station_state::Uninstall) && get_net_state() == NET_STATE_RUNING)
 			{
 				config.restart();
 				run(station->get_config_ptr());

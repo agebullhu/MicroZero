@@ -1,4 +1,5 @@
 using System.ComponentModel.Composition;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using ApiTest;
@@ -24,7 +25,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            ZeroApplication.RegistZeroObject<Program.LoginStation>();
+            //ZeroApplication.RegistZeroObject<LoginStation>();
         }
     }
 }

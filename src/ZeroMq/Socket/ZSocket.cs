@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -33,7 +34,7 @@ namespace ZeroMQ
                 return null;
             }
             if (identity == null)
-                identity = Guid.NewGuid().ToByteArray();
+                identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
             socket.SetOption(ZSocketOption.IDENTITY, identity);
             socket.SetOption(ZSocketOption.RECONNECT_IVL, 10);
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
@@ -41,7 +42,7 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.LINGER, 200);
             socket.SetOption(ZSocketOption.RCVTIMEO, 1000);
 
-            socket.SetOption(ZSocketOption.BACKLOG, 100);
+            socket.SetOption(ZSocketOption.BACKLOG, 50000);
             socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
             socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, 200);
             socket.SetOption(ZSocketOption.HEARTBEAT_TTL, 200);
@@ -49,11 +50,7 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 1);
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, 4096);
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, 4096);
-            if (type == ZSocketType.SUB)
-            {
-                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe ?? "");
-            }
-            else
+            if (type != ZSocketType.SUB)
             {
                 socket.SetOption(ZSocketOption.SNDTIMEO, 1000);
                 //socket.SetOption(ZSocketOption.SNDHWM, 4096);
@@ -86,14 +83,14 @@ namespace ZeroMQ
                 return null;
             }
             if (identity == null)
-                identity = Guid.NewGuid().ToByteArray();
+                identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
             socket.SetOption(ZSocketOption.IDENTITY, identity);
             socket.SetOption(ZSocketOption.RECONNECT_IVL, 50);
             socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, 50);
             //socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
             socket.SetOption(ZSocketOption.LINGER, 100);
             socket.SetOption(ZSocketOption.RCVTIMEO, 5000);
-            socket.SetOption(ZSocketOption.BACKLOG, 100);
+            //socket.SetOption(ZSocketOption.BACKLOG, 8192);
             //socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
             //socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, 200);
             //socket.SetOption(ZSocketOption.HEARTBEAT_TTL, 200);
@@ -103,7 +100,7 @@ namespace ZeroMQ
             //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, 5);
 
             //socket.SetOption(ZSocketOption.RCVHWM, 4096);
-            socket.SetOption(ZSocketOption.SNDHWM, 512);
+            //socket.SetOption(ZSocketOption.SNDHWM, 4096);
             if (type == ZSocketType.SUB)
             {
                 socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe ?? "");
@@ -185,28 +182,75 @@ namespace ZeroMQ
         /// 发送
         /// </summary>
         /// <param name="message">消息</param>
-        /// <param name="autoDispose">发送完成后是否自动销毁message对象</param>
+        /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
+        public bool SendTo(ZMessage message)
+        {
+            using (message)
+            {
+                _error = null;
+                var array = message.ToArray();
+                int i = 0;
+                bool first = true;
+                int retry = 5;
+                for (; i < array.Length - 1; ++i)
+                {
+                    if (!Send(array[i], first, 2, ref retry))
+                    {
+                        return false;
+                    }
+                    first = false;
+                }
+                return Send(array[i], first, 1, ref retry);
+            }
+        }
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="array">消息</param>
         /// <returns>是否发送成功</returns>
-        public bool SendTo(ZMessage message, bool autoDispose = true)
+        public bool SendTo(params byte[][] array)
         {
             _error = null;
-            var array = message.ToArray();
             int i = 0;
             bool first = true;
             int retry = 5;
             for (; i < array.Length - 1; ++i)
             {
-                if (!Send(array[i], first, 2, ref retry))
-                {
-                    if (autoDispose)
-                        message.Dispose();
-                    return false;
-                }
+                using (var f = new ZFrame(array[i]))
+                    if (!Send(f, first, 2, ref retry))
+                        return false;
                 first = false;
             }
-            bool success = Send(array[i], first, 1, ref retry);
-            if (autoDispose)
-                message.Dispose();
+            using (var f = new ZFrame(array[i]))
+                return Send(f, first, 1, ref retry);
+        }
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="array">消息</param>
+        /// <returns>是否发送成功</returns>
+        public bool SendTo(params ZFrame[] array)
+        {
+            _error = null;
+            int i = 0;
+            bool first = true;
+            int retry = 5;
+            bool success = true;
+            for (; i < array.Length - 1; ++i)
+            {
+                if (success)
+                {
+                    success = Send(array[i], first, 2, ref retry);
+                    if (success)
+                        first = false;
+                }
+                array[i].Dispose();
+            }
+            if (success)
+                success = Send(array[i], first, 1, ref retry);
+            array[i].Dispose();
             return success;
         }
 
@@ -1843,5 +1887,80 @@ namespace ZeroMQ
                 throw new ObjectDisposedException(GetType().FullName);
         }
 #pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+    }
+
+
+    /// <summary>随机字符串生成器</summary>
+    internal class RandomOperate
+    {
+        /// <summary>字符</summary>
+        private static readonly char[] keys = new char[35]
+        {
+            '0',
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9',
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H',
+            'i',
+            'J',
+            'K',
+            'L',
+            'M',
+            'N',
+            'P',
+            'Q',
+            'R',
+            'S',
+            'T',
+            'U',
+            'V',
+            'W',
+            'X',
+            'Y',
+            'Z'
+        };
+        /// <summary>基准数字</summary>
+        private static readonly long BaseTicks = new DateTime(2015, 1, 1).Ticks;
+
+        /// <summary>内部构架</summary>
+        private RandomOperate()
+        {
+        }
+
+        /// <summary>随机生成字符串（数字和字母混和）</summary>
+        /// <param name="codeCount"></param>
+        /// <returns></returns>
+        public static string Generate(int codeCount)
+        {
+            return new RandomOperate().GenerateCode(codeCount);
+        }
+
+        private string GenerateCode(int codeCount)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            Random random1 = new Random((int)(DateTime.Now.Ticks - BaseTicks));
+            Random random2 = new Random(GetHashCode());
+            int num = 0;
+            while (num < codeCount)
+            {
+                stringBuilder.Append(keys[random1.Next(keys.Length)]);
+                stringBuilder.Append(keys[random2.Next(keys.Length)]);
+                num += 2;
+            }
+            return stringBuilder.ToString();
+        }
     }
 }

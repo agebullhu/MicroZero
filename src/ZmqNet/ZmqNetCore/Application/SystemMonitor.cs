@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.PubSub;
-using Newtonsoft.Json;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -44,7 +42,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     if (!message.Unpack(out var item))
                         continue;
-                    OnMessagePush(item.ZeroEvent, item.Station, item.Content);
+                    OnMessagePush(item.ZeroEvent, item.Publisher, item.Content);
                 }
             }
             TaskEndSem.Release();
@@ -96,6 +94,9 @@ namespace Agebull.ZeroNet.Core
                 case ZeroNetEventType.CenterStationInstall:
                     station_install(station, content);
                     return;
+                case ZeroNetEventType.CenterStationUpdate:
+                    station_update(station, content);
+                    return;
                 case ZeroNetEventType.CenterStationUninstall:
                     station_uninstall(station);
                     return;
@@ -110,12 +111,11 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_uninstall", name);
-            ZeroApplication.Config[name] = null;
             config.State = ZeroCenterState.Uninstall;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationUninstall, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUninstall, null, config);
         }
 
         private static void station_install(string name, string content)
@@ -126,7 +126,18 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationInstall, content, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, content, config);
+        }
+
+        private static void station_update(string name, string content)
+        {
+            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
+                return;
+            ZeroTrace.WriteInfo("station_update", name, content);
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, content, config);
         }
 
         private static void station_closing(string name)
@@ -134,11 +145,12 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_closing", name);
-            config.State = ZeroCenterState.Closing;
+            if (config.State != ZeroCenterState.Uninstall)
+                config.State = ZeroCenterState.Closing;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationClosing, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationClosing, null, config);
         }
 
         private static void station_resume(string name)
@@ -149,7 +161,7 @@ namespace Agebull.ZeroNet.Core
             config.State = ZeroCenterState.Run;
             if (ZeroApplication.InRun)
                 ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationResume, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationResume, null, config);
         }
 
         private static void station_pause(string name)
@@ -161,7 +173,7 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationPause, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationPause, null, config);
         }
 
         private static void station_left(string name)
@@ -169,11 +181,12 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_left", name);
-            config.State = ZeroCenterState.Closed;
+            if (config.State != ZeroCenterState.Uninstall)
+                config.State = ZeroCenterState.Closed;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
         }
 
         private static void station_join(string name, string content)
@@ -185,7 +198,7 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            InvokeEvent(ZeroNetEventType.CenterStationJoin, content, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, content, config);
         }
 
         /// <summary>
@@ -195,12 +208,11 @@ namespace Agebull.ZeroNet.Core
         /// <param name="content"></param>
         private static void station_state(string name, string content)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var old))
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             try
             {
-                var config = JsonConvert.DeserializeObject<StationConfig>(content);
-                InvokeEvent(ZeroNetEventType.CenterStationState, content, old, config);
+                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationState, content, config);
             }
             catch (Exception e)
             {
@@ -224,7 +236,7 @@ namespace Agebull.ZeroNet.Core
             if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Closing, StationState.Run) == StationState.Run)
             {
                 ZeroTrace.WriteError("center_close", content);
-                RaiseEvent(ZeroNetEventType.CenterSystemClosing);
+                ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
                 ZeroApplication.ZerCenterStatus = ZeroCenterState.Closed;
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
@@ -251,82 +263,8 @@ namespace Agebull.ZeroNet.Core
                 return;
             }
 
-            return;
             if (ZeroApplication.InRun)
                 ZeroApplication.OnHeartbeat();
-        }
-
-        #endregion
-
-        #region 对外事件
-
-        /// <summary>
-        /// 站点事件参数
-        /// </summary>
-        public class ZeroNetEventArgument : EventArgs
-        {
-            /// <summary>
-            /// 构造
-            /// </summary>
-            /// <param name="centerEvent"></param>
-            /// <param name="context"></param>
-            /// <param name="config"></param>
-            /// <param name="nc"></param>
-            public ZeroNetEventArgument(ZeroNetEventType centerEvent, string context, StationConfig config, StationConfig nc)
-            {
-                EventConfig = config;
-                Event = centerEvent;
-                Context = context;
-                NewConfig = nc;
-            }
-
-            /// <summary>
-            /// 站点名称
-            /// </summary>
-            public readonly ZeroNetEventType Event;
-
-            /// <summary>
-            /// 内容
-            /// </summary>
-            public readonly string Context;
-
-            /// <summary>
-            /// 配置
-            /// </summary>
-            public readonly StationConfig EventConfig;
-
-            /// <summary>
-            /// 配置
-            /// </summary>
-            public readonly StationConfig NewConfig;
-        }
-
-        /// <summary>
-        /// 站点事件发生
-        /// </summary>
-        public static event EventHandler<ZeroNetEventArgument> ZeroNetEvent;
-
-        /// <summary>
-        /// 发出事件
-        /// </summary>
-        static void InvokeEvent(ZeroNetEventType centerEvent, string context, StationConfig config, StationConfig newcfg = null)
-        {
-            try
-            {
-                ZeroNetEvent?.Invoke(ZeroApplication.Config, new ZeroNetEventArgument(centerEvent, context, config, newcfg));
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("InvokeEvent", e, centerEvent);
-            }
-        }
-        /// <summary>
-        /// 发出事件
-        /// </summary>
-        /// <param name="centerEvent"></param>
-        internal static void RaiseEvent(ZeroNetEventType centerEvent)
-        {
-            ZeroNetEvent?.Invoke(ZeroApplication.Config, new ZeroNetEventArgument(centerEvent, null, null, null));
         }
 
         #endregion

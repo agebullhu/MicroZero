@@ -16,7 +16,7 @@ namespace ZmqPlan
             ZeroApplication.CheckOption();
             ZeroApplication.RegistZeroObject<TestPlanSub>();
             ZeroApplication.Initialize();
-            SystemMonitor.ZeroNetEvent += SystemMonitor_ZeroNetEvent;
+            ZeroApplication.ZeroNetEvent += SystemMonitor_ZeroNetEvent;
             ZeroApplication.Run();
             while (Console.ReadKey().Key != ConsoleKey.Q)
             {
@@ -25,7 +25,7 @@ namespace ZmqPlan
             ZeroApplication.Shutdown();
         }
 
-        private static void SystemMonitor_ZeroNetEvent(object sender, SystemMonitor.ZeroNetEventArgument e)
+        private static void SystemMonitor_ZeroNetEvent(object sender, ZeroNetEventArgument e)
         {
             if (e.Event == ZeroNetEventType.AppRun)
             {
@@ -55,7 +55,7 @@ namespace ZmqPlan
         /// <returns></returns>
         public static void CallCommand()
         {
-            if (!SystemManager.TryInstall("Test"))
+            if (!SystemManager.Instance.TryInstall("Test", "api"))
                 return;
 
             byte[] description = {
@@ -68,9 +68,9 @@ namespace ZmqPlan
             };
             var plan = new ZeroPlan
             {
-                plan_type = plan_date_type.minute,
+                plan_type = plan_date_type.second,
                 plan_value = 1,
-                plan_repet = 1,
+                plan_repet = 100,
                 description = "test:plan"
             };
             ZeroTrace.WriteInfo("PlanTest","Start plan");

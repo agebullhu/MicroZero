@@ -22,7 +22,7 @@ namespace agebull
 			//default:
 			//	return ZERO_STATUS_NET_ERROR;
 			//}
-				return ZERO_STATUS_NET_ERROR;
+			return ZERO_STATUS_NET_ERROR;
 		}
 
 		/**
@@ -31,16 +31,15 @@ namespace agebull
 		void api_station::launch(shared_ptr<api_station>& station)
 		{
 			zero_config& config = station->get_config();
-			config.start();
-			if (!station_warehouse::join(station.get()))
-			{
-				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
-				return;
-			}
 			if (!station->initialize())
 			{
 				config.failed("initialize");
+				set_command_thread_bad(config.station_name_.c_str());
+				return;
+			}
+			if (!station_warehouse::join(station.get()))
+			{
+				config.failed("join warehouse");
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
@@ -49,7 +48,7 @@ namespace agebull
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (config.station_state_ != station_state::Uninstall && get_net_state() == NET_STATE_RUNING)
+			if (!config.is_state(station_state::Uninstall) && get_net_state() == NET_STATE_RUNING)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -66,30 +65,30 @@ namespace agebull
 		*/
 		inline void api_station::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
-			int frame_skip = inner ? 1 : 0;
-			var description = *list[inner ? 2 : 1];
+			shared_char caller = list[0];
+			if (inner)
+				list.erase(list.begin());
+			var description = list[1];
 			size_t reqid = 0, reqer = 0, glid_index = 0;
 			for (size_t i = 2; i <= static_cast<size_t>(description[0] + 2); i++)
 			{
 				switch (description[i])
 				{
 				case ZERO_FRAME_REQUESTER:
-					reqer = i + frame_skip;
+					reqer = i;
 					break;
 				case ZERO_FRAME_REQUEST_ID:
-					reqid = i + frame_skip;
+					reqid = i;
 					break;
 				case ZERO_FRAME_GLOBAL_ID:
-					glid_index = i + frame_skip;
+					glid_index = i;
 					break;
 				}
 			}
 			if (glid_index == 0)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID,
-					nullptr,
-					reqid == 0 ? nullptr : *list[reqid],
-					reqer == 0 ? nullptr : *list[reqer]);
+				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID_ID, list, 0, reqid, reqer);
+				return;
 			}
 			switch (description[1])
 			{
@@ -103,10 +102,7 @@ namespace agebull
 				//	send_request_result(iter->second);
 				//}
 				//else
-				send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID,
-					*list[glid_index],
-					reqid == 0 ? nullptr : *list[reqid],
-					reqer == 0 ? nullptr : *list[reqer]);
+				send_request_status(socket, *caller, ZERO_STATUS_NOT_WORKER_ID, list, glid_index, reqid, reqer);
 			}break;
 			case ZERO_BYTE_COMMAND_CLOSE_REQUEST:
 			{
@@ -114,25 +110,16 @@ namespace agebull
 				const auto iter = results.find(atoll(*list[glid_index]));
 				if (iter != results.end())
 					results.erase(iter);*/
-				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
-					*list[glid_index],
-					reqid == 0 ? nullptr : *list[reqid],
-					reqer == 0 ? nullptr : *list[reqer]);
+				send_request_status(socket, *caller, ZERO_STATUS_OK_ID, list, glid_index, reqid, reqer);
 			}break;
 			default:
 				if (!send_response(list))
 				{
-					send_request_status(socket, *list[0], ZERO_STATUS_NOT_WORKER_ID,
-						*list[glid_index],
-						reqid == 0 ? nullptr : *list[reqid],
-						reqer == 0 ? nullptr : *list[reqer]);
+					send_request_status(socket, *caller, ZERO_STATUS_NOT_WORKER_ID, list, glid_index, reqid, reqer);
 				}
-				else if(description[1] == ZERO_BYTE_COMMAND_PROXY)//必须返回信息到代理
+				else if (description[1] == ZERO_BYTE_COMMAND_PROXY)//必须返回信息到代理
 				{
-					send_request_status(socket, *list[0], ZERO_STATUS_RUNING_ID,
-						*list[glid_index],
-						reqid == 0 ? nullptr : *list[reqid],
-						reqer == 0 ? nullptr : *list[reqer]);
+					send_request_status(socket, *caller, ZERO_STATUS_RUNING_ID, list, glid_index, reqid, reqer);
 				}
 				break;
 			}
@@ -150,7 +137,7 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			send_request_result(list[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_,list);
+			send_request_result(list[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, list);
 		}
 
 	}

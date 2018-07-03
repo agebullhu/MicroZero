@@ -2,6 +2,7 @@
 #define AGEBULL_REDIS_H
 #pragma once
 #include "../cfg/json_config.h"
+#include "../shared_char.h"
 #ifndef CLIENT
 #include "../stdinc.h"
 namespace agebull
@@ -240,6 +241,160 @@ namespace agebull
 		bool set_hash(const char* key, const char* sub_key, const char* vl) const;
 		bool del_hash(const char* key, const char* sub_key) const;
 		bool get_hash(const char* key, std::map<acl::string, acl::string>& vl) const;
+
+		bool set_hash_val(const char* key, const char* sub_key, const agebull::zmq_net::shared_char& ptr) const
+		{
+			return m_redis_cmd->hset(key, sub_key, *ptr, ptr.size()) >= 0;
+		}
+		void set_hash_val(const char* key, const char* sub_key, int64 number)
+		{
+			char buf[32];
+			sprintf(buf, "%lld", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+		void set_hash_val(const char* key, const char* sub_key,uint64 number)
+		{
+			char buf[32];
+			sprintf(buf, "%llu", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+		void set_hash_val(const char* key, const char* sub_key, bool number)
+		{
+			m_redis_cmd->hset(key, sub_key, number ? "1":"0");
+		}
+		void set_hash_val(const char* key, const char* sub_key, int number)
+		{
+			char buf[32];
+			sprintf(buf, "%d", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+		void set_hash_val(const char* key, const char* sub_key, int64_t number)
+		{
+			char buf[32];
+			sprintf(buf, "%lld", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+		void set_hash_val(const char* key, const char* sub_key, uint number)
+		{
+			char buf[32];
+			sprintf(buf, "%u", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+		void set_hash_val(const char* key, const char* sub_key, ulong number)
+		{
+			char buf[32];
+			sprintf(buf, "%lu", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
+
+		bool get_hash_val(const char* key, const char* sub_key, agebull::zmq_net::shared_char& ptr) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			ptr = val;
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, bool& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num ="1" == val;
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, int& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atoi(val.c_str());
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, uint& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atoi(val.c_str());
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, long& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atol(val.c_str());
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, ulong& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atol(val.c_str());
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, int64& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atoll(val.c_str());
+			return true;
+		}
+		bool get_hash_val(const char* key, const char* sub_key, uint64& num) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return false;
+			}
+			num = atoll(val.c_str());
+			return true;
+		}
+		agebull::zmq_net::shared_char get_hash_ptr(const char* key, const char* sub_key) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return agebull::zmq_net::shared_char();
+			}
+			return agebull::zmq_net::shared_char(val);
+		}
+		long get_hash_num(const char* key, const char* sub_key) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return 0L;
+			}
+			return atol(val.c_str());
+		}
+		long long get_hash_int64(const char* key, const char* sub_key) const
+		{
+			acl::string val;
+			if (!m_redis_cmd->hget(key, sub_key, val))
+			{
+				return 0L;
+			}
+			return atoll(val.c_str());
+		}
+
 	};
 
 	/**

@@ -11,7 +11,6 @@ namespace ApiTest
             ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
             ZeroApplication.Discove();
-            IocHelper.Create<IApiCounter>()?.HookApi();
             ZeroApplication.RunAwaite();
         }
     }

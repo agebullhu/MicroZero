@@ -15,6 +15,7 @@ namespace agebull
 		*/
 		class plan_dispatcher :public zero_station
 		{
+			friend plan_message;
 			map<string, shared_ptr<inner_socket>> sockets_;
 		public:
 			/**
@@ -89,7 +90,13 @@ namespace agebull
 			/**
 			*\brief 发布消息
 			*/
-			bool publish(plan_message& message, vector<shared_char>& result);
+			bool result_event(shared_ptr<plan_message>& message, vector<shared_char>& result);
+			
+			/**
+			*\brief 广播内容
+			*/
+			bool zero_event(zero_net_event event_type, const plan_message* message);
+
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
@@ -103,15 +110,31 @@ namespace agebull
 			/**
 			* \brief 执行计划
 			*/
-			int exec_plan(plan_message& msg);
+			void exec_plan(shared_ptr<plan_message>& msg);
 			/**
 			* \brief 计划执行返回
 			*/
-			bool on_plan_result(vector<shared_char>& list);
+			void on_plan_result(vector<shared_char>& list);
+			/**
+			* \brief 计划执行返回
+			*/
+			void on_plan_result(shared_ptr<plan_message>& message, char state, vector<shared_char>& list);
 			/**
 			* \brief 计划进入
 			*/
 			bool on_plan_start(ZMQ_HANDLE socket, vector<shared_char>& list);
+			/**
+			* \brief 计划管理
+			*/
+			void on_plan_manage(ZMQ_HANDLE socket, vector<shared_char>& list);
+			/**
+			* \brief 执行命令
+			*/
+			static char exec_command(const char* command, vector<shared_char>& arguments, string& json);
+			/**
+			* \brief 计划列表
+			*/
+			static void plan_list(string& json);
 		};
 	}
 }

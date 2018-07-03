@@ -1,0 +1,96 @@
+﻿<template>
+    <el-table :data="plans"
+              stripe border
+              height="100%"
+              width=" 100%">
+        <el-table-column type="expand">
+            <template slot-scope="scope">
+                <el-form label-position="left" inline class="demo-table-expand" label-width="100px">
+                    <el-form-item label="计划标识">
+                        <span>{{ scope.row.plan_id | formatHex}}</span>
+                    </el-form-item>
+                    <el-form-item label="原始请求者">
+                        <span>{{ scope.row.caller }}</span>
+                    </el-form-item>
+                    <p style="width: 100%;display:inline-block" v-html="format_frame(scope.row.frames)"></p>
+                </el-form>
+            </template>
+        </el-table-column>
+        <el-table-column label="计划内容">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.description}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="station" label="命令">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.station}}/{{ scope.row.command}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="计划类型">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.plan_type | format_plan_date_type}}({{ scope.row.plan_value}})
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="计划状态">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.plan_state | format_plan_state}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="计划时间">
+            <template slot-scope="scope">
+                <i class="el-icon-time"></i>
+                <span>
+                    {{ scope.row.plan_time | formatUnixDate}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="执行时间">
+            <template slot-scope="scope">
+                <span>
+                    <i class="el-icon-time"></i>
+                    <span>{{ scope.row.exec_time | formatUnixDate}}</span>
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="执行次数">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.real_repet}}/{{ scope.row.plan_repet}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column label="轮空状态">
+            <template slot-scope="scope">
+                {{ scope.row | format_skip}}
+            </template>
+        </el-table-column>
+        <el-table-column label="执行状态">
+            <template slot-scope="scope">
+                <span>
+                    {{ scope.row.exec_state | format_exec_state}}
+                </span>
+            </template>
+        </el-table-column>
+        <el-table-column width="160px" label="操作" fixed="right">
+            <template slot-scope="scope">
+                <el-button v-if="scope.row.plan_state == 5 || scope.row.plan_state == 6" size="mini"
+                           @@click="plan_reset(scope.row)">恢复</el-button>
+                <el-button v-if="scope.row.plan_state == 5" size="mini"
+                           @@click="plan_close(scope.row)">关闭</el-button>
+                <el-button v-if="scope.row.plan_state < 5" size="mini"
+                           @@click="plan_pause(scope.row)">暂停</el-button>
+                <el-button v-if="scope.row.plan_state >= 6" size="mini"
+                           type="danger"
+                           @@click="plan_remove(scope.row)">删除</el-button>
+            </template>
+        </el-table-column>
+    </el-table>
+</template>

@@ -1,0 +1,93 @@
+﻿<!-- Form -->
+<el-dialog title='计划编辑'
+           width="1024px"
+           :visible.sync='zeroPlan.visible'
+           v-loading='zeroPlan.loading'
+           element-loading-text='正在处理'
+           element-loading-spinner='el-icon-loading'
+           element-loading-background='rgba(0, 0, 0, 0.8)'>
+    <div style='border:solid 1px silver;background-color:white;padding:10px'>
+        <el-form :model='zeroPlan.form'
+                 :rules='zeroPlan.rules'
+                 label-position='right'
+                 label-width='60px'
+                 ref='zeroPlanForm'
+                 @@submit.native.prevent>
+            <el-form-item size="medium" label='标题' prop='description'>
+                <el-input v-model='zeroPlan.form.description' placeholder='计划说明' auto-complete='off'></el-input>
+            </el-form-item>
+            <el-form-item size="medium" label='命令' prop='station'>
+                <el-col :span="4">
+                    <el-input v-model='zeroPlan.form.station' placeholder='站点' auto-complete='off'></el-input>
+                </el-col>
+                <el-col :span="1">
+                    &nbsp;
+                </el-col>
+                <el-col :span="10">
+                    <el-input v-model='zeroPlan.form.command' placeholder='API' auto-complete='off'></el-input>
+                </el-col>
+            </el-form-item>
+            <el-form-item size="medium">
+                <el-input type="textarea" :row="9" v-model='zeroPlan.form.argument' placeholder='参数' auto-complete='off'></el-input>
+            </el-form-item>
+            <el-form-item size="medium" label='上下文'>
+                <el-input type="textarea" :row="9" v-model='zeroPlan.form.context' placeholder='上下文' auto-complete='off'></el-input>
+            </el-form-item>
+
+            <el-form-item size="medium" label='计划' prop='plan_type'>
+                <el-col :span="6">
+                    <el-select v-model='zeroPlan.form.plan_type'>
+                        <el-option value='0' label="无">无</el-option>
+                        <el-option value='1' label="在基准时间执行">在基准时间执行</el-option>
+                        <el-option value='2' label="延迟指定秒">延迟指定秒</el-option>
+                        <el-option value='3' label="延迟指定分钟">延迟指定分钟</el-option>
+                        <el-option value='4' label="延迟指定小时">延迟指定小时</el-option>
+                        <el-option value='5' label="延迟指定天数">延迟指定天数</el-option>
+                        <el-option value='6' label="每周">每周</el-option>
+                        <el-option value='7' label="每月">每月</el-option>
+                    </el-select>
+                </el-col>
+                <el-col :span="5" v-if="zeroPlan.form.plan_type > 1">
+                    <label v-if="zeroPlan.form.plan_type > 1 && zeroPlan.form.plan_type < 6 ">延迟</label>
+                    <el-input style="width:80px" v-model='zeroPlan.form.plan_value' placeholder='数值' auto-complete='off'></el-input>
+                    <label v-if="zeroPlan.form.plan_type > 1 && zeroPlan.form.plan_type < 6 ">{{zeroPlan.form.plan_type | format_plan_type}}</label>
+                    <label v-if="zeroPlan.form.plan_type == 7 ">{{zeroPlan.form.plan_value | format_plan_value}}</label>
+                </el-col>
+                <el-col :span="1">
+                    &nbsp;
+                </el-col>
+                <el-col :span="7" v-if="zeroPlan.form.plan_type > 0">
+                    <el-date-picker type="datetime" v-model='zeroPlan.form.plan_time' placeholder='基准时间' auto-complete='off'></el-date-picker>
+                </el-col>
+                <el-col :span="1">
+                    &nbsp;
+                </el-col>
+            </el-form-item>
+            <el-form-item size="medium">
+                <el-col :span="6" v-if="zeroPlan.form.plan_type > 1">
+                    <span>跳过前</span><el-input style="width:100px" v-model='zeroPlan.form.skip_set' auto-complete='off'></el-input>次后
+                </el-col>
+                <el-col :span="5" v-if="zeroPlan.form.plan_type > 1">
+                    <span>重复</span>
+                    <el-input style="width:100px" v-model='zeroPlan.form.plan_repet' placeholder='重复次数,0不重复 >0重复次数,-1永久重复' auto-complete='off'></el-input>
+                    <span>次</span>
+                </el-col>
+                <el-col :span="5" v-if="zeroPlan.form.plan_type > 0 && zeroPlan.form.plan_type < 6 ">
+                    <el-switch v-model="zeroPlan.form.no_skip"
+                               active-color="#13ce66"
+                               inactive-color="silver"
+                               inactive-text="">
+                    </el-switch>
+                    <span>保留过期时间</span>
+                </el-col>
+            </el-form-item>
+            <el-form-item size="medium">
+                <label>{{zeroPlan.form | format_plan}}</label>
+            </el-form-item>
+        </el-form>
+    </div>
+    <div slot='footer' class='dialog-footer'>
+        <el-button @@click='zeroPlan.visible = false'>取 消</el-button>
+        <el-button @@click='save_zeroPlan' type='primary'>确 定</el-button>
+    </div>
+</el-dialog>

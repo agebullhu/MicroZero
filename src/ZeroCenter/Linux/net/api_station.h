@@ -46,14 +46,8 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
-				boost::lock_guard<boost::mutex> guard(config->mutex_);
-				if (config->station_state_ == station_state::Uninstall)
+				if (config->is_state(station_state::Uninstall))
 					return;
-				if (config->station_state_ > station_state::ReStart && config->station_state_ < station_state::Closed)
-				{
-					config->station_state_ = station_state::ReStart;
-					return;
-				}
 				boost::thread(boost::bind(launch, std::make_shared<api_station>(config)));
 			}
 			/**

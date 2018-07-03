@@ -9,16 +9,11 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-
 #define zsco_key "plan:time:set"
 
 #define def_msg_key(key,msg)\
 			char key[MAX_PATH];\
-			sprintf(key, "plan:msg:%s:%llx",*((msg)->station), (msg)->plan_id);
-
-#define def_msg_worker_key(key,msg)\
-			char key[MAX_PATH];\
-			sprintf(key, "plan:work:%s:%llx", *((msg)->station), (msg)->plan_id);
+			sprintf(key, "msg:%s:%llx",*((msg)->station), (msg)->plan_id);
 
 		/**
 		* \brief 计划类型
@@ -58,6 +53,45 @@ namespace agebull
 			*/
 			month
 		};
+
+		/**
+		* \brief 计划状态
+		*/
+		enum class plan_message_state
+		{
+			/**
+			* \brief 无状态
+			*/
+			none,
+			/**
+			* \brief 排队
+			*/
+			queue,
+			/**
+			* \brief 正常执行
+			*/
+			execute,
+			/**
+			* \brief 重试执行
+			*/
+			retry,
+			/**
+			* \brief 跳过
+			*/
+			skip,
+			/**
+			* \brief 暂停
+			*/
+			pause,
+			/**
+			* \brief 错误关闭
+			*/
+			error,
+			/**
+			* \brief 正常关闭
+			*/
+			close
+		};
 		/**
 		* \brief 消息
 		*/
@@ -78,6 +112,16 @@ namespace agebull
 			* \brief 站点
 			*/
 			shared_char station;
+
+			/**
+			* \brief 命令
+			*/
+			shared_char command;
+
+			/**
+			* \brief 站点
+			*/
+			int station_type;
 
 			/**
 			* \brief 原始请求者
@@ -108,15 +152,36 @@ namespace agebull
 			* \brief 执行次数
 			*/
 			int real_repet;
+
 			/**
 			* \brief 是否空跳
 			*/
-			bool no_keep;
+			bool no_skip;
+
+			/**
+			* \brief 跳过设置次数(-1暂停执行,0无效,1-n 跳过次数)
+			*/
+			int skip_set;
+
+			/**
+			* \brief 跳过次数计数,1 当no_skip=true时,空跳也会参与计数. 2 此计数在执行时发生,2.1 skip_set < 0 直接计算下一次执行时间, 2.2 在skip_set > 0时,skip_set < skip_num时直接计算下一次执行时间,否则正常执行
+			*/
+			int skip_num;
 
 			/**
 			* \brief 最后一次执行状态
 			*/
-			int last_state;
+			int exec_state;
+
+			/**
+			* \brief 计划状态
+			*/
+			plan_message_state plan_state;
+
+			/**
+			* \brief 加入时间
+			*/
+			time_t add_time;
 
 			/**
 			* \brief 计划时间
@@ -127,18 +192,31 @@ namespace agebull
 			* \brief 执行时间
 			*/
 			time_t exec_time;
-
+			
 			/**
 			* \brief 消息内容
 			*/
-			vector<shared_char> messages;
+			vector<shared_char> frames;
 
 
 			/**
 			* \brief 构造
 			*/
-			plan_message() : plan_id(0), plan_type(), plan_value(0), plan_repet(0), real_repet(0), no_keep(false), last_state(0),
-				plan_time(0), exec_time(0)
+			plan_message()
+				: plan_id(0)
+				  , station_type(0)
+				  , plan_type()
+				  , plan_value(0)
+				  , plan_repet(0)
+				  , real_repet(0)
+				  , no_skip(false)
+				  , skip_set(0)
+				  , skip_num(0)
+				  , exec_state(0)
+				  , plan_state(plan_message_state::none)
+				  , add_time(0)
+				  , plan_time(0)
+				  , exec_time(0)
 			{
 			}
 
@@ -155,41 +233,61 @@ namespace agebull
 			/**
 			* \brief JSON序列化
 			*/
+			void write_info(acl::json_node& node) const;
+			/**
+			* \brief JSON序列化
+			*/
 			acl::string write_info() const;
+			/**
+			* \brief JSON序列化
+			*/
+			acl::string write_state() const;
 			/**
 			* \brief JSON序列化
 			*/
 			acl::string write_json() const;
 			/**
-			* \brief 保存下一次执行时间
+			* \brief 加入本地缓存
 			*/
-			bool save();
-			/**
-			* \brief 保存消息
-			*/
-			bool save_message() const;
+			static void add_local(shared_ptr<plan_message>& msg);
 			/**
 			* \brief 保存下一次执行时间
 			*/
-			bool save_next();
+			bool next();
+			/**
+			* \brief 计算下一次执行时间
+			*/
+			bool check_next();
 			/**
 			* \brief 读取消息
 			*/
-			bool load_message(const char* key);
+			static shared_ptr<plan_message> load_message(const char* key);
 
 			/**
-			* \brief 删除一个计划
+			* \brief 恢复执行
 			*/
-			bool remove() const;
+			bool reset();
 			/**
-			* \brief 删除一个计划
+			* \brief 暂停执行,同时移出计划队列
 			*/
-			bool remove_next() const;
+			bool pause();
 			/**
-			* \brief 删除消息
+			* \brief 进入错误状态,同时移出计划队列
 			*/
-			bool remove_message() const;
+			bool error();
+			/**
+			* \brief 关闭消息
+			*/
+			bool close();
+			/**
+			* \brief 删除一个消息
+			*/
+			bool remove();
 
+			/**
+			* \brief 保存消息
+			*/
+			bool save_message(bool full, bool exec, bool plan, bool res, bool skip, bool close);
 			/**
 			* \brief 保存消息参与者
 			*/
@@ -198,7 +296,7 @@ namespace agebull
 			/**
 			* \brief 保存消息参与者返回值
 			*/
-			bool save_message_result(const char* worker, vector<shared_char>& response) const;
+			bool save_message_result(const char* worker, vector<shared_char>& response);
 
 			/**
 			* \brief 取一个参与者的消息返回值
@@ -206,25 +304,19 @@ namespace agebull
 			vector<shared_char> get_message_result(const char* worker) const;
 
 			/**
-			* \brief 取一个参与者的消息返回值
-			*/
-			static void get_message_result(vector<shared_char>& result, acl::string& val);
-
-			/**
 			* \brief 取全部参与者消息返回值
 			*/
 			map<acl::string, vector<shared_char>> get_message_result() const;
 
 			/**
-			* \brief 计划下一次执行时间
-			*/
-			bool plan_next();
-
-			/**
 			* \brief 加入执行队列
 			*/
-			bool join_queue(time_t time);
+			void join_queue(time_t time);
 
+			/**
+			* \brief 检查时间
+			*/
+			bool check_time();
 			/**
 			* \brief 检查几号
 			*/
@@ -242,9 +334,14 @@ namespace agebull
 			/**
 			* \brief 执行到期任务
 			*/
-			static void exec_now(std::function<int(plan_message&)> exec);
-		};
+			static void exec_now(std::function<void(shared_ptr<plan_message>&)> exec);
 
+
+			/**
+			* \brief 设置跳过
+			*/
+			bool set_skip(int set);
+		};
 	}
 }
 

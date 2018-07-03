@@ -41,6 +41,10 @@ namespace Agebull.ZeroNet.Core
         /// 投票器
         /// </summary>
         public const int StationTypeVote = 4;
+        /// <summary>
+        /// 投票器
+        /// </summary>
+        public const int StationTypePlanDispatcher = 0xFF;
 
         /// <summary>
         /// 类型
@@ -54,7 +58,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 节点名称
         /// </summary>
-        public string Name { get;protected internal set; }
+        public string Name { get; protected internal set; }
 
         /// <summary>
         /// 实例名称
@@ -135,10 +139,10 @@ namespace Agebull.ZeroNet.Core
                     return false;
                 }
 
-                ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
                 //名称初始化
-                RealName = ZeroIdentityHelper.CreateRealName(IsService, Config?.ShortName ?? StationName, Name);
+                RealName = ZeroIdentityHelper.CreateRealName(IsService, Name == Config.StationName ? null : Name);
                 Identity = RealName.ToAsciiBytes();
+                ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
                 //扩展动作
                 if (!OnStart())
                 {
@@ -147,7 +151,7 @@ namespace Agebull.ZeroNet.Core
                     return false;
                 }
                 //可执行
-                SystemManager.HeartJoin(Config.StationName, RealName);
+                SystemManager.Instance.HeartJoin(Config.StationName, RealName);
                 //执行主任务
                 RunTaskCancel = new CancellationTokenSource();
                 Task.Factory.StartNew(Run);
@@ -178,7 +182,15 @@ namespace Agebull.ZeroNet.Core
             bool success;
             using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
-                success = RunInner(RunTaskCancel.Token);
+                try
+                {
+                    success = RunInner(RunTaskCancel.Token);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(StationName, e, "Run");
+                    success = false;
+                }
             }
             if (ZeroApplication.CanDo && !success)
             {
@@ -190,6 +202,8 @@ namespace Agebull.ZeroNet.Core
             {
                 _waitToken.Release();
             }
+
+            GC.Collect();
         }
 
         /// <summary>
@@ -204,7 +218,6 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void OnRun()
         {
-            State = StationState.Run;
             ZeroApplication.OnObjectActive(this);
             _waitToken.Release();
         }
@@ -214,9 +227,11 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void OnStop()
         {
+            State = StationState.Closing;
             OnRunStop();
             RunTaskCancel.Dispose();
             RunTaskCancel = null;
+            State = StationState.Closed;
             ZeroApplication.OnObjectClose(this);
         }
 
@@ -234,14 +249,17 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private bool Close()
         {
-            if (RunTaskCancel != null)
+            if (Interlocked.CompareExchange(ref _state, StationState.Closing, StationState.Run) == StationState.Run)
             {
-                SystemManager.HeartLeft(StationName, RealName);
+                SystemManager.Instance.HeartLeft(StationName, RealName);
                 ZeroTrace.WriteInfo(StationName, "Closing....");
-                RunTaskCancel.Cancel();
+                RunTaskCancel?.Cancel();
                 _waitToken.Wait();
             }
-            State = StationState.Closed;
+            else
+            {
+                State = StationState.Closed;
+            }
             return true;
         }
 
@@ -266,7 +284,7 @@ namespace Agebull.ZeroNet.Core
         void IZeroObject.OnHeartbeat()
         {
             if (CanRun)
-                SystemManager.Heartbeat(Config.StationName, RealName);
+                SystemManager.Instance.Heartbeat(Config.StationName, RealName);
         }
 
         void IZeroObject.OnZeroInitialize()

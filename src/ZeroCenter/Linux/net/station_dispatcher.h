@@ -97,63 +97,32 @@ namespace agebull
 			*\brief 发布消息
 			*/
 			bool publish(const string& title, const string& publiher, const string& arg);
-			/**
-			* 心跳的响应
-			*/
-			static bool heartbeat(char cmd, vector<shared_char> lines);
 		public:
 			/**
 			* \brief 执行一条命令
 			*/
 			shared_char command(const char* caller, vector<shared_char> lines) final;
-			/**
-			* \brief 取机器信息
-			*/
-			static char host_info(const string& stattion, string& json);
-			/**
-			* \brief 站点安装
-			*/
-			static char install_station(const char* type_name, const char* stattion, const char* short_name);
-			/**
-			* \brief 站点卸载
-			*/
-			static bool uninstall(const string& stattion);
-			/**
-			*  \brief 启动站点
-			*/
-			static char start_station(string stattion);
-			/**
-			* \brief 暂停站点
-			*/
-			static char pause_station(const string& stattion);
-			/**
-			* \brief 继续站点
-			*/
-			static char resume_station(const string& stattion);
-			/**
-			* \brief 关闭站点
-			*/
-			static char close_station(const string& stattion);
+
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(const string& stattion, const string& command, const string& argument);
+			string call_station(const string& stattion, const string& command, const string& argument);
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(const char* stattion, vector<shared_char>& arguments);
+			string call_station(const char* stattion, vector<shared_char>& arguments);
 			/**
 			* \brief 执行命令
 			*/
-			static char exec_command(const char* command, vector<shared_char>& arguments, string& json);
+			char exec_command(const char* command, vector<shared_char>& arguments, string& json);
 			/**
 			* \brief 执行命令
 			*/
-			static string exec_command(const char* command, const char* argument);
+			string exec_command(const char* command, const char* argument);
 			/**
 			*\brief 广播内容
 			*/
-			static bool zero_event(const string& publiher, const zero_net_event event_name, const string& content);
+			static bool zero_event(const string publiher, const zero_net_event event_name, const string content);
 			/**
 			*\brief 广播内容
 			*/

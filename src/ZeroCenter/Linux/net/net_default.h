@@ -123,7 +123,52 @@ namespace agebull
 			/**
 			*\brief  
 			*/
-			event_station_state
+			event_station_state,
+
+			/**
+			*\brief
+			*/
+			event_station_update,
+
+			/**
+			*\brief 计划加入
+			*/
+			event_plan_add = 0x1,
+
+			/**
+			*\brief 计划更新
+			*/
+			event_plan_update,
+
+			/**
+			*\brief 计划进入队列
+			*/
+			event_plan_queue,
+
+			/**
+			*\brief 计划正在执行
+			*/
+			event_plan_exec,
+
+			/**
+			*\brief 计划执行完成
+			*/
+			event_plan_result,
+
+			/**
+			*\brief 计划暂停
+			*/
+			event_plan_pause,
+
+			/**
+			*\brief 计划已结束
+			*/
+			event_plan_end,
+
+			/**
+			*\brief 计划已删除
+			*/
+			event_plan_remove
 		};
 
 		/**
@@ -350,19 +395,21 @@ namespace agebull
 		* 错误状态
 		*/
 #define ZERO_STATUS_BAD  '-'
-#define ZERO_STATUS_NOT_FIND  "-no find"
-#define ZERO_STATUS_FRAME_INVALID  "-invalid"
-#define ZERO_STATUS_TIMEOUT  "-time out"
-#define ZERO_STATUS_NET_ERROR  "-net error"
-#define ZERO_STATUS_NOT_SUPPORT  "-no support"
 #define ZERO_STATUS_FAILED  "-failed"
 #define ZERO_STATUS_ERROR  "-error"
+#define ZERO_STATUS_NOT_SUPPORT  "-not support"
+#define ZERO_STATUS_NOT_FIND  "-not find"
 #define ZERO_STATUS_NOT_WORKER  "-not work"
-#define ZERO_STATUS_MANAGE_ARG_ERROR  "-ArgumentError! must like : call[name][command][argument]"
-#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
-#define ZERO_STATUS_FRAME_PLANERROR  "-plan error,need plan frame"
+#define ZERO_STATUS_FRAME_INVALID  "-invalid frame"
+#define ZERO_STATUS_ARG_INVALID  "-invalid argument"
+#define ZERO_STATUS_TIMEOUT  "-time out"
+#define ZERO_STATUS_NET_ERROR  "-net error"
+//#define ZERO_STATUS_MANAGE_ARG_ERROR  "-ArgumentError! must like : call[name][command][argument]"
+//#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR  "-ArgumentError! must like :install [type] [name]"
+#define ZERO_STATUS_PLAN_INVALID  "-plan invalid"
+#define ZERO_STATUS_PLAN_ERROR  "-plan error"
 
-		/*!
+/*!
 		 *以下为帧类型说明符号
 		 */
 		 //终止符号
@@ -377,8 +424,6 @@ namespace agebull
 #define ZERO_FRAME_REQUEST_ID  '\4'
 		//执行计划
 #define ZERO_FRAME_PLAN  '\5'
-		//计划时间
-#define ZERO_FRAME_PLAN_TIME  '\6'
 		//命令
 #define ZERO_FRAME_COMMAND  '$'
 		//参数
@@ -413,28 +458,30 @@ namespace agebull
 #define ZERO_STATUS_RUNING_ID char(0x3)
 #define ZERO_STATUS_BYE_ID char(0x4)
 #define ZERO_STATUS_WECOME_ID char(0x5)
+#define ZERO_STATUS_WAIT_ID char(0x6)
 
-#define ZERO_STATUS_VOTE_SENDED_ID char(0x20)
-#define ZERO_STATUS_VOTE_BYE_ID char(0x21)
-#define ZERO_STATUS_WAITING_ID char(0x22)
-#define ZERO_STATUS_VOTE_START_ID char(0x23)
-#define ZERO_STATUS_VOTE_END_ID char(0x24)
-#define ZERO_STATUS_VOTE_CLOSED_ID char(0x25)
+#define ZERO_STATUS_VOTE_SENDED_ID char(0x70)
+#define ZERO_STATUS_VOTE_BYE_ID char(0x71)
+#define ZERO_STATUS_VOTE_WAITING_ID char(0x72)
+#define ZERO_STATUS_VOTE_START_ID char(0x73)
+#define ZERO_STATUS_VOTE_END_ID char(0x74)
+#define ZERO_STATUS_VOTE_CLOSED_ID char(0x75)
 
-#define ZERO_STATUS_ERROR_FLAG char(0x80)
-#define ZERO_STATUS_ERROR_ID char(0x81)
-#define ZERO_STATUS_FAILED_ID char(0x82)
-#define ZERO_STATUS_NOT_FIND_ID char(0x83)
-#define ZERO_STATUS_NOT_SUPPORT_ID char(0x84)
-#define ZERO_STATUS_FRAME_INVALID_ID char(0x85)
-#define ZERO_STATUS_TIMEOUT_ID char(0x86)
-#define ZERO_STATUS_NET_ERROR_ID char(0x87)
-#define ZERO_STATUS_NOT_WORKER_ID char(0x88)
-#define ZERO_STATUS_MANAGE_ARG_ERROR_ID char(0x89)
-#define ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID char(0x8A)
-#define ZERO_STATUS_FRAME_PLANERROR_ID char(0x8B)
-#define ZERO_STATUS_SEND_ERROR_ID char(0x8C)
-#define ZERO_STATUS_RECV_ERROR_ID char(0x8D)
+#define ZERO_STATUS_FAILED_ID char(0x80)
+
+#define ZERO_STATUS_BUG_ID char(0xD0)
+#define ZERO_STATUS_FRAME_INVALID_ID char(0xD1)
+#define ZERO_STATUS_ARG_INVALID_ID char(0xD2)
+
+#define ZERO_STATUS_ERROR_ID char(0xF0)
+#define ZERO_STATUS_NOT_FIND_ID char(0xF1)
+#define ZERO_STATUS_NOT_WORKER_ID char(0xF2)
+#define ZERO_STATUS_NOT_SUPPORT_ID char(0xF3)
+#define ZERO_STATUS_TIMEOUT_ID char(0xF4)
+#define ZERO_STATUS_NET_ERROR_ID char(0xF5)
+#define ZERO_STATUS_PLAN_ERROR_ID char(0xF6)
+#define ZERO_STATUS_SEND_ERROR_ID char(0xF7)
+#define ZERO_STATUS_RECV_ERROR_ID char(0xF8)
 
 		 /*!
 		  * 以下为请求时的快捷命令:说明帧的第二节字([1])
@@ -506,10 +553,10 @@ namespace agebull
 		inline acl::string desc_str(bool in, const char* desc, size_t len)
 		{
 			acl::string str;
-			str.format_append("size:%d", desc[0]);
+			str.format_append("{\"size\":%d", desc[0]);
 			if (in)
 			{
-				str.append(",command:");
+				str.append(",\"command\":\"");
 				switch (desc[1])
 				{
 				case ZERO_BYTE_COMMAND_NONE: //!\1 无特殊说明
@@ -518,10 +565,10 @@ namespace agebull
 				case ZERO_BYTE_COMMAND_PLAN: //!\2  取全局标识
 					str.append("plan");
 					break;
-				case ZERO_BYTE_COMMAND_GLOBAL_ID: //!>  等待结果
+				case ZERO_BYTE_COMMAND_GLOBAL_ID: //!>  
 					str.append("global_id");
 					break;
-				case ZERO_BYTE_COMMAND_WAITING: //!# 查找结果
+				case ZERO_BYTE_COMMAND_WAITING: //!# 等待结果
 					str.append("waiting");
 					break;
 				case ZERO_BYTE_COMMAND_FIND_RESULT: //!% 关闭结果
@@ -549,7 +596,7 @@ namespace agebull
 			}
 			else
 			{
-				str.append(",state:");
+				str.append(",\"state\":\"");
 				switch (desc[1])
 				{
 				case ZERO_STATUS_OK_ID: //!(0x1)
@@ -573,9 +620,12 @@ namespace agebull
 				case ZERO_STATUS_VOTE_BYE_ID: //!(0x21)
 					str.append(ZERO_STATUS_VOTE_BYE);
 					break;
-				case ZERO_STATUS_WAITING_ID: //!(0x22)
+				case ZERO_STATUS_WAIT_ID: //!(0x22)
 					str.append(ZERO_STATUS_WAITING);
 					break;
+				case ZERO_STATUS_VOTE_WAITING_ID: //!(0x22)
+					str.append(ZERO_STATUS_WAITING);
+					break; 
 				case ZERO_STATUS_VOTE_START_ID: //!(0x23)
 					str.append(ZERO_STATUS_VOTE_START);
 					break;
@@ -600,6 +650,9 @@ namespace agebull
 				case ZERO_STATUS_FRAME_INVALID_ID: //!(0x85)
 					str.append(ZERO_STATUS_FRAME_INVALID);
 					break;
+				case ZERO_STATUS_ARG_INVALID_ID: //!(0x85)
+					str.append(ZERO_STATUS_ARG_INVALID);
+					break;
 				case ZERO_STATUS_TIMEOUT_ID: //!(0x86)
 					str.append(ZERO_STATUS_TIMEOUT);
 					break;
@@ -609,87 +662,86 @@ namespace agebull
 				case ZERO_STATUS_NOT_WORKER_ID: //!(0x88)
 					str.append(ZERO_STATUS_NOT_WORKER);
 					break;
-				case ZERO_STATUS_MANAGE_ARG_ERROR_ID: //!(0x89)
-					str.append(ZERO_STATUS_MANAGE_ARG_ERROR);
-					break;
-				case ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR_ID: //!(0x8A)
-					str.append(ZERO_STATUS_MANAGE_INSTALL_ARG_ERROR);
-					break;
-				case ZERO_STATUS_FRAME_PLANERROR_ID: //!(0x8B)
-					str.append(ZERO_STATUS_FRAME_PLANERROR);
-					break;
+				case ZERO_STATUS_PLAN_ERROR_ID: //!(0x8B)
+					str.append(ZERO_STATUS_PLAN_ERROR);
+					break; 
 				}
 			}
-			str.append(",frames:");
+			str.append("\",\"frames\":[");
 
+			str.append("\"Caller\",\"FrameDescr\"");
 			for (size_t idx = 2; idx < len; idx++)
 			{
 				switch (desc[idx])
 				{
 				case ZERO_FRAME_END:
-					str.format_append("[%d:End]", idx);
+					str.append(",\"End\"");
 					break;
 					//全局标识
 				case ZERO_FRAME_GLOBAL_ID:
-					str.format_append("[%d:GLOBAL_ID]", idx);
+					str.append(",\"GLOBAL_ID\"");
 					break;
 					//站点
 				case ZERO_FRAME_STATION_ID:
-					str.format_append("[%d:STATION_ID]", idx);
+					str.append(",\"STATION_ID\"");
 					break;
 					//执行计划
 				case ZERO_FRAME_PLAN:
-					str.format_append("[%d:PLAN]", idx);
+					str.append(",\"PLAN\"");
 					break;
 					//参数
 				case ZERO_FRAME_ARG:
-					str.format_append("[%d:ARG]", idx);
+					str.append(",\"ARG\"");
 					break;
 					//参数
 				case ZERO_FRAME_COMMAND:
-					str.format_append("[%d:COMMAND]", idx);
+					str.append(",\"COMMAND\"");
 					break;
 					//请求ID
 				case ZERO_FRAME_REQUEST_ID:
-					str.format_append("[%d:REQUEST_ID]", idx);
+					str.append(",\"REQUEST_ID\"");
 					break;
 					//请求者/生产者
 				case ZERO_FRAME_REQUESTER:
-					str.format_append("[%d:REQUESTER]", idx);
+					str.append(",\"REQUESTER\"");
 					break;
 					//回复者/浪费者
 				case ZERO_FRAME_RESPONSER:
-					str.format_append("[%d:RESPONSER]", idx);
+					str.append(",\"RESPONSER\"");
 					break;
 					//广播主题
 				case ZERO_FRAME_PUB_TITLE:
-					str.format_append("[%d:PUB_TITLE]", idx);
+					str.append(",\"PUB_TITLE\"");
 					break;
 					//广播副题
 				case ZERO_FRAME_SUBTITLE:
-					str.format_append("[%d:SUBTITLE]", idx);
+					str.append(",\"SUBTITLE\"");
 					break;
 				case ZERO_FRAME_STATUS:
-					str.format_append("[%d:STATUS]", idx);
+					str.append(",\"STATUS\"");
 					break;
 					//网络上下文信息
 				case ZERO_FRAME_CONTEXT:
-					str.format_append("[%d:CONTEXT]", idx);
+					str.append(",\"CONTEXT\"");
 					break;
 				case ZERO_FRAME_CONTENT_TEXT:
-					str.format_append("[%d:CONTENT]", idx);
+					str.append(",\"CONTENT\"");
 					break;
 				case ZERO_FRAME_CONTENT_JSON:
-					str.format_append("[%d:JSON]", idx);
+					str.append(",\"JSON\"");
 					break;
 				case ZERO_FRAME_CONTENT_BIN:
-					str.format_append("[%d:BIN]", idx);
+					str.append(",\"BIN\"");
 					break;
 				case ZERO_FRAME_CONTENT_XML:
-					str.format_append("[%d:XML]", idx);
+					str.append(",\"XML\"");
+					break;
+				default:
+					str.append(",\"Arg\"");
 					break;
 				}
 			}
+			str.append("]}");
 			return str;
 		}
 	}

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
+using Agebull.Common.Tson;
 using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
-using ZeroMQ;
 
 namespace Agebull.ZeroNet.LogService
 {
@@ -15,13 +14,13 @@ namespace Agebull.ZeroNet.LogService
     /// </summary>
     public class RemoteLogStation : SubStation
     { /// <summary>
-        ///     刷新
-        /// </summary>
+      ///     刷新
+      /// </summary>
         public RemoteLogStation()
         {
             Name = "RemoteLog";
             StationName = "RemoteLog";
-            Subscribe = "";
+            //Subscribe = "Logs";
         }
         /// <inheritdoc />
         /// <summary>
@@ -33,15 +32,43 @@ namespace Agebull.ZeroNet.LogService
         {
             try
             {
-                if (args.Title == "Logs")
+                if (args.Content != null)
                 {
-                    List<RecordInfo> infos = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
-                    LogRecorder.BaseRecorder.RecordLog(infos);
+                    LogRecorder.BaseRecorder.RecordLog(JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content));
+                    return;
                 }
-                else
+
+
+                if (args.Tson == null || args.Tson[0] == 0 || args.Tson[0] > 2)
+                    return;
+                ITsonDeserializer serializer = args.Tson[0] == 1
+                    ? new TsonDeserializerV1(args.Tson) as ITsonDeserializer
+                    : new TsonDeserializer(args.Tson);
+
+                using (serializer)
                 {
-                    var info = JsonConvert.DeserializeObject<RecordInfo>(args.Content);
-                    LogRecorder.BaseRecorder.RecordLog(info);
+                    switch (serializer.DataType)
+                    {
+                        case TsonDataType.Object:
+                            RecordInfo info = new RecordInfo();
+                            RecordInfoTson.FromTson(serializer, info);
+                            LogRecorder.BaseRecorder.RecordLog(info);
+                            break;
+                        case TsonDataType.Array:
+                            serializer.ReadType();
+                            int size = serializer.ReadLen();
+                            List<RecordInfo> infos = new List<RecordInfo>();
+                            for (int idx = 0; !serializer.IsBad && idx < size; idx++)
+                            {
+                                info = new RecordInfo();
+                                serializer.Begin(out _);
+                                RecordInfoTson.FromTson(serializer, info);
+                                serializer.End();
+                                infos.Add(info);
+                            }
+                            LogRecorder.BaseRecorder.RecordLog(infos);
+                            break;
+                    }
                 }
             }
             catch (Exception e)

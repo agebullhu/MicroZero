@@ -1,0 +1,147 @@
+﻿<script>
+    extend_data({
+        plans: plans,
+        plan: plans[0]
+    });
+    extend_filter({
+        format_plan_date_type(type) {
+            switch (type) {
+                case 0:
+                    return 'none';
+                case 1:
+                    return 'time';
+                case 2:
+                    return 'second';
+                case 3:
+                    return 'minute';
+                case 4:
+                    return 'hour';
+                case 5:
+                    return 'day';
+                case 6:
+                    return 'week';
+                case 7:
+                    return 'month';
+            }
+        },
+        format_plan_state(state) {
+            switch (state) {
+                case 0:
+                    return 'none';
+                case 1:
+                    return 'queue';
+                case 2:
+                    return 'execute';
+                case 3:
+                    return 'retry';
+                case 4:
+                    return 'skip';
+                case 5:
+                    return 'pause';
+                case 6:
+                    return 'error';
+                case 7:
+                    return 'close';
+            }
+        },
+        format_exec_state(state) {
+            return exec_state_text(state);
+        },
+        format_skip(plan) {
+            if (plan.skip_set === 0)
+                return "-";
+            if (plan.skip_set === -2)
+                return "Retry(" + plan.skip_num + "/3)";
+            if (plan.skip_set === -1)
+                return "Pause(" + plan.skip_num + ")";
+            return "Skip(" + plan.skip_num + "/" + plan.skip_set + ")";
+        }
+    });
+    extend_methods({
+        plan_remove(plan) {
+            do_sync_get("/Plan/Remove/" + plan.plan_id, this, "删除计划任务:" + plan.description);
+        },
+        plan_reset(plan) {
+            do_sync_get("/Plan/Reset/" + plan.plan_id, this, "恢复计划任务:" + plan.description);
+        },
+        plan_pause(plan) {
+            do_sync_get("/Plan/Pause/" + plan.plan_id, this, "暂停计划任务:" + plan.description);
+        },
+        plan_close(plan) {
+            do_sync_get("/Plan/Close/" + plan.plan_id, this, "关闭计划任务:" + plan.description);
+        },
+        format_frame(frames) {
+            if (!frames || frames.length === 0)
+                return '*';
+            if (frames.length === 1)
+                return frames[0];
+            var desc = eval("(" + frames[1] + ")");
+            var msg = "<div>" +
+                "<div class='el-form-item el-form-item--small' style='inline-block'>" +
+                "<label class='el-form-item__label' style='width:100px'><i class='el-icon-date'>Caller</i></label>" +
+                "<div class='el-form-item__content'><span>" +
+                frames[0] +
+                "</span></div>" +
+                "</div>";
+            var idx = 0;
+            if (desc) {
+                for (idx = 2; idx < frames.length; idx++) {
+                    msg +=
+                        "<div class='el-form-item el-form-item--small' style='inline-block'>" +
+                        "<label class='el-form-item__label' style='width:100px'><i class='el-icon-star-on'>" +
+                        desc.frames[idx] +
+                        "</i></label>" +
+                        "<div class='el-form-item__content'><span>" +
+                        frames[idx] +
+                        "</span></div>" +
+                        "</div>";
+                    if ((idx % 2) === 0)
+                        msg += "</div><div>";
+                }
+            } else {
+                for (idx = 1; idx < frames.length; idx++) {
+                    msg += "<i class='el-icon-star-on'>" + frames[idx] + "</i>";
+                    if (idx % 2 !== 0)
+                        msg += "</div><div>";
+                }
+            }
+            msg += "</div>";
+            return msg;
+        }
+    });
+    
+    var socket_status = new ws({
+        address: "ws://" + location.host + "/plan_notify",
+        sub: null,
+        onmessage: function (item) {
+            for (var idx = 0; idx < plans.length; idx++) {
+                var old = plans[idx];
+                if (old.plan_id === item.plan_id) {
+                    if (item.plan_state === 8) {
+                        vm.$notify({
+                            title: "消息推送",
+                            message: old.description + '已删除',
+                            type: 'warning',
+                            position: 'bottom-left',
+                            duration: 2000
+                        });
+                        Vue.delete(plans, idx);
+                    }
+                    else {
+                        old.exec_time = item.exec_time;
+                        old.exec_state = item.exec_state;
+                        old.plan_state = item.plan_state;
+                        old.plan_time = item.plan_time;
+                        old.real_repet = item.real_repet;
+                        old.skip_set = item.skip_set;
+                        old.skip_num = item.skip_num;
+                    }
+                    return;
+                }
+            }
+            if (item.plan_state !== 8)
+                plans.push(item);
+        }
+    });
+    socket_status.open();
+</script>

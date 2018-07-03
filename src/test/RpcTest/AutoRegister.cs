@@ -1,6 +1,8 @@
 using System.ComponentModel.Composition;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
+using Microsoft.Extensions.DependencyInjection;
 using RpcTest;
 
 namespace Agebull.ZeroNet.Log
@@ -11,12 +13,13 @@ namespace Agebull.ZeroNet.Log
     [Export(typeof(IAutoRegister))]
     [ExportMetadata("Symbol", '%')]
     public sealed class AutoRegister : IAutoRegister
-    {
+    { 
         /// <summary>
         /// 初始化
         /// </summary>
         void IAutoRegister.Initialize()
         {
+            IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
         }
 
         /// <summary>
@@ -24,7 +27,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            SystemMonitor.ZeroNetEvent += ZeroApiTestDispatcher.SystemMonitor_StationEvent;
+            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
         }
     }
 }

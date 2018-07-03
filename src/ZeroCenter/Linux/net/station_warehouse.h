@@ -18,7 +18,7 @@ namespace agebull
 			/**
 			* \brief 全局ID
 			*/
-			static int64 glogal_id_, glogal_id_1;
+			static int64 glogal_id_, reboot_num_;
 			/**
 			* \brief 实例队列访问锁
 			*/
@@ -42,20 +42,20 @@ namespace agebull
 			*/
 			static int64 get_glogal_id()
 			{
-				if (glogal_id_1 == 0)
+				if (reboot_num_ == 0)
 				{
 					redis_live_scope redis(json_config::redis_defdb);
-					redis->incr("sys:gid",&glogal_id_1);
-					if (glogal_id_1 > 0xFFFF)
+					redis->incr("sys:gid", &reboot_num_);
+					if (reboot_num_ > 0xFFF)
 					{
-						glogal_id_1 = 1;
+						reboot_num_ = 1;
 						redis->set("sys:gid", "1");
 					}
 				}
 				boost::lock_guard<boost::mutex> grard(examples_mutex_);
 				if (glogal_id_ >= 0xFFFFFFFFFFFFF)
 					glogal_id_ = 0;
-				return ((++glogal_id_) << 16) | glogal_id_1;
+				return (reboot_num_) | (++glogal_id_) << 12;
 			}
 			/**
 			* \brief 清除所有站点
@@ -69,7 +69,7 @@ namespace agebull
 			/**
 			* \brief 保存配置
 			*/
-			static zero_config& insert_config(shared_ptr<zero_config>& config, bool save);
+			static void insert_config(shared_ptr<zero_config> config);
 
 			/**
 			* \brief 保存配置
@@ -80,7 +80,14 @@ namespace agebull
 			*/
 			static size_t get_station_count()
 			{
-				return configs_.size();
+				int cnt = 0;
+				for (auto& kv : configs_)
+				{
+					if (kv.second->is_state(station_state::Uninstall))
+						continue;
+					cnt++;
+				}
+				return cnt;
 			}
 
 			/**
@@ -89,10 +96,55 @@ namespace agebull
 			static shared_ptr<zero_config>& get_config(const string& station_name, bool find_redis = true);
 
 			/**
+			* \brief 还原站点
+			*/
+			static bool restore(shared_ptr<zero_config>& value);
+			/**
+			* \brief 加入站点
+			*/
+			static bool join(zero_station* station_name);
+			/**
+			* \brief 加入站点
+			*/
+			static bool left(zero_station* station_name);
+			/**
+			* \brief 设置关闭
+			*/
+			static void set_all_destroy();
+		public:
+			/**
+			* \brief 遍历配置
+			*/
+			static void foreach_configs(std::function<void(shared_ptr<zero_config>&)> look);
+
+			/**
+			* \brief 取机器信息
+			*/
+			static char host_info(const string& station_name, string& json);
+
+			/**
+			* \brief 上传文档
+			*/
+			static bool upload_doc(const char* station_name, shared_char& doc);
+
+			/**
+			* \brief 获取文档
+			*/
+			static bool get_doc(const char* station_name, string& doc);
+
+			/**
+			* \brief 安装一个站点
+			*/
+			static bool install(const char* json_str);
+
+			/**
+			* \brief 站点安装
+			*/
+			static char install_station(const char* station_name, const char* type_name, const char* short_name);
+			/**
 			* \brief 安装一个站点
 			*/
 			static bool install(const char* station_name, int station_type, const char* short_name);
-
 			/**
 			* \brief 初始化
 			*/
@@ -103,35 +155,43 @@ namespace agebull
 			static	bool uninstall(const string& station_name);
 
 			/**
-			* \brief 还原站点
+			* \brief 站点更新
 			*/
-			static bool restore(shared_ptr<zero_config>& value);
+			static bool update(const char* json);
+		private:
 			/**
-			* \brief 加入站点
+			* \brief 安装一个站点
 			*/
-			static bool join(zero_station* station);
+			static bool install(shared_ptr<zero_config>& config);
 			/**
-			* \brief 加入站点
+			* \brief 保存站点
 			*/
-			static bool left(zero_station* station);
+			static acl::string save(shared_ptr<zero_config>& config);
+		public:
 			/**
 			* \brief 查找已运行站点
 			*/
 			static zero_station* instance(const string& name);
 			/**
-			* \brief 取机器信息
+			*  \brief 启动站点
 			*/
-			static char host_info(const string& stattion, string& json);
+			static char start_station(string station_name);
 			/**
-			* \brief 设置关闭
+			* \brief 暂停站点
 			*/
-			static void set_close_info();
-		public:
+			static char pause_station(const string& station_name);
 			/**
-			* \brief 遍历配置
+			* \brief 继续站点
 			*/
-			static void foreach_configs(std::function<void(shared_ptr<zero_config>&)> look);
-
+			static char resume_station(const string& station_name);
+			/**
+			* \brief 关闭站点
+			*/
+			static char close_station(const string& station_name);
+			/**
+			* 心跳的响应
+			*/
+			static bool heartbeat(char cmd, vector<shared_char> lines);
 		};
 	}
 }

@@ -47,7 +47,7 @@ namespace Agebull.ZeroNet.Core
         void IZeroObject.OnHeartbeat()
         {
         }
-    
+
 
         /// <summary>
         /// 系统启动时调用
@@ -126,7 +126,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         ZSocket IZeroConnectionPool.GetSocket(string station, string name)
         {
-            return ZSocket.CreateClientSocket($"inproc://{station}_Proxy", ZSocketType.PAIR,name .ToAsciiBytes( ));
+            return ZSocket.CreateClientSocket($"inproc://{station}_Proxy", ZSocketType.PAIR, name.ToAsciiBytes());
         }
 
         /// <summary>

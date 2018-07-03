@@ -1,7 +1,30 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
+
+    /// <summary>
+    /// Api处理器
+    /// </summary>
+    public interface IApiHandler
+    {
+        /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        void Prepare(ApiStation station, ApiCallItem item);
+
+        /// <summary>
+        /// 结束处理
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="item"></param>
+        void End(ApiStation station, ApiCallItem item);
+    }
+
     /// <summary>
     /// Api调用节点
     /// </summary>
@@ -10,19 +33,21 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 全局ID
         /// </summary>
-        [JsonProperty]
+        internal List<IApiHandler> Handlers { get; set; }
+        /// <summary>
+        /// 全局ID
+        /// </summary>
         public string GlobalId { get; set; }
 
         /// <summary>
         /// 调用方的全局ID
         /// </summary>
-        [JsonProperty]
         public string CallerGlobalId { get; set; }
 
         /// <summary>
         /// 请求者
         /// </summary>
-        public string Caller { get; set; }
+        public byte[] Caller { get; set; }
         /// <summary>
         /// 请求标识
         /// </summary>

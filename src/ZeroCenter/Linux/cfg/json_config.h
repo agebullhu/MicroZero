@@ -13,6 +13,7 @@ namespace agebull
 	public:
 		static int base_tcp_port;
 		static int plan_exec_timeout;
+		static int plan_cache_size;
 		static bool use_ipc_protocol;
 		static char redis_addr[512];
 		static int redis_defdb;
@@ -161,5 +162,9 @@ namespace agebull
 		}
 		return -1;
 	}
+
+#define json_add_str(node,key,text) if(!text.empty())  node.add_text(key, text.c_str());
+#define json_add_num(node,key,num) if(num)  node.add_number(key, num);
+#define json_add_array_str(node,text) text.empty() ? node.add_array_null() : node.add_array_text(text.c_str());
 }
 #endif

@@ -1,110 +1,46 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Agebull.Common.Configuration;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace RpcTest
 {
-    internal class ZeroTester
+    internal class ZeroTester : Tester
     {
-        public CancellationToken Token;
-        private static long _count;
-        private static long _blError;
-        private static long _netError;
-        private static long _exError;
-        private static long _tmError;
-        private static long _runTime;
-        private static DateTime _start;
-
-        private readonly string _station;
-        private readonly string _api;
-        private readonly string _arg;
-
-        public ZeroTester()
+        public override bool Init()
         {
-            var sec = ConfigurationManager.Get("ApiTest");
-            if (sec.IsEmpty)
-                throw new Exception("’“≤ªµΩApiTest≈‰÷√Ω⁄");
-            _station = sec["Station"];
-            _api = sec["Api"];
-            _arg= sec["Argument"]; 
+            return SystemManager.Instance.TryInstall(Tester.Station, "api");
         }
 
-        public void Async()
+        protected override void DoAsync()
         {
-            DateTime s = DateTime.Now;
-            Interlocked.Increment(ref waitCount);
             ApiClient client = new ApiClient
             {
-                Station = _station,
-                Commmand = _api,
-                Argument = _arg
+                Station = Station,
+                Commmand = Api,
+                Argument = Arg
             };
             client.CallCommand();
-            switch (client.State)
+            if (client.State < ZeroOperatorStateType.Failed)
             {
-                case ZeroOperatorStateType.NetError:
-                    Interlocked.Increment(ref _netError);
-                    break;
-                case ZeroOperatorStateType.LocalException:
-                    Interlocked.Increment(ref _exError);
-                    break;
-                case ZeroOperatorStateType.Ok:
-                    break;
-                default:
-                    Interlocked.Increment(ref _blError);
-                    break;
             }
-            var sp = (DateTime.Now - s);
-            if (sp.TotalMilliseconds > 500)
-                Interlocked.Increment(ref _tmError);
-            Interlocked.Add(ref _runTime, sp.Ticks);
-            Interlocked.Increment(ref _count);
-            Interlocked.Decrement(ref waitCount);
-        }
-        private int waitCount;
-
-        public void Test()
-        {
-            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
-            _start = DateTime.Now;
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            else if (client.State < ZeroOperatorStateType.Error)
             {
-                if (waitCount > ZeroApplication.Config.MaxWait)
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
-
-                Async();
+                Interlocked.Increment(ref BlError);
             }
-
-            Count();
-            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId,"Close");
-        }
-        public void TestSync()
-        {
-            ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
-            _start = DateTime.Now;
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            else if (client.State < ZeroOperatorStateType.TimeOut)
             {
-                if (waitCount > ZeroApplication.Config.MaxWait)
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
-                Task.Factory.StartNew(Async);
+                Interlocked.Increment(ref WkError);
             }
-            Count();
-            ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Close");
+            else if (client.State > ZeroOperatorStateType.LocalNoReady)
+            {
+                Interlocked.Increment(ref ExError);
+            }
+            else
+            {
+                Interlocked.Increment(ref NetError);
+            }
         }
 
-        public static void Count()
-        {
-            TimeSpan ts = TimeSpan.FromTicks(_runTime);
-            ZeroTrace.WriteInfo("Count", $"{_count:D8} | {_netError:D8} | {_tmError:D8} | {_blError:D8}  {ts.TotalMilliseconds / _count}ms | {_count / (DateTime.Now - _start).TotalSeconds}/s");
-        }
     }
 }

@@ -227,6 +227,10 @@ namespace agebull
 			{
 				return size_;
 			}
+			size_t alloc_size() const
+			{
+				return alloc_size_;
+			}
 
 			bool empty() const
 			{
@@ -386,13 +390,13 @@ namespace agebull
 				return val;
 			}
 
-			shared_char& alloc_frame(size_t size, char status = ZERO_BYTE_COMMAND_NONE)
+			shared_char& alloc_frame(size_t size, char state = ZERO_BYTE_COMMAND_NONE)
 			{
 				free();
 				alloc_(size + 2);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(size);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				return *this;
 			}
 
@@ -402,49 +406,49 @@ namespace agebull
 				return alloc_frame(ZERO_BYTE_COMMAND_NONE, frames);
 			}
 
-			shared_char& alloc_frame_1(char status, char frame)
+			shared_char& alloc_frame_1(char state, char frame)
 			{
 				free();
 				alloc_(4);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(1);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				buffer_[2] = frame;
 				return *this;
 			}
 
-			shared_char& alloc_frame_2(char status, char frame1, char frame2)
+			shared_char& alloc_frame_2(char state, char frame1, char frame2)
 			{
 				free();
 				alloc_(5);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(2);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				return *this;
 			}
 
-			shared_char& alloc_frame_3(char status, char frame1, char frame2, char frame3)
+			shared_char& alloc_frame_3(char state, char frame1, char frame2, char frame3)
 			{
 				free();
 				alloc_(6);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(3);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				buffer_[4] = frame3;
 				return *this;
 			}
 
-			shared_char& alloc_frame_4(char status, char frame1, char frame2, char frame3, char frame4)
+			shared_char& alloc_frame_4(char state, char frame1, char frame2, char frame3, char frame4)
 			{
 				free();
 				alloc_(7);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(4);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				buffer_[4] = frame3;
@@ -453,13 +457,13 @@ namespace agebull
 			}
 
 			template <size_t TSize>
-			shared_char& alloc_frame(char status, char (&frames)[TSize])
+			shared_char& alloc_frame(char state, char (&frames)[TSize])
 			{
 				free();
 				alloc_(TSize + 2);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(TSize);
-				buffer_[1] = status;
+				buffer_[1] = state;
 				memcpy(buffer_ + 2, frames, TSize);
 				return *this;
 			}
@@ -482,17 +486,22 @@ namespace agebull
 					buffer_[0] = static_cast<char>(size);
 			}
 
-			void status(char status)
+			void state(char s)
 			{
 				if (size_ == 0)
-					alloc_frame(10, status);
+					alloc_frame(10, s);
 				else
-					buffer_[1] = status;
+					buffer_[1] = s;
 			}
 
-			char status() const
+			char state() const
 			{
 				return buffer_[1];
+			}
+
+			const char* c_str() const
+			{
+				return buffer_;
 			}
 
 			char frame_type(size_t index) const
@@ -502,6 +511,8 @@ namespace agebull
 
 			void append_frame(char type)
 			{
+				if (size_ == 0)
+					alloc_frame(10);
 				frame_type(buffer_[0], type);
 				buffer_[0] = static_cast<char>(buffer_[0] + 1);
 			}

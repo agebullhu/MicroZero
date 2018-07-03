@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.ZeroApi;
 using ZeroMQ;
@@ -25,7 +26,7 @@ namespace Agebull.ZeroNet.Core
             while (true)
             {
                 var cmd = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(cmd))
+                if (String.IsNullOrWhiteSpace(cmd))
                     continue;
                 switch (cmd.Trim().ToLower())
                 {
@@ -45,7 +46,7 @@ namespace Agebull.ZeroNet.Core
                     continue;
                 }
 
-                var result = SystemManager.CallCommand(words);
+                var result = SystemManager.Instance.CallCommand(words);
                 if (result.InteractiveSuccess)
                     ZeroTrace.WriteInfo("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
                         ? value
@@ -126,6 +127,7 @@ namespace Agebull.ZeroNet.Core
         public static void CheckOption()
         {
             ZeroTrace.WriteLine("Weconme ZeroNet");
+            ZContext.Initialize();
             ZeroTrace.Initialize();
             CheckConfig();
             InitializeDependency();
@@ -197,9 +199,10 @@ namespace Agebull.ZeroNet.Core
         {
             RegistZeroObject(ZeroConnectionPool.CreatePool());
             AddInImporter.Instance.AutoRegist();
-
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
+            SystemManager.Instance = SystemManager.CreateInstance();
+            IocHelper.Update();
         }
 
         #endregion
@@ -211,8 +214,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void Start()
         {
-            ZContext.Initialize();
-
             using (OnceScope.CreateScope(Config))
             {
                 ApplicationState = StationState.Start;
@@ -261,7 +262,7 @@ namespace Agebull.ZeroNet.Core
         internal static bool JoinCenter()
         {
             ZeroTrace.WriteLine($"try connect zero center ({Config.ZeroManageAddress})...");
-            if (!SystemManager.PingCenter())
+            if (!SystemManager.Instance.PingCenter())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
@@ -271,7 +272,7 @@ namespace Agebull.ZeroNet.Core
 
             ZerCenterStatus = ZeroCenterState.Run;
             ApplicationState = StationState.BeginRun;
-            if (!SystemManager.HeartJoin())
+            if (!SystemManager.Instance.HeartJoin())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
@@ -279,15 +280,15 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
 
-            if (!SystemManager.LoadAllConfig())
+            if (!SystemManager.Instance.LoadAllConfig())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
                 return false;
             }
-
             ZeroTrace.WriteLine("be connected successfully,start local stations.");
             OnZeroStart();
+            SystemManager.Instance.UploadDocument();
             return true;
         }
 
@@ -310,14 +311,14 @@ namespace Agebull.ZeroNet.Core
                     OnZeroEnd();
                     break;
                 case StationState.Failed:
-                    SystemManager.HeartLeft();
+                    SystemManager.Instance.HeartLeft();
                     break;
             }
             ApplicationState = StationState.Destroy;
             if (GlobalObjects.Count > 0)
                 GlobalSemaphore.Wait();
             OnZeroDestory();
-            SystemManager.Destroy();
+            SystemManager.Instance.Destroy();
             LogRecorder.Shutdown();
             SystemMonitor.WaitMe();
             ZContext.Destroy();
@@ -333,6 +334,45 @@ namespace Agebull.ZeroNet.Core
 
         #endregion
 
+        #endregion
+
+        #region Event
+
+        /// <summary>
+        /// 站点事件发生
+        /// </summary>
+        public static event EventHandler<ZeroNetEventArgument> ZeroNetEvent;
+
+        /// <summary>
+        /// 发出事件
+        /// </summary>
+        public static void InvokeEvent(ZeroNetEventType centerEvent, string context, StationConfig config)
+        {
+            try
+            {
+                ZeroNetEvent?.Invoke(Config, new ZeroNetEventArgument(centerEvent, context, config));
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("ZeroNetEvent", e, centerEvent, context, config);
+            }
+        }
+
+        /// <summary>
+        /// 发出事件
+        /// </summary>
+        /// <param name="centerEvent"></param>
+        internal static void RaiseEvent(ZeroNetEventType centerEvent)
+        {
+            try
+            {
+                ZeroNetEvent?.Invoke(Config, new ZeroNetEventArgument(centerEvent, null, null));
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("ZeroNetEvent", e, centerEvent);
+            }
+        }
         #endregion
     }
 }

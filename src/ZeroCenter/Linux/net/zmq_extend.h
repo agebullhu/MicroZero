@@ -368,6 +368,15 @@ namespace agebull
 				//}
 				return zmq_socket_state::Succeed;
 			}
+			/**
+			* \brief 发送
+			*/
+			static int send_shared_char(ZMQ_HANDLE socket, const shared_char& iter, int flag)
+			{
+				if (iter.empty())
+					return zmq_send(socket, "", 0, flag);
+				return zmq_send(socket, *iter, iter.size(), flag);
+			}
 
 			/**
 			* \brief 发送
@@ -376,7 +385,7 @@ namespace agebull
 			{
 				while (iter != end)
 				{
-					const int state = zmq_send(socket, iter->operator*(), iter->size(), ZMQ_SNDMORE);
+					const int state = send_shared_char(socket, *iter.base(), ZMQ_SNDMORE);
 					if (state < 0)
 					{
 						return check_zmq_error();
@@ -395,13 +404,13 @@ namespace agebull
 				size_t idx = first_index;
 				for (; idx < ls.size() - 1; idx++)
 				{
-					const int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_SNDMORE);
+					const int state = send_shared_char(socket, ls[idx], ZMQ_SNDMORE);
 					if (state < 0)
 					{
 						return check_zmq_error();
 					}
 				}
-				const int state = zmq_send(socket, *ls[idx], ls[idx].size(), ZMQ_DONTWAIT);
+				const int state = send_shared_char(socket, ls[idx], ZMQ_DONTWAIT);
 				if (state < 0)
 				{
 					return check_zmq_error();
@@ -416,15 +425,21 @@ namespace agebull
 				if (first_index >= ls.size())
 					return send_late(socket, "");
 				size_t idx = first_index;
+				int state;
 				for (; idx < ls.size() - 1; idx++)
 				{
-					const int state = zmq_send(socket, ls[idx].c_str(), ls[idx].length(), ZMQ_SNDMORE);
+					state = send_shared_char(socket, ls[idx], ZMQ_SNDMORE);
 					if (state < 0)
 					{
 						return check_zmq_error();
 					}
 				}
-				return send_late(socket, ls[idx].c_str());
+				state = send_shared_char(socket, ls[idx], ZMQ_DONTWAIT);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}
+				return zmq_socket_state::Succeed;
 			}
 			/**
 			* \brief 发送帧

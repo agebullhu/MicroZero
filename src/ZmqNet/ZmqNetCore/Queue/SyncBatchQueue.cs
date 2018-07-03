@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,145 +11,98 @@ namespace Agebull.Common
     /// <summary>
     /// 多生产者单消费者的同步列表（线程安全）
     /// </summary>
-    /// <typeparam name="T">泛型对象</typeparam>
+    /// <typeparam name="TData">泛型对象</typeparam>
     /// <remarks>
     /// 1 内部使用信号量
     /// 2 用于多生产者单消费者的场景
     /// 3 使用双队列，以防止错误时无法还原
     /// </remarks>
-    public class SyncBatchQueue<T>
+    public class SyncBatchQueue<TData>
     {
         /// <summary>
         /// 内部队列
         /// </summary>
-        public Queue<List<T>> Queue { get; } = new Queue<List<T>>();
+        public ConcurrentBag<TData> Line1 = new ConcurrentBag<TData>();
 
         /// <summary>
-        /// 正在处理
+        /// 内部队列
         /// </summary>
-        public Queue<List<T>> Doing { get; } = new Queue<List<T>>();
+        public ConcurrentBag<TData> Line2 = new ConcurrentBag<TData>();
 
+
+        private int index;
+
+        ConcurrentBag<TData> now;
         /// <summary>
-        /// 用于同步的信号量
+        /// 构造
         /// </summary>
-        private readonly Semaphore _semaphore = new Semaphore(0, Int32.MaxValue);
-
-        /// <summary>
-        /// 是否为空
-        /// </summary>
-        /// <returns></returns>
-        public bool IsEmpty => Queue.Count == 0 && Doing.Count <= 1;
-
-
+        public SyncBatchQueue()
+        {
+            now = Line1;
+        }
         /// <summary>
         /// 加入队列
         /// </summary>
         /// <param name="t"></param>
-        public void Push(T t)
+        public void Push(TData t)
         {
-            Interlocked.Increment(ref DataCount);
-            lock (this)
+            if (inSwitch)
             {
-                if (Queue.Count == 0)
+                lock (this)//防止交换时间插入不正常数据
                 {
-                    Queue.Enqueue(new List<T> { t });
-                    _semaphore.Release();
+                    Thread.Sleep(0);
                 }
-                else
-                    Queue.Peek().Add(t);
             }
+            now.Add(t);
         }
 
+        private bool inSwitch;
         /// <summary>
         /// 开始处理队列内容
         /// </summary>
-        /// <param name="t">返回内容（如果返回True)</param>
-        /// <param name="waitMs">等待时长</param>
-        public bool StartProcess(out List<T> t, int waitMs)
+        public List<TData> Switch()
         {
+            ConcurrentBag<TData> old = now;
+            inSwitch = true;
             lock (this)
             {
-                if (Doing.Count > 0)//之前存在失败
+                Thread.Sleep(0);//让其它线程进入等待状态
+                if (index == 1)
                 {
-                    t = Doing.Peek();
-                    Interlocked.Increment(ref ProcessCount);
-                    return true;
+                    index = 2;
+                    now = Line2;
                 }
-                if (!_semaphore.WaitOne(waitMs))
+                else
                 {
-                    t = null;
-                    return false;
+                    index = 1;
+                    now = Line1;
                 }
-                t = Queue.Dequeue();
-                Doing.Enqueue(t);
             }
-            Interlocked.Increment(ref ProcessCount);
-            return true;
-        }
-
-        /// <summary>
-        /// 完成处理队列内容
-        /// </summary>
-        public void EndProcess()
-        {
-            Interlocked.Increment(ref SuccessCount);
-            lock (this)
+            inSwitch = false;
+            if (old.Count == 0)
+                return null;
+            List<TData> array = old.ToList();
+            if (index == 1)
             {
-                Doing.Dequeue();
+                Line2 = new ConcurrentBag<TData>();
             }
+            else
+            {
+                Line1 = new ConcurrentBag<TData>();
+            }
+            return array;
         }
-
-        #region MyRegion
-
-
-        /// <summary>
-        /// 广播总数
-        /// </summary>
-        public long SuccessCount;
-
-        /// <summary>
-        /// 广播总数
-        /// </summary>
-        public long DataCount;
-
-        /// <summary>
-        /// 广播总数
-        /// </summary>
-        public long ProcessCount;
-
-        #endregion
 
         #region 序列化
-        /// <summary>
-        /// 内部序列化使用
-        /// </summary>
-        [JsonObject(MemberSerialization.OptIn)]
-        public class InnerQueue
-        {
-            /// <summary>
-            /// 内部队列
-            /// </summary>
-            [JsonProperty]
-            public List<List<T>> QueueList;
-
-            /// <summary>
-            /// 内部队列
-            /// </summary>
-            [JsonProperty]
-            public List<List<T>> DoingList;
-        }
         /// <summary>
         /// 保存以备下次启动时使用
         /// </summary>
         public void Save(string file)
         {
-            var inner = new InnerQueue();
-            lock (this)
-            {
-                inner.QueueList = Queue.ToList();
-                inner.DoingList = Doing.ToList();
-            }
-            var json = JsonConvert.SerializeObject(inner);
+            List<TData> data = new List<TData>();
+            data.AddRange(Line1);
+            data.AddRange(Line2);
+            var json = JsonConvert.SerializeObject(data);
             IOHelper.CheckPath(Path.GetDirectoryName(file));
             File.WriteAllText(file, json);
         }
@@ -160,31 +114,31 @@ namespace Agebull.Common
         public bool Load(string file)
         {
             if (!File.Exists(file))
+            {
+                index = 1;
+                now = Line1;
                 return false;
+            }
 
+            index = 2;
+            now = Line2;
             try
             {
                 var json = File.ReadAllText(file);
-                var inner = JsonConvert.DeserializeObject<InnerQueue>(json);
-                lock (this)
-                {
-                    if (inner.QueueList != null && inner.QueueList.Count > 0)
-                    {
-                        foreach (var vl in inner.QueueList)
-                            Queue.Enqueue(vl);
-                    }
-                    if (inner.DoingList != null && inner.DoingList.Count > 0)
-                    {
-                        foreach (var vl in inner.DoingList)
-                            Doing.Enqueue(vl);
-                    }
-                }
+                var inner = JsonConvert.DeserializeObject<List<TData>>(json);
+                if (inner != null)
+                    foreach (var item in inner)
+                        Line1.Add(item);
                 return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 return false;
+            }
+            finally
+            {
+                File.Delete(file);
             }
         }
 

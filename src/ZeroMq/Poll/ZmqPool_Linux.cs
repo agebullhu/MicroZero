@@ -20,7 +20,7 @@ namespace ZeroMQ
         /// <summary>
         /// 超时
         /// </summary>
-        public int TimeoutMs { get; set; }
+        public int TimeoutMs { get; set; } = 1000;
         private ZError error;
 
         /// <summary>

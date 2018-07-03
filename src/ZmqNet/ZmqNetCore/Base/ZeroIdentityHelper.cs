@@ -69,9 +69,9 @@ namespace Agebull.ZeroNet.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(UseIpc ? '-' : '+');
             sb.Append(isService ? "<" : ">");
-            sb.Append(ZeroApplication.Config.ServiceName);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);
+            //sb.Append(ZeroApplication.Config.ServiceName);
+            //sb.Append("-");
+            sb.Append(ZeroApplication.Config.ShortName);
             if (ZeroApplication.Config.ServiceKey != "*")
             {
                 sb.Append("-");
@@ -85,39 +85,8 @@ namespace Agebull.ZeroNet.Core
                 sb.Append(range);
             }
             sb.Append("-");
-            sb.Append(RandomOperate.Generate(6));
+            sb.Append(RandomOperate.Generate(4));
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public static byte[] ToZeroIdentity(bool isService, params string[] ranges)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(UseIpc ? "-" : "+");
-            sb.Append(isService ? "<" : ">");
-            sb.Append(ZeroApplication.Config.ServiceName);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.ShortName ?? ZeroApplication.Config.StationName);
-            //if (ZeroApplication.Config.ServiceKey != "*")
-            //{
-            //    sb.Append("-");
-            //    sb.Append(ZeroApplication.Config.ServiceKey);
-            //}
-            //foreach (var range in ranges)
-            //{
-            //    if (range == null)
-            //        continue;
-            //    sb.Append("-");
-            //    sb.Append(range);
-            //}
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(8));
-            return sb.ToString().ToAsciiBytes();
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Agebull.ZeroNet.Core
             {
                 pool.Prepare(sockets, ZPollEvent.In);
                 _waitToken.Release();
-                //SystemManager.HeartReady(StationName, RealName);
+                //SystemManager.Instance.HeartReady(StationName, RealName);
                 while (!RunTaskCancel.Token.IsCancellationRequested)
                 {
                     if (!pool.Poll())

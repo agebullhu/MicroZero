@@ -9,9 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PerformanceCounter\**" />
+    <EmbeddedResource Remove="PerformanceCounter\**" />
+    <None Remove="PerformanceCounter\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Program.cs" />
     <Compile Remove="RouteCounter.cs" />
     <Compile Remove="RuntimeWaring.cs" />
+    <Compile Remove="RuntimeWaring\WaringItem.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ZmqNet\ApiContract\Agebull.ZeroNet.Contract.csproj" />
     <ProjectReference Include="..\..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 

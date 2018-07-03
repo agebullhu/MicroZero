@@ -26,7 +26,6 @@ namespace Agebull.ZeroNet.Log
         void IAutoRegister.AutoRegist()
         {
             ZeroApplication.RegistZeroObject<RuntimeWaring>();
-            ZeroApplication.RegistZeroObject<ApiCounter>();
         }
     }
 }

@@ -34,11 +34,12 @@ namespace agebull
 
 		class rpc_service
 		{
-		public:
 			/**
 			* \brief 主线程等待信号量
 			*/
 			static boost::interprocess::interprocess_semaphore wait_semaphore;
+		public:
+			static boost::posix_time::ptime start_time;
 			/**
 			* \brief 初始化
 			*/
@@ -53,6 +54,11 @@ namespace agebull
 			*\brief 等待结束
 			*/
 			static void wait_zero();
+
+			/**
+			*\brief 等待结束
+			*/
+			static void close_zero();
 
 			/**
 			* \brief 中止

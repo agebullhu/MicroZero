@@ -44,25 +44,27 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <IncludePath>\usr\Include;\usr\local\include</IncludePath>
+    <OutDir>/root/zero/center/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
-      <AdditionalOptions>-pthread -fopenmp %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <Version>false</Version>
     </Link>
     <ClCompile>
-      <DebugInformationFormat>FullDebug</DebugInformationFormat>
-      <AdditionalOptions>-fopenmp %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>Minimal</DebugInformationFormat>
+      <UnrollLoops>true</UnrollLoops>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>

@@ -75,7 +75,14 @@ namespace agebull
 			* \brief 已就绪的站点数量
 			*/
 			int ready_works_;
+			/**
+			* \brief 类型名称(冗余)
+			*/
 			const char* type_name_;
+			/**
+			* \brief 当前站点状态
+			*/
+			station_state station_state_;
 		public:
 			/**
 			* \brief 实例队列访问锁
@@ -88,7 +95,7 @@ namespace agebull
 			/**
 			* \brief 站点名称
 			*/
-			string short_name;
+			string short_name_;
 			/**
 			* \brief 站点标题
 			*/
@@ -123,10 +130,6 @@ namespace agebull
 			int worker_in_port_;
 
 			/**
-			* \brief 当前站点状态
-			*/
-			station_state station_state_;
-			/**
 			* \brief 总请求次数
 			*/
 			int64 request_in, request_out, request_err;
@@ -143,11 +146,11 @@ namespace agebull
 			zero_config()
 				: ready_works_(0)
 				, type_name_("ERR")
+				, station_state_(station_state::None)
 				, station_type_(0)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
-				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -164,12 +167,12 @@ namespace agebull
 			*/
 			zero_config(const string& name, int type)
 				: ready_works_(0)
+				, station_state_(station_state::None)
 				, station_name_(std::move(name))
 				, station_type_(type)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
-				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -299,19 +302,39 @@ namespace agebull
 				}
 			}
 
-			/**
-			* \brief 写入JSON
-			* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
-			*/
-			acl::string to_json(int type);
+			bool is_custom_station() const
+			{
+				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || station_type_ == STATION_TYPE_VOTE;
+			}
 
+			bool is_state(station_state state) const
+			{
+				return station_state_ == state;
+			}
+			bool is_run() const
+			{
+				return station_state_ >= station_state::Start && station_state_ <= station_state::Pause;
+			}
+			station_state get_state() const
+			{
+				return station_state_;
+			}
+			void set_state(station_state state)
+			{
+				station_state_ = state;
+			}
+			void runtime_state(station_state state)
+			{
+				if (station_state_ != station_state::Uninstall)
+					station_state_ = state;
+			}
 			/**
 			* \brief 开机日志
 			*/
 			void start()
 			{
-				full_log(station_state_ == station_state::ReStart ? "restart" : "start");
-				station_state_ = station_state::Start;
+				full_log(station_state_ == station_state::ReStart || station_state_ == station_state::Failed ? "restart" : "start");
+				runtime_state(station_state::Start);
 			}
 
 			/**
@@ -320,7 +343,7 @@ namespace agebull
 			void failed(const char* msg)
 			{
 				error("con`t launch", msg);
-				station_state_ = station_state::Failed;
+				runtime_state(station_state::Failed);
 			}
 
 			/**
@@ -328,8 +351,8 @@ namespace agebull
 			*/
 			void runing()
 			{
-				full_log("runing");
-				station_state_ = station_state::Run;
+				log("runing");
+				runtime_state(station_state::Run);
 			}
 
 			/**
@@ -337,8 +360,8 @@ namespace agebull
 			*/
 			void closing()
 			{
-				station_state_ = station_state::Closing;
-				full_log("closing...");
+				log("closing...");
+				runtime_state(station_state::Closing);
 			}
 
 			/**
@@ -347,7 +370,7 @@ namespace agebull
 			void restart()
 			{
 				full_log("restart");
-				station_state_ = station_state::ReStart;
+				runtime_state(station_state::ReStart);
 			}
 
 			/**
@@ -355,8 +378,8 @@ namespace agebull
 			*/
 			void closed()
 			{
-				station_state_ = station_state::Closed;
-				full_log("closed");
+				runtime_state(station_state::Closed);
+				log("closed");
 			}
 
 			/**
@@ -365,25 +388,31 @@ namespace agebull
 			void full_log(const char* state) const
 			{
 				if (worker_in_port_ > 0)
-					log_msg6("[%s]: > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
+					log_msg6("[%s] > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
 				else
-					log_msg5("[%s]: > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
+					log_msg5("[%s] > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
 			}
 
 			/**
 			* \brief 日志
 			*/
-			void log(const char* msg) const
+			void log(const char* msg, bool works = false) const
 			{
-				log_msg3("[%s]: > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_);
+				if (works)
+					log_msg3("[%s] > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_)
+				else
+					log_msg2("[%s] > %s", station_name_.c_str(), msg)
 			}
 
 			/**
 			* \brief 日志
 			*/
-			void log(const char* title, const char* msg) const
+			void log(const char* title, const char* msg, bool works = false) const
 			{
-				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
+				if (works)
+					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+				else
+					log_msg3("[%s] > %s > %s", station_name_.c_str(), title, msg)
 			}
 
 			/**
@@ -404,6 +433,35 @@ namespace agebull
 			{
 				log_error3("[%s] > %s > %lld", station_name_.c_str(), title, id);
 			}
+			/**
+			* \brief 写入基本信息JSON
+			*/
+			acl::string to_info_json()
+			{
+				return to_json(2);
+			}
+
+			/**
+			* \brief 写入状态JSON
+			*/
+			acl::string to_status_json()
+			{
+				return to_json(1);
+			}
+
+			/**
+			* \brief 写入全部JSON
+			*/
+			acl::string to_full_json()
+			{
+				return to_json(0);
+			}
+		private:
+			/**
+			* \brief 写入JSON
+			* \param type 记录类型 0 全量 1 状态信息 2 基本信息
+			*/
+			acl::string to_json(int type);
 		};
 	}
 }

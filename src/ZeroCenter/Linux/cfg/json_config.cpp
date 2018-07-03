@@ -5,6 +5,7 @@ namespace agebull
 	std::map<std::string, std::string> json_config::global_cfg_;
 	int json_config::base_tcp_port = 7999;
 	int json_config::plan_exec_timeout = 300;
+	int json_config::plan_cache_size = 1024;
 	bool json_config::use_ipc_protocol = false;
 	char json_config::redis_addr[512] = "127.0.0.1:6379";
 	int json_config::redis_defdb = 0x10;
@@ -63,6 +64,7 @@ namespace agebull
 			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
 
 			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
+			plan_cache_size = get_global_int("plan_exec_timeout", plan_cache_size);
 			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
 			use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
 			var addr = get_global_string("redis_addr");

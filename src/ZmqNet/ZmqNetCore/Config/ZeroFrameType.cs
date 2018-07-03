@@ -102,6 +102,11 @@ namespace Agebull.ZeroNet.Core
         public const byte BinaryValue = (byte)'B';
 
         /// <summary>
+        ///     二进制内容
+        /// </summary>
+        public const byte TsonValue = (byte)'V';
+
+        /// <summary>
         ///     说明帧解析
         /// </summary>
         public static string FrameName(byte value)

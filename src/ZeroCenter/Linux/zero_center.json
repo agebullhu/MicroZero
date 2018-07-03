@@ -5,6 +5,7 @@
   "redis_defdb": "15",
   "worker_sound_ivl": 2000,
   "plan_exec_timeout": 300,
+  "plan_cache_size": 1024,
 
   "ZMQ_MAX_SOCKETS": -1,
   "ZMQ_IO_THREADS": -1,

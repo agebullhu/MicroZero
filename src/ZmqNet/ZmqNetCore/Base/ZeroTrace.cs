@@ -19,7 +19,7 @@ namespace Agebull.ZeroNet.Core
             public int Type { get; set; }
         }
 
-        private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
+        //private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
         //private static Thread thread;
 
@@ -50,10 +50,10 @@ namespace Agebull.ZeroNet.Core
         //    Console.WriteLine();
         //    thread = null;
         //}
-
+        static object lock_obj = new object();
         private static void Write(ConsoleMessage message)
         {
-            lock (ConsoleMessages)
+            lock (lock_obj)
                 switch (message.Type)
                 {
                     case 0:
@@ -188,7 +188,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            LogRecorder.Error(messages.LinkToString(title, "\r\n"));
+            LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" > "));
             Push(new ConsoleMessage
             {
                 Type = 3,
@@ -208,7 +208,7 @@ namespace Agebull.ZeroNet.Core
             msgs.Insert(0, "Exception");
             msgs.Add("\r\n");
             msgs.Add(exception);
-            LogRecorder.Exception(exception, messages.LinkToString(title, "\r\n"));
+            LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" > "));
             Push(new ConsoleMessage
             {
                 Type = 3,

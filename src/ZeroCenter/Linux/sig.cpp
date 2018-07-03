@@ -1,6 +1,6 @@
-// stdafx.cpp : Ö»°üÀ¨±ê×¼°üº¬ÎÄ¼şµÄÔ´ÎÄ¼ş
-// StreamTest.pch ½«×÷ÎªÔ¤±àÒëÍ·
-// stdafx.obj ½«°üº¬Ô¤±àÒëÀàĞÍĞÅÏ¢
+ï»¿// stdafx.cpp : åªåŒ…æ‹¬æ ‡å‡†åŒ…å«æ–‡ä»¶çš„æºæ–‡ä»¶
+// StreamTest.pch å°†ä½œä¸ºé¢„ç¼–è¯‘å¤´
+// stdafx.obj å°†åŒ…å«é¢„ç¼–è¯‘ç±»å‹ä¿¡æ¯
 
 #include "stdafx.h"
 #include "service.h"
@@ -25,158 +25,192 @@ namespace agebull
 
 
 		/**
-		* \brief sig¶ÔÓ¦µÄÎÄ±¾
+		* \brief sigå¯¹åº”çš„æ–‡æœ¬
 		*/
 		const char* sig_text(int sig)
 		{
 			switch (sig)
 			{
-			case SIGABRT: return "ÓÉµ÷ÓÃabortº¯Êı²úÉú£¬½ø³Ì·ÇÕı³£ÍË³ö";
-			case SIGKILL: return "ÎŞ·¨´¦ÀíºÍºöÂÔ¡£ÖĞÖ¹Ä³¸ö½ø³Ì";
-			case SIGTERM: return "ÇëÇóÖĞÖ¹½ø³Ì£¬killÃüÁîÈ±Ê¡·¢ËÍ";
-			case SIGINT: return "ÓÉInterrupt Key²úÉú£¬Í¨³£ÊÇCTRL + C»òÕßDELETE¡£·¢ËÍ¸øËùÓĞForeGround GroupµÄ½ø³Ì";
+			case SIGABRT: return "ç”±è°ƒç”¨abortå‡½æ•°äº§ç”Ÿï¼Œè¿›ç¨‹éæ­£å¸¸é€€å‡º";
+			case SIGKILL: return "æ— æ³•å¤„ç†å’Œå¿½ç•¥ã€‚ä¸­æ­¢æŸä¸ªè¿›ç¨‹";
+			case SIGTERM: return "è¯·æ±‚ä¸­æ­¢è¿›ç¨‹ï¼Œkillå‘½ä»¤ç¼ºçœå‘é€";
+			case SIGINT: return "ç”±Interrupt Keyäº§ç”Ÿï¼Œé€šå¸¸æ˜¯CTRL + Cæˆ–è€…DELETEã€‚å‘é€ç»™æ‰€æœ‰ForeGround Groupçš„è¿›ç¨‹";
 
-			case SIGALRM: return "ÓÃalarmº¯ÊıÉèÖÃµÄtimer³¬Ê±»òsetitimerº¯ÊıÉèÖÃµÄinterval timer³¬Ê±";
-			case SIGBUS: return "Ä³ÖÖÌØ¶¨µÄÓ²¼şÒì³££¬Í¨³£ÓÉÄÚ´æ·ÃÎÊÒıÆğ";
-				//case SIGCANCEL: return "ÓÉSolaris Thread LibraryÄÚ²¿Ê¹ÓÃ£¬Í¨³£²»»áÊ¹ÓÃ";
-			case SIGCHLD: return "½ø³ÌTerminate»òStopµÄÊ±ºò£¬SIGCHLD»á·¢ËÍ¸øËüµÄ¸¸½ø³Ì¡£È±Ê¡Çé¿öÏÂ¸ÃSignal»á±»ºöÂÔ";
-			case SIGCONT: return "µ±±»stopµÄ½ø³Ì»Ö¸´ÔËĞĞµÄÊ±ºò£¬×Ô¶¯·¢ËÍ";
-				//case SIGEMT: return "ºÍÊµÏÖÏà¹ØµÄÓ²¼şÒì³£
-			case SIGFPE: return "ÊıÑ§Ïà¹ØµÄÒì³££¬Èç±»0³ı£¬¸¡µãÒç³ö£¬µÈµÈ";
-				//case SIGFREEZE: return "Solaris×¨ÓÃ£¬Hiberate»òÕßSuspendedÊ±ºò·¢ËÍ
-			case SIGHUP: return "·¢ËÍ¸ø¾ßÓĞTerminalµÄControlling Process£¬µ±terminal±»disconnectÊ±ºò·¢ËÍ";
-			case SIGILL: return "·Ç·¨Ö¸ÁîÒì³£";
-				//case SIGINFO: return "BSD signal¡£ÓÉStatus Key²úÉú£¬Í¨³£ÊÇCTRL + T¡£·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì
-			case SIGIO: return "Òì²½IOÊÂ¼ş";
-				//case SIGIOT: return "ÊµÏÖÏà¹ØµÄÓ²¼şÒì³££¬Ò»°ã¶ÔÓ¦SIGABRT";
-				//case SIGLWP: return "ÓÉSolaris Thread LibrayÄÚ²¿Ê¹ÓÃ
-			case SIGPIPE: return "ÔÚreaderÖĞÖ¹Ö®ºóĞ´PipeµÄÊ±ºò·¢ËÍ";
-				//case SIGPOLL: return "µ±Ä³¸öÊÂ¼ş·¢ËÍ¸øPollable DeviceµÄÊ±ºò·¢ËÍ";
-			case SIGPROF: return "SetitimerÖ¸¶¨µÄProfiling Interval TimerËù²úÉú";
-			case SIGPWR: return "ºÍÏµÍ³Ïà¹Ø¡£ºÍUPSÏà¹Ø¡£";
-			case SIGQUIT: return "ÊäÈëQuit KeyµÄÊ±ºò£¨CTRL + \\£©·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì";
-			case SIGSEGV: return "·Ç·¨ÄÚ´æ·ÃÎÊ";
-			case SIGSTKFLT: return "Linux×¨ÓÃ£¬ÊıÑ§Ğ­´¦ÀíÆ÷µÄÕ»Òì³£";
-			case SIGSTOP: return "ÖĞÖ¹½ø³Ì¡£ÎŞ·¨´¦ÀíºÍºöÂÔ¡£";
-			case SIGSYS: return "·Ç·¨ÏµÍ³µ÷ÓÃ";
-				//case SIGTHAW: return "Solaris×¨ÓÃ£¬´ÓSuspend»Ö¸´Ê±ºò·¢ËÍ";
-			case SIGTRAP: return "ÊµÏÖÏà¹ØµÄÓ²¼şÒì³£¡£Ò»°ãÊÇµ÷ÊÔÒì³£";
-			case SIGTSTP: return "Suspend Key£¬Ò»°ãÊÇCtrl + Z¡£·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì";
-			case SIGTTIN: return "µ±Background GroupµÄ½ø³Ì³¢ÊÔ¶ÁÈ¡TerminalµÄÊ±ºò·¢ËÍ";
-			case SIGTTOU: return "µ±Background GroupµÄ½ø³Ì³¢ÊÔĞ´TerminalµÄÊ±ºò·¢ËÍ";
-			case SIGURG: return "µ±out - of - band data½ÓÊÕµÄÊ±ºò¿ÉÄÜ·¢ËÍ";
-			case SIGUSR1: return "ÓÃ»§×Ô¶¨Òåsignal 1";
-			case SIGUSR2: return "ÓÃ»§×Ô¶¨Òåsignal 2";
-			case SIGVTALRM: return "setitimerº¯ÊıÉèÖÃµÄVirtual Interval Timer³¬Ê±µÄÊ±ºò";
-				//case SIGWAITING: return "Solaris Thread LibraryÄÚ²¿ÊµÏÖ×¨ÓÃ";
-			case SIGWINCH: return "µ±TerminalµÄ´°¿Ú´óĞ¡¸Ä±äµÄÊ±ºò£¬·¢ËÍ¸øForeground GroupµÄËùÓĞ½ø³Ì";
-			case SIGXCPU: return "µ±CPUÊ±¼äÏŞÖÆ³¬Ê±µÄÊ±ºò";
-			case SIGXFSZ: return "½ø³Ì³¬¹ıÎÄ¼ş´óĞ¡ÏŞÖÆ";
-				//case SIGXRES: return "Solaris×¨ÓÃ£¬½ø³Ì³¬¹ı×ÊÔ´ÏŞÖÆµÄÊ±ºò·¢ËÍ
+			case SIGALRM: return "ç”¨alarmå‡½æ•°è®¾ç½®çš„timerè¶…æ—¶æˆ–setitimerå‡½æ•°è®¾ç½®çš„interval timerè¶…æ—¶";
+			case SIGBUS: return "æŸç§ç‰¹å®šçš„ç¡¬ä»¶å¼‚å¸¸ï¼Œé€šå¸¸ç”±å†…å­˜è®¿é—®å¼•èµ·";
+				//case SIGCANCEL: return "ç”±Solaris Thread Libraryå†…éƒ¨ä½¿ç”¨ï¼Œé€šå¸¸ä¸ä¼šä½¿ç”¨";
+			case SIGCHLD: return "è¿›ç¨‹Terminateæˆ–Stopçš„æ—¶å€™ï¼ŒSIGCHLDä¼šå‘é€ç»™å®ƒçš„çˆ¶è¿›ç¨‹ã€‚ç¼ºçœæƒ…å†µä¸‹è¯¥Signalä¼šè¢«å¿½ç•¥";
+			case SIGCONT: return "å½“è¢«stopçš„è¿›ç¨‹æ¢å¤è¿è¡Œçš„æ—¶å€™ï¼Œè‡ªåŠ¨å‘é€";
+				//case SIGEMT: return "å’Œå®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸
+			case SIGFPE: return "æ•°å­¦ç›¸å…³çš„å¼‚å¸¸ï¼Œå¦‚è¢«0é™¤ï¼Œæµ®ç‚¹æº¢å‡ºï¼Œç­‰ç­‰";
+				//case SIGFREEZE: return "Solarisä¸“ç”¨ï¼ŒHiberateæˆ–è€…Suspendedæ—¶å€™å‘é€
+			case SIGHUP: return "å‘é€ç»™å…·æœ‰Terminalçš„Controlling Processï¼Œå½“terminalè¢«disconnectæ—¶å€™å‘é€";
+			case SIGILL: return "éæ³•æŒ‡ä»¤å¼‚å¸¸";
+				//case SIGINFO: return "BSD signalã€‚ç”±Status Keyäº§ç”Ÿï¼Œé€šå¸¸æ˜¯CTRL + Tã€‚å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹
+			case SIGIO: return "å¼‚æ­¥IOäº‹ä»¶";
+				//case SIGIOT: return "å®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸ï¼Œä¸€èˆ¬å¯¹åº”SIGABRT";
+				//case SIGLWP: return "ç”±Solaris Thread Librayå†…éƒ¨ä½¿ç”¨
+			case SIGPIPE: return "åœ¨readerä¸­æ­¢ä¹‹åå†™Pipeçš„æ—¶å€™å‘é€";
+				//case SIGPOLL: return "å½“æŸä¸ªäº‹ä»¶å‘é€ç»™Pollable Deviceçš„æ—¶å€™å‘é€";
+			case SIGPROF: return "SetitimeræŒ‡å®šçš„Profiling Interval Timeræ‰€äº§ç”Ÿ";
+			case SIGPWR: return "å’Œç³»ç»Ÿç›¸å…³ã€‚å’ŒUPSç›¸å…³ã€‚";
+			case SIGQUIT: return "è¾“å…¥Quit Keyçš„æ—¶å€™ï¼ˆCTRL + \\ï¼‰å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹";
+			case SIGSEGV: return "éæ³•å†…å­˜è®¿é—®";
+			case SIGSTKFLT: return "Linuxä¸“ç”¨ï¼Œæ•°å­¦åå¤„ç†å™¨çš„æ ˆå¼‚å¸¸";
+			case SIGSTOP: return "ä¸­æ­¢è¿›ç¨‹ã€‚æ— æ³•å¤„ç†å’Œå¿½ç•¥ã€‚";
+			case SIGSYS: return "éæ³•ç³»ç»Ÿè°ƒç”¨";
+				//case SIGTHAW: return "Solarisä¸“ç”¨ï¼Œä»Suspendæ¢å¤æ—¶å€™å‘é€";
+			case SIGTRAP: return "å®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸ã€‚ä¸€èˆ¬æ˜¯è°ƒè¯•å¼‚å¸¸";
+			case SIGTSTP: return "Suspend Keyï¼Œä¸€èˆ¬æ˜¯Ctrl + Zã€‚å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹";
+			case SIGTTIN: return "å½“Background Groupçš„è¿›ç¨‹å°è¯•è¯»å–Terminalçš„æ—¶å€™å‘é€";
+			case SIGTTOU: return "å½“Background Groupçš„è¿›ç¨‹å°è¯•å†™Terminalçš„æ—¶å€™å‘é€";
+			case SIGURG: return "å½“out - of - band dataæ¥æ”¶çš„æ—¶å€™å¯èƒ½å‘é€";
+			case SIGUSR1: return "ç”¨æˆ·è‡ªå®šä¹‰signal 1";
+			case SIGUSR2: return "ç”¨æˆ·è‡ªå®šä¹‰signal 2";
+			case SIGVTALRM: return "setitimerå‡½æ•°è®¾ç½®çš„Virtual Interval Timerè¶…æ—¶çš„æ—¶å€™";
+				//case SIGWAITING: return "Solaris Thread Libraryå†…éƒ¨å®ç°ä¸“ç”¨";
+			case SIGWINCH: return "å½“Terminalçš„çª—å£å¤§å°æ”¹å˜çš„æ—¶å€™ï¼Œå‘é€ç»™Foreground Groupçš„æ‰€æœ‰è¿›ç¨‹";
+			case SIGXCPU: return "å½“CPUæ—¶é—´é™åˆ¶è¶…æ—¶çš„æ—¶å€™";
+			case SIGXFSZ: return "è¿›ç¨‹è¶…è¿‡æ–‡ä»¶å¤§å°é™åˆ¶";
+				//case SIGXRES: return "Solarisä¸“ç”¨ï¼Œè¿›ç¨‹è¶…è¿‡èµ„æºé™åˆ¶çš„æ—¶å€™å‘é€
 			default:
-				return "Î´ÖªÖĞÖ¹Ô­Òò";
-
+				return "æœªçŸ¥ä¸­æ­¢åŸå› ";
 			}
-
 		}
 		/**
-		* \brief ÏµÍ³ĞÅºÅ´¦Àí
+		* \brief ç³»ç»Ÿä¿¡å·å¤„ç†
 		*/
 		void on_sig(int sig) {
-			sig_crash(sig);
 			switch (sig)
 			{
-			case SIGABRT://ÓÉµ÷ÓÃabortº¯Êı²úÉú£¬½ø³Ì·ÇÕı³£ÍË³ö
-			case SIGKILL://ÎŞ·¨´¦ÀíºÍºöÂÔ¡£ÖĞÖ¹Ä³¸ö½ø³Ì
-			case SIGTERM://ÇëÇóÖĞÖ¹½ø³Ì£¬killÃüÁîÈ±Ê¡·¢ËÍ
-			case SIGINT://ÓÉInterrupt Key²úÉú£¬Í¨³£ÊÇCTRL + C»òÕßDELETE¡£·¢ËÍ¸øËùÓĞForeGround GroupµÄ½ø³Ì
-				boost::thread(boost::bind(rpc_service::stop));
+			case SIGCONT://å½“è¢«stopçš„è¿›ç¨‹æ¢å¤è¿è¡Œçš„æ—¶å€™ï¼Œè‡ªåŠ¨å‘é€
+			case SIGPIPE://åœ¨readerä¸­æ­¢ä¹‹åå†™Pipeçš„æ—¶å€™å‘é€
+			case SIGPOLL://å½“æŸä¸ªäº‹ä»¶å‘é€ç»™Pollable Deviceçš„æ—¶å€™å‘é€
+			case SIGPROF://SetitimeræŒ‡å®šçš„Profiling Interval Timeræ‰€äº§ç”Ÿ
+			case SIGPWR://å’Œç³»ç»Ÿç›¸å…³ã€‚å’ŒUPSç›¸å…³ã€‚
+			case SIGWINCH://å½“Terminalçš„çª—å£å¤§å°æ”¹å˜çš„æ—¶å€™ï¼Œå‘é€ç»™Foreground Groupçš„æ‰€æœ‰è¿›ç¨‹
+			case SIGTTIN://å½“Background Groupçš„è¿›ç¨‹å°è¯•è¯»å–Terminalçš„æ—¶å€™å‘é€
+			case SIGTTOU://å½“Background Groupçš„è¿›ç¨‹å°è¯•å†™Terminalçš„æ—¶å€™å‘é€
+			case SIGURG://å½“out - of - band dataæ¥æ”¶çš„æ—¶å€™å¯èƒ½å‘é€
+			case SIGCHLD://è¿›ç¨‹Terminateæˆ–Stopçš„æ—¶å€™ï¼ŒSIGCHLDä¼šå‘é€ç»™å®ƒçš„çˆ¶è¿›ç¨‹ã€‚ç¼ºçœæƒ…å†µä¸‹è¯¥Signalä¼šè¢«å¿½ç•¥
+				return;
+			/*
+			case SIGINT://ç”±Interrupt Keyäº§ç”Ÿï¼Œé€šå¸¸æ˜¯CTRL + Cæˆ–è€…DELETEã€‚å‘é€ç»™æ‰€æœ‰ForeGround Groupçš„è¿›ç¨‹
+				log_error("#########################################################");
 				break;
-				/*
-				case SIGALRM://ÓÃalarmº¯ÊıÉèÖÃµÄtimer³¬Ê±»òsetitimerº¯ÊıÉèÖÃµÄinterval timer³¬Ê±
-				case SIGBUS://Ä³ÖÖÌØ¶¨µÄÓ²¼şÒì³££¬Í¨³£ÓÉÄÚ´æ·ÃÎÊÒıÆğ
-				case SIGCANCEL://ÓÉSolaris Thread LibraryÄÚ²¿Ê¹ÓÃ£¬Í¨³£²»»áÊ¹ÓÃ
-				case SIGCHLD://½ø³ÌTerminate»òStopµÄÊ±ºò£¬SIGCHLD»á·¢ËÍ¸øËüµÄ¸¸½ø³Ì¡£È±Ê¡Çé¿öÏÂ¸ÃSignal»á±»ºöÂÔ
-				case SIGCONT://µ±±»stopµÄ½ø³Ì»Ö¸´ÔËĞĞµÄÊ±ºò£¬×Ô¶¯·¢ËÍ
-				case SIGEMT://ºÍÊµÏÖÏà¹ØµÄÓ²¼şÒì³£
-				case SIGFPE://ÊıÑ§Ïà¹ØµÄÒì³££¬Èç±»0³ı£¬¸¡µãÒç³ö£¬µÈµÈ
-				case SIGFREEZE://Solaris×¨ÓÃ£¬Hiberate»òÕßSuspendedÊ±ºò·¢ËÍ
-				case SIGHUP://·¢ËÍ¸ø¾ßÓĞTerminalµÄControlling Process£¬µ±terminal±»disconnectÊ±ºò·¢ËÍ
-				case SIGILL://·Ç·¨Ö¸ÁîÒì³£
-				case SIGINFO://BSD signal¡£ÓÉStatus Key²úÉú£¬Í¨³£ÊÇCTRL + T¡£·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì
-				case SIGIO://Òì²½IOÊÂ¼ş
-				case SIGIOT://ÊµÏÖÏà¹ØµÄÓ²¼şÒì³££¬Ò»°ã¶ÔÓ¦SIGABRT
-				case SIGLWP://ÓÉSolaris Thread LibrayÄÚ²¿Ê¹ÓÃ
-				case SIGPIPE://ÔÚreaderÖĞÖ¹Ö®ºóĞ´PipeµÄÊ±ºò·¢ËÍ
-				case SIGPOLL://µ±Ä³¸öÊÂ¼ş·¢ËÍ¸øPollable DeviceµÄÊ±ºò·¢ËÍ
-				case SIGPROF://SetitimerÖ¸¶¨µÄProfiling Interval TimerËù²úÉú
-				case SIGPWR://ºÍÏµÍ³Ïà¹Ø¡£ºÍUPSÏà¹Ø¡£
-				case SIGQUIT://ÊäÈëQuit KeyµÄÊ±ºò£¨CTRL + \£©·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì
-				case SIGSEGV://·Ç·¨ÄÚ´æ·ÃÎÊ
-				case SIGSTKFLT://Linux×¨ÓÃ£¬ÊıÑ§Ğ­´¦ÀíÆ÷µÄÕ»Òì³£
-				case SIGSTOP://ÖĞÖ¹½ø³Ì¡£ÎŞ·¨´¦ÀíºÍºöÂÔ¡£
-				case SIGSYS://·Ç·¨ÏµÍ³µ÷ÓÃ
-				case SIGTHAW://Solaris×¨ÓÃ£¬´ÓSuspend»Ö¸´Ê±ºò·¢ËÍ
-				case SIGTRAP://ÊµÏÖÏà¹ØµÄÓ²¼şÒì³£¡£Ò»°ãÊÇµ÷ÊÔÒì³£
-				case SIGTSTP://Suspend Key£¬Ò»°ãÊÇCtrl + Z¡£·¢ËÍ¸øËùÓĞForeground GroupµÄ½ø³Ì
-				case SIGTTIN://µ±Background GroupµÄ½ø³Ì³¢ÊÔ¶ÁÈ¡TerminalµÄÊ±ºò·¢ËÍ
-				case SIGTTOU://µ±Background GroupµÄ½ø³Ì³¢ÊÔĞ´TerminalµÄÊ±ºò·¢ËÍ
-				case SIGURG://µ±out - of - band data½ÓÊÕµÄÊ±ºò¿ÉÄÜ·¢ËÍ
-				case SIGUSR1://ÓÃ»§×Ô¶¨Òåsignal 1
-				case SIGUSR2://ÓÃ»§×Ô¶¨Òåsignal 2
-				case SIGVTALRM://setitimerº¯ÊıÉèÖÃµÄVirtual Interval Timer³¬Ê±µÄÊ±ºò
-				case SIGWAITING://Solaris Thread LibraryÄÚ²¿ÊµÏÖ×¨ÓÃ
-				case SIGWINCH://µ±TerminalµÄ´°¿Ú´óĞ¡¸Ä±äµÄÊ±ºò£¬·¢ËÍ¸øForeground GroupµÄËùÓĞ½ø³Ì
-				case SIGXCPU://µ±CPUÊ±¼äÏŞÖÆ³¬Ê±µÄÊ±ºò
-				case SIGXFSZ://½ø³Ì³¬¹ıÎÄ¼ş´óĞ¡ÏŞÖÆ
-				case SIGXRES://Solaris×¨ÓÃ£¬½ø³Ì³¬¹ı×ÊÔ´ÏŞÖÆµÄÊ±ºò·¢ËÍ
-				default:
-				return;*/
-
+			case SIGABRT://ç”±è°ƒç”¨abortå‡½æ•°äº§ç”Ÿï¼Œè¿›ç¨‹éæ­£å¸¸é€€å‡º
+			case SIGKILL://æ— æ³•å¤„ç†å’Œå¿½ç•¥ã€‚ä¸­æ­¢æŸä¸ªè¿›ç¨‹
+			case SIGTERM://è¯·æ±‚ä¸­æ­¢è¿›ç¨‹ï¼Œkillå‘½ä»¤ç¼ºçœå‘é€
+			case SIGALRM://ç”¨alarmå‡½æ•°è®¾ç½®çš„timerè¶…æ—¶æˆ–setitimerå‡½æ•°è®¾ç½®çš„interval timerè¶…æ—¶
+			case SIGBUS://æŸç§ç‰¹å®šçš„ç¡¬ä»¶å¼‚å¸¸ï¼Œé€šå¸¸ç”±å†…å­˜è®¿é—®å¼•èµ·
+			case SIGCANCEL://ç”±Solaris Thread Libraryå†…éƒ¨ä½¿ç”¨ï¼Œé€šå¸¸ä¸ä¼šä½¿ç”¨
+			case SIGEMT://å’Œå®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸
+			case SIGFPE://æ•°å­¦ç›¸å…³çš„å¼‚å¸¸ï¼Œå¦‚è¢«0é™¤ï¼Œæµ®ç‚¹æº¢å‡ºï¼Œç­‰ç­‰
+			case SIGHUP://å‘é€ç»™å…·æœ‰Terminalçš„Controlling Processï¼Œå½“terminalè¢«disconnectæ—¶å€™å‘é€
+			case SIGILL://éæ³•æŒ‡ä»¤å¼‚å¸¸
+			case SIGINFO://BSD signalã€‚ç”±Status Keyäº§ç”Ÿï¼Œé€šå¸¸æ˜¯CTRL + Tã€‚å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹
+			case SIGIOT://å®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸ï¼Œä¸€èˆ¬å¯¹åº”SIGABRT
+			case SIGQUIT://è¾“å…¥Quit Keyçš„æ—¶å€™ï¼ˆCTRL + \ï¼‰å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹
+			case SIGSEGV://éæ³•å†…å­˜è®¿é—®
+			case SIGSTKFLT://Linuxä¸“ç”¨ï¼Œæ•°å­¦åå¤„ç†å™¨çš„æ ˆå¼‚å¸¸
+			case SIGSTOP://ä¸­æ­¢è¿›ç¨‹ã€‚æ— æ³•å¤„ç†å’Œå¿½ç•¥ã€‚
+			case SIGSYS://éæ³•ç³»ç»Ÿè°ƒç”¨
+			case SIGTRAP://å®ç°ç›¸å…³çš„ç¡¬ä»¶å¼‚å¸¸ã€‚ä¸€èˆ¬æ˜¯è°ƒè¯•å¼‚å¸¸
+			case SIGTSTP://Suspend Keyï¼Œä¸€èˆ¬æ˜¯Ctrl + Zã€‚å‘é€ç»™æ‰€æœ‰Foreground Groupçš„è¿›ç¨‹
+			case SIGUSR1://ç”¨æˆ·è‡ªå®šä¹‰signal 1
+			case SIGUSR2://ç”¨æˆ·è‡ªå®šä¹‰signal 2
+			case SIGVTALRM://setitimerå‡½æ•°è®¾ç½®çš„Virtual Interval Timerè¶…æ—¶çš„æ—¶å€™
+			case SIGXCPU://å½“CPUæ—¶é—´é™åˆ¶è¶…æ—¶çš„æ—¶å€™
+			case SIGXFSZ://è¿›ç¨‹è¶…è¿‡æ–‡ä»¶å¤§å°é™åˆ¶
+			case SIGXRES://Solarisä¸“ç”¨ï¼Œè¿›ç¨‹è¶…è¿‡èµ„æºé™åˆ¶çš„æ—¶å€™å‘é€
+			case SIGTHAW://Solarisä¸“ç”¨ï¼Œä»Suspendæ¢å¤æ—¶å€™å‘é€
+			case SIGLWP://ç”±Solaris Thread Librayå†…éƒ¨ä½¿ç”¨
+			case SIGFREEZE://Solarisä¸“ç”¨ï¼ŒHiberateæˆ–è€…Suspendedæ—¶å€™å‘é€
+			case SIGWAITING://Solaris Thread Libraryå†…éƒ¨å®ç°ä¸“ç”¨
+			case SIGIO://å¼‚æ­¥IOäº‹ä»¶*/
+			default:
+				sig_crash(sig);
+				break;
 			}
-
-			rpc_service::wait_semaphore.post();
+			rpc_service::close_zero();
 		}
 
 		/**
-		* \brief ¼ÇÂ¼¶ÑÕ»ĞÅÏ¢
+		* \brief è®°å½•å †æ ˆä¿¡æ¯
 		*/
 		void sig_crash(int sig)
 		{
 			try
 			{
-				time_t t = time(nullptr);
-				tm* now = localtime(&t);
-				log_error8(
-					"#########################################################\n[%04d-%02d-%02d %02d:%02d:%02d][crash signal number:%d]\n[%s]",
-					now->tm_year + 1900,
-					now->tm_mon + 1,
-					now->tm_mday,
-					now->tm_hour,
-					now->tm_min,
-					now->tm_sec,
-					sig, sig_text(sig));
-#ifdef __linux
-				signal(sig, SIG_DFL);
-				void* array[MAX_STACK_FRAMES];
-				char** strings = nullptr;
-				var size = backtrace(array, MAX_STACK_FRAMES);
-				strings = (char**)backtrace_symbols(array, size);
-				for (int i = 0; i < size; ++i)
+				log_error("#########################################################");
+				if (SIGINT == sig)
 				{
-					log_error2("%d %s", i, strings[i]);
+					log_msg1("[crash signal number:%d] CTRL + C", sig);
 				}
-				free(strings);
+				else
+				{
+					log_error2("[crash signal number:%d] %s", sig, sig_text(sig));
+					//std::wcout.imbue(std::locale("zh_CN.UTF-8"));
+					//wstring ws = sig_text(sig);
+					//locale loc("zh_CN.UTF-8");
+					//locale::global(loc);
+					//std::wcout << endl << ws << endl;
+#ifdef __linux
+					char root[1024];
+					char buff[1024];
+					char * path = getcwd(root, 1024);
+					signal(sig, SIG_DFL);
+					void* array[MAX_STACK_FRAMES];
+					char** strings = nullptr;
+					var size = backtrace(array, MAX_STACK_FRAMES);
+					strings = (char**)backtrace_symbols(array, size);
+					for (int i = 0; i < size; ++i)
+					{
+						log_error2("%d %s", i, strings[i]);
+
+						std::string symbol(strings[i]);
+						size_t pos1 = symbol.find_first_of("[");
+						size_t pos2 = symbol.find_last_of("]");
+						std::string address = symbol.substr(pos1 + 1, pos2 - pos1 - 1);
+						char cmd[128] = { 0, };
+						sprintf(cmd, "addr2line -e %s/zero_center.out %s", path, address.c_str()); // testä¸ºåº”ç”¨ç¨‹åºåç§°ï¼Œéœ€è¦æ”¹ä¸ºç”¨æˆ·è‡ªå·±çš„åº”ç”¨ç¨‹åºå
+						FILE *fPipe = popen(cmd, "r");
+						if (fPipe != NULL)
+						{
+							memset(buff, 0, sizeof(buff));
+							char* ret = fgets(buff, sizeof(buff), fPipe);
+							pclose(fPipe);
+							for (int i = (int)strlen(ret) - 1; i >= 0; i++)
+							{
+								switch (ret[i])
+								{
+								case '\r':
+								case '\n':
+								case '\t':
+								case ' ':
+								case '?':
+								case ':':
+									ret[i] = 0;
+									continue;
+								}
+								break;
+							}
+							log_error(ret);
+						}
+					}
+					free(strings);
+				}
+				log_error("#########################################################");
 #endif // __linux
-			}
-			catch (...)
+				}
+				catch (...)
 			{
 				log_error("exception");
 			}
 		}
 
 		/**
-		* \brief È¡±¾»úIP
+		* \brief å–æœ¬æœºIP
 		*/
 		void get_local_ips(acl::string& host, vector<acl::string>& ips)
 		{
@@ -205,8 +239,8 @@ namespace agebull
 		}
 
 		/**
-		* \brief »ñÈ¡Ö¸¶¨½ø³ÌËù¶ÔÓ¦µÄ¿ÉÖ´ĞĞ£¨EXE£©ÎÄ¼şÈ«Â·¾¶
-		* \param sFilePath - ½ø³Ì¾ä±úhProcessËù¶ÔÓ¦µÄ¿ÉÖ´ĞĞÎÄ¼şÂ·¾¶
+		* \brief è·å–æŒ‡å®šè¿›ç¨‹æ‰€å¯¹åº”çš„å¯æ‰§è¡Œï¼ˆEXEï¼‰æ–‡ä»¶å…¨è·¯å¾„
+		* \param sFilePath - è¿›ç¨‹å¥æŸ„hProcessæ‰€å¯¹åº”çš„å¯æ‰§è¡Œæ–‡ä»¶è·¯å¾„
 		* /
 		void get_process_file_path(string& sFilePath)
 		{
@@ -223,7 +257,7 @@ namespace agebull
 		return;
 		}
 
-		// »ñÈ¡Logic Drive String³¤¶È
+		// è·å–Logic Drive Stringé•¿åº¦
 		UINT uiLen = GetLogicalDriveStrings(0, nullptr);
 		if (0 == uiLen)
 		{

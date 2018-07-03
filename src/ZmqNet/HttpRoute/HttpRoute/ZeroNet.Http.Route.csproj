@@ -21,9 +21,6 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
     <Compile Remove="wwwroot\**" />
@@ -39,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Models\RouteCounter.cs" />
+    <Compile Remove="App\RouteCounter.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +60,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AddIn\Agebull.ZeroNet.Extend.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AddIn\Agebull.ZeroNet.Extend.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

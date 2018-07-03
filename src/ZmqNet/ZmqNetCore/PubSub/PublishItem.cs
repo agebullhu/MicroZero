@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -78,7 +77,25 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     内容
         /// </summary>
-        [JsonProperty("Values")] private List<string> _values;
+        [JsonProperty]
+        public byte[] Buffer { get; set; }
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty]
+        public byte[] Status { get; set; }
+        
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty]
+        public byte[] Tson { get; set; }
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty("Values")] internal List<string> _values;
 
         /// <summary>
         ///     内容

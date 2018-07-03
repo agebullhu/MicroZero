@@ -11,7 +11,7 @@ namespace agebull
 #define DEBUG_RESULT		(DEBUG_BASE + 3)
 #define DEBUG_PUB			(DEBUG_BASE + 4)
 #define DEBUG_SUB			(DEBUG_BASE + 5)
-#define DEBUG_QUOTE_NOTIFY	(DEBUG_BASE + 6)
+#define DEBUG_VOTE			(DEBUG_BASE + 6)
 #define DEBUG_CONFIG		("100:6; 101:6; 102:6; 103:6; 104:6; 106:6; 106:6")
 
 	/**

@@ -85,7 +85,7 @@ namespace Agebull.ZeroNet.Core
             using (var pool = ZmqPool.CreateZmqPool())
             {
                 pool.Prepare(new[] {_inprocPollSocket, _callPollSocket}, ZPollEvent.In);
-                //SystemManager.HeartReady(StationName, RealName);
+                //SystemManager.Instance.HeartReady(StationName, RealName);
                 while (!RunTaskCancel.Token.IsCancellationRequested)
                 {
                     if (!pool.Poll())

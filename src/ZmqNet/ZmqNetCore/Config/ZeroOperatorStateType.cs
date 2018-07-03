@@ -30,86 +30,101 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         Wecome = 0x5,
         /// <summary>
+        /// 投票欢迎
+        /// </summary>
+        Waiting = 0x6,
+        /// <summary>
         /// 投票已发送
         /// </summary>
-        VoteSend = 0x20,
+        VoteSend = 0x70,
         /// <summary>
         /// 投票告别
         /// </summary>
-        VoteBye = 0x21,
+        VoteBye = 0x71,
         /// <summary>
         /// 投票等待执行
         /// </summary>
-        VoteWaiting = 0x22,
+        VoteWaiting = 0x72,
         /// <summary>
         /// 投票已开始
         /// </summary>
-        VoteStart = 0x23,
+        VoteStart = 0x73,
         /// <summary>
         /// 投票结束
         /// </summary>
-        VoteEnd = 0x24,
+        VoteEnd = 0x74,
         /// <summary>
         /// 投票关闭
         /// </summary>
-        VoteClose = 0x25,
+        VoteClose = 0x75,
 
-        /// <summary>
-        /// 发生错误
-        /// </summary>
-        Error = 0x81,
         /// <summary>
         /// 操作失败
         /// </summary>
-        Failed = 0x82,
+        Failed = 0x80,
+
+        /// <summary>
+        /// 逻辑BUG
+        /// </summary>
+        Bug = 0xD0,
+        /// <summary>
+        /// 数据帧错误
+        /// </summary>
+        FrameInvalid = 0xD1,
+        /// <summary>
+        /// 参数错误
+        /// </summary>
+        ArgumentInvalid = 0xD2,
+        
+        /// <summary>
+        /// 发生错误
+        /// </summary>
+        Error = 0xF0,
         /// <summary>
         /// 找不到站点
         /// </summary>
-        NotFind = 0x83,
-        /// <summary>
-        /// 不支持的操作
-        /// </summary>
-        NotSupport = 0x84,
-        /// <summary>
-        /// 参数校验失败
-        /// </summary>
-        Invalid = 0x85,
-        /// <summary>
-        /// 超时失败
-        /// </summary>
-        TimeOut = 0x86,
-        /// <summary>
-        /// 网络错误
-        /// </summary>
-        NetError = 0x87,
+        NotFind = 0xF1,
         /// <summary>
         /// 没有工作对象
         /// </summary>
-        NoWorker = 0x88,
+        NoWorker = 0xF2,
         /// <summary>
-        /// 管理命令格式错误
+        /// 不支持的操作
         /// </summary>
-        CommandArgumentError = 0x89,
+        NotSupport = 0xF3,
         /// <summary>
-        /// 安装命令格式错误
+        /// 超时失败
         /// </summary>
-        InstallArgumentError = 0x8A,
+        TimeOut = 0xF4,
+        /// <summary>
+        /// 网络错误
+        /// </summary>
+        NetError = 0xF5,
         /// <summary>
         /// 计划格式错误
         /// </summary>
-        PlanArgumentError = 0x8B,
+        PlanError = 0xF6,
         /// <summary>
         /// 远端发送错误
         /// </summary>
-        RemoteSendError = 0x8C,
+        RemoteSendError = 0xF7,
+        
         /// <summary>
         /// 远端接收错误
         /// </summary>
-        RemoteRecvError = 0x8D,
+        RemoteRecvError = 0xF8,
+        /// <summary>
+        /// 拒绝访问
+        /// </summary>
+        DenyAccess = 0xF9,
+        /// <summary>
+        /// 拒绝服务
+        /// </summary>
+        Unavailable = 0xFA, 
         /// <summary>
         /// 未准备好
         /// </summary>
-        LocalNoReady = 0xF0,
+        LocalNoReady = 0xFB,
         /// <summary>
         /// 本地ZMQ发生错误
         /// </summary>

@@ -7,13 +7,12 @@ namespace ZeroMQ
         public ZSocket[] Sockets { get; set; }
 
         public int Size { get; set; }
-        public int TimeoutMs { get; set; }
+        public int TimeoutMs { get; set; } = 1000;
         private ZError error;
         public ZError ZError => error ?? (error = ZError.GetLastErr());
         public DispoIntPtr Ptr { get; set; }
         public void Prepare(ZSocket[] sockets, ZPollEvent events)
         {
-            TimeoutMs = 1000;
             Sockets = sockets;
             error = null;
             Size = sockets.Length;
@@ -34,7 +33,6 @@ namespace ZeroMQ
         /// <param name="events"></param>
         public void Prepare(ZPollEvent events, params ZSocket[] sockets)
         {
-            TimeoutMs = 1000;
             Sockets = sockets;
             error = null;
             Size = sockets.Length;
