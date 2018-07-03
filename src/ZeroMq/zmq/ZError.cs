@@ -3,7 +3,9 @@
 namespace ZeroMQ
 {
     using lib;
-
+    /// <summary>
+    /// ZMQ错误信息
+    /// </summary>
     public class ZError : ZSymbol
 	{
         static ZError()

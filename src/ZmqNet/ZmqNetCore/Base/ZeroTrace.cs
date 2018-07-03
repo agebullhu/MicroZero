@@ -1,8 +1,5 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using Agebull.Common;
 using Agebull.Common.Logging;
 
@@ -22,7 +19,7 @@ namespace Agebull.ZeroNet.Core
             public int Type { get; set; }
         }
 
-        private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
+        //private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
         //private static Thread thread;
 
@@ -53,13 +50,10 @@ namespace Agebull.ZeroNet.Core
         //    Console.WriteLine();
         //    thread = null;
         //}
-
+        static object lock_obj = new object();
         private static void Write(ConsoleMessage message)
         {
-            //if (message.Title == null)
-            //    message.Title = "???";
-            if (true)//ZeroApplication.Config.IsLinux
-            {
+            lock (lock_obj)
                 switch (message.Type)
                 {
                     case 0:
@@ -69,57 +63,56 @@ namespace Agebull.ZeroNet.Core
                         Console.WriteLine(message.Messages.LinkToString($"[{message.Title}]  ", " > "));
                         break;
                 }
-            }
-            else
-            {
-                int childNewLine = 1;
-                switch (message.Type)
-                {
-                    case 0:
-                        Console.WriteLine();
-                        Console.Write(message.Title);
-                        break;
-                    case 1:
-                        if (Console.CursorLeft != 0)
-                            Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        childNewLine = 0;
-                        break;
-                    case 2:
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        break;
-                    case 3:
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write($"[{message.Title}] ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        break;
-                }
+            //if (message.Title == null)
+            //    message.Title = "???";
+            //int childNewLine = 1;
+            //switch (message.Type)
+            //{
+            //    case 0:
+            //        Console.WriteLine();
+            //        Console.Write(message.Title);
+            //        break;
+            //    case 1:
+            //        if (Console.CursorLeft != 0)
+            //            Console.WriteLine();
+            //        Console.ForegroundColor = ConsoleColor.Blue;
+            //        Console.Write($"[{message.Title}] ");
+            //        Console.ForegroundColor = ConsoleColor.White;
+            //        childNewLine = 0;
+            //        break;
+            //    case 2:
+            //        Console.WriteLine();
+            //        Console.ForegroundColor = ConsoleColor.Green;
+            //        Console.Write($"[{message.Title}] ");
+            //        Console.ForegroundColor = ConsoleColor.White;
+            //        break;
+            //    case 3:
+            //        Console.WriteLine();
+            //        Console.ForegroundColor = ConsoleColor.Red;
+            //        Console.Write($"[{message.Title}] ");
+            //        Console.ForegroundColor = ConsoleColor.White;
+            //        break;
+            //}
 
-                if (message.Messages != null && message.Messages.Length > 0)
-                {
-                    foreach (var line in message.Messages)
-                    {
-                        if (childNewLine == 1)
-                            childNewLine = 2;
-                        else if (childNewLine == 2)
-                        {
-                            Console.ForegroundColor = ConsoleColor.DarkGreen;
-                            Console.Write(" > ");
-                            Console.ForegroundColor = ConsoleColor.White;
-                        }
-                        Console.Write(line);
-                    }
-                }
+            //if (message.Messages != null && message.Messages.Length > 0)
+            //{
+            //    foreach (var line in message.Messages)
+            //    {
+            //        if (childNewLine == 1)
+            //            childNewLine = 2;
+            //        else if (childNewLine == 2)
+            //        {
+            //            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            //            Console.Write(" > ");
+            //            Console.ForegroundColor = ConsoleColor.White;
+            //        }
 
-                if (message.Type == 1)
-                    Console.CursorLeft = 0;
-            }
+            //        Console.Write(line);
+            //    }
+            //}
+
+            //if (message.Type == 1)
+            //    Console.CursorLeft = 0;
         }
 
         //private static void ShowTrace(ConsoleMessage message)
@@ -146,9 +139,7 @@ namespace Agebull.ZeroNet.Core
             //    ConsoleMessages.Push(message);
             //else
             {
-                // if (!ZeroApplication.Config.IsLinux)
-                lock (ConsoleMessages)
-                    Write(message);
+                Write(message);
             }
 
             //ShowTrace(message);
@@ -197,7 +188,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            LogRecorder.Error(messages.LinkToString(title, "\r\n"));
+            LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" > "));
             Push(new ConsoleMessage
             {
                 Type = 3,
@@ -217,7 +208,7 @@ namespace Agebull.ZeroNet.Core
             msgs.Insert(0, "Exception");
             msgs.Add("\r\n");
             msgs.Add(exception);
-            LogRecorder.Exception(exception, messages.LinkToString(title, "\r\n"));
+            LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" > "));
             Push(new ConsoleMessage
             {
                 Type = 3,

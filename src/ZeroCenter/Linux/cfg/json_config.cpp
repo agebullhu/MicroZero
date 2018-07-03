@@ -3,11 +3,27 @@
 namespace agebull
 {
 	std::map<std::string, std::string> json_config::global_cfg_;
-	int json_config::base_tcp_port;
-	bool json_config::use_ipc_protocol;
-	char json_config::redis_addr[512];
-	int json_config::redis_defdb;
-	int json_config::worker_sound_ivl;
+	int json_config::base_tcp_port = 7999;
+	int json_config::plan_exec_timeout = 300;
+	int json_config::plan_cache_size = 1024;
+	bool json_config::use_ipc_protocol = false;
+	char json_config::redis_addr[512] = "127.0.0.1:6379";
+	int json_config::redis_defdb = 0x10;
+	int json_config::worker_sound_ivl = 2000;
+
+	int json_config::IMMEDIATE = 1;
+	int json_config::LINGER = -1;
+	int json_config::SNDHWM = -1;
+	int json_config::SNDBUF = -1;
+	int json_config::RCVTIMEO = 500;
+	int json_config::RCVHWM = -1;
+	int json_config::RCVBUF = -1;
+	int json_config::SNDTIMEO = 500;
+	int json_config::BACKLOG = -1;
+	int json_config::MAX_SOCKETS = -1;
+	int json_config::IO_THREADS = -1;
+	int json_config::MAX_MSGSZ = -1;
+
 	/**
 	* \brief 系统根目录
 	*/
@@ -33,21 +49,30 @@ namespace agebull
 			}
 			acl_vstream_fclose(fp);
 			read(cfg.c_str(), global_cfg_);
+
+			IMMEDIATE = get_global_int("ZMQ_IMMEDIATE", IMMEDIATE);
+			LINGER = get_global_int("ZMQ_LINGER", LINGER);
+			RCVHWM = get_global_int("ZMQ_RCVHWM", RCVHWM);
+			RCVBUF = get_global_int("ZMQ_RCVBUF", RCVBUF);
+			RCVTIMEO = get_global_int("ZMQ_RCVTIMEO", RCVTIMEO);
+			SNDHWM = get_global_int("ZMQ_SNDHWM", SNDHWM);
+			SNDBUF = get_global_int("ZMQ_SNDBUF", SNDBUF);
+			SNDTIMEO = get_global_int("ZMQ_SNDTIMEO", SNDTIMEO);
+			BACKLOG = get_global_int("ZMQ_BACKLOG", BACKLOG);
+			MAX_SOCKETS = get_global_int("ZMQ_MAX_SOCKETS", MAX_SOCKETS);
+			IO_THREADS = get_global_int("ZMQ_IO_THREADS", IO_THREADS);
+			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
+
+			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
+			plan_cache_size = get_global_int("plan_exec_timeout", plan_cache_size);
+			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
+			use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
+			var addr = get_global_string("redis_addr");
+			if (addr.length() > 0)
+				strcpy(redis_addr, addr.c_str());
+			redis_defdb = get_global_int("redis_defdb", redis_defdb);
+			worker_sound_ivl = get_global_int("worker_sound_ivl", worker_sound_ivl);
 		}
-		else
-		{
-			global_cfg_.insert(make_pair("base_tcp_port", "7999"));
-			global_cfg_.insert(make_pair("use_ipc_protocol", "false"));
-			global_cfg_.insert(make_pair("redis_addr", "127.0.0.1:6379"));
-			global_cfg_.insert(make_pair("redis_defdb", "15"));
-			global_cfg_.insert(make_pair("worker_sound_ivl", "1000"));
-			
-		}
-		base_tcp_port = get_global_int("base_tcp_port");
-		use_ipc_protocol = get_global_bool("use_ipc_protocol");
-		strcpy(redis_addr, get_global_string("redis_addr").c_str());
-		redis_defdb = get_global_int("redis_defdb");
-		worker_sound_ivl = get_global_int("worker_sound_ivl");
 	}
 	/**
 	* \brief 读取配置内容
@@ -88,42 +113,46 @@ namespace agebull
 	/**
 	* \brief 取全局配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 值
 	*/
-	int json_config::get_global_int(const char * name)
+	int json_config::get_global_int(const char * name, int def)
 	{
 		auto vl = global_cfg_[name];
-		return vl.empty() ? 0 : atoi(vl.c_str());
+		return vl.empty() ? def : atoi(vl.c_str());
 	}
 	/**
 	* \brief 取全局配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 值
 	*/
-	bool json_config::get_global_bool(const char * name)
+	bool json_config::get_global_bool(const char * name, bool def)
 	{
 		auto vl = global_cfg_[name];
-		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
+		return vl.empty() ? def : strcasecmp(vl.c_str(), "true") == 0;
 	}
 	/**
 	* \brief 取配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 布尔
 	*/
-	bool json_config::boolean(const char * name)
+	bool json_config::boolean(const char * name, bool def)
 	{
 		auto vl = value_map_[name];
-		return !vl.empty() && strcasecmp(vl.c_str(), "true") == 0;
+		return vl.empty() ? def : strcasecmp(vl.c_str(), "true") == 0;
 	}
 	/**
 	* \brief 取配置
 	* \param name 名称
+	* \param def 缺省值
 	* \return 数字
 	*/
-	int json_config::number(const char * name)
+	int json_config::number(const char * name, int def)
 	{
 		auto vl = value_map_[name];
-		return vl.empty() ? 0 : atoi(vl.c_str());
+		return vl.empty() ? def : atoi(vl.c_str());
 	}
 	/**
 	* \brief 取配置

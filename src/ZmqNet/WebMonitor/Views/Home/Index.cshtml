@@ -1,0 +1,343 @@
+﻿@using Agebull.ZeroNet.Core
+@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@{
+
+    ViewData["Title"] = "ZeroNet Monitor";
+    ViewData["page"] = "home";
+    var options = ZeroApplication.Config.GetConfigs().OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+    var station = JsonConvert.SerializeObject(options, Formatting.Indented);
+    var item = JsonConvert.SerializeObject(new StationCountItem(), Formatting.Indented);
+}
+@section Styles{
+
+    <style>
+        .item {
+            margin-top: 10px;
+            margin-right: 40px;
+        }
+
+        .my_label {
+            width: 60px;
+            display: inline-block;
+            text-align: right
+        }
+
+        .el-dialog {
+            background-color: whitesmoke
+        }
+
+        .el-dialog__body {
+            padding: 10px
+        }
+
+        .el-card__body {
+            padding: 10px 10px 0 10px;
+        }
+    </style>
+}
+
+@section VUE{
+    <script>
+        function do_get(url, that) {
+            $.get(url, function (data) {
+                if (data.success) {
+                    that.$message({
+                        message: '操作成功',
+                        type: 'success'
+                    });
+                }
+                else {
+                    that.$message.error('操作失败:' + data.status.msg);
+                }
+            }).error(function (e) {
+                that.$message.error('操作失败'+e);
+            });
+
+        }
+        var stations =@Html.Raw(station);
+        var emptyStatus =@Html.Raw(item);
+        for (var idx = 0; idx < stations.length; idx++) {
+            stations[idx].status = emptyStatus;
+        }
+        extend_data({
+            configs: stations,
+            editDialogFormVisible: false,
+            loading: false,
+            formLabelWidth: 100,
+            nowStation: {
+                name: "",
+                description: "",
+                type: "Api",
+                alias: "",
+                short_name: "",
+                edit: false
+            },
+            rules: {
+                name: [
+                    { required: true, message: '请输入站点名称', trigger: 'blur' },
+                    { min: 3, max: 16, message: '长度在 3 到 16 个字符', trigger: 'blur' }
+                ],
+                short_name: [
+                    { required: true, message: '请输入站点简称', trigger: 'blur' },
+                    { min: 3, max: 16, message: '长度在 3 到 8 个字符', trigger: 'blur' }
+                ]
+            }
+        });
+        extend_methods({
+            go_station_info(station) {
+                location.href = '/Station?s=' + station;
+            },
+            pause_station(station) {
+                do_get('Station/Pause/' + station, this);
+            },
+            resume_station(station) {
+                do_get('Station/Resume/' + station, this);
+            },
+            reset_station(station) {
+                do_get('Station/Reset/' + station, this);
+            },
+            uninstall_station(station) {
+                do_get('Station/Uninstall/' + station, this);
+            },
+            go_doc(station) {
+                location.href = 'Doc/Index/' + station;
+            },
+            add_station() {
+                vue_option.data.nowStation = {
+                    name: "",
+                    description: "",
+                    type: "Api",
+                    alias: "",
+                    short_name: "",
+                    edit: false
+                };
+                vue_option.data.editDialogFormVisible = true;
+            },
+            edit_station(station) {
+                station.edit = true;
+                vue_option.data.nowStation = station;
+                vue_option.data.editDialogFormVisible = true;
+            },
+            save_station(formName) {
+                var that = this;
+                this.$refs[formName].validate((valid) => {
+                    if (!valid) {
+                        that.$message.error('内容不合理');
+                        return false;
+                    }
+                    vue_option.data.loading = true;
+                    $.post(vue_option.data.nowStation.edit ? 'Station/Update' : 'Station/Install', vue_option.data.nowStation, function (data) {
+                        vue_option.data.loading = false;
+                        if (data.success) {
+                            that.$message({
+                                message: '操作成功',
+                                type: 'success'
+                            });
+                            vue_option.data.editDialogFormVisible = false;
+                        }
+                        else {
+                            that.$message.error('操作失败:' + data.status.msg);
+                        }
+                    }).error(function () {
+                        vue_option.data.loading = false;
+                        vue_option.data.editDialogFormVisible = false;
+                        that.$message.error('更新失败');
+                    });
+                });
+
+            },
+            reset_edit(formName) {
+                vue_option.data.editDialogFormVisible = false;
+                this.$refs[formName].resetFields();
+            }
+
+        });
+
+    </script>
+}
+@section Scripts{
+    <script>
+        function on_config_push(station) {
+            for (var idx = 0; idx < stations.length; idx++) {
+                var cfg = stations[idx];
+                if (cfg.name === station.name) {
+                    Vue.set(stations, idx, station);
+                    return;
+                }
+            }
+            station.status = emptyStatus;
+            stations.push(station);
+        }
+        function on_status_push(status) {
+            for (var idx = 0; idx < stations.length; idx++) {
+                var cfg = stations[idx];
+                if (cfg.name === status.station_name) {
+                    Vue.set(cfg, "status", status);
+                    return;
+                }
+            }
+        }
+        var socket_config = new ws({
+            address: "ws://" + location.host + "/config",
+            sub: "",
+            onmessage: on_config_push
+        });
+        socket_config.open();
+        var socket_status = new ws({
+            address: "ws://" + location.host + "/status",
+            sub: "",
+            onmessage: on_status_push
+        });
+        socket_status.open();
+    </script>
+}
+
+<template v-for="config in configs">
+
+    <el-card shadow="hover" style="margin:8px;padding :2px;width:280px; height: 320px;display:inline-block">
+        <div style="display: block; height: 272px">
+            <div style="font-size:16pt">
+                {{config.name}}
+            </div>
+            <ul>
+                <li>Type:{{config.type}}</li>
+                <el-popover placement="bottom-start"
+                            title="[Stations]"
+                            effect="light"
+                            visible-arrow="false"
+                            trigger="hover">
+                    <template v-for="worker in config.status.workers">
+                        <el-rate v-model="worker.level"
+                                 disabled
+                                 text-color="#ff9900"
+                                 score-template="{value}">
+                        </el-rate>
+                        {{worker.real_name}} ({{worker.state_text}})
+                    </template>
+                    <li slot="reference">
+                        State:{{config.state}}
+                        <template v-if="config.state == 'Run'">
+                            ({{config.status.workers.length}})
+                        </template>
+                    </li>
+                </el-popover>
+                <li slot="reference">Alias:{{config.short_name}} {{config.alias}}</li>
+                <el-popover placement="left"
+                            effect="light"
+                            visible-arrow="false"
+                            trigger="hover">
+                    <template>
+                        <div><span class="my_label">Request</span> : {{config.status.request_in}}</div>
+                        <div><span class="my_label">Result</span> : {{config.status.request_out}}</div>
+                        <div><span class="my_label">Error</span> : {{config.status.request_err}}</div>
+                        <div><span class="my_label">Total</span> : {{config.status.TotalQps}}</div>
+                        <div><span class="my_label">Avg</span> : {{config.status.AvgQps}}/s</div>
+                        <div><span class="my_label">Max</span> : {{config.status.MaxQps}}/s</div>
+                        <div><span class="my_label">Min</span> : {{config.status.MinQps}}/s</div>
+                        <div><span class="my_label">Last</span> : {{config.status.LastQps}}/s</div>
+                    </template>
+                    <li slot="reference">
+                        Request({{config.status.request_out}})<br />
+                        {{config.clientCallAddress}}
+                    </li>
+                </el-popover>
+                <el-popover placement="left"
+                            effect="light"
+                            visible-arrow="false"
+                            trigger="hover">
+                    <template>
+                        <div v-if="config.type != 'API'"><span class="my_label">Publish</span> : {{config.status.worker_out}}</div>
+                        <div v-if="config.type == 'API'"><span class="my_label">Issued</span> : {{config.status.worker_out}}</div>
+                        <div v-if="config.type == 'API'"><span class="my_label">Result</span> : {{config.status.worker_in}}</div>
+                        <div v-if="config.type == 'API'"><span class="my_label">Error</span> : {{config.status.worker_err}}</div>
+                        <div><span class="my_label">Total</span> : {{config.status.TotalTps}}</div>
+                        <div><span class="my_label">Avg</span> : {{config.status.AvgTps}}/s</div>
+                        <div><span class="my_label">Max</span> : {{config.status.MaxTps}}/s</div>
+                        <div><span class="my_label">Min</span> : {{config.status.MinTps}}/s</div>
+                        <div><span class="my_label">Last</span> : {{config.status.LastTps}}/s</div>
+                    </template>
+                    <li slot="reference">
+                        <template v-if="config.type == 'API'">
+                            Issued({{config.status.worker_out}})
+                            <br />
+                            {{config.workerCallAddress}}
+                            <br />
+                            Result({{config.status.worker_in}})
+                            <br />
+                            {{config.workerResultAddress}}
+                        </template>
+                        <template v-else>
+                            Publish({{config.status.worker_out}})
+                            <br />
+                            {{config.workerCallAddress}}
+                            <br />*
+                            <br />*
+                        </template>
+                    </li>
+                </el-popover>
+            </ul>
+            <div style="font-size:12px;">{{config.description}}</div>
+        </div>
+        <div style="display:block;">
+            <div style="float:left">
+                <el-button-group>
+                    <el-button size="mini" icon="el-icon-info" @@click="go_station_info(config.name)"></el-button>
+                </el-button-group>
+            </div>
+            <div style="float:right">
+                <el-button-group>
+                    <el-button size="mini" icon="el-icon-document" @@click="go_doc(config.name)"></el-button>
+                    <el-button size="mini" icon="el-icon-edit" @@click="edit_station(config)"></el-button>
+                    <el-button v-if="config.state == 'Run'" size="mini" icon="el-icon-star-off" @@click="pause_station(config.name)"></el-button>
+                    <el-button v-if="config.state == 'Pause' || config.state == 'None'" size="mini" icon="el-icon-star-on" @@click="resume_station(config.name)"></el-button>
+                    <el-button v-if="config.state == 'Uninstall'" size="mini" icon="el-icon-success" @@click="reset_station(config.name)"></el-button>
+                    <el-button v-else size="mini" icon="el-icon-error" @@click="uninstall_station(config.name)"></el-button>
+                </el-button-group>
+            </div>
+        </div>
+    </el-card>
+</template>
+
+<el-card shadow="hover" style="margin:8px;padding :2px;width:280px; height: 320px;display:inline-block;background-color:rgba(140, 135, 135, 0.1)">
+    <div style="width:240px;height:240px;line-height:240px;text-align:center">
+        <el-button icon="el-icon-circle-plus-outline" @@click="add_station()">新增站点</el-button>
+    </div>
+</el-card>
+<!-- Form -->
+<el-dialog title="站点编辑"
+           :visible.sync="editDialogFormVisible" v-loading="loading"
+           element-loading-text="正在处理"
+           element-loading-spinner="el-icon-loading"
+           element-loading-background="rgba(0, 0, 0, 0.8)">
+    <div style="border:solid 1px silver;background-color:white;padding:10px">
+        <el-form :model="nowStation" :rules="rules" label-position="left" label-width="100px" ref="nowStationForm" @@submit.native.prevent>
+            <el-form-item label="名称" prop="name">
+                <el-input v-model="nowStation.name" placeholder="站点名称" :readOnly="nowStation.edit" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="简称" prop="short_name">
+                <el-input v-model="nowStation.short_name" placeholder="站点简称" :readOnly="nowStation.edit" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="类型">
+                <el-radio-group v-model="nowStation.type" :disabled="nowStation.edit">
+                    <el-radio disabled label="Dispatcher">Dispatcher</el-radio>
+                    <el-radio disabled label="Plan">Plan</el-radio>
+                    <el-radio label="Pub">Pub</el-radio>
+                    <el-radio label="Api">Api</el-radio>
+                    <el-radio label="Vate">Vate</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item label="别名">
+                <el-input v-model="nowStation.alias" placeholder="站点别名" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="说明" label-position="top">
+                <el-input type="textarea" placeholder="站点说明" :rows="2" auto-complete="off" v-model="nowStation.description"></el-input>
+
+            </el-form-item>
+        </el-form>
+    </div>
+    <div slot="footer" class="dialog-footer">
+        <el-button @@click="reset_edit('nowStationForm')">取 消</el-button>
+        <el-button type="primary" @@click="save_station('nowStationForm')">确 定</el-button>
+    </div>
+</el-dialog>

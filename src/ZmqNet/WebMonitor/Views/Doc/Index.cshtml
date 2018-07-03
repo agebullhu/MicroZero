@@ -1,0 +1,306 @@
+﻿@using Agebull.ZeroNet.Core
+@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@using Agebull.ZeroNet.ZeroApi
+@using System
+@using System.Text
+@model StationDocument
+@{
+
+    ViewData["Title"] = "Api Document";
+    ViewData["page"] = "doc";
+}
+@section Styles{
+    <style>
+        .item {
+            margin-top: 10px;
+            margin-right: 40px;
+        }
+
+        .my_label {
+            width: 60px;
+            display: inline-block;
+            text-align: right
+        }
+
+        .el-dialog {
+            background-color: whitesmoke
+        }
+
+        .el-dialog__body {
+            padding: 10px
+        }
+
+        .el-card__body {
+            padding: 10px 10px 0 10px;
+        }
+
+        .code ul {
+            list-style-type: none;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        .code li {
+            padding-left: 28px;
+        }
+
+        .name {
+            color: tomato
+        }
+
+        .str {
+            color: lightsalmon
+        }
+
+        .num {
+            color: cornflowerblue
+        }
+
+        .bool {
+            color: blue
+        }
+
+        .null {
+            color: silver
+        }
+
+        .class {
+            color: forestgreen
+        }
+    </style>
+}
+
+@functions{
+    string outputTags(TypeDocument field)
+    {
+        StringBuilder sb = new StringBuilder("");
+        outputTags(field, sb);
+        return sb.ToString();
+    }
+    void outputTags(TypeDocument field, StringBuilder sb)
+    {
+        sb.AppendLine($@"
+<li><span class='class'>{field.Name}</span>
+<ul>
+<li><span class='null'>[Json]</span> : <span class='name'>{field.JsonName ?? field.Name}</span></li>
+<li><span class='null'>[Type]</span> : {field.TypeName}</li>
+<li><span class='null'>[Label]</span>: {field.Caption ?? field.Name}</li>");
+        if (!string.IsNullOrEmpty(field.Value))
+            sb.AppendLine($@"
+<li><span class='null'>[Value]</span>: {field.Value}</li>");
+        if (!string.IsNullOrEmpty(field.Description))
+            sb.AppendLine($@"
+<li><span class='null'>[Desc]</span> : {field.Description}</li>");
+        if(field.fields != null)
+            foreach (var child in field.fields.Values)
+            {
+                outputTags(child, sb);
+            }
+        sb.AppendLine($@"
+</ul>
+</li>");
+    }
+
+    string outputCSharp(TypeDocument field)
+    {
+        StringBuilder sb = new StringBuilder("");
+        outputCSharp(field, sb);
+        return sb.ToString();
+    }
+    void outputCSharp(TypeDocument par, StringBuilder sb)
+    {
+        bool first = true;
+        sb.AppendLine($@"
+<span class='bool'>new</span> <span class='class'>{par.ClassName}</span>{{</li>
+<li>
+<ul>");
+        foreach (var field in par.fields.Values)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+                sb.AppendLine(",</li>");
+            sb.AppendLine($@"
+    <li><span class='class'>//</span> <span class='null'>{field.Caption ?? field.Name}</span></li>
+    <li><span class='name'></span>{field.Name} = ");
+            if (field.fields == null || field.fields.Count == 0)
+            {
+                if (field.TypeName == "string")
+                {
+                    sb.AppendLine($@"""<span class='str'>{field.Example ?? field.Caption ?? field.Name}</span>""");
+                }
+                else if (field.TypeName == "string")
+                {
+                    sb.AppendLine($@"""<span class='str'>{field.Example ?? field.Caption ?? field.Name}</span>""");
+                }
+                else if (field.TypeName == "DateTime")
+                {
+                    if(field.Example != null)
+                    {
+                        sb.AppendLine($@"""<span class='str'>{field.Example}</span>""");
+                    }
+                    else
+                    {
+                        sb.AppendLine($@"<span class='bool'>new</span> <span class='class'>DateTime</span>(<span class='num'>2018</span>,<span class='num'>1</span>,<span class='num'>1</span>,<span class='num'>12</span>,<span class='num'>0</span>,<span class='num'>0</span>)");
+                    }
+                }
+                else if (field.TypeName == "bool")
+                {
+                    sb.AppendLine($@"<span class='bool'>{field.Example ?? "false"} </span>");
+                }
+                else
+                {
+                    sb.AppendLine($@"<span class='num'>{field.Example ?? "0"}</span>");
+                }
+                continue;
+            }
+            outputCSharp(field, sb);
+        }
+        if (par.fields.Count > 0)
+            sb.AppendLine("</li>");
+        sb.AppendLine($@"
+</ul>
+<li>}}</li><li>");
+    }
+
+    string outputJson(TypeDocument field)
+    {
+        StringBuilder sb = new StringBuilder("");
+        outputJson(field, sb);
+        return sb.ToString();
+    }
+    void outputJson(TypeDocument par, StringBuilder sb)
+    {
+        bool first = true;
+        sb.AppendLine($@"
+<li>{{</li>
+<li>
+<ul>");
+        foreach (var field in par.fields.Values)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+                sb.AppendLine(",</li>");
+            sb.AppendLine($@"
+    <li>'<span class='name'>{field.JsonName ?? field.Name}</span>' : ");
+            if (field.fields == null || field.fields.Count == 0)
+            {
+                if (field.TypeName == "string")
+                {
+                    sb.AppendLine($@"'<span class='str'>{field.Example ?? field.Caption ?? field.Name}</span>'");
+                }
+                else if (field.TypeName == "DateTime")
+                {
+                    sb.AppendLine($@"'<span class='str'>{field.Example ?? "2018-1-1 12:00:00:00"}</span>'");
+                }
+                else if (field.TypeName == "bool")
+                {
+                    sb.AppendLine($@"<span class='bool'>{field.Example ?? "false"}</span>");
+                }
+                else
+                {
+                    sb.AppendLine($@"<span class='num'>{field.Example ?? "false"}</span>");
+                }
+                continue;
+            }
+            outputJson(field, sb);
+        }
+        sb.AppendLine($@"
+</ul>
+</li>
+<li>}}</li>");
+    }
+}
+
+<div v-pre style="min-height:100%;text-align:center;background-color:silver;padding:20px">
+    <div style="text-align:left;border:solid 1px black;background-color:white;padding:20px">
+        <h2>@(Model.Caption)(@Model.Name) Api接口文档</h2>
+        <hr />
+        @foreach (var api in Model.Aips.Values)
+        {
+            <h3>@(api.Caption)(@api.Name)</h3>
+            <h4>Api</h4>
+            <p>@Model.Name/@api.RouteName</p>
+            @if (@api.Description != null)
+            {
+                <h4>说明</h4>
+                <p>@api.Description</p>
+            }
+            <h4>参数</h4>
+            @if (api.ArgumentInfo == null)
+            {
+                <p>无</p>
+            }
+            else
+            {
+                <p>@api.ArgumentInfo.Caption</p>
+                <ul>
+                    @foreach (var field in api.ArgumentInfo.Fields.Values)
+                    {
+                        @Html.Raw(outputTags(field))
+                    }
+                </ul>
+                <div class="code">
+                    <h5>C#</h5>
+                    <ul>
+                        <li>
+                            @Html.Raw(outputCSharp(api.ArgumentInfo))
+                        </li>
+                    </ul>
+                    <h5>Json</h5>
+                    <ul>
+                        <li>
+                            @Html.Raw(outputJson(api.ArgumentInfo))
+                        </li>
+                    </ul>
+                </div>
+            }
+            <h4>返回值</h4>
+            @if (api.ResultInfo == null)
+            {
+                <p>无</p>
+            }
+            else
+            {
+                <p>@api.ResultInfo.Caption</p>
+                <ul>
+                    @foreach (var field in api.ResultInfo.Fields.Values)
+                    {
+                        @Html.Raw(outputTags(field))
+                    }
+                </ul>
+                <div class="code">
+                    <h5>C#</h5>
+                    <ul>
+                        <li>
+                            @Html.Raw(outputCSharp(api.ResultInfo))
+                        </li>
+                    </ul>
+                    <h5>Json</h5>
+                    <ul>
+                        <li>
+                            @Html.Raw(outputJson(api.ResultInfo))
+                        </li>
+                    </ul>
+                </div>
+            }
+            <hr />
+        }
+        @if (Model.Description != null)
+        {
+            <h3>说明</h3>
+            <p>@Model.Description</p>
+        }
+        @if (Model.Seealso != null)
+        {
+            <h3>参见</h3>
+            <h1>@Model.Seealso</h1>
+        }
+    </div>
+</div>

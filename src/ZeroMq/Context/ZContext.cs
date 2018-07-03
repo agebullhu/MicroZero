@@ -28,7 +28,11 @@ namespace ZeroMQ
         {
             if (!IsAlive)
             {
-                _current = new ZContext();
+                _current = new ZContext
+                {
+                    ThreadPoolSize = 4,
+                    MaxSockets = 4096
+                };
             }
         }
 

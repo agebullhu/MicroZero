@@ -44,31 +44,32 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <IncludePath>\usr\Include;\usr\local\include</IncludePath>
+    <OutDir>/root/zero/center/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
-      <AdditionalOptions>-pthread -fopenmp %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <Version>false</Version>
     </Link>
     <ClCompile>
-      <DebugInformationFormat>FullDebug</DebugInformationFormat>
-      <AdditionalOptions>-fopenmp %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>Minimal</DebugInformationFormat>
+      <UnrollLoops>true</UnrollLoops>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
-      <AdditionalOptions>-fopenmp %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -77,10 +78,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="net\api_station.cpp" />
     <ClCompile Include="net\net_crc.cpp" />
+    <ClCompile Include="net\plan_dispatcher.cpp" />
     <ClCompile Include="net\station_dispatcher.cpp" />
     <ClCompile Include="net\station_warehouse.cpp" />
     <ClCompile Include="net\broadcasting_station.cpp" />
     <ClCompile Include="net\zero_config.cpp" />
+    <ClCompile Include="net\zero_plan.cpp" />
     <ClCompile Include="net\zero_station.cpp" />
     <ClCompile Include="net\zmq_extend.cpp" />
     <ClCompile Include="redis\redis.cpp" />
@@ -92,7 +95,8 @@
     <ClInclude Include="cfg\json_config.h" />
     <ClInclude Include="log\mylogger.h" />
     <ClInclude Include="net\api_station.h" />
-    <ClInclude Include="net\ipc_request_socket.h" />
+    <ClInclude Include="net\inner_socket.h" />
+    <ClInclude Include="net\plan_dispatcher.h" />
     <ClInclude Include="net\station_dispatcher.h" />
     <ClInclude Include="net\net_default.h" />
     <ClInclude Include="net\zero_station.h" />
@@ -103,7 +107,7 @@
     <ClInclude Include="net\zmq_extend.h" />
     <ClInclude Include="redis\redis.h" />
     <ClInclude Include="service.h" />
-    <ClInclude Include="sharp_char.h" />
+    <ClInclude Include="shared_char.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="tm_extend.h" />

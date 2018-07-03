@@ -1,9 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common;
+using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
+using Gboxt.Common.DataModel;
+using Newtonsoft.Json;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.PubSub
@@ -11,7 +16,8 @@ namespace Agebull.ZeroNet.PubSub
     /// <summary>
     /// 消息订阅站点
     /// </summary>
-    public abstract class SubStation : ZeroStation
+    public abstract class SubStation<TPublishItem> : ZeroStation
+        where TPublishItem : PublishItem, new()
     {
         /// <summary>
         /// 构造
@@ -20,6 +26,7 @@ namespace Agebull.ZeroNet.PubSub
         {
 
         }
+
         /// <summary>
         /// 订阅主题
         /// </summary>
@@ -29,8 +36,6 @@ namespace Agebull.ZeroNet.PubSub
         /// 是否实时数据(如为真,则不保存未处理数据)
         /// </summary>
         public bool IsRealModel { get; set; }
-
-
 
         /*// <summary>
         /// 命令处理方法 
@@ -52,48 +57,147 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public abstract void Handle(PublishItem args);
+        public abstract void Handle(TPublishItem args);
 
         /// <summary>
-        /// 缓存文件名称
+        /// 空转
         /// </summary>
-        private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder,
-            $"zero_sub_queue_{Name}.json");
+        /// <returns></returns>
+        public virtual void Idle()
+        {
+        }
 
-        /// <summary>
-        /// 请求队列
-        /// </summary>
-        public SyncQueue<PublishItem> Items = new SyncQueue<PublishItem>();
-
-
+        //private string inporcName;
 
         /// <summary>
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected  override bool RunInner(CancellationToken token)
+        protected override bool RunInner(CancellationToken token)
         {
-            SystemManager.HeartReady(StationName, RealName);
+            SystemManager.Instance.HeartReady(StationName, RealName);
+            //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe) }, ZPollEvent.In);
+                pool.Prepare(ZPollEvent.In,
+                    ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe));
+                State = StationState.Run;
                 while (CanRun)
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    if (!pool.Poll())
                     {
-                        continue;
+                        Idle();
                     }
-                    using (message)
+                    else if (pool.CheckIn(0, out var message))
                     {
-                        if (message.Unpack(out var item))
+                        if (Unpack(message, out var item))
                         {
-                            Items.Push(item);
+                            try
+                            {
+                                Handle(item);
+                            }
+                            catch (Exception e)
+                            {
+                                ZeroTrace.WriteException(Name, e, item.Content);
+                            }
                         }
+
+                        //socket.SendTo(message);
                     }
                 }
             }
-            SystemManager.HeartLeft(StationName, RealName);
+
+            SystemManager.Instance.HeartLeft(StationName, RealName);
             return true;
+        }
+
+        /// <summary>
+        ///     广播消息解包
+        /// </summary>
+        /// <param name="messages"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        protected virtual bool Unpack(ZMessage messages, out TPublishItem item)
+        {
+            if (messages == null)
+            {
+                item = null;
+                return false;
+            }
+            try
+            {
+                if (messages.Count < 3)
+                {
+                    item = null;
+                    return false;
+                }
+                var description = messages[1].Read();
+                if (description.Length < 2)
+                {
+                    item = null;
+                    return false;
+                }
+
+                int end = description[0] + 2;
+                if (end != messages.Count)
+                {
+                    item = null;
+                    return false;
+                }
+
+                item = new TPublishItem
+                {
+                    Title = messages[0].ReadString(),
+                    State = (ZeroOperatorStateType)description[1],
+                    ZeroEvent = (ZeroNetEventType)description[1]
+                };
+
+                for (int idx = 2; idx < end; idx++)
+                {
+                    var bytes = messages[idx].Read();
+                    if (bytes.Length == 0)
+                        continue;
+                    switch (description[idx])
+                    {
+                        case ZeroFrameType.SubTitle:
+                            item.SubTitle = Encoding.UTF8.GetString(bytes);
+                            break;
+                        case ZeroFrameType.Station:
+                            item.Station = Encoding.UTF8.GetString(bytes);
+                            break;
+                        case ZeroFrameType.Publisher:
+                            item.Publisher = Encoding.UTF8.GetString(bytes);
+                            break;
+                        case ZeroFrameType.Content:
+                            if (item.Content == null)
+                                item.Content = Encoding.UTF8.GetString(bytes);
+                            else
+                                item.Values.Add(Encoding.UTF8.GetString(bytes));
+                            break;
+                        case ZeroFrameType.BinaryValue:
+                            item.Buffer = bytes;
+                            break;
+                        case ZeroFrameType.TsonValue:
+                            item.Tson = bytes;
+                            break;
+                        default:
+                            item.Values.Add(Encoding.UTF8.GetString(bytes));
+                            break;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Unpack", e);
+                item = null;
+                return false;
+            }
+            finally
+            {
+                messages.Dispose();
+            }
         }
 
         /// <summary>
@@ -102,27 +206,22 @@ namespace Agebull.ZeroNet.PubSub
         protected virtual void HandleTask()
         {
             ZeroApplication.OnGlobalStart(this);
-            while (ZeroApplication.IsAlive)
-            {
-                if (!Items.StartProcess(out var item))
-                    continue;
-                try
-                {
-                    Handle(item);
-                    if (!IsRealModel)
-                        Items.EndProcess();
-                }
-                catch (Exception e)
-                {
-                    ZeroTrace.WriteException(StationName, e, Name);
-                    Thread.Sleep(5);
-                }
-                finally
-                {
-                    if (IsRealModel)
-                        Items.EndProcess();
-                }
-            }
+            //using (var pool = ZmqPool.CreateZmqPool())
+            //{
+            //    pool.Prepare(new[] { ZSocket.CreateServiceSocket(inporcName, ZSocketType.PAIR) }, ZPollEvent.In);
+            //    while (ZeroApplication.IsAlive)
+            //    {
+            //        if (!pool.Poll())
+            //        {
+            //            Idle();
+            //            continue;
+            //        }
+            //        if (pool.CheckIn(0, out var message) && message.Unpack(out var item))
+            //        {
+            //            Handle(item);
+            //        }
+            //    }
+            //}
             ZeroApplication.OnGlobalEnd(this);
         }
 
@@ -130,20 +229,111 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override void Initialize()
+        protected override void Initialize()
         {
-            if (!IsRealModel)
-                Items.Load(CacheFileName);
-            Task.Factory.StartNew(HandleTask);
+            //inporcName = $"inproc://{StationName}_{RandomOperate.Generate(8)}.pub";
+            //Task.Factory.StartNew(HandleTask);
+        }
+
+    }
+
+    /// <summary>
+    /// 消息订阅站点
+    /// </summary>
+    public abstract class SubStation : SubStation<PublishItem>
+    {
+
+    }
+
+    /// <summary>
+    /// 消息订阅站点
+    /// </summary>
+    public abstract class SubStation<TData, TPublishItem> : SubStation<TPublishItem>
+        where TData : new()
+        where TPublishItem : PublishItem, new()
+    {
+        /// <summary>
+        /// TSON序列化操作器
+        /// </summary>
+        protected ITsonOperator<TData> TsonOperator { get; set; }
+
+        /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        protected List<TData> DeserializeList(TPublishItem args)
+        {
+            if (args.Tson != null)
+            {
+                var list = new List<TData>();
+                using (ITsonDeserializer serializer = new TsonDeserializer(args.Tson))
+                {
+                    serializer.ReadType();
+                    int size = serializer.ReadLen();
+                    for (int idx = 0; !serializer.IsBad && idx < size; idx++)
+                    {
+                        using (var scope = TsonObjectScope.CreateScope(serializer))
+                        {
+                            if (scope.DataType != TsonDataType.Empty)
+                            {
+                                var item = new TData();
+                                TsonOperator.FromTson(serializer, item);
+                                list.Add(item);
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                return list;
+            }
+
+            if (args.Content != null)
+                return JsonConvert.DeserializeObject<List<TData>>(args.Content);
+            if (args.Buffer != null)
+            {
+                using (MemoryStream ms = new MemoryStream(args.Buffer))
+                {
+                    DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(List<TData>));
+                    return (List<TData>) js.ReadObject(ms);
+                }
+            }
+
+            return new List<TData>();
         }
 
         /// <summary>
-        /// 析构
+        /// 执行命令
         /// </summary>
-        protected override void DoDispose()
+        /// <param name="args"></param>
+        /// <returns></returns>
+        protected TData DeserializeObject(TPublishItem args)
         {
-            if (!IsRealModel)
-                Items.Save(CacheFileName);
+            if (args.Tson != null)
+            {
+                var item = new TData();
+                using (var des = new TsonDeserializer(args.Buffer))
+                    TsonOperator.FromTson(des, item);
+                return item;
+            }
+
+            if (args.Content != null)
+                return JsonConvert.DeserializeObject<TData>(args.Content);
+            if (args.Buffer != null)
+            {
+                using (MemoryStream ms = new MemoryStream(args.Buffer))
+                {
+                    DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(TData));
+                    return (TData) js.ReadObject(ms);
+                }
+            }
+
+            return default(TData);
         }
+
     }
 }

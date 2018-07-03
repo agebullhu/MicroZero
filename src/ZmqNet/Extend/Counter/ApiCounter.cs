@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Agebull.Common.Configuration;
+using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.Log;
+using Agebull.ZeroNet.PubSub;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -15,7 +18,18 @@ namespace Agebull.ZeroNet.ZeroApi
             Name = "ApiCounter";
             StationName = "HealthCenter";
             ZeroApplication.RegistZeroObject(this);
+            TsonOperator = new CountDataTsonOperator();
         }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+            if (ConfigurationManager.AppSettings.GetBool("HookApi", true))
+            {
+                HookApi();
+            }
+        }
+
         /// <summary>
         /// 实例
         /// </summary>
@@ -24,35 +38,43 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 数据进入的处理
         /// </summary>
-        protected override void OnSend(List<CountData> datas)
+        protected override void OnSend(CountData[] datas)
         {
-            foreach (var  data in datas)
+            foreach (var data in datas)
             {
                 data.Title = "ApiCounter";
             }
         }
 
+        protected override bool OnStart()
+        {
+            return _isEnable;
+        }
         /// <summary>
         /// 设置Api调用注入
         /// </summary>
         public void HookApi()
         {
-            ApiStation.PreActions.Add(Instance.OnPre);
-            ApiStation.EndActions.Add(Instance.OnEnd);
-            ZeroApplication.RegistZeroObject(Instance);
+            if (_isEnable)
+                return;
             _isEnable = true;
+            ApiStation.RegistHandlers<ApiCountHandler>();
+            ApiClient.RegistHandlers<ApiClientCountHandler>();
+            ZeroTrace.WriteInfo("ApiCounter", "HookApi");
         }
 
         /// <summary>
         /// 统计
         /// </summary>
         /// <param name="data"></param>
-        void IApiCounter.Count(CountData data)
+        public void Count(CountData data)
         {
-            throw new NotImplementedException();
+            data.Machine = ZeroApplication.Config.ServiceKey ??  ZeroApplication.Config.ServiceName;
+            data.Station = ZeroApplication.Config.StationName;
+            //data.User = ApiContext.Customer?.Account ?? "Unknow";
+            //data.RequestId = ApiContext.RequestContext.RequestId;
+            Publish(data);
         }
-
-        private readonly Dictionary<string, CountData> _handlers = new Dictionary<string, CountData>();
 
         /// <summary>
         /// 是否启用
@@ -64,36 +86,5 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         bool IApiCounter.IsEnable => _isEnable;
 
-        private void OnPre(ApiStation station, ApiCallItem item)
-        {
-            var count = new CountData
-            {
-                Start = DateTime.Now,
-                Machine = ZeroApplication.Config.StationName,
-                User = ApiContext.Customer?.Account ?? "Unknow",
-                ToId = item.GlobalId,
-                RequestId = ApiContext.RequestContext.RequestId,
-                Requester = item.Caller,
-                HostName = station.StationName,
-                ApiName = item.ApiName
-            };
-            lock (_handlers)
-                _handlers.Add(item.GlobalId, count);
-        }
-
-        private void OnEnd(ApiStation station,ApiCallItem  item)
-        {
-            CountData count;
-            lock (_handlers)
-            {
-                if (!_handlers.TryGetValue(item.GlobalId, out count))
-                    return;
-                _handlers.Remove(item.GlobalId);
-            }
-            count.End = DateTime.Now;
-            count.Status = item.Status;
-            count.FromId = item.CallerGlobalId;
-            Publish(count);
-        }
     }
 }

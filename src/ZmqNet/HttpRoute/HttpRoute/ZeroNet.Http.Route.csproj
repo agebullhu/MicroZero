@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>3909b577-6324-4fb6-b394-f48db7e0ad07</UserSecretsId>
     <StartupObject></StartupObject>
     <ApplicationIcon />
@@ -18,6 +17,9 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
@@ -34,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Models\RouteCounter.cs" />
+    <Compile Remove="App\RouteCounter.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,15 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
-    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -67,6 +60,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AddIn\Agebull.ZeroNet.Extend.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AddIn\Agebull.ZeroNet.Extend.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

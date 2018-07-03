@@ -1,0 +1,240 @@
+﻿
+<script>
+    function new_plan() {
+        vue_option.data.zeroPlan.form = {
+            plan_type: "0",
+            plan_value: 0,
+            plan_repet: 0,
+            description: null,
+            no_skip: 0,
+            plan_time: null,
+            station: null,
+            skip_set: 0,
+            command: null,
+            context: null,
+            argument: null
+        };
+        vue_option.data.zeroPlan.visible = true;
+    }
+    extend_data({
+        zeroPlan: {
+            visible: false,
+            loading: false,
+            labelWidth: 100,
+            form: {
+                plan_type: "0",
+                plan_value: 0,
+                plan_repet: 0,
+                description: null,
+                no_skip: 0,
+                plan_time: null,
+                station: null,
+                skip_set: 0,
+                command: null,
+                context: null,
+                argument: null
+            },
+            rules: {
+                'description': [
+                    { required: true, message: '请输入计划说明', trigger: 'blur' }
+                ],
+                'station': [
+                    { required: true, message: '请输入站点', trigger: 'blur' }
+                ],
+                'command': [
+                    { required: true, message: '请输入调用的API', trigger: 'blur' }
+                ],
+                'plan_type': [
+                    { required: true, message: '请输入调用的API', trigger: 'blur' },
+                    { min: 1, max: 7, message: '请选择正确计划类型', trigger: 'blur' }
+                ]
+            }
+        }
+    });
+    /*
+     vue_option.zeroPlan.form.watch = {
+        plan_type: {
+            handler(val, oldVal) {
+
+            },
+            deep: true，
+            immediate: true
+        }
+    };
+     */
+
+    function format_plan(plan) {
+        var txt = "";
+        var type = plan.plan_type ? parseInt(plan.plan_type) : 0;
+        if (type < 1 || type > 7)
+            return "错误";
+        if (type == 1) {
+            if (!plan.plan_time)
+                return "立即执行一次，不重复";
+            var date = new Date(plan.plan_time);
+            if (plan.no_skip)
+                return "在" + formatDate(date, 'MM-dd hh:mm:ss') + "执行，如果时间已过则立即执行，不重复";
+            else
+                return "仅在" + formatDate(date, 'MM-dd hh:mm:ss') + "没有过去的情况下执行一次，不重复";
+        }
+        var value = plan.plan_value ? parseInt(plan.plan_value) : 0;
+        var skip = plan.skip_set ? parseInt(plan.skip_set) : 0;
+        var repet = plan.plan_repet ? parseInt(plan.plan_repet) : 0;
+        var sk = "";
+        if (repet == 0 || value == 0)
+            return "错误";
+        if (type < 6) {
+            if (value <= 0 || value > 32767)
+                return "错误";
+
+            txt = "从";
+            if (!plan.plan_time)
+                txt += "现在起";
+            else {
+
+                var date = new Date(plan.plan_time);
+                txt += formatDate(date, 'MM-dd hh:mm:ss') + "起";
+            }
+            if (skip > 0) {
+                txt += "，跳过" + (skip * value);
+                switch (type) {
+                    case 2:
+                        txt += "秒";
+                        break;
+                    case 3:
+                        txt += "分钟";
+                        break;
+                    case 4:
+                        txt += "小时";
+                        break;
+                    case 5:
+                        txt += "天";
+                        break;
+                }
+                txt += "后，";
+            }
+            txt += "每" + value;
+
+            switch (type) {
+                case 2:
+                    txt += "秒";
+                    break;
+                case 3:
+                    txt += "分钟";
+                    break;
+                case 4:
+                    txt += "小时";
+                    break;
+                case 5:
+                    txt += "天";
+                    break;
+            }
+            if (plan.no_skip)
+                sk = "计算执行时间时,过去的时间不会跳过。";
+            else
+                sk = "计算执行时间时,如果时间已经过去将直接跳过(执行次数也会步进)。";
+
+        }
+        if (type == 6) {
+            if (value <= 0 || value > 7)
+                return "错误";
+            if (skip > 0) {
+                txt += "跳过前" + skip + "周后，";
+            }
+            txt += "每周" + (value == 7 ? "日" : value.toString());
+            if (!plan.plan_time)
+                txt += "零点";
+            else {
+                var date = new Date(plan.plan_time);
+                txt += "的" + formatDate(date, 'hh:mm:ss');
+            }
+            sk = "不计算过去的时间。";
+        }
+        if (type == 7) {
+            if (skip > 0) {
+                txt += "跳过前" + skip + "个月后，";
+            }
+            txt += "每月";
+            if (value > 0)
+                txt += value + "号";
+            else
+                txt += "倒数第" + Math.abs(value) + "天";
+            if (!plan.plan_time)
+                txt += "零点";
+            else {
+                var date = new Date(plan.plan_time);
+                txt += formatDate(date, 'hh:mm:ss');
+            }
+            sk = "不计算过去的时间。";
+        }
+        if (repet < 0)
+            txt += "执行一次，永久重复执行。";
+        else {
+            txt += "执行一次，重复" + repet + "次后结束。";
+        }
+        txt += sk;
+        return txt;
+    }
+    extend_filter({
+        format_plan_type(plan_type) {
+            switch (plan_type) {
+                case "2":
+                    return "秒";
+                case "3":
+                    return "分钟";
+                case "4":
+                    return "小时";
+                case "5":
+                    return "天";
+            }
+            return "";
+        },
+        format_plan_value(vl) {
+            if (vue_option.data.zeroPlan.form.plan_type != 7) {
+                return "";
+            }
+            if (vl > 0)
+                return "号";
+
+            return "倒数第" + Math.abs(vl) + "天";
+        },
+        format_plan(plan) {
+            return format_plan(plan);
+        }
+    });
+    extend_methods({
+        save_zeroPlan() {
+            var that = this;
+            var data = vue_option.data.zeroPlan;
+            if (format_plan(data.form) == '错误' || !data.form.command || data.form.command == '') {
+                that.$message.error('内容不合理');
+                return false;
+            }
+            this.$refs['zeroPlanForm'].validate((valid) => {
+                if (!valid) {
+                    that.$message.error('内容不合理');
+                    return false;
+                }
+                data.loading = true;
+                $.post('Plan/Add', data.form, function (result) {
+                    data.loading = false;
+                    if (result.success) {
+                        that.$message({
+                            message: '操作成功',
+                            type: 'success'
+                        });
+                        data.visible = false;
+                    }
+                    else {
+                        that.$message.error('操作失败:' + result.status.msg);
+                    }
+                    data.loading = false;
+                }).error(function () {
+                    data.loading = false;
+                    data.visible = false;
+                    that.$message.error('更新失败');
+                });
+            });
+        }
+    });
+</script>

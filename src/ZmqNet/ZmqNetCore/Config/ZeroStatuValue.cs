@@ -1,5 +1,4 @@
 using Agebull.ZeroNet.ZeroApi;
-using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -11,12 +10,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 正常状态
         /// </summary>
-        public const byte ZeroStatusSuccess = (byte) '+';
+        public const byte ZeroStatusSuccess = (byte)'+';
 
         /// <summary>
         /// 错误状态
         /// </summary>
-        public const byte ZeroStatusBad = (byte) '-';
+        public const byte ZeroStatusBad = (byte)'-';
 
         /// <summary>
         /// 成功
@@ -98,15 +97,15 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public const string ZeroCommandFailed = "-failes";
 
-        /// <summary>
+        /*// <summary>
         /// 参数错误
         /// </summary>
-        public const string ZeroCommandArgError = "-ArgumentError! must like : call[name][command][argument]";
+        public const string ZeroCommandArgError = "-invalid. argument error, must like : call [name] [command] [argument]";
 
         /// <summary>
         /// 安装时参数错误
         /// </summary>
-        public const string ZeroCommandInstallArgError = "-ArgumentError! must like :install [type] [name]";
+        public const string ZeroCommandInstallArgError = "-invalid. argument error, must like :install [type] [name]";*/
 
         /// <summary>
         /// 执行超时
@@ -129,63 +128,6 @@ namespace Agebull.ZeroNet.Core
         public const string ZeroUnknowError = "-error";
 
         /// <summary>
-        /// 参数错误的Json文本
-        /// </summary>
-        /// <remarks>参数校验不通过</remarks>
-        public static readonly string SucceesJson = JsonConvert.SerializeObject(ApiResult.Succees());
-
-
-        /// <summary>
-        /// 参数错误的Json文本
-        /// </summary>
-        /// <remarks>参数校验不通过</remarks>
-        public static readonly string ArgumentErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.ArgumentError,"参数错误"));
-
-        /// <summary>
-        /// 拒绝访问的Json文本
-        /// </summary>
-        /// <remarks>权限校验不通过</remarks>
-        public static readonly string DenyAccessJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.DenyAccess,"拒绝访问"));
-
-        /// <summary>
-        /// 未知错误的Json文本
-        /// </summary>
-        public static readonly string UnknowErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.UnknowError));
-
-        /// <summary>
-        /// 网络错误的Json文本
-        /// </summary>
-        /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static readonly string NetworkErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NetworkError));
-
-        /// <summary>
-        /// 网络超时的Json文本
-        /// </summary>
-        /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static readonly string TimeOutJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.TimeOut));
-
-        /// <summary>
-        /// 内部错误的Json文本
-        /// </summary>
-        /// <remarks>执行方法时抛出未处理异常</remarks>
-        public static readonly string InnerErrorJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.InnerError));
-
-        /// <summary>
-        /// 页面不存在的Json文本
-        /// </summary>
-        public static readonly string NoFindJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoFind, "页面不存在"));
-
-        /// <summary>
-        /// 服务不可用的Json文本
-        /// </summary>
-        public static readonly string UnavailableJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Unavailable, "服务不可用"));
-        
-        /// <summary>
-        /// 系统未就绪的Json文本
-        /// </summary>
-        public static readonly string NoReadyJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.NoReady, "系统未就绪"));
-
-        /// <summary>
         /// 状态原始文本
         /// </summary>
         /// <param name="state"></param>
@@ -198,29 +140,36 @@ namespace Agebull.ZeroNet.Core
                     return ZeroCommandOk;
                 case ZeroOperatorStateType.Plan:
                     return ZeroCommandPlan;
-                case ZeroOperatorStateType.VoteRuning:
+                case ZeroOperatorStateType.Runing:
                     return ZeroCommandRuning;
-                case ZeroOperatorStateType.VoteBye:
+                case ZeroOperatorStateType.Bye:
                     return ZeroCommandBye;
-                case ZeroOperatorStateType.VoteWecome:
+                case ZeroOperatorStateType.Wecome:
                     return ZeroCommandWecome;
                 case ZeroOperatorStateType.VoteSend:
                     return ZeroVoteSended;
+                case ZeroOperatorStateType.Waiting:
                 case ZeroOperatorStateType.VoteWaiting:
                     return ZeroVoteWaiting;
+                case ZeroOperatorStateType.VoteBye:
+                    return ZeroCommandBye;
                 case ZeroOperatorStateType.VoteStart:
                     return ZeroVoteStart;
+                case ZeroOperatorStateType.VoteClose:
+                    return ZeroVoteClosed;
                 case ZeroOperatorStateType.VoteEnd:
                     return ZeroVoteEnd;
+
                 case ZeroOperatorStateType.Error:
                     return ZeroCommandError;
                 case ZeroOperatorStateType.Failed:
+                case ZeroOperatorStateType.Bug:
                     return ZeroCommandFailed;
-                case ZeroOperatorStateType.NoFind:
+                case ZeroOperatorStateType.NotFind:
                     return ZeroCommandNoFind;
-                case ZeroOperatorStateType.NoSupport:
+                case ZeroOperatorStateType.NotSupport:
                     return ZeroCommandNoSupport;
-                case ZeroOperatorStateType.Invalid:
+                case ZeroOperatorStateType.FrameInvalid:
                     return ZeroCommandInvalid;
                 case ZeroOperatorStateType.TimeOut:
                     return ZeroCommandTimeout;
@@ -228,19 +177,57 @@ namespace Agebull.ZeroNet.Core
                     return ZeroCommandNetError;
                 case ZeroOperatorStateType.NoWorker:
                     return ZeroCommandNotWorker;
-                case ZeroOperatorStateType.CommandArgumentError:
-                    return ZeroCommandArgError;
-                case ZeroOperatorStateType.InstallArgumentError:
-                    return ZeroCommandInstallArgError;
+                //case ZeroOperatorStateType.CommandArgumentError:
+                //    return ZeroCommandArgError;
+                //case ZeroOperatorStateType.InstallArgumentError:
+                //    return ZeroCommandInstallArgError;
                 case ZeroOperatorStateType.LocalRecvError:
-                    return "-can't recv data";
+                    return "-error. local can't recv data";
                 case ZeroOperatorStateType.LocalSendError:
-                    return "-can't send data";
-                case ZeroOperatorStateType.Exception:
-                    return "-exception";
+                    return "-error. local can't send data";
+                case ZeroOperatorStateType.LocalException:
+                    return "-error. local throw exception";
+                case ZeroOperatorStateType.None:
+                    return "-unknow";
+                case ZeroOperatorStateType.PlanError:
+                    return "-error. plan argument error";
+                case ZeroOperatorStateType.RemoteSendError:
+                    return "-error. remote station or ZeroCenter send error";
+                case ZeroOperatorStateType.RemoteRecvError:
+                    return "-error. remote station or ZeroCenter recv error";
+                case ZeroOperatorStateType.LocalNoReady:
+                    return "-error. ZeroApplication no ready.";
+                case ZeroOperatorStateType.LocalZmqError:
+                    return "-error. ZeroMQ  error.";
                 default:
-                    return ZeroCommandFailed;
+                    return ZeroCommandError;
             }
+        }
+
+        /// <summary>
+        /// 状态转换
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static OperatorStatus ToOperatorStatus(this ZeroOperatorStateType state)
+        {
+            if (state < ZeroOperatorStateType.Failed)
+                return OperatorStatus.Success;
+            if (state < ZeroOperatorStateType.Bug)
+                return OperatorStatus.LogicalError;
+            if (state < ZeroOperatorStateType.Error)
+                return OperatorStatus.FormalError;
+            if (state <= ZeroOperatorStateType.NotSupport)
+                return OperatorStatus.NotFind;
+            if (state == ZeroOperatorStateType.DenyAccess)
+                return OperatorStatus.DenyAccess;
+            if (state == ZeroOperatorStateType.Unavailable)
+                return OperatorStatus.Unavailable;
+            if (state == ZeroOperatorStateType.LocalException)
+                return OperatorStatus.LocalException;
+            if (state >= ZeroOperatorStateType.LocalNoReady || state == ZeroOperatorStateType.TimeOut)
+                return OperatorStatus.LocalError;
+            return OperatorStatus.RemoteError;
         }
     }
 

@@ -1,5 +1,6 @@
+using System.Collections.Generic;
+using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -16,6 +17,20 @@ namespace Agebull.ZeroNet.PubSub
         [JsonProperty]
         public bool IsBadValue { get; set; }
 
+
+        /// <summary>
+        /// 带外事件
+        /// </summary>
+        [JsonIgnore]
+        public ZeroNetEventType ZeroEvent { get; set; }
+
+
+        /// <summary>
+        /// 带外事件
+        /// </summary>
+        [JsonIgnore]
+        public ZeroOperatorStateType State { get; set; }
+
         /// <summary>
         /// 全局ID
         /// </summary>
@@ -29,7 +44,14 @@ namespace Agebull.ZeroNet.PubSub
         public string RequestId { get; set; }
 
         /// <summary>
-        ///     分类（即站点）
+        ///  发布者的Identity(可能已消失)
+        /// </summary>
+        [JsonProperty]
+        public string Publisher { get; set; }
+
+
+        /// <summary>
+        ///  站点
         /// </summary>
         [JsonProperty]
         public string Station { get; set; }
@@ -51,5 +73,34 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         [JsonProperty]
         public string Content { get; set; }
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty]
+        public byte[] Buffer { get; set; }
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty]
+        public byte[] Status { get; set; }
+        
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty]
+        public byte[] Tson { get; set; }
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonProperty("Values")] internal List<string> _values;
+
+        /// <summary>
+        ///     内容
+        /// </summary>
+        [JsonIgnore]
+        public List<string> Values => _values ?? (_values = new List<string>());
     }
 }

@@ -69,6 +69,7 @@ sudo apt-get install redis-server
 databases 16 => 32
 sudo /etc/init.d/redis-server restart #重启
 
+ZRANGEBYSCORE plan:time:set +inf -inf  WITHSCORES #命令
 
 # 10 安装 supervisor
 

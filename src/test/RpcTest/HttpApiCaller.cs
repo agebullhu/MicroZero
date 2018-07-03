@@ -43,7 +43,7 @@ namespace ZeroNet.Http.Route
         public string Bearer { get; set; }
 
         #endregion
-
+         
         #region 辅助方法
 
         /// <summary>
@@ -124,21 +124,11 @@ namespace ZeroNet.Http.Route
         /// </summary>
         public async Task<string> GetResult()
         {
-            string json = await Task<string>.Factory.StartNew(GetResponse);
-            _webRequest = null;
-            return json;
-        }
-
-        /// <summary>
-        ///     取返回值
-        /// </summary>
-        /// <returns></returns>
-        private string GetResponse()
-        {
             Status = WebExceptionStatus.Success;
             try
             {
-                return ReadResponse(_webRequest.GetResponse());
+                var res = await _webRequest.GetResponseAsync();
+                return ReadResponse(res);
             }
             catch (WebException e)
             {
@@ -150,7 +140,7 @@ namespace ZeroNet.Http.Route
             {
                 Status = WebExceptionStatus.UnknownError;
                 LogRecorder.Exception(e);
-                return ToErrorString(ErrorCode.UnknowError, "未知错误", e.Message);
+                return ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
         }
         /// <summary>

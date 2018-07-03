@@ -1,28 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <UserSecretsId>2eaf5a70-faab-43c4-8875-8975adfe10af</UserSecretsId>
-    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="datas\**" />
     <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
+    <Compile Remove="Pages\**" />
     <Compile Remove="WebSocket\**" />
     <Content Remove="datas\**" />
     <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
+    <Content Remove="Pages\**" />
     <Content Remove="WebSocket\**" />
     <EmbeddedResource Remove="datas\**" />
     <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="WebSocket\**" />
     <None Remove="datas\**" />
     <None Remove="Debug\**" />
     <None Remove="logs\**" />
+    <None Remove="Pages\**" />
     <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>
@@ -30,24 +29,38 @@
     <Compile Remove="WS\WebNotify.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="appsettings.json" />
-    <Content Remove="host.json" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
+    <PackageReference Include="vue" Version="2.5.16" />
+    <PackageReference Include="Vue.Js.Element.UI" Version="2.4.2.4" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <ProjectReference Include="..\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
+    <Folder Include="WS\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="host.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Extend\Agebull.ZeroNet.Extend.csproj" />
+    <Content Update="Views\Plan\FormJs.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\MenuJs.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\Style.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\Menu.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\TableJs.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\Table.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Plan\Form.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 </Project>

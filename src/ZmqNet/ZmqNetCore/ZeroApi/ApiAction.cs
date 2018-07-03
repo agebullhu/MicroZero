@@ -180,6 +180,7 @@ namespace Agebull.ZeroNet.ZeroApi
         where TArgument : class, IApiArgument
         where TResult : IApiResult
     {
+        
         /// <summary>
         ///     参数
         /// </summary>

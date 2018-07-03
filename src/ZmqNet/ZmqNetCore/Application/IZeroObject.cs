@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
+using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -65,18 +67,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 已注册的对象
         /// </summary>
-        private static readonly List<IZeroObject> ZeroObjects = new List<IZeroObject>();
-
-
+        private static readonly Dictionary<string, IZeroObject> ZeroObjects = new Dictionary<string, IZeroObject>();
+        
         /// <summary>
-        ///     系统启动时调用
+        ///     注册单例对象
         /// </summary>
         public static bool RegistZeroObject<TZeroObject>() where TZeroObject : class, IZeroObject, new()
         {
-            using (OnceScope.CreateScope(ZeroObjects))
-            {
-                return !ZeroObjects.Any(p => p is TZeroObject) && RegistZeroObject(new TZeroObject());
-            }
+            return RegistZeroObject(new TZeroObject());
         }
 
         /// <summary>
@@ -97,12 +95,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
+        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, Int16.MaxValue);
 
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static readonly SemaphoreSlim GlobalSemaphore = new SemaphoreSlim(0, short.MaxValue);
+        private static readonly SemaphoreSlim GlobalSemaphore = new SemaphoreSlim(0, Int16.MaxValue);
 
         /// <summary>
         ///     重置当前活动数量
@@ -195,16 +193,27 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     系统启动时调用
+        ///     取已注册对象
+        /// </summary>
+        public static IZeroObject TryGetZeroObject(string name)
+        {
+            if (ZeroObjects.TryGetValue (name,out var zeroObject))
+                return zeroObject;
+            return null;
+        }
+
+        /// <summary>
+        ///     注册对象
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
+            ZeroDiscover.DiscoverApiDocument(obj.GetType());
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                if (ZeroObjects.Contains(obj))
+                if (ZeroObjects.ContainsKey(obj.Name))
                     return false;
                 ZeroTrace.WriteInfo("RegistZeroObject", obj.Name);
-                ZeroObjects.Add(obj);
+                ZeroObjects.Add(obj.Name, obj);
                 if (ApplicationState >= StationState.Initialized)
                 {
                     try
@@ -214,8 +223,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "Initialize", e);
+                        ZeroTrace.WriteException(obj.Name, e, "Initialize");
                     }
                 }
 
@@ -228,11 +236,9 @@ namespace Agebull.ZeroNet.Core
                 }
                 catch (Exception e)
                 {
-                    LogRecorder.Exception(e);
-                    ZeroTrace.WriteError(obj.Name, "Start", e);
+                    ZeroTrace.WriteException(obj.Name, e, "Start");
                 }
             }
-
             return true;
         }
 
@@ -244,9 +250,7 @@ namespace Agebull.ZeroNet.Core
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 ZeroTrace.WriteLine("[OnZeroInitialize>>");
-
-
-                Parallel.ForEach(ZeroObjects.ToArray(), obj =>
+                Parallel.ForEach(ZeroObjects.Values.ToArray(), obj =>
                 {
                     try
                     {
@@ -255,8 +259,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "*Initialize", e);
+                        ZeroTrace.WriteException(obj.Name, e, "*Initialize");
                     }
                 });
                 ZeroTrace.WriteLine("<<OnZeroInitialize]");
@@ -273,7 +276,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ZeroTrace.WriteLine("[OnZeroStart>>");
 #if DEBUG
-                foreach (var obj in ZeroObjects.ToArray())
+                foreach (var obj in ZeroObjects.Values.ToArray())
                 {
                     try
                     {
@@ -282,8 +285,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "*Start", e);
+                        ZeroTrace.WriteException(obj.Name, e, "*Start");
                     }
                 }
 #else
@@ -296,16 +298,15 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "*Start", e);
+                        ZeroTrace.WriteException(obj.Name,e, "*Start");
                     }
                 });
 #endif
                 WaitAllObjectSemaphore();
             }
-            SystemManager.HeartReady();
+            SystemManager.Instance.HeartReady();
             ApplicationState = StationState.Run;
-            SystemMonitor.RaiseEvent("program_run");
+            RaiseEvent(ZeroNetEventType.AppRun);
             ZeroTrace.WriteLine("<<OnZeroStart]");
         }
 
@@ -326,8 +327,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "OnStationStateChanged", e);
+                        ZeroTrace.WriteException(obj.Name, e, "OnStationStateChanged");
                     }
                 });
                 ZeroTrace.WriteLine("<<OnStationStateChanged]");
@@ -345,8 +345,8 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!InRun)
                     return;
-                SystemManager.Heartbeat();
-                Parallel.ForEach(ActiveObjects.ToArray(), obj =>
+                SystemManager.Instance.Heartbeat();
+                foreach (var obj in ActiveObjects.ToArray())
                 {
                     try
                     {
@@ -354,10 +354,9 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "OnHeartbeat", e);
+                        ZeroTrace.WriteException(obj.Name, e, "OnHeartbeat");
                     }
-                });
+                };
             }
         }
 
@@ -366,10 +365,11 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroEnd()
         {
+            RaiseEvent(ZeroNetEventType.AppStop);
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 ZeroTrace.WriteLine("[OnZeroEnd>>");
-                SystemManager.HeartLeft();
+                SystemManager.Instance.HeartLeft();
                 ApplicationState = StationState.Closing;
                 if (HaseActiveObject)
                 {
@@ -382,8 +382,7 @@ namespace Agebull.ZeroNet.Core
                         }
                         catch (Exception e)
                         {
-                            LogRecorder.Exception(e);
-                            ZeroTrace.WriteError(obj.Name, "*Close", e);
+                            ZeroTrace.WriteException(obj.Name, e, "*Close");
                         }
                     });
                     WaitAllObjectSemaphore();
@@ -402,11 +401,12 @@ namespace Agebull.ZeroNet.Core
             if (!Monitor.TryEnter(ZeroObjects))
                 return;
             ZeroTrace.WriteLine("[OnZeroDestory>>");
+            RaiseEvent(ZeroNetEventType.AppEnd);
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                var array = ZeroObjects.ToArray();
+                var array = ZeroObjects.Values.ToArray();
                 ZeroObjects.Clear();
-                Parallel.ForEach(array, obj =>
+                foreach (var obj in array)
                 {
                     try
                     {
@@ -415,10 +415,9 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "*Destory", e);
+                        ZeroTrace.WriteException(obj.Name, e, "*Destory");
                     }
-                });
+                };
 
                 ZeroTrace.WriteLine("<<OnZeroDestory]");
 
@@ -432,8 +431,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
-                        ZeroTrace.WriteError(obj.Name, "*Dispose", e);
+                        ZeroTrace.WriteException(obj.Name, e, "*Dispose");
                     }
                 });
                 ZeroTrace.WriteLine("<<OnZeroDispose]");

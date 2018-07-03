@@ -39,6 +39,11 @@ namespace Agebull.ZeroNet.ZeroApi
         Employe = 0x20,
 
         /// <summary>
+        /// 无限制
+        /// </summary>
+        Full = 0xFF,
+
+        /// <summary>
         /// 参数可以为null
         /// </summary>
         ArgumentCanNil = 0x1000
@@ -63,6 +68,25 @@ namespace Agebull.ZeroNet.ZeroApi
         public ApiAccessOption Option { get; }
     }
 
+
+    /// <summary>
+    /// 站点名称
+    /// </summary>
+    public class StationAttribute : Attribute
+    {
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="name"></param>
+        public StationAttribute(string name)
+        {
+            Name = name;
+        }
+        /// <summary>
+        /// 配置
+        /// </summary>
+        public string Name { get; }
+    }
 
     /// <summary>
     /// 路由名称

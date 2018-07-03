@@ -92,73 +92,37 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<sharp_char>& list) final;//, sharp_char& global_id
+			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
 			/**
 			*\brief 发布消息
 			*/
 			bool publish(const string& title, const string& publiher, const string& arg);
-			/**
-			* 心跳的响应
-			*/
-			static bool heartbeat(char cmd, vector<sharp_char> lines);
 		public:
 			/**
 			* \brief 执行一条命令
 			*/
-			sharp_char command(const char* caller, vector<sharp_char> lines) final;
-			/**
-			* \brief 取机器信息
-			*/
-			static char host_info(const string& stattion, string& json);
-			/**
-			* \brief 站点安装
-			*/
-			static char install_station(const char* type_name, const char* stattion, const char* short_name);
-			/**
-			* \brief 站点卸载
-			*/
-			static bool uninstall(const string& stattion);
-			/**
-			*  \brief 启动站点
-			*/
-			static char start_station(string stattion);
-			/**
-			* \brief 暂停站点
-			*/
-			static char pause_station(const string& stattion);
-			/**
-			* \brief 继续站点
-			*/
-			static char resume_station(const string& stattion);
-			/**
-			* \brief 关闭站点
-			*/
-			static char close_station(const string& stattion);
+			shared_char command(const char* caller, vector<shared_char> lines) final;
+
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(const string& stattion, const string& command, const string& argument);
+			string call_station(const string& stattion, const string& command, const string& argument);
 			/**
 			* \brief 远程调用
 			*/
-			static string call_station(const char* stattion, vector<sharp_char>& arguments);
+			string call_station(const char* stattion, vector<shared_char>& arguments);
 			/**
 			* \brief 执行命令
 			*/
-			static char exec_command(const char* command, vector<sharp_char>& arguments, string& json);
+			char exec_command(const char* command, vector<shared_char>& arguments, string& json);
 			/**
 			* \brief 执行命令
 			*/
-			static string exec_command(const char* command, const char* argument);
+			string exec_command(const char* command, const char* argument);
 			/**
 			*\brief 广播内容
 			*/
-			static bool monitor(const string& publiher, const string& event_name, const string& content)
-			{
-				if (instance != nullptr)
-					return instance->publish(event_name, publiher, content);
-				return false;
-			}
+			static bool zero_event(const string publiher, const zero_net_event event_name, const string content);
 			/**
 			*\brief 广播内容
 			*/

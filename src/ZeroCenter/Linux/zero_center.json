@@ -3,5 +3,21 @@
   "use_ipc_protocol": "false",
   "redis_addr": "127.0.0.1:6379",
   "redis_defdb": "15",
-  "worker_sound_ivl": 2000
+  "worker_sound_ivl": 2000,
+  "plan_exec_timeout": 300,
+  "plan_cache_size": 1024,
+
+  "ZMQ_MAX_SOCKETS": -1,
+  "ZMQ_IO_THREADS": -1,
+  "ZMQ_MAX_MSGSZ": -1,
+
+  "ZMQ_IMMEDIATE": 1,
+  "ZMQ_LINGER": 50,
+  "ZMQ_RCVTIMEO": 500,
+  "ZMQ_SNDTIMEO": 500,
+  "ZMQ_SNDHWM": -1,
+  "ZMQ_RCVHWM": -1,
+  "ZMQ_SNDBUF": -1,
+  "ZMQ_RCVBUF": -1,
+  "ZMQ_BACKLOG": 8192
 }

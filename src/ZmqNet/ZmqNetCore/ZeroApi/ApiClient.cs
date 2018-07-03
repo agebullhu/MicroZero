@@ -1,10 +1,11 @@
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -15,48 +16,56 @@ namespace Agebull.ZeroNet.ZeroApi
     /// </summary>
     public class ApiClient
     {
+        #region Properties
+
         /// <summary>
-        /// 请求格式说明
+        ///     返回值
         /// </summary>
-        private static readonly byte[] CallDescription = {
-            6,
-            ZeroByteCommand.General,
-            ZeroFrameType.Command,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Context,
-            ZeroFrameType.Argument,
-            ZeroFrameType.Requester,
-            ZeroFrameType.GlobalId
-        };
+        public string Result => _json;
+
         /// <summary>
-        /// 请求格式说明
+        ///     请求站点
         /// </summary>
-        private static readonly byte[] GetGlobalIdDescription = {
-            1,
-            ZeroByteCommand.GetGlobalId,
-            ZeroFrameType.Requester,
-            ZeroFrameType.End
-        };
+        public string Station { get; set; }
+
         /// <summary>
-        /// 请求格式说明
+        ///     请求站点
         /// </summary>
-        private static readonly byte[] CloseDescription = {
-            2,
-            ZeroByteCommand.Close,
-            ZeroFrameType.Requester,
-            ZeroFrameType.GlobalId
-        };
+        public string RequestId { get; } = RandomOperate.Generate(8);
+
         /// <summary>
-        /// 请求格式说明
+        ///     调用命令
         /// </summary>
-        private static readonly byte[] FindDescription = {
-            2,
-            ZeroByteCommand.Find,
-            ZeroFrameType.Requester,
-            ZeroFrameType.GlobalId
-        };
+        public string Commmand { get; set; }
+
         /// <summary>
-        /// 远程调用
+        ///     参数
+        /// </summary>
+        public string Argument { get; set; }
+
+        /// <summary>
+        ///     请求时申请的全局标识(本地)
+        /// </summary>
+        public string GlobalId;
+
+        /// <summary>
+        ///     结果状态
+        /// </summary>
+        public ZeroOperatorStateType State { get; set; }
+
+
+        /// <summary>
+        ///     返回的数据
+        /// </summary>
+        private string _json;
+
+        #endregion
+
+
+        #region Command
+
+        /// <summary>
+        ///     远程调用
         /// </summary>
         /// <param name="station"></param>
         /// <param name="commmand"></param>
@@ -68,7 +77,7 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// 远程调用
+        ///     远程调用
         /// </summary>
         /// <param name="station"></param>
         /// <param name="commmand"></param>
@@ -80,7 +89,7 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// 远程调用
+        ///     远程调用
         /// </summary>
         /// <param name="station"></param>
         /// <param name="commmand"></param>
@@ -98,130 +107,252 @@ namespace Agebull.ZeroNet.ZeroApi
             return client.Result;
         }
 
-        /// <summary>
-        /// 返回值
-        /// </summary>
-        public string Result => _json;
-        /// <summary>
-        /// 请求站点
-        /// </summary>
-        public string Station { get; set; }
-        /// <summary>
-        /// 调用命令
-        /// </summary>
-        public string Commmand { get; set; }
-        /// <summary>
-        /// 参数
-        /// </summary>
-        public string Argument { get; set; }
-        /// <summary>
-        /// 结果状态
-        /// </summary>
-        public ZeroOperatorStateType State { get; set; }
 
         /// <summary>
-        /// 返回的数据
-        /// </summary>
-        private string _json;
-
-        /// <summary>
-        /// 远程调用
+        ///     远程调用
         /// </summary>
         /// <returns></returns>
         public void CallCommand()
         {
             using (MonitorScope.CreateScope("内部Zero调用"))
             {
-                //ApiContext.Current.LastError = 0;
-                LogRecorder.MonitorTrace($"Station:{Station},Command:{Commmand}");
+                Prepare();
                 Call();
-                //LogRecorder.MonitorTrace($"Result:{Result}");
+                End();
             }
         }
+
+        #endregion
+
+        #region Flow
+
         /// <summary>
-        /// 检查在非成功状态下的返回值
+        ///     检查在非成功状态下的返回值
         /// </summary>
         public void CheckStateResult()
         {
+            if (_json != null)
+                return;
             switch (State)
             {
-                case ZeroOperatorStateType.NoReady:
+                case ZeroOperatorStateType.LocalNoReady:
                 case ZeroOperatorStateType.LocalZmqError:
-                    _json = ZeroStatuValue.NoReadyJson;
+                    _json = ApiResult.NoReadyJson;
                     return;
                 case ZeroOperatorStateType.LocalSendError:
                 case ZeroOperatorStateType.LocalRecvError:
-                    _json = ZeroStatuValue.NetworkErrorJson;
+                    _json = ApiResult.NetworkErrorJson;
                     return;
-                case ZeroOperatorStateType.Exception:
-                    _json = ZeroStatuValue.UnknowErrorJson;
+                case ZeroOperatorStateType.LocalException:
+                    _json = ApiResult.LocalExceptionJson;
                     return;
                 case ZeroOperatorStateType.Plan:
-                case ZeroOperatorStateType.VoteRuning:
+                case ZeroOperatorStateType.Runing:
                 case ZeroOperatorStateType.VoteBye:
-                case ZeroOperatorStateType.VoteWecome:
+                case ZeroOperatorStateType.Wecome:
                 case ZeroOperatorStateType.VoteSend:
                 case ZeroOperatorStateType.VoteWaiting:
                 case ZeroOperatorStateType.VoteStart:
                 case ZeroOperatorStateType.VoteEnd:
-                    _json = ZeroStatuValue.SucceesJson;
+                    _json = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Success, State.Text()));
                     return;
                 case ZeroOperatorStateType.Error:
-                    _json = ZeroStatuValue.InnerErrorJson;
+                    _json = ApiResult.InnerErrorJson;
                     return;
-                case ZeroOperatorStateType.NoSupport:
-                case ZeroOperatorStateType.NoFind:
+                case ZeroOperatorStateType.Unavailable:
+                    _json = ApiResult.UnavailableJson;
+                    return;
+                case ZeroOperatorStateType.NotSupport:
+                case ZeroOperatorStateType.NotFind:
                 case ZeroOperatorStateType.NoWorker:
-                    ApiContext.Current.LastError = ErrorCode.NoFind;
-                    _json = ZeroStatuValue.NoFindJson;
+                    //ApiContext.Current.LastError = ErrorCode.NoFind;
+                    _json = ApiResult.NoFindJson;
                     return;
-                case ZeroOperatorStateType.Invalid:
-                    ApiContext.Current.LastError = ErrorCode.ArgumentError;
-                    _json = ZeroStatuValue.ArgumentErrorJson;
+                case ZeroOperatorStateType.ArgumentInvalid:
+                    //ApiContext.Current.LastError = ErrorCode.LogicalError;
+                    _json = ApiResult.ArgumentErrorJson;
                     return;
                 case ZeroOperatorStateType.TimeOut:
-                    _json = ZeroStatuValue.TimeOutJson;
+                    _json = ApiResult.TimeOutJson;
+                    return;
+                case ZeroOperatorStateType.FrameInvalid:
+                    //ApiContext.Current.LastError = ErrorCode.NetworkError;
+                    _json = ApiResult.NetworkErrorJson;
                     return;
                 case ZeroOperatorStateType.NetError:
-                    ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    _json = ZeroStatuValue.NetworkErrorJson;
+                    //ApiContext.Current.LastError = ErrorCode.NetworkError;
+                    _json = ApiResult.NetworkErrorJson;
                     return;
                 case ZeroOperatorStateType.Failed:
-                    ApiContext.Current.LastError = ErrorCode.BusinessError;
-                    _json = ZeroStatuValue.UnknowErrorJson;
+                case ZeroOperatorStateType.Bug:
+                    //ApiContext.Current.LastError = ErrorCode.LocalError;
+                    _json = ApiResult.NetworkErrorJson;
                     return;
                 default:
-                    _json = ZeroStatuValue.UnknowErrorJson;
+                    _json = ApiResult.UnknowErrorJson;
                     return;
                 case ZeroOperatorStateType.Ok:
-                    ApiContext.Current.LastError = ErrorCode.Success;
+                    //ApiContext.Current.LastError = ErrorCode.Success;
                     return;
             }
         }
+
         /// <summary>
-        /// 远程调用
+        ///     远程调用
         /// </summary>
         /// <returns></returns>
         private void Call()
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                State = ZeroOperatorStateType.NoReady;
+                State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
+
             var socket = ZeroConnectionPool.GetSocket(Station, ApiContext.RequestContext.RequestId);
-            if (socket == null)
+            if (socket.Socket == null)
             {
-                ApiContext.Current.LastError = ErrorCode.NoReady;
-                _json = ZeroStatuValue.NoReadyJson;
-                State = ZeroOperatorStateType.LocalSendError;
+                //ApiContext.Current.LastError = ErrorCode.NoReady;
+                _json = ApiResult.NoReadyJson;
+                State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
+
             using (socket)
             {
                 ReadNetWork(socket);
             }
         }
+
+        #endregion
+
+
+        #region 操作注入
+
+        /// <summary>
+        ///     Api处理器
+        /// </summary>
+        public interface IHandler
+        {
+            /// <summary>
+            ///     准备
+            /// </summary>
+            /// <param name="item"></param>
+            /// <returns></returns>
+            void Prepare(ApiClient item);
+
+            /// <summary>
+            ///     结束处理
+            /// </summary>
+            /// <param name="item"></param>
+            void End(ApiClient item);
+        }
+
+        /// <summary>
+        ///     处理器
+        /// </summary>
+        private static readonly List<Func<IHandler>> ApiHandlers = new List<Func<IHandler>>();
+
+        /// <summary>
+        ///     注册处理器
+        /// </summary>
+        public static void RegistHandlers<THandler>() where THandler : class, IHandler, new()
+        {
+            ApiHandlers.Add(() => new THandler());
+        }
+
+        private readonly List<IHandler> _handlers = new List<IHandler>();
+
+        /// <summary>
+        ///     注册处理器
+        /// </summary>
+        public ApiClient()
+        {
+            foreach (var func in ApiHandlers)
+                _handlers.Add(func());
+        }
+
+
+        private void Prepare()
+        {
+            LogRecorder.MonitorTrace($"Station:{Station},Command:{Commmand}");
+            foreach (var handler in _handlers)
+                try
+                {
+                    handler.Prepare(this);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(Station, e, "PreActions", Commmand);
+                }
+        }
+
+        private void End()
+        {
+            foreach (var handler in _handlers)
+                try
+                {
+                    handler.End(this);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(Station, e, "EndActions", Commmand);
+                }
+            CheckStateResult();
+            LogRecorder.MonitorTrace($"Result:{Result}");
+        }
+
+        #endregion
+
+        #region Socket
+
+        /// <summary>
+        ///     请求格式说明
+        /// </summary>
+        private static readonly byte[] CallDescription =
+        {
+            6,
+            ZeroByteCommand.General,
+            ZeroFrameType.Command,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Context,
+            ZeroFrameType.Argument,
+            ZeroFrameType.Requester,
+            ZeroFrameType.GlobalId
+        };
+
+        /// <summary>
+        ///     请求格式说明
+        /// </summary>
+        private static readonly byte[] GetGlobalIdDescription =
+        {
+            1,
+            ZeroByteCommand.GetGlobalId,
+            ZeroFrameType.Requester,
+            ZeroFrameType.End
+        };
+
+        /// <summary>
+        ///     请求格式说明
+        /// </summary>
+        private static readonly byte[] CloseDescription =
+        {
+            2,
+            ZeroByteCommand.Close,
+            ZeroFrameType.Requester,
+            ZeroFrameType.GlobalId
+        };
+
+        /// <summary>
+        ///     请求格式说明
+        /// </summary>
+        private static readonly byte[] FindDescription =
+        {
+            2,
+            ZeroByteCommand.Find,
+            ZeroFrameType.Requester,
+            ZeroFrameType.GlobalId
+        };
 
         private void ReadNetWork(PoolSocket socket)
         {
@@ -230,7 +361,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 socket.HaseFailed = true;
                 //ZeroTrace.WriteError("GetGlobalId", "Send Failed", station, commmand, argument);
-                ApiContext.Current.LastError = ErrorCode.NetworkError;
+                //ApiContext.Current.LastError = ErrorCode.NetworkError;
                 State = ZeroOperatorStateType.LocalSendError;
                 return;
             }
@@ -240,64 +371,43 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 socket.HaseFailed = true;
                 //ZeroTrace.WriteError("GlobalId", "Recv  Failed", station, commmand, argument);
-                ApiContext.Current.LastError = ErrorCode.NetworkError;
+                //ApiContext.Current.LastError = ErrorCode.NetworkError;
                 State = ZeroOperatorStateType.LocalRecvError;
                 return;
             }
 
-            if (result.TryGetValue(ZeroFrameType.GlobalId, out var globalId))
-                LogRecorder.MonitorTrace($"GlobalId:{long.Parse(globalId, NumberStyles.HexNumber)}");
-
+            var old = ApiContext.RequestContext.LocalGlobalId;
+            if (result.TryGetValue(ZeroFrameType.GlobalId, out GlobalId))
+            {
+                ApiContext.RequestContext.LocalGlobalId = GlobalId;
+                LogRecorder.MonitorTrace($"GlobalId:{GlobalId}");
+            }
 
             result = socket.Socket.QuietSend(CallDescription,
                 Commmand,
                 ApiContext.RequestContext.RequestId,
                 JsonConvert.SerializeObject(ApiContext.Current),
-                Argument, 
-                ApiContext.RequestContext.RequestId,//作名称
-                globalId);
+                Argument,
+                ApiContext.RequestContext.RequestId, //作名称
+                ApiContext.RequestContext.LocalGlobalId);
+            ApiContext.RequestContext.LocalGlobalId = old;
             if (!result.InteractiveSuccess)
             {
                 socket.HaseFailed = true;
                 //ZeroTrace.WriteError(station, "Send Failed", commmand, argument);
-                ApiContext.Current.LastError = ErrorCode.NetworkError;
+                //ApiContext.Current.LastError = ErrorCode.NetworkError;
                 State = ZeroOperatorStateType.LocalSendError;
                 return;
             }
+
             result = ReceiveString(socket.Socket);
             if (!result.InteractiveSuccess)
             {
-                //bool finded = false;
-                //int cnt = 0;
-                //while (!finded && ++cnt < 5)
-                //{
-                //    Thread.Sleep(1000);
-                //    socket.ReBuild();
-                //    result = socket.Socket.QuietSend(FindDescription, globalId, name);
-                //    if (!result.InteractiveSuccess)
-                //    {
-                //        continue;
-                //    }
-                //    if (result.State == ZeroOperatorStateType.NoWorker)
-                //    {
-                //        serializeObject = null;
-                //        return ZeroOperatorStateType.NetError;
-                //    }
-                //    result = ReceiveString(socket.Socket);
-                //    if (!result.InteractiveSuccess || result.State == ZeroOperatorStateType.NoWorker)
-                //        continue;
-                //    ZeroTrace.WriteInfo("API", "deliverer", commmand, globalId, cnt.ToString());
-                //    finded = true;
-                //}
-
-                //if (!finded)
-                {
-                    socket.HaseFailed = true;
-                    //ZeroTrace.WriteError("API", "incorrigible", commmand, globalId);
-                    ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    State = ZeroOperatorStateType.LocalRecvError;
-                    return;
-                }
+                socket.HaseFailed = true;
+                //ZeroTrace.WriteError("API", "incorrigible", commmand, globalId);
+                //ApiContext.Current.LastError = ErrorCode.NetworkError;
+                State = ZeroOperatorStateType.LocalRecvError;
+                return;
             }
 
             //if (result.State == ZeroOperatorStateType.NoWorker)
@@ -316,19 +426,20 @@ namespace Agebull.ZeroNet.ZeroApi
             //    socket.HaseFailed = true;
             //    ZeroTrace.WriteError(station, "Close Failed", commmand, globalId, lr.ZmqErrorMessage);
             //}
-
             result.TryGetValue(ZeroFrameType.JsonValue, out _json);
+            State = result.State;
         }
+
 
         /// <summary>
         ///     接收文本
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        private ZeroResultData<string> ReceiveString(ZSocket socket)
+        private ZeroResultData ReceiveString(ZSocket socket)
         {
             if (!ZeroApplication.ZerCenterIsRun)
-                return new ZeroResultData<string>
+                return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
                     InteractiveSuccess = false
@@ -336,12 +447,11 @@ namespace Agebull.ZeroNet.ZeroApi
             if (!socket.Recv(out var messages))
             {
                 if (!Equals(socket.LastError, ZError.EAGAIN))
+                    ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text,
+                        $"Socket Ptr:{socket.SocketPtr}");
+                return new ZeroResultData
                 {
-                    ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text, $"Socket Ptr:{ socket.SocketPtr}");
-                }
-                return new ZeroResultData<string>
-                {
-                    State = ZeroOperatorStateType.LocalRecvError,
+                    State = ZeroOperatorStateType.LocalRecvError
                     //ZmqErrorMessage = error?.Text,
                     //ZmqErrorCode = error?.Number ?? 0
                 };
@@ -352,45 +462,45 @@ namespace Agebull.ZeroNet.ZeroApi
                 var description = messages[0].Read();
                 if (description.Length == 0)
                 {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{ socket.SocketPtr}.");
-                    return new ZeroResultData<string>
+                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','),
+                        description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{socket.SocketPtr}.");
+                    return new ZeroResultData
                     {
-                        State = ZeroOperatorStateType.Invalid,
-                        ZmqErrorMessage = "网络格式错误",
-                        ZmqErrorCode = -1
+                        State = ZeroOperatorStateType.FrameInvalid,
+                        Message = "网络格式错误"
                     };
                 }
 
-                int end = description[0] + 1;
+                var end = description[0] + 1;
                 if (end != messages.Count)
                 {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{ socket.SocketPtr}.");
-                    return new ZeroResultData<string>
+                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','),
+                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
+                        $"Socket Ptr:{socket.SocketPtr}.");
+                    return new ZeroResultData
                     {
-                        State = ZeroOperatorStateType.Invalid,
-                        ZmqErrorMessage = "网络格式错误",
-                        ZmqErrorCode = -2
+                        State = ZeroOperatorStateType.FrameInvalid,
+                        Message = "网络格式错误"
                     };
                 }
 
-                var result = new ZeroResultData<string>
+                var result = new ZeroResultData
                 {
                     InteractiveSuccess = true,
-                    State = (ZeroOperatorStateType)description[1]
+                    State = (ZeroOperatorStateType) description[1]
                 };
-                for (int idx = 1; idx < end; idx++)
-                {
+                for (var idx = 1; idx < end; idx++)
                     result.Add(description[idx + 1], Encoding.UTF8.GetString(messages[idx].Read()));
-                }
 
                 return result;
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"Socket Ptr:{ socket.SocketPtr}.");
-                return new ZeroResultData<string>
+                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','),
+                    $"Socket Ptr:{socket.SocketPtr}.");
+                return new ZeroResultData
                 {
-                    State = ZeroOperatorStateType.Exception,
+                    State = ZeroOperatorStateType.LocalException,
                     Exception = e
                 };
             }
@@ -400,5 +510,6 @@ namespace Agebull.ZeroNet.ZeroApi
             }
         }
 
+        #endregion
     }
 }

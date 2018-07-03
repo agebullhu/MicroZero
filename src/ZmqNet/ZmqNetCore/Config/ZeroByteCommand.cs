@@ -8,7 +8,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 标准调用
         /// </summary>
-        public const byte General = (byte)0;
+        public const byte General = (byte)1;
+
+        /// <summary>
+        /// 计划任务
+        /// </summary>
+        public const byte Plan = (byte)2;
+
+        /// <summary>
+        /// 代理执行
+        /// </summary>
+        public const byte Proxy = (byte)3;
 
         /// <summary>
         /// 等待结果

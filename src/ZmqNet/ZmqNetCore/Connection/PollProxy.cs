@@ -22,7 +22,7 @@ namespace Agebull.ZeroNet.Core
         {
             ZeroTrace.WriteInfo("ConnectionProxy", "Start");
             RunTaskCancel = new CancellationTokenSource();
-            Task.Factory.StartNew(Run, RunTaskCancel.Token);
+            Task.Factory.StartNew(Run);
             _waitToken.Wait();
         }
 
@@ -83,7 +83,7 @@ namespace Agebull.ZeroNet.Core
             {
                 pool.Prepare(sockets, ZPollEvent.In);
                 _waitToken.Release();
-                //SystemManager.HeartReady(StationName, RealName);
+                //SystemManager.Instance.HeartReady(StationName, RealName);
                 while (!RunTaskCancel.Token.IsCancellationRequested)
                 {
                     if (!pool.Poll())

@@ -2,316 +2,15 @@
 #ifndef _ZERO_CONFIG_H_
 #define _ZERO_CONFIG_H_
 #include "../stdinc.h"
+#include "net_default.h"
 #include <utility>
 #include "../log/mylogger.h"
-#include "net_command.h"
 
 #include<boost/unordered_map.hpp>
 namespace agebull
 {
 	namespace zmq_net
 	{
-		/**
-		* \brief  站点状态
-		*/
-		enum class station_state
-		{
-			/**
-			* \brief 无，刚构造
-			*/
-			None,
-			/**
-			* \brief 重新启动
-			*/
-			ReStart,
-			/**
-			* \brief 正在启动
-			*/
-			Start,
-			/**
-			* \brief 正在运行
-			*/
-			Run,
-			/**
-			* \brief 已暂停
-			*/
-			Pause,
-			/**
-			* \brief 错误状态
-			*/
-			Failed,
-			/**
-			* \brief 将要关闭
-			*/
-			Closing,
-			/**
-			* \brief 已关闭
-			*/
-			Closed,
-			/**
-			* \brief 已销毁，析构已调用
-			*/
-			Destroy,
-			/**
-			* \brief 已卸载
-			*/
-			Uninstall,
-			/**
-			* \brief 未知
-			*/
-			Unknow
-		};
-
-		/**
-		* \brief ZMQ套接字状态
-		*/
-		enum class zmq_socket_state
-		{
-			/**
-			* \brief 没问题
-			*/
-			Succeed,
-			/**
-			* \brief 后续还有消息
-			*/
-			More,
-
-			/**
-			* \brief 空帧
-			*/
-			Empty,
-
-			/**
-			* \brief 主机不可达
-			*/
-			HostUnReach,
-			/**
-			* \brief 网络关闭
-			*/
-			NetDown,
-
-			/**
-			* \brief 网络不可达
-			*/
-			NetUnReach,
-
-			/**
-			* \brief 网络重置
-			*/
-			NetReset,
-
-			/**
-			* \brief 未连接
-			*/
-			NotConn,
-			/**
-			* \brief 连接已在使用中？
-			*/
-			ConnRefUsed,
-			/**
-			* \brief 连接中断
-			*/
-			ConnAborted,
-
-			/**
-			* \brief 连接重置
-			*/
-			ConnReset,
-
-			/**
-			* \brief 超时
-			*/
-			TimedOut,
-
-			/**
-			* \brief 正在处理中？
-			*/
-			InProgress,
-
-			/**
-			* \brief 跨线程调用？
-			*/
-			Mthread,
-
-			/**
-			* \brief 指定的socket不可用
-			*/
-			NotSocket,
-
-			/**
-			* \brief 内存不足
-			*/
-			NoBufs,
-
-			/**
-			* \brief 消息大小不合适？
-			*/
-			MsgSize,
-
-			/**
-			* \brief 指定的socket相关联的context已关闭
-			*/
-			Term,
-
-			/**
-			* \brief 系统信号中断
-			*/
-			Intr,
-
-			/**
-			* \brief 不支持？
-			*/
-			NotSup,
-
-			/**
-			* \brief 不支持的协议
-			*/
-			ProtoNoSupport,
-
-			/**
-			* \brief 协议不兼容
-			*/
-			NoCompatProto,
-
-			/**
-			* \brief ？
-			*/
-			AfNoSupport,
-
-			/**
-			* \brief 地址问题？
-			*/
-			AddrNotAvAll,
-			/**
-			* \brief 地址已被使用
-			*/
-			AddrInUse,
-			/**
-			* \brief ？
-			*/
-			Fsm,
-
-			/**
-			* \brief 重启
-			*/
-			Again,
-			/**
-			* \brief 其它错误
-			*/
-			Unknow
-		};
-
-
-		/**
-		* \brief 检查ZMQ错误状态
-		* \return 状态
-		*/
-		inline const char* state_str(zmq_socket_state state)
-		{
-			switch (state)
-			{
-			case zmq_socket_state::Succeed: return "Succeed";
-			case zmq_socket_state::More: return "More";
-			case zmq_socket_state::Empty: return "Empty";
-			case zmq_socket_state::HostUnReach: return "HostUnReach";
-			case zmq_socket_state::NetDown: return "NetDown";
-			case zmq_socket_state::NetUnReach: return "NetUnReach";
-			case zmq_socket_state::NetReset: return "NetReset";
-			case zmq_socket_state::NotConn: return "NotConn";
-			case zmq_socket_state::ConnRefUsed: return "ConnRefUsed";
-			case zmq_socket_state::ConnAborted: return "ConnAborted";
-			case zmq_socket_state::ConnReset: return "ConnReset";
-			case zmq_socket_state::TimedOut: return "TimedOut";
-			case zmq_socket_state::InProgress: return "InProgress";
-			case zmq_socket_state::Mthread: return "Mthread";
-			case zmq_socket_state::NotSocket: return "NotSocket";
-			case zmq_socket_state::NoBufs: return "NoBufs";
-			case zmq_socket_state::MsgSize: return "MsgSize";
-			case zmq_socket_state::Term: return "Term";
-			case zmq_socket_state::Intr: return "Intr";
-			case zmq_socket_state::NotSup: return "NotSup";
-			case zmq_socket_state::ProtoNoSupport: return "ProtoNoSupport";
-			case zmq_socket_state::NoCompatProto: return "NoCompatProto";
-			case zmq_socket_state::AfNoSupport: return "AfNoSupport";
-			case zmq_socket_state::AddrNotAvAll: return "AddrNotAvAll";
-			case zmq_socket_state::AddrInUse: return "AddrInUse";
-			case zmq_socket_state::Fsm: return "Fsm";
-			case zmq_socket_state::Again: return "Again";
-			case zmq_socket_state::Unknow: return "Unknow";
-			default:return "*";
-			}
-		}
-
-		/**
-		* \brief 检查ZMQ错误状态
-		* \return 状态
-		*/
-		inline zmq_socket_state check_zmq_error()
-		{
-			const int err = zmq_errno();
-			zmq_socket_state state;
-			switch (err)
-			{
-			case 0:
-				state = zmq_socket_state::Empty; break;
-			case ETERM:
-				state = zmq_socket_state::Intr; break;
-			case ENOTSOCK:
-				state = zmq_socket_state::NotSocket; break;
-			case EINTR:
-				state = zmq_socket_state::Intr; break;
-			case EAGAIN:
-			case ETIMEDOUT:
-				state = zmq_socket_state::TimedOut; break;
-				//state = ZmqSocketState::TimedOut;break;
-			case ENOTSUP:
-				state = zmq_socket_state::NotSup; break;
-			case EPROTONOSUPPORT:
-				state = zmq_socket_state::ProtoNoSupport; break;
-			case ENOBUFS:
-				state = zmq_socket_state::NoBufs; break;
-			case ENETDOWN:
-				state = zmq_socket_state::NetDown; break;
-			case EADDRINUSE:
-				state = zmq_socket_state::AddrInUse; break;
-			case EADDRNOTAVAIL:
-				state = zmq_socket_state::AddrNotAvAll; break;
-			case ECONNREFUSED:
-				state = zmq_socket_state::ConnRefUsed; break;
-			case EINPROGRESS:
-				state = zmq_socket_state::InProgress; break;
-			case EMSGSIZE:
-				state = zmq_socket_state::MsgSize; break;
-			case EAFNOSUPPORT:
-				state = zmq_socket_state::AfNoSupport; break;
-			case ENETUNREACH:
-				state = zmq_socket_state::NetUnReach; break;
-			case ECONNABORTED:
-				state = zmq_socket_state::ConnAborted; break;
-			case ECONNRESET:
-				state = zmq_socket_state::ConnReset; break;
-			case ENOTCONN:
-				state = zmq_socket_state::NotConn; break;
-			case EHOSTUNREACH:
-				state = zmq_socket_state::HostUnReach; break;
-			case ENETRESET:
-				state = zmq_socket_state::NetReset; break;
-			case EFSM:
-				state = zmq_socket_state::Fsm; break;
-			case ENOCOMPATPROTO:
-				state = zmq_socket_state::NoCompatProto; break;
-			case EMTHREAD:
-				state = zmq_socket_state::Mthread; break;
-			default:
-				state = zmq_socket_state::Unknow; break;
-			}
-#if _DEBUG_
-			if (state != zmq_socket_state::Succeed)
-				log_debug(0, 0, state_str(state));
-#endif // _DEBUG_
-			return state;
-		}
-
 		/**
 		* \brief 工作对象
 		*/
@@ -346,7 +45,7 @@ namespace agebull
 			 */
 			worker()
 				: pre_time(time(nullptr))
-				, level(10)
+				, level(5)
 				, state(0)
 			{
 
@@ -357,7 +56,7 @@ namespace agebull
 			void active()
 			{
 				pre_time = time(nullptr);
-				level = 10;
+				level = 5;
 			}
 			/**
 			* \brief 检查
@@ -376,7 +75,14 @@ namespace agebull
 			* \brief 已就绪的站点数量
 			*/
 			int ready_works_;
+			/**
+			* \brief 类型名称(冗余)
+			*/
 			const char* type_name_;
+			/**
+			* \brief 当前站点状态
+			*/
+			station_state station_state_;
 		public:
 			/**
 			* \brief 实例队列访问锁
@@ -389,7 +95,7 @@ namespace agebull
 			/**
 			* \brief 站点名称
 			*/
-			string short_name;
+			string short_name_;
 			/**
 			* \brief 站点标题
 			*/
@@ -424,10 +130,6 @@ namespace agebull
 			int worker_in_port_;
 
 			/**
-			* \brief 当前站点状态
-			*/
-			station_state station_state_;
-			/**
 			* \brief 总请求次数
 			*/
 			int64 request_in, request_out, request_err;
@@ -444,11 +146,11 @@ namespace agebull
 			zero_config()
 				: ready_works_(0)
 				, type_name_("ERR")
+				, station_state_(station_state::None)
 				, station_type_(0)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
-				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -465,12 +167,12 @@ namespace agebull
 			*/
 			zero_config(const string& name, int type)
 				: ready_works_(0)
+				, station_state_(station_state::None)
 				, station_name_(std::move(name))
 				, station_type_(type)
 				, request_port_(0)
 				, worker_out_port_(0)
 				, worker_in_port_(0)
-				, station_state_(station_state::None)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -514,7 +216,7 @@ namespace agebull
 			*/
 			bool hase_ready_works() const
 			{
-				return station_type_ <= STATION_TYPE_PUBLISH || ready_works_ > 0;
+				return station_type_ <= STATION_TYPE_PUBLISH || station_type_ > STATION_TYPE_SPECIAL || ready_works_ > 0;
 			}
 
 			/**
@@ -586,10 +288,13 @@ namespace agebull
 					type_name_ = "VOTE";
 					break;
 				case STATION_TYPE_PUBLISH:
-					type_name_ = "PUBLISH";
+					type_name_ = "PUB";
 					break;
 				case  STATION_TYPE_DISPATCHER:
-					type_name_ = "DISPATCHER";
+					type_name_ = "DISP";
+					break;
+				case  STATION_TYPE_PLAN:
+					type_name_ = "PLAN";
 					break;
 				default:
 					type_name_ = "ERR";
@@ -597,19 +302,39 @@ namespace agebull
 				}
 			}
 
-			/**
-			* \brief 写入JSON
-			* \param type 记录类型 0 全量 1 心跳时的动态信息 2 配置保存时无动态信息
-			*/
-			acl::string to_json(int type);
+			bool is_custom_station() const
+			{
+				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || station_type_ == STATION_TYPE_VOTE;
+			}
 
+			bool is_state(station_state state) const
+			{
+				return station_state_ == state;
+			}
+			bool is_run() const
+			{
+				return station_state_ >= station_state::Start && station_state_ <= station_state::Pause;
+			}
+			station_state get_state() const
+			{
+				return station_state_;
+			}
+			void set_state(station_state state)
+			{
+				station_state_ = state;
+			}
+			void runtime_state(station_state state)
+			{
+				if (station_state_ != station_state::Uninstall)
+					station_state_ = state;
+			}
 			/**
 			* \brief 开机日志
 			*/
 			void start()
 			{
-				full_log(station_state_ == station_state::ReStart ? "restart" : "start");
-				station_state_ = station_state::Start;
+				full_log(station_state_ == station_state::ReStart || station_state_ == station_state::Failed ? "restart" : "start");
+				runtime_state(station_state::Start);
 			}
 
 			/**
@@ -618,7 +343,7 @@ namespace agebull
 			void failed(const char* msg)
 			{
 				error("con`t launch", msg);
-				station_state_ = station_state::Failed;
+				runtime_state(station_state::Failed);
 			}
 
 			/**
@@ -626,8 +351,8 @@ namespace agebull
 			*/
 			void runing()
 			{
-				full_log("runing");
-				station_state_ = station_state::Run;
+				log("runing");
+				runtime_state(station_state::Run);
 			}
 
 			/**
@@ -635,8 +360,8 @@ namespace agebull
 			*/
 			void closing()
 			{
-				station_state_ = station_state::Closing;
-				full_log("closing...");
+				log("closing...");
+				runtime_state(station_state::Closing);
 			}
 
 			/**
@@ -645,7 +370,7 @@ namespace agebull
 			void restart()
 			{
 				full_log("restart");
-				station_state_ = station_state::ReStart;
+				runtime_state(station_state::ReStart);
 			}
 
 			/**
@@ -653,8 +378,8 @@ namespace agebull
 			*/
 			void closed()
 			{
-				station_state_ = station_state::Closed;
-				full_log("closed");
+				runtime_state(station_state::Closed);
+				log("closed");
 			}
 
 			/**
@@ -663,34 +388,80 @@ namespace agebull
 			void full_log(const char* state) const
 			{
 				if (worker_in_port_ > 0)
-					log_msg6("[%s]: > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
+					log_msg6("[%s] > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
 				else
-					log_msg5("[%s]: > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
+					log_msg5("[%s] > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
 			}
 
 			/**
 			* \brief 日志
 			*/
-			void log(const char* msg) const
+			void log(const char* msg, bool works = false) const
 			{
-				log_msg3("[%s]: > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_);
+				if (works)
+					log_msg3("[%s] > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_)
+				else
+					log_msg2("[%s] > %s", station_name_.c_str(), msg)
 			}
 
 			/**
 			* \brief 日志
 			*/
-			void log(const char* title, const char* msg) const
+			void log(const char* title, const char* msg, bool works = false) const
 			{
-				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
+				if (works)
+					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+				else
+					log_msg3("[%s] > %s > %s", station_name_.c_str(), title, msg)
 			}
 
 			/**
 			* \brief 日志
 			*/
-			void error(const char* title, const char* msg) const
+			void error(const char* title, const char* msg, bool works = false) const
 			{
-				log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_);
+				if (works)
+					log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+				else
+					log_error3("[%s] > %s > %s", station_name_.c_str(), title, msg)
 			}
+
+			/**
+			* \brief 日志
+			*/
+			void error(const char* title, const int64 id) const
+			{
+				log_error3("[%s] > %s > %lld", station_name_.c_str(), title, id);
+			}
+			/**
+			* \brief 写入基本信息JSON
+			*/
+			acl::string to_info_json()
+			{
+				return to_json(2);
+			}
+
+			/**
+			* \brief 写入状态JSON
+			*/
+			acl::string to_status_json()
+			{
+				return to_json(1);
+			}
+
+			/**
+			* \brief 写入全部JSON
+			*/
+			acl::string to_full_json()
+			{
+				return to_json(0);
+			}
+		private:
+			/**
+			* \brief 写入JSON
+			* \param type 记录类型 0 全量 1 状态信息 2 基本信息
+			*/
+			acl::string to_json(int type);
 		};
 	}
 }

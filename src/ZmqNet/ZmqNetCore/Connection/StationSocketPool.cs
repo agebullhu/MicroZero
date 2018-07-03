@@ -26,10 +26,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [IgnoreDataMember, JsonIgnore] private readonly Queue<ZSocket> _pools = new Queue<ZSocket>();
 
-        private byte[] CreateIdentity()
-        {
-            return ZeroIdentityHelper.CreateRealName(false, Config.ShortName ?? Config.StationName).ToAsciiBytes();
-        }
         /// <summary>
         /// 取得一个连接对象
         /// </summary>
@@ -56,7 +52,7 @@ namespace Agebull.ZeroNet.Core
                 }
             }
 
-            socket = ZSocket.CreateRequestSocket(Config.RequestAddress, CreateIdentity());
+            socket = ZSocket.CreateRequestSocket(Config.RequestAddress);
             if (socket == null)
                 return null;
             socket.IsUsing = true;

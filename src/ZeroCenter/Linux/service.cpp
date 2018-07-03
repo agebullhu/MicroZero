@@ -15,6 +15,7 @@
 #include <string>
 #include "net/station_warehouse.h"
 #include "net/station_dispatcher.h"
+#include "net/plan_dispatcher.h"
 
 
 namespace agebull
@@ -33,6 +34,7 @@ namespace agebull
 		* \brief 任务信号量
 		*/
 		boost::interprocess::interprocess_semaphore task_semaphore(0);
+		boost::interprocess::interprocess_semaphore close_semaphore(0);
 		boost::mutex task_mutex;
 
 
@@ -40,12 +42,14 @@ namespace agebull
 		* \brief 主线程等待信号量
 		*/
 		boost::interprocess::interprocess_semaphore rpc_service::wait_semaphore(0);
-
+		boost::posix_time::ptime rpc_service::start_time = boost::posix_time::microsec_clock::local_time();
 		/**
 		* \brief 初始化
 		*/
 		bool rpc_service::initialize()
 		{
+			//start_time = boost::posix_time::microsec_clock::local_time();
+			cout << "*********************************************" << endl;
 			//系统信号发生回调绑定
 			for (int sig = SIGHUP; sig < SIGSYS; sig++)
 				signal(sig, on_sig);
@@ -87,26 +91,30 @@ namespace agebull
 			//REDIS环境检查
 			if (!ping_redis())
 			{
-				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), trans_redis::redis_db());
+				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
 				return false;
 			}
-			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), trans_redis::redis_db());
+			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
 			//站点仓库管理初始化
 			return station_warehouse::initialize();
 		}
 
 		void rpc_service::start()
 		{
+			//boost::posix_time::ptime rpc_service::start_time = boost::posix_time::microsec_clock::local_time();
 			config_zero_center();
 			start_zero_center();
-
-			log_msg("zero center in service");
 		}
 
 		//等待结束
 		void rpc_service::wait_zero()
 		{
 			wait_semaphore.wait();
+		}
+		//等待结束
+		void rpc_service::close_zero()
+		{
+			wait_semaphore.post();
 		}
 
 		void rpc_service::stop()
@@ -131,35 +139,36 @@ namespace agebull
 		}
 		void check_semaphore_start()
 		{
-			if (zero_thread_run + zero_thread_bad == 1)
+			if (zero_thread_run + zero_thread_bad <= 2)
 				task_semaphore.post();
-			else if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
-				task_semaphore.post();
+			else
+				if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
+					task_semaphore.post();
 		}
 		//登记线程开始
 		void set_command_thread_run(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_run++;
-			check_semaphore_start();
 			log_msg2("[%s] zero thread join(%d)", name, zero_thread_run);
+			check_semaphore_start();
 		}
 		//登记线程失败
 		void set_command_thread_bad(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_bad++;
-			check_semaphore_start();
 			log_msg2("[%s] zero thread bad(%d)", name, zero_thread_bad);
+			check_semaphore_start();
 		}
 		//登记线程关闭
 		void set_command_thread_end(const char* name)
 		{
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_run--;
+			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
 			if (zero_thread_run <= 1)
 				task_semaphore.post();
-			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
 		}
 		//运行状态
 		NET_STATE get_net_state()
@@ -170,14 +179,18 @@ namespace agebull
 		//初始化网络命令环境
 		int config_zero_center()
 		{
-			log_msg("[zero_center]=>initiate...");
+			log_msg("$initiate...");
 			net_state = NET_STATE_NONE;
 			net_context = zmq_ctx_new();
 			assert(net_context != nullptr);
-			//zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, 65536);
-			//zmq_ctx_set(net_context, ZMQ_IO_THREADS, 8);
-			//zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, 32767);
-			log_msg("[zero_center]=>initiated");
+			if (json_config::MAX_SOCKETS >= 0)
+				zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, json_config::MAX_SOCKETS);
+			if (json_config::IO_THREADS >= 0)
+				zmq_ctx_set(net_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
+			if (json_config::MAX_MSGSZ >= 0)
+				zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
+
+			log_msg("$initiated");
 			return net_state;
 		}
 		//启动网络命令环境
@@ -185,32 +198,58 @@ namespace agebull
 		{
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
-			log_msg("[zero_center]=>start system dispatcher ...");
 			net_state = NET_STATE_RUNING;
+			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
+			log_msg("$start system dispatcher ...");
 			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				log_msg(cfg->to_json(0));
+				if (cfg->station_type_ == STATION_TYPE_DISPATCHER)
+					log_msg(cfg->to_info_json());
 			});
-			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			station_dispatcher::run();
 			task_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
-				log_msg("[zero_center]=>system dispatcher failed ...");
+				log_msg("$system dispatcher failed ...");
 				return	net_state = NET_STATE_FAILED;
 			}
-			log_msg("[zero_center]=>start business stations...");
+			log_msg("$start plan dispatcher ...");
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
+			{
+				if (cfg->station_type_ > STATION_TYPE_SPECIAL)
+					log_msg(cfg->to_info_json());
+			});
+			plan_dispatcher::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("$plan dispatcher failed ...");
+				return	net_state = NET_STATE_FAILED;
+			}
+			log_msg("$start business stations...");
+			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
+			{
+				if (cfg->station_type_ > STATION_TYPE_DISPATCHER && cfg->station_type_ <= STATION_TYPE_SPECIAL)
+				{
+					log_msg(cfg->to_info_json());
+				}
+			});
 			station_warehouse::restore();
 			task_semaphore.wait();
-			
-			log_msg("[zero_center]=>all stations in service");
+			var sp = boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
+			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
 			for (int i = 0; i < 10; i++)
 			{
-				monitor_sync("*", "system_start", "*************Wecome ZeroNet,luck every day!*************");
+				zero_event_sync("*", zero_net_event::event_system_start, ">>Wecome ZeroNet,luck every day!<<");
 				thread_sleep(50);
 			}
-			log_msg("[zero_center]=>success");
+			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
+			log_msg1("$success(%lldms)\n", sp.total_milliseconds());
 			return net_state;
+		}
+		void wait_close()
+		{
+			close_semaphore.wait();
 		}
 
 		//关闭网络命令环境
@@ -218,23 +257,33 @@ namespace agebull
 		{
 			if (net_state != NET_STATE_RUNING)
 				return;
-			log_msg("[zero_center]=>closing...");
-			for (int i = 0; i < 10; i++)
+			var tm = boost::posix_time::microsec_clock::local_time();
+			var sp = tm - rpc_service::start_time;
+			log_msg3("$total run %lld:%lld:%lld", sp.hours(), sp.minutes(), sp.seconds());
+			log_msg("$closing...");
+			for (int i = 0; i < 5; i++)
 			{
-				monitor_sync("*", "system_stop", "*************Close ZeroNet,see you late!*************");
-				thread_sleep(50);
+				zero_event_sync("*", zero_net_event::event_system_closing, "*");
+				thread_sleep(40);
 			}
 			net_state = NET_STATE_CLOSING;
 			task_semaphore.wait();
 			net_state = NET_STATE_CLOSED;
+			zero_event_sync("*", zero_net_event::event_system_stop, ">>ZeroNet close,see you late!<<");
+			close_semaphore.post();
 			task_semaphore.wait();
 			net_state = NET_STATE_DISTORY;
+			sp = boost::posix_time::microsec_clock::local_time() - tm;
+			log_msg1("$distory(%lldms)", sp.total_milliseconds());
+			log_msg("$zmq shutdown\n");
+			tm = boost::posix_time::microsec_clock::local_time();
 			zmq_ctx_shutdown(net_context);
 			zmq_ctx_term(net_context);
-
 			net_context = nullptr;
-
-			log_msg("[zero_center]=>closed");
+			sp = boost::posix_time::microsec_clock::local_time() - tm;
+			log_msg1("$zmq success(%lldms)",sp.total_milliseconds());
+			cout << endl << "*********************************************" << endl;
+			
 		}
 	}
 }

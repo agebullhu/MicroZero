@@ -6,20 +6,43 @@ namespace agebull
 	/**
 	* \brief 当前线程静态唯一
 	*/
-	static __thread  trans_redis* thread_context_ = nullptr;
-	/**
-	* \brief 构造
-	*/
-	redis_db_scope::redis_db_scope(int db): redis_(trans_redis::get_context())
+	static thread_local trans_redis* thread_context_ = nullptr;
+
+
+	redis_live_scope::redis_live_scope() : redis_live_scope(json_config::redis_defdb)
 	{
-		redis_->select(db);
 	}
-	/**
-	* \brief 析构
-	*/
-	redis_db_scope::~redis_db_scope()
+
+	redis_live_scope::redis_live_scope(int db)
 	{
-		redis_->select(trans_redis::redis_db());
+		boost::lock_guard<boost::mutex> guard(lock_mutex_);
+		redis_ = thread_context_;
+		if (redis_ == nullptr)
+		{
+			thread_context_ = redis_ = new trans_redis(db);
+#if _DEBUG
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
+#endif
+			old_db_ = db;
+			open_by_me_ = true;
+		}
+		else
+		{
+#if _DEBUG
+			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
+#endif
+			old_db_ = thread_context_->cur_db();
+			thread_context_->select(db);
+			open_by_me_ = false;
+		}
+	}
+
+	redis_live_scope::~redis_live_scope()
+	{
+		if (open_by_me_)
+			agebull::trans_redis::close_context();
+		else
+			thread_context_->select(old_db_);
 	}
 
 	redis_trans_scope::redis_trans_scope()
@@ -38,23 +61,7 @@ namespace agebull
 	*/
 	bool trans_redis::open_context()
 	{
-		boost::lock_guard<boost::mutex> guard(lock_mutex_);
-		if (thread_context_ == nullptr)
-		{
-			thread_context_ = new trans_redis();
-#if _DEBUG
-			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
-#endif
-			(*thread_context_)->select(redis_db());
-			return true;
-		}
-#if _DEBUG
-		else
-		{
-			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
-		}
-#endif
-		return false;
+		return open_context(json_config::redis_defdb);
 	}
 	/**
 	* \brief 生成当前线程上下文的事务Redis对象
@@ -64,11 +71,10 @@ namespace agebull
 		boost::lock_guard<boost::mutex> guard(lock_mutex_);
 		if (thread_context_ == nullptr)
 		{
-			thread_context_ = new trans_redis();
+			thread_context_ = new trans_redis(db);
 #if _DEBUG
 			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 #endif
-			(*thread_context_)->select(db);
 			return true;
 		}
 		else
@@ -76,7 +82,7 @@ namespace agebull
 #if _DEBUG
 			thread_context_->m_last_status = thread_context_->m_redis_cmd->ping();
 #endif
-			(*thread_context_)->select(db);
+			(*thread_context_).select(db);
 		}
 		return false;
 	}
@@ -111,14 +117,31 @@ namespace agebull
 	/**
 	* \brief 构造
 	*/
-	trans_redis::trans_redis()
+	trans_redis::trans_redis(int db)
 		: m_trans_num(0)
 		, m_failed(false)
 		, m_last_status(true)
+		, m_cur_db_(db)
 	{
 		m_redis_client = new acl::redis_client(redis_ip());
 		m_redis_cmd = new acl::redis(m_redis_client);
-		m_redis_cmd->select(redis_db());
+		m_redis_cmd->select(db);
+	}
+
+	/**
+	* 选择 redis-server 中的数据库 ID
+	* SELECT command to select the DB id in redis-server
+	* @param dbnum {int} redis 数据库 ID
+	*  the DB id
+	* @return {bool} 操作是否成功
+	*  return true if success, or false for failed.
+	*/
+	bool trans_redis::select(int dbnum)
+	{
+		if (m_cur_db_ == dbnum)
+			return true;
+		m_cur_db_ = dbnum;
+		return m_redis_cmd->select(dbnum);
 	}
 	/**
 	* \brief 析构
@@ -596,7 +619,7 @@ namespace agebull
 		}
 		if (!keys.empty())
 		{
-			for(auto key : keys)
+			for (auto key : keys)
 			{
 				acl::string* str = new acl::string();
 				if (get(key, *str) == false)
@@ -619,7 +642,7 @@ namespace agebull
 		}
 		if (!keys.empty())
 		{
-			for(auto&key : keys)
+			for (auto&key : keys)
 			{
 				m_redis_cmd->clear();
 				if (m_redis_cmd->del(key) < 0)
@@ -633,7 +656,6 @@ namespace agebull
 	size_t trans_redis::incr_redis(const char* key) const
 	{
 		long long id;
-		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (!m_redis_cmd->incr(key, &id))
 		{
 			log_error3("(%s)incr(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
@@ -645,7 +667,6 @@ namespace agebull
 
 	bool trans_redis::lock_from_redis(const char* key) const
 	{
-		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		char vl[2] = "1";
 		const int re = m_redis_cmd->setnx(key, vl);
 		if (re < 0)
@@ -660,7 +681,6 @@ namespace agebull
 	}
 	bool trans_redis::unlock_from_redis(const char* key) const
 	{
-		redis_db_scope scope(REDIS_DB_ZERO_SYSTEM);
 		if (m_redis_cmd->del(key) < 0)
 		{
 			log_error3("(%s)del(%s)时发生错误(%s)", redis_ip(), key, m_redis_cmd->result_error());
@@ -704,21 +724,6 @@ namespace agebull
 		return true;
 	}
 
-	redis_live_scope::redis_live_scope()
-	{
-		open_by_me_ = trans_redis::open_context();
-	}
-
-	redis_live_scope::redis_live_scope(int db)
-	{
-		open_by_me_ = trans_redis::open_context(db);
-	}
-
-	redis_live_scope::~redis_live_scope()
-	{
-		if (open_by_me_)
-			agebull::trans_redis::close_context();
-	}
 
 	bool trans_redis::del_hash(const char* key, const char* sub_key) const
 	{
