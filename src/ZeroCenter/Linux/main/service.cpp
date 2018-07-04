@@ -2,7 +2,7 @@
 // StreamTest.pch 将作为预编译头
 // stdafx.obj 将包含预编译类型信息
 
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "service.h"
 #include <netdb.h>
 #include <sys/types.h>
@@ -13,9 +13,6 @@
 #include <time.h>
 #include <execinfo.h>
 #include <string>
-#include "net/station_warehouse.h"
-#include "net/station_dispatcher.h"
-#include "net/plan_dispatcher.h"
 
 
 namespace agebull
@@ -240,7 +237,7 @@ namespace agebull
 			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
 			for (int i = 0; i < 10; i++)
 			{
-				zero_event_sync("*", zero_net_event::event_system_start, ">>Wecome ZeroNet,luck every day!<<");
+				system_event(zero_net_event::event_system_start, nullptr, ">>Wecome ZeroNet,luck every day!<<");
 				thread_sleep(50);
 			}
 			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
@@ -263,13 +260,13 @@ namespace agebull
 			log_msg("$closing...");
 			for (int i = 0; i < 5; i++)
 			{
-				zero_event_sync("*", zero_net_event::event_system_closing, "*");
+				system_event(zero_net_event::event_system_closing);
 				thread_sleep(40);
 			}
 			net_state = NET_STATE_CLOSING;
 			task_semaphore.wait();
 			net_state = NET_STATE_CLOSED;
-			zero_event_sync("*", zero_net_event::event_system_stop, ">>ZeroNet close,see you late!<<");
+			system_event(zero_net_event::event_system_stop, nullptr, ">>ZeroNet close,see you late!<<");
 			close_semaphore.post();
 			task_semaphore.wait();
 			net_state = NET_STATE_DISTORY;
@@ -281,9 +278,9 @@ namespace agebull
 			zmq_ctx_term(net_context);
 			net_context = nullptr;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
-			log_msg1("$zmq success(%lldms)",sp.total_milliseconds());
+			log_msg1("$zmq success(%lldms)", sp.total_milliseconds());
 			cout << endl << "*********************************************" << endl;
-			
+
 		}
 	}
 }

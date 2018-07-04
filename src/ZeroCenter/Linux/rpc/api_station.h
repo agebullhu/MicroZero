@@ -56,11 +56,6 @@ namespace agebull
 			static void launch(shared_ptr<api_station>& station);
 		private:
 			/**
-			* \brief 执行一条命令
-			*/
-			shared_char command(const char* caller, vector<shared_char> lines) final;
-
-			/**
 			* \brief 工作开始（发送到工作者）
 			*/
 			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;

@@ -7,25 +7,6 @@ namespace agebull
 	namespace zmq_net
 	{
 		/**
-		* \brief 开始执行一条命令
-		*/
-		shared_char api_station::command(const char* caller, vector<shared_char> lines)
-		{
-			//vector<shared_char> response;
-			//ipc_request_socket<ZMQ_REQ> socket(caller, get_station_name());
-			//if (socket.request(lines, response))
-			//	return response.empty() ? ZERO_STATUS_ERROR : response[0];
-			//switch (socket.get_state())
-			//{
-			//case zmq_socket_state::TimedOut:
-			//	return ZERO_STATUS_TIMEOUT;
-			//default:
-			//	return ZERO_STATUS_NET_ERROR;
-			//}
-			return ZERO_STATUS_NET_ERROR;
-		}
-
-		/**
 		* \brief 执行
 		*/
 		void api_station::launch(shared_ptr<api_station>& station)

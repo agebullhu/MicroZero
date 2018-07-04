@@ -2,7 +2,7 @@
 #ifndef _ZERO_CONFIG_H_
 #define _ZERO_CONFIG_H_
 #include "../stdinc.h"
-#include "net_default.h"
+#include "zero_net.h"
 #include <utility>
 #include "../log/mylogger.h"
 

@@ -1,6 +1,5 @@
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "service.h"
-#include "net/zero_station.h"
 #include <mcheck.h>  
 
 int main(int argc, char *argv[])

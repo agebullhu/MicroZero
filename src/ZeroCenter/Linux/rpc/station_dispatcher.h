@@ -99,34 +99,14 @@ namespace agebull
 			bool publish(const string& title, const string& publiher, const string& arg);
 		public:
 			/**
-			* \brief 执行一条命令
-			*/
-			shared_char command(const char* caller, vector<shared_char> lines) final;
-
-			/**
-			* \brief 远程调用
-			*/
-			string call_station(const string& stattion, const string& command, const string& argument);
-			/**
-			* \brief 远程调用
-			*/
-			string call_station(const char* stattion, vector<shared_char>& arguments);
-			/**
 			* \brief 执行命令
 			*/
 			char exec_command(const char* command, vector<shared_char>& arguments, string& json);
-			/**
-			* \brief 执行命令
-			*/
-			string exec_command(const char* command, const char* argument);
+			
 			/**
 			*\brief 广播内容
 			*/
-			static bool zero_event(const string publiher, const zero_net_event event_name, const string content);
-			/**
-			*\brief 广播内容
-			*/
-			static bool publish(const string& station, const string& publiher, const string& title, const string& sub, const string& arg);
+			static bool publish_event(const zero_net_event event_name, const char* title, const char* sub, const char* content);
 		};
 	}
 }

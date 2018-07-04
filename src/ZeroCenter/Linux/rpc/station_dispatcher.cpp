@@ -16,43 +16,41 @@ namespace agebull
 		*/
 		station_dispatcher* station_dispatcher::instance = nullptr;
 
-
 		/**
-		*\brief 广播内容
+		*\brief 事件广播
 		*/
-		bool zero_event_async(string publiher, zero_net_event event_type, string content)
+		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content)
 		{
-			boost::thread thread_xxx(boost::bind(station_dispatcher::zero_event, std::move(publiher), event_type, std::move(content)));
-			return true;
+			return station_dispatcher::publish_event(event_type, title, sub, content);
 		}
 
+		/**
+		*\brief 系统事件广播
+		*/
+		bool system_event(zero_net_event event_type, const char* sub, const char* content)
+		{
+			return station_dispatcher::publish_event(event_type, "system", sub, content);
+		}
 
 		/**
 		*\brief 广播内容
 		*/
-		bool zero_event_sync(string publiher, zero_net_event event_type, string content)
-		{
-			return station_dispatcher::zero_event(std::move(publiher), event_type, std::move(content));
-		}
-		/**
-		*\brief 广播内容
-		*/
-		bool station_dispatcher::zero_event(const string publiher, const zero_net_event event_name, const string content)
+		bool station_dispatcher::publish_event(const zero_net_event event_name, const char* title, const char* sub, const char* content)
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
 			if (instance == nullptr || get_net_state() == NET_STATE_DISTORY)
 				return false;
 			shared_char description;
 
-			description.alloc_frame_1(static_cast<char>(event_name), ZERO_FRAME_PUBLISHER);
+			description.alloc_frame_1(static_cast<char>(event_name), ZERO_FRAME_SUBTITLE);
 			vector<shared_char> datas;
-			datas.emplace_back("zero_event");
+			datas.emplace_back(title);
 			datas.emplace_back(description);
-			datas.emplace_back(publiher.c_str());
-			if (content.length() != 0)
+			datas.emplace_back(sub);
+			if (content != nullptr)
 			{
 				description.append_frame(ZERO_FRAME_CONTENT);
-				datas.emplace_back(content.c_str());
+				datas.emplace_back(content);
 			}
 			return instance->send_response(datas);
 		}
@@ -83,18 +81,6 @@ namespace agebull
 			return send_response(datas);
 		}
 
-		/**
-		*\brief 发布消息
-		*/
-		bool station_dispatcher::publish(const string& station, const string& publiher,
-			const string& title, const string& sub, const string& arg)
-		{
-			const auto pub = station_warehouse::instance(station);
-			if (pub == nullptr || pub->get_station_type() != STATION_TYPE_PUBLISH)
-				return false;
-			return dynamic_cast<broadcasting_station*>(pub)->publish(publiher, title, sub, arg);
-		}
-
 		const char* station_commands_1[] =
 		{
 			"pause", "resume", "start", "close", "host", "install", "uninstall", "update", "doc"
@@ -102,7 +88,7 @@ namespace agebull
 
 		enum class station_commands_2
 		{
-			pause, resume, start, close, host, install, uninstall, update,doc
+			pause, resume, start, close, host, install, uninstall, update, doc
 		};
 		/**
 		* \brief 执行命令
@@ -170,70 +156,7 @@ namespace agebull
 				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 		}
-		/**
-		* \brief 执行命令
-		*/
-		string station_dispatcher::exec_command(const char* command, const char* argument)
-		{
-			acl::string str = command;
-			vector<shared_char> args{ shared_char(argument) };
-			string json;
-			return exec_command(command, args, json) == '\0' ? ZERO_STATUS_OK : ZERO_STATUS_ERROR;
-		}
 
-		/**
-		* \brief 执行一条命令
-		*/
-		shared_char station_dispatcher::command(const char* caller, vector<shared_char> lines)
-		{
-			const string val = call_station(caller, lines[0], lines[1]);
-			return shared_char(val);
-		}
-
-		/**
-		* \brief 远程调用
-		*/
-		string station_dispatcher::call_station(const string& stattion, const string& command, const string& argument)
-		{
-			zero_station* station = station_warehouse::instance(stattion);
-			if (station == nullptr)
-			{
-				return ZERO_STATUS_NOT_FIND;
-			}
-			vector<shared_char> lines;
-			lines.emplace_back(command);
-			lines.emplace_back(argument);
-			auto result = station->command("-system", lines);
-			return result;
-		}
-
-
-		/**
-		* \brief 远程调用
-		*/
-		string station_dispatcher::call_station(const char* stattion, vector<shared_char>& arguments)
-		{
-			zero_station* station = station_warehouse::instance(stattion);
-			if (station == nullptr)
-			{
-				return ZERO_STATUS_NOT_FIND;
-			}
-			const shared_char empty;
-			if (arguments.size() == 1)
-			{
-				arguments.emplace_back(empty);
-				arguments.emplace_back(empty);
-				arguments.emplace_back(empty);
-			}
-			else if (arguments.size() == 2)
-			{
-				auto last = arguments.begin();
-				++last;
-				arguments.insert(last, 2, empty);
-			}
-			auto result = station->command("-system", arguments);
-			return result;
-		}
 
 		/**
 		* \brief 工作开始（发送到工作者）
@@ -351,11 +274,11 @@ namespace agebull
 					names.emplace_back(cfg->station_name_);
 					cfgs.emplace_back(cfg->to_status_json().c_str());
 				});
-				instance->zero_event("*", zero_net_event::event_worker_sound_off, "");
+				instance->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
 
 				for (size_t i = 0; i < names.size(); i++)
 				{
-					instance->zero_event(names[i], zero_net_event::event_station_state, cfgs[i]);
+					instance->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());
 				}
 			}
 			instance->task_semaphore_.post();

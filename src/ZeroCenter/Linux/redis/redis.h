@@ -1,10 +1,9 @@
 #ifndef AGEBULL_REDIS_H
 #define AGEBULL_REDIS_H
 #pragma once
-#include "../cfg/json_config.h"
-#include "../shared_char.h"
-#ifndef CLIENT
 #include "../stdinc.h"
+#include "../cfg/json_config.h"
+#include "../ext/shared_char.h"
 namespace agebull
 {
 	class redis_live_scope;
@@ -725,5 +724,4 @@ namespace agebull
 		return lock_from_redis(key);
 	}
 }
-#endif
 #endif

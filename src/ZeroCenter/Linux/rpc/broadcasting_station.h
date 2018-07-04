@@ -32,15 +32,6 @@ namespace agebull
 				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER)
 			{
 			}
-			/**
-			* \brief 执行一条命令
-			*/
-			shared_char command(const char* caller, vector< shared_char> lines) final
-			{
-				const bool res = publish(caller, lines[0], lines[1], lines[1]);
-				return shared_char(res ? ZERO_STATUS_OK : ZERO_STATUS_FAILED);
-			}
-
 
 			/**
 			* \brief 工作开始（发送到工作者）

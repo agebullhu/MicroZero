@@ -244,7 +244,7 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				config_->worker_err++;
-				const char* err_msg = state_str(zmq_state_);
+				const char* err_msg = socket_ex::state_str(zmq_state_);
 				log_error2("send_response error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
@@ -281,7 +281,7 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->worker_err;
-				const char* err_msg = state_str(zmq_state_);
+				const char* err_msg = socket_ex::state_str(zmq_state_);
 				log_error2("send_request_result error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
@@ -295,7 +295,7 @@ namespace agebull
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
-				const char* err_msg = state_str(zmq_state_);
+				const char* err_msg = socket_ex::state_str(zmq_state_);
 				log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
 				return false;
 			}
@@ -355,11 +355,6 @@ namespace agebull
 			virtual void job_end(vector<shared_char>& list)
 			{
 			}
-		public:
-			/**
-			* \brief 执行一条命令
-			*/
-			virtual shared_char command(const char* caller, vector<shared_char> lines) = 0;
 		private:
 			/**
 			* \brief 工作进入计划

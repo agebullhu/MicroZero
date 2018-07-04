@@ -2,7 +2,7 @@
 // StreamTest.pch 将作为预编译头
 // stdafx.obj 将包含预编译类型信息
 
-#include "stdafx.h"
+#include "../stdafx.h"
 #include "service.h"
 #include <netdb.h>
 #include <sys/types.h>
@@ -13,8 +13,6 @@
 #include <time.h>
 #include <execinfo.h>
 #include <string>
-#include "net/station_warehouse.h"
-#include "net/station_dispatcher.h"
 
 
 namespace agebull

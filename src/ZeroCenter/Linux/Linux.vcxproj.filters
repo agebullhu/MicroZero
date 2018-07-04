@@ -33,63 +33,63 @@
     <Filter Include="rpc\dispatcher">
       <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rpc\Ømq">
-      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="rpc\zero">
       <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
     </Filter>
     <Filter Include="rpc\plan">
       <UniqueIdentifier>{b82920b1-a36b-45d2-a82e-cce913d80b1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rpc\zmq">
+      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
       <Filter>sys\log</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="main\main.cpp">
       <Filter>main</Filter>
     </ClCompile>
-    <ClCompile Include="service.cpp">
+    <ClCompile Include="main\service.cpp">
       <Filter>main</Filter>
     </ClCompile>
-    <ClCompile Include="net\zmq_extend.cpp">
-      <Filter>rpc\Ømq</Filter>
+    <ClCompile Include="rpc\zmq_extend.cpp">
+      <Filter>rpc\zmq</Filter>
     </ClCompile>
-    <ClCompile Include="net\station_dispatcher.cpp">
+    <ClCompile Include="rpc\station_dispatcher.cpp">
       <Filter>rpc\dispatcher</Filter>
     </ClCompile>
-    <ClCompile Include="net\broadcasting_station.cpp">
+    <ClCompile Include="rpc\broadcasting_station.cpp">
       <Filter>rpc\notify</Filter>
     </ClCompile>
-    <ClCompile Include="net\zero_station.cpp">
+    <ClCompile Include="rpc\zero_station.cpp">
       <Filter>rpc\zero</Filter>
     </ClCompile>
-    <ClCompile Include="net\api_station.cpp">
+    <ClCompile Include="rpc\api_station.cpp">
       <Filter>rpc\api</Filter>
     </ClCompile>
-    <ClCompile Include="net\station_warehouse.cpp">
+    <ClCompile Include="rpc\station_warehouse.cpp">
       <Filter>rpc\dispatcher</Filter>
     </ClCompile>
     <ClCompile Include="redis\redis.cpp">
       <Filter>sys\redis</Filter>
     </ClCompile>
-    <ClCompile Include="net\net_crc.cpp">
+    <ClCompile Include="rpc\net_crc.cpp">
       <Filter>sys</Filter>
     </ClCompile>
     <ClCompile Include="cfg\json_config.cpp">
       <Filter>sys\cfg</Filter>
     </ClCompile>
-    <ClCompile Include="sig.cpp">
+    <ClCompile Include="main\sig.cpp">
       <Filter>main</Filter>
     </ClCompile>
-    <ClCompile Include="net\zero_config.cpp">
+    <ClCompile Include="rpc\zero_config.cpp">
       <Filter>rpc\zero</Filter>
     </ClCompile>
-    <ClCompile Include="net\zero_plan.cpp">
+    <ClCompile Include="rpc\zero_plan.cpp">
       <Filter>rpc\plan</Filter>
     </ClCompile>
-    <ClCompile Include="net\plan_dispatcher.cpp">
+    <ClCompile Include="rpc\plan_dispatcher.cpp">
       <Filter>rpc\plan</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,50 +109,53 @@
     <ClInclude Include="stdafx.h">
       <Filter>std</Filter>
     </ClInclude>
-    <ClInclude Include="service.h">
+    <ClInclude Include="main\service.h">
       <Filter>main</Filter>
     </ClInclude>
-    <ClInclude Include="tm_extend.h">
+    <ClInclude Include="ext\tm_extend.h">
       <Filter>sys</Filter>
     </ClInclude>
-    <ClInclude Include="net\net_default.h">
-      <Filter>rpc\Ømq</Filter>
+    <ClInclude Include="rpc\zmq_extend.h">
+      <Filter>rpc\zmq</Filter>
     </ClInclude>
-    <ClInclude Include="net\zmq_extend.h">
-      <Filter>rpc\Ømq</Filter>
-    </ClInclude>
-    <ClInclude Include="net\station_dispatcher.h">
+    <ClInclude Include="rpc\station_dispatcher.h">
       <Filter>rpc\dispatcher</Filter>
     </ClInclude>
-    <ClInclude Include="net\broadcasting_station.h">
+    <ClInclude Include="rpc\broadcasting_station.h">
       <Filter>rpc\notify</Filter>
     </ClInclude>
-    <ClInclude Include="net\zero_station.h">
+    <ClInclude Include="rpc\zero_station.h">
       <Filter>rpc\zero</Filter>
     </ClInclude>
-    <ClInclude Include="net\api_station.h">
+    <ClInclude Include="rpc\api_station.h">
       <Filter>rpc\api</Filter>
     </ClInclude>
-    <ClInclude Include="net\station_warehouse.h">
+    <ClInclude Include="rpc\station_warehouse.h">
       <Filter>rpc\dispatcher</Filter>
     </ClInclude>
-    <ClInclude Include="net\zero_config.h">
+    <ClInclude Include="rpc\zero_config.h">
       <Filter>rpc\zero</Filter>
     </ClInclude>
     <ClInclude Include="cfg\json_config.h">
       <Filter>sys\cfg</Filter>
     </ClInclude>
-    <ClInclude Include="net\zero_plan.h">
+    <ClInclude Include="rpc\zero_plan.h">
       <Filter>rpc\plan</Filter>
     </ClInclude>
-    <ClInclude Include="net\plan_dispatcher.h">
+    <ClInclude Include="rpc\plan_dispatcher.h">
       <Filter>rpc\plan</Filter>
     </ClInclude>
-    <ClInclude Include="shared_char.h">
+    <ClInclude Include="ext\shared_char.h">
       <Filter>sys</Filter>
     </ClInclude>
-    <ClInclude Include="net\inner_socket.h">
-      <Filter>rpc\Ømq</Filter>
+    <ClInclude Include="rpc\inner_socket.h">
+      <Filter>rpc\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_net.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_default.h">
+      <Filter>rpc\zero</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

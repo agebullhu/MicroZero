@@ -80,14 +80,6 @@ namespace agebull
 			void plan_poll();
 
 			/**
-			* \brief 开始执行一条命令
-			*/
-			shared_char command(const char* caller, vector<shared_char> lines) final
-			{
-				return ZERO_STATUS_NET_ERROR;
-			}
-
-			/**
 			*\brief 发布消息
 			*/
 			bool result_event(shared_ptr<plan_message>& message, vector<shared_char>& result);

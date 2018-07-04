@@ -135,6 +135,7 @@ namespace agebull
 		*/
 		bool station_warehouse::upload_doc(const char* station_name, shared_char& doc)
 		{
+			zero_event(zero_net_event::event_station_doc, "doc", station_name, *doc);
 			acl::string path;
 			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
 			std::cout << path.c_str() << endl;
@@ -142,7 +143,7 @@ namespace agebull
 			if (fid >= 0)
 			{
 				size_t size = write(fid, *doc, doc.size());
-				ftruncate(fid, size);
+				ftruncate(fid, (__off_t)size);
 				close(fid);
 				return true;
 			}
@@ -343,7 +344,7 @@ namespace agebull
 					return false;
 				config->set_state(station_state::None);
 				acl::string json = save(config);
-				zero_event_async(station_name, zero_net_event::event_station_update, json.c_str());
+				zero_event(zero_net_event::event_station_update, "station", station_name, json.c_str());
 				return true;
 			}
 			bool success;
@@ -419,8 +420,7 @@ namespace agebull
 			acl::string json = save(config);
 			insert_config(config);
 			config->log("install");
-			zero_event_async(config->station_name_, zero_net_event::event_station_install, json.c_str());
-
+			zero_event(zero_net_event::event_station_install, "station", config->station_name_.c_str(), json.c_str());
 			return true;
 		}
 		/**
@@ -442,8 +442,7 @@ namespace agebull
 				config->alias_ = new_cfg->alias_;
 			}
 			acl::string json = save(config);
-			zero_event_async(new_cfg->station_name_, zero_net_event::event_station_update, json.c_str());
-
+			zero_event(zero_net_event::event_station_update, "station", config->station_name_.c_str(), json.c_str());
 			config->log("update");
 			return true;
 		}
@@ -479,7 +478,7 @@ namespace agebull
 			{
 				station->close(true);
 			}
-			zero_event_async(station_name, zero_net_event::event_station_uninstall, "");
+			zero_event(zero_net_event::event_station_uninstall, "station", config->station_name_.c_str(), nullptr);
 			return true;
 		}
 
@@ -496,7 +495,8 @@ namespace agebull
 				station->config_->runtime_state(station_state::Run);
 				examples_.insert(make_pair(station->config_->station_name_, station));
 			}
-			zero_event_async(station->config_->station_name_, zero_net_event::event_station_join, string(station->config_->to_full_json()));
+			acl::string json = station->config_->to_full_json();
+			zero_event(zero_net_event::event_station_join, "station", station->config_->station_name_.c_str(), json.c_str());
 			return true;
 		}
 
@@ -514,8 +514,7 @@ namespace agebull
 				station->config_->runtime_state(station_state::Closed);
 				examples_.erase(iter);
 			}
-			zero_event_async(station->config_->station_name_, zero_net_event::event_station_left, "");
-
+			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name_.c_str(),"");
 			return true;
 		}
 

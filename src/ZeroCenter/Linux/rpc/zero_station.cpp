@@ -221,7 +221,7 @@ namespace agebull
 					continue;
 				if (state < 0)
 				{
-					zmq_state_ = check_zmq_error();
+					zmq_state_ = socket_ex::check_zmq_error();
 					if (zmq_state_ < zmq_socket_state::Again)
 						continue;
 					break;
@@ -296,7 +296,7 @@ namespace agebull
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
 				config_->worker_err++;
-				config_->error("read work result", state_str(zmq_state_));
+				config_->error("read work result", socket_ex::state_str(zmq_state_));
 				return;
 			}
 			if (list.size() < 2)
@@ -324,7 +324,7 @@ namespace agebull
 			zmq_state_ = socket_ex::recv(socket, list);
 			if (zmq_state_ != zmq_socket_state::Succeed)
 			{
-				config_->log(state_str(zmq_state_));
+				config_->log(socket_ex::state_str(zmq_state_));
 				return;
 			}
 			const size_t list_size = inner ? list.size() - 1 : list.size();
@@ -425,7 +425,7 @@ namespace agebull
 			config_->log("pause");
 			config_->runtime_state(station_state::Pause);
 			state_semaphore_.post();
-			zero_event_async(config_->station_name_, zero_net_event::event_station_pause, "");
+			zero_event(zero_net_event::event_station_pause, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
 
@@ -439,7 +439,7 @@ namespace agebull
 			config_->log("resume");
 			config_->runtime_state(station_state::Run);
 			state_semaphore_.post();
-			zero_event_async(config_->station_name_, zero_net_event::event_station_resume, "");
+			zero_event(zero_net_event::event_station_resume, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
 
@@ -461,7 +461,7 @@ namespace agebull
 			config_->log("close");
 			config_->runtime_state(station_state::Closing);
 			state_semaphore_.post();
-			zero_event_async(config_->station_name_, zero_net_event::event_station_closing, "");
+			zero_event(zero_net_event::event_station_closing, "station", config_->station_name_.c_str(), nullptr);
 			while (waiting && config_->is_state(station_state::Closing))
 				thread_sleep(200);
 			return true;
@@ -478,15 +478,15 @@ namespace agebull
 			char addr[256];
 			sprintf(addr, "inproc://%s_monitor.rep", config_->station_name_.c_str());
 
-			zmq_event_t event;
+			zmq_monitor::zmq_event_t event;
 			printf("starting monitor...\n");
 			void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 			assert(inproc);
-			setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
+			socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
 			zmq_connect(inproc, addr);
 			while (get_net_state() < NET_STATE_DISTORY)
 			{
-				if (read_event_msg(inproc, &event) == 1)
+				if (zmq_monitor::read_event_msg(inproc, &event) == 1)
 					continue;
 				switch (event.event)
 				{

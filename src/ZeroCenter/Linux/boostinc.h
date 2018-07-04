@@ -45,4 +45,13 @@
 #include <boost/format.hpp> 
 #include <boost/unordered_map.hpp> 
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#include <boost/timer.hpp>
+#include <boost/progress.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include "boost/date_time/gregorian/greg_duration_types.hpp"
+#include "boost/date_time/posix_time/ptime.hpp"
+
+#define BOOST_DATE_TIME_OPTIONAL_GREGORIAN_TYPES
+#define BOOST_DATE_TIME_SOURCE 
 #endif//!_1_BOOST_INC_H

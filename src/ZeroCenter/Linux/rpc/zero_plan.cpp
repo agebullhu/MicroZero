@@ -2,15 +2,7 @@
 #include "zero_plan.h"
 #include "zero_station.h"
 #include "inner_socket.h"
-#include <boost/timer.hpp>
-#include <boost/progress.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "boost/date_time/gregorian/greg_duration_types.hpp"
-#include "boost/date_time/posix_time/ptime.hpp"
 #include "plan_dispatcher.h"
-#define BOOST_DATE_TIME_OPTIONAL_GREGORIAN_TYPES
-#define BOOST_DATE_TIME_SOURCE 
 using namespace boost::posix_time;
 
 namespace agebull

@@ -1,10 +1,9 @@
 #pragma once
 #ifndef _IPC_REQUEST_SOCKET_H
 #define _IPC_REQUEST_SOCKET_H
-#include "net_default.h"
+#include "zero_default.h"
 #include "zero_config.h"
 #include "zmq_extend.h"
-#include "../shared_char.h"
 
 namespace agebull
 {

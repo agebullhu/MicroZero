@@ -2,7 +2,7 @@
 #ifndef _ZERO_PLAN_H_
 #define _ZERO_PLAN_H_
 #include "../stdinc.h"
-#include "../shared_char.h"
+#include "../ext/shared_char.h"
 #include "../cfg/json_config.h"
 
 namespace agebull
