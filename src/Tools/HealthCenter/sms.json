@@ -1,0 +1,14 @@
+/*运维短信通知--重要内容已脱密*/
+{
+    "CycleHours": -1, /*计数归零小时数，负数可关闭通知*/
+    "CycleSendCount": 6, /*周期内一个地址最多短信数量*/
+    "AliTemplateCode": "SMS_1",
+    "AliSignName": "",
+    "AliRegionId": "cn-hangzhou",
+    "AliEndPointName": "cn-hangzhou",
+    "AliProduct": "Dysm",
+    "AliDomain": "dysmsapi.aliyuncs.com",
+    "AliAccessKeyId": "",
+    "AliAccessKeySecret": "",
+    "Phones": [ "15618965007" ]
+  }
