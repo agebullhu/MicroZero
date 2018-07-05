@@ -285,7 +285,7 @@ namespace agebull
 		/**
 		* \brief 删除一个消息
 		*/
-		bool plan_message::remove()
+		bool plan_message::remove() const
 		{
 			redis_live_scope redis(json_config::redis_defdb);
 			def_msg_key(key, this);
@@ -486,7 +486,7 @@ namespace agebull
 			for (size_t idx = 0; idx < response.size(); idx++)
 			{
 				if (response[idx][0] < ' ')
-					json.append(desc_str(false, *response[idx], response[idx].size()));
+					json.append(desc_str(false, response[idx].get_buffer(), response[idx].size()));
 				else
 					json.append(*response[idx]);
 				json.append("\r\n");
@@ -681,16 +681,16 @@ namespace agebull
 				switch (static_cast<plan_fields_2>(index))
 				{
 				case plan_fields_2::plan_type:
-					plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
+					plan_type = static_cast<plan_date_type>(json_read_int(iter));
 					break;
 				case plan_fields_2::plan_value:
-					plan_value = static_cast<int>(*iter->get_int64());
+					plan_value = json_read_int(iter);
 					break;
 				case plan_fields_2::plan_repet:
-					plan_repet = static_cast<int>(*iter->get_int64());
+					plan_repet = json_read_int(iter);
 					break;
 				case plan_fields_2::plan_time:
-					plan_time = *iter->get_int64();
+					plan_time = json_read_num(iter);
 					break;
 				case plan_fields_2::description:
 					description = iter->get_string();
@@ -699,90 +699,9 @@ namespace agebull
 					no_skip = *iter->get_bool();
 					break;
 				case plan_fields_2::skip_set:
-					skip_set = static_cast<int>(*iter->get_int64());
+					skip_set = json_read_int(iter);
 					break;
 				default: break;
-				}
-				iter = json.next_node();
-			}
-		}
-		/**
-		* \brief JSON反序列化
-		*/
-		void plan_message::read_json(acl::string& val)
-		{
-			acl::json json;
-			json.update(val);
-			acl::json_node* iter = json.first_node();
-			while (iter)
-			{
-				int index = strmatchi(iter->tag_name(), plan_fields_1);
-				switch (static_cast<plan_fields_2>(index))
-				{
-				case plan_fields_2::plan_id:
-					plan_id = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::plan_time:
-					plan_time = *iter->get_int64();
-					break;
-				case plan_fields_2::exec_time:
-					exec_time = *iter->get_int64();
-					break;
-				case plan_fields_2::plan_type:
-					plan_type = static_cast<plan_date_type>(static_cast<int>(*iter->get_int64()));
-					break;
-				case plan_fields_2::plan_value:
-					plan_value = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::plan_repet:
-					plan_repet = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::real_repet:
-					real_repet = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::station:
-					station = iter->get_string();
-					break;
-				case plan_fields_2::request_id:
-					request_id = iter->get_string();
-					break;
-				case plan_fields_2::exec_state:
-					exec_state = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::description:
-					description = iter->get_string();
-					break;
-				case plan_fields_2::caller:
-					caller = iter->get_string();
-					break;
-				case plan_fields_2::no_skip:
-					no_skip = *iter->get_bool();
-					break;
-				case plan_fields_2::skip_set:
-					skip_set = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::skip_num:
-					skip_num = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::station_type:
-					station_type = static_cast<int>(*iter->get_int64());
-					break;
-				case plan_fields_2::plan_state:
-					plan_state = static_cast<plan_message_state>(*iter->get_int64());
-					break;
-				case plan_fields_2::frames:
-				{
-					var ch = iter->first_child();
-					var iter_arr = ch->first_child();
-					while (iter_arr)
-					{
-						frames.emplace_back(iter_arr->get_text());
-						iter_arr = ch->next_child();
-					}
-					break;
-				}
-				default:
-					break;
 				}
 				iter = json.next_node();
 			}
@@ -859,7 +778,7 @@ namespace agebull
 				else if (line[0] >= ' ')
 					array.add_array_text(*line);
 				else
-					array.add_array_text(desc_str(false, *line, line.size()));
+					array.add_array_text(desc_str(false, line.get_buffer(), line.size()));
 			}
 			node.add_child("frames", array);
 			return node.to_string();

@@ -18,7 +18,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static SystemManager CreateInstance()
         {
-           return Instance = new SystemManager();
+            return Instance = new SystemManager();
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        internal  bool PingCenter()
+        internal bool PingCenter()
         {
             return ByteCommand(ZeroByteCommand.Ping);
         }
@@ -48,7 +48,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        internal  bool HeartLeft()
+        internal bool HeartLeft()
         {
             return HeartLeft("SystemManage", ZeroApplication.Config.RealName);
         }
@@ -56,7 +56,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        public  bool HeartReady()
+        public bool HeartReady()
         {
             return HeartReady("SystemManage", ZeroApplication.Config.RealName);
         }
@@ -64,7 +64,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        internal  bool HeartJoin()
+        internal bool HeartJoin()
         {
             return HeartJoin("SystemManage", ZeroApplication.Config.RealName);
         }
@@ -72,14 +72,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        internal  bool Heartbeat()
+        internal bool Heartbeat()
         {
             return Heartbeat("SystemManage", ZeroApplication.Config.RealName);
         }
         /// <summary>
         ///     连接到
         /// </summary>
-        public  bool HeartLeft(string station, string realName)
+        public bool HeartLeft(string station, string realName)
         {
             return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartLeft, station, realName);
         }
@@ -87,7 +87,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        public  bool HeartReady(string station, string realName)
+        public bool HeartReady(string station, string realName)
         {
             return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartReady, station, realName);
         }
@@ -95,7 +95,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        public  bool HeartJoin(string station, string realName)
+        public bool HeartJoin(string station, string realName)
         {
             return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
         }
@@ -103,7 +103,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        public  bool Heartbeat(string station, string realName)
+        public bool Heartbeat(string station, string realName)
         {
             return ZeroApplication.ZerCenterIsRun && HeartCommand(ZeroByteCommand.HeartPitpat, station, realName);
         }
@@ -111,7 +111,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        private  bool HeartCommand(byte commmand, params string[] args)
+        private bool HeartCommand(byte commmand, params string[] args)
         {
             Task.Factory.StartNew(() => ByteCommand(commmand, args)).Wait();
             return true;
@@ -127,13 +127,13 @@ namespace Agebull.ZeroNet.Core
         /// <param name="station"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public  bool TryInstall(string station, string type)
+        public bool TryInstall(string station, string type)
         {
             if (ZeroApplication.Config.TryGetConfig(station, out _))
                 return true;
             ZeroTrace.WriteInfo(station, "No find,try install ...");
-            var r = CallCommand("install", type, station, station);
-            if (!r.InteractiveSuccess || r.State == ZeroOperatorStateType.NotSupport)
+            var r = CallCommand("install", type, station, station, station);
+            if (!r.InteractiveSuccess)
             {
                 ZeroTrace.WriteError(station, "Test install failed");
                 return false;
@@ -154,7 +154,7 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.WriteInfo(station, "Station runing");
             return true;
         }
-        bool DocumentIsUpload;
+        bool DocumentIsUpload; 
         /// <summary>
         ///     上传文档
         /// </summary>
@@ -166,7 +166,7 @@ namespace Agebull.ZeroNet.Core
             bool success = true;
             foreach (var doc in ZeroApplication.Config.Documents.Values)
             {
-                if (doc.IsLocal)
+                if (!doc.IsLocal)
                     continue;
                 var result = CallCommand("doc", doc.Name, JsonConvert.SerializeObject(doc));
                 if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
@@ -183,7 +183,7 @@ namespace Agebull.ZeroNet.Core
         ///     下载文档
         /// </summary>
         /// <returns></returns>
-        public bool LoadDocument(string name,out StationDocument doc)
+        public bool LoadDocument(string name, out StationDocument doc)
         {
             ZeroResultData result;
             try
@@ -225,7 +225,7 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public  bool LoadAllConfig()
+        public bool LoadAllConfig()
         {
             var result = CallCommand("host", "*");
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
@@ -246,7 +246,7 @@ namespace Agebull.ZeroNet.Core
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        internal  StationConfig LoadConfig(string stationName)
+        internal StationConfig LoadConfig(string stationName)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {

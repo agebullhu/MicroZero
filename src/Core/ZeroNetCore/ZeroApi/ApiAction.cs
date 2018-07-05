@@ -23,14 +23,18 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     需要登录
         /// </summary>
-        public bool NeedLogin =>
-            Access.HasSomeFlags(ApiAccessOption.Customer, ApiAccessOption.Business, ApiAccessOption.Employe);
+        public bool NeedLogin => (Access & ApiAccessOption.Anymouse) == ApiAccessOption.None;
 
         /// <summary>
         ///     是否公开接口
         /// </summary>
         public bool IsPublic => Access.HasFlag(ApiAccessOption.Public);
 
+        /// <summary>
+        ///     是否可能存在用户信息
+        /// </summary>
+        public bool HaseUser => (Access & ApiAccessOption.LoginUser) > ApiAccessOption.None;
+        
         /// <summary>
         ///     参数类型
         /// </summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Agebull.ZeroNet.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,6 +91,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         public static void Load(string path)
         {
+            ZeroTrace.WriteInfo("DOC", path);
             if (!File.Exists(path))
                 return;
             XElement xRoot = XElement.Load(path);

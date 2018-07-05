@@ -83,12 +83,12 @@ namespace agebull
 
 		const char* station_commands_1[] =
 		{
-			"pause", "resume", "start", "close", "host", "install", "uninstall", "update", "doc"
+			"pause", "resume", "start", "close", "host", "install", "stop","recover", "update","remove", "doc"
 		};
 
 		enum class station_commands_2
 		{
-			pause, resume, start, close, host, install, uninstall, update, doc
+			pause, resume, start, close, host, install, stop, recover, update, remove, doc
 		};
 		/**
 		* \brief 执行命令
@@ -103,7 +103,7 @@ namespace agebull
 				switch (arguments.size())
 				{
 				case 2:
-					return station_warehouse::upload_doc(*arguments[0], arguments[1]);
+					return station_warehouse::upload_doc(*arguments[0], arguments[1]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 				case 1:
 					return station_warehouse::get_doc(*arguments[0], json) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 				}
@@ -113,18 +113,30 @@ namespace agebull
 			{
 				switch (arguments.size())
 				{
-				case 2:
-					return station_warehouse::install_station(*arguments[1], *arguments[0], *arguments[2]);
+				case 4:
+					return station_warehouse::install(*arguments[1], *arguments[0], *arguments[2], *arguments[3]) 
+						? ZERO_STATUS_OK_ID 
+						: ZERO_STATUS_FAILED_ID;
 				case 1:
 					return station_warehouse::install(*arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 				}
 				return ZERO_STATUS_ARG_INVALID_ID;
 			}
-			case station_commands_2::uninstall:
+			case station_commands_2::stop:
 			{
 				if (arguments.empty())
 					return ZERO_STATUS_ARG_INVALID_ID;
-				return station_warehouse::uninstall(arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+				return station_warehouse::stop(arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+			}
+			case station_commands_2::recover:
+			{
+				if (arguments.empty())
+					return ZERO_STATUS_ARG_INVALID_ID;
+				return station_warehouse::recover(*arguments[0]) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+			}
+			case station_commands_2::remove:
+			{
+				return station_warehouse::remove(*arguments[0]);
 			}
 			case station_commands_2::update:
 			{

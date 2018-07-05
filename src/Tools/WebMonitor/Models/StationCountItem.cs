@@ -16,6 +16,14 @@ namespace ZeroNet.Http.Route
         [JsonProperty("station_name")]
         public string Station { get; set; }
 
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        [DataMember]
+        [JsonProperty("station_state")]
+        public ZeroCenterState State { get; set; }
+
         /// <summary>
         ///     状态
         /// </summary>
@@ -144,7 +152,7 @@ namespace ZeroNet.Http.Route
         public void CheckValue(StationConfig station, StationCountItem src)
         {
             Workers = src.Workers;
-            station.Workers = src.Workers;
+            station.State = src.State;
             Station = station.StationName;
             if (Count == 0)
             {

@@ -235,8 +235,8 @@ namespace Agebull.ZeroNet.Log
                         }
                     }
 
-                    send.TryClose();
-                    _socket.TryClose();
+                    send.Dispose();
+                    _socket.Dispose();
                     _socket = null;
                 }
             }
@@ -271,12 +271,18 @@ namespace Agebull.ZeroNet.Log
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            //if (config != Config)
-            //    return;
-            //if (State == StationState.Run)
-            //    Close();
-            //if (config.State == ZeroCenterState.Run && CanRun)
-            //    Start();
+            if (State == StationState.Run && (config.State == ZeroCenterState.Run || config.State == ZeroCenterState.Pause))
+                return;
+            if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
+            {
+                ZeroTrace.WriteInfo("RemoteLog", "Start by config state changed");
+                Start();
+            }
+            else
+            {
+                ZeroTrace.WriteInfo("RemoteLog", "Close by config state changed");
+                Close();
+            }
         }
 
         bool IZeroObject.OnZeroEnd()

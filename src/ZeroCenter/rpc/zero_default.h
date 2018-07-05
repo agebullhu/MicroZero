@@ -8,7 +8,7 @@ namespace agebull
 	{
 		typedef void* ZMQ_HANDLE;
 
-		typedef char* TSON_BUFFER;
+		typedef uchar* TSON_BUFFER;
 
 		/*!
 		* 站点类型
@@ -114,35 +114,35 @@ namespace agebull
 		 * 以下为返回时的快捷状态:说明帧的第二节字([1])
 		 */
 
-#define ZERO_STATUS_OK_ID char(0x1)
-#define ZERO_STATUS_PLAN_ID char(0x2)
-#define ZERO_STATUS_RUNING_ID char(0x3)
-#define ZERO_STATUS_BYE_ID char(0x4)
-#define ZERO_STATUS_WECOME_ID char(0x5)
-#define ZERO_STATUS_WAIT_ID char(0x6)
+#define ZERO_STATUS_OK_ID uchar(0x1)
+#define ZERO_STATUS_PLAN_ID uchar(0x2)
+#define ZERO_STATUS_RUNING_ID uchar(0x3)
+#define ZERO_STATUS_BYE_ID uchar(0x4)
+#define ZERO_STATUS_WECOME_ID uchar(0x5)
+#define ZERO_STATUS_WAIT_ID uchar(0x6)
 
-#define ZERO_STATUS_VOTE_SENDED_ID char(0x70)
-#define ZERO_STATUS_VOTE_BYE_ID char(0x71)
-#define ZERO_STATUS_VOTE_WAITING_ID char(0x72)
-#define ZERO_STATUS_VOTE_START_ID char(0x73)
-#define ZERO_STATUS_VOTE_END_ID char(0x74)
-#define ZERO_STATUS_VOTE_CLOSED_ID char(0x75)
+#define ZERO_STATUS_VOTE_SENDED_ID uchar(0x70)
+#define ZERO_STATUS_VOTE_BYE_ID uchar(0x71)
+#define ZERO_STATUS_VOTE_WAITING_ID uchar(0x72)
+#define ZERO_STATUS_VOTE_START_ID uchar(0x73)
+#define ZERO_STATUS_VOTE_END_ID uchar(0x74)
+#define ZERO_STATUS_VOTE_CLOSED_ID uchar(0x75)
 
-#define ZERO_STATUS_FAILED_ID char(0x80)
+#define ZERO_STATUS_FAILED_ID uchar(0x80)
 
-#define ZERO_STATUS_BUG_ID char(0xD0)
-#define ZERO_STATUS_FRAME_INVALID_ID char(0xD1)
-#define ZERO_STATUS_ARG_INVALID_ID char(0xD2)
+#define ZERO_STATUS_BUG_ID uchar(0xD0)
+#define ZERO_STATUS_FRAME_INVALID_ID uchar(0xD1)
+#define ZERO_STATUS_ARG_INVALID_ID uchar(0xD2)
 
-#define ZERO_STATUS_ERROR_ID char(0xF0)
-#define ZERO_STATUS_NOT_FIND_ID char(0xF1)
-#define ZERO_STATUS_NOT_WORKER_ID char(0xF2)
-#define ZERO_STATUS_NOT_SUPPORT_ID char(0xF3)
-#define ZERO_STATUS_TIMEOUT_ID char(0xF4)
-#define ZERO_STATUS_NET_ERROR_ID char(0xF5)
-#define ZERO_STATUS_PLAN_ERROR_ID char(0xF6)
-#define ZERO_STATUS_SEND_ERROR_ID char(0xF7)
-#define ZERO_STATUS_RECV_ERROR_ID char(0xF8)
+#define ZERO_STATUS_ERROR_ID uchar(0xF0)
+#define ZERO_STATUS_NOT_FIND_ID uchar(0xF1)
+#define ZERO_STATUS_NOT_WORKER_ID uchar(0xF2)
+#define ZERO_STATUS_NOT_SUPPORT_ID uchar(0xF3)
+#define ZERO_STATUS_TIMEOUT_ID uchar(0xF4)
+#define ZERO_STATUS_NET_ERROR_ID uchar(0xF5)
+#define ZERO_STATUS_PLAN_ERROR_ID uchar(0xF6)
+#define ZERO_STATUS_SEND_ERROR_ID uchar(0xF7)
+#define ZERO_STATUS_RECV_ERROR_ID uchar(0xF8)
 
 		 /*!
 		  * 以下为请求时的快捷命令:说明帧的第二节字([1])
@@ -211,14 +211,15 @@ namespace agebull
 		  /**
 		  * \brief 说明帧解析
 		  */
-		inline acl::string desc_str(bool in, const char* desc, size_t len)
+		inline acl::string desc_str(bool in, char* desc, size_t len)
 		{
 			acl::string str;
 			str.format_append("{\"size\":%d", desc[0]);
+			uchar state = *reinterpret_cast<uchar*>(desc + 1);
 			if (in)
 			{
-				str.append(",\"command\":\"");
-				switch (desc[1])
+				str.append(R"(,"command":")");
+				switch (state)
 				{
 				case ZERO_BYTE_COMMAND_NONE: //!\1 无特殊说明
 					str.append("none");
@@ -257,8 +258,8 @@ namespace agebull
 			}
 			else
 			{
-				str.append(",\"state\":\"");
-				switch (desc[1])
+				str.append(R"(,"state":")");
+				switch (state)
 				{
 				case ZERO_STATUS_OK_ID: //!(0x1)
 					str.append(ZERO_STATUS_OK);
@@ -328,9 +329,9 @@ namespace agebull
 					break; 
 				}
 			}
-			str.append("\",\"frames\":[");
+			str.append(R"(","frames":[)");
 
-			str.append("\"Caller\",\"FrameDescr\"");
+			str.append(R"("Caller","FrameDescr")");
 			for (size_t idx = 2; idx < len; idx++)
 			{
 				switch (desc[idx])

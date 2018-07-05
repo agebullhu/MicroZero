@@ -288,10 +288,10 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr)
+			bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr)
 			{
 				++config_->request_out;
-				zmq_state_ = socket_ex::send_status(socket, addr, code, global_id, req_id, reqer, msg);
+				zmq_state_ = socket_ex::send_status(socket, addr, state, global_id, req_id, reqer, msg);
 				if (zmq_state_ == zmq_socket_state::Succeed)
 					return true;
 				++config_->request_err;
@@ -302,9 +302,9 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, char code, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
+			bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
 			{
-				return send_request_status(socket, addr, code,
+				return send_request_status(socket, addr, state,
 					glbid_idx == 0 ? nullptr : *ls[glbid_idx],
 					reqid_idx == 0 ? nullptr : *ls[reqid_idx],
 					reqer_idx == 0 ? nullptr : *ls[reqer_idx],
@@ -313,9 +313,9 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			bool send_request_status(ZMQ_HANDLE socket, char code, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
+			bool send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
 			{
-				return send_request_status(socket, *ls[0], code,
+				return send_request_status(socket, *ls[0], state,
 					glbid_idx == 0 ? nullptr : *ls[glbid_idx],
 					reqid_idx == 0 ? nullptr : *ls[reqid_idx],
 					reqer_idx == 0 ? nullptr : *ls[reqer_idx],

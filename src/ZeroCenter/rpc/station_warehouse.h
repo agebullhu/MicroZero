@@ -62,9 +62,14 @@ namespace agebull
 			*/
 			static void clear();
 			/**
-			* \brief 还原站点
+			* \brief 恢复站点
 			*/
 			static int restore();
+
+			/**
+			* \brief 恢复站点
+			*/
+			static bool restore(shared_ptr<zero_config>& value);
 
 			/**
 			* \brief 保存配置
@@ -83,7 +88,7 @@ namespace agebull
 				int cnt = 0;
 				for (auto& kv : configs_)
 				{
-					if (kv.second->is_state(station_state::Uninstall))
+					if (kv.second->is_state(station_state::Stop))
 						continue;
 					cnt++;
 				}
@@ -95,10 +100,6 @@ namespace agebull
 			*/
 			static shared_ptr<zero_config>& get_config(const string& station_name, bool find_redis = true);
 
-			/**
-			* \brief 还原站点
-			*/
-			static bool restore(shared_ptr<zero_config>& value);
 			/**
 			* \brief 加入站点
 			*/
@@ -138,27 +139,44 @@ namespace agebull
 			static bool install(const char* json_str);
 
 			/**
-			* \brief 站点安装
+			* \brief 安装站点
 			*/
-			static char install_station(const char* station_name, const char* type_name, const char* short_name);
-			/**
-			* \brief 安装一个站点
-			*/
-			static bool install(const char* station_name, int station_type, const char* short_name);
+			static bool install(const char* station_name, const char* type_name, const char* short_name, const char* desc);
 			/**
 			* \brief 初始化
 			*/
 			static bool initialize();
 			/**
-			* \brief 站点卸载
+			* \brief 站点关停
 			*/
-			static	bool uninstall(const string& station_name);
+			static	bool stop(const string& station_name);
 
+			/**
+			* \brief 还原已关停站点
+			*/
+			static bool recover(const char* station_name);
+			/**
+			* \brief 删除已关停站点
+			*/
+			static bool remove(const char* station_name);
 			/**
 			* \brief 站点更新
 			*/
 			static bool update(const char* json);
 		private:
+			/**
+			* \brief 安装站点
+			*/
+			static bool install(const char* station_name, int type, const char* short_name, const char* desc, bool is_base)
+			{
+				shared_ptr<zero_config> config = make_shared<zero_config>();
+				config->station_type_ = type;
+				config->station_name_ = station_name;
+				config->short_name_ = short_name;
+				config->station_description_ = desc;
+				config->is_base = is_base;
+				return install(config);
+			}
 			/**
 			* \brief 安装一个站点
 			*/

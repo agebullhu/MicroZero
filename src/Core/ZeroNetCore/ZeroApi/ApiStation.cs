@@ -161,7 +161,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 构造
         /// </summary>
-        public ApiStation() : base(StationTypeApi, true)
+        public ApiStation() : base(ZeroStationType.Api, true)
         {
 
         }
@@ -428,6 +428,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
             ApiCall(ref socket, (ApiCallItem)item);
+            socket.Dispose();
         }
 
         /// <summary>
@@ -436,40 +437,41 @@ namespace Agebull.ZeroNet.ZeroApi
         private void RunWaite()
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-            using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
-                State = StationState.Run;
-                while (CanRun)
+                using (var pool = ZmqPool.CreateZmqPool())
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    pool.Prepare(ZPollEvent.In, ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity));
+                    State = StationState.Run;
+                    while (CanLoop)
                     {
-                        continue;
-                    }
-                    Interlocked.Increment(ref RecvCount);
-                    using (message)
-                    {
-                        if (!Unpack(message, out var item))
+                        if (!pool.Poll() || !pool.CheckIn(0, out var message))
                         {
-                            SendLayoutErrorResult(ref socket, item.Caller);
                             continue;
                         }
+                        Interlocked.Increment(ref RecvCount);
+                        using (message)
+                        {
+                            if (!Unpack(message, out var item))
+                            {
+                                SendLayoutErrorResult(ref socket, item.Caller);
+                                continue;
+                            }
 
-                        Interlocked.Increment(ref waitCount);
-                        if (waitCount > ZeroApplication.Config.MaxWait)
-                        {
-                            item.Result = ApiResult.UnavailableJson;
-                            SendResult(ref socket, item, ZeroOperatorStateType.Unavailable);
-                        }
-                        else
-                        {
-                            Task.Factory.StartNew(ApiCallTask, item);
+                            Interlocked.Increment(ref waitCount);
+                            if (waitCount > ZeroApplication.Config.MaxWait)
+                            {
+                                item.Result = ApiResult.UnavailableJson;
+                                SendResult(ref socket, item, ZeroOperatorStateType.Unavailable);
+                            }
+                            else
+                            {
+                                Task.Factory.StartNew(ApiCallTask, item);
+                            }
                         }
                     }
                 }
             }
-
-            socket.TryClose();
+            socket.Dispose();
         }
 
         private SemaphoreSlim _processSemaphore;
@@ -479,29 +481,31 @@ namespace Agebull.ZeroNet.ZeroApi
         private void RunSignle()
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-            using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
-                State = StationState.Run;
-                while (CanRun)
+                using (var pool = ZmqPool.CreateZmqPool())
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, Identity) }, ZPollEvent.In);
+                    State = StationState.Run;
+                    while (CanLoop)
                     {
-                        continue;
-                    }
-                    Interlocked.Increment(ref RecvCount);
-                    using (message)
-                    {
-                        if (!Unpack(message, out var item))
+                        if (!pool.Poll() || !pool.CheckIn(0, out var message))
                         {
-                            SendLayoutErrorResult(ref socket, item.Caller);
                             continue;
                         }
-                        ApiCall(ref socket, item);
+                        Interlocked.Increment(ref RecvCount);
+                        using (message)
+                        {
+                            if (!Unpack(message, out var item))
+                            {
+                                SendLayoutErrorResult(ref socket, item.Caller);
+                                continue;
+                            }
+                            ApiCall(ref socket, item);
+                        }
                     }
                 }
             }
-
+            socket.Dispose();
             IocHelper.DisposeScope();
             _processSemaphore?.Release();
         }
@@ -655,7 +659,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         private bool SendResult(ref ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (!CanRun)
+            if (!CanLoop)
             {
                 ZeroTrace.WriteError("SendResult", "is closed", StationName);
                 return false;

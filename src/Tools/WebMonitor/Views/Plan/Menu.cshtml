@@ -3,7 +3,7 @@
 @using Agebull.Common.Ioc
 @using Agebull.ZeroNet.Core
 @{
-    var options = ZeroApplication.Config.GetConfigs().OrderBy(p => p.RequestPort).ToArray();
+    var options = ZeroApplication.Config.GetConfigs().Where(p => !p.IsBaseStation).OrderBy(p => p.RequestPort).ToArray();
 }
 <el-aside class="message_boards" style="width:240px">
     <el-menu default-active="type"
@@ -75,34 +75,22 @@
                         <template slot="title">
                             @switch (station.StationType)
                             {
-                                case ZeroStation.StationTypeApi:
+                                case ZeroStationType.Api:
                                     {
                                         <i class="el-icon-star-on"></i>
                                         break;
                                     }
-                                case ZeroStation.StationTypeVote:
+                                case ZeroStationType.Vote:
                                     {
                                         <i class="el-icon-star-off"></i>
                                         break;
                                     }
-                                case ZeroStation.StationTypePublish:
+                                case ZeroStationType.Publish:
                                     {
                                         <i class="el-icon-share"></i>
                                         break;
                                     }
-                                case ZeroStation.StationTypePlanDispatcher:
-                                    {
-                                        <i class="el-icon-date"></i>
-                                        break;
-                                    }
-                                case ZeroStation.StationTypeDispatcher:
-                                    {
-                                        <i class="el-icon-setting"></i>
-                                        break;
-                                    }
                             }
-
-
                             <span>@station.Name</span>
                         </template>
                     </el-menu-item>

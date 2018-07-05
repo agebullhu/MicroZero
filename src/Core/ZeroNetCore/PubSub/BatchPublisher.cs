@@ -20,7 +20,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 构造
         /// </summary>
-        protected BatchPublisher() : base(StationTypePublish, false)
+        protected BatchPublisher() : base(ZeroStationType.Publish, false)
         {
         }
         /// <summary>
@@ -91,7 +91,7 @@ namespace Agebull.ZeroNet.Log
             State = StationState.Run;
             int cnt = 0;
 
-            while (CanRun)
+            while (CanLoop)
             {
                 Thread.Sleep(10);
                 if (token.IsCancellationRequested)
@@ -112,7 +112,7 @@ namespace Agebull.ZeroNet.Log
                     do
                     {
                         var datas = array.Count > 300 ? array.Take(255).ToArray() : array.ToArray();
-                        while (!_socket.Publish(Name, datas) && CanRun)
+                        while (!_socket.Publish(Name, datas) && CanLoop)
                             Thread.Sleep(10);
                         if (array.Count > 300)
                             array.RemoveRange(0, 255);
@@ -146,7 +146,7 @@ namespace Agebull.ZeroNet.Log
                         }
                         buf = serializer.Close();
                     }
-                    while (!_socket.Publish(ZeroPublishExtend.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanRun)
+                    while (!_socket.Publish(ZeroPublishExtend.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanLoop)
                         Thread.Sleep(10);
                 }
             }

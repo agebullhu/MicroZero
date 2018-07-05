@@ -21,15 +21,19 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="AddIn\**" />
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
     <Compile Remove="wwwroot\**" />
+    <Content Remove="AddIn\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Datas\**" />
     <Content Remove="wwwroot\**" />
+    <EmbeddedResource Remove="AddIn\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Datas\**" />
     <EmbeddedResource Remove="wwwroot\**" />
+    <None Remove="AddIn\**" />
     <None Remove="Controllers\**" />
     <None Remove="Datas\**" />
     <None Remove="wwwroot\**" />
@@ -60,15 +64,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="AddIn\Agebull.ZeroNet.Extend.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="AddIn\Agebull.ZeroNet.Extend.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

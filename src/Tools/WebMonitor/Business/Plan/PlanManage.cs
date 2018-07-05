@@ -117,7 +117,7 @@ namespace ZeroNet.Http.Route
             }
             return ApiResult.Succees();
         }
-        
+
 
 
         public ApiResult Remove(string id)
@@ -247,11 +247,32 @@ namespace ZeroNet.Http.Route
             ZeroFrameType.End
         };
 
+        /// <summary>
+        ///     命令格式说明
+        /// </summary>
+        private readonly byte[] commandDescription =
+        {
+            3,
+            ZeroByteCommand.Plan,
+            ZeroFrameType.Plan,
+            ZeroFrameType.Command,
+            ZeroFrameType.Argument,
+            ZeroFrameType.End
+        };
+
         public ApiResult NewPlan(ClientPlan clientPlan)
         {
+            if (string.IsNullOrWhiteSpace(clientPlan.station) || string.IsNullOrWhiteSpace(clientPlan.command))
+                return ApiResult.Error(ErrorCode.LogicalError, "命令不能为空");
             var config = ZeroApplication.Config[clientPlan.station];
             if (config == null)
-                return ApiResult.Error(ErrorCode.LogicalError, "错误名称错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "站点名称错误");
+            if (config.StationType != ZeroStationType.Dispatcher && config.IsBaseStation)
+                return ApiResult.Error(ErrorCode.LogicalError, "不允许对基础站点设置计划(SystemManage除外)");
+
+            clientPlan.station = config.StationName;
+
+
             CustomPlan plan = new CustomPlan
             {
                 plan_type = clientPlan.plan_type,
@@ -281,8 +302,7 @@ namespace ZeroNet.Http.Route
                 return ApiResult.Error(ErrorCode.LocalError, "无法联系ZeroCenter");
             bool success;
 
-            if (config.StationType == ZeroStation.StationTypeApi ||
-                config.StationType == ZeroStation.StationTypeVote)
+            if (config.StationType == ZeroStationType.Api || config.StationType == ZeroStationType.Vote)
             {
                 success = socket.Socket.SendTo(planApiDescription,
                     plan.ToZeroBytes(),
@@ -290,11 +310,25 @@ namespace ZeroNet.Http.Route
                     clientPlan.command.ToZeroBytes(),
                     clientPlan.argument.ToZeroBytes());
             }
-            else
+            else if (config.StationType == ZeroStationType.Publish)
             {
                 success = socket.Socket.SendTo(planPubDescription,
                     plan.ToZeroBytes(),
                     clientPlan.context.ToZeroBytes(),
+                    clientPlan.command.ToZeroBytes(),
+                    clientPlan.argument.ToZeroBytes());
+            }
+            else//Manage
+            {
+                clientPlan.command = clientPlan.command.ToLower();
+                if (clientPlan.command != "pause" && clientPlan.command != "close" && clientPlan.command != "resume")
+                    return ApiResult.Error(ErrorCode.LogicalError, "系统命令仅支持暂停(pause)关闭(close)和恢复(resume) 非系统站点");
+                config = ZeroApplication.Config[clientPlan.station];
+                if (config == null || config.State == ZeroCenterState.Stop || config.IsBaseStation)
+                    return ApiResult.Error(ErrorCode.LogicalError, "命令参数为有效的非系统站点名称");
+
+                success = socket.Socket.SendTo(commandDescription,
+                    plan.ToZeroBytes(),
                     clientPlan.command.ToZeroBytes(),
                     clientPlan.argument.ToZeroBytes());
             }

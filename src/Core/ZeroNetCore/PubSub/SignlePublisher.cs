@@ -23,7 +23,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 构造
         /// </summary>
-        protected SignlePublisher() : base(StationTypePublish, false)
+        protected SignlePublisher() : base(ZeroStationType.Publish, false)
         {
         }
 
@@ -40,7 +40,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             if (data == null)
                 return;
-            if (!CanRun)
+            if (!CanLoop)
             {
                 datas.Add(data);
                 return;
@@ -204,7 +204,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         if (poll.CheckIn(0, out var message))
                             socket.SendTo(message);
-                        else if (!CanRun)//保证发送完成
+                        else if (!CanLoop)//保证发送完成
                             break;
                     }
                     SystemManager.Instance.HeartLeft(StationName, RealName);

@@ -22,7 +22,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 构造
         /// </summary>
-        protected SubStation() : base(StationTypePublish, true)
+        protected SubStation() : base(ZeroStationType.Publish, true)
         {
 
         }
@@ -82,7 +82,7 @@ namespace Agebull.ZeroNet.PubSub
                 pool.Prepare(ZPollEvent.In,
                     ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe));
                 State = StationState.Run;
-                while (CanRun)
+                while (CanLoop)
                 {
                     if (!pool.Poll())
                     {

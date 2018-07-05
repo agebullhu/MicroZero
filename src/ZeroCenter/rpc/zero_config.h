@@ -85,6 +85,10 @@ namespace agebull
 			station_state station_state_;
 		public:
 			/**
+			* \brief 是否基础站点
+			*/
+			bool is_base;
+			/**
 			* \brief 实例队列访问锁
 			*/
 			boost::mutex mutex_;
@@ -93,13 +97,13 @@ namespace agebull
 			*/
 			string station_name_;
 			/**
-			* \brief 站点名称
-			*/
-			string short_name_;
-			/**
 			* \brief 站点标题
 			*/
 			string station_caption_;
+			/**
+			* \brief 站点名称
+			*/
+			string short_name_;
 			/**
 			* \brief 站点说明
 			*/
@@ -147,6 +151,7 @@ namespace agebull
 				: ready_works_(0)
 				, type_name_("ERR")
 				, station_state_(station_state::None)
+				, is_base(false)
 				, station_type_(0)
 				, request_port_(0)
 				, worker_out_port_(0)
@@ -168,6 +173,7 @@ namespace agebull
 			zero_config(const string& name, int type)
 				: ready_works_(0)
 				, station_state_(station_state::None)
+				, is_base(false)
 				, station_name_(std::move(name))
 				, station_type_(type)
 				, request_port_(0)
@@ -277,6 +283,9 @@ namespace agebull
 			*/
 			void read_json(const char* val);
 
+			/**
+			* \brief 检查类型的可读名称
+			*/
 			void check_type_name()
 			{
 				switch (station_type_)
@@ -302,7 +311,7 @@ namespace agebull
 				}
 			}
 
-			bool is_custom_station() const
+			bool is_general() const
 			{
 				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || station_type_ == STATION_TYPE_VOTE;
 			}
@@ -325,7 +334,7 @@ namespace agebull
 			}
 			void runtime_state(station_state state)
 			{
-				if (station_state_ != station_state::Uninstall)
+				if (station_state_ != station_state::Stop)
 					station_state_ = state;
 			}
 			/**
@@ -438,7 +447,7 @@ namespace agebull
 			*/
 			acl::string to_info_json()
 			{
-				return to_json(2);
+				return to_json(1);
 			}
 
 			/**
@@ -446,7 +455,7 @@ namespace agebull
 			*/
 			acl::string to_status_json()
 			{
-				return to_json(1);
+				return to_json(2);
 			}
 
 			/**

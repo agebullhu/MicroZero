@@ -215,30 +215,72 @@ namespace Agebull.ZeroNet.Core
                     return null;
                 lock (_configs)
                 {
-                    _configs.TryGetValue(station, out var config);
+                    if (!_configMap.TryGetValue(station, out var name))
+                        return null;
+                    _configs.TryGetValue(name, out var config);
                     return config;
                 }
             }
-            set
+        }
+        internal void Remove(StationConfig station)
+        {
+            lock (_configs)
             {
-                lock (_configs)
+                _configs.Remove(station.Name);
+                _configMap.Remove(station.Name);
+                _configMap.Remove(station.ShortName);
+                if (station.StationAlias == null)
+                    return;
+                foreach (var ali in station.StationAlias)
                 {
-                    if (value == null)
-                    {
-                        _configs.Remove(station);
-                        return;
-                    }
-                    if (_configs.ContainsKey(station))
-                        _configs[station].Copy(value);
-                    else
-                        _configs.Add(station, value);
+                    _configMap.Remove(ali);
                 }
             }
         }
+
+        private void AddStation(StationConfig station)
+        {
+            lock (_configs)
+            {
+                if (_configs.ContainsKey(station.Name))
+                    _configs[station.Name].Copy(station);
+                else
+                    _configs.Add(station.Name, station);
+
+                if (!_configMap.ContainsKey(station.Name))
+                    _configMap.Add(station.Name, station.Name);
+                else
+                    _configMap[station.Name] = station.Name;
+
+                if (!_configMap.ContainsKey(station.ShortName))
+                    _configMap.Add(station.ShortName, station.Name);
+                else
+                    _configMap[station.ShortName] = station.Name;
+                if (station.StationAlias == null)
+                    return;
+                foreach (var ali in station.StationAlias)
+                {
+                    if (!_configMap.ContainsKey(ali))
+                        _configMap.Add(ali, station.Name);
+                    else
+                        _configMap[ali] = station.Name;
+                }
+            }
+        }
+
         /// <summary>
         ///     站点集合
         /// </summary>
         private readonly Dictionary<string, StationConfig> _configs = new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// 站点配置
+        /// </summary>
+        public IEnumerable<StationConfig> Stations => _configs.Values;
+
+        /// <summary>
+        ///     站点集合
+        /// </summary>
+        private readonly Dictionary<string, string> _configMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     站点集合
@@ -246,7 +288,7 @@ namespace Agebull.ZeroNet.Core
         public StationConfig[] GetConfigs()
         {
             lock (_configs)
-                return _configs.Values.ToArray();
+                return _configs.Values.Distinct().ToArray();
         }
         /// <summary>
         ///     站点集合
@@ -254,7 +296,7 @@ namespace Agebull.ZeroNet.Core
         public StationConfig[] GetConfigs(Func<StationConfig, bool> condition)
         {
             lock (_configs)
-                return _configs.Values.Where(condition).ToArray();
+                return _configs.Values.Where(condition).Distinct().ToArray();
         }
 
         /// <summary>
@@ -268,7 +310,7 @@ namespace Agebull.ZeroNet.Core
                 var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
                 foreach (var config in configs)
                 {
-                    this[config.StationName] = config;
+                    AddStation(config);
                 }
                 ZeroTrace.WriteInfo("LoadAllConfig", json);
                 return true;
@@ -314,25 +356,26 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         /// <param name="stationName"></param>
         /// <param name="json"></param>
-        /// <param name="stationConfig"></param>
+        /// <param name="config"></param>
         /// <returns></returns>
-        public bool UpdateConfig(string stationName, string json, out StationConfig stationConfig)
+        public bool UpdateConfig(string stationName, string json, out StationConfig config)
         {
             if (stationName == null || string.IsNullOrEmpty(json) || json[0] != '{')
             {
                 ZeroTrace.WriteError("UpdateConfig", "argument error", stationName, json);
-                stationConfig = null;
+                config = null;
                 return false;
             }
             try
             {
-                stationConfig = this[stationName] = JsonConvert.DeserializeObject<StationConfig>(json);
+                config = JsonConvert.DeserializeObject<StationConfig>(json);
+                AddStation(config);
                 return true;
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("UpdateConfig", e, stationName, json);
-                stationConfig = null;
+                config = null;
                 return false;
             }
 
@@ -354,21 +397,6 @@ namespace Agebull.ZeroNet.Core
         ///     站点配置
         /// </summary>
         public static ZeroAppConfig Config { get; set; }
-
-        /// <summary>
-        ///     读取配置
-        /// </summary>
-        /// <returns></returns>
-        public static StationConfig GetConfig(string stationName)
-        {
-            if (Config.TryGetConfig(stationName, out var config)) return config;
-            config = SystemManager.Instance.LoadConfig(stationName);
-            if (config == null)
-                return null;
-            Config[stationName] = config;
-            return config;
-        }
-
 
         /// <summary>
         ///     配置校验

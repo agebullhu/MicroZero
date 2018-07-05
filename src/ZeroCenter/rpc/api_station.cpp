@@ -29,7 +29,7 @@ namespace agebull
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::Uninstall) && get_net_state() == NET_STATE_RUNING)
+			if (!config.is_state(station_state::Stop) && get_net_state() == NET_STATE_RUNING)
 			{
 				config.restart();
 				run(station->get_config_ptr());

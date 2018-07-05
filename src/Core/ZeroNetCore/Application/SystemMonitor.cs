@@ -78,11 +78,14 @@ namespace Agebull.ZeroNet.Core
                 return;
             switch (zeroNetEvent)
             {
+                case ZeroNetEventType.CenterStationInstall:
+                    station_install(station, content);
+                    return;
+                case ZeroNetEventType.CenterStationUpdate:
+                    station_update(station, content);
+                    return;
                 case ZeroNetEventType.CenterStationJoin:
                     station_join(station, content);
-                    return;
-                case ZeroNetEventType.CenterStationLeft:
-                    station_left(station);
                     return;
                 case ZeroNetEventType.CenterStationPause:
                     station_pause(station);
@@ -93,13 +96,13 @@ namespace Agebull.ZeroNet.Core
                 case ZeroNetEventType.CenterStationClosing:
                     station_closing(station);
                     return;
-                case ZeroNetEventType.CenterStationInstall:
-                    station_install(station, content);
+                case ZeroNetEventType.CenterStationLeft:
+                    station_left(station);
                     return;
-                case ZeroNetEventType.CenterStationUpdate:
-                    station_update(station, content);
+                case ZeroNetEventType.CenterStationStop:
+                    station_stop(station);
                     return;
-                case ZeroNetEventType.CenterStationUninstall:
+                case ZeroNetEventType.CenterStationRemove:
                     station_uninstall(station);
                     return;
                 case ZeroNetEventType.CenterStationState:
@@ -116,11 +119,12 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_uninstall", name);
-            config.State = ZeroCenterState.Uninstall;
+            config.State = ZeroCenterState.Remove;
+            ZeroApplication.Config.Remove(config);
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUninstall, null, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationRemove, null, config);
         }
 
         private static void station_install(string name, string content)
@@ -128,6 +132,7 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
                 return;
             ZeroTrace.WriteInfo("station_install", name, content);
+            config.State = ZeroCenterState.None;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
@@ -150,7 +155,7 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_closing", name);
-            if (config.State != ZeroCenterState.Uninstall)
+            if (config.State < ZeroCenterState.Closing)
                 config.State = ZeroCenterState.Closing;
             if (!ZeroApplication.InRun)
                 return;
@@ -186,8 +191,21 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.WriteInfo("station_left", name);
-            if (config.State != ZeroCenterState.Uninstall)
+            if (config.State < ZeroCenterState.Closed)
                 config.State = ZeroCenterState.Closed;
+            if (!ZeroApplication.InRun)
+                return;
+            ZeroApplication.OnStationStateChanged(config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
+        }
+
+        private static void station_stop(string name)
+        {
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
+            ZeroTrace.WriteInfo("station_stop", name);
+            if (config.State < ZeroCenterState.Stop)
+                config.State = ZeroCenterState.Stop;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);

@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZmqNet\ZmqNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

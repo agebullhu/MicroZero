@@ -39,30 +39,6 @@ namespace agebull
 		*/
 		int64 station_warehouse::reboot_num_ = 0;
 
-
-		/**
-		* \brief 还原站点
-		*/
-		bool station_warehouse::restore(shared_ptr<zero_config>& config)
-		{
-			if (config->is_state(station_state::Uninstall))
-				return false;
-			switch (config->station_type_)
-			{
-			case STATION_TYPE_API:
-				api_station::run(config);
-				return true;
-				//case STATION_TYPE_VOTE:
-				//	vote_station::run(config);
-				//	return true;
-			case STATION_TYPE_PUBLISH:
-				broadcasting_station::run(config);
-				return true;
-			default:
-				return false;
-			}
-		}
-
 		/**
 		* \brief 初始化
 		*/
@@ -94,12 +70,53 @@ namespace agebull
 				acl::string port;
 				port.format_append("%d", json_config::base_tcp_port);
 				redis->set(port_redis_key, port);
-				install("SystemManage", STATION_TYPE_DISPATCHER, "man");
-				install("PlanDispatcher", STATION_TYPE_PLAN, "plan");
-				install("RemoteLog", STATION_TYPE_PUBLISH, "log");
-				install("HealthCenter", STATION_TYPE_PUBLISH, "hea");
+				install("SystemManage", STATION_TYPE_DISPATCHER, "man", "ZeroNet system mamage station.", true);
+				install("PlanDispatcher", STATION_TYPE_PLAN, "plan", "ZeroNet plan & task mamage station.", true);
+				install("RemoteLog", STATION_TYPE_PUBLISH, "log", "ZeroNet remote log station.", true);
+				install("HealthCenter", STATION_TYPE_PUBLISH, "hea", "ZeroNet health center log station.", true);
 			}
 			return true;
+		}
+
+		/**
+		* \brief 恢复站点运行
+		*/
+		int station_warehouse::restore()
+		{
+			glogal_id_ = 0LL;
+			int cnt = 0;
+			boost::lock_guard<boost::mutex> guard(config_mutex_);
+			for (auto& kv : configs_)
+			{
+				if (kv.second->station_type_ <= STATION_TYPE_DISPATCHER || kv.second->station_type_ > STATION_TYPE_SPECIAL)
+					continue;
+				if (restore(kv.second))
+					cnt++;
+			}
+			return cnt;
+		}
+
+		/**
+		* \brief 还原站点
+		*/
+		bool station_warehouse::restore(shared_ptr<zero_config>& config)
+		{
+			if (config->is_state(station_state::Stop))
+				return false;
+			switch (config->station_type_)
+			{
+			case STATION_TYPE_API:
+				api_station::run(config);
+				return true;
+				//case STATION_TYPE_VOTE:
+				//	vote_station::run(config);
+				//	return true;
+			case STATION_TYPE_PUBLISH:
+				broadcasting_station::run(config);
+				return true;
+			default:
+				return false;
+			}
 		}
 
 		/**
@@ -130,63 +147,6 @@ namespace agebull
 			}
 		}
 
-		/**
-		* \brief 上传文档
-		*/
-		bool station_warehouse::upload_doc(const char* station_name, shared_char& doc)
-		{
-			zero_event(zero_net_event::event_station_doc, "doc", station_name, *doc);
-			acl::string path;
-			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
-			std::cout << path.c_str() << endl;
-			int fid = open(path, O_RDWR);
-			if (fid >= 0)
-			{
-				size_t size = write(fid, *doc, doc.size());
-				ftruncate(fid, (__off_t)size);
-				close(fid);
-				return true;
-			}
-			return false;
-			/*FILE *fp = fopen(path.c_str(),"w");
-			if (fp == nullptr)
-			{
-				path.format("%sdoc", json_config::root_path.c_str());
-				mkdir(path, 00700);
-				path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
-				fp = fopen(path.c_str(), "w");
-			}
-			if (fp == nullptr)
-				return false;
-			size_t size = fwrite(*doc, sizeof(char), doc.size(), fp);
-			fflush(fp);
-			fclose(fp);
-			return size == doc.size();*/
-		}
-
-		/**
-		* \brief 获取文档
-		*/
-		bool station_warehouse::get_doc(const char* station_name, string& doc)
-		{
-			acl::string path;
-			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
-			std::cout << path.c_str() << endl;
-			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
-			if (fp == nullptr)
-			{
-				return false;
-			}
-			int ret = 0;
-			char buf[1024];
-			while (ret != ACL_VSTREAM_EOF) {
-				ret = acl_vstream_gets_nonl(fp, buf, sizeof(buf));
-				if (ret > 0)
-					doc += buf;
-			}
-			acl_vstream_fclose(fp);
-			return true;
-		}
 		string host_json;
 		/**
 		* \brief 取机器信息
@@ -249,7 +209,7 @@ namespace agebull
 			{
 				boost::format fmt("net:host:%1%");
 				fmt % iter.first;
-				redis->set(fmt.str().c_str(), iter.second->to_info_json());
+				redis->set(fmt.str().c_str(), iter.second->to_full_json());
 			}
 		}
 		shared_ptr<zero_config> empty_config;
@@ -282,21 +242,17 @@ namespace agebull
 			return empty_config;
 		}
 		/**
-		* \brief 还原站点
+		* \brief 保存站点
 		*/
-		int station_warehouse::restore()
+		acl::string station_warehouse::save(shared_ptr<zero_config>& config)
 		{
-			glogal_id_ = 0LL;
-			int cnt = 0;
-			boost::lock_guard<boost::mutex> guard(config_mutex_);
-			for (auto& kv : configs_)
-			{
-				if (kv.second->station_type_ <= STATION_TYPE_DISPATCHER || kv.second->station_type_ > STATION_TYPE_SPECIAL)
-					continue;
-				if (restore(kv.second))
-					cnt++;
-			}
-			return cnt;
+			host_json.clear();
+			var json = config->to_full_json();
+			boost::format fmt("net:host:%1%");
+			fmt % config->station_name_;
+			redis_live_scope redis(json_config::redis_defdb);
+			redis->set(fmt.str().c_str(), json);
+			return json;
 		}
 		/**
 		* \brief 安装站点
@@ -305,24 +261,11 @@ namespace agebull
 		{
 			if (json_str == nullptr || json_str[0] != '{')
 				return false;
-			zero_config new_cfg;
-			new_cfg.read_json(json_str);
-			if (new_cfg.station_name_.empty() || !new_cfg.is_custom_station())
+			shared_ptr<zero_config> config = make_shared<zero_config>();
+			config->read_json(json_str);
+			if (config->station_name_.empty() || !config->is_general())
 				return false;
-			shared_ptr<zero_config> config = get_config(new_cfg.station_name_);
-			if (config != nullptr)
-			{
-				return false;
-			}
-			config = make_shared<zero_config>();
-
-			config->station_name_ = new_cfg.station_name_;
-			config->short_name_ = new_cfg.short_name_;
-			config->station_type_ = new_cfg.station_type_;
-			config->station_caption_ = new_cfg.station_caption_;
-			config->alias_ = new_cfg.alias_;
-			config->station_description_ = new_cfg.station_description_;
-
+			config->is_base = false;
 			return install(config);
 		}
 
@@ -333,52 +276,36 @@ namespace agebull
 		};
 
 		/**
-		* 当远程调用进入时的处理
+		* \brief 安装站点
 		*/
-		char station_warehouse::install_station(const char* station_name, const char* type_name, const char* short_name)
+		bool station_warehouse::install(const char* station_name, const char* type_name, const char* short_name, const char* desc)
 		{
-			shared_ptr<zero_config> config = get_config(station_name);
-			if (config != nullptr)
-			{
-				if (!config->is_state(station_state::Uninstall))
-					return false;
-				config->set_state(station_state::None);
-				acl::string json = save(config);
-				zero_event(zero_net_event::event_station_update, "station", station_name, json.c_str());
-				return true;
-			}
-			bool success;
+			int type;
 			int idx = strmatchi(type_name, station_types_1);
 			switch (static_cast<station_types_2>(idx))
 			{
 			case station_types_2::api:
-				success = install(station_name, STATION_TYPE_API, short_name); break;
+				type = STATION_TYPE_API;
+				break;
 			case station_types_2::pub:
-				success = install(station_name, STATION_TYPE_PUBLISH, short_name); break;
+				type = STATION_TYPE_PUBLISH;
+				break;
 			case station_types_2::vote:
-				success = install(station_name, STATION_TYPE_VOTE, short_name); break;
+				type = STATION_TYPE_VOTE;
+				break;
 			default:
-				return ZERO_STATUS_NOT_SUPPORT_ID;
+				return false;
 			}
-			return success ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
+			return install(station_name, type, short_name, desc, false);
 		}
-		/**
-		* \brief 安装站点
-		*/
-		bool station_warehouse::install(const char* station_name, int station_type, const char* short_name)
-		{
-			shared_ptr<zero_config> config = make_shared<zero_config>();
-			config->station_name_ = station_name;
-			config->short_name_ = short_name;
-			config->station_type_ = station_type;
 
-			return install(config);
-		}
 		/**
 		* \brief 安装站点
 		*/
 		bool station_warehouse::install(shared_ptr<zero_config>& config)
 		{
+			if (!config || config->station_name_.empty())
+				return false;
 			var old = get_config(config->station_name_);
 			if (old)
 				return false;
@@ -431,7 +358,7 @@ namespace agebull
 			shared_ptr<zero_config> new_cfg = make_shared<zero_config>();
 			new_cfg->read_json(str);
 			var config = get_config(new_cfg->station_name_);
-			if (!config)
+			if (!config || config->is_base)
 				return false;
 			if (new_cfg->station_name_ != config->station_name_)
 				return false;
@@ -448,37 +375,55 @@ namespace agebull
 		}
 
 		/**
-		* \brief 保存站点
+		* \brief 还原已关停站点
 		*/
-		acl::string station_warehouse::save(shared_ptr<zero_config>& config)
+		bool station_warehouse::recover(const char* station_name)
 		{
+			shared_ptr<zero_config> config = get_config(station_name);
+			if (!config || !config->is_state(station_state::Stop) || config->is_base)
+				return false;
+			config->set_state(station_state::None);
+			acl::string json = save(config);
+			config->log("recover");
+			zero_event(zero_net_event::event_station_install, "station", config->station_name_.c_str(), json.c_str());
+			return true;
+		}
+		/**
+		* \brief 删除已关停站点
+		*/
+		bool station_warehouse::remove(const char* station_name)
+		{
+			shared_ptr<zero_config> config = get_config(station_name);
+			if (!config || !config->is_state(station_state::Stop) || config->is_base)
+				return false;
 			host_json.clear();
-			var json = config->to_info_json();
 			boost::format fmt("net:host:%1%");
 			fmt % config->station_name_;
 			redis_live_scope redis(json_config::redis_defdb);
-			redis->set(fmt.str().c_str(), json);
-			return json;
+			redis->del(fmt.str().c_str());
+			config->log("remove");
+			var json = config->to_full_json();
+			zero_event(zero_net_event::event_station_remove, "station", config->station_name_.c_str(), json.c_str());
+			configs_.erase(station_name);
+			return true;
 		}
 		/**
-		* \brief 站点卸载
+		* \brief 站点关停
 		*/
-		bool station_warehouse::uninstall(const string& station_name)
+		bool station_warehouse::stop(const string& station_name)
 		{
 			shared_ptr<zero_config> config = get_config(station_name);
-			if (config->is_state(station_state::Uninstall) ||
-				config->station_type_ <= STATION_TYPE_DISPATCHER ||
-				config->station_type_ >= STATION_TYPE_SPECIAL)
+			if (!config || config->is_state(station_state::Stop) || config->is_base)
 				return false;
-			config->set_state(station_state::Uninstall);
+			config->set_state(station_state::Stop);
 			save(config);
-			config->log("uninstall");
+			config->log("stop");
 			auto station = instance(station_name);
 			if (station != nullptr)
 			{
 				station->close(true);
 			}
-			zero_event(zero_net_event::event_station_uninstall, "station", config->station_name_.c_str(), nullptr);
+			zero_event(zero_net_event::event_station_stop, "station", config->station_name_.c_str(), nullptr);
 			return true;
 		}
 
@@ -514,7 +459,7 @@ namespace agebull
 				station->config_->runtime_state(station_state::Closed);
 				examples_.erase(iter);
 			}
-			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name_.c_str(),"");
+			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name_.c_str(), "");
 			return true;
 		}
 
@@ -523,19 +468,20 @@ namespace agebull
 		*/
 		char station_warehouse::close_station(const string& station_name)
 		{
-			if (station_name == "*")
-			{
-				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				for (auto& station : examples_)
-				{
-					station.second->close(true);
-				}
-				return ZERO_STATUS_OK_ID;
-			}
+			//if (station_name == "*")
+			//{
+			//	boost::lock_guard<boost::mutex> guard(examples_mutex_);
+			//	for (auto& station : examples_)
+			//	{
+			//		if (station.second->get_config().is_general())
+			//			station.second->close(true);
+			//	}
+			//	return ZERO_STATUS_OK_ID;
+			//}
 			zero_station* station = instance(station_name);
-			if (station == nullptr)
+			if (station == nullptr || !station->get_config().is_general())
 			{
-				return ZERO_STATUS_NOT_FIND_ID;
+				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 			return station->close(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -545,19 +491,20 @@ namespace agebull
 		*/
 		char station_warehouse::pause_station(const string& arg)
 		{
-			if (arg == "*")
-			{
-				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				for (map<string, zero_station*>::value_type& station : examples_)
-				{
-					station.second->pause(true);
-				}
-				return ZERO_STATUS_OK_ID;
-			}
+			//if (arg == "*")
+			//{
+			//	boost::lock_guard<boost::mutex> guard(examples_mutex_);
+			//	for (map<string, zero_station*>::value_type& station : examples_)
+			//	{
+			//		if (station.second->get_config().is_general())
+			//			station.second->pause(true);
+			//	}
+			//	return ZERO_STATUS_OK_ID;
+			//}
 			zero_station* station = instance(arg);
-			if (station == nullptr)
+			if (station == nullptr || !station->get_config().is_general())
 			{
-				return ZERO_STATUS_NOT_FIND_ID;
+				return ZERO_STATUS_NOT_SUPPORT_ID;
 			}
 			return station->pause(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -580,7 +527,7 @@ namespace agebull
 			if (station != nullptr)
 				return station->resume(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 			shared_ptr<zero_config> config = get_config(arg);
-			if (config->is_state(station_state::Uninstall))
+			if (!config||config->is_state(station_state::Stop))
 				return ZERO_STATUS_NOT_FIND_ID;
 			return restore(config) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -651,6 +598,74 @@ namespace agebull
 				config->runtime_state(station_state::Destroy);
 			});
 			save_configs();
+		}
+
+
+		/**
+		* \brief 上传文档
+		*/
+		bool station_warehouse::upload_doc(const char* station_name, shared_char& doc)
+		{
+			zero_event(zero_net_event::event_station_doc, "doc", station_name, *doc);
+			acl::string path;
+			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			std::cout << path.c_str() << endl;
+			int fid = open(path, O_RDWR | O_CREAT, 00777);
+			int re;
+			if (fid < 0)
+			{
+				path.format("%sdoc", json_config::root_path.c_str());
+				re = mkdir(path, 00777);
+				std::cout << path.c_str() << re << endl;
+				path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+				fid = open(path, O_RDWR | O_CREAT, 00777);
+			}
+			if (fid >= 0)
+			{
+				size_t size = write(fid, *doc, doc.size());
+				re = ftruncate(fid, static_cast<__off_t>(size));
+				re = close(fid);
+				return true;
+			}
+			return false;
+			/*FILE *fp = fopen(path.c_str(),"w");
+			if (fp == nullptr)
+			{
+			path.format("%sdoc", json_config::root_path.c_str());
+			mkdir(path, 00700);
+			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			fp = fopen(path.c_str(), "w");
+			}
+			if (fp == nullptr)
+			return false;
+			size_t size = fwrite(*doc, sizeof(char), doc.size(), fp);
+			fflush(fp);
+			fclose(fp);
+			return size == doc.size();*/
+		}
+
+		/**
+		* \brief 获取文档
+		*/
+		bool station_warehouse::get_doc(const char* station_name, string& doc)
+		{
+			acl::string path;
+			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			std::cout << path.c_str() << endl;
+			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
+			if (fp == nullptr)
+			{
+				return false;
+			}
+			int ret = 0;
+			char buf[1024];
+			while (ret != ACL_VSTREAM_EOF) {
+				ret = acl_vstream_gets_nonl(fp, buf, sizeof(buf));
+				if (ret > 0)
+					doc += buf;
+			}
+			acl_vstream_fclose(fp);
+			return true;
 		}
 	}
 }

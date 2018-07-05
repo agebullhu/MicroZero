@@ -11,15 +11,27 @@ namespace WebMonitor.Controllers
     {
         public IActionResult Index(string id)
         {
-            if (id == null)
-                id = "RemoteLog";
-            if(!SystemManager.Instance.LoadDocument(id, out var doc))
+            if (!ZeroApplication.Config.TryGetConfig(id,out var config))
+            {
+                config = ZeroApplication.Config.Stations.FirstOrDefault(p=>p.StationType == ZeroStationType.Api);
+            }
+            Agebull.ZeroNet.ZeroApi.StationDocument doc;
+            if (config == null)
             {
                 doc = new Agebull.ZeroNet.ZeroApi.StationDocument
                 {
                     Name = id,
-                    Caption = id,
-                    Description = id
+                    Caption = "无文档",
+                    Description = "无文档"
+                };
+            }
+            else if (!SystemManager.Instance.LoadDocument(config.StationName, out doc))
+            {
+                doc = new Agebull.ZeroNet.ZeroApi.StationDocument
+                {
+                    Name = config.Name,
+                    Caption = config.Caption,
+                    Description = config.Description
                 };
             }
             return View(doc);

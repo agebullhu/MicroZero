@@ -106,7 +106,7 @@ namespace agebull
 			/**
 			*\brief 广播内容
 			*/
-			static bool publish_event(const zero_net_event event_name, const char* title, const char* sub, const char* content);
+			static bool publish_event(zero_net_event event_name, const char* title, const char* sub, const char* content);
 		};
 	}
 }

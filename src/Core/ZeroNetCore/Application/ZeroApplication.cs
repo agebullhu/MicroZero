@@ -176,12 +176,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     发现
         /// </summary>
-        public static void Discove(Assembly assembly = null, string stationName = null)
+        public static void Discove(Assembly assembly, string stationName = null)
         {
             var discover = new ZeroDiscover
             {
                 StationName = stationName ?? Config.StationName,
-                Assembly = assembly ?? Assembly.GetCallingAssembly()
+                Assembly = assembly
             };
             ZeroTrace.WriteInfo("Discove", discover.Assembly.FullName);
             discover.FindApies();
@@ -321,6 +321,7 @@ namespace Agebull.ZeroNet.Core
             SystemManager.Instance.Destroy();
             LogRecorder.Shutdown();
             SystemMonitor.WaitMe();
+            GC.Collect();
             ZContext.Destroy();
             ZeroTrace.WriteLine("Application shutdown ,see you late.");
             ApplicationState = StationState.Disposed;

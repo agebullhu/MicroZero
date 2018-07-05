@@ -32,22 +32,27 @@ namespace agebull
 			}
 
 			shared_char(const shared_char& fri) : count_(fri.count_), buffer_(fri.buffer_), size_(fri.size_),
-			                                      alloc_size_(fri.alloc_size_), is_binary_(fri.is_binary_), is_const_(false)
+				alloc_size_(fri.alloc_size_), is_binary_(fri.is_binary_), is_const_(false)
 			{
 				if (count_ != nullptr)
 					*count_ += 1;
 			}
 
 			shared_char(char* buffer, int len) : count_(new int()), buffer_(buffer), size_(len), alloc_size_(len),
-			                                     is_binary_(2), is_const_(false)
+				is_binary_(2), is_const_(false)
 			{
 				*count_ = 1;
 			}
 
 			shared_char(const char* buffer)
 			{
+				if (buffer == nullptr)
+				{
+					set_empty();
+					return;
+				}
 				size_ = strlen(buffer);
-				if (buffer == nullptr || size_ == 0)
+				if (size_ == 0)
 				{
 					set_empty();
 					return;
@@ -390,65 +395,65 @@ namespace agebull
 				return val;
 			}
 
-			shared_char& alloc_frame(size_t size, char state = ZERO_BYTE_COMMAND_NONE)
+			shared_char& alloc_frame(size_t size, uchar state = ZERO_BYTE_COMMAND_NONE)
 			{
 				free();
 				alloc_(size + 2);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(size);
-				buffer_[1] = state;
+				set_state(state);
 				return *this;
 			}
 
 			template <size_t TSize>
-			shared_char& alloc_frame(char (&frames)[TSize])
+			shared_char& alloc_frame(char(&frames)[TSize])
 			{
 				return alloc_frame(ZERO_BYTE_COMMAND_NONE, frames);
 			}
 
-			shared_char& alloc_frame_1(char state, char frame)
+			shared_char& alloc_frame_1(uchar state, char frame)
 			{
 				free();
 				alloc_(4);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(1);
-				buffer_[1] = state;
+				set_state(state);
 				buffer_[2] = frame;
 				return *this;
 			}
 
-			shared_char& alloc_frame_2(char state, char frame1, char frame2)
+			shared_char& alloc_frame_2(uchar state, char frame1, char frame2)
 			{
 				free();
 				alloc_(5);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(2);
-				buffer_[1] = state;
+				set_state(state);
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				return *this;
 			}
 
-			shared_char& alloc_frame_3(char state, char frame1, char frame2, char frame3)
+			shared_char& alloc_frame_3(uchar state, char frame1, char frame2, char frame3)
 			{
 				free();
 				alloc_(6);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(3);
-				buffer_[1] = state;
+				set_state(state);
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				buffer_[4] = frame3;
 				return *this;
 			}
 
-			shared_char& alloc_frame_4(char state, char frame1, char frame2, char frame3, char frame4)
+			shared_char& alloc_frame_4(uchar state, char frame1, char frame2, char frame3, char frame4)
 			{
 				free();
 				alloc_(7);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(4);
-				buffer_[1] = state;
+				set_state(state);
 				buffer_[2] = frame1;
 				buffer_[3] = frame2;
 				buffer_[4] = frame3;
@@ -457,13 +462,13 @@ namespace agebull
 			}
 
 			template <size_t TSize>
-			shared_char& alloc_frame(char state, char (&frames)[TSize])
+			shared_char& alloc_frame(uchar state, char(&frames)[TSize])
 			{
 				free();
 				alloc_(TSize + 2);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(TSize);
-				buffer_[1] = state;
+				set_state(state);
 				memcpy(buffer_ + 2, frames, TSize);
 				return *this;
 			}
@@ -486,17 +491,21 @@ namespace agebull
 					buffer_[0] = static_cast<char>(size);
 			}
 
-			void state(char s)
+			void state(uchar s)
 			{
 				if (size_ == 0)
 					alloc_frame(10, s);
 				else
-					buffer_[1] = s;
+					memcpy(buffer_ + 1, &s, 1);
 			}
 
-			char state() const
+			void set_state(uchar s) const
 			{
-				return buffer_[1];
+				memcpy(buffer_ + 1, &s, 1);
+			}
+			uchar state() const
+			{
+				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
 			}
 
 			const char* c_str() const

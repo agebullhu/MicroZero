@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
 {
+
     /// <summary>
     ///     站点配置
     /// </summary>
@@ -16,6 +17,7 @@ namespace Agebull.ZeroNet.Core
     [Serializable]
     public class StationConfig : AnnotationsConfig, IApiResultData
     {
+
         /// <summary>
         ///     站点名称
         /// </summary>
@@ -27,7 +29,21 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     站点名称
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
+        [JsonProperty("is_base")]
+        public bool IsBaseStation { get; set; }
+
+        /// <summary>
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
+        [JsonProperty("is_general")]
+        public bool IsGeneralStation => StationType == ZeroStationType.Api || StationType == ZeroStationType.Publish || StationType == ZeroStationType.Vote;
+
+        /// <summary>
+        ///     站点简称
         /// </summary>
         [DataMember]
         [JsonProperty("short_name")]
@@ -45,7 +61,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember]
         [JsonProperty("station_type")]
-        public int StationType { get; set; }
+        public ZeroStationType StationType { get; set; }
 
         /// <summary>
         ///     入站端口
@@ -105,12 +121,6 @@ namespace Agebull.ZeroNet.Core
         public ZeroCenterState State { get; set; }
 
         /// <summary>
-        ///     状态
-        /// </summary>
-        [DataMember]
-        [JsonProperty("workers")] public List<ZeroWorker> Workers { get; set; }
-
-        /// <summary>
         ///     复制
         /// </summary>
         /// <param name="src"></param>
@@ -123,7 +133,9 @@ namespace Agebull.ZeroNet.Core
             WorkerCallPort = src.WorkerCallPort;
             WorkerResultPort = src.WorkerResultPort;
             State = src.State;
-            Workers = src.Workers;
+            IsBaseStation = src.IsBaseStation;
+            StationName = src.StationName;
+            StationAlias = src.StationAlias;
         }
 
     }

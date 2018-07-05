@@ -49,9 +49,9 @@ namespace agebull
 			*/
 			Destroy,
 			/**
-			* \brief 已卸载
+			* \brief 已关停
 			*/
-			Uninstall,
+			Stop,
 			/**
 			* \brief 未知
 			*/
@@ -146,7 +146,11 @@ namespace agebull
 			/**
 			*\brief
 			*/
-			event_station_uninstall,
+			event_station_stop,
+			/**
+			*\brief
+			*/
+			event_station_remove,
 			/**
 			*\brief
 			*/

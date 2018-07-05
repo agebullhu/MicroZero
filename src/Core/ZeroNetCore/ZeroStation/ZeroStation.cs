@@ -15,7 +15,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         /// <param name="type">站点类型</param>
         /// <param name="isService">是否服务</param>
-        protected ZeroStation(int type, bool isService)
+        protected ZeroStation(ZeroStationType type, bool isService)
         {
             StationType = type;
             IsService = isService;
@@ -25,31 +25,11 @@ namespace Agebull.ZeroNet.Core
         /// 是否服务
         /// </summary>
         public bool IsService { get; }
-        /// <summary>
-        /// 调度器
-        /// </summary>
-        public const int StationTypeDispatcher = 1;
-        /// <summary>
-        /// 广播
-        /// </summary>
-        public const int StationTypePublish = 2;
-        /// <summary>
-        /// API
-        /// </summary>
-        public const int StationTypeApi = 3;
-        /// <summary>
-        /// 投票器
-        /// </summary>
-        public const int StationTypeVote = 4;
-        /// <summary>
-        /// 投票器
-        /// </summary>
-        public const int StationTypePlanDispatcher = 0xFF;
 
         /// <summary>
         /// 类型
         /// </summary>
-        public int StationType { get; }
+        public ZeroStationType StationType { get; }
         /// <summary>
         /// 站点名称
         /// </summary>
@@ -91,11 +71,16 @@ namespace Agebull.ZeroNet.Core
         /// 取消标记
         /// </summary>
         private CancellationTokenSource RunTaskCancel;
+
         /// <summary>
-        /// 能不能运行
+        /// 能不能循环处理
         /// </summary>
-        public bool CanRun => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested &&
-                              ZeroApplication.CanDo && State == StationState.Run;
+        protected bool CanLoop => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested && ZeroApplication.CanDo && State == StationState.Run;
+
+        /// <summary>
+        /// 是否为运行状态
+        /// </summary>
+        public bool IsRun => State > StationState.Start && State < StationState.Closing;
         /// <summary>
         /// 初始化
         /// </summary>
@@ -131,7 +116,7 @@ namespace Agebull.ZeroNet.Core
                     return false;
                 }
 
-                if (Config.State == ZeroCenterState.Uninstall)
+                if (Config.State == ZeroCenterState.Stop)
                 {
                     ZeroApplication.OnObjectFailed(this);
                     ZeroTrace.WriteError(StationName, "Uninstall");
@@ -283,7 +268,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         void IZeroObject.OnHeartbeat()
         {
-            if (CanRun)
+            if (CanLoop)
                 SystemManager.Instance.Heartbeat(Config.StationName, RealName);
         }
 
@@ -300,15 +285,18 @@ namespace Agebull.ZeroNet.Core
 
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            if (config != Config || (State == StationState.Run && config.State == ZeroCenterState.Run))
+            if (IsRun && (config.State == ZeroCenterState.Run || config.State == ZeroCenterState.Pause))
                 return;
-            if (config.State == ZeroCenterState.Run && CanRun)
+            if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
             {
                 ZeroTrace.WriteInfo(Name, "Start by config state changed");
                 Start();
             }
-            else if (State == StationState.Run)
+            else
+            {
+                ZeroTrace.WriteInfo(Name, "Close by config state changed");
                 Close();
+            }
         }
 
         bool IZeroObject.OnZeroEnd()

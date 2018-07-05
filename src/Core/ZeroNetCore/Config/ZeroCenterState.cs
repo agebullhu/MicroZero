@@ -42,12 +42,12 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         Destroy,
         /// <summary>
-        ///  已卸载
+        ///  已关停
         /// </summary>
-        Uninstall,
+        Stop,
         /// <summary>
-        ///  未知
+        ///  删除
         /// </summary>
-        Unknow
+        Remove
     };
 }

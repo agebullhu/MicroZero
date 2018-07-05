@@ -52,7 +52,11 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 
         /// </summary>
-        CenterStationUninstall,
+        CenterStationStop,
+        /// <summary>
+        /// 
+        /// </summary>
+        CenterStationRemove,
         /// <summary>
         /// 
         /// </summary>

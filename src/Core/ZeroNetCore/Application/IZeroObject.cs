@@ -68,7 +68,7 @@ namespace Agebull.ZeroNet.Core
         /// 已注册的对象
         /// </summary>
         private static readonly Dictionary<string, IZeroObject> ZeroObjects = new Dictionary<string, IZeroObject>();
-        
+
         /// <summary>
         ///     注册单例对象
         /// </summary>
@@ -197,7 +197,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static IZeroObject TryGetZeroObject(string name)
         {
-            if (ZeroObjects.TryGetValue (name,out var zeroObject))
+            if (ZeroObjects.TryGetValue(name, out var zeroObject))
                 return zeroObject;
             return null;
         }
@@ -207,7 +207,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
-            ZeroDiscover.DiscoverApiDocument(obj.GetType());
+            if (obj.GetType().IsSubclassOf(typeof(ApiStation)))
+                ZeroDiscover.DiscoverApiDocument(obj.GetType());
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 if (ZeroObjects.ContainsKey(obj.Name))
@@ -289,7 +290,7 @@ namespace Agebull.ZeroNet.Core
                     }
                 }
 #else
-                Parallel.ForEach(ZeroObjects.ToArray(), obj =>
+                Parallel.ForEach(ZeroObjects.Values.ToArray(), obj =>
                 {
                     try
                     {
@@ -387,7 +388,7 @@ namespace Agebull.ZeroNet.Core
                     });
                     WaitAllObjectSemaphore();
                 }
-
+                GC.Collect();
                 ApplicationState = StationState.Closed;
                 ZeroTrace.WriteLine("<<OnZeroEnd]");
             }
@@ -406,7 +407,7 @@ namespace Agebull.ZeroNet.Core
             {
                 var array = ZeroObjects.Values.ToArray();
                 ZeroObjects.Clear();
-                foreach (var obj in array)
+                Parallel.ForEach(array, obj =>
                 {
                     try
                     {
@@ -417,8 +418,9 @@ namespace Agebull.ZeroNet.Core
                     {
                         ZeroTrace.WriteException(obj.Name, e, "*Destory");
                     }
-                };
+                });
 
+                GC.Collect();
                 ZeroTrace.WriteLine("<<OnZeroDestory]");
 
                 ZeroTrace.WriteLine("[OnZeroDispose>>");

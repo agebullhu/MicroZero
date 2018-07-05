@@ -92,40 +92,40 @@ namespace agebull
 			case SIGURG://当out - of - band data接收的时候可能发送
 			case SIGCHLD://进程Terminate或Stop的时候，SIGCHLD会发送给它的父进程。缺省情况下该Signal会被忽略
 				return;
-			/*
-			case SIGINT://由Interrupt Key产生，通常是CTRL + C或者DELETE。发送给所有ForeGround Group的进程
-				log_error("#########################################################");
-				break;
-			case SIGABRT://由调用abort函数产生，进程非正常退出
-			case SIGKILL://无法处理和忽略。中止某个进程
-			case SIGTERM://请求中止进程，kill命令缺省发送
-			case SIGALRM://用alarm函数设置的timer超时或setitimer函数设置的interval timer超时
-			case SIGBUS://某种特定的硬件异常，通常由内存访问引起
-			case SIGCANCEL://由Solaris Thread Library内部使用，通常不会使用
-			case SIGEMT://和实现相关的硬件异常
-			case SIGFPE://数学相关的异常，如被0除，浮点溢出，等等
-			case SIGHUP://发送给具有Terminal的Controlling Process，当terminal被disconnect时候发送
-			case SIGILL://非法指令异常
-			case SIGINFO://BSD signal。由Status Key产生，通常是CTRL + T。发送给所有Foreground Group的进程
-			case SIGIOT://实现相关的硬件异常，一般对应SIGABRT
-			case SIGQUIT://输入Quit Key的时候（CTRL + \）发送给所有Foreground Group的进程
-			case SIGSEGV://非法内存访问
-			case SIGSTKFLT://Linux专用，数学协处理器的栈异常
-			case SIGSTOP://中止进程。无法处理和忽略。
-			case SIGSYS://非法系统调用
-			case SIGTRAP://实现相关的硬件异常。一般是调试异常
-			case SIGTSTP://Suspend Key，一般是Ctrl + Z。发送给所有Foreground Group的进程
-			case SIGUSR1://用户自定义signal 1
-			case SIGUSR2://用户自定义signal 2
-			case SIGVTALRM://setitimer函数设置的Virtual Interval Timer超时的时候
-			case SIGXCPU://当CPU时间限制超时的时候
-			case SIGXFSZ://进程超过文件大小限制
-			case SIGXRES://Solaris专用，进程超过资源限制的时候发送
-			case SIGTHAW://Solaris专用，从Suspend恢复时候发送
-			case SIGLWP://由Solaris Thread Libray内部使用
-			case SIGFREEZE://Solaris专用，Hiberate或者Suspended时候发送
-			case SIGWAITING://Solaris Thread Library内部实现专用
-			case SIGIO://异步IO事件*/
+				/*
+				case SIGINT://由Interrupt Key产生，通常是CTRL + C或者DELETE。发送给所有ForeGround Group的进程
+					log_error("#########################################################");
+					break;
+				case SIGABRT://由调用abort函数产生，进程非正常退出
+				case SIGKILL://无法处理和忽略。中止某个进程
+				case SIGTERM://请求中止进程，kill命令缺省发送
+				case SIGALRM://用alarm函数设置的timer超时或setitimer函数设置的interval timer超时
+				case SIGBUS://某种特定的硬件异常，通常由内存访问引起
+				case SIGCANCEL://由Solaris Thread Library内部使用，通常不会使用
+				case SIGEMT://和实现相关的硬件异常
+				case SIGFPE://数学相关的异常，如被0除，浮点溢出，等等
+				case SIGHUP://发送给具有Terminal的Controlling Process，当terminal被disconnect时候发送
+				case SIGILL://非法指令异常
+				case SIGINFO://BSD signal。由Status Key产生，通常是CTRL + T。发送给所有Foreground Group的进程
+				case SIGIOT://实现相关的硬件异常，一般对应SIGABRT
+				case SIGQUIT://输入Quit Key的时候（CTRL + \）发送给所有Foreground Group的进程
+				case SIGSEGV://非法内存访问
+				case SIGSTKFLT://Linux专用，数学协处理器的栈异常
+				case SIGSTOP://中止进程。无法处理和忽略。
+				case SIGSYS://非法系统调用
+				case SIGTRAP://实现相关的硬件异常。一般是调试异常
+				case SIGTSTP://Suspend Key，一般是Ctrl + Z。发送给所有Foreground Group的进程
+				case SIGUSR1://用户自定义signal 1
+				case SIGUSR2://用户自定义signal 2
+				case SIGVTALRM://setitimer函数设置的Virtual Interval Timer超时的时候
+				case SIGXCPU://当CPU时间限制超时的时候
+				case SIGXFSZ://进程超过文件大小限制
+				case SIGXRES://Solaris专用，进程超过资源限制的时候发送
+				case SIGTHAW://Solaris专用，从Suspend恢复时候发送
+				case SIGLWP://由Solaris Thread Libray内部使用
+				case SIGFREEZE://Solaris专用，Hiberate或者Suspended时候发送
+				case SIGWAITING://Solaris Thread Library内部实现专用
+				case SIGIO://异步IO事件*/
 			default:
 				sig_crash(sig);
 				break;
@@ -200,8 +200,8 @@ namespace agebull
 				}
 				log_error("#########################################################");
 #endif // __linux
-				}
-				catch (...)
+			}
+			catch (...)
 			{
 				log_error("exception");
 			}

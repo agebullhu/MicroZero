@@ -226,11 +226,6 @@ namespace agebull
 			void read_plan(const char* plan);
 
 			/**
-			* \brief JSON反序列化
-			*/
-			void read_json(acl::string& val);
-
-			/**
 			* \brief JSON序列化
 			*/
 			void write_info(acl::json_node& node) const;
@@ -282,7 +277,7 @@ namespace agebull
 			/**
 			* \brief 删除一个消息
 			*/
-			bool remove();
+			bool remove() const;
 
 			/**
 			* \brief 保存消息

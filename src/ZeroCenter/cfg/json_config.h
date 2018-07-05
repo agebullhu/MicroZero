@@ -162,9 +162,29 @@ namespace agebull
 		}
 		return -1;
 	}
+	inline int64 json_read_num(acl::json_node* json_node, int64 def = 0LL)
+	{
+		auto num = json_node->get_int64();
+		return num == nullptr ? def : *num;
+	}
+	inline int json_read_int(acl::json_node* json_node, int def = 0)
+	{
+		auto num = json_node->get_int64();
+		return num == nullptr ? def : static_cast<int>(*num);
+	}
+	inline int64 json_read_bool(acl::json_node* json_node, bool def = false)
+	{
+		auto num = json_node->get_bool();
+		return num == nullptr ? def : *num;
+	}
 
-#define json_add_str(node,key,text) if(!text.empty())  node.add_text(key, text.c_str());
-#define json_add_num(node,key,num) if(num)  node.add_number(key, num);
-#define json_add_array_str(node,text) text.empty() ? node.add_array_null() : node.add_array_text(text.c_str());
+#define json_add_str(node,key,text) if(!text.empty())  node.add_text(key, text.c_str())
+
+#define json_add_num(node,key,num) if(num)  node.add_number(key, num)
+
+#define json_add_bool(node,key,num) if(num)  node.add_bool(key, true)
+
+#define json_add_array_str(node,text) if(!text.empty()) node.add_array_text(text.c_str())
+	
 }
 #endif

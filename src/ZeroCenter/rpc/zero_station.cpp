@@ -57,7 +57,7 @@ namespace agebull
 		*/
 		bool zero_station::initialize()
 		{
-			if (config_->is_state(station_state::Uninstall))
+			if (config_->is_state(station_state::Stop))
 				return false;
 			boost::lock_guard<boost::mutex> guard(mutex_);
 			config_->runtime_state(station_state::Start);
@@ -411,7 +411,7 @@ namespace agebull
 			description.append_frame(ZERO_FRAME_STATION_ID);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::Succeed)
 			{
-				config_->error("send to plan dispatcher failed", desc_str(false, *list[1], list.size()));
+				config_->error("send to plan dispatcher failed", desc_str(false, list[1].get_buffer(), list.size()));
 			}
 		}
 		/**
@@ -453,7 +453,7 @@ namespace agebull
 			{
 			case station_state::Run:
 			case station_state::Pause:
-			case station_state::Uninstall:
+			case station_state::Stop:
 				break;
 			default:
 				return false;

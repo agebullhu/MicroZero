@@ -67,7 +67,7 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
-				if (config->is_state(station_state::Uninstall))
+				if (config->is_state(station_state::Stop))
 					return;
 				boost::thread(boost::bind(launch, std::make_shared<broadcasting_station>(config)));
 			}

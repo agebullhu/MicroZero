@@ -18,6 +18,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
+            ZeroApplication.Discove(typeof(AutoRegister).Assembly);
         }
 
         /// <summary>
@@ -25,7 +26,6 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            //ZeroApplication.RegistZeroObject<LoginStation>();
         }
     }
 }

@@ -228,7 +228,7 @@ namespace ZeroNet.Http.Route
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
-                case ZeroNetEventType.CenterStationUninstall:
+                case ZeroNetEventType.CenterStationRemove:
                     StationLeft(e.EventConfig);
                     break;
             }
@@ -238,7 +238,7 @@ namespace ZeroNet.Http.Route
         {
             ZeroApplication.Config.Foreach(config =>
             {
-                if (config.StationType == ZeroStation.StationTypeApi)
+                if (config.StationType == ZeroStationType.Api)
                     StationJoin(config);
             });
         }

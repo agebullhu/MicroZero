@@ -145,6 +145,7 @@ namespace agebull
 			, "worker_out"
 			, "worker_err"
 			, "short_name"
+			,"is_base"
 		};
 		enum class config_fields
 		{
@@ -164,6 +165,7 @@ namespace agebull
 			, worker_out
 			, worker_err
 			, short_name
+			, is_base
 		};
 		void zero_config::read_json(const char* val)
 		{
@@ -174,7 +176,7 @@ namespace agebull
 			while (iter)
 			{
 				const char* tag = iter->tag_name();
-				if (tag == nullptr || tag[0] == 0)
+				if (tag == nullptr || tag[0] == 0 || iter->is_null())
 				{
 					iter = json.next_node();
 					continue;
@@ -187,7 +189,7 @@ namespace agebull
 					station_name_ = iter->get_string();
 					break;
 				case config_fields::station_type:
-					station_type_ = static_cast<int>(*iter->get_int64());
+					station_type_ = json_read_int(iter);
 					break;
 				case config_fields::short_name:
 					short_name_ = iter->get_string();
@@ -198,6 +200,9 @@ namespace agebull
 				case config_fields::caption:
 					station_caption_ = iter->get_string();
 					break;
+				case config_fields::is_base:
+					is_base = json_read_bool(iter);
+					break;
 				case config_fields::station_alias:
 					alias_.clear();
 					{
@@ -205,38 +210,43 @@ namespace agebull
 						var iter_arr = ch->first_child();
 						while (iter_arr)
 						{
-							alias_.emplace_back(iter_arr->get_text());
+							auto txt = iter_arr->get_text();
+							if (txt != nullptr)
+								alias_.emplace_back(txt);
 							iter_arr = ch->next_child();
 						}
 					}
 					break;
 				case config_fields::request_port:
-					request_port_ = static_cast<int>(*iter->get_int64());
+					request_port_ = json_read_int(iter);
 					break;
 				case config_fields::worker_out_port:
-					worker_out_port_ = static_cast<int>(*iter->get_int64());
+					worker_out_port_ = json_read_int(iter);
 					break;
 				case config_fields::worker_in_port:
-					worker_in_port_ = static_cast<int>(*iter->get_int64());
+					worker_in_port_ = json_read_int(iter);
 					break;
-					//case config_fields::station_state:
-					//	station_state_ = static_cast<station_state>(*iter->get_int64());
-					//	break;
-					//case config_fields::request_in:
-					//	request_in = *iter->get_int64();
-					//	break;
-					//case config_fields::request_out:
-					//	request_out = *iter->get_int64();
-					//	break;
-					//case config_fields::worker_err:
-					//	worker_err = *iter->get_int64();
-					//	break;
-					//case config_fields::worker_in:
-					//	worker_in = *iter->get_int64();
-					//	break;
-					//case config_fields::worker_out:
-					//	worker_out = *iter->get_int64();
-					//	break;
+				case config_fields::station_state:
+					station_state_ = static_cast<station_state>(json_read_num(iter));
+					break;
+				case config_fields::request_in:
+					request_in = json_read_num(iter);
+					break;
+				case config_fields::request_out:
+					request_out = json_read_num(iter);
+					break;
+				case config_fields::request_err:
+					request_err = json_read_num(iter);
+					break;
+				case config_fields::worker_err:
+					worker_err = json_read_num(iter);
+					break;
+				case config_fields::worker_in:
+					worker_in = json_read_num(iter);
+					break;
+				case config_fields::worker_out:
+					worker_out = json_read_num(iter);
+					break;
 				default: break;
 				}
 				iter = json.next_node();
@@ -253,45 +263,55 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(mutex_);
 			acl::json json;
 			acl::json_node& node = json.create_node();
-			json_add_str(node,"name", station_name_);
-			json_add_num(node,"station_state", static_cast<int>(station_state_));
+			json_add_str(node, "name", station_name_);
+			json_add_num(node, "station_state", static_cast<int>(station_state_));
+			//站点基础信息,不包含在状态中
+			if (type != 2)
+			{
+				json_add_bool(node, "is_base", is_base);
+				json_add_str(node, "short_name", short_name_);
+				json_add_str(node, "description", station_description_);
+				json_add_num(node, "station_type", station_type_);
+				json_add_num(node, "request_port", request_port_);
+				json_add_num(node, "worker_in_port", worker_in_port_);
+				json_add_num(node, "worker_out_port", worker_out_port_);
+				if (alias_.size() > 0)
+				{
+					acl::json_node& array = json.create_array();
+					for (auto alia : alias_)
+					{
+						json_add_array_str(array, alia);
+					}
+					node.add_child("station_alias", array);
+				}
+			}
+			//站点计数,不包含在基础信息中
 			if (type != 1)
 			{
-				json_add_str(node,"caption", station_caption_);
-				json_add_str(node, "short_name", short_name_);
-				json_add_str(node,"description", station_description_);
-				acl::json_node& array = json.create_array();
-				for (auto alia : alias_)
-				{
-					json_add_array_str(array, alia);
-				}
-				node.add_child("station_alias", array);
-				json_add_num(node,"station_type", station_type_);
-				json_add_num(node,"request_port", request_port_);
-				json_add_num(node,"worker_in_port", worker_in_port_);
-				json_add_num(node,"worker_out_port", worker_out_port_);
+				json_add_num(node, "request_in", request_in);
+				json_add_num(node, "request_out", request_out);
+				json_add_num(node, "request_err", request_err);
+				json_add_num(node, "worker_in", worker_in);
+				json_add_num(node, "worker_out", worker_out);
+				json_add_num(node, "worker_err", worker_err);
 			}
-			if (type < 2)
+			//加入的工作站点信息,仅包含在状态
+			if (type >= 2 && workers.size() > 0)
 			{
-				json_add_num(node,"request_in", request_in);
-				json_add_num(node,"request_out", request_out);
-				json_add_num(node,"request_err", request_err);
-				json_add_num(node,"worker_in", worker_in);
-				json_add_num(node,"worker_out", worker_out);
-				json_add_num(node,"worker_err", worker_err);
 				acl::json_node& array = json.create_array();
 				for (auto& worker : workers)
 				{
 					acl::json_node& work = json.create_node();
-					json_add_num(work,"level", worker.second.level);
-					json_add_num(work,"state", worker.second.state);
-					json_add_num(work,"pre_time", worker.second.pre_time);
+					json_add_num(work, "level", worker.second.level);
+					json_add_num(work, "state", worker.second.state);
+					json_add_num(work, "pre_time", worker.second.pre_time);
 					json_add_str(work, "real_name", worker.second.real_name);
 					json_add_str(work, "ip_address", worker.second.ip_address);
 					array.add_child(work);
 				}
 				node.add_child("workers", array);
 			}
+
 			return node.to_string();
 		}
 	}

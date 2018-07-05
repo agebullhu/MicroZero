@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route
@@ -54,5 +55,10 @@ namespace ZeroNet.Http.Route
         /// 计数
         /// </summary>
         public int Count { get; set; }
+
+        public override string ToString()
+        {
+            return new DateTime(Time* 10000 + 621355968000000000).ToString();
+        }
     }
 }

@@ -49,6 +49,7 @@ namespace ZeroMQ
             SetIsFree(TypeName);
 #endif
             DoDispose();
+            GC.SuppressFinalize(this);
         }
         /// <summary>
         /// 析构

@@ -569,10 +569,10 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, char code, const char* global_id, const char* req_id, const char* reqer, const char* msg)
+			inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
 			{
-				char descirpt[8];
-				descirpt[1] = code;
+				uchar descirpt[8];
+				descirpt[1] = state;
 
 				int idx = 2;
 				if (reqer != nullptr)
@@ -618,8 +618,8 @@ namespace agebull
 					}
 				}
 
-				int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
-				if (state < 0)
+				int re = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
+				if (re < 0)
 				{
 					return check_zmq_error();
 				}
@@ -628,39 +628,39 @@ namespace agebull
 				//{
 				//	return check_zmq_error();
 				//}
-				state = zmq_send(socket, descirpt, idx + 1, descirpt_flags);
-				if (state < 0)
+				re = zmq_send(socket, descirpt, idx + 1, descirpt_flags);
+				if (re < 0)
 				{
 					return check_zmq_error();
 				}
 				if (reqer != nullptr)
 				{
-					state = zmq_send(socket, reqer, strlen(reqer), reqer_flags);
-					if (state < 0)
+					re = zmq_send(socket, reqer, strlen(reqer), reqer_flags);
+					if (re < 0)
 					{
 						return check_zmq_error();
 					}
 				}
 				if (msg != nullptr)
 				{
-					state = zmq_send(socket, msg, strlen(msg), msg_flags);
-					if (state < 0)
+					re = zmq_send(socket, msg, strlen(msg), msg_flags);
+					if (re < 0)
 					{
 						return check_zmq_error();
 					}
 				}
 				if (req_id != nullptr)
 				{
-					state = zmq_send(socket, req_id, strlen(req_id), reqId_flags);
-					if (state < 0)
+					re = zmq_send(socket, req_id, strlen(req_id), reqId_flags);
+					if (re < 0)
 					{
 						return check_zmq_error();
 					}
 				}
 				if (global_id != nullptr)
 				{
-					state = zmq_send(socket, global_id, strlen(global_id), ZMQ_DONTWAIT);
-					if (state < 0)
+					re = zmq_send(socket, global_id, strlen(global_id), ZMQ_DONTWAIT);
+					if (re < 0)
 					{
 						return check_zmq_error();
 					}

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
+using ZeroNet.Http.Route;
 
 namespace WebMonitor.Models
 {
@@ -29,7 +30,7 @@ namespace WebMonitor.Models
         ///     站点名称
         /// </summary>
         [DataMember, JsonProperty("short_name")]
-        public string ShortName { get; set; }
+        public string short_name { get; set; }
 
         /// <summary>
         ///     站点别名
@@ -67,6 +68,28 @@ namespace WebMonitor.Models
         [DataMember, JsonProperty("type")]
         public string Type { get; set; }
 
+
+        /// <summary>
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
+        [JsonProperty("is_base")]
+        public bool IsBaseStation { get; set; }
+
+        /// <summary>
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
+        [JsonProperty("is_general")]
+        public bool IsGeneralStation { get; set; }
+
+        /// <summary>
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
+        [JsonProperty("status")]
+        public StationCountItem Status { get; set; } = new StationCountItem();
+
         /// <summary>
         ///     构造
         /// </summary>
@@ -82,26 +105,28 @@ namespace WebMonitor.Models
         {
             Name = src.StationName;
             Description = src.Description;
-            ShortName = src.ShortName;
+            short_name = src.ShortName;
             Alias = src.StationAlias.LinkToString(',');
 
             switch (src.StationType)
             {
                 default:
                     Type = "Error"; break;
-                case ZeroStation.StationTypeApi:
+                case ZeroStationType.Api:
                     Type = "API"; break;
-                case ZeroStation.StationTypeDispatcher:
+                case ZeroStationType.Dispatcher:
                     Type = "Dispatcher"; break;
-                case ZeroStation.StationTypePublish:
+                case ZeroStationType.Publish:
                     Type = "Pub"; break;
-                case ZeroStation.StationTypeVote:
+                case ZeroStationType.Vote:
                     Type = "Vote"; break;
-                case ZeroStation.StationTypePlanDispatcher:
+                case ZeroStationType.Plan:
                     Type = "Plan"; break;
             }
             RequestAddress = src.RequestAddress;
             WorkerCallAddress = src.WorkerCallAddress;
+            IsGeneralStation = src.IsGeneralStation;
+            IsBaseStation  = src.IsBaseStation;
             WorkerResultAddress = src.WorkerResultAddress;
             State = src.State.ToString();
         }

@@ -28,25 +28,57 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 客户
         /// </summary>
-        Customer = 0x8,
-        /// <summary>
-        /// 商家用户
-        /// </summary>
-        Business = 0x10,
+        Customer = 0x10,
         /// <summary>
         /// 内部员工
         /// </summary>
         Employe = 0x20,
+        /// <summary>
+        /// 商家用户
+        /// </summary>
+        Business = 0x40,
+        /// <summary>
+        /// 扩展用户性质3
+        /// </summary>
+        User1 = 0x80,
+        /// <summary>
+        /// 扩展用户性质2
+        /// </summary>
+        User2 = 0x100,
+        /// <summary>
+        /// 扩展用户性质3
+        /// </summary>
+        User3 = 0x200,
+        /// <summary>
+        /// 扩展用户性质4
+        /// </summary>
+        User4 = 0x400,
+        /// <summary>
+        /// 扩展用户性质5
+        /// </summary>
+        User5 = 0x800,
+        /// <summary>
+        /// 扩展用户性质6
+        /// </summary>
+        User6 = 0x1000,
+        /// <summary>
+        /// 扩展用户性质7
+        /// </summary>
+        User7 = 0x4000,
+        /// <summary>
+        /// 扩展用户性质8
+        /// </summary>
+        User8 = 0x8000,
 
         /// <summary>
-        /// 无限制
+        /// 需要登录
         /// </summary>
-        Full = 0xFF,
+        LoginUser = 0xFFF0,
 
         /// <summary>
         /// 参数可以为null
         /// </summary>
-        ArgumentCanNil = 0x1000
+        ArgumentCanNil = 0x10000
     }
 
     /// <summary>

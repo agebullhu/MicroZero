@@ -66,7 +66,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void Run()
         {
-            var configs = ZeroApplication.Config.GetConfigs(p => p.StationType != ZeroStation.StationTypeDispatcher);
+            var configs = ZeroApplication.Config.GetConfigs(p => p.StationType != ZeroStationType.Dispatcher);
             ZSocket[] sockets = new ZSocket[configs.Length * 2];
             int idx = 0;
 

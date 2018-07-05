@@ -32,6 +32,51 @@ namespace ZeroNet.Http.Route
                     var dir = JsonConvert.DeserializeObject<Dictionary<string, List<KLine>>>(json);
                     if (dir != null)
                         KLines = dir;
+                    var now = DateTime.Now.AddMinutes(-1);//上一分钟
+                    BaseLine = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
+                    foreach (var items in KLines.Values.ToArray())
+                    {
+                        var array = items.ToArray();
+                        var line = GetTime(BaseLine);
+                        int cnt = 0;
+                        for (int idx = array.Length - 1; idx >= 0; idx++)
+                        {
+                            ++cnt;
+                            var sp = line - array[idx].Time;
+                            if (sp < 0)
+                                continue;
+                            if (sp == 0)
+                            {
+                                line -= 60000;//一分钟
+                                continue;
+                            }
+                            while (line > array[idx].Time && cnt <= 240)
+                            {
+                                if (idx == items.Count - 1)
+                                {
+                                    items.Add(new KLine
+                                    {
+                                        Time = line
+                                    });
+                                }
+                                else
+                                {
+                                    items.Insert(idx + 1, new KLine
+                                    {
+                                        Time = line
+                                    });
+                                }
+                                line -= 60000;
+                                ++cnt;
+                            }
+                            if(cnt > 240)
+                            {
+                                if (items.Count > 240)
+                                    items.RemoveRange(0, items.Count - 240);
+                                break;
+                            }
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
@@ -49,7 +94,11 @@ namespace ZeroNet.Http.Route
         {
             if (config == null)
                 return;
-            var json = JsonConvert.SerializeObject(new StationInfo(config));
+            var info = new StationInfo(config);
+            if (StationCountItems.TryGetValue(config.Name, out var status))
+                info.Status = status;
+            var json = JsonConvert.SerializeObject(info);
+
             WebSocketNotify.Publish("config", config.StationName, json);
         }
         private void StationEvent(ZeroNetEventArgument e)
@@ -63,7 +112,7 @@ namespace ZeroNet.Http.Route
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationUpdate:
-                case ZeroNetEventType.CenterStationUninstall:
+                case ZeroNetEventType.CenterStationRemove:
                     PublishConfig(e.EventConfig);
                     return;
                 case ZeroNetEventType.AppStop:
@@ -95,8 +144,12 @@ namespace ZeroNet.Http.Route
                     return;
             }
         }
-
-        long GetTime(DateTime time)
+        /// <summary>
+        /// 取1970年起的毫秒数
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        static long GetTime(DateTime time)
         {
             return (time.ToUniversalTime().Ticks - 621355968000000000) / 10000;
         }
@@ -124,8 +177,8 @@ namespace ZeroNet.Http.Route
                 item.CheckValue(station, now);
 
                 WebSocketNotify.Publish("status", station.StationName, JsonConvert.SerializeObject(item));
-                long value = station.StationType == ZeroStation.StationTypeApi ||
-                             station.StationType == ZeroStation.StationTypeVote
+                long value = station.StationType == ZeroStationType.Api ||
+                             station.StationType == ZeroStationType.Vote
                     ? item.LastTps
                     : item.LastQps;
                 if (minuteLine.TryGetValue(station.StationName, out var kLine))
@@ -172,7 +225,7 @@ namespace ZeroNet.Http.Route
             NewBaseTime();
             foreach (var key in KLines.Keys.ToArray())
             {
-                if(!minuteLine.TryGetValue(key,out var line))
+                if (!minuteLine.TryGetValue(key, out var line))
                 {
                     minuteLine.Add(key, line = new KLine
                     {
@@ -184,7 +237,7 @@ namespace ZeroNet.Http.Route
                     line.Avg = 0;
                 else
                     line.Avg = decimal.Round(line.Total / line.Count, 4);
-                while (KLines[key].Count > 200)
+                while (KLines[key].Count > 240)
                     KLines[key].RemoveAt(0);
                 KLines[key].Add(line);
                 WebSocketNotify.Publish("kline", key, JsonConvert.SerializeObject(line));

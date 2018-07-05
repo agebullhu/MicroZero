@@ -155,7 +155,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     RouteName = name,
 
                     Controller = type.FullName,
-                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Full,
+                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
                 };
                 station.Aips.Add(api.RouteName, api);
@@ -194,10 +194,27 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public void FindZeroObjects()
         {
-            var types = Assembly.GetTypes().Where(p => p.IsSupperInterface(typeof(IZeroObject))).ToArray();
-            foreach (var type in types)
+            Console.WriteLine(Assembly.Location);
+            Type[] types;
+            try
             {
-                ZeroApplication.RegistZeroObject(type.CreateObject() as IZeroObject);
+                types = Assembly.GetTypes().Where(p => p.IsSupperInterface(typeof(IZeroObject))).ToArray();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(p => p != null).ToArray();
+                Console.WriteLine(ex);
+            }
+            try
+            {
+                foreach (var type in types)
+                {
+                    ZeroApplication.RegistZeroObject(type.CreateObject() as IZeroObject);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
 
@@ -297,7 +314,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     Name = method.Name,
                     RouteName = name,
-                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Full,
+                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
                 };
                 station.Aips.Add(api.RouteName, api);
