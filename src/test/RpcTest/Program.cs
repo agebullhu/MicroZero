@@ -9,7 +9,7 @@ namespace RpcTest
         private static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
+            IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
             ZeroApplication.Initialize();
             ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
             ZeroApplication.RunAwaite();

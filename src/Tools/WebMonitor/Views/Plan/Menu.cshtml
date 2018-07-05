@@ -1,0 +1,114 @@
+﻿@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@using Agebull.Common.Ioc
+@using Agebull.ZeroNet.Core
+@{
+    var options = ZeroApplication.Config.GetConfigs().Where(p => !p.IsBaseStation).OrderBy(p => p.RequestPort).ToArray();
+}
+<el-aside class="message_boards" style="width:240px">
+    <el-menu default-active="type"
+             @@select="menu_select"
+             class="el-menu-vertical-demo"
+             background-color="#545c64"
+             text-color="#fff" unique-opened
+             active-text-color="#ffd04b">
+
+        <el-menu-item index="type-active">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>活动数据</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-history">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>历史数据</span>
+            </template>
+        </el-menu-item>
+        <el-submenu index="type">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>计划类型</span>
+            </template>
+            <el-menu-item-group>
+                <el-menu-item index="type-once">
+                    <template slot="title">
+                        <i class="el-icon-time"></i>
+                        <span>单次</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="type-time">
+                    <template slot="title">
+                        <i class="el-icon-time"></i>
+                        <span>定时</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="type-delay">
+                    <template slot="title">
+                        <i class="el-icon-bell"></i>
+                        <span>延时</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="type-week">
+                    <template slot="title">
+                        <i class="el-icon-date"></i>
+                        <span>每周</span>
+                    </template>
+                </el-menu-item>
+                <el-menu-item index="type-month">
+                    <template slot="title">
+                        <i class="el-icon-date"></i>
+                        <span>每月</span>
+                    </template>
+                </el-menu-item>
+            </el-menu-item-group>
+        </el-submenu>
+        <el-submenu index="station">
+            <template slot="title">
+                <i class="el-icon-menu"></i>
+                <span>站点</span>
+            </template>
+            <el-menu-item-group>
+                @foreach (var station in options)
+                {
+                    <el-menu-item index="station-@station.Name">
+                        <template slot="title">
+                            @switch (station.StationType)
+                            {
+                                case ZeroStationType.Api:
+                                    {
+                                        <i class="el-icon-star-on"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Vote:
+                                    {
+                                        <i class="el-icon-star-off"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Publish:
+                                    {
+                                        <i class="el-icon-share"></i>
+                                        break;
+                                    }
+                            }
+                            <span>@station.Name</span>
+                        </template>
+                    </el-menu-item>
+                }
+            </el-menu-item-group>
+        </el-submenu>
+
+        <el-menu-item index="operator-add">
+            <template slot="title">
+                <i class="el-icon-circle-plus-outline"></i>
+                <span>新增</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="operator-flush">
+            <template slot="title">
+                <i class="el-icon-refresh"></i>
+                <span>刷新</span>
+            </template>
+        </el-menu-item>
+    </el-menu>
+</el-aside>

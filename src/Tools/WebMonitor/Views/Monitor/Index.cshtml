@@ -1,0 +1,544 @@
+﻿@using Agebull.ZeroNet.Core
+@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@model StationConfig
+@{
+
+    int min = 0;
+    if (!string.IsNullOrEmpty(Url.ActionContext.HttpContext.Request.QueryString.Value))
+    {
+        var m = Url.ActionContext.HttpContext.Request.Query["m"];
+        if (string.IsNullOrEmpty(m) || !int.TryParse(m, out min))
+        {
+            min = 0;
+        }
+    }
+
+    var item = StationCounter.StationCountItems.ContainsKey(Model.Name) ? StationCounter.StationCountItems[Model.Name] : new StationCountItem();
+    var klines = StationCounter.KLines.ContainsKey(Model.Name) ? StationCounter.KLines[Model.Name] : new List<KLine>();
+    if (klines.Count > 60)
+    {
+        klines = klines.Skip(klines.Count - 60).ToList();
+    }
+    var lines = JsonConvert.SerializeObject(klines);
+    var config = new StationInfo(ZeroApplication.Config[Model.Name]);
+    var configJson = JsonConvert.SerializeObject(config, Formatting.Indented);
+
+    var status = JsonConvert.SerializeObject(new StationCountItem(), Formatting.Indented);
+
+    ViewData["Title"] = "Monitor";
+    ViewData["page"] = "monitor";
+
+    var stations = ZeroApplication.Config.GetConfigs().OrderBy(p => p.RequestPort).ToArray();
+}
+@section Styles    {
+    <style>
+        .chart_parent {
+            display: inline-block;
+            width: 248px
+        }
+
+        .chart_panel {
+            height: 248px;
+            min-width: 248px;
+            margin: 0 auto;
+            max-width: 248px;
+        }
+    </style>
+}
+@section InitScript{
+    <script>
+    var config=@Html.Raw(configJson);
+    config.status=@Html.Raw(status);
+        extend_data({
+            config: config,
+            activePanel: "real"
+        });
+
+        extend_methods({
+            menu_select: function (index, indexPath) {
+                location.href = "/Monitor/Index/" + index;
+            }
+        });
+    </script>
+}
+@section Charts{
+    <script>
+        var ws_status = new ws({
+            address: "ws://" + location.host + "/status",
+            sub: "@Model.Name",
+            onmessage: on_status
+        });
+        ws_status.open();
+        var ws_kline = new ws({
+            address: "ws://" + location.host + "/kline",
+            sub: "@Model.Name",
+            onmessage: on_kline
+        });
+        ws_kline.open();
+        var chart_q_late = Highcharts.chart('q_late',
+            gauge_chart_option(@(item.MaxQps * 1.5),
+                {
+                    title: {
+                        text: 'Last QPS'
+                    },
+                    series: [
+                        {
+                            name: 'Speed',
+                            data: [@item.LastQps],
+                            tooltip: {
+                                valueSuffix: '/s'
+                            }
+                        }
+                    ]
+                }));
+        var chart_q_avg = Highcharts.chart('q_avg',
+            gauge_chart_option(@(item.MaxQps * 1.5),
+                {
+                    title: {
+                        text: 'Avg QPS'
+                    },
+                    series: [
+                        {
+                            name: 'Speed',
+                            data: [@item.AvgQps],
+                            tooltip: {
+                                valueSuffix: '/s'
+                            }
+                        }
+                    ]
+                }));
+        
+        var chart_q_max = Highcharts.chart('q_max',
+            gauge_chart_option(@(item.MaxQps * 1.5),
+                {
+                    title: {
+                        text: 'Avg QPS'
+                    },
+                    series: [
+                        {
+                            name: 'Speed',
+                            data: [@item.MaxQps],
+                            tooltip: {
+                                valueSuffix: '/s'
+                            }
+                        }
+                    ]
+                }));
+        @if (config.Type == "API")
+        {
+            <text>
+
+                var chart_t_late = Highcharts.chart('t_late',
+                    gauge_chart_option(@(item.MaxTps * 1.5),
+                        {
+                            title: {
+                                text: 'Last TPS'
+                            },
+                            series: [
+                                {
+                                    name: 'Speed',
+                                    data: [@item.LastTps],
+                                    tooltip: {
+                                        valueSuffix: '/s'
+                                    }
+                                }
+                            ]
+                }));
+
+        var chart_t_max = Highcharts.chart('t_max',
+                    gauge_chart_option(@(item.MaxTps * 1.5),
+                        {
+                            title: {
+                                text: 'Last TPS'
+                            },
+                            series: [
+                                {
+                                    name: 'Speed',
+                                    data: [@item.MaxTps],
+                                    tooltip: {
+                                        valueSuffix: '/s'
+                                    }
+                                }
+                            ]
+                        }));
+                var chart_t_avg = Highcharts.chart('t_avg',
+                    gauge_chart_option(@(item.MaxTps * 1.5),
+                        {
+                            title: {
+                                text: 'Avg TPS'
+                            },
+                            series: [
+                                {
+                                    name: 'Speed',
+                                    data: [@item.AvgTps],
+                                    tooltip: {
+                                        valueSuffix: '/s'
+                                    }
+                                }
+                            ]
+                        }));
+                var chart_t_hungry = Highcharts.chart('t_hungry',
+                    gauge_chart_option(@(item.MaxTps*1.5),
+                        {
+                            title: {
+                                text: 'TPS hungry'
+                            },
+                            series: [
+                                {
+                                    name: 'Speed',
+                                    data: [@(config.Type == "API" ? item.RequestIn - item.RequestOut : 0)]
+                                }
+                            ]
+                        }));
+                // 转速仪表
+                var chart_q_hungry = Highcharts.chart('q_hungry',
+                    gauge_chart_option(@(item.MaxQps * 1.5),
+                        {
+                            title: {
+                                text: 'QPS hungry'
+                            },
+                            series: [
+                                {
+                                    name: 'Speed',
+                                    data: [@(config.Type == "API" ? item.WorkerOut - item.WorkerIn : 0)]
+                                }
+                            ]
+                        }));
+                var chart_t_container = Highcharts.chart('t_container',
+                    line_chart_option({
+                        title: {
+                            text: 'TPS'
+                        },
+                        @if (min >= 0)
+                {
+                    <text>
+                        yAxis: {
+                            min: 0
+                        },
+                    </text>
+                }
+                        series: [
+                            {
+                                name: 'TPS',
+                                data: (function() {
+                                    // 生成随机值
+                                    var data = [],
+                                        time = (new Date()).getTime();
+                                    for (var i = -36; i <= 0; i += 1) {
+                                        data.push({
+                                            x: time + i * 1000,
+                                            y: @item.LastTps
+                                        });
+                                    }
+                                    return data;
+                                }())
+                            }
+                        ]
+                    }));
+            </text>
+        }
+
+
+        var chart_q_container = Highcharts.chart('q_container',
+            line_chart_option({
+                title: {
+                    text: 'QPS'
+                },
+                @if (min >= 0)
+                {
+                    <text>
+                        yAxis: {
+                            min: 0
+                        },
+                    </text>
+                }
+                series: [
+                    {
+                        name: 'TPS',
+                        data: (function() {
+                            // 生成随机值
+                            var data = [],
+                                time = (new Date()).getTime();
+                            for (var i = -36; i <= 0; i += 1) {
+                                data.push({
+                                    x: time + i * 1000,
+                                    y: @item.LastQps
+                                });
+                            }
+                            return data;
+                        }())
+                    }
+                ]
+            }));
+
+        var pre = 0;
+        var count = 0;
+        var pre_avg = 0;
+
+        function check_k_avg(item) {
+            count++;
+            //item.x = new Date(item.x);
+            item.color = pre > item.q3 ? "blue" : "red";
+            item.fillColor = pre > item.q3 ? "white" : "red";
+            pre = item.q3;
+            var avg = {
+                x: item.x,
+                y: item.Avg,
+                marker: { fillColor: pre_avg < item.Avg ? "red" : "blue" }
+            };
+            pre_avg = item.Avg;
+            return avg;
+        }
+
+        var klines = eval('(@Html.Raw(lines))');
+        var kavgs = [];
+        var idx = 0;
+        for (; idx < klines.length; idx++) {
+            kavgs.push(check_k_avg(klines[idx]));
+        }
+        var chart = Highcharts.chart('container',
+            {
+                credits: {
+                    enabled: false
+                },
+                title: {
+                    text: '请求量分钟K线'
+                },
+                legend: {
+                    enabled: false
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150
+                },
+                @if (min >= 0)
+                {
+                    <text>
+                        yAxis: {
+                            min: 0
+                        },
+                    </text>
+                }
+                plotOptions: {
+                    spline: {
+                        lineWidth: 1,
+                        states: {
+                            hover: {
+                                lineWidth: 1
+                            }
+                        },
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [
+                    {
+                    name: 'K线',
+                        type: 'boxplot',
+                        color: "blue",
+                        data: klines,
+                        tooltip: {
+                        pointFormat:
+                        '<span style="color:{point.color}">\u25CF</span> <b> {series.name}</b><br/>' + // eslint-disable-line no-dupe-keys
+                            '最大: {point.high}<br/>' +
+                            '开始\t: {point.q3}<br/>' +
+                            '结束\t: {point.q1}<br/>' +
+                            '最小: {point.low}<br/>'
+                        }
+                }, {
+                    name: '均线',
+                        type: 'spline',
+                        lineColor: "green",
+                        data: kavgs,
+                        tooltip: {
+                        pointFormat: '平均值 : {point.y}'
+                        }
+                }
+                ]
+            });
+
+        function on_status(item) {
+            Vue.set(vue_option.data.config, "status", item);
+            var time = (new Date()).getTime();
+            update_chart(chart_q_late, item.LastQps);
+            update_chart(chart_q_avg, item.AvgQps);
+            update_chart(chart_q_max, item.MaxQps);
+            chart_q_container.series[0].addPoint([time, item.LastQps], true, true);
+            @if (config.Type == "API")
+            {
+                <text>
+            update_chart(chart_t_late, item.LastTps);
+            update_chart(chart_t_avg, item.AvgTps);
+            update_chart(chart_t_max, item.MaxTps);
+                    update_chart(chart_q_hungry, item.request_in - item.request_out);
+                    update_chart(chart_t_hungry, item.worker_out - item.worker_in);
+                    chart_t_container.series[0].addPoint([time, item.LastTps], true, true);
+                </text>
+            }
+        }
+
+        function on_kline(item) {
+            chart.series[1].addPoint(check_k_avg(item), true, count > 100);
+            chart.series[0].addPoint(item, true, count > 100);
+        }
+    </script>
+}
+
+@section Menus{
+    <el-aside class="message_boards" style="width:240px">
+        <el-menu default-active="@Model.Name"
+                 @@select="menu_select"
+                 class="el-menu-vertical-demo"
+                 background-color="#545c64"
+                 text-color="#fff" unique-opened
+                 active-text-color="#ffd04b">
+            @foreach (var station in stations)
+            {
+                <el-menu-item index="@station.Name">
+                    <template slot="title">
+                        @switch (station.StationType)
+                        {
+                            case ZeroStationType.Api:
+                                {
+                                    <i class="el-icon-star-on"></i>
+                                    break;
+                                }
+                            case ZeroStationType.Vote:
+                                {
+                                    <i class="el-icon-star-off"></i>
+                                    break;
+                                }
+                            case ZeroStationType.Publish:
+                                {
+                                    <i class="el-icon-share"></i>
+                                    break;
+                                }
+                            case ZeroStationType.Plan:
+                                {
+                                    <i class="el-icon-time"></i>
+                                    break;
+                                }
+                            case ZeroStationType.Dispatcher:
+                                {
+                                    <i class="el-icon-setting"></i>
+                                    break;
+                                }
+                        }
+                        <span>@station.Name</span>
+                    </template>
+                </el-menu-item>
+            }
+        </el-menu>
+    </el-aside>
+}
+
+<el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">
+    <el-main style="width:100%;height:100%;margin:0;padding:0;overflow:auto">
+        <div style="width:100%;margin:0;padding:0;overflow:visible">
+            <div style="display: inline-block; width: 100%">
+                <div id="container" style="height: 300px; min-width: 280px;"></div>
+            </div>
+            <div>
+                <div class="chart_parent">
+                    <div id="q_late" class="chart_panel"></div>
+                </div>
+                <div class="chart_parent">
+                    <div id="q_avg" class="chart_panel"></div>
+                </div>
+                <div style="color: white; display: inline-block; width: 49%;">
+                    <div id="q_container" style="height: 240px; min-width: 400px;"></div>
+                </div>
+            </div>
+            @if (config.Type == "API")
+            {
+                <div>
+                    <div class="chart_parent">
+                        <div id="t_late" class="chart_panel"></div>
+                    </div>
+                    <div class="chart_parent">
+                        <div id="t_avg" class="chart_panel"></div>
+                    </div>
+                    <div style="display: inline-block; width: 49%">
+                        <div id="t_container" style="height: 240px; min-width: 400px;"></div>
+                    </div>
+                </div>
+            }
+            <div>
+                <div class="chart_parent">
+                    <div id="q_hungry" class="chart_panel"></div>
+                </div>
+                @if (config.Type == "API")
+                {
+                    <div class="chart_parent">
+                        <div id="t_hungry" class="chart_panel"></div>
+                    </div>
+                }
+                <div class="chart_parent">
+                    <div id="q_max" class="chart_panel"></div>
+                </div>
+                @if (config.Type == "API")
+                {
+                    <div class="chart_parent">
+                        <div id="t_max" class="chart_panel"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </el-main>
+
+    <el-aside class="message_boards" style="height:100%;line-height:30px;padding:10px;text-align:left;width:300px;border:solid 1px whitesmoke">
+        <div style="height:100%;width:100%;overflow: hidden;">
+            <div style="height:100%;overflow: hidden; width:260px;margin:0 20px  0 20px;">
+                <el-tabs v-model="activePanel" class="tiled">
+                    <el-tab-pane label="实时信息" name="real">
+
+                        <div>
+                            <h3>
+                                Client
+                            </h3>
+                            <div><span class="my_label">Request</span> : {{config.status.request_in | thousandsNumber}}</div>
+                            <div><span class="my_label">Result</span> : {{config.status.request_out | thousandsNumber}}</div>
+                            <div><span class="my_label">Error</span> : {{config.status.request_err | thousandsNumber}}</div>
+                            <div><span class="my_label">Total</span> : {{config.status.TotalQps | thousandsNumber}}</div>
+                            <div><span class="my_label">Avg</span> : {{config.status.AvgQps | thousandsNumber}}/s</div>
+                            <div><span class="my_label">Max</span> : {{config.status.MaxQps | thousandsNumber}}/s</div>
+                            <div><span class="my_label">Min</span> : {{config.status.MinQps | thousandsNumber}}/s</div>
+                            <div><span class="my_label">Last</span> : {{config.status.LastQps | thousandsNumber}}/s</div>
+                        </div>
+                        <div>
+                            <h3>
+                                Worker
+                            </h3>
+                            <template v-if="config.type == 'API'">
+                                <div><span class="my_label">Issued</span> : {{config.status.worker_out | thousandsNumber}}</div>
+                                <div><span class="my_label">Result</span> : {{config.status.worker_in | thousandsNumber}}</div>
+                                <div><span class="my_label">Error</span> : {{config.status.worker_err | thousandsNumber}}</div>
+                                <div><span class="my_label">Total</span> : {{config.status.TotalTps | thousandsNumber}}</div>
+                                <div><span class="my_label">Avg</span> : {{config.status.AvgTps | thousandsNumber}}/s</div>
+                                <div><span class="my_label">Max</span> : {{config.status.MaxTps | thousandsNumber}}/s</div>
+                                <div><span class="my_label">Min</span> : {{config.status.MinTps | thousandsNumber}}/s</div>
+                                <div><span class="my_label">Last</span> : {{config.status.LastTps | thousandsNumber}}/s</div>
+                            </template>
+                            <template v-else>
+                                <div><span class="my_label">Publish</span> : {{config.status.worker_out}}</div>
+                            </template>
+                        </div>
+                    </el-tab-pane>
+                    <el-tab-pane label="工作站点" name="workers">
+                        <template v-for="worker in config.status.workers">
+                            <el-rate v-model="worker.level"
+                                     disabled
+                                     text-color="#ff9900"
+                                     score-template="{value}">
+                            </el-rate>
+                            {{worker.real_name}} ({{worker.state_text}})
+                        </template>
+                    </el-tab-pane>
+                </el-tabs>
+            </div>
+        </div>
+    </el-aside>
+</el-container>
+

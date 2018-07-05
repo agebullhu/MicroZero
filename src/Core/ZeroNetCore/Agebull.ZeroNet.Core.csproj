@@ -1,0 +1,94 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>
+      实现消息队列功能：
+      1 Api站点
+      2 消息发布与订阅
+      3 网络投票（并行工作流）
+    </Description>
+    <Version>1.0.7</Version>
+    <!--monoandroid60;xamarinios10-->
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
+    <Product>Agebull.ZeroNet</Product>
+    <AssemblyVersion>1.0.7</AssemblyVersion>
+    <FileVersion>1.0.7</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DefineConstants>RELEASE;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Entity\**" />
+    <Compile Remove="Rpc\**" />
+    <Compile Remove="Services\**" />
+    <EmbeddedResource Remove="Entity\**" />
+    <EmbeddedResource Remove="Rpc\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <None Remove="Entity\**" />
+    <None Remove="Rpc\**" />
+    <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Config\ZeroCommandStatus.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="PubSub\LogQueue.cs" />
+    <Compile Remove="Queue\PublishQueue.cs" />
+    <Compile Remove="Queue\SyncQueue.cs" />
+    <Compile Remove="Queue\TaskQueue.cs" />
+    <Compile Remove="ZeroApi\ApiStationItem.cs" />
+    <Compile Remove="Application\ZeroHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.1.5.1" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroMq\ClrZMQ.Core.csproj" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\hotfix\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\hotfix\ /y" />
+  </Target>
+
+</Project>

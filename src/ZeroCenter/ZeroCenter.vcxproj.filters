@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sys">
+      <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\redis">
+      <UniqueIdentifier>{74d6ab0d-ffc5-4b5b-aecc-2f702db1d183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\log">
+      <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sys\cfg">
+      <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="std">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="rpc">
+      <UniqueIdentifier>{8f194ee2-b34a-45ea-bd93-102a50bff2be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\api">
+      <UniqueIdentifier>{e336a74d-efed-4638-a212-f071cd14f3db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\notify">
+      <UniqueIdentifier>{ac451bbb-4dc9-4e3d-80a4-b59cf0fdc4e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\dispatcher">
+      <UniqueIdentifier>{6bba6483-3314-4a1d-9599-86c60b6f58ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\zero">
+      <UniqueIdentifier>{9acc0348-03c0-45b1-8a1d-a74ca8e01f9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\plan">
+      <UniqueIdentifier>{b82920b1-a36b-45d2-a82e-cce913d80b1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\zmq">
+      <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="log\mylogger.cpp">
+      <Filter>sys\log</Filter>
+    </ClCompile>
+    <ClCompile Include="main\main.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="main\service.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\zmq_extend.cpp">
+      <Filter>rpc\zmq</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\station_dispatcher.cpp">
+      <Filter>rpc\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\broadcasting_station.cpp">
+      <Filter>rpc\notify</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\zero_station.cpp">
+      <Filter>rpc\zero</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\api_station.cpp">
+      <Filter>rpc\api</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\station_warehouse.cpp">
+      <Filter>rpc\dispatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\redis.cpp">
+      <Filter>sys\redis</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\net_crc.cpp">
+      <Filter>sys</Filter>
+    </ClCompile>
+    <ClCompile Include="cfg\json_config.cpp">
+      <Filter>sys\cfg</Filter>
+    </ClCompile>
+    <ClCompile Include="main\sig.cpp">
+      <Filter>main</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\zero_config.cpp">
+      <Filter>rpc\zero</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\zero_plan.cpp">
+      <Filter>rpc\plan</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\plan_dispatcher.cpp">
+      <Filter>rpc\plan</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="boostinc.h">
+      <Filter>std</Filter>
+    </ClInclude>
+    <ClInclude Include="stdinc.h">
+      <Filter>std</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\redis.h">
+      <Filter>sys\redis</Filter>
+    </ClInclude>
+    <ClInclude Include="log\mylogger.h">
+      <Filter>sys\log</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>std</Filter>
+    </ClInclude>
+    <ClInclude Include="main\service.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\tm_extend.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zmq_extend.h">
+      <Filter>rpc\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\station_dispatcher.h">
+      <Filter>rpc\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\broadcasting_station.h">
+      <Filter>rpc\notify</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_station.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\api_station.h">
+      <Filter>rpc\api</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\station_warehouse.h">
+      <Filter>rpc\dispatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_config.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="cfg\json_config.h">
+      <Filter>sys\cfg</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_plan.h">
+      <Filter>rpc\plan</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\plan_dispatcher.h">
+      <Filter>rpc\plan</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\shared_char.h">
+      <Filter>sys</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\inner_socket.h">
+      <Filter>rpc\zmq</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_net.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_default.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="zero_center.json" />
+  </ItemGroup>
+</Project>

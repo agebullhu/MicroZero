@@ -1,0 +1,26 @@
+﻿@using Newtonsoft.Json
+@using ZeroNet.Http.Route
+@using Agebull.Common.Ioc
+@using Agebull.ZeroNet.Core
+@{
+    ViewData["Title"] = "Task & Plan";
+    ViewData["page"] = "plan";
+}
+@section Styles{
+    <partial name="Style" />
+}
+@section InitScript{
+    <script>
+        var plans = @(Html.Raw(JsonConvert.SerializeObject(PlanManage.Plans.Values)));
+    </script>
+}
+@section VUE{
+    <partial name="MenuJs" />
+    <partial name="TableJs" />
+    <partial name="FormJs" />
+}
+@section Menus{
+    <partial name="Menu" />
+}
+<partial name="Table" />
+<partial name="Form" />

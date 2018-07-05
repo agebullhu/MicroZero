@@ -1,8 +1,0 @@
-version: '3'
-
-services:
-  agebull.zeronet.healthcenter:
-    image: agebullzeronethealthcenter
-    build:
-      context: .
-      dockerfile: HealthCenter/HealthCenter/Dockerfile
