@@ -3,17 +3,6 @@
 @using ZeroNet.Http.Route
 @model StationConfig
 @{
-
-    int min = 0;
-    if (!string.IsNullOrEmpty(Url.ActionContext.HttpContext.Request.QueryString.Value))
-    {
-        var m = Url.ActionContext.HttpContext.Request.Query["m"];
-        if (string.IsNullOrEmpty(m) || !int.TryParse(m, out min))
-        {
-            min = 0;
-        }
-    }
-
     var item = StationCounter.StationCountItems.ContainsKey(Model.Name) ? StationCounter.StationCountItems[Model.Name] : new StationCountItem();
     var klines = StationCounter.KLines.ContainsKey(Model.Name) ? StationCounter.KLines[Model.Name] : new List<KLine>();
     if (klines.Count > 60)
@@ -30,6 +19,35 @@
     ViewData["page"] = "monitor";
 
     var stations = ZeroApplication.Config.GetConfigs().OrderBy(p => p.RequestPort).ToArray();
+
+    long min = 0;
+    long max=0;
+    if (!string.IsNullOrEmpty(Url.ActionContext.HttpContext.Request.QueryString.Value))
+    {
+        var m = Url.ActionContext.HttpContext.Request.Query["min"];
+        if (string.IsNullOrEmpty(m) || !long.TryParse(m, out min))
+        {
+            min = 0;
+        }
+        var x = Url.ActionContext.HttpContext.Request.Query["max"];
+        if (string.IsNullOrEmpty(x) || !long.TryParse(x, out max))
+        {
+            max = 0;
+        }
+    }
+    if(max == 0)
+    {
+        max = (long)(item.MaxQps * 1.5);
+        if(item.AvgQps > 0 && (max / item.AvgQps) > 4)
+        {
+            max = item.AvgQps * 4;
+        }
+    }
+
+    if (max < 1000)
+    {
+        max = 1000;
+    }
 }
 @section Styles    {
     <style>
@@ -57,7 +75,7 @@
 
         extend_methods({
             menu_select: function (index, indexPath) {
-                location.href = "/Monitor/Index/" + index;
+                location.href = "/Monitor/Index/" + index + "?min=@min&max=@max";
             }
         });
     </script>
@@ -77,7 +95,7 @@
         });
         ws_kline.open();
         var chart_q_late = Highcharts.chart('q_late',
-            gauge_chart_option(@(item.MaxQps * 1.5),
+            gauge_chart_option(@max,
                 {
                     title: {
                         text: 'Last QPS'
@@ -93,7 +111,7 @@
                     ]
                 }));
         var chart_q_avg = Highcharts.chart('q_avg',
-            gauge_chart_option(@(item.MaxQps * 1.5),
+            gauge_chart_option(@max,
                 {
                     title: {
                         text: 'Avg QPS'
@@ -110,10 +128,10 @@
                 }));
         
         var chart_q_max = Highcharts.chart('q_max',
-            gauge_chart_option(@(item.MaxQps * 1.5),
+            gauge_chart_option(@max,
                 {
                     title: {
-                        text: 'Avg QPS'
+                        text: 'Max QPS'
                     },
                     series: [
                         {
@@ -130,7 +148,7 @@
             <text>
 
                 var chart_t_late = Highcharts.chart('t_late',
-                    gauge_chart_option(@(item.MaxTps * 1.5),
+                    gauge_chart_option(@(max / 2),
                         {
                             title: {
                                 text: 'Last TPS'
@@ -147,10 +165,10 @@
                 }));
 
         var chart_t_max = Highcharts.chart('t_max',
-                    gauge_chart_option(@(item.MaxTps * 1.5),
+                    gauge_chart_option(@(max / 2),
                         {
                             title: {
-                                text: 'Last TPS'
+                                text: 'Max TPS'
                             },
                             series: [
                                 {
@@ -163,7 +181,7 @@
                             ]
                         }));
                 var chart_t_avg = Highcharts.chart('t_avg',
-                    gauge_chart_option(@(item.MaxTps * 1.5),
+                    gauge_chart_option(@(max / 2),
                         {
                             title: {
                                 text: 'Avg TPS'
@@ -179,7 +197,7 @@
                             ]
                         }));
                 var chart_t_hungry = Highcharts.chart('t_hungry',
-                    gauge_chart_option(@(item.MaxTps*1.5),
+                    gauge_chart_option(@(max / 2),
                         {
                             title: {
                                 text: 'TPS hungry'
@@ -193,7 +211,7 @@
                         }));
                 // 转速仪表
                 var chart_q_hungry = Highcharts.chart('q_hungry',
-                    gauge_chart_option(@(item.MaxQps * 1.5),
+                    gauge_chart_option(@max,
                         {
                             title: {
                                 text: 'QPS hungry'
@@ -277,6 +295,8 @@
         var pre_avg = 0;
 
         function check_k_avg(item) {
+            if (item == null)
+                return;
             count++;
             //item.x = new Date(item.x);
             item.color = pre > item.q3 ? "blue" : "red";

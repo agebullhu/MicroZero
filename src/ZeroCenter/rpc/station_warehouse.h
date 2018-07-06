@@ -209,7 +209,7 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			static bool heartbeat(char cmd, vector<shared_char> lines);
+			static bool heartbeat(uchar cmd, vector<shared_char> lines);
 		};
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using Agebull.ZeroNet.ZeroApi;
+using System.ComponentModel;
 
 namespace ApiTest
 {
@@ -21,12 +22,13 @@ namespace ApiTest
         //{
         //    RegistAction<LoginArg, ApiResult>("api/login", Login, ApiAccessOption.Anymouse);
         //}
+
         /// <summary>
         /// 登录
         /// </summary>
         /// <param name="user">用户信息</param>
         /// <returns></returns>
-        [Route("api/login")]
+        [Route("api/login"), Category("登录")]
         public ApiResult Login(LoginArg user)
         {
             return new ApiResult
@@ -34,6 +36,7 @@ namespace ApiTest
                 Success = true,
                 Status = new ApiStatsResult
                 {
+                    ErrorCode = 0,
                     ClientMessage = $"Wecome {user.MobilePhone}!"
                 }
             };

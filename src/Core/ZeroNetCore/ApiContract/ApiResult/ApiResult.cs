@@ -116,7 +116,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     逻辑错误字符串
         /// </summary>
-        public static readonly string LogicalErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.LogicalError));
+        public static readonly string LogicalErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.LogicalError,"逻辑错误"));
 
         /// <summary>
         ///     拒绝访问的Json字符串
@@ -134,23 +134,27 @@ namespace Agebull.ZeroNet.ZeroApi
         public static readonly string NetworkErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.NetworkError));
 
         /// <summary>
-        ///     服务器访问异常
+        ///     本地错误
         /// </summary>
         public static readonly string LocalErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.LocalError));
 
         /// <summary>
-        ///     服务器访问异常
+        ///     本地访问异常
         /// </summary>
         public static readonly string LocalExceptionJson = JsonConvert.SerializeObject(Error(ErrorCode.LocalException));
         /// <summary>
         ///     系统未就绪
         /// </summary>
         public static readonly string NoReadyJson = JsonConvert.SerializeObject(Error(ErrorCode.NoReady));
+        /// <summary>
+        ///     暂停服务
+        /// </summary>
+        public static readonly string PauseJson = JsonConvert.SerializeObject(Error(ErrorCode.NoReady, "暂停服务"));
 
         /// <summary>
-        /// 参数错误的Json文本
+        /// 成功的Json文本
         /// </summary>
-        /// <remarks>参数校验不通过</remarks>
+        /// <remarks>成功</remarks>
         public static readonly string SucceesJson = JsonConvert.SerializeObject(Succees());
 
         /// <summary>
@@ -162,13 +166,13 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 网络超时的Json文本
         /// </summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static readonly string TimeOutJson = JsonConvert.SerializeObject(Error(ErrorCode.NetworkError));
+        public static readonly string TimeOutJson = JsonConvert.SerializeObject(Error(ErrorCode.NetworkError, "网络超时"));
 
         /// <summary>
         /// 内部错误的Json文本
         /// </summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
-        public static readonly string InnerErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.LocalError));
+        public static readonly string InnerErrorJson = JsonConvert.SerializeObject(Error(ErrorCode.LocalError, "内部错误"));
 
         /// <summary>
         /// 服务不可用的Json文本

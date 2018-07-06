@@ -277,7 +277,7 @@ namespace agebull
 			/**
 			* \brief 删除一个消息
 			*/
-			bool remove() const;
+			bool remove();
 
 			/**
 			* \brief 保存消息

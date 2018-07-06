@@ -211,6 +211,8 @@ namespace ZeroMQ
         /// <returns>是否发送成功</returns>
         public bool SendTo(params byte[][] array)
         {
+            if (array.Length == 0)
+                return false;
             _error = null;
             int i = 0;
             bool first = true;
@@ -224,7 +226,7 @@ namespace ZeroMQ
             }
             using (var f = new ZFrame(array[i]))
                 return Send(f, first, 1, ref retry);
-        }
+        } 
 
         /// <summary>
         /// 发送
@@ -1061,9 +1063,11 @@ namespace ZeroMQ
                 return false;
             }
             error = _error = default(ZError);
-            lock (AliveSockets)
+            try{
                 AliveSockets.Add(this);
 
+            }
+            catch { }
             return true;
         }
 
@@ -1120,8 +1124,11 @@ namespace ZeroMQ
                     return false;
                 }
             }
-            lock (AliveSockets)
+            try
+            {
                 AliveSockets.Remove(this);
+            }
+            catch { }
             SocketPtr = IntPtr.Zero;
             return true;
         }
@@ -1277,7 +1284,15 @@ namespace ZeroMQ
 
             using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
             {
-                if (-1 == zmq.disconnect(SocketPtr, endpointPtr))
+                try
+                {
+                    if (-1 == zmq.disconnect(SocketPtr, endpointPtr))
+                    {
+                        error = _error = ZError.GetLastErr();
+                        return false;
+                    }
+                }
+                catch
                 {
                     error = _error = ZError.GetLastErr();
                     return false;

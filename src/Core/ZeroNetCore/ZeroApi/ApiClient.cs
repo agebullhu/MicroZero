@@ -186,10 +186,14 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.Failed:
                 case ZeroOperatorStateType.Bug:
                     //ApiContext.Current.LastError = ErrorCode.LocalError;
-                    _json = ApiResult.NetworkErrorJson;
+                    _json = ApiResult.LogicalErrorJson;
+                    return;
+                case ZeroOperatorStateType.Pause:
+                    //ApiContext.Current.LastError = ErrorCode.LocalError;
+                    _json = ApiResult.LogicalErrorJson;
                     return;
                 default:
-                    _json = ApiResult.UnknowErrorJson;
+                    _json = ApiResult.PauseJson;
                     return;
                 case ZeroOperatorStateType.Ok:
                     //ApiContext.Current.LastError = ErrorCode.Success;
@@ -312,7 +316,7 @@ namespace Agebull.ZeroNet.ZeroApi
         private static readonly byte[] CallDescription =
         {
             6,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.Command,
             ZeroFrameType.RequestId,
             ZeroFrameType.Context,
@@ -327,7 +331,7 @@ namespace Agebull.ZeroNet.ZeroApi
         private static readonly byte[] GetGlobalIdDescription =
         {
             1,
-            ZeroByteCommand.GetGlobalId,
+            (byte)ZeroByteCommand.GetGlobalId,
             ZeroFrameType.Requester,
             ZeroFrameType.End
         };
@@ -338,7 +342,7 @@ namespace Agebull.ZeroNet.ZeroApi
         private static readonly byte[] CloseDescription =
         {
             2,
-            ZeroByteCommand.Close,
+            (byte)ZeroByteCommand.Close,
             ZeroFrameType.Requester,
             ZeroFrameType.GlobalId
         };
@@ -349,7 +353,7 @@ namespace Agebull.ZeroNet.ZeroApi
         private static readonly byte[] FindDescription =
         {
             2,
-            ZeroByteCommand.Find,
+            (byte)ZeroByteCommand.Find,
             ZeroFrameType.Requester,
             ZeroFrameType.GlobalId
         };
@@ -363,6 +367,12 @@ namespace Agebull.ZeroNet.ZeroApi
                 //ZeroTrace.WriteError("GetGlobalId", "Send Failed", station, commmand, argument);
                 //ApiContext.Current.LastError = ErrorCode.NetworkError;
                 State = ZeroOperatorStateType.LocalSendError;
+                return;
+            }
+            if (result.State == ZeroOperatorStateType.Pause)
+            {
+                socket.HaseFailed = true;
+                State = ZeroOperatorStateType.Pause;
                 return;
             }
 
@@ -487,7 +497,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 var result = new ZeroResultData
                 {
                     InteractiveSuccess = true,
-                    State = (ZeroOperatorStateType) description[1]
+                    State = (ZeroOperatorStateType)description[1]
                 };
                 for (var idx = 1; idx < end; idx++)
                     result.Add(description[idx + 1], Encoding.UTF8.GetString(messages[idx].Read()));

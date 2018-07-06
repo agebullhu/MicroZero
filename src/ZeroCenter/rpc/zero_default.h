@@ -129,6 +129,7 @@ namespace agebull
 #define ZERO_STATUS_VOTE_CLOSED_ID uchar(0x75)
 
 #define ZERO_STATUS_FAILED_ID uchar(0x80)
+#define ZERO_STATUS_PAUSE_ID uchar(0x81)
 
 #define ZERO_STATUS_BUG_ID uchar(0xD0)
 #define ZERO_STATUS_FRAME_INVALID_ID uchar(0xD1)
@@ -213,6 +214,8 @@ namespace agebull
 		  */
 		inline acl::string desc_str(bool in, char* desc, size_t len)
 		{
+			if (desc == nullptr || len == 0)
+				return "[EMPTY]";
 			acl::string str;
 			str.format_append("{\"size\":%d", desc[0]);
 			uchar state = *reinterpret_cast<uchar*>(desc + 1);

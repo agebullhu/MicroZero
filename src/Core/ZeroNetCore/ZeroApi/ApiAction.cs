@@ -33,7 +33,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     是否可能存在用户信息
         /// </summary>
-        public bool HaseUser => (Access & ApiAccessOption.LoginUser) > ApiAccessOption.None;
+        public bool HaseUser => (Access & (ApiAccessOption)0xFFF0) > ApiAccessOption.None;
         
         /// <summary>
         ///     参数类型

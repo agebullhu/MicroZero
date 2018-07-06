@@ -175,8 +175,8 @@ namespace agebull
 		*/
 		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
 		{
-			char* const buf = list[1].get_buffer();
-			switch (buf[1])
+			auto state = list[1].state();
+			switch (state)
 			{
 			case ZERO_BYTE_COMMAND_PING:
 				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID);
@@ -185,7 +185,7 @@ namespace agebull
 			case ZERO_BYTE_COMMAND_HEART_READY:
 			case ZERO_BYTE_COMMAND_HEART_PITPAT:
 			case ZERO_BYTE_COMMAND_HEART_LEFT:
-				const bool success = station_warehouse::heartbeat(buf[1], list);
+				const bool success = list.size() > 2 && station_warehouse::heartbeat(state, list);
 				send_request_status(socket, *list[0], success ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID);
 				return;
 			}
@@ -193,6 +193,7 @@ namespace agebull
 			size_t rqid_index = 0, glid_index = 0, reqer_index = 0;
 			vector<shared_char> arg;
 			const auto frame_size = list[1].size();
+			const char* buf = *list[1];
 			for (size_t idx = 2; idx <= frame_size; idx++)
 			{
 				switch (buf[idx])

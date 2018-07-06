@@ -19,7 +19,7 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-		ZMQ_HANDLE net_context;
+		ZMQ_HANDLE zmq_context;
 		volatile NET_STATE net_state = NET_STATE_NONE;
 		//应该启动的线程数量
 		volatile int zero_thread_count = 0;
@@ -123,7 +123,7 @@ namespace agebull
 		//ZMQ上下文对象
 		ZMQ_HANDLE get_zmq_context()
 		{
-			return net_context;
+			return zmq_context;
 		}
 
 		//线程计数清零
@@ -178,14 +178,14 @@ namespace agebull
 		{
 			log_msg("$initiate...");
 			net_state = NET_STATE_NONE;
-			net_context = zmq_ctx_new();
-			assert(net_context != nullptr);
-			if (json_config::MAX_SOCKETS >= 0)
-				zmq_ctx_set(net_context, ZMQ_MAX_SOCKETS, json_config::MAX_SOCKETS);
-			if (json_config::IO_THREADS >= 0)
-				zmq_ctx_set(net_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
-			if (json_config::MAX_MSGSZ >= 0)
-				zmq_ctx_set(net_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
+			zmq_context = zmq_ctx_new();
+			assert(zmq_context != nullptr);
+			if (json_config::MAX_SOCKETS > 0)
+				zmq_ctx_set(zmq_context, ZMQ_MAX_SOCKETS, json_config::MAX_SOCKETS);
+			if (json_config::IO_THREADS > 0)
+				zmq_ctx_set(zmq_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
+			if (json_config::MAX_MSGSZ > 0)
+				zmq_ctx_set(zmq_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
 
 			log_msg("$initiated");
 			return net_state;
@@ -274,9 +274,9 @@ namespace agebull
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
 			log_msg("$zmq shutdown\n");
 			tm = boost::posix_time::microsec_clock::local_time();
-			zmq_ctx_shutdown(net_context);
-			zmq_ctx_term(net_context);
-			net_context = nullptr;
+			zmq_ctx_shutdown(zmq_context);
+			zmq_ctx_term(zmq_context);
+			zmq_context = nullptr;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$zmq success(%lldms)", sp.total_milliseconds());
 			cout << endl << "*********************************************" << endl;

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -9,10 +10,18 @@ namespace Agebull.ZeroNet.ZeroApi
     [DataContract, JsonObject(MemberSerialization.OptIn)]
     public class ApiDocument : DocumentItem
     {
+
+
+        /// <summary>
+        ///     分类
+        /// </summary>
+        [DataMember, JsonProperty("category", NullValueHandling = NullValueHandling.Ignore), Category]
+        public string Category;
+
         /// <summary>
         ///     Api路由名称
         /// </summary>
-        [DataMember, JsonProperty("route", NullValueHandling = NullValueHandling.Ignore)]
+        [DataMember, JsonProperty("route", NullValueHandling = NullValueHandling.Ignore), Category]
         public string RouteName;
 
         /// <summary>
@@ -32,5 +41,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         [DataMember, JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
         public TypeDocument ResultInfo;
+
     }
 }

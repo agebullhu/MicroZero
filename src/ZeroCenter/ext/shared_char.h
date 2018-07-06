@@ -475,7 +475,7 @@ namespace agebull
 
 			size_t desc_size() const
 			{
-				return buffer_[0] + 2;
+				return buffer_ == nullptr ? 0 : buffer_[0] + 2;
 			}
 
 			size_t frame_size() const
@@ -491,7 +491,7 @@ namespace agebull
 					buffer_[0] = static_cast<char>(size);
 			}
 
-			void state(uchar s)
+			void set_state(uchar s)
 			{
 				if (size_ == 0)
 					alloc_frame(10, s);
@@ -499,7 +499,7 @@ namespace agebull
 					memcpy(buffer_ + 1, &s, 1);
 			}
 
-			void set_state(uchar s) const
+			void state(uchar s) const
 			{
 				memcpy(buffer_ + 1, &s, 1);
 			}

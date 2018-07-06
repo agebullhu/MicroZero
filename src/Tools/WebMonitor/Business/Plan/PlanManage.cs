@@ -23,16 +23,25 @@ namespace ZeroNet.Http.Route
     public class PlanManage : ZeroManageCommand
     {
         #region 实例
+        /// <summary>
+        /// 地址错误的情况
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override string GetAddress()
+        {
+            var config = ZeroApplication.Config["PlanDispatcher"];
+            if (config == null)
+                return null;
+            return config.RequestAddress;
+        }
+
 
         /// <summary>
         /// 构造路由计数器
         /// </summary>
         public PlanManage()
         {
-            var config = ZeroApplication.Config["PlanDispatcher"];
-            if (config == null)
-                return;
-            ManageAddress = config.RequestAddress;
+            ManageAddress = GetAddress();
             FlushList();
         }
 
@@ -225,7 +234,7 @@ namespace ZeroNet.Http.Route
         private readonly byte[] planApiDescription =
         {
             4,
-            ZeroByteCommand.Plan,
+            (byte)ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Context,
             ZeroFrameType.Command,
@@ -239,7 +248,7 @@ namespace ZeroNet.Http.Route
         private readonly byte[] planPubDescription =
         {
             4,
-            ZeroByteCommand.Plan,
+           (byte) ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Context,
             ZeroFrameType.PubTitle,
@@ -253,7 +262,7 @@ namespace ZeroNet.Http.Route
         private readonly byte[] commandDescription =
         {
             3,
-            ZeroByteCommand.Plan,
+           (byte) ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Command,
             ZeroFrameType.Argument,

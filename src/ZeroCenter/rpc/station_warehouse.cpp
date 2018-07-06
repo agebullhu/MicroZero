@@ -563,7 +563,7 @@ namespace agebull
 		/**
 		* 心跳的响应
 		*/
-		bool station_warehouse::heartbeat(char cmd, vector<shared_char> list)
+		bool station_warehouse::heartbeat(uchar cmd, vector<shared_char> list)
 		{
 			auto config = get_config(list[2], false);
 			if (config == nullptr)

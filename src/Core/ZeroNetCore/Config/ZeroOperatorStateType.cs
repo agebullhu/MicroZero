@@ -64,6 +64,11 @@ namespace Agebull.ZeroNet.Core
         Failed = 0x80,
 
         /// <summary>
+        /// 站点被暂停
+        /// </summary>
+        Pause = 0x81,
+
+        /// <summary>
         /// 逻辑BUG
         /// </summary>
         Bug = 0xD0,

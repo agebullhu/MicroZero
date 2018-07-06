@@ -169,7 +169,7 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ApiCall(ref ZSocket socket, ApiCallItem item)
         {
-            ApiContext.SetRequestContext(item.GlobalId, item.Requester, item.RequestId);
+            ApiContext.SetRequestContext(item.GlobalId, item.Requester, item.RequestId ?? item.GlobalId);
             item.Handlers = CreateHandlers();
             Interlocked.Increment(ref CallCount);
             if (LogRecorder.LogMonitor)
@@ -181,6 +181,8 @@ namespace Agebull.ZeroNet.ZeroApi
 
         void Prepare(ApiCallItem item)
         {
+            if (item.RequestId == null)
+                item.RequestId = item.GlobalId;
             if (item.Handlers == null)
                 return;
             foreach (var p in item.Handlers)
@@ -265,7 +267,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         private ZeroOperatorStateType ExecCommand(ApiCallItem item)
         {
-            if (!_apiActions.TryGetValue(item.ApiName, out var action))
+            if (!_apiActions.TryGetValue(item.ApiName.Trim(), out var action))
             {
                 item.Result = ApiResult.NoFindJson;
                 item.Status = OperatorStatus.NotFind;
@@ -301,7 +303,7 @@ namespace Agebull.ZeroNet.ZeroApi
             //3 参数校验
             try
             {
-                if (!action.RestoreArgument(item.Argument))
+                if (!action.RestoreArgument(item.Argument ?? "{}"))
                 {
                     item.Result = ApiResult.ArgumentErrorJson;
                     item.Status = OperatorStatus.FormalError;
@@ -613,7 +615,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     var bytes = messages[idx].Read();
                     if (bytes.Length == 0)
                         continue;
-                    var val = Encoding.UTF8.GetString(bytes);
+                    var val = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
@@ -636,7 +638,7 @@ namespace Agebull.ZeroNet.ZeroApi
                             break;
                     }
                 }
-                return item.ApiName != null && item.RequestId != null && item.GlobalId != null && item.ContextJson != null;
+                return item.ApiName != null && item.GlobalId != null;
             }
             catch (Exception e)
             {

@@ -47,10 +47,12 @@ namespace RpcTest
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
+                    ZeroTrace.WriteInfo("RpcTest", "Test is start");
                     var test = IocHelper.Create<Tester>();
                     test.StartTest();
                     break;
                 case ZeroNetEventType.AppStop:
+                    ZeroTrace.WriteInfo("RpcTest", "Test is stop");
                     test = IocHelper.Create<Tester>();
                     test.Cancel.Cancel();
                     break;
@@ -59,8 +61,7 @@ namespace RpcTest
 
         private void StartTest()
         {
-            if (Cancel != null)
-                return;
+            WaitToEnd();
             if (!Init())
                 return;
             ZeroTrace.WriteInfo("RpcTest", "Test is start");
@@ -104,16 +105,38 @@ namespace RpcTest
         }
         protected abstract void DoAsync();
 
+        private int testerCount = 0;
+
+        void WaitToEnd()
+        {
+            while (Cancel != null)
+                Thread.Sleep(10);
+        }
+
+        void OnTestStar()
+        {
+            Interlocked.Increment(ref testerCount);
+        }
+        void OnTestEnd()
+        {
+            if(Interlocked.Decrement(ref testerCount) == 0)
+            {
+                Cancel.Dispose();
+                Cancel = null;
+            }
+        }
+
         public void Test()
         {
             Thread.Sleep(100);
             ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
+            OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
             {
                 if (WaitCount > ZeroApplication.Config.MaxWait)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(10);
                     continue;
                 }
                 Async();
@@ -125,11 +148,12 @@ namespace RpcTest
             Thread.Sleep(100);
             ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
 
+            OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
             {
                 if (WaitCount > ZeroApplication.Config.MaxWait)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(10);
                     continue;
                 }
                 Task.Factory.StartNew(Async, CancellationToken.None);
@@ -139,6 +163,7 @@ namespace RpcTest
 
         public void Count()
         {
+            OnTestEnd();
             TimeSpan ts = TimeSpan.FromTicks(RunTime);
             GC.Collect();
             ZeroTrace.WriteInfo("Count", ExCount,

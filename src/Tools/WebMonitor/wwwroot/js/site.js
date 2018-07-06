@@ -56,6 +56,8 @@ function do_sync_get(url, vue_obj, job, callback) {
 function formatDate(date, fmt) {
     if (isNaN(date.getMonth()))
         return date;
+    if (!fmt)
+        fmt= 'yyyy-MM-dd hh:mm:ss'
     if (/(y+)/.test(fmt)) {
         fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
     }

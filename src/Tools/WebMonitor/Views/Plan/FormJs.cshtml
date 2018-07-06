@@ -216,6 +216,7 @@
                     return false;
                 }
                 data.loading = true;
+                data.form.plan_time1 = formatDate(data.form.plan_time);
                 $.post('Plan/Add', data.form, function (result) {
                     data.loading = false;
                     if (result.success) {

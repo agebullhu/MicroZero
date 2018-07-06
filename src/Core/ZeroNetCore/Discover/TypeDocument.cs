@@ -1,31 +1,10 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
-    /// <summary>
-    /// 对象类型
-    /// </summary>
-    public enum ObjectType
-    {
-        /// <summary>
-        /// 基本类型
-        /// </summary>
-        Base,
-        /// <summary>
-        /// 数组
-        /// </summary>
-        Array,
-        /// <summary>
-        /// 字典
-        /// </summary>
-        Dictionary, 
-        /// <summary>
-        /// 对象
-        /// </summary>
-        Object
-    }
     /// <summary>
     ///     Api结构的信息
     /// </summary>
@@ -68,6 +47,36 @@ namespace Agebull.ZeroNet.ZeroApi
         [DataMember, JsonProperty("fields", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, TypeDocument> fields;
 
+        /// <summary>
+        /// 能否为空
+        /// </summary>
+        [DataMember, JsonProperty("canNull", NullValueHandling = NullValueHandling.Ignore)]
+        public bool CanNull { get; set; }
+        /// <summary>
+        /// 正则校验(文本)
+        /// </summary>
+        [DataMember, JsonProperty("regex", NullValueHandling = NullValueHandling.Ignore)]
+        public string Regex { get; set; }
+        /// <summary>
+        /// 包含的最小时间
+        /// </summary>
+        [DataMember, JsonProperty("minDate", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? MinDate { get; set; }
+        /// <summary>
+        /// 包含的最大时间
+        /// </summary>
+        [DataMember, JsonProperty("maxDate", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? MaxDate { get; set; }
+        /// <summary>
+        /// 最小(包含的数值或文本长度)
+        /// </summary>
+        [DataMember, JsonProperty("min", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Min { get; set; }
+        /// <summary>
+        /// 最大(包含的数值或文本长度)
+        /// </summary>
+        [DataMember, JsonProperty("max", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Max { get; set; }
         /// <summary>
         ///     字段
         /// </summary>

@@ -21,6 +21,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 内部访问
         /// </summary>
         Internal = 0x2,
+
         /// <summary>
         /// 游客
         /// </summary>
@@ -69,11 +70,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 扩展用户性质8
         /// </summary>
         User8 = 0x8000,
-
-        /// <summary>
-        /// 需要登录
-        /// </summary>
-        LoginUser = 0xFFF0,
 
         /// <summary>
         /// 参数可以为null

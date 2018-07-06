@@ -17,7 +17,6 @@ namespace agebull
 			, poll_count_(0)
 			, task_semaphore_(0)
 			, station_name_(name)
-			, state_semaphore_(1)
 			, config_(station_warehouse::get_config(name))
 			, request_scoket_tcp_(nullptr)
 			, request_socket_ipc_(nullptr)
@@ -38,7 +37,6 @@ namespace agebull
 			, poll_count_(0)
 			, task_semaphore_(0)
 			, station_name_(config->station_name_)
-			, state_semaphore_(1)
 			, config_(config)
 			, request_scoket_tcp_(nullptr)
 			, request_socket_ipc_(nullptr)
@@ -208,16 +206,8 @@ namespace agebull
 					zmq_state_ = zmq_socket_state::Intr;
 					break;
 				}
-				if (check_pause())
-					continue;
-				if (!can_do())
-				{
-					zmq_state_ = zmq_socket_state::Intr;
-					break;
-				}
-
 				const int state = zmq_poll(poll_items_, poll_count_, 10000);
-				if (state == 0 || !can_do())//超时或需要关闭
+				if (state == 0)//超时或需要关闭
 					continue;
 				if (state < 0)
 				{
@@ -305,12 +295,11 @@ namespace agebull
 				config_->error("work result layout error", "size < 2");
 				return;
 			}
-			if (list[0][0] == '*')//来自计划
+			if (list[0][0] == '*' && station_type_ != STATION_TYPE_PLAN)
 			{
 				plan_end(list);
 			}
-			else
-			{
+			else {
 				job_end(list);
 			}
 		}
@@ -327,6 +316,11 @@ namespace agebull
 				config_->log(socket_ex::state_str(zmq_state_));
 				return;
 			}
+			if (config_->station_state_ == station_state::Pause)
+			{
+				send_request_status(socket, *list[0], ZERO_STATUS_PAUSE_ID);
+				return;
+			}
 			const size_t list_size = inner ? list.size() - 1 : list.size();
 			if (list_size < 2)
 			{
@@ -334,10 +328,10 @@ namespace agebull
 				return;
 			}
 			shared_char description = list[inner ? 2 : 1];
-			const size_t descr_size = description.desc_size();
+			const size_t descr_size = description.size();
 			const size_t frame_size = description.frame_size();
-			char state = description.state();
-			if (state < ZERO_BYTE_COMMAND_NONE || frame_size >= descr_size || (frame_size + 2) != list_size)
+			const uchar state = description.state();
+			if (state < ZERO_BYTE_COMMAND_NONE || (frame_size + 2) > descr_size || (frame_size + 2) != list_size)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;
@@ -424,7 +418,6 @@ namespace agebull
 				return false;
 			config_->log("pause");
 			config_->runtime_state(station_state::Pause);
-			state_semaphore_.post();
 			zero_event(zero_net_event::event_station_pause, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
@@ -438,7 +431,6 @@ namespace agebull
 				return false;
 			config_->log("resume");
 			config_->runtime_state(station_state::Run);
-			state_semaphore_.post();
 			zero_event(zero_net_event::event_station_resume, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
@@ -460,7 +452,6 @@ namespace agebull
 			}
 			config_->log("close");
 			config_->runtime_state(station_state::Closing);
-			state_semaphore_.post();
 			zero_event(zero_net_event::event_station_closing, "station", config_->station_name_.c_str(), nullptr);
 			while (waiting && config_->is_state(station_state::Closing))
 				thread_sleep(200);

@@ -1,5 +1,5 @@
 #include "json_config.h"
-
+#include "../log/mylogger.h"
 namespace agebull
 {
 	std::map<std::string, std::string> json_config::global_cfg_;
@@ -64,7 +64,7 @@ namespace agebull
 			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
 
 			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
-			plan_cache_size = get_global_int("plan_exec_timeout", plan_cache_size);
+			plan_cache_size = get_global_int("plan_cache_size", plan_cache_size);
 			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
 			use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
 			var addr = get_global_string("redis_addr");
@@ -73,6 +73,27 @@ namespace agebull
 			redis_defdb = get_global_int("redis_defdb", redis_defdb);
 			worker_sound_ivl = get_global_int("worker_sound_ivl", worker_sound_ivl);
 		}
+		log_msg1("config => base_tcp_port : %d", base_tcp_port);
+		log_msg1("config => worker_sound_ivl : %d", worker_sound_ivl);
+		log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
+		log_msg1("config => redis_addr : %s", redis_addr);
+		log_msg1("config => redis_defdb : %d", redis_defdb);
+		log_msg1("config => plan_exec_timeout : %d", plan_exec_timeout);
+		log_msg1("config => plan_cache_size : %d", plan_cache_size);
+
+		log_msg1("config => ZMQ_IMMEDIATE : %d", IMMEDIATE);
+		log_msg1("config => ZMQ_LINGER : %d", LINGER);
+		log_msg1("config => ZMQ_RCVHWM : %d", RCVHWM);
+		log_msg1("config => ZMQ_RCVBUF : %d", RCVBUF);
+		log_msg1("config => ZMQ_RCVTIMEO : %d", RCVTIMEO);
+		log_msg1("config => ZMQ_SNDHWM : %d", SNDHWM);
+		log_msg1("config => ZMQ_SNDBUF : %d", SNDBUF);
+		log_msg1("config => ZMQ_SNDTIMEO : %d", SNDTIMEO);
+		log_msg1("config => ZMQ_BACKLOG : %d", BACKLOG);
+		log_msg1("config => ZMQ_MAX_SOCKETS : %d", MAX_SOCKETS);
+		log_msg1("config => ZMQ_IO_THREADS : %d", IO_THREADS);
+		log_msg1("config => ZMQ_MAX_MSGSZ : %d", MAX_MSGSZ);
+
 	}
 	/**
 	* \brief 读取配置内容
