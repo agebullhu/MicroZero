@@ -68,3 +68,5 @@ packages
 /src/ZmqNet/test/ApiTest2
 /src/Old
 /src/Tools/HttpRoute/HttpRoute/AddIn
+/src/Test/ZeroSerivce
+/src/Tools/WebMonitor/datas

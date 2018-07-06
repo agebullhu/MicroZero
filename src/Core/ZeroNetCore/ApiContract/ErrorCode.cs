@@ -14,10 +14,10 @@ namespace Agebull.ZeroNet.ZeroApi
         static readonly Dictionary<int, string> Map = new Dictionary<int, string>
         {
             {Success,"操作成功" },
-            {LocalException,"服务器本地异常" },
+            {LocalException,"发生异常" },
             {LogicalError,"逻辑错误" },
             {RemoteError,"服务器外部错误" },
-            {LocalError,"服务器本地错误" },
+            {LocalError,"一般错误" },
             {DenyAccess,"拒绝访问" },
             {ReTry,"客户端应重新请求" },
             {Ignore,"客户端应中止请求" },

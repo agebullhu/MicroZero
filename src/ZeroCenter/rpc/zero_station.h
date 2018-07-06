@@ -57,10 +57,6 @@ namespace agebull
 			string station_name_;
 		private:
 			/**
-			* \brief 状态信号量
-			*/
-			boost::interprocess::interprocess_semaphore state_semaphore_;
-			/**
 			* \brief 配置
 			*/
 			shared_ptr<zero_config> config_;
@@ -192,18 +188,6 @@ namespace agebull
 				return config_->is_run() && get_net_state() == NET_STATE_RUNING;
 			}
 
-			/**
-			* \brief 检查是否暂停
-			*/
-			bool check_pause()
-			{
-				if (config_->station_state_ == station_state::Pause)
-				{
-					state_semaphore_.timed_wait(time_span(1000));
-					return config_->station_state_ == station_state::Pause;
-				}
-				return false;
-			}
 		protected:
 			/**
 			* \brief 初始化

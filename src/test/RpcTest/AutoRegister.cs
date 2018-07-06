@@ -28,7 +28,6 @@ namespace Agebull.ZeroNet.Log
         void IAutoRegister.AutoRegist()
         {
             ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
-
         }
     }
 }

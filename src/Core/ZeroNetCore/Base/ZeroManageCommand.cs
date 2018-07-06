@@ -7,8 +7,13 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     /// 管理命令
     /// </summary>
-    public class ZeroManageCommand
+    public abstract class ZeroManageCommand
     {
+        /// <summary>
+        /// 地址错误的情况
+        /// </summary>
+        /// <returns></returns>
+        protected abstract string GetAddress();
         /// <summary>
         /// 管理站点地址
         /// </summary>
@@ -23,7 +28,7 @@ namespace Agebull.ZeroNet.Core
         {
             byte[] description = new byte[3 + args.Length];
             description[0] = (byte)(args.Length);
-            description[1] = ZeroByteCommand.General;
+            description[1] = (byte)ZeroByteCommand.General;
             description[2] = ZeroFrameType.Command;
             int idx = 3;
             for (var index = 1; index < args.Length; index++)
@@ -48,7 +53,17 @@ namespace Agebull.ZeroNet.Core
             lock (LockObj)
             {
                 if (_socket == null)
+                {
+                    if (ManageAddress == null)
+                        ManageAddress = GetAddress();
+                    if (ManageAddress == null)
+                        return new ZeroResultData
+                        {
+                            InteractiveSuccess = false,
+                            Message = "地址无效"
+                        };
                     _socket = ZSocket.CreateRequestSocket(ManageAddress);
+                }
                 try
                 {
                     var result = _socket.SendTo(description, args);
@@ -86,11 +101,11 @@ namespace Agebull.ZeroNet.Core
         /// <param name="commmand"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        protected bool ByteCommand(byte commmand, params string[] args)
+        protected bool ByteCommand(ZeroByteCommand commmand, params string[] args)
         {
             byte[] description = new byte[4 + args.Length];
             description[0] = (byte)(args.Length);
-            description[1] = commmand;
+            description[1] = (byte)commmand;
             int idx = 2;
             for (var index = 0; index < args.Length; index++)
             {

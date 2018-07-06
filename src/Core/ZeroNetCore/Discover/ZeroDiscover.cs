@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Agebull.Common.Reflection;
 using Agebull.ZeroNet.Core;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -45,9 +47,11 @@ namespace Agebull.ZeroNet.ZeroApi
             var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
             foreach (var type in types)
             {
-                FindApi(type);
+                FindApi(type, false);
             }
             RegistToZero();
+
+            RegistDocument();
         }
         void RegistToZero()
         {
@@ -72,31 +76,14 @@ namespace Agebull.ZeroNet.ZeroApi
                         : station.RegistAction(api.Key, action.Action, action.AccessOption, action);
                     a.ArgumenType = action.ArgumenType;
                 }
-                if (!ZeroApplication.Config.Documents.TryGetValue(sta.Name, out var doc))
-                {
-                    ZeroApplication.Config.Documents.Add(sta.Name, sta);
-                }
-                else
-                {
-                    foreach (var api in sta.Aips)
-                    {
-                        if (!doc.Aips.ContainsKey(api.Key))
-                        {
-                            doc.Aips.Add(api.Key, api.Value);
-                        }
-                        else
-                        {
-                            doc.Aips[api.Key] = api.Value;
-                        }
-                    }
-                }
             }
         }
         /// <summary>
         /// 查找API
         /// </summary>
         /// <param name="type"></param>
-        private void FindApi(Type type)
+        /// <param name="onlyDoc"></param>
+        private void FindApi(Type type, bool onlyDoc)
         {
             StationDocument station;
             var sa = type.GetCustomAttribute<StationAttribute>();
@@ -114,7 +101,8 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 station = DefStation;
             }
-            station.Copy(XmlMember.Find(type));
+            var xdoc = XmlMember.Find(type);
+            //station.Copy(XmlMember.Find(type));
             string routeHead = null;
             var attrib = type.GetCustomAttribute<RouteAttribute>();
             if (attrib != null)
@@ -148,12 +136,12 @@ namespace Agebull.ZeroNet.ZeroApi
                     ? $"{routeHead}{method.Name}"
                     : $"{routeHead}{route.Name.Trim(' ', '\t', '\r', '\n', '/')}";
                 var accessOption = method.GetCustomAttribute<ApiAccessOptionFilterAttribute>();
-
+                var ca = method.GetAttribute<CategoryAttribute>();
                 var api = new ApiActionInfo
                 {
                     Name = method.Name,
                     RouteName = name,
-
+                    Category = ca?.Category ?? xdoc.Caption,
                     Controller = type.FullName,
                     AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
@@ -167,18 +155,21 @@ namespace Agebull.ZeroNet.ZeroApi
                 //动态生成并编译
                 if (api.HaseArgument)
                 {
-                    api.ArgumenType = arg.ParameterType;
                     api.ArgumentInfo = ReadEntity(arg.ParameterType, "argument") ?? new TypeDocument();
                     api.ArgumentInfo.Name = arg.Name;
                     if (doc != null)
                         api.ArgumentInfo.Caption = doc.Arguments.Values.FirstOrDefault();
 
-                    api.ArgumentAction = TypeExtend.CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
-                        method.Name,
-                        arg.ParameterType.GetTypeInfo(),
-                        method.ReturnType.GetTypeInfo());
+                    if (!onlyDoc)
+                    {
+                        api.ArgumenType = arg.ParameterType;
+                        api.ArgumentAction = TypeExtend.CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
+                            method.Name,
+                            arg.ParameterType.GetTypeInfo(),
+                            method.ReturnType.GetTypeInfo());
+                    }
                 }
-                else
+                else if (!onlyDoc)
                 {
                     api.Action = TypeExtend.CreateFunc<IApiResult>(type.GetTypeInfo(), method.Name, method.ReturnType.GetTypeInfo());
                 }
@@ -227,113 +218,36 @@ namespace Agebull.ZeroNet.ZeroApi
             if (!type.IsSubclassOf(typeof(ApiStation)))
                 return;
             ZeroDiscover discover = new ZeroDiscover();
-            discover.FindApiDocument(type);
-            foreach (var sta in discover.StationInfo.Values)
+            discover.FindApi(type, true);
+            discover.RegistDocument();
+        }
+        #endregion
+
+        #region XML文档
+        void RegistDocument()
+        {
+            foreach (var sta in StationInfo.Values)
             {
                 if (sta.Aips.Count == 0)
                     continue;
                 if (!ZeroApplication.Config.Documents.TryGetValue(sta.Name, out var doc))
                 {
                     ZeroApplication.Config.Documents.Add(sta.Name, sta);
+                    continue;
                 }
-                else
+                foreach (var api in sta.Aips)
                 {
-                    foreach (var api in sta.Aips)
+                    if (!doc.Aips.ContainsKey(api.Key))
                     {
-                        if (!doc.Aips.ContainsKey(api.Key))
-                        {
-                            doc.Aips.Add(api.Key, api.Value);
-                        }
-                        else
-                        {
-                            doc.Aips[api.Key] = api.Value;
-                        }
+                        doc.Aips.Add(api.Key, api.Value);
+                    }
+                    else
+                    {
+                        doc.Aips[api.Key] = api.Value;
                     }
                 }
             }
         }
-
-        /// <summary>
-        /// 查找API
-        /// </summary>
-        /// <param name="type"></param>
-        private void FindApiDocument(Type type)
-        {
-            StationDocument station;
-            var sa = type.GetCustomAttribute<StationAttribute>();
-            if (sa != null)
-            {
-                if (!StationInfo.TryGetValue(sa.Name, out station))
-                {
-                    StationInfo.Add(sa.Name, station = new StationDocument
-                    {
-                        Name = sa.Name
-                    });
-                }
-            }
-            else
-            {
-                station = DefStation;
-            }
-            station.Copy(XmlMember.Find(type));
-            string routeHead = null;
-            var attrib = type.GetCustomAttribute<RouteAttribute>();
-            if (attrib != null)
-            {
-                routeHead = attrib.Name;
-            }
-
-            if (string.IsNullOrWhiteSpace(routeHead))
-                routeHead = null;
-            else
-                routeHead = routeHead.Trim(' ', '\t', '\r', '\n', '/') + "/";
-
-            var methods = type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance
-                                                                    | BindingFlags.Public
-                                                                    | BindingFlags.NonPublic);
-
-            foreach (var method in methods)
-            {
-                if (method.GetParameters().Length > 1)
-                {
-                    ZeroTrace.WriteError("ApiDiscover", "argument size must 0 or 1", station.Name, type.Name, method.Name);
-                    continue;
-                }
-                var route = method.GetCustomAttribute<RouteAttribute>();
-                if (route == null && !method.IsPublic)
-                {
-                    ZeroTrace.WriteError("ApiDiscover", "exclude", station.Name, type.Name, method.Name);
-                    continue;
-                }
-                var name = route?.Name == null
-                    ? $"{routeHead}{method.Name}"
-                    : $"{routeHead}{route.Name.Trim(' ', '\t', '\r', '\n', '/')}";
-                var accessOption = method.GetCustomAttribute<ApiAccessOptionFilterAttribute>();
-
-                var api = new ApiDocument
-                {
-                    Name = method.Name,
-                    RouteName = name,
-                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
-                    ResultInfo = ReadEntity(method.ReturnType, "result")
-                };
-                station.Aips.Add(api.RouteName, api);
-                var doc = XmlMember.Find(type, method.Name, "M");
-                api.Copy(doc);
-                var arg = method.GetParameters().FirstOrDefault();
-                //动态生成并编译
-                if (arg != null)
-                {
-                    api.ArgumentInfo = ReadEntity(arg.ParameterType, "argument") ?? new TypeDocument();
-                    api.ArgumentInfo.Name = arg.Name;
-                    if (doc != null)
-                        api.ArgumentInfo.Caption = doc.Arguments.Values.FirstOrDefault();
-                }
-            }
-        }
-        #endregion
-
-        #region XML文档
         private TypeDocument ReadEntity(Type type, string name)
         {
             if (type == typeof(void))
@@ -458,6 +372,20 @@ namespace Agebull.ZeroNet.ZeroApi
             else if (memType.IsArray)
             {
                 field.ObjectType = ObjectType.Array;
+            }
+            var rule = member.GetAttribute<DataRuleAttribute>();
+            if (rule != null)
+            {
+                field.CanNull = rule.CanNull;
+                field.Regex = rule.Regex;
+                if (rule.Min != long.MinValue)
+                    field.Min = rule.Min;
+                if (rule.Max != long.MinValue)
+                    field.Max = rule.Max;
+                if (rule.MinDate != DateTime.MinValue)
+                    field.MinDate = rule.MinDate;
+                if (rule.MaxDate != DateTime.MaxValue)
+                    field.MaxDate = rule.MaxDate;
             }
             document.Fields.Add(member.Name, field);
         }

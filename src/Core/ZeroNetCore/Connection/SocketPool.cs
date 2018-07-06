@@ -46,16 +46,19 @@ namespace Agebull.ZeroNet.Core
                 pool.Resume();
             }
 
-            ZeroApplication.Config.Foreach(config =>
+            lock (Pools)
             {
-                if (!Pools.ContainsKey(config.StationName))
+                ZeroApplication.Config.Foreach(config =>
                 {
-                    Pools.Add(config.StationName, new StationSocketPool
+                    if (!Pools.ContainsKey(config.StationName))
                     {
-                        Config = config
-                    });
-                }
-            });
+                        Pools.Add(config.StationName, new StationSocketPool
+                        {
+                            Config = config
+                        });
+                    }
+                });
+            }
             CanDo = true;
             ZeroApplication.OnObjectActive(this);
             return true;

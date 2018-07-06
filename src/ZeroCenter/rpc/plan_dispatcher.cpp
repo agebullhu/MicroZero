@@ -60,7 +60,7 @@ namespace agebull
 			else
 			{
 				//内部返回与计划下发
-				if (list[0][0] == '*') //返回值
+				if (list[1][0] == '*') //返回值
 				{
 					on_plan_result(list);
 				}
@@ -405,12 +405,18 @@ namespace agebull
 			if (state != zmq_socket_state::Succeed)
 			{
 				auto config = station_warehouse::get_config(message->station, false);
+				shared_char frame;
+				frame.alloc_frame(6, config ? ZERO_STATUS_SEND_ERROR_ID : ZERO_STATUS_NOT_FIND_ID);
+				result.emplace_back(frame);
 				on_plan_result(message, config ? ZERO_STATUS_SEND_ERROR_ID : ZERO_STATUS_NOT_FIND_ID, result);
 				return;
 			}
 			state = socket->recv(result);
 			if (state != zmq_socket_state::Succeed)
 			{
+				shared_char frame;
+				frame.alloc_frame(6, ZERO_STATUS_RECV_ERROR_ID);
+				result.emplace_back(frame);
 				on_plan_result(message, ZERO_STATUS_RECV_ERROR_ID, result);
 				return;
 			}
@@ -428,6 +434,7 @@ namespace agebull
 		*/
 		void plan_dispatcher::on_plan_result(vector<shared_char>& list)
 		{
+			list.erase(list.begin());
 			shared_ptr<plan_message> message = plan_message::load_message(list[0].get_buffer() + 2);
 
 			if (message == nullptr)

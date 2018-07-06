@@ -48,7 +48,7 @@ namespace Agebull.ZeroNet.Log
         static readonly byte[] LogDescription =
         {
             2,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.TsonValue,
             ZeroFrameType.End

@@ -29,6 +29,14 @@ namespace Agebull.ZeroNet.Core
             ManageAddress = ZeroApplication.Config.ZeroManageAddress;
         }
         /// <summary>
+        /// 地址错误的情况
+        /// </summary>
+        /// <returns></returns>
+        protected sealed override string GetAddress()
+        {
+            return ZeroApplication.Config.ZeroManageAddress;
+        }
+        /// <summary>
         /// 单例
         /// </summary>
         public static SystemManager Instance { get; set; }
@@ -111,7 +119,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     连接到
         /// </summary>
-        private bool HeartCommand(byte commmand, params string[] args)
+        private bool HeartCommand(ZeroByteCommand commmand, params string[] args)
         {
             Task.Factory.StartNew(() => ByteCommand(commmand, args)).Wait();
             return true;

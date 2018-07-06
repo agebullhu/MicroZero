@@ -21,7 +21,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionTson =
         {
             4,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
@@ -35,7 +35,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionJson =
         {
             4,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
@@ -48,7 +48,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionData =
         {
             4,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
@@ -62,7 +62,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionTson2 =
         {
             5,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
@@ -77,7 +77,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionJson2 =
         {
             5,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
@@ -91,7 +91,7 @@ namespace Agebull.ZeroNet.Core
         public static byte[] PubDescriptionData2 =
         {
             5,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
@@ -106,7 +106,7 @@ namespace Agebull.ZeroNet.Core
         public static readonly byte[] PubDescriptionEmpty =
         {
             3,
-            ZeroByteCommand.General,
+            (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,

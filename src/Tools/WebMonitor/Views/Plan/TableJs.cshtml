@@ -48,8 +48,11 @@
             return exec_state_text(state);
         },
         format_skip(plan) {
-            if (plan.skip_set === 0)
-                return "-";
+            if (plan.skip_set === 0) {
+                if (plan.no_skip)
+                    return "Error(" + plan.skip_num + ")";
+                return "Overdue(" + plan.skip_num + ")";
+            }
             if (plan.skip_set === -2)
                 return "Retry(" + plan.skip_num + "/3)";
             if (plan.skip_set === -1)

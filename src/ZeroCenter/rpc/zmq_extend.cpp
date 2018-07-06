@@ -43,7 +43,9 @@ namespace agebull
 					setsockopt(socket, ZMQ_SNDTIMEO, json_config::SNDTIMEO);
 				if (json_config::RCVTIMEO >= 0)
 					setsockopt(socket, ZMQ_RCVTIMEO, json_config::RCVTIMEO);
-
+				if (json_config::MAX_MSGSZ > 0)
+					setsockopt(socket, ZMQ_MAXMSGSIZE, json_config::MAX_MSGSZ);
+				
 				//setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
 				//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
 				//setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);

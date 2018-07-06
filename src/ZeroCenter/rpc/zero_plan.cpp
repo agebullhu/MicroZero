@@ -285,7 +285,7 @@ namespace agebull
 		/**
 		* \brief 删除一个消息
 		*/
-		bool plan_message::remove() const
+		bool plan_message::remove()
 		{
 			redis_live_scope redis(json_config::redis_defdb);
 			def_msg_key(key, this);
@@ -309,12 +309,14 @@ namespace agebull
 			//{
 			//	local_chche.erase(local_chche.begin());
 			//}
-			shared_ptr<plan_message> message = make_shared<plan_message>();
+			redis_live_scope scope(json_config::redis_defdb);
+			if (!scope->exists(key))
+				return nullptr;
 			//local_chche[key] = message;
 
-			redis_live_scope scope(json_config::redis_defdb);
 			trans_redis* redis = scope.t();
 
+			shared_ptr<plan_message> message = make_shared<plan_message>();
 			redis->get_hash_val(key, "caller", message->caller);
 			redis->get_hash_val(key, "request_id", message->request_id);
 			redis->get_hash_val(key, "plan_id", message->plan_id);
@@ -402,7 +404,7 @@ namespace agebull
 			{
 				redis->set_hash_val(key, "skip_set", skip_set);
 			}
-			if (full || skip || plan || exec || res)
+			if (full || skip || plan || exec || res || close)
 			{
 				redis->set_hash_val(key, "skip_num", skip_num);
 			}
@@ -593,7 +595,7 @@ namespace agebull
 				{
 					var span = second_clock::universal_time() - from_time_t(message->exec_time);
 					//超时未到且还未执行完成,不重复下发
-					if (span.seconds() < json_config::plan_exec_timeout)
+					if (span.total_seconds() < json_config::plan_exec_timeout)
 					{
 						plan_dispatcher::instance->get_config().error("plan delay to short", *message->frames[0]);
 						continue;
@@ -615,11 +617,11 @@ namespace agebull
 				}
 				exec(message);
 			}
-			{
-				redis_live_scope redis(json_config::redis_defdb);
-				for (const acl::string& key : err_keys)
-					redis->zrem(zsco_key, key);
-			}
+			//{
+			//	redis_live_scope redis(json_config::redis_defdb);
+			//	for (const acl::string& key : err_keys)
+			//		redis->zrem(zsco_key, key);
+			//}
 		}
 
 

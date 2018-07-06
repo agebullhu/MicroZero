@@ -231,6 +231,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="content"></param>
         private static void station_state(string name, string content)
         {
+            //ZeroTrace.WriteInfo("station_state",name);
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             try
