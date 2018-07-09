@@ -3,6 +3,7 @@ using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using Agebull.ZeroNet.ZeroApi;
+using System.ComponentModel;
 
 namespace Agebull.Common.OAuth
 {
@@ -72,6 +73,11 @@ namespace Agebull.Common.OAuth
         string DeviceId { get; set; }
 
         /// <summary>
+        /// 身份令牌
+        /// </summary>
+        string AccessToken { get; set; }
+
+        /// <summary>
         /// 登录设备的操作系统
         /// </summary>
         string Os { get; set; }
@@ -85,8 +91,8 @@ namespace Agebull.Common.OAuth
     /// <summary>
     /// 当前登录的用户信息
     /// </summary>
-    [Serializable]
-    [DataContract, JsonObject(MemberSerialization.OptIn)]
+    [DataContract, Category("上下文")]
+    [JsonObject(MemberSerialization.OptIn)]
     public class LoginUserInfo : ILoginUserInfo
     {
         /// <summary>
@@ -143,6 +149,12 @@ namespace Agebull.Common.OAuth
         /// </summary>
         [JsonProperty("d")]
         public string DeviceId { get; set; }
+        /// <summary>
+        /// 身份令牌
+        /// </summary>
+        [JsonProperty("at")]
+        public string AccessToken { get; set; }
+
 
         /// <summary>
         /// 登录设备的操作系统
@@ -153,20 +165,20 @@ namespace Agebull.Common.OAuth
         /// <summary>
         /// 登录设备的浏览器
         /// </summary>
-        [JsonProperty("br")]
+        [JsonProperty("browser")]
         public string Browser { get; set; }
 
         /// <summary>
         ///     数据状态
         /// </summary>
-        [JsonProperty("ds")]
+        [JsonIgnore]
         public DataStateType DataState { get; set; }
 
         /// <summary>
         ///     数据是否已冻结，如果是，则为只读数据
         /// </summary>
         /// <value>bool</value>
-        [JsonProperty("df")]
+        [JsonIgnore]
         public bool IsFreeze { get; set; }
 
         #region 预定义

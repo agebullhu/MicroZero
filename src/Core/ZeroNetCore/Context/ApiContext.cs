@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using System.Threading;
 using Agebull.Common.Base;
 using Agebull.Common.OAuth;
@@ -10,7 +12,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     ///     API调用上下文（流程中使用）
     /// </summary>
-    [Serializable]
+    [DataContract, Category("上下文")]
     [JsonObject(MemberSerialization.OptIn)]
     public class ApiContext : ScopeBase
     {

@@ -238,7 +238,7 @@ namespace ZeroNet.Http.Route
             else
                 Data.Bearer = words[1];
 
-            ApiContext.Current.Request.Bear = Data.Bearer;
+            ApiContext.Current.Request.Token = Data.Bearer;
             SecurityChecker.Bearer = Data.Bearer;
             if (SecurityChecker.Check())
                 return true;

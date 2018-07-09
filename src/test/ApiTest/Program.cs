@@ -9,7 +9,6 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.Discove(typeof(Program).Assembly);
             ZeroApplication.Initialize();
             ZeroApplication.RunAwaite();
         }

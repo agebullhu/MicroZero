@@ -48,7 +48,7 @@ namespace ZeroNet.Http.Route
             {
                 var caller = new HttpApiCaller(httpHost)
                 {
-                    Bearer = $"Bearer {ApiContext.RequestContext.Bear}"
+                    Bearer = $"Bearer {ApiContext.RequestContext.Token}"
                 };
                 caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 

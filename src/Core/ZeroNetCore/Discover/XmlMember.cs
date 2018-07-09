@@ -129,7 +129,7 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// 种类
+        /// 类名
         /// </summary>
         public string Type
         {
@@ -147,16 +147,16 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        /// 返回
+        /// 参数(XML对象)
         /// </summary>
-        public IEnumerable <XElement> XArguments
+        internal IEnumerable <XElement> XArguments
         {
             get;
             set;
         }
         Dictionary<string, string> _arguments;
         /// <summary>
-        /// 返回
+        /// 参数字典
         /// </summary>
         public Dictionary<string,string> Arguments
         {

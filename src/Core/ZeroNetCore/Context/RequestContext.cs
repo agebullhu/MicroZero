@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -6,7 +8,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// 内部服务调用上下文（跨系统边界传递）
     /// </summary>
-    [Serializable]
+    [DataContract, Category("上下文")]
     [JsonObject(MemberSerialization.OptIn)]
     public class RequestContext
     {
@@ -50,7 +52,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             _serviceKey = serviceKey;
             _requestId = requestId;
-            Bear = "<error>";
+            Token = "<error>";
         }
 
         /// <summary>
@@ -90,10 +92,13 @@ namespace Agebull.ZeroNet.ZeroApi
         public string RequestId => _requestId;
 
         /// <summary>
-        /// 当前请求的Http Authorizaition
+        /// 身份令牌
         /// </summary>
-        [JsonProperty("ha", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
-        public string Bear { get; set; }
+        /// <remarks>
+        /// Http : Head中的Authorizaition节
+        /// </remarks>
+        [JsonProperty("tk", DefaultValueHandling = DefaultValueHandling.Ignore, NullValueHandling = NullValueHandling.Ignore)]
+        public string Token { get; set; }
 
         /// <summary>
         /// 参数类型

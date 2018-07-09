@@ -597,7 +597,7 @@ namespace agebull
 					//超时未到且还未执行完成,不重复下发
 					if (span.total_seconds() < json_config::plan_exec_timeout)
 					{
-						plan_dispatcher::instance->get_config().error("plan delay to short", *message->frames[0]);
+						log_error1("plan delay to short %lld", span.total_seconds());
 						continue;
 					}
 					//设置重试

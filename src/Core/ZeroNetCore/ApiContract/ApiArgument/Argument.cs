@@ -11,7 +11,7 @@ namespace Agebull.ZeroNet.ZeroApi
     public class Argument : IApiArgument
     {
         /// <summary>
-        /// AT
+        /// 文本内容
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Value { get; set; }
@@ -34,7 +34,7 @@ namespace Agebull.ZeroNet.ZeroApi
     public class Argument<T> : IApiArgument
     {
         /// <summary>
-        /// AT
+        /// 数值
         /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public T Value { get; set; }

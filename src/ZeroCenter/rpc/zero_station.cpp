@@ -275,7 +275,6 @@ namespace agebull
 		*/
 		void zero_station::response()
 		{
-
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(worker_in_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
@@ -331,7 +330,7 @@ namespace agebull
 			const size_t descr_size = description.size();
 			const size_t frame_size = description.frame_size();
 			const uchar state = description.state();
-			if (state < ZERO_BYTE_COMMAND_NONE || (frame_size + 2) > descr_size || (frame_size + 2) != list_size)
+			if (state < ZERO_BYTE_COMMAND_NONE || (frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;

@@ -15,6 +15,7 @@ namespace WebMonitor.Controllers
             {
                 config = ZeroApplication.Config.Stations.FirstOrDefault(p=>p.StationType == ZeroStationType.Api);
             }
+
             Agebull.ZeroNet.ZeroApi.StationDocument doc;
             if (config == null)
             {

@@ -1,8 +1,6 @@
 using System.ComponentModel.Composition;
-using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using ApiTest;
 
 namespace Agebull.ZeroNet.Log
 {
@@ -12,7 +10,7 @@ namespace Agebull.ZeroNet.Log
     [Export(typeof(IAutoRegister))]
     [ExportMetadata("Symbol", '%')]
     public sealed class AutoRegister : IAutoRegister
-    {
+    { 
         /// <summary>
         /// 初始化
         /// </summary>

@@ -165,7 +165,7 @@ namespace WebMonitor.Controllers
         protected DateTime? GetDateArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value, out var date))
             {
                 return null;
             }
@@ -180,11 +180,11 @@ namespace WebMonitor.Controllers
         protected DateTime GetDateArg2(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value,out var date))
             {
                 return DateTime.MinValue;
             }
-            return DateTime.Parse(value);
+            return date;
         }
 
         /// <summary>
