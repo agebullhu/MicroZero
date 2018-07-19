@@ -1,8 +1,6 @@
-using System;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using Agebull.ZeroNet.ZeroApi;
 using System.ComponentModel;
 
 namespace Agebull.Common.OAuth
@@ -98,75 +96,20 @@ namespace Agebull.Common.OAuth
         /// <summary>
         /// 用户数字标识
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("userId")]
         public long UserId { get; set; }
 
         /// <summary>
         /// 用户昵称
         /// </summary>
-        [JsonProperty("nn")]
+        [JsonProperty("nickName")]
         public string NickName { get; set; }
-
-        /// <summary>
-        /// 头像
-        /// </summary>
-        /// <remarks>
-        /// 头像
-        /// </remarks>
-        [JsonProperty("av")]
-        public string AvatarUrl
-        {
-            get;
-            set;
-        }
-        /// <summary>
-        /// 当前用户登录到哪个系统（预先定义的系统标识）
-        /// </summary>
-        [JsonProperty("ls")]
-        public string LoginSystem { get; set; }
-
-        /// <summary>
-        /// 当前用户登录方式
-        /// </summary>
-        [JsonProperty("lt")]
-        public int LoginType { get; set; }
-
-        /// <summary>
-        /// 登录者的手机号
-        /// </summary>
-        [JsonProperty("p")]
-        public string Phone { get; set; }
-
 
         /// <summary>
         /// 登录者的账号
         /// </summary>
-        [JsonProperty("a")]
+        [JsonProperty("account")]
         public string Account { get; set; }
-
-        /// <summary>
-        /// 登录设备的标识
-        /// </summary>
-        [JsonProperty("d")]
-        public string DeviceId { get; set; }
-        /// <summary>
-        /// 身份令牌
-        /// </summary>
-        [JsonProperty("at")]
-        public string AccessToken { get; set; }
-
-
-        /// <summary>
-        /// 登录设备的操作系统
-        /// </summary>
-        [JsonProperty("os")]
-        public string Os { get; set; }
-
-        /// <summary>
-        /// 登录设备的浏览器
-        /// </summary>
-        [JsonProperty("browser")]
-        public string Browser { get; set; }
 
         /// <summary>
         ///     数据状态
@@ -180,6 +123,61 @@ namespace Agebull.Common.OAuth
         /// <value>bool</value>
         [JsonIgnore]
         public bool IsFreeze { get; set; }
+
+        /// <summary>
+        /// 头像
+        /// </summary>
+        /// <remarks>
+        /// 头像
+        /// </remarks>
+        [JsonProperty("avatarUrl", NullValueHandling = NullValueHandling.Ignore)]
+        public string AvatarUrl
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 当前用户登录到哪个系统（预先定义的系统标识）
+        /// </summary>
+        [JsonProperty("loginSystem", NullValueHandling = NullValueHandling.Ignore)]
+        public string LoginSystem { get; set; }
+
+        /// <summary>
+        /// 当前用户登录方式
+        /// </summary>
+        [JsonProperty("loginType")]
+        public int LoginType { get; set; }
+
+        /// <summary>
+        /// 登录者的手机号
+        /// </summary>
+        [JsonProperty("phone", NullValueHandling = NullValueHandling.Ignore)]
+        public string Phone { get; set; }
+
+        /// <summary>
+        /// 登录设备的标识
+        /// </summary>
+        [JsonProperty("deviceId", NullValueHandling = NullValueHandling.Ignore)]
+        public string DeviceId { get; set; }
+        /// <summary>
+        /// 身份令牌
+        /// </summary>
+        [JsonProperty("accessToken", NullValueHandling = NullValueHandling.Ignore)]
+        public string AccessToken { get; set; }
+
+
+        /// <summary>
+        /// 登录设备的操作系统
+        /// </summary>
+        [JsonProperty("os", NullValueHandling = NullValueHandling.Ignore)]
+        public string Os { get; set; }
+
+        /// <summary>
+        /// 登录设备的浏览器
+        /// </summary>
+        [JsonProperty("browser", NullValueHandling = NullValueHandling.Ignore)]
+        public string Browser { get; set; }
 
         #region 预定义
 

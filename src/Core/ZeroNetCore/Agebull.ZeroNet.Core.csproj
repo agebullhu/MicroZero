@@ -16,7 +16,7 @@
       2 消息发布与订阅
       3 网络投票（并行工作流）
     </Description>
-    <Version>1.0.8.3</Version>
+    <Version>1.0.8.13</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -25,7 +25,7 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.8.3</PackageVersion>
+    <PackageVersion>1.0.8.13</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -52,18 +52,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ApiContract\ApiArgument\**" />
+    <Compile Remove="ApiContract\ApiResult\**" />
     <Compile Remove="Entity\**" />
     <Compile Remove="Rpc\**" />
     <Compile Remove="Services\**" />
+    <EmbeddedResource Remove="ApiContract\ApiArgument\**" />
+    <EmbeddedResource Remove="ApiContract\ApiResult\**" />
     <EmbeddedResource Remove="Entity\**" />
     <EmbeddedResource Remove="Rpc\**" />
     <EmbeddedResource Remove="Services\**" />
+    <None Remove="ApiContract\ApiArgument\**" />
+    <None Remove="ApiContract\ApiResult\**" />
     <None Remove="Entity\**" />
     <None Remove="Rpc\**" />
     <None Remove="Services\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="ApiContract\ErrorCode.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
     <Compile Remove="PubSub\LogQueue.cs" />
@@ -79,7 +86,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.1.6" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.2.1.1" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 

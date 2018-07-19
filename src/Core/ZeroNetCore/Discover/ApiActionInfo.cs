@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Gboxt.Common.DataModel;
+using Newtonsoft.Json;
 using System;
 using System.Runtime.Serialization;
 

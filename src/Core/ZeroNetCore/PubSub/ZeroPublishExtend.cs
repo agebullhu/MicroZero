@@ -39,7 +39,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
-            ZeroFrameType.Context,
+            ZeroFrameType.Content,
             ZeroFrameType.End
         };
         /// <summary>
@@ -82,7 +82,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
             ZeroFrameType.Publisher,
-            ZeroFrameType.Context,
+            ZeroFrameType.Content,
             ZeroFrameType.End
         };
         /// <summary>

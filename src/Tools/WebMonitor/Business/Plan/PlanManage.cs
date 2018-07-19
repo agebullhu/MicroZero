@@ -10,6 +10,7 @@ using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using WebMonitor;
 using ZeroMQ;
@@ -157,7 +158,7 @@ namespace ZeroNet.Http.Route
         {
             return new ApiArrayResult<ZeroPlan>
             {
-                ResultData = Plans.Values.Where(p => p.plan_state >= plan_message_state.close).ToArray()
+                ResultData = Plans.Values.Where(p => p.plan_state >= plan_message_state.close).ToList()
             };
         }
         public IApiResult Station(string station)
@@ -169,7 +170,7 @@ namespace ZeroNet.Http.Route
             station = station.Split('-').LastOrDefault();
             return new ApiArrayResult<ZeroPlan>
             {
-                ResultData = Plans.Values.Where(p => p.station.Equals(station, StringComparison.OrdinalIgnoreCase)).ToArray()
+                ResultData = Plans.Values.Where(p => p.station.Equals(station, StringComparison.OrdinalIgnoreCase)).ToList()
             };
         }
 
@@ -177,7 +178,7 @@ namespace ZeroNet.Http.Route
         {
             return new ApiArrayResult<ZeroPlan>
             {
-                ResultData = Plans.Values.Where(p => p.plan_state < plan_message_state.close).ToArray()
+                ResultData = Plans.Values.Where(p => p.plan_state < plan_message_state.close).ToList()
             };
         }
         public IApiResult Filter(string type)
@@ -186,14 +187,14 @@ namespace ZeroNet.Http.Route
             {
                 return new ApiArrayResult<ZeroPlan>
                 {
-                    ResultData = Plans.Values.Where(p => p.plan_type >= plan_date_type.second && p.plan_type <= plan_date_type.day).ToArray()
+                    ResultData = Plans.Values.Where(p => p.plan_type >= plan_date_type.second && p.plan_type <= plan_date_type.day).ToList()
                 };
             }
             if (!Enum.TryParse<plan_date_type>(type, out var planType))
                 return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
             return new ApiArrayResult<ZeroPlan>
             {
-                ResultData = Plans.Values.Where(p => p.plan_type == planType).ToArray()
+                ResultData = Plans.Values.Where(p => p.plan_type == planType).ToList()
             };
         }
         public ApiResult FlushList()

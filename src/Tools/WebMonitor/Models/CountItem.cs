@@ -117,14 +117,14 @@ namespace ZeroNet.Http.Route
         /// 子级
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public Dictionary<string, CountItem> Items { get; } = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, CountItem> Items { get; set; } = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase);
 
 
         /// <summary>
         /// 子级
         /// </summary>
         [DataMember, JsonProperty("children")]
-        public List<CountItem> Children { get; } = new List<CountItem>();
+        public List<CountItem> Children { get; set; } = new List<CountItem>();
 
 
         /// <summary>

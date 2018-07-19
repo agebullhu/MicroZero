@@ -521,5 +521,100 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         #endregion
+
+        #region 快捷方法
+        /// <summary>
+        /// 调用远程方法
+        /// </summary>
+        /// <typeparam name="TArgument">参数类型</typeparam>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="arg">参数</param>
+        /// <returns></returns>
+        public static TResult Call<TArgument, TResult>(string station, string api, TArgument arg)
+        {
+            ApiClient client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+            };
+            client.CallCommand();
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client.CheckStateResult();
+            }
+            return JsonConvert.DeserializeObject<TResult>(client.Result);
+        }
+        /// <summary>
+        /// 调用远程方法
+        /// </summary>
+        /// <typeparam name="TArgument">参数类型</typeparam>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="arg">参数</param>
+        /// <returns></returns>
+        public static ApiResult<TResult> CallApi<TArgument, TResult>(string station, string api, TArgument arg) 
+            where TResult : IApiResultData
+        {
+            ApiClient client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+            };
+            client.CallCommand();
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client.CheckStateResult();
+            }
+            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+        }
+        /// <summary>
+        /// 调用远程方法
+        /// </summary>
+        /// <typeparam name="TArgument">参数类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="arg">参数</param>
+        /// <returns></returns>
+        public static ApiResult CallApi<TArgument>(string station, string api, TArgument arg)
+        {
+            ApiClient client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+            };
+            client.CallCommand();
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client.CheckStateResult();
+            }
+            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+        }
+        /// <summary>
+        /// 调用远程方法
+        /// </summary>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <returns></returns>
+        public static ApiResult CallApi(string station, string api)
+        {
+            ApiClient client = new ApiClient
+            {
+                Station = station,
+                Commmand = api
+            };
+            client.CallCommand();
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client.CheckStateResult();
+            }
+            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+        }
+        #endregion
     }
 }

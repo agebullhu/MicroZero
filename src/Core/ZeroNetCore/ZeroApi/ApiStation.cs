@@ -9,6 +9,8 @@ using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
 using Newtonsoft.Json;
+using Gboxt.Common.DataModel;
+
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>

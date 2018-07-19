@@ -221,13 +221,29 @@ namespace ZeroNet.Http.Route
             try
             {
                 var json = File.ReadAllText(file);
-                if (!string.IsNullOrWhiteSpace(json))
-                    _root = JsonConvert.DeserializeObject<CountItem>(json) ?? new CountItem();
+                if (string.IsNullOrWhiteSpace(json))
+                    return;
+                _root = JsonConvert.DeserializeObject<CountItem>(json) ?? new CountItem();
+                RebuildItems(_root);
             }
             catch (Exception exception)
             {
                 Console.WriteLine(exception);
             }
+        }
+
+        void RebuildItems(CountItem item)
+        {
+            if (item.Items == null)
+                item.Items = new System.Collections.Generic.Dictionary<string, CountItem>();
+            if (item.Children == null)
+                item.Children = new System.Collections.Generic.List<CountItem>();
+            else
+                foreach (var child in item.Children)
+                {
+                    RebuildItems(child);
+                    item.Items.Add(item.Id, item);
+                }
         }
     }
 }

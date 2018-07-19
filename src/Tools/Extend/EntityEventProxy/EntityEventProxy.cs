@@ -1,4 +1,6 @@
+using Agebull.Common.Configuration;
 using Agebull.ZeroNet.PubSub;
+using Gboxt.Common.DataModel.ExtendEvents;
 
 namespace Gboxt.Common.DataModel.ZeroNet
 {
@@ -12,12 +14,16 @@ namespace Gboxt.Common.DataModel.ZeroNet
         /// </summary>
         EntityEventProxy()
         {
-
+            StationName = ConfigurationManager.AppSettings["EntityEventStation"];
         }
+
         /// <summary>
         /// 单例
         /// </summary>
-        internal static EntityEventProxy Instance = new EntityEventProxy();
+        internal static EntityEventProxy Instance = new EntityEventProxy
+        {
+            Name = "EntityEvent"
+        };
 
 
         /// <summary>状态修改事件</summary>
@@ -35,6 +41,5 @@ namespace Gboxt.Common.DataModel.ZeroNet
                 Value = value
             });
         }
-
     }
 }

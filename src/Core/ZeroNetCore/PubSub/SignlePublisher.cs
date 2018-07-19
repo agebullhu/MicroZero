@@ -186,8 +186,7 @@ namespace Agebull.ZeroNet.PubSub
                 File.Delete(CacheFileName);
                 using (var poll = ZmqPool.CreateZmqPool())
                 {
-                    poll.Prepare(ZPollEvent.In,
-                        ZSocket.CreateServiceSocket(inporcName, ZSocketType.PULL));
+                    poll.Prepare(ZPollEvent.In,ZSocket.CreateServiceSocket(inporcName, ZSocketType.PULL));
                     for (int i = 0; i < 64; i++)
                     {
                         sockets.Add(ZSocket.CreateClientSocket(inporcName, ZSocketType.PUSH));
@@ -202,7 +201,7 @@ namespace Agebull.ZeroNet.PubSub
                     datas.Clear();
                     while (true)
                     {
-                        if (poll.CheckIn(0, out var message))
+                        if (poll.Poll() && poll.CheckIn(0, out var message))
                             socket.SendTo(message);
                         else if (!CanLoop)//保证发送完成
                             break;

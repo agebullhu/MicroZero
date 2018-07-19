@@ -5,6 +5,7 @@ using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel.ZeroNet;
 
 namespace RpcTest
 {
