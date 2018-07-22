@@ -36,7 +36,7 @@ namespace ApiTest
             return new ApiResult
             {
                 Success = true,
-                Status = new ApiStatsResult
+                Status = new ApiStatusResult
                 {
                     ErrorCode = 0,
                     ClientMessage = $"Wecome {user.MobilePhone}!"

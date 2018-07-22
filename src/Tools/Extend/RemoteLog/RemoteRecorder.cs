@@ -117,6 +117,8 @@ namespace Agebull.ZeroNet.Log
         /// 配置
         /// </summary>
         private StationConfig Config;
+        public string StationName => "RemoteLog";
+
 
         /// <summary>
         /// 节点名称

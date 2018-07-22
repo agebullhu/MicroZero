@@ -6,12 +6,17 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\..\test\ZeroSerivce\</OutputPath>
+    <OutputPath>..\..\..\test\ZeroSerivce\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\..\test\ZeroSerivce\</OutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Agebull.EntityModel.MySql" Version="2.2.1.2" />
+    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.2.1.2" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />

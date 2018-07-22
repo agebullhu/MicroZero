@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.Logging;
-using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.Core
@@ -19,6 +17,10 @@ namespace Agebull.ZeroNet.Core
         /// 名称
         /// </summary>
         string Name { get; }
+        /// <summary>
+        /// 名称
+        /// </summary>
+        string StationName { get; }
 
         /// <summary>
         ///     运行状态
@@ -299,7 +301,7 @@ namespace Agebull.ZeroNet.Core
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name,e, "*Start");
+                        ZeroTrace.WriteException(obj.Name, e, "*Start");
                     }
                 });
 #endif
@@ -319,8 +321,9 @@ namespace Agebull.ZeroNet.Core
         {
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                ZeroTrace.WriteLine("[OnStationStateChanged>>");
-                Parallel.ForEach(ActiveObjects.ToArray(), obj =>
+                ZeroTrace.WriteLine($"[OnStationStateChanged({config.StationName})>>");
+                Parallel.ForEach(ActiveObjects.Where(p => string.Equals(config.StationName, p.StationName, StringComparison.OrdinalIgnoreCase)).ToArray(),
+                    obj =>
                 {
                     try
                     {
@@ -331,7 +334,7 @@ namespace Agebull.ZeroNet.Core
                         ZeroTrace.WriteException(obj.Name, e, "OnStationStateChanged");
                     }
                 });
-                ZeroTrace.WriteLine("<<OnStationStateChanged]");
+                ZeroTrace.WriteLine($"<<OnStationStateChanged({config.StationName})]");
             }
         }
 

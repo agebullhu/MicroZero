@@ -36,7 +36,7 @@ namespace WebMonitor.Models
                     return ApiResult.Error(ErrorCode.LogicalError, "不支持的操作");
                 case ZeroOperatorStateType.Ok:
                     var _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
-                    _result.Status = new ApiStatsResult
+                    _result.Status = new ApiStatusResult
                     {
                         ErrorCode = ErrorCode.Success,
                         ClientMessage = "操作成功"
@@ -65,7 +65,7 @@ namespace WebMonitor.Models
                 {
                     case ZeroOperatorStateType.Ok:
                         var apiResult = ApiResult.Succees();
-                        apiResult.Status = new ApiStatsResult
+                        apiResult.Status = new ApiStatusResult
                         {
                             ErrorCode = ErrorCode.Success,
                             ClientMessage = "安装成功"
@@ -86,7 +86,7 @@ namespace WebMonitor.Models
             if (ZeroApplication.Config.TryGetConfig(option.Name, out var config))
             {
                 var result= ApiResult<StationConfig>.Succees(config);
-                result.Status = new ApiStatsResult
+                result.Status = new ApiStatusResult
                 {
                     ErrorCode = ErrorCode.LogicalError,
                     ClientMessage = "站点已存在"
@@ -111,7 +111,7 @@ namespace WebMonitor.Models
                         return ApiResult.Error(ErrorCode.LogicalError, "已存在");
                     case ZeroOperatorStateType.Ok:
                         var apiResult= ApiResult.Succees();
-                        apiResult.Status = new ApiStatsResult
+                        apiResult.Status = new ApiStatusResult
                         {
                             ErrorCode = ErrorCode.Success,
                             ClientMessage = "安装成功"

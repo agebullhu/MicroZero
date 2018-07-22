@@ -54,7 +54,7 @@ namespace ZeroNet.Http.Route
             if (ZeroApplication.Config.TryGetConfig(_words[2], out var config))
             {
                 _result = ApiResult<StationConfig>.Succees(config);
-                _result.Status = new ApiStatsResult
+                _result.Status = new ApiStatusResult
                 {
                     ErrorCode = ErrorCode.Success,
                     ClientMessage = "站点已存在"
@@ -82,7 +82,7 @@ namespace ZeroNet.Http.Route
                         return;
                     case ZeroOperatorStateType.Failed:
                         _result = ApiResult.Error(ErrorCode.LogicalError, "已存在");
-                        _result.Status = new ApiStatsResult
+                        _result.Status = new ApiStatusResult
                         {
                             ErrorCode = ErrorCode.Success,
                             ClientMessage = "安装成功"
@@ -90,7 +90,7 @@ namespace ZeroNet.Http.Route
                         return;
                     case ZeroOperatorStateType.Ok:
                         _result = ApiResult.Succees();
-                        _result.Status = new ApiStatsResult
+                        _result.Status = new ApiStatusResult
                         {
                             ErrorCode = ErrorCode.Success,
                             ClientMessage = "安装成功"
@@ -120,7 +120,7 @@ namespace ZeroNet.Http.Route
             //    ZeroApplication.Config.Configs.Add(stationName, config);
             //}
             //_result = ApiResult<StationConfig>.Succees(config);
-            //_result.Status = new ApiStatsResult
+            //_result.Status = new ApiStatusResult
             //{
             //    ErrorCode = ErrorCode.Success,
             //    ClientMessage = "安装成功"
@@ -155,7 +155,7 @@ namespace ZeroNet.Http.Route
                     return;
                 case ZeroOperatorStateType.Ok:
                     _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
-                    _result.Status = new ApiStatsResult
+                    _result.Status = new ApiStatusResult
                     {
                         ErrorCode = ErrorCode.Success,
                         ClientMessage = "操作成功"

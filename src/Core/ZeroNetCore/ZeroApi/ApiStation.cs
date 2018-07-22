@@ -345,7 +345,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 if (result != null)
                 {
                     if (result.Status == null)
-                        result.Status = new ApiStatsResult { InnerMessage = item.GlobalId };
+                        result.Status = new ApiStatusResult { InnerMessage = item.GlobalId };
                     else
                         result.Status.InnerMessage = item.GlobalId;
                 }

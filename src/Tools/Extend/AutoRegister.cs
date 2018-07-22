@@ -10,6 +10,8 @@ using Gboxt.Common.DataModel.ZeroNet;
 using ZeroNet.Http.Route;
 using Agebull.Common.Configuration;
 using Gboxt.Common.DataModel.ExtendEvents;
+using Microsoft.Extensions.Configuration.Json;
+using System.Linq;
 
 namespace Agebull.ZeroNet.Log
 {
@@ -25,6 +27,10 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
+
+            var sec = ConfigurationManager.Get("AppSettings");
+            foreach (var k in sec.Configuration.GetChildren())
+                Console.WriteLine(k.Key );
             if (ConfigurationManager.AppSettings.GetBool("RemoteLog", false))
                 IocHelper.ServiceCollection.AddSingleton<ILogRecorder>(provider => RemoteLogRecorder.Instance);
             if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring", false))

@@ -24,10 +24,7 @@ namespace Agebull.ZeroNet.ZeroApi
         protected override void Initialize()
         {
             base.Initialize();
-            if (ConfigurationManager.AppSettings.GetBool("HookApi", true))
-            {
-                HookApi();
-            }
+            HookApi();
         }
 
         /// <summary>
