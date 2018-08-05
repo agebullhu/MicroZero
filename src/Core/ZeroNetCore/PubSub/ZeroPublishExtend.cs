@@ -239,7 +239,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(PubDescriptionEmpty,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestContext.RequestId),
+                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
                     ToZeroBytes(ZeroApplication.Config.RealName))
                 )
                 {
@@ -272,7 +272,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(description,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestContext.RequestId),
+                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
                     ToZeroBytes(subTitle),
                     ToZeroBytes(ZeroApplication.Config.RealName),
                     content))
@@ -307,7 +307,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(description,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestContext.RequestId),
+                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
                     ToZeroBytes(ZeroApplication.Config.RealName),
                     content))
                 {

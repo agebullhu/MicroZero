@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
@@ -33,7 +32,7 @@ namespace WebMonitor.Controler
                 Description = info.Description,
                 StationAlias = string.IsNullOrWhiteSpace(info.Alias)
                     ? new List<string>()
-                    : info.Alias.Trim().Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                    : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
             if (!ZeroApplication.Config.Check(old, config))
                 return Json(ApiResult.Error(ErrorCode.LogicalError, "名称存在重复"));
@@ -58,6 +57,9 @@ namespace WebMonitor.Controler
                 case "api":
                     type = ZeroStationType.Api;
                     break;
+                case "rapi":
+                    type = ZeroStationType.RouteApi;
+                    break;
                 default:
                     return Json(ApiResult.Error(ErrorCode.LogicalError, "参数错误"));
             }
@@ -69,7 +71,7 @@ namespace WebMonitor.Controler
                 ShortName = info.short_name ?? info.Name,
                 StationAlias = string.IsNullOrWhiteSpace(info.Alias)
                     ? new List<string>()
-                    : info.Alias.Trim().Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                    : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
             if (!ZeroApplication.Config.Check(config, config))
                 return Json(ApiResult.Error(ErrorCode.LogicalError, "名称存在重复"));

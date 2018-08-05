@@ -486,11 +486,11 @@ namespace agebull
 				{
 					return check_zmq_error();
 				}
-				//state = zmq_send(socket, "", 0, ZMQ_SNDMORE);
-				//if (state < 0)
-				//{
-				//	return check_zmq_error();
-				//}
+				/*state = zmq_send(socket, "", 0, ZMQ_SNDMORE);
+				if (state < 0)
+				{
+					return check_zmq_error();
+				}*/
 				return zmq_socket_state::Succeed;
 			}
 			/**

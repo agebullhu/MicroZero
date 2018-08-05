@@ -63,7 +63,7 @@ namespace Agebull.ZeroNet.PubSub
 
                         socket.SendTo(ZeroPublishExtend.PubDescriptionTson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestContext.RequestId.ToZeroBytes(),
+                            ApiContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             buf);
                     }
@@ -71,7 +71,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         socket.SendTo(ZeroPublishExtend.PubDescriptionJson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestContext.RequestId.ToZeroBytes(),
+                            ApiContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             data.ToZeroBytes());
                     }

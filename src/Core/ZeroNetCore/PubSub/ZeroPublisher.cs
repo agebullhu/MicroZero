@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.PubSub
                     Station = station,
                     Title = title,
                     SubTitle = sub,
-                    RequestId = ApiContext.RequestContext.RequestId,
+                    RequestId = ApiContext.RequestInfo.RequestId,
                     Content = value ?? "{}"
                 });
             }

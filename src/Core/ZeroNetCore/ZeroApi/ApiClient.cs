@@ -213,7 +213,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             }
 
-            var socket = ZeroConnectionPool.GetSocket(Station, ApiContext.RequestContext.RequestId);
+            var socket = ZeroConnectionPool.GetSocket(Station, ApiContext.RequestInfo.RequestId);
             if (socket.Socket == null)
             {
                 //ApiContext.Current.LastError = ErrorCode.NoReady;
@@ -315,13 +315,14 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private static readonly byte[] CallDescription =
         {
-            6,
+            7,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.Command,
             ZeroFrameType.RequestId,
             ZeroFrameType.Context,
             ZeroFrameType.Argument,
             ZeroFrameType.Requester,
+            ZeroFrameType.Responser,
             ZeroFrameType.GlobalId
         };
 
@@ -332,35 +333,13 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             1,
             (byte)ZeroByteCommand.GetGlobalId,
-            ZeroFrameType.Requester,
+            ZeroFrameType.RequestId,
             ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     请求格式说明
-        /// </summary>
-        private static readonly byte[] CloseDescription =
-        {
-            2,
-            (byte)ZeroByteCommand.Close,
-            ZeroFrameType.Requester,
-            ZeroFrameType.GlobalId
-        };
-
-        /// <summary>
-        ///     请求格式说明
-        /// </summary>
-        private static readonly byte[] FindDescription =
-        {
-            2,
-            (byte)ZeroByteCommand.Find,
-            ZeroFrameType.Requester,
-            ZeroFrameType.GlobalId
         };
 
         private void ReadNetWork(PoolSocket socket)
         {
-            var result = socket.Socket.QuietSend(GetGlobalIdDescription, ApiContext.RequestContext.RequestId);
+            var result = socket.Socket.QuietSend(GetGlobalIdDescription, ApiContext.RequestInfo.RequestId);
             if (!result.InteractiveSuccess)
             {
                 socket.HaseFailed = true;
@@ -386,21 +365,22 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             }
 
-            var old = ApiContext.RequestContext.LocalGlobalId;
+            var old = ApiContext.RequestInfo.LocalGlobalId;
             if (result.TryGetValue(ZeroFrameType.GlobalId, out GlobalId))
             {
-                ApiContext.RequestContext.LocalGlobalId = GlobalId;
+                ApiContext.RequestInfo.LocalGlobalId = GlobalId;
                 LogRecorder.MonitorTrace($"GlobalId:{GlobalId}");
             }
 
             result = socket.Socket.QuietSend(CallDescription,
                 Commmand,
-                ApiContext.RequestContext.RequestId,
+                ApiContext.RequestInfo.RequestId,
                 JsonConvert.SerializeObject(ApiContext.Current),
                 Argument,
-                ApiContext.RequestContext.RequestId, //作名称
-                ApiContext.RequestContext.LocalGlobalId);
-            ApiContext.RequestContext.LocalGlobalId = old;
+                ZeroApplication.Config.StationName,
+                ApiContext.Organizational.RouteName,
+                ApiContext.RequestInfo.LocalGlobalId);
+            ApiContext.RequestInfo.LocalGlobalId = old;
             if (!result.InteractiveSuccess)
             {
                 socket.HaseFailed = true;

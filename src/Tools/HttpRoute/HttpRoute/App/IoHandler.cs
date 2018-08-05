@@ -129,7 +129,7 @@ namespace ZeroNet.Http.Route
                 HostName = data.HostName,
                 ApiName = data.ApiName,
                 Status = state,
-                Requester = $"http_route={ApiContext.RequestContext.Ip}:{ApiContext.RequestContext.Port}"
+                Requester = $"http_route={ApiContext.RequestInfo.Ip}:{ApiContext.RequestInfo.Port}"
             });
             //ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
         }

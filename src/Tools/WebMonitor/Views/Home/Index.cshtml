@@ -16,6 +16,9 @@
         case "pub":
             options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Publish).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
+        case "rapi":
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.RouteApi).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            break;
         default:
             filter = "api";
             options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Api).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
@@ -107,6 +110,9 @@
                         return;
                     case "type-api":
                         location.href = "/Home/Index/api";
+                        return;
+                    case "type-rapi":
+                        location.href = "/Home/Index/rapi";
                         return;
                 }
             },
@@ -260,6 +266,12 @@
                 <template slot="title">
                     <i class="el-icon-star-off"></i>
                     <span>Api站点</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="type-rapi">
+                <template slot="title">
+                    <i class="el-icon-star-off"></i>
+                    <span>RouteApi站点</span>
                 </template>
             </el-menu-item>
             <el-menu-item index="type-pub">
@@ -425,6 +437,7 @@
                         <el-radio disabled label="Plan">Plan</el-radio>
                         <el-radio label="Pub">Pub</el-radio>
                         <el-radio label="API">Api</el-radio>
+                        <el-radio label="rApi">RouteApi</el-radio>
                         <el-radio disabled label="Vote">Vote</el-radio>
                     </el-radio-group>
                 </el-form-item>

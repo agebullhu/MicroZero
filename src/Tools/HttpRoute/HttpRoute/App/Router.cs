@@ -145,10 +145,10 @@ namespace ZeroNet.Http.Route
             Data = new RouteData();
             Data.Prepare(context.Request);
             SecurityChecker = new SecurityChecker {Data = Data};
-            ApiContext.Current.Request.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            ApiContext.Current.Request.Port = HttpContext.Connection.RemotePort.ToString();
-            ApiContext.Current.Request.ArgumentType = ArgumentType.Json;
-            ApiContext.Current.Request.UserAgent = Request.Headers["User-Agent"];
+            ApiContext.RequestInfo.Ip = HttpContext.Connection.RemoteIpAddress.ToString();
+            ApiContext.RequestInfo.Port = HttpContext.Connection.RemotePort.ToString();
+            ApiContext.RequestInfo.ArgumentType = ArgumentType.Json;
+            ApiContext.RequestInfo.UserAgent = Request.Headers["User-Agent"];
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace ZeroNet.Http.Route
             else
                 Data.Bearer = words[1];
 
-            ApiContext.Current.Request.Token = Data.Bearer;
+            ApiContext.RequestInfo.Token = Data.Bearer;
             SecurityChecker.Bearer = Data.Bearer;
             if (SecurityChecker.Check())
                 return true;

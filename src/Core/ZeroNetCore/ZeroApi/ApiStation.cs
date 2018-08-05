@@ -416,7 +416,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         _processSemaphore.Wait();
                     break;
                 case SpeedLimitType.WaitCount:
-                    RunWaite();
+                    RunWait();
                     break;
                 default:
                     RunSignle();
@@ -438,7 +438,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 具体执行
         /// </summary>
-        private void RunWaite()
+        private void RunWait()
         {
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
             {

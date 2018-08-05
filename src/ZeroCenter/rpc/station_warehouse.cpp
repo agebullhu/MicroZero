@@ -1,6 +1,7 @@
 #include "../stdafx.h"
 #include "broadcasting_station.h"
 #include "api_station.h"
+#include "route_api_station.h"
 //#include "vote_station.h"
 #include<stdio.h>
 #include<string.h>
@@ -107,6 +108,9 @@ namespace agebull
 			{
 			case STATION_TYPE_API:
 				api_station::run(config);
+				return true;
+			case STATION_TYPE_ROUTE_API:
+				route_api_station::run(config);
 				return true;
 				//case STATION_TYPE_VOTE:
 				//	vote_station::run(config);
@@ -269,10 +273,10 @@ namespace agebull
 			return install(config);
 		}
 
-		const char* station_types_1[] = { "api", "pub", "vote" };
+		const char* station_types_1[] = { "api", "pub", "vote", "rapi" };
 		enum class station_types_2
 		{
-			api, pub, vote
+			api, pub, vote, rapi
 		};
 
 		/**
@@ -286,6 +290,9 @@ namespace agebull
 			{
 			case station_types_2::api:
 				type = STATION_TYPE_API;
+				break;
+			case station_types_2::rapi:
+				type = STATION_TYPE_ROUTE_API;
 				break;
 			case station_types_2::pub:
 				type = STATION_TYPE_PUBLISH;
@@ -339,10 +346,14 @@ namespace agebull
 			redis->incr(port_redis_key, &port);
 			config->worker_out_port_ = static_cast<int>(port);
 			//API与VOTE有返回值接口
-			if (config->station_type_ >= STATION_TYPE_API && config->station_type_ < STATION_TYPE_PLAN)
+			switch(config->station_type_)
 			{
+			case STATION_TYPE_API:
+			case STATION_TYPE_VOTE:
+			case STATION_TYPE_ROUTE_API:
 				redis->incr(port_redis_key, &port);
 				config->worker_in_port_ = static_cast<int>(port);
+
 			}
 			acl::string json = save(config);
 			insert_config(config);

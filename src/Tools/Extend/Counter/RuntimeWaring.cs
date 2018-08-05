@@ -35,7 +35,7 @@ namespace ZeroNet.Http.Route
             {
                 Machine = ZeroApplication.Config.StationName,
                 User = ApiContext.Customer?.Account ?? "Unknow",
-                RequestId = ApiContext.RequestContext.RequestId,
+                RequestId = ApiContext.RequestInfo.RequestId,
                 Host = host,
                 Api = api,
                 Message = message

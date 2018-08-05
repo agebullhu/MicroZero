@@ -6,11 +6,10 @@ using Newtonsoft.Json;
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// 内部服务调用上下文（跨系统边界传递）
+    /// 请求信息
     /// </summary>
-    [DataContract, Category("上下文")]
-    [JsonObject(MemberSerialization.OptIn)]
-    public class RequestContext
+    [DataContract, Category("上下文"), JsonObject(MemberSerialization.OptIn)]
+    public class RequestInfo
     {
         /// <summary>
         /// 修改值
@@ -27,7 +26,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 构造
         /// </summary>
-        public RequestContext() : this(ApiContext.MyServiceKey,Guid.NewGuid().ToString())
+        public RequestInfo() : this(ApiContext.MyServiceKey,Guid.NewGuid().ToString())
         {
         }
 
@@ -38,7 +37,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="globalId"></param>
         /// <param name="serviceKey"></param>
         /// <param name="requestId"></param>
-        public RequestContext(string globalId, string serviceKey, string requestId) : this(serviceKey, requestId)
+        public RequestInfo(string globalId, string serviceKey, string requestId) : this(serviceKey, requestId)
         {
             CallGlobalId = globalId;
         }
@@ -48,7 +47,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         /// <param name="serviceKey"></param>
         /// <param name="requestId"></param>
-        public RequestContext(string serviceKey, string requestId)
+        public RequestInfo(string serviceKey, string requestId)
         {
             _serviceKey = serviceKey;
             _requestId = requestId;

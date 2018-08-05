@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using Agebull.Common.Base;
 using Agebull.Common.OAuth;
-using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -79,16 +78,6 @@ namespace Agebull.ZeroNet.ZeroApi
         }
 
         /// <summary>
-        ///     当前调用上下文
-        /// </summary>
-        public static RequestContext RequestContext => Current._requestContext;
-
-        /// <summary>
-        ///     当前调用的客户信息
-        /// </summary>
-        public static ILoginUserInfo Customer => Current._user;
-
-        /// <summary>
         /// 最后操作的错误码
         /// </summary>
         public int LastError { get; set; }
@@ -103,20 +92,34 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #region 实例变量
         /// <summary>
-        ///     当前调用上下文
+        ///     当前调用的客户信息
         /// </summary>
-        [JsonProperty("r")] private RequestContext _requestContext;
+        [JsonProperty("user")] private ILoginUserInfo _user;
+        /// <summary>
+        ///     当前调用的客户信息
+        /// </summary>
+        public static ILoginUserInfo Customer => Current._user;
+        
+        /// <summary>
+        ///     当前调用的组织信息
+        /// </summary>
+        [JsonProperty("org")] private IOrganizational _organizational;
+
+        /// <summary>
+        ///     当前调用的组织信息
+        /// </summary>
+        public static IOrganizational Organizational => Current._organizational;
+        
 
         /// <summary>
         ///     当前调用上下文
         /// </summary>
-        [JsonProperty("u")] private LoginUserInfo _user;
-
+        [JsonProperty("req")] private RequestInfo _requestInfo;
 
         /// <summary>
         ///     当前调用上下文
         /// </summary>
-        public RequestContext Request => _requestContext ?? (_requestContext = new RequestContext());
+        public static RequestInfo RequestInfo => Current._requestInfo ?? (Current._requestInfo = new RequestInfo());
 
         #endregion
 
@@ -127,8 +130,9 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private ApiContext()
         {
-            _requestContext = new RequestContext(MyServiceKey, $"{MyServiceKey}-{Guid.NewGuid():N}");
+            _requestInfo = new RequestInfo(MyServiceKey, $"{MyServiceKey}-{Guid.NewGuid():N}");
             _user = LoginUserInfo.CreateAnymouse("<error>", "<error>", "<error>");
+            _organizational = OrganizationalInfo.System;
         }
 
         /// <summary>
@@ -141,8 +145,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             if (context._user != null)
                 Current._user = context._user;
-            if (context._requestContext != null)
-                Current._requestContext = context._requestContext;
+            if (context._requestInfo != null)
+                Current._requestInfo = context._requestInfo;
         }
 
         /// <summary>
@@ -150,7 +154,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public static void SetRequestContext(string globalId, string serviceKey, string requestId)
         {
-            Current._requestContext = new RequestContext(globalId, serviceKey, requestId);
+            Current._requestInfo = new RequestInfo(globalId, serviceKey, requestId);
         }
 
 
@@ -159,25 +163,34 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public static void SetRequestContext(string serviceKey, string requestId)
         {
-            Current._requestContext = new RequestContext(serviceKey, requestId);
+            Current._requestInfo = new RequestInfo(serviceKey, requestId);
         }
 
         /// <summary>
         ///     设置当前上下文（框架内调用，外部误用后果未知）
         /// </summary>
         /// <param name="context"></param>
-        public static void SetRequestContext(RequestContext context)
+        public static void SetRequestContext(RequestInfo context)
         {
-            Current._requestContext = context;
+            Current._requestInfo = context;
+        }
+
+        /// <summary>
+        ///     设置当前组织（框架内调用，外部误用后果未知）
+        /// </summary>
+        /// <param name="org"></param>
+        public static void SetOrganizational(IOrganizational org)
+        {
+            Current._organizational = org;
         }
 
         /// <summary>
         ///     设置当前用户（框架内调用，外部误用后果未知）
         /// </summary>
-        /// <param name="customer"></param>
-        public static void SetCustomer(LoginUserInfo customer)
+        /// <param name="user"></param>
+        public static void SetUser(ILoginUserInfo user)
         {
-            Current._user = customer;
+            Current._user = user;
         }
 
         #endregion

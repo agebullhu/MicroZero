@@ -144,7 +144,7 @@ namespace Agebull.ZeroNet.Core
             ApiContext.MyServiceName = Config.ServiceName;
             LogRecorder.GetMachineNameFunc = () => Config.ServiceName;
             LogRecorder.GetUserNameFunc = () => ApiContext.Customer?.Account ?? "Unknow";
-            LogRecorder.GetRequestIdFunc = () => ApiContext.RequestContext?.RequestId ?? Guid.NewGuid().ToString();
+            LogRecorder.GetRequestIdFunc = () => ApiContext.RequestInfo?.RequestId ?? Guid.NewGuid().ToString();
 
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();

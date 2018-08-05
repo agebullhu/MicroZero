@@ -14,15 +14,15 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 调用者（机器名）
         /// </summary>
-        public string Caller => ApiContext.RequestContext.ServiceKey;
+        public string Caller => ApiContext.RequestInfo.ServiceKey;
         /// <summary>
         /// 调用标识
         /// </summary>
-        public string RequestId => ApiContext.RequestContext.RequestId;
+        public string RequestId => ApiContext.RequestInfo.RequestId;
         /// <summary>
         /// HTTP调用时的UserAgent
         /// </summary>
-        public string UserAgent => ApiContext.RequestContext.UserAgent;
+        public string UserAgent => ApiContext.RequestInfo.UserAgent;
         
     }
 }
