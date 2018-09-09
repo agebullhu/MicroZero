@@ -4,7 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Agebull.Common.ApiDocuments;
 using Agebull.Common.Reflection;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
@@ -44,7 +46,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Name = StationName
             });
-            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiController))).ToArray();
             foreach (var type in types)
             {
                 FindApi(type, false);
@@ -141,9 +143,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     Name = method.Name,
                     RouteName = name,
-                    Category = ca?.Category ?? xdoc.Caption,
+                    Category = ca?.Category ?? xdoc?.Caption,
                     Controller = type.FullName,
-                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
+                    AccessOption = accessOption?.Option ?? ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
                 };
                 station.Aips.Add(api.RouteName, api);
@@ -271,7 +273,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (type == typeof(object))
                 return;
-            if (type.BaseType != typeof(object) && !type.BaseType.IsInterface)
+            if (type.BaseType != null && (type.BaseType != typeof(object) && !type.BaseType.IsInterface))
                 ReadEntity(typeDocument, type.BaseType);
             var dc = type.GetAttribute<DataContractAttribute>();
             var jo = type.GetAttribute<JsonObjectAttribute>();

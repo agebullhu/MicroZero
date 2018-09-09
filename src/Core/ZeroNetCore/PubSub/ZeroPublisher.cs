@@ -1,5 +1,5 @@
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.PubSub
                     Station = station,
                     Title = title,
                     SubTitle = sub,
-                    RequestId = ApiContext.RequestInfo.RequestId,
+                    RequestId = GlobalContext.RequestInfo.RequestId,
                     Content = value ?? "{}"
                 });
             }

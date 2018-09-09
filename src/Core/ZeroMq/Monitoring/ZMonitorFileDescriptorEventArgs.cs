@@ -12,7 +12,8 @@ namespace ZeroMQ.Monitoring
 		internal ZMonitorFileDescriptorEventArgs(ZMonitor monitor, ZMonitorEventData data)
 			: base(monitor, data)
 		{
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+#if NETSTANDARD2_0
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{
 				FileDescriptor_Posix = data.EventValue;
 			}
@@ -24,7 +25,10 @@ namespace ZeroMQ.Monitoring
 			{
 				throw new PlatformNotSupportedException();
 			}
-		}
+#else
+		    FileDescriptor_Windows = new IntPtr(data.EventValue);
+#endif
+        }
 
 		/// <summary>
 		/// Gets the monitor descriptor (Posix)

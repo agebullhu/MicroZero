@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -76,7 +75,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 执行状态
         /// </summary>
-        public OperatorStatus Status { get; set; }
+        public ZeroOperatorStatus Status { get; set; }
 
     }
 }

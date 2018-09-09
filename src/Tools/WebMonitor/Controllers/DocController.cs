@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Agebull.Common.ApiDocuments;
 using Agebull.ZeroNet.Core;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +17,10 @@ namespace WebMonitor.Controllers
                 config = ZeroApplication.Config.Stations.FirstOrDefault(p=>p.StationType == ZeroStationType.Api);
             }
 
-            Agebull.ZeroNet.ZeroApi.StationDocument doc;
+            StationDocument doc;
             if (config == null)
             {
-                doc = new Agebull.ZeroNet.ZeroApi.StationDocument
+                doc = new StationDocument
                 {
                     Name = id,
                     Caption = "无文档",
@@ -28,7 +29,7 @@ namespace WebMonitor.Controllers
             }
             else if (!SystemManager.Instance.LoadDocument(config.StationName, out doc))
             {
-                doc = new Agebull.ZeroNet.ZeroApi.StationDocument
+                doc = new StationDocument
                 {
                     Name = config.Name,
                     Caption = config.Caption,

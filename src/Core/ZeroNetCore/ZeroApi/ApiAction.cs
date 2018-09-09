@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Agebull.Common.Rpc;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
@@ -24,7 +25,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         ///     需要登录
         /// </summary>
-        public bool NeedLogin => (Access & ApiAccessOption.Anymouse) == ApiAccessOption.None;
+        public bool NeedLogin => (((int)Access) & 0xFFF0) > 0;
 
         /// <summary>
         ///     是否公开接口

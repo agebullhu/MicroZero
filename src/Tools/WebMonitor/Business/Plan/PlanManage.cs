@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;

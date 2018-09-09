@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
+using Agebull.Common.ApiDocuments;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 using ZeroMQ;
 

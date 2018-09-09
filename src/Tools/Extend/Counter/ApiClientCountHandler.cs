@@ -1,4 +1,6 @@
 using System;
+using Agebull.Common;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -14,7 +16,7 @@ namespace Agebull.ZeroNet.ZeroApi
             count = new CountData
             {
                 Start = DateTime.Now.Ticks,
-                FromId = ApiContext.RequestInfo.CallGlobalId,
+                FromId = GlobalContext.RequestInfo.CallGlobalId,
                 Requester = ZeroApplication.Config.RealName,
                 HostName = item.Station,
                 ApiName = item.Commmand
@@ -23,7 +25,7 @@ namespace Agebull.ZeroNet.ZeroApi
 
         void ApiClient.IHandler.End(ApiClient item)
         {
-            count.ToId = ApiContext.RequestInfo.LocalGlobalId;
+            count.ToId = GlobalContext.RequestInfo.LocalGlobalId;
             count.End = DateTime.Now.Ticks;
             count.Status = item.State.ToOperatorStatus();
             ApiCounter.Instance.Count(count);

@@ -1,6 +1,5 @@
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.Common.Rpc;
 using Gboxt.Common.DataModel;
-using System.Text.RegularExpressions;
 
 namespace ApiTest
 {
@@ -16,6 +15,7 @@ namespace ApiTest
         /// <example>15618965007</example>
         [DataRule(CanNull = false, Max = 11, Min = 11, Regex = "1[3-9]\\d{9,9}")]
         public string MobilePhone { get; set; }
+
         /// <summary>
         /// √‹¬Î
         /// </summary>

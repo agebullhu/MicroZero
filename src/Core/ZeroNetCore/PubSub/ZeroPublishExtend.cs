@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -239,7 +239,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(PubDescriptionEmpty,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
+                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
                     ToZeroBytes(ZeroApplication.Config.RealName))
                 )
                 {
@@ -272,7 +272,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(description,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
+                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
                     ToZeroBytes(subTitle),
                     ToZeroBytes(ZeroApplication.Config.RealName),
                     content))
@@ -307,7 +307,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.SendTo(description,
                     ToZeroBytes(title),
-                    ToZeroBytes(ApiContext.RequestInfo.RequestId),
+                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
                     ToZeroBytes(ZeroApplication.Config.RealName),
                     content))
                 {

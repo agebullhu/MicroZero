@@ -178,18 +178,18 @@ namespace ZeroNet.Http.Route
                 MinTime = tm;
             switch (data.Status)
             {
-                case OperatorStatus.Success:
+                case ZeroOperatorStatus.Success:
                     break;
-                case OperatorStatus.Unavailable:
-                case OperatorStatus.NotFind:
-                case OperatorStatus.DenyAccess:
+                case ZeroOperatorStatus.Unavailable:
+                case ZeroOperatorStatus.NotFind:
+                case ZeroOperatorStatus.DenyAccess:
                     Deny += 1;
                     break;
-                case OperatorStatus.FormalError:
+                case ZeroOperatorStatus.FormalError:
                     FormalError += 1;
                     break;
-                case OperatorStatus.LocalException:
-                case OperatorStatus.LogicalError:
+                case ZeroOperatorStatus.LocalException:
+                case ZeroOperatorStatus.LogicalError:
                     Bug += 1;
                     break;
                 default:

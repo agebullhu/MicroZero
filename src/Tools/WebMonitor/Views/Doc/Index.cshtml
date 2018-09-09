@@ -4,6 +4,9 @@
 @using Agebull.ZeroNet.ZeroApi
 @using System
 @using System.Text
+@using System.Text
+@using Agebull.Common.ApiDocuments
+@using Agebull.Common.Rpc
 @model StationDocument
 @{
 
@@ -263,7 +266,8 @@
                 <ul>
                     @foreach (var category in Model.Aips.Values.GroupBy(p => p.Category ?? "通用"))
                     {
-                        <li style="list-style-type:square">@category.Key
+                        <li style="list-style-type:square">
+                            @category.Key
                             <ul>
                                 @foreach (var api in category)
                                 {

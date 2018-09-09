@@ -1,8 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel.ZeroNet;
@@ -65,6 +67,7 @@ namespace RpcTest
             WaitToEnd();
             if (!Init())
                 return;
+
             ZeroTrace.WriteInfo("RpcTest", "Test is start");
             Start = DateTime.Now;
             Cancel = new CancellationTokenSource();
@@ -127,7 +130,38 @@ namespace RpcTest
             }
         }
 
+        public void TestSignle()
+        {
+            Thread.Sleep(3000);
+            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
+            Start = DateTime.Now;
+            OnTestStar();
+            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            {
+                if (WaitCount > ZeroApplication.Config.MaxWait)
+                {
+                    Thread.Sleep(10);
+                    continue;
+                }
+                Async();
+            }
+            Count();
+        }
         public void Test()
+        {
+            Thread.Sleep(1000);
+            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
+            Start = DateTime.Now;
+            OnTestStar();
+            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            {
+                Thread.Sleep(1000);
+                Async();
+            }
+            Count();
+        }
+
+        public void Test1()
         {
             Thread.Sleep(100);
             ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");

@@ -10,7 +10,6 @@
 
 		private const CallingConvention CCCdecl = CallingConvention.Cdecl;
 
-		private const string SodiumLibraryName = "libsodium";
 
 		//private static readonly UnmanagedLibrary NativeLibSodium;
 
@@ -61,7 +60,7 @@
 				sizeof_zmq_msg_t = sizeof_zmq_msg_t_v3;
 
 				ctx_shutdown = (ctxPtr) 
-					=> { throw VersionNotSupported("zmq_ctx_shutdown", "v4"); };
+					=> throw VersionNotSupported("zmq_ctx_shutdown", "v4");
 				msg_gets = (msgPtr, propertyPtr) 
 					=> { throw VersionNotSupported("zmq_msg_gets", "v4"); };
 				has = (capabilityPtr) 
@@ -89,102 +88,7 @@
 			}
 		}
 
-	    const int RTLD_NOW = 2; // for dlopen's flags
 
-	    const int RTLD_GLOBAL = 8;
-
-	    [DllImport(@"libdl")]
-
-	    static extern IntPtr dlopen(string filename, int flags);
-
-	    [DllImport("libdl")]
-
-	    static extern IntPtr dlsym(IntPtr handle, string symbol);
-
-	    [DllImport("kernel32.dll")]
-
-	    static extern IntPtr LoadLibrary(string filename);
-
-	    private static IntPtr LibPtr = IntPtr.Zero;
-        static void LoadLib()
-	    {
-	        Console.WriteLine("OSArchitecture:{0}", RuntimeInformation.OSArchitecture);
-
-	        try
-	        {
-	            var libPath = @"i386";
-
-	            if (RuntimeInformation.OSArchitecture == Architecture.X86)
-
-	            {
-	                libPath = @"i386";
-	            }
-
-	            else if (RuntimeInformation.OSArchitecture == Architecture.X64)
-
-	            {
-	                libPath = @"amd64";
-	            }
-
-	            else
-
-	            {
-	                Console.WriteLine("OSArchitecture not suported!");
-	            }
-
-	            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-
-	            {
-	                var libName = $"{AppContext.BaseDirectory}{libPath}\\{LibraryName}.dll";
-
-	                Console.WriteLine("windows:{0}", libName);
-
-	                LibPtr = LoadLibrary(libName);
-	            }
-
-	            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-
-	            {
-	                var libName = $"{AppContext.BaseDirectory}/{libPath}/{LibraryName}.so";
-
-	                Console.WriteLine("linux:{0}", libName);
-
-	                LibPtr = dlopen(libName, RTLD_NOW | RTLD_GLOBAL);
-
-//	                if (LibPtr != IntPtr.Zero)
-
-	                //{
-	                //    var ptr1 = dlsym(LibPtr, "zmq_ctx_new");
-
-	                //    context = Marshal.GetDelegateForFunctionPointer<ZmqContext>(ptr1);
-
-	                //    var ptr2 = dlsym(LibPtr, "zmq_socket");
-
-	                //    socket = Marshal.GetDelegateForFunctionPointer<ZmqSocket>(ptr2);
-
-	                //    var ptr3 = dlsym(LibPtr, "zmq_connect");
-
-	                //    connect = Marshal.GetDelegateForFunctionPointer<ZmqConnect>(ptr3);
-	                //}
-	            }
-
-	            else
-	            {
-	                Console.WriteLine("OSPlatform not suported!");
-	            }
-
-	            if (LibPtr != IntPtr.Zero)
-	                Console.WriteLine("load zmqlib success!");
-                else
-	                Console.WriteLine("load zmqlib failed!");
-            }
-
-	        catch (Exception ex)
-
-	        {
-	            Console.WriteLine("load zmqlib error:rn{0}", ex);
-	        }
-	    }
 
 	    private static NotSupportedException VersionNotSupported(string methodName, string requiredVersion)
 		{

@@ -147,11 +147,9 @@
 		}
 
 		/// <summary>
-		/// Start the device in the current thread. Should be used by implementations of the <see cref="DeviceRunner.Start"/> method.
+		/// Start the device in the current thread. Should be used by implementations of the method.
 		/// </summary>
 		/// <remarks>
-		/// Initializes the sockets prior to starting the device with <see cref="Initialize"/>.
-		/// </remarks>
 		protected override void Run()
 		{
 			EnsureNotDisposed();

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.ZeroApi;
 using ZeroMQ;
 
@@ -139,12 +140,12 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void InitializeDependency()
         {
-            ApiContext.MyRealName = Config.RealName;
-            ApiContext.MyServiceKey = Config.ServiceKey;
-            ApiContext.MyServiceName = Config.ServiceName;
+            ApiContext.ServiceRealName = Config.RealName;
+            ApiContext.ServiceKey = Config.ServiceKey;
+            ApiContext.ServiceName = Config.ServiceName;
             LogRecorder.GetMachineNameFunc = () => Config.ServiceName;
             LogRecorder.GetUserNameFunc = () => ApiContext.Customer?.Account ?? "Unknow";
-            LogRecorder.GetRequestIdFunc = () => ApiContext.RequestInfo?.RequestId ?? Guid.NewGuid().ToString();
+            LogRecorder.GetRequestIdFunc = () => GlobalContext.RequestInfo?.RequestId ?? Guid.NewGuid().ToString();
 
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();

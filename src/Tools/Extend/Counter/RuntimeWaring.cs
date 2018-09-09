@@ -1,4 +1,6 @@
 using System.Runtime.Serialization;
+using Agebull.Common;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
@@ -35,7 +37,7 @@ namespace ZeroNet.Http.Route
             {
                 Machine = ZeroApplication.Config.StationName,
                 User = ApiContext.Customer?.Account ?? "Unknow",
-                RequestId = ApiContext.RequestInfo.RequestId,
+                RequestId = GlobalContext.RequestInfo.RequestId,
                 Host = host,
                 Api = api,
                 Message = message

@@ -163,6 +163,7 @@ namespace WebMonitor
             Binding(app, "kline");
             Binding(app, "api");
             Binding(app, "plan_notify");
+            Binding(app, "event");
             StationCounter.Start();
         }
 

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
+using Agebull.Common.Rpc;
 
 namespace ZeroNet.Http.Route
 {

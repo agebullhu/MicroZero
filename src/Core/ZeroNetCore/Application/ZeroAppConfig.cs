@@ -6,12 +6,13 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Agebull.Common;
+using Agebull.Common.ApiDocuments;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using ZeroMQ;
 using ZeroMQ.lib;
 
 namespace Agebull.ZeroNet.Core
@@ -428,6 +429,11 @@ namespace Agebull.ZeroNet.Core
             ConfigurationManager.Root["rootPath"] = rootPath;
 
             var sec = ConfigurationManager.Get("Zero");
+
+            
+            var socketOption = sec.Child<SocketOption>("socketOption");
+            if (socketOption != null)
+                ZSocket.Option = socketOption;
 
             Config = String.IsNullOrWhiteSpace(AppName)
                 ? sec.Child<ZeroAppConfig>("Station")

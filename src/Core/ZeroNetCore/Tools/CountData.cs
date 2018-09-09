@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using Agebull.ZeroNet.PubSub;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -64,7 +65,7 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行状态
         /// </summary>
         [DataMember]
-        [JsonProperty("status")] public OperatorStatus Status { get; set; }
+        [JsonProperty("status")] public ZeroOperatorStatus Status { get; set; }
 
         /// <summary>
         ///     标题

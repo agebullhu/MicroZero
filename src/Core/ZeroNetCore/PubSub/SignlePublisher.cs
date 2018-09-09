@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Log;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using ZeroMQ;
@@ -63,7 +62,7 @@ namespace Agebull.ZeroNet.PubSub
 
                         socket.SendTo(ZeroPublishExtend.PubDescriptionTson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestInfo.RequestId.ToZeroBytes(),
+                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             buf);
                     }
@@ -71,7 +70,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         socket.SendTo(ZeroPublishExtend.PubDescriptionJson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestInfo.RequestId.ToZeroBytes(),
+                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             data.ToZeroBytes());
                     }

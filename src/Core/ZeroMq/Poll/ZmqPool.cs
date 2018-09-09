@@ -71,6 +71,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static IZmqPool CreateZmqPool()
         {
+#if NETSTANDARD2_0
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return new WinZPoll();
@@ -80,6 +81,9 @@ namespace ZeroMQ
                 return new LinuxZPoll();
             }
             throw new NotSupportedException("only support Windows or Linux");
+#else
+                return new WinZPoll();
+#endif
         }
     }
 }

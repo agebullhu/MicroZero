@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+using Agebull.Common.ApiDocuments;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -15,7 +13,7 @@ namespace Agebull.ZeroNet.Core
     [JsonObject(MemberSerialization.OptIn)]
     [DataContract]
     [Serializable]
-    public class StationConfig : AnnotationsConfig, IApiResultData
+    public class StationConfig : AnnotationsConfig
     {
 
         /// <summary>

@@ -14,7 +14,10 @@ namespace ZeroMQ
     public class ZSocket : MemoryCheck
     {
         #region Socket支持
-
+        /// <summary>
+        /// 配置
+        /// </summary>
+        public static SocketOption Option = new SocketOption();
         /// <summary>
         /// 构建套接字
         /// </summary>
@@ -36,24 +39,23 @@ namespace ZeroMQ
             if (identity == null)
                 identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
             socket.SetOption(ZSocketOption.IDENTITY, identity);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, 10);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl );
+            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
 
-            socket.SetOption(ZSocketOption.LINGER, 200);
-            socket.SetOption(ZSocketOption.RCVTIMEO, 1000);
+            socket.SetOption(ZSocketOption.LINGER, Option.Linger);
+            socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
 
-            socket.SetOption(ZSocketOption.BACKLOG, 50000);
-            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
-            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, 200);
-            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, 200);
+            socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
+            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
 
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 1);
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, 4096);
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, 4096);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
             if (type != ZSocketType.SUB)
             {
-                socket.SetOption(ZSocketOption.SNDTIMEO, 1000);
-                //socket.SetOption(ZSocketOption.SNDHWM, 4096);
+                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
             }
 
             if (socket.Bind(address, out error))
@@ -85,29 +87,18 @@ namespace ZeroMQ
             if (identity == null)
                 identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
             socket.SetOption(ZSocketOption.IDENTITY, identity);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, 50);
-            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, 50);
-            //socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, 500);
-            socket.SetOption(ZSocketOption.LINGER, 100);
-            socket.SetOption(ZSocketOption.RCVTIMEO, 5000);
-            //socket.SetOption(ZSocketOption.BACKLOG, 8192);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_IVL, 1000);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, 200);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_TTL, 200);
-
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 10);
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, 1);
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, 5);
-
-            //socket.SetOption(ZSocketOption.RCVHWM, 4096);
-            //socket.SetOption(ZSocketOption.SNDHWM, 4096);
+            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
+            socket.SetOption(ZSocketOption.LINGER, Option.Linger);
+            socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
             if (type == ZSocketType.SUB)
             {
                 socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe ?? "");
             }
             else
             {
-                socket.SetOption(ZSocketOption.SNDTIMEO, 5000);
+                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
             }
 
             if (socket.Connect(address, out error))

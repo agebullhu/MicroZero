@@ -24,6 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="MachineEventArg.cs" />
+    <Compile Remove="MachineEventStation.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
   </ItemGroup>
 
