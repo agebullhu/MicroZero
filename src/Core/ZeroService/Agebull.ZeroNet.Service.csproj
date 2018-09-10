@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -12,11 +13,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\..\test\ZeroSerivce\</OutputPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.MySql" Version="2.3.0.22" />
-    <PackageReference Include="Agebull.EntityModel.Redis" Version="2.3.0.22" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />

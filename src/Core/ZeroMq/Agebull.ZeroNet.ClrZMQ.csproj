@@ -4,16 +4,17 @@
     <Description>
       ClrZmq的ZeroNet专用版本
     </Description>
-    <Version>1.1.1.6</Version>
+    <Version>1.1.1.8</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
     <DebugType>portable</DebugType>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
     <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/clrzmq4</RepositoryUrl>
-    <PackageVersion>1.1.1.6</PackageVersion>
+    <PackageVersion>1.1.1.8</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,8 +24,8 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>ClrZmq的ZeroNet专用版本</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.1.1.6</AssemblyVersion>
-    <FileVersion>1.1.1.6</FileVersion>
+    <AssemblyVersion>1.1.1.8</AssemblyVersion>
+    <FileVersion>1.1.1.8</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -36,7 +37,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_1</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;</DefineConstants>
     <DocumentationFile />
   </PropertyGroup>
 

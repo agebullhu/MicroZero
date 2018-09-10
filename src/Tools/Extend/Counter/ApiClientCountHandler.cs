@@ -1,5 +1,4 @@
 using System;
-using Agebull.Common;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 
@@ -27,7 +26,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             count.ToId = GlobalContext.RequestInfo.LocalGlobalId;
             count.End = DateTime.Now.Ticks;
-            count.Status = item.State.ToOperatorStatus();
+            count.Status = item.State.ToOperatorStatus(true);
             ApiCounter.Instance.Count(count);
         }
     }

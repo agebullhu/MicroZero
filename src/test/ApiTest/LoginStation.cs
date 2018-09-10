@@ -14,11 +14,10 @@ namespace ApiTest
         /// <summary>
         /// 登录
         /// </summary>
-        /// <param name="user">用户信息</param>
         /// <returns></returns>
         [Route("api/login"), Category("登录")]
         [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
-        public ApiResult Login(LoginArg user)
+        public ApiResult Login()
         {
             return new ApiResult
             {
@@ -26,7 +25,7 @@ namespace ApiTest
                 Status = new ApiStatusResult
                 {
                     ErrorCode = 0,
-                    ClientMessage = $"Wecome {user.MobilePhone}!"
+                    //ClientMessage = $"Wecome {user.MobilePhone}!"
                 }
             };
         }
