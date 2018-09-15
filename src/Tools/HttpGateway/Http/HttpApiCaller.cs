@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Http;
@@ -88,18 +89,15 @@ namespace ZeroNet.Http.Gateway
             {
                 RemoteRequest.ContentType = "application/x-www-form-urlencoded";
                 var builder = new StringBuilder();
-                var first = true;
+                builder.Append($"_api_context_={HttpUtility.UrlEncode(JsonConvert.SerializeObject(GlobalContext.Current), Encoding.UTF8)}");
                 foreach (var kvp in localRequest.Form)
                 {
-                    if (first)
-                        first = false;
-                    else
                         builder.Append('&');
                     builder.Append($"{kvp.Key}=");
                     if (!string.IsNullOrEmpty(kvp.Value))
                         builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
                 }
-
+                
                 data.Form = builder.ToString();
                 using (var rs = RemoteRequest.GetRequestStream())
                 {

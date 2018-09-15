@@ -186,31 +186,10 @@ namespace Agebull.ZeroNet.Core
                     : Publish(socket, PubDescriptionData2, item.Title, item.SubTitle, item.Buffer);
             }
             return item.SubTitle == null
-                ? Publish(socket, PubDescriptionJson, item.Title, ToZeroBytes(item.Content))
-                : Publish(socket, PubDescriptionJson2, item.Title, item.SubTitle, ToZeroBytes(item.Content));
+                ? Publish(socket, PubDescriptionJson, item.Title, item.Content.ToZeroBytes())
+                : Publish(socket, PubDescriptionJson2, item.Title, item.SubTitle, item.Content.ToZeroBytes());
         }
 
-        private static readonly byte[] EmptyBytes = Encoding.UTF8.GetBytes("");
-
-        /// <summary>
-        /// 转为UTF8字节
-        /// </summary>
-        /// <param name="word">单词</param>
-        /// <returns>字节</returns>
-        public static byte[] ToZeroBytes(this string word)
-        {
-            return string.IsNullOrEmpty(word) ? EmptyBytes : Encoding.UTF8.GetBytes(word);
-        }
-        /// <summary>
-        /// 转为UTF8字节
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns>字节</returns>
-        public static byte[] ToZeroBytes<T>(this T v) where T : class
-        {
-            return v == null ? EmptyBytes : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(v));
-        }
-        
         /// <summary>
         ///     发送广播
         /// </summary>
@@ -238,9 +217,9 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 if (!socket.SendTo(PubDescriptionEmpty,
-                    ToZeroBytes(title),
-                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
-                    ToZeroBytes(ZeroApplication.Config.RealName))
+                    title.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    ZeroApplication.Config.RealName.ToZeroBytes())
                 )
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title);
@@ -271,10 +250,10 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 if (!socket.SendTo(description,
-                    ToZeroBytes(title),
-                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
-                    ToZeroBytes(subTitle),
-                    ToZeroBytes(ZeroApplication.Config.RealName),
+                    title.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    subTitle.ToZeroBytes(),
+                    ZeroApplication.Config.RealName.ToZeroBytes(),
                     content))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title, subTitle);
@@ -306,9 +285,9 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 if (!socket.SendTo(description,
-                    ToZeroBytes(title),
-                    ToZeroBytes(GlobalContext.RequestInfo.RequestId),
-                    ToZeroBytes(ZeroApplication.Config.RealName),
+                    title.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    ZeroApplication.Config.RealName.ToZeroBytes(),
                     content))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title);

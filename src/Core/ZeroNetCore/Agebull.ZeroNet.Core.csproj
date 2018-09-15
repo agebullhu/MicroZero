@@ -16,16 +16,16 @@
       2 消息发布与订阅
       3 网络投票（并行工作流）
     </Description>
-    <Version>1.1.1.8</Version>
+    <Version>1.2.0.0</Version>
     <!--monoandroid60;xamarinios10-->
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
     <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.1.1.8</PackageVersion>
+    <PackageVersion>1.2.0.0</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -96,6 +96,7 @@
 
   <ItemGroup>
     <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.1.1" />
+    <PackageReference Include="Agebull.Rpc.Abstractions" Version="2.3.1.2" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 

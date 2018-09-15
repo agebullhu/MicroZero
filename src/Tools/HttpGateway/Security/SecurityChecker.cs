@@ -193,6 +193,13 @@ namespace ZeroNet.Http.Gateway
                         if (result.Success)
                         {
                             GlobalContext.SetUser(result.ResultData);
+                            GlobalContext.SetOrganizational(new OrganizationalInfo
+                            {
+                                OrgId = result.ResultData.OrganizationId,
+                                Name = result.ResultData.Organization,
+                                OrgKey = result.ResultData.Organization,
+                                RouteName = result.ResultData.Organization
+                            }); 
                             return true;
                         }
                         Data.ResultMessage = vl;

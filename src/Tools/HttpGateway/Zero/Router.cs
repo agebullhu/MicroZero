@@ -42,6 +42,8 @@ namespace ZeroNet.Http.Gateway
                 using (var texter = new StreamReader(Request.Body))
                 {
                     Data.Context = texter.ReadToEnd();
+                    if (string.IsNullOrEmpty(Data.Context))
+                        Data.Context = null;
                     texter.Close();
                 }
             }

@@ -19,6 +19,7 @@ namespace Agebull.ZeroNet.Core
         {
             StationType = type;
             IsService = isService;
+            Name = GetType().Name ;
         }
 
         /// <summary>
