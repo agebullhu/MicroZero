@@ -6,7 +6,6 @@ using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Microsoft.Extensions.DependencyInjection;
-using Gboxt.Common.DataModel.ZeroNet;
 using ZeroNet.Http.Route;
 using Agebull.Common.Configuration;
 using Gboxt.Common.DataModel.ExtendEvents;
@@ -31,28 +30,24 @@ namespace Agebull.ZeroNet.Log
             var sec = ConfigurationManager.Get("AppSettings");
             foreach (var k in sec.Configuration.GetChildren())
                 Console.WriteLine(k.Key );
-            if (ConfigurationManager.AppSettings.GetBool("RemoteLog", false))
+            if (ConfigurationManager.AppSettings.GetBool("RemoteLog"))
                 IocHelper.ServiceCollection.AddSingleton<ILogRecorder>(provider => RemoteLogRecorder.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring", false))
+            if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))
                 IocHelper.ServiceCollection.AddSingleton<IRuntimeWaring>(provider => RuntimeWaring.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("ApiCount", false))
+            if (ConfigurationManager.AppSettings.GetBool("ApiCount"))
                 IocHelper.ServiceCollection.AddSingleton<IApiCounter>(provider => ApiCounter.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("EntityEvent", false))
-                IocHelper.ServiceCollection.AddSingleton<IEntityEventProxy>(provider => EntityEventProxy.Instance);
         }
         /// <summary>
         /// 注册
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            if (ConfigurationManager.AppSettings.GetBool("RemoteLog", false))
+            if (ConfigurationManager.AppSettings.GetBool("RemoteLog"))
                 ZeroApplication.RegistZeroObject(RemoteLogRecorder.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring", false))
+            if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))
                 ZeroApplication.RegistZeroObject(RuntimeWaring.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("ApiCount", false))
+            if (ConfigurationManager.AppSettings.GetBool("ApiCount"))
                 ZeroApplication.RegistZeroObject(ApiCounter.Instance);
-            if (ConfigurationManager.AppSettings.GetBool("EntityEvent", false))
-                ZeroApplication.RegistZeroObject(EntityEventProxy.Instance);
         }
     }
 }

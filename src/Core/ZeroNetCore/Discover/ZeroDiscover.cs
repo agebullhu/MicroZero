@@ -276,10 +276,10 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ReadEntity(TypeDocument typeDocument, Type type)
         {
-            if (type == null || type.IsAutoClass || type.IsInterface ||
+            if (type == null || type.IsAutoClass || type.IsInterface || type.IsMarshalByRef || type.IsCOMObject ||
                 type == typeof(object) || type == typeof(void) ||
-                type == typeof(ValueType) || type == typeof(Type) ||
-                type == typeof(Enum) || type.Namespace == "System" || type.Namespace == "System.Reflection")
+                type == typeof(ValueType) || type == typeof(Type) || type == typeof(Enum) ||
+                type.Namespace == "System" || type.Namespace?.Contains("System.") == true)
                 return;
             if (typeDocs.TryGetValue(type, out var doc))
             {
@@ -303,6 +303,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 ReadEntity(typeDocument, type.GetGenericArguments().Last());
                 return;
             }
+
+            XmlMember.Find(type);
             typeDocument.Copy(XmlMember.Find(type));
             if (type.IsEnum)
             {
@@ -312,7 +314,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     {
                         continue;
                     }
-                    var info=CheckMember(typeDocument, type, field, field.FieldType, false, false, false);
+                    var info = CheckMember(typeDocument, type, field, field.FieldType, false, false, false);
                     if (info != null)
                     {
                         info.TypeName = "const";

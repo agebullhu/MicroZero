@@ -17,6 +17,11 @@ namespace Agebull.ZeroNet.Log
     {
         #region Override
 
+        /// <summary>
+        /// 是否初始化
+        /// </summary>
+        public bool IsInitialized { get; set; }
+
         /// <inheritdoc />
         /// <summary>
         ///     启动
@@ -24,8 +29,9 @@ namespace Agebull.ZeroNet.Log
         void ILogRecorder.Initialize()
         {
             LogRecorder.TraceToConsole = false;
+            IsInitialized = true;
             _state = StationState.Initialized;
-            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize",LogRecorder.Level);
+            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize", LogRecorder.Level);
         }
         /// <inheritdoc />
         /// <summary>
