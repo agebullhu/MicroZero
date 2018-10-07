@@ -184,7 +184,7 @@ namespace ZeroNet.Http.Gateway
                             Data.ResultMessage = ApiResult.DenyAccessJson;
                             return false;
                         }
-                        result = CheckToken("DeviceId", RouteOption.Option.Security.DeviceIdCheckApi , out var vl);
+                        result = CheckToken("DeviceId", RouteOption.Option.Security.DeviceIdCheckApi, out var vl);
                         if (result == null || result.Status.ErrorCode == ErrorCode.Auth_UnknowToken)
                         {
                             Data.ResultMessage = UnknowDeviceJson;
@@ -199,14 +199,11 @@ namespace ZeroNet.Http.Gateway
                                 Name = result.ResultData.Organization,
                                 OrgKey = result.ResultData.Organization,
                                 RouteName = result.ResultData.Organization
-                            }); 
+                            });
                             return true;
                         }
                         Data.ResultMessage = vl;
                         return false;
-                    //case '{':
-                    //case '$':
-                    //    return true;
                     case '#':
                         result = CheckToken("AccessToken", RouteOption.Option.Security.AccessTokenCheckApi, out vl);
                         if (result == null || result.Status.ErrorCode == ErrorCode.Auth_UnknowToken)
@@ -229,7 +226,7 @@ namespace ZeroNet.Http.Gateway
                 return true;
             }
         }
-
+        static readonly ApiResult<LoginUserInfo> DenyAccessResult = ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
         private ApiResult<LoginUserInfo> CheckToken(string name, string api, out string result)
         {
             // 远程调用
@@ -248,8 +245,7 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace($"Result:{caller.Result}");
                 return caller.Result == null
                     ? ApiResult.Succees(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"))
-                    : JsonConvert.DeserializeObject<ApiResult<LoginUserInfo>>(caller.Result)
-                    ?? ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess);
+                    : JsonConvert.DeserializeObject<ApiResult<LoginUserInfo>>(caller.Result) ?? DenyAccessResult;
             }
         }
         #endregion

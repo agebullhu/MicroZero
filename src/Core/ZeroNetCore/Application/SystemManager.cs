@@ -138,7 +138,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (ZeroApplication.Config.TryGetConfig(station, out _))
                 return true;
-            ZeroTrace.WriteInfo(station, "No find,try install ...");
+            ZeroTrace.SystemLog(station, "No find,try install ...");
             var r = CallCommand("install", type, station, station, station);
             if (!r.InteractiveSuccess)
             {
@@ -150,7 +150,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ZeroApplication.Config.UpdateConfig(station, json, out _);
             }
-            ZeroTrace.WriteInfo(station, "Is install ,try start it ...");
+            ZeroTrace.SystemLog(station, "Is install ,try start it ...");
             r = CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
@@ -158,7 +158,7 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
             LoadConfig(station);
-            ZeroTrace.WriteInfo(station, "Station runing");
+            ZeroTrace.SystemLog(station, "Station runing");
             return true;
         }
         bool DocumentIsUpload; 

@@ -219,8 +219,7 @@ namespace Agebull.ZeroNet.Core
                 if (!socket.SendTo(PubDescriptionEmpty,
                     title.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    ZeroApplication.Config.RealName.ToZeroBytes())
-                )
+                    ZeroApplication.Config.RealName.ToZeroBytes()))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title);
                     return false;
@@ -234,6 +233,19 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
         }
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish(this ZSocket socket, string title, string subTitle, byte[] content)
+        {
+            return Publish(socket, PubDescriptionJson2, title, subTitle, content);
+        }
+
         /// <summary>
         ///     发送广播
         /// </summary>

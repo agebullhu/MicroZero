@@ -24,6 +24,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
+
         }
     }
 }

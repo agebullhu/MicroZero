@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.ZeroApi
             _isEnable = true;
             ApiStation.RegistHandlers<ApiCountHandler>();
             ApiClient.RegistHandlers<ApiClientCountHandler>();
-            ZeroTrace.WriteInfo("ApiCounter", "HookApi");
+            ZeroTrace.SystemLog("ApiCounter", "HookApi");
         }
 
         /// <summary>

@@ -108,11 +108,11 @@ namespace ZeroNet.Http.Route
         public ApiResult Pause(string id)
         {
             if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             var result = CallCommand("pause", $"msg:{plan.station}:{plan.plan_id:x}");
             if (result.State != ZeroOperatorStateType.Ok)
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             return ApiResult.Succees();
         }
@@ -120,11 +120,11 @@ namespace ZeroNet.Http.Route
         public ApiResult Reset(string id)
         {
             if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             var result = CallCommand("reset", $"msg:{plan.station}:{plan.plan_id:x}");
             if (result.State != ZeroOperatorStateType.Ok)
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             return ApiResult.Succees();
         }
@@ -134,11 +134,11 @@ namespace ZeroNet.Http.Route
         public ApiResult Remove(string id)
         {
             if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             var result = CallCommand("remove", $"msg:{plan.station}:{plan.plan_id:x}");
             if (result.State != ZeroOperatorStateType.Ok)
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             return ApiResult.Succees();
         }
@@ -147,11 +147,11 @@ namespace ZeroNet.Http.Route
         public ApiResult Close(string id)
         {
             if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             var result = CallCommand("close", $"msg:{plan.station}:{plan.plan_id:x}");
             if (result.State != ZeroOperatorStateType.Ok)
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             return ApiResult.Succees();
         }
@@ -166,7 +166,7 @@ namespace ZeroNet.Http.Route
         {
             if (string.IsNullOrEmpty(station))
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             station = station.Split('-').LastOrDefault();
             return new ApiArrayResult<ZeroPlan>
@@ -192,7 +192,7 @@ namespace ZeroNet.Http.Route
                 };
             }
             if (!Enum.TryParse<plan_date_type>(type, out var planType))
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             return new ApiArrayResult<ZeroPlan>
             {
                 ResultData = Plans.Values.Where(p => p.plan_type == planType).ToList()
@@ -203,7 +203,7 @@ namespace ZeroNet.Http.Route
             var result = CallCommand("list");
             if (result.State != ZeroOperatorStateType.Ok)
             {
-                return ApiResult.Error(ErrorCode.NetworkError, "参数错误");
+                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
             if (!result.TryGetValue(ZeroFrameType.Status, out var json))
             {
@@ -345,13 +345,13 @@ namespace ZeroNet.Http.Route
             }
             if (!success)
             {
-                ZeroTrace.WriteInfo("NewPlan", "Send", socket.Socket.GetLastError());
+                ZeroTrace.SystemLog("NewPlan", "Send", socket.Socket.GetLastError());
 
                 return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
             }
             if (!socket.Socket.Recv(out var message))
             {
-                ZeroTrace.WriteInfo("NewPlan", "Recv", socket.Socket.LastError);
+                ZeroTrace.SystemLog("NewPlan", "Recv", socket.Socket.LastError);
                 return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
             }
             var value = message.Unpack();

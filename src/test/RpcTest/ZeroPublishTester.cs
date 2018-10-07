@@ -25,7 +25,7 @@ namespace RpcTest
     {
         public override bool Init()
         {
-            return SystemManager.Instance.TryInstall(Tester.Station, "api");
+            return SystemManager.Instance.TryInstall(Station, "api");
         }
 
         private Random random = new Random((int) (DateTime.Now.Ticks % int.MaxValue));

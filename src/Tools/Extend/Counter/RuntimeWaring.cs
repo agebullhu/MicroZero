@@ -36,7 +36,7 @@ namespace ZeroNet.Http.Route
             Publish(new WaringItem
             {
                 Machine = ZeroApplication.Config.StationName,
-                User = ApiContext.Customer?.Account ?? "Unknow",
+                User = GlobalContext.Customer?.Account ?? "Unknow",
                 RequestId = GlobalContext.RequestInfo.RequestId,
                 Host = host,
                 Api = api,

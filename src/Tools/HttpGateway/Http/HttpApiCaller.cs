@@ -302,8 +302,10 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         private string ToErrorString(int code, string message, string message2 = null)
         {
-            LogRecorder.MonitorTrace($"调用异常：{message}");
-            return JsonConvert.SerializeObject(ApiResult.Error(code, RemoteUrl + message, message2));
+            LogRecorder.MonitorTrace($"调用异常：{message}.{message2}");
+            var result = ApiResult.Error(code, RemoteUrl + message, message2);
+            result.Status.Point = "web api gateway";
+            return JsonConvert.SerializeObject(result);
         }
         #endregion
     }

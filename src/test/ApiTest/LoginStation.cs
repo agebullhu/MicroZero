@@ -17,7 +17,7 @@ namespace ApiTest
         /// <returns></returns>
         [Route("api/login"), Category("登录")]
         [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
-        public ApiResult Login()
+        public ApiResult Login(LoginArg arg)
         {
             return new ApiResult
             {

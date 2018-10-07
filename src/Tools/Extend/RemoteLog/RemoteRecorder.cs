@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.Log
         {
             LogRecorder.TraceToConsole = false;
             _state = StationState.Initialized;
-            ZeroTrace.WriteInfo("RemoteLogRecorder", "ILogRecorder.Initialize",LogRecorder.Level);
+            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize",LogRecorder.Level);
         }
         /// <inheritdoc />
         /// <summary>
@@ -190,7 +190,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void OnRun()
         {
-            ZeroTrace.WriteInfo("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
+            ZeroTrace.SystemLog("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
             State = StationState.Run;
             ZeroApplication.OnObjectActive(this);
         }
@@ -277,12 +277,12 @@ namespace Agebull.ZeroNet.Log
                 return;
             if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
             {
-                ZeroTrace.WriteInfo("RemoteLog", "Start by config state changed");
+                ZeroTrace.SystemLog("RemoteLog", "Start by config state changed");
                 Start();
             }
             else
             {
-                ZeroTrace.WriteInfo("RemoteLog", "Close by config state changed");
+                ZeroTrace.SystemLog("RemoteLog", "Close by config state changed");
                 Close();
             }
         }

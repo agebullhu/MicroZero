@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public void Start()
         {
-            ZeroTrace.WriteInfo($"{Config.StationName}(proxy)", "Start");
+            ZeroTrace.SystemLog($"{Config.StationName}(proxy)", "Start");
             RunTaskCancel = new CancellationTokenSource();
             Task.Factory.StartNew(Run);
             _waitToken.Wait();
@@ -42,7 +42,7 @@ namespace Agebull.ZeroNet.Core
             _waitToken.Wait();
             RunTaskCancel.Dispose();
             RunTaskCancel = null;
-            ZeroTrace.WriteInfo($"{Config.StationName}(proxy)", "End");
+            ZeroTrace.SystemLog($"{Config.StationName}(proxy)", "End");
             return true;
         }
         /// <summary>
@@ -80,7 +80,7 @@ namespace Agebull.ZeroNet.Core
             _callPollSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER);
 
             WaitCount = 0;
-            ZeroTrace.WriteInfo($"{Config.StationName}(proxy)", "Listen");
+            ZeroTrace.SystemLog($"{Config.StationName}(proxy)", "Listen");
             _waitToken.Release();
             using (var pool = ZmqPool.CreateZmqPool())
             {

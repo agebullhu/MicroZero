@@ -8,6 +8,17 @@ namespace Agebull.ZeroNet.PubSub
     /// <summary>
     ///     消息发布
     /// </summary>
+    internal class ZPublisher : Agebull.Common.Rpc.IZeroPublisher
+    {
+        bool IZeroPublisher.Publish(string station, string title, string sub, string arg)
+        {
+            return ZeroPublisher.Publish(station, title, sub, arg);
+        }
+    }
+
+    /// <summary>
+    ///     消息发布
+    /// </summary>
     public static class ZeroPublisher
     {
         /// <summary>
@@ -62,6 +73,6 @@ namespace Agebull.ZeroNet.PubSub
                 });
             }
         }
-        
+
     }
 }

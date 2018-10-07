@@ -32,9 +32,10 @@ namespace Agebull.ZeroNet.ZeroApi
         public Dictionary<string, StationDocument> StationInfo = new Dictionary<string, StationDocument>();
         public ZeroDiscover()
         {
-            XmlMember.Load(this.GetType().Assembly);
+            XmlMember.Load(GetType().Assembly);
         }
-        StationDocument DefStation;
+
+        private StationDocument _defStation;
 
         /// <summary>
         /// 查找API
@@ -42,7 +43,7 @@ namespace Agebull.ZeroNet.ZeroApi
         public void FindApies()
         {
             XmlMember.Load(Assembly);
-            StationInfo.Add(StationName, DefStation = new StationDocument
+            StationInfo.Add(StationName, _defStation = new StationDocument
             {
                 Name = StationName
             });
@@ -101,7 +102,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             else
             {
-                station = DefStation;
+                station = _defStation;
             }
             var xdoc = XmlMember.Find(type);
             //station.Copy(XmlMember.Find(type));
@@ -187,7 +188,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public void FindZeroObjects()
         {
-            Console.WriteLine(Assembly.Location);
+            ZeroTrace.SystemLog("FindZeroObjects", Assembly.Location);
             Type[] types;
             try
             {
@@ -196,7 +197,7 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (ReflectionTypeLoadException ex)
             {
                 types = ex.Types.Where(p => p != null).ToArray();
-                Console.WriteLine(ex);
+                ZeroTrace.WriteException("FindZeroObjects:GetTypes", ex);
             }
             try
             {
@@ -207,7 +208,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                ZeroTrace.WriteException("FindZeroObjects:RegistZeroObject", ex);
             }
         }
 
@@ -219,6 +220,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!type.IsSubclassOf(typeof(ApiStation)))
                 return;
+            ZeroTrace.SystemLog("DiscoverApiDocument", type.FullName);
             ZeroDiscover discover = new ZeroDiscover();
             discover.FindApi(type, true);
             discover.RegistDocument();
@@ -250,12 +252,16 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
             }
         }
+
+        private Dictionary<Type, TypeDocument> typeDocs = new Dictionary<Type, TypeDocument>();
         private TypeDocument ReadEntity(Type type, string name)
         {
             if (type == typeof(void))
                 return null;
             if (!IsLetter(type.Name[0]))
                 return null;
+            if (typeDocs.TryGetValue(type, out var doc))
+                return doc;
             var typeDocument = new TypeDocument
             {
                 Name = name,
@@ -263,7 +269,6 @@ namespace Agebull.ZeroNet.ZeroApi
                 ClassName = ReflectionHelper.GetTypeName(type),
                 ObjectType = ObjectType.Object
             };
-            typeDocument.Copy(XmlMember.Find(type));
             ReadEntity(typeDocument, type);
             return typeDocument;
         }
@@ -271,39 +276,100 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ReadEntity(TypeDocument typeDocument, Type type)
         {
-            if (type == typeof(object))
+            if (type == null || type.IsAutoClass || type.IsInterface ||
+                type == typeof(object) || type == typeof(void) ||
+                type == typeof(ValueType) || type == typeof(Type) ||
+                type == typeof(Enum) || type.Namespace == "System" || type.Namespace == "System.Reflection")
                 return;
-            if (type.BaseType != null && (type.BaseType != typeof(object) && !type.BaseType.IsInterface))
+            if (typeDocs.TryGetValue(type, out var doc))
+            {
+                foreach (var field in doc.Fields)
+                {
+                    if (typeDocument.Fields.ContainsKey(field.Key))
+                        typeDocument.Fields[field.Key] = field.Value;
+                    else
+                        typeDocument.Fields.Add(field.Key, field.Value);
+                }
+                return;
+            }
+            if (type.IsArray)
+            {
+                ReadEntity(typeDocument, type.Assembly.GetType(type.FullName.Split('[')[0]));
+                return;
+            }
+            if (type.IsGenericType && !type.IsValueType &&
+                type.GetGenericTypeDefinition().GetInterface(typeof(IEnumerable<>).FullName) != null)
+            {
+                ReadEntity(typeDocument, type.GetGenericArguments().Last());
+                return;
+            }
+            typeDocument.Copy(XmlMember.Find(type));
+            if (type.IsEnum)
+            {
+                foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public))
+                {
+                    if (field.IsSpecialName)
+                    {
+                        continue;
+                    }
+                    var info=CheckMember(typeDocument, type, field, field.FieldType, false, false, false);
+                    if (info != null)
+                    {
+                        info.TypeName = "const";
+                        info.Value = ((int)field.GetValue(null)).ToString();
+                    }
+                }
+            }
+            else
+            {
                 ReadEntity(typeDocument, type.BaseType);
-            var dc = type.GetAttribute<DataContractAttribute>();
-            var jo = type.GetAttribute<JsonObjectAttribute>();
 
-            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            {
-                if (property.IsSpecialName)
+                var dc = type.GetAttribute<DataContractAttribute>();
+                var jo = type.GetAttribute<JsonObjectAttribute>();
+
+                foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
-                    continue;
+                    if (property.IsSpecialName)
+                    {
+                        continue;
+                    }
+                    CheckMember(typeDocument, type, property, property.PropertyType, jo != null, dc != null);
                 }
-                CheckMember(typeDocument, type, property, property.PropertyType, jo != null, dc != null);
-            }
-            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-            {
-                if (field.IsSpecialName)
+                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 {
-                    continue;
+                    if (field.IsSpecialName)
+                    {
+                        continue;
+                    }
+                    CheckMember(typeDocument, type, field, field.FieldType, jo != null, dc != null);
                 }
-                CheckMember(typeDocument, type, field, field.FieldType, jo != null, dc != null);
             }
+
+            typeDocs.Add(type, new TypeDocument
+            {
+                fields = typeDocument.fields.ToDictionary(p => p.Key, p => p.Value)
+            });
         }
-        void CheckMember(TypeDocument document, Type parent, MemberInfo member, Type memType, bool json, bool dc)
+        TypeDocument CheckMember(TypeDocument document, Type parent, MemberInfo member, Type memType, bool json, bool dc, bool checkBase = true)
         {
-            if (!IsLetter(member.Name[0]))
-                return;
-            var field = new TypeDocument();
+            if (!IsLetter(member.Name[0]) || document.Fields.ContainsKey(member.Name))
+                return null;
+            var field = new TypeDocument
+            {
+                Name = member.Name,
+                JsonName = member.Name,
+                ClassName = ReflectionHelper.GetTypeName(memType)
+            };
+            var doc = XmlMember.Find(parent, member.Name);
+            field.Copy(doc);
             try
             {
                 Type type = memType;
-                if (memType.IsSubclassOf(typeof(IList<>)))
+                if (memType.IsArray)
+                {
+                    type = type.Assembly.GetType(type.FullName.Split('[')[0]);
+                }
+                if (memType.IsSubclassOf(typeof(ICollection<>)))
                 {
                     type = type.GetGenericArguments()[0];
                 }
@@ -311,15 +377,12 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     type = type.GetGenericArguments()[1];
                 }
-                if (memType.IsArray)
-                {
-                    type = type.MakeArrayType();
-                }
                 if (type.IsEnum)
                 {
-                    field = ReadEntity(type, member.Name);
+                    if (checkBase)
+                        field = ReadEntity(type, member.Name);
                     field.ObjectType = ObjectType.Base;
-                    field.IsEnum = type.IsEnum;
+                    field.IsEnum = true;
                 }
                 else if (type.IsBaseType())
                 {
@@ -328,7 +391,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 else
                 {
-                    field = ReadEntity(type, member.Name);
+                    if (checkBase)
+                        field = ReadEntity(type, member.Name);
                     field.ObjectType = ObjectType.Object;
                 }
             }
@@ -336,19 +400,16 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 field.TypeName = "object";
             }
-            field.Copy(XmlMember.Find(parent, member.Name, member is PropertyInfo ? "P" : "F"));
-            field.Name = field.JsonName = member.Name;
-            field.ClassName = ReflectionHelper.GetTypeName(memType);
             if (json)
             {
                 var ji = member.GetAttribute<JsonIgnoreAttribute>();
                 if (ji != null)
                 {
-                    return;
+                    return null;
                 }
                 var jp = member.GetAttribute<JsonPropertyAttribute>();
                 if (jp == null)
-                    return;
+                    return null;
                 if (!string.IsNullOrWhiteSpace(jp.PropertyName))
                     field.JsonName = jp.PropertyName;
             }
@@ -356,14 +417,12 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 var id = member.GetAttribute<IgnoreDataMemberAttribute>();
                 if (id != null)
-                {
-                    return;
-                }
+                    return null;
                 var dm = member.GetAttribute<DataMemberAttribute>();
                 if (dm != null && !string.IsNullOrWhiteSpace(dm.Name))
                     field.JsonName = dm.Name;
             }
-            if (memType.IsSubclassOf(typeof(IList<>)))
+            if (memType.IsSubclassOf(typeof(ICollection<>)))
             {
                 field.ObjectType = ObjectType.Array;
             }
@@ -390,6 +449,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     field.MaxDate = rule.MaxDate;
             }
             document.Fields.Add(member.Name, field);
+            return field;
         }
         #endregion
     }

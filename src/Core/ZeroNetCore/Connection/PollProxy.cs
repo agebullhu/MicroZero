@@ -20,7 +20,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public void Start()
         {
-            ZeroTrace.WriteInfo("ConnectionProxy", "Start");
+            ZeroTrace.SystemLog("ConnectionProxy", "Start");
             RunTaskCancel = new CancellationTokenSource();
             Task.Factory.StartNew(Run);
             _waitToken.Wait();
@@ -38,7 +38,7 @@ namespace Agebull.ZeroNet.Core
             _waitToken.Wait();
             RunTaskCancel.Dispose();
             RunTaskCancel = null;
-            ZeroTrace.WriteInfo("ConnectionProxy", "End");
+            ZeroTrace.SystemLog("ConnectionProxy", "End");
             return true;
         }
         /// <summary>
@@ -77,7 +77,7 @@ namespace Agebull.ZeroNet.Core
             }
 
             WaitCount = 0;
-            ZeroTrace.WriteInfo("ConnectionProxy", "Listen");
+            ZeroTrace.SystemLog("ConnectionProxy", "Listen");
             
             using (var pool = ZmqPool.CreateZmqPool())
             {

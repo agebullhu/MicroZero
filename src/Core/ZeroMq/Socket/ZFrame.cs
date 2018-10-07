@@ -680,7 +680,7 @@ namespace ZeroMQ
         {
             if (framePtr != null)
             {
-                this.Close();
+                Close();
             }
             WriteStringNative(str, encoding, false);
         }
@@ -694,7 +694,7 @@ namespace ZeroMQ
         {
             if (framePtr != null)
             {
-                this.Close();
+                Close();
             }
             WriteStringNative($"{str}\r\n", encoding, false);
         }

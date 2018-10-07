@@ -11,12 +11,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>
-      实现消息队列功能：
-      1 Api站点
-      2 消息发布与订阅
-      3 网络投票（并行工作流）
+      基于ZMQ通讯的微服务框架,包含服务治理\RPC通讯\网络监控\消息队列等功能.
     </Description>
-    <Version>1.2.0.0</Version>
+    <Version>1.2.0.28</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -25,7 +22,7 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.2.0.0</PackageVersion>
+    <PackageVersion>1.2.0.28</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -95,8 +92,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.1.1" />
-    <PackageReference Include="Agebull.Rpc.Abstractions" Version="2.3.1.2" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.37" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 

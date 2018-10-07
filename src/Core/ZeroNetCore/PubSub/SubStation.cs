@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
+using Agebull.Common.Ioc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
@@ -58,6 +59,26 @@ namespace Agebull.ZeroNet.PubSub
         public abstract void Handle(TPublishItem args);
 
         /// <summary>
+        /// 执行命令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        void DoHandle(TPublishItem args)
+        {
+            using (IocScope.CreateScope())
+            {
+                try
+                {
+                    Handle(args);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(Name, e, args.Content);
+                }
+            }
+        }
+
+        /// <summary>
         /// 空转
         /// </summary>
         /// <returns></returns>
@@ -90,14 +111,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         if (Unpack(message, out var item))
                         {
-                            try
-                            {
-                                Handle(item);
-                            }
-                            catch (Exception e)
-                            {
-                                ZeroTrace.WriteException(Name, e, item.Content);
-                            }
+                            DoHandle(item);
                         }
 
                         //socket.SendTo(message);
@@ -297,7 +311,7 @@ namespace Agebull.ZeroNet.PubSub
                 using (MemoryStream ms = new MemoryStream(args.Buffer))
                 {
                     DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(List<TData>));
-                    return (List<TData>) js.ReadObject(ms);
+                    return (List<TData>)js.ReadObject(ms);
                 }
             }
 
@@ -326,7 +340,7 @@ namespace Agebull.ZeroNet.PubSub
                 using (MemoryStream ms = new MemoryStream(args.Buffer))
                 {
                     DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(TData));
-                    return (TData) js.ReadObject(ms);
+                    return (TData)js.ReadObject(ms);
                 }
             }
 

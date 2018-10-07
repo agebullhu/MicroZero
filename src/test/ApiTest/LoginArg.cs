@@ -32,6 +32,11 @@ namespace ApiTest
         public string VerificationCode { get; set; }
         
         /// <summary>
+        /// ×´Ì¬
+        /// </summary>
+        public DataStateType State { get; set; }
+
+        /// <summary>
         /// Ð£Ñé
         /// </summary>
         /// <param name="message"></param>
@@ -39,6 +44,9 @@ namespace ApiTest
         bool IApiArgument.Validate(out string message)
         {
             message = null;
+
+
+
             return true;
         }
     }

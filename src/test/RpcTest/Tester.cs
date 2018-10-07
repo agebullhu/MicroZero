@@ -50,12 +50,12 @@ namespace RpcTest
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
-                    ZeroTrace.WriteInfo("RpcTest", "Test is start");
+                    ZeroTrace.SystemLog("RpcTest", "Test is start");
                     var test = IocHelper.Create<Tester>();
                     test.StartTest();
                     break;
                 case ZeroNetEventType.AppStop:
-                    ZeroTrace.WriteInfo("RpcTest", "Test is stop");
+                    ZeroTrace.SystemLog("RpcTest", "Test is stop");
                     test = IocHelper.Create<Tester>();
                     test.Cancel.Cancel();
                     break;
@@ -68,7 +68,7 @@ namespace RpcTest
             if (!Init())
                 return;
 
-            ZeroTrace.WriteInfo("RpcTest", "Test is start");
+            ZeroTrace.SystemLog("RpcTest", "Test is start");
             Start = DateTime.Now;
             Cancel = new CancellationTokenSource();
             var option = ZeroApplication.GetClientOption(Station);
@@ -95,7 +95,7 @@ namespace RpcTest
         void Async()
         {
             Interlocked.Increment(ref WaitCount);
-            ApiContext.SetRequestContext(ZeroApplication.Config.ServiceName, Guid.NewGuid().ToString("N"));
+            GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceName, Guid.NewGuid().ToString("N"));
             DateTime s = DateTime.Now;
 
             DoAsync();
@@ -133,7 +133,7 @@ namespace RpcTest
         public void TestSignle()
         {
             Thread.Sleep(3000);
-            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
+            ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
@@ -150,7 +150,7 @@ namespace RpcTest
         public void Test()
         {
             Thread.Sleep(1000);
-            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
+            ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
@@ -164,7 +164,7 @@ namespace RpcTest
         public void Test1()
         {
             Thread.Sleep(100);
-            ZeroTrace.WriteInfo("RpcTest", "Tester.Test", Task.CurrentId, "Start");
+            ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
@@ -181,7 +181,7 @@ namespace RpcTest
         public void TestSync()
         {
             Thread.Sleep(100);
-            ZeroTrace.WriteInfo("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
+            ZeroTrace.SystemLog("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
 
             OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
@@ -201,7 +201,7 @@ namespace RpcTest
             OnTestEnd();
             TimeSpan ts = TimeSpan.FromTicks(RunTime);
             GC.Collect();
-            ZeroTrace.WriteInfo("Count", ExCount,
+            ZeroTrace.SystemLog("Count", ExCount,
                 $"{ts.TotalMilliseconds / ExCount}ms | {ExCount / (DateTime.Now - Start).TotalSeconds}/s",
                 "Error", $"net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BlError:D8}");
         }

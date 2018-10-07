@@ -128,7 +128,7 @@ namespace Agebull.ZeroNet.Core
                 //名称初始化
                 RealName = ZeroIdentityHelper.CreateRealName(IsService, Name == Config.StationName ? null : Name);
                 Identity = RealName.ToAsciiBytes();
-                ZeroTrace.WriteInfo(StationName, Config.WorkerCallAddress, Name, RealName);
+                ZeroTrace.SystemLog(StationName, Config.WorkerCallAddress, Name, RealName);
                 //扩展动作
                 if (!OnStart())
                 {
@@ -181,7 +181,7 @@ namespace Agebull.ZeroNet.Core
             if (ZeroApplication.CanDo && !success)
             {
                 //自动重启
-                ZeroTrace.WriteInfo(StationName, "ReStart");
+                ZeroTrace.SystemLog(StationName, "ReStart");
                 Task.Factory.StartNew(Start);
             }
             else
@@ -238,7 +238,7 @@ namespace Agebull.ZeroNet.Core
             if (Interlocked.CompareExchange(ref _state, StationState.Closing, StationState.Run) == StationState.Run)
             {
                 SystemManager.Instance.HeartLeft(StationName, RealName);
-                ZeroTrace.WriteInfo(StationName, "Closing....");
+                ZeroTrace.SystemLog(StationName, "Closing....");
                 RunTaskCancel?.Cancel();
                 _waitToken.Wait();
             }
@@ -290,12 +290,12 @@ namespace Agebull.ZeroNet.Core
                 return;
             if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
             {
-                ZeroTrace.WriteInfo(Name, "Start by config state changed");
+                ZeroTrace.SystemLog(Name, "Start by config state changed");
                 Start();
             }
             else
             {
-                ZeroTrace.WriteInfo(Name, "Close by config state changed");
+                ZeroTrace.SystemLog(Name, "Close by config state changed");
                 Close();
             }
         }

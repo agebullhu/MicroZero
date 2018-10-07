@@ -19,7 +19,7 @@ namespace ZeroNet.Http.Gateway
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                _result = ApiResult.Error(ErrorCode.NoReady);
+                _result = ApiResult.NoReady;
                 return;
             }
             _data = data;
@@ -39,13 +39,13 @@ namespace ZeroNet.Http.Gateway
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                _result = ApiResult.Error(ErrorCode.NoReady);
+                _result = ApiResult.NoReady;
                 return;
             }
             if (_words.Length < 2)
             {
                 _data.Status = ZeroOperatorStatus.FormalError;
-                _result = ApiResult.Error(ErrorCode.LogicalError,"参数错误");
+                _data.ResultMessage = ApiResult.ArgumentErrorJson;
                 return;
             }
             
@@ -53,24 +53,19 @@ namespace ZeroNet.Http.Gateway
             var value = SystemManager.Instance.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {
-                _result = ApiResult.Error(ErrorCode.NetworkError);
+                _result = ApiResult.NetworkError;
                 return;
             }
             switch (value.State)
             {
                 case ZeroOperatorStateType.NotSupport:
-                    _result = ApiResult.Error(ErrorCode.LogicalError, "不支持的操作");
+                    _result = ApiResult.NotSupport;
                     return;
                 case ZeroOperatorStateType.Ok:
                     _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
-                    _result.Status = new ApiStatusResult
-                    {
-                        ErrorCode = ErrorCode.Success,
-                        ClientMessage = "操作成功"
-                    };
                     return;
                 default:
-                    _result = ApiResult.Error(ErrorCode.LogicalError, value.State.Text());
+                    _result = ApiResult.Error(ErrorCode.LogicalError, value.Message,value.ToString());
                     return;
             }
         }

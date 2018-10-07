@@ -66,7 +66,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 _apiActions[name] = action;
             }
 
-            ZeroTrace.WriteInfo(StationName,
+            ZeroTrace.SystemLog(StationName,
                 info != null
                     ? $"{name}({info.Controller}.{info.Name}) is registed."
                     : $"{name} is registed");
@@ -172,12 +172,27 @@ namespace Agebull.ZeroNet.ZeroApi
 
         private void ApiCall(ref ZSocket socket, ApiCallItem item)
         {
-            Interlocked.Increment(ref CallCount);
-            if (LogRecorder.LogMonitor)
-                ApiCallByMonitor(ref socket, item);
-            else
-                ApiCallNoMonitor(ref socket, item);
-            Interlocked.Decrement(ref waitCount);
+            using (IocScope.CreateScope())
+            {
+                Interlocked.Increment(ref CallCount);
+                try
+                {
+                    if (LogRecorder.LogMonitor)
+                        ApiCallByMonitor(ref socket, item);
+                    else
+                        ApiCallNoMonitor(ref socket, item);
+                }
+                catch (Exception ex)
+                {
+                    ZeroTrace.WriteException(StationName, ex, "ApiCall", item.ApiName);
+                    item.Result = ApiResult.InnerErrorJson;
+                    SendResult(ref socket, item, ZeroOperatorStateType.Error);
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref waitCount);
+                }
+            }
         }
 
         void Prepare(ApiCallItem item)
@@ -407,7 +422,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 return false;
             }
             Config.State = ZeroCenterState.Run;
-            ZeroTrace.WriteInfo(StationName, "successfully");
+            ZeroTrace.SystemLog(StationName, "successfully");
             return true;
         }
 
@@ -528,7 +543,6 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
             }
             socket.Dispose();
-            IocHelper.DisposeScope();
             _processSemaphore?.Release();
         }
         #endregion
@@ -734,17 +748,25 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         private bool SendResult(ref ZSocket socket, ZMessage message)
         {
-            ZError error;
-            using (message)
+            try
             {
-                if (socket.Send(message, out error))
-                    return true;
-                socket.TryClose();
-                socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
+                ZError error;
+                using (message)
+                {
+                    if (socket.Send(message, out error))
+                        return true;
+                    socket.TryClose();
+                    socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
+                }
+                ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                Interlocked.Increment(ref SendError);
+                return false;
             }
-            ZeroTrace.WriteError(StationName, error.Text, error.Name);
-            Interlocked.Increment(ref SendError);
-            return false;
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e, "ApiStation.SendResult");
+                return false;
+            }
         }
 
         #endregion
