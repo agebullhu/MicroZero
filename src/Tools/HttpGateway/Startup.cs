@@ -19,7 +19,7 @@ namespace ZeroNet.Http.Gateway
             Console.WriteLine(RouteOption.ConfigFileName);
             RouteOption.CheckOption();
         }
-
+        
         public static IConfiguration Configuration { get; set; }
 
         //

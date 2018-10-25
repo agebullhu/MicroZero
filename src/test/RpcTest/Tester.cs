@@ -1,20 +1,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel.ZeroNet;
 
 namespace RpcTest
 {
     internal abstract class Tester
     {
         public CancellationToken Token => Cancel.Token;
-        public CancellationTokenSource Cancel;
+        public CancellationTokenSource Cancel {get;set;}
 
         public long ExCount;
         public long BlError;
@@ -78,7 +75,7 @@ namespace RpcTest
                     new Thread(Test).Start();
                     break;
                 case SpeedLimitType.ThreadCount:
-                    int max = (int) (Environment.ProcessorCount * option.TaskCpuMultiple);
+                    int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
                     if (max < 1)
                         max = 1;
                     for (int idx = 0; idx < max; idx++)
@@ -105,7 +102,8 @@ namespace RpcTest
             Interlocked.Add(ref RunTime, sp.Ticks);
             if (sp.TotalMilliseconds > 500)
                 Interlocked.Increment(ref TmError);
-            Interlocked.Increment(ref ExCount);
+            if ((Interlocked.Increment(ref ExCount) % 100) == 0)
+                Count();
         }
         protected abstract void DoAsync();
 
@@ -123,7 +121,7 @@ namespace RpcTest
         }
         void OnTestEnd()
         {
-            if(Interlocked.Decrement(ref testerCount) == 0)
+            if (Interlocked.Decrement(ref testerCount) == 0)
             {
                 Cancel.Dispose();
                 Cancel = null;
@@ -146,6 +144,7 @@ namespace RpcTest
                 Async();
             }
             Count();
+            OnTestEnd();
         }
         public void Test()
         {
@@ -155,10 +154,11 @@ namespace RpcTest
             OnTestStar();
             while (!Token.IsCancellationRequested && ZeroApplication.InRun)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(10);
                 Async();
             }
             Count();
+            OnTestEnd();
         }
 
         public void Test1()
@@ -177,6 +177,7 @@ namespace RpcTest
                 Async();
             }
             Count();
+            OnTestEnd();
         }
         public void TestSync()
         {
@@ -194,11 +195,11 @@ namespace RpcTest
                 Task.Factory.StartNew(Async, CancellationToken.None);
             }
             Count();
+            OnTestEnd();
         }
 
         public void Count()
         {
-            OnTestEnd();
             TimeSpan ts = TimeSpan.FromTicks(RunTime);
             GC.Collect();
             ZeroTrace.SystemLog("Count", ExCount,

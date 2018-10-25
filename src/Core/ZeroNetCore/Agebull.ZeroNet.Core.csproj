@@ -13,7 +13,7 @@
     <Description>
       基于ZMQ通讯的微服务框架,包含服务治理\RPC通讯\网络监控\消息队列等功能.
     </Description>
-    <Version>1.2.0.30</Version>
+    <Version>1.2.0.50</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <DebugType>portable</DebugType>
@@ -22,7 +22,7 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.2.0.30</PackageVersion>
+    <PackageVersion>1.2.0.50</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -92,7 +92,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.38" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.54" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 

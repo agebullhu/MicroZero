@@ -21,6 +21,8 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         private bool FindHost()
         {
+
+
             if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
                 Data.RouteHost = HttpHost.DefaultHost;
             if (Data.RouteHost == null)
@@ -111,6 +113,7 @@ namespace ZeroNet.Http.Gateway
             if (!TokenCheck())
             {
                 Data.Status = ZeroOperatorStatus.DenyAccess;
+                Data.ResultMessage = ApiResult.DenyAccessJson;
                 return;
             }
             // 3 缓存快速处理

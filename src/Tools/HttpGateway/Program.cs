@@ -13,7 +13,9 @@ namespace ZeroNet.Http.Gateway
             ZeroApplication.Shutdown();
         }
 
-        public static IWebHost BuildWebHost(string[] args) => 
+
+
+        public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
                 .UseStartup<Startup>()

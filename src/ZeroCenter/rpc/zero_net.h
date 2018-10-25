@@ -167,6 +167,16 @@ namespace agebull
 			event_station_doc,
 
 			/**
+			*\brief 客户端加入
+			*/
+			event_client_join,
+
+			/**
+			*\brief 客户端退出
+			*/
+			event_client_left,
+
+			/**
 			*\brief 计划加入
 			*/
 			event_plan_add = 0x1,

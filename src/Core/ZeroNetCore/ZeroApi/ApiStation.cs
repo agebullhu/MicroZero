@@ -301,6 +301,11 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     GlobalContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.ContextJson));
                 }
+                if (!string.IsNullOrWhiteSpace(item.Content))
+                {
+                    GlobalContext.Current.DependencyObjects.Annex(JsonConvert.DeserializeObject<Dictionary<string, string>>(item.Content));
+                }
+
                 GlobalContext.Current.Request.SetValue(item.GlobalId, item.Requester, item.RequestId);
                 return ZeroOperatorStateType.Ok;
             }
@@ -669,6 +674,9 @@ namespace Agebull.ZeroNet.ZeroApi
                             break;
                         case ZeroFrameType.Argument:
                             item.Argument = val;
+                            break;
+                        case ZeroFrameType.Content:
+                            item.Content = val;
                             break;
                     }
                 }

@@ -132,6 +132,7 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.SystemLog("Weconme ZeroNet");
             ZContext.Initialize();
             ZeroTrace.Initialize();
+            IocHelper.AddScoped<GlobalContext, GlobalContext>();
             CheckConfig();
             InitializeDependency();
         }

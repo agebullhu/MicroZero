@@ -585,12 +585,14 @@ namespace agebull
 				config->worker_join(*list[3], *list[4]);
 				return true;
 			case ZERO_BYTE_COMMAND_HEART_READY:
+				zero_event(zero_net_event::event_client_join, "station", *list[2], *list[3]);
 				config->worker_ready(*list[3]);
 				return true;
 			case ZERO_BYTE_COMMAND_HEART_PITPAT:
 				config->worker_heartbeat(*list[3]);
 				return true;
 			case ZERO_BYTE_COMMAND_HEART_LEFT:
+				zero_event(zero_net_event::event_client_left, "station", *list[2], *list[3]);
 				config->worker_left(*list[3]);
 				return true;
 			default:

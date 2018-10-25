@@ -8,9 +8,7 @@ using System.Web;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using Agebull.Common.Rpc;
 
 namespace ZeroNet.Http.Route
 {
@@ -99,7 +97,7 @@ namespace ZeroNet.Http.Route
             _webRequest.Method = method;
             if (!string.IsNullOrEmpty(context))
             {
-                _webRequest.ContentType = "application/x-www-form-urlencoded";
+                _webRequest.ContentType = "application/json";
                 _webRequest.Headers.Add(HttpRequestHeader.Authorization, auth);
                 using (var rs = _webRequest.GetRequestStream())
                 {
@@ -108,6 +106,7 @@ namespace ZeroNet.Http.Route
                 }
             }
         }
+
         /// <summary>
         /// 序列化到错误内容
         /// </summary>

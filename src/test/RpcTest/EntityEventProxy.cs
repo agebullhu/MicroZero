@@ -1,6 +1,4 @@
-using Agebull.Common.Configuration;
 using Agebull.ZeroNet.PubSub;
-using Gboxt.Common.DataModel.ExtendEvents;
 
 namespace Gboxt.Common.DataModel.ZeroNet
 {
@@ -10,6 +8,7 @@ namespace Gboxt.Common.DataModel.ZeroNet
 
         public string Title => "Test";
     }
+
     /// <summary>
     /// 实体事件代理,实现网络广播功能
     /// </summary>

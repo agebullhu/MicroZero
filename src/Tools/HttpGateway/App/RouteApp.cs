@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
@@ -120,14 +121,26 @@ namespace ZeroNet.Http.Gateway
             }
             catch (Exception e)
             {
+                OnError(router, e, context);
+            }
+            finally
+            {
+                IoHandler.OnEnd(router.Data);
+            }
+        }
+
+        private static void OnError(Router router, Exception e, HttpContext context)
+        {
+            try
+            {
                 router.Data.Status = ZeroOperatorStatus.LocalException;
                 ZeroTrace.WriteException("Route", e);
                 IocHelper.Create<IRuntimeWaring>()?.Waring("Route", router.Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(ApiResult.LocalErrorJson, Encoding.UTF8);
             }
-            finally
+            catch (Exception exception)
             {
-                IoHandler.OnEnd(router.Data);
+                LogRecorder.Exception(exception);
             }
         }
 
@@ -228,38 +241,52 @@ namespace ZeroNet.Http.Gateway
         #endregion
 
         #region OnZeroNetEvent
-
+        static DateTime preUpdate;
         private static void OnZeroNetEvent(object sender, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
                     OnZeroNetRuning();
-                    break;
+                    return;
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
-                    break;
+                    return;
                 case ZeroNetEventType.CenterStationJoin:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
+                case ZeroNetEventType.CenterClientJoin:
+                    if (e.EventConfig.IsBaseStation)
+                        return;
                     StationJoin(e.EventConfig);
                     break;
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
+                case ZeroNetEventType.CenterClientLeft:
+                    if (e.EventConfig.IsBaseStation)
+                        return;
                     StationLeft(e.EventConfig);
                     break;
             }
+
+            if ((DateTime.Now - preUpdate).TotalMinutes > 5)
+                OnZeroNetRuning();
         }
 
+        private static readonly object lock_obj = new object();
         private static void OnZeroNetRuning()
         {
-            ZeroApplication.Config.Foreach(config =>
+            lock (lock_obj)
             {
-                if (config.StationType == ZeroStationType.Api)
-                    StationJoin(config);
-            });
+                preUpdate = DateTime.Now;
+                ZeroApplication.Config.Foreach(config =>
+                {
+                    if (config.StationType == ZeroStationType.Api)
+                        StationJoin(config);
+                });
+            }
         }
 
         private static void OnZeroNetClose()
@@ -347,18 +374,16 @@ namespace ZeroNet.Http.Gateway
                     });
                 }
             }
-
             zeroHost.Apis = new System.Collections.Generic.Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
-            if (SystemManager.Instance.LoadDocument(station.StationName, out var doc))
+            if (!SystemManager.Instance.LoadDocument(station.StationName, out var doc))
+                return;
+            foreach (var api in doc.Aips.Values)
             {
-                foreach (var api in doc.Aips.Values)
+                zeroHost.Apis.Add(api.RouteName,new ApiItem
                 {
-                    zeroHost.Apis.Add(api.RouteName,new ApiItem
-                    {
-                        Name = api.RouteName,
-                        Access = api.AccessOption
-                    });
-                }
+                    Name = api.RouteName,
+                    Access = api.AccessOption
+                });
             }
         }
         #endregion

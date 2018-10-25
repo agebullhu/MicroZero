@@ -108,7 +108,7 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         private bool CheckApisInner()
         {
-            if (Data.ApiItem == null)
+            //if (Data.ApiItem == null)
                 return true;
             if (!string.IsNullOrWhiteSpace(Data.ApiItem.Os))
                 if (Data.Token.IndexOf(Data.ApiItem.Os, StringComparison.OrdinalIgnoreCase) < 0)
@@ -141,6 +141,8 @@ namespace ZeroNet.Http.Gateway
                 }
                 if (string.IsNullOrWhiteSpace(Data.Token))
                 {
+                    GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
+                    return true;
                     if (Data.ApiItem != null && Data.ApiItem.NoBearer)
                     {
                         GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));

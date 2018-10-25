@@ -14,11 +14,11 @@
   "profiles": {
     "ZeroNet.Http.Gateway": {
       "commandName": "Project",
-      "applicationUrl": "http://localhost:6000/",
       "environmentVariables": {
-        "server.urls": "http://*:6000"
+        "server.urls": "http://*:8080"
       },
-      "use64Bit": true
+      "use64Bit": true,
+      "applicationUrl": "http://localhost:8080"
     }
   }
 }

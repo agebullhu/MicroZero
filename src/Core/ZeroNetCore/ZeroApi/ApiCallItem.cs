@@ -68,6 +68,10 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public string Argument { get; set; }
         /// <summary>
+        /// 请求参数字典
+        /// </summary>
+        public string Content { get; set; }
+        /// <summary>
         /// 返回
         /// </summary>
         public string Result { get; set; }

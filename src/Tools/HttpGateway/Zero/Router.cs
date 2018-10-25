@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Gateway
@@ -24,28 +26,36 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace("Host Type Failed");
                 return Data.ResultMessage;
             }
-            var form = new Dictionary<string, string>();
-            if (Request.QueryString.HasValue)
+            try
             {
-                foreach (var key in Request.Query.Keys)
-                    form.TryAdd(key, Request.Query[key]);
-            }
-            if (Request.HasFormContentType)
-            {
-                foreach (var key in Request.Form.Keys)
-                    form.TryAdd(key, Request.Form[key]);
-            }
-            if (form.Count > 0)
-                Data.Form = JsonConvert.SerializeObject(form);
-            if (Request.ContentLength != null)
-            {
-                using (var texter = new StreamReader(Request.Body))
+                var arguments = new Dictionary<string, string>();
+                if (Request.QueryString.HasValue)
                 {
-                    Data.Context = texter.ReadToEnd();
-                    if (string.IsNullOrEmpty(Data.Context))
-                        Data.Context = null;
-                    texter.Close();
+                    foreach (var key in Request.Query.Keys)
+                        arguments.TryAdd(key, Request.Query[key]);
                 }
+                if (Request.HasFormContentType)
+                {
+                    foreach (var key in Request.Form.Keys)
+                        arguments.TryAdd(key, Request.Form[key]);
+                }
+                if (arguments.Count > 0)
+                    Data.Form = JsonConvert.SerializeObject(arguments);
+                if (Request.ContentLength != null)
+                {
+                    using (var texter = new StreamReader(Request.Body))
+                    {
+                        Data.Context = texter.ReadToEnd();
+                        if (string.IsNullOrEmpty(Data.Context))
+                            Data.Context = null;
+                        texter.Close();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e, "读取远程参数");
+                return Data.ResultMessage = ApiResult.ArgumentErrorJson;
             }
             // 远程调用
             using (MonitorScope.CreateScope("CallZero"))
@@ -55,7 +65,7 @@ namespace ZeroNet.Http.Gateway
                     Station = host.Station,
                     Commmand = Data.ApiName,
                     Argument = Data.Context ?? Data.Form,
-                    ExtendArgument = Data.Context == null ? null : Data.Form
+                    ExtendArgument = Data.Form
                 };
                 caller.CallCommand();
                 Data.ResultMessage = caller.Result;

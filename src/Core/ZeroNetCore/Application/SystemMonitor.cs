@@ -78,6 +78,9 @@ namespace Agebull.ZeroNet.Core
                 return;
             switch (zeroNetEvent)
             {
+                case ZeroNetEventType.CenterStationState:
+                    station_state(station, content);
+                    return;
                 case ZeroNetEventType.CenterStationInstall:
                     station_install(station, content);
                     return;
@@ -105,11 +108,14 @@ namespace Agebull.ZeroNet.Core
                 case ZeroNetEventType.CenterStationRemove:
                     station_uninstall(station);
                     return;
-                case ZeroNetEventType.CenterStationState:
-                    station_state(station, content);
-                    return;
                 case ZeroNetEventType.CenterStationDocument:
                     station_document(station, content);
+                    return;
+                case ZeroNetEventType.CenterClientJoin:
+                    client_join(station, content);
+                    return;
+                case ZeroNetEventType.CenterClientLeft:
+                    client_left(station, content);
                     return;
             }
         }
@@ -304,6 +310,20 @@ namespace Agebull.ZeroNet.Core
                 ZeroApplication.OnHeartbeat();
         }
 
+
+        private static void client_join(string name, string content)
+        {
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientJoin, name, config);
+        }
+
+        private static void client_left(string name, string content)
+        {
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientLeft, name, config);
+        }
         #endregion
     }
 

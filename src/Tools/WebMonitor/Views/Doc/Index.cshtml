@@ -12,6 +12,7 @@
     ViewData["Title"] = "Document";
     ViewData["page"] = "doc";
     var stations = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Api).OrderBy(p => p.RequestPort).ToArray();
+
 }
 @section Styles{
     <style>
@@ -114,13 +115,31 @@
 @section VUE{
     <script>
         extend_methods({
-            menu_select: function (index, indexPath) {
+            menu_select: function (index) {
                 location.href = "/Doc/Index/" + index;
             }
         });
     </script>
 }
 @functions{
+    public string ToHtml(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+        bool first = true;
+        var code = new StringBuilder();
+        foreach (var line in value.Trim().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (first)
+                first = false;
+            else
+                code.Append("<br/>");
+            code.Append(line.Trim().Replace(" ", "&nbsp;"));
+        }
+        return code.ToString();
+    }
     string outputTags(TypeDocument field)
     {
         StringBuilder sb = new StringBuilder("");
@@ -145,22 +164,34 @@
 <td>{head}{field.Name}</td>
 <td>{head}{field.JsonName ?? field.Name}</td>");
         }
-        if(field.fields == null)
+        if (field.fields == null)
+        {
             sb.AppendLine($@"
 <td>{field.TypeName}</td>");
+        }
         else if (field.IsEnum)
+        {
             sb.AppendLine($@"
 <td>{field.TypeName}<span class='name'>(Enum)</span></td>");
+        }
         else
+        {
             sb.AppendLine($@"
 <td>{field.TypeName}<span class='name'>(Object)</span></td>");
-        sb.AppendLine($@"
+        }
+        if (field.fields == null || field.IsEnum)
+        {
+            sb.AppendLine($@"
 <td>{field.Example}</td>
 <td>");
-        if (!string.IsNullOrEmpty(field.Description))
-            sb.AppendLine($@"{field.Description} ：");
-        if (!string.IsNullOrEmpty(field.Value))
-            sb.AppendLine($@"{field.Value}");
+        }
+        else
+        {
+            sb.AppendLine($@"
+<td></td>
+<td>");
+        }
+        sb.AppendLine(ToHtml($"{field.Description}\n{field.Value}"));
         sb.AppendLine(@"
 </td></tr>");
         if (field.fields != null)
@@ -336,7 +367,7 @@
 <el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">
 
     <el-aside class="message_boards" style="height:100%;line-height:30px;padding:2px;text-align:left;border:solid 1px whitesmoke">
-        <div style="height:100%;width:100%;overflow: auto;background-color:white;">
+        <div style="height:100%;width:100%;overflow: scroll;background-color:white;">
             <div style="height:100%;overflow: visible; margin:20px" class="title">
                 <div style="color:black;font-size:16pt">@Model.Caption</div>
                 <ul>
@@ -372,12 +403,12 @@
                         if (Model.Description != null)
                         {
                             <h3>说明</h3>
-                            <p>@Model.Description</p>
+                            <p>@Html.Raw(ToHtml(Model.Description))</p>
                         }
                         if (Model.Seealso != null)
                         {
                             <h3>参见</h3>
-                            <h1>@Model.Seealso</h1>
+                            <h1>@Html.Raw(ToHtml(Model.Seealso))</h1>
                         }
                         foreach (var api in Model.Aips.Values)
                         {
@@ -391,7 +422,7 @@
                             if (api.Description != null)
                             {
                                 <h4>说明</h4>
-                                <p>@api.Description</p>
+                                <p>@Html.Raw(ToHtml(api.Description))</p>
                             }
                             <h4>参数</h4>
                             if (api.ArgumentInfo == null)
@@ -401,6 +432,7 @@
                             else
                             {
                                 <p>@api.ArgumentInfo.Caption</p>
+                                <p>@Html.Raw(ToHtml(api.ArgumentInfo.Description))</p>
                                 <table>
                                     <tr style="background-color:silver">
                                         <td>标题</td>
@@ -410,7 +442,11 @@
                                         <td>示例</td>
                                         <td>说明</td>
                                     </tr>
-                                    @foreach (var field in api.ArgumentInfo.Fields.Values)
+                                    @foreach (var field in api.ArgumentInfo.Fields.Values.Where(p => p.fields == null))
+                                    {
+                                        @Html.Raw(outputTags(field))
+                                    }
+                                    @foreach (var field in api.ArgumentInfo.Fields.Values.Where(p => p.fields != null))
                                     {
                                         @Html.Raw(outputTags(field))
                                     }
@@ -438,6 +474,7 @@
                             else
                             {
                                 <p>@api.ResultInfo.Caption</p>
+                                <p>@Html.Raw(ToHtml(api.ResultInfo.Description))</p>
                                 <table>
                                     <tr style=" background-color:silver;">
                                         <td>标题</td>
@@ -447,7 +484,11 @@
                                         <td>示例</td>
                                         <td>说明</td>
                                     </tr>
-                                    @foreach (var field in api.ResultInfo.Fields.Values)
+                                    @foreach (var field in api.ResultInfo.Fields.Values.Where(p => p.fields == null))
+                                    {
+                                        @Html.Raw(outputTags(field))
+                                    }
+                                    @foreach (var field in api.ResultInfo.Fields.Values.Where(p => p.fields != null))
                                     {
                                         @Html.Raw(outputTags(field))
                                     }
