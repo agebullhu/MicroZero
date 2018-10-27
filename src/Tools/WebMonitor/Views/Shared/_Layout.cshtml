@@ -21,11 +21,6 @@
         icon = "el-icon-document";
         title = "接口文档";
     }
-    if (ViewData["page"]?.ToString() == "event")
-    {
-        icon = "el-icon-document";
-        title = "设备事件";
-    }
 }
 <!DOCTYPE html>
 <html style="height: 100%;width:100%">
@@ -279,9 +274,10 @@
         function extend_methods(methods) {
             vue_option.methods = $.extend(vue_option.methods, methods);
         }
-        ws_state = function (active) {
+
+        ws_state = function(active) {
             vue_option.data.ws_active = active;
-        }
+        };
     </script>
 
     @RenderSection("InitScript", required: false)
@@ -314,10 +310,6 @@
                         @if (ViewData["page"]?.ToString() != "doc")
                         {
                             <el-button type="info" icon="el-icon-document" @@click="go_doc">接口文档</el-button>
-                        }
-                        @if (ViewData["page"]?.ToString() != "event")
-                        {
-                            <el-button type="info" icon="el-icon-document" @@click="go_event">设备事件</el-button>
                         }
                     </el-button-group>
                 </div>

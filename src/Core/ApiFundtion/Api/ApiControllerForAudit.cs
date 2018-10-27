@@ -150,10 +150,11 @@ namespace Agebull.Common.WebApi
         #region API
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     审核不通过
         /// </summary>
-        
+
         [Route("audit/deny")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult AuditDeny()
         {
             
@@ -168,10 +169,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     拉回已提交的审核
         /// </summary>
-        
+
         [Route("audit/pullback")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Pullback()
         {
             
@@ -186,10 +188,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     提交审核
         /// </summary>
         
         [Route("audit/submit")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult SubmitAudit()
         {
             
@@ -204,10 +207,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     校验审核数据
         /// </summary>
         
         [Route("audit/validate")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Validate()
         {
             
@@ -223,10 +227,11 @@ namespace Agebull.Common.WebApi
 
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     审核通过
         /// </summary>
         
         [Route("audit/pass")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult AuditPass()
         {
             
@@ -241,10 +246,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     重新审核
         /// </summary>
         
         [Route("audit/redo")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult UnAudit()
         {
             OnUnAudit();
@@ -258,10 +264,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     退回(审核)
         /// </summary>
-        
+
         [Route("audit/back")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult BackAudit()
         {
             

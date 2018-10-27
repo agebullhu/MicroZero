@@ -15,12 +15,12 @@ namespace ApiTest
         /// 登录
         /// </summary>
         /// <returns></returns>
-        [Route("api/test"), Category("登录")]
+        [Route("api/test")]
         [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
-        public ApiResult Login(LoginArg arg)
+        public ApiPageResult<LoginArg> Login(LoginArg arg)
         {
             Test();
-            return new ApiResult
+            return new ApiPageResult<LoginArg>
             {
                 Success = true,
                 Status = new ApiStatusResult

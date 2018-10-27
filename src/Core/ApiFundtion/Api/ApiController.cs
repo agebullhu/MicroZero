@@ -78,7 +78,7 @@ namespace Agebull.Common.WebApi
         /// <returns></returns>
 
         [Route("edit/eid")]
-        //[ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Anymouse)]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<EntityInfo> EntityType()
         {
             return ApiResult.Succees(new EntityInfo
@@ -93,7 +93,7 @@ namespace Agebull.Common.WebApi
         /// <returns></returns>
 
         [Route("edit/list")]
-        //[ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Anymouse)]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiPageResult<TData> List()
         {
             return List2();
@@ -116,10 +116,11 @@ namespace Agebull.Common.WebApi
                 };
         }
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     单条详细数据
         /// </summary>
 
         [Route("edit/details")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> Details()
         {
 
@@ -134,10 +135,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     新增数据
         /// </summary>
 
         [Route("edit/addnew")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> AddNew()
         {
 
@@ -152,10 +154,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     更新数据
         /// </summary>
 
         [Route("edit/update")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> Update()
         {
 
@@ -170,10 +173,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///     用在界面上的当前用户可以访问的按钮集合
+        ///     删除多条数据
         /// </summary>
 
         [Route("edit/delete")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Delete()
         {
 

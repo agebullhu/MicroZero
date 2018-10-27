@@ -10,6 +10,11 @@ namespace WebMonitor.Controllers
 {
     public class DocController : Controller
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public IActionResult Index(string id)
         {
             if (!ZeroApplication.Config.TryGetConfig(id,out var config))

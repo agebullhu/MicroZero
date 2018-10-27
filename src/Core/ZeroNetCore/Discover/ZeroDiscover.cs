@@ -107,7 +107,6 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 station = _defStation;
             }
-            var xdoc = XmlMember.Find(type);
             //station.Copy(XmlMember.Find(type));
             string routeHead = null;
             var attrib = type.GetCustomAttribute<RouteAttribute>();
@@ -133,6 +132,7 @@ namespace Agebull.ZeroNet.ZeroApi
                                                                     | BindingFlags.Public
                                                                     | BindingFlags.NonPublic);
 
+            var xdoc = XmlMember.Find(type);
             foreach (var method in methods)
             {
                 var route = method.GetCustomAttribute<RouteAttribute>();
@@ -156,10 +156,10 @@ namespace Agebull.ZeroNet.ZeroApi
                 var api = new ApiActionInfo
                 {
                     Name = method.Name,
+                    ApiName= route?.Name ?? method.Name,
                     RouteName = name,
                     Category = ca?.Category ?? xdoc?.Caption,
-                    Controller = type.FullName,
-                    AccessOption = accessOption?.Option ?? ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
+                    AccessOption = accessOption?.Option ?? ApiAccessOption.Public | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
                 };
                 var doc = XmlMember.Find(type, method.Name, "M");
@@ -302,6 +302,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 foreach (var type in types)
                 {
+                    XmlMember.Find(type);
                     ZeroApplication.RegistZeroObject(type.CreateObject() as IZeroObject);
                 }
             }
@@ -438,7 +439,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var dc = type.GetAttribute<DataContractAttribute>();
             var jo = type.GetAttribute<JsonObjectAttribute>();
 
-            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (property.IsSpecialName)
                 {
@@ -446,7 +447,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 CheckMember(typeDocument, type, property, property.PropertyType, jo != null, dc != null);
             }
-            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (!char.IsLetter(field.Name[0]) || field.IsSpecialName)
                 {
@@ -459,19 +460,14 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 fields = typeDocument.fields?.ToDictionary(p => p.Key, p => p.Value)
             });
-            ReadEntity(typeDocument, type.BaseType);
             typeDocument.Copy(XmlMember.Find(type));
         }
         TypeDocument CheckMember(TypeDocument document, Type parent, MemberInfo member, Type memType, bool json, bool dc, bool checkBase = true)
         {
             if (document.Fields.ContainsKey(member.Name))
                 return null;
-            var field = new TypeDocument
-            {
-                Name = member.Name,
-                JsonName = member.Name,
-                ClassName = ReflectionHelper.GetTypeName(memType)
-            };
+            var jp = member.GetAttribute<JsonPropertyAttribute>();
+            var dm = member.GetAttribute<DataMemberAttribute>();
             if (json)
             {
                 var ji = member.GetAttribute<JsonIgnoreAttribute>();
@@ -479,36 +475,17 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     return null;
                 }
-                var jp = member.GetAttribute<JsonPropertyAttribute>();
                 if (jp == null)
                     return null;
-                if (!string.IsNullOrWhiteSpace(jp.PropertyName))
-                    field.JsonName = jp.PropertyName;
             }
             else if (dc)
             {
                 var id = member.GetAttribute<IgnoreDataMemberAttribute>();
                 if (id != null)
                     return null;
-                var dm = member.GetAttribute<DataMemberAttribute>();
-                if (dm != null && !string.IsNullOrWhiteSpace(dm.Name))
-                    field.JsonName = dm.Name;
-            }
-            var rule = member.GetAttribute<DataRuleAttribute>();
-            if (rule != null)
-            {
-                field.CanNull = rule.CanNull;
-                field.Regex = rule.Regex;
-                if (rule.Min != long.MinValue)
-                    field.Min = rule.Min;
-                if (rule.Max != long.MinValue)
-                    field.Max = rule.Max;
-                if (rule.MinDate != DateTime.MinValue)
-                    field.MinDate = rule.MinDate;
-                if (rule.MaxDate != DateTime.MaxValue)
-                    field.MaxDate = rule.MaxDate;
             }
 
+            var field = new TypeDocument();
             var doc = XmlMember.Find(parent, member.Name);
             field.Copy(doc);
             bool isArray = false;
@@ -533,7 +510,6 @@ namespace Agebull.ZeroNet.ZeroApi
                         var fields = type.GetGenericArguments();
                         field.Fields.Add("Key", ReadEntity(fields[0], "Key"));
                         field.Fields.Add("Value", ReadEntity(fields[1], "Value"));
-                        field.ObjectType = ObjectType.Object;
                         isDictionary = true;
                         checkBase = false;
                     }
@@ -549,7 +525,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     field.ObjectType = ObjectType.Base;
                 }
-                else
+                else if(!isDictionary)
                 {
                     if (checkBase)
                         field = ReadEntity(type, member.Name);
@@ -570,6 +546,29 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 field.TypeName = "Dictionary";
                 field.ObjectType = ObjectType.Dictionary;
+            }
+
+            field.Name = member.Name;
+            field.JsonName = member.Name;
+            field.ClassName = ReflectionHelper.GetTypeName(memType);
+
+            if (!string.IsNullOrWhiteSpace(dm?.Name))
+                field.JsonName = dm.Name;
+            if (!string.IsNullOrWhiteSpace(jp?.PropertyName))
+                field.JsonName = jp.PropertyName;
+            var rule = member.GetAttribute<DataRuleAttribute>();
+            if (rule != null)
+            {
+                field.CanNull = rule.CanNull;
+                field.Regex = rule.Regex;
+                if (rule.Min != long.MinValue)
+                    field.Min = rule.Min;
+                if (rule.Max != long.MinValue)
+                    field.Max = rule.Max;
+                if (rule.MinDate != DateTime.MinValue)
+                    field.MinDate = rule.MinDate;
+                if (rule.MaxDate != DateTime.MaxValue)
+                    field.MaxDate = rule.MaxDate;
             }
             document.Fields.Add(member.Name, field);
 

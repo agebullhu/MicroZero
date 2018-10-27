@@ -90,27 +90,48 @@
         .class {
             color: forestgreen
         }
-    </style>}
+        .menu_boards {
+            overflow: auto;
+            text-align: left;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: auto;
+            min-width: 200px;
+            border-top: solid 1px whitesmoke;
+            border-bottom: solid 1px whitesmoke;
+        }
+        .menu_panel {
+            overflow: visible;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            width: auto;
+        }
+    </style>
+}
 
 @section Menus{
-    <el-aside class="message_boards" style="width:160px">
-        <el-menu @@select="menu_select"
-                 default-active="@Model.Name"
-                 class="el-menu-vertical-demo"
-                 background-color="#545c64"
-                 text-color="#fff" unique-opened
-                 active-text-color="#ffd04b">
-            @foreach (var station in stations)
-            {
-                <el-menu-item index="@station.Name">
-                    <template slot="title">
-                        <i class="el-icon-document"></i>
-                        <span>@station.Name</span>
-                    </template>
-                </el-menu-item>
-            }
-        </el-menu>
-    </el-aside>
+    <div class="menu_boards" >
+        
+        <el-aside class="menu_panel">
+            <el-menu @@select="menu_select"
+                     default-active="@Model.Name"
+                     background-color="#545c64"
+                     text-color="#fff" unique-opened
+                     active-text-color="#ffd04b">
+                @foreach (var station in stations)
+                {
+                    <el-menu-item index="@station.Name">
+                        <template slot="title">
+                            <i class="el-icon-document"></i>
+                            <span>@station.Name</span>
+                        </template>
+                    </el-menu-item>
+                }
+            </el-menu>
+        </el-aside>
+    </div>
 }
 @section VUE{
     <script>
@@ -119,6 +140,28 @@
                 location.href = "/Doc/Index/" + index;
             }
         });
+        function show(head,last) {
+            if (last === '_cs') {
+                show1(head + '_cs');
+                hide1(head + '_js');
+            }
+            else {
+                show1(head + '_js');
+                hide1(head + '_cs');
+            }
+        }
+        function hide1(el) {
+            var elm = document.getElementById(el);
+            if (!elm)
+                return;
+            elm.style.display = 'none';
+        }
+        function show1(el) {
+            var elm = document.getElementById(el);
+            if (!elm)
+                return;
+            elm.style.display = 'block'
+        }
     </script>
 }
 @functions{
@@ -226,14 +269,110 @@
     string outputCSharp(TypeDocument field)
     {
         StringBuilder sb = new StringBuilder("");
+        classCSharp(field, sb);
+        sb.AppendLine(@"
+<ul>");
         outputCSharp(field, sb);
+        sb.AppendLine(@"
+</ul>");
         return sb.ToString();
+    }
+
+    void classCSharp(TypeDocument par, StringBuilder sb)
+    {
+        if (par?.TypeName == null)
+        {
+            return;
+        }
+        var name = par.TypeName.Split(new char[] { '[', ']' })[0];
+        sb.AppendLine($@"
+<ul>
+<li><span class='class'>/// &lt;summary&gt;</span>{par.Caption}<span class='class'>&lt;/summary&gt;</span></li>
+<li v-html='rawHtml'>[JsonObject]</li>
+<li><span class='bool'>public&nbsp;class</span>&nbsp;<span class='class' v-html='rawHtml'>{name}</span></li>
+<li>{{</li>
+<li><ul>");
+
+        foreach (var field in par.fields.Values)
+        {
+            if (!string.IsNullOrEmpty(field.Caption))
+                sb.AppendLine($@"
+<li><span class='class'>/// &lt;summary&gt;</span>{field.Caption}<span class='class'>&lt;/summary&gt;</span></li>");
+
+            sb.AppendLine($@"
+<li v-html='rawHtml'>[JsonProperty(""<span class='str'>{field.JsonName ?? field.Name}</span>"")]</li>");
+            sb.AppendLine($@"
+<li><span class='class'>public&nbsp;{field.TypeName} </span><span class='name'>{field.Name} </span>{{get;set;}}</li><br/>");
+        }
+        sb.AppendLine(@"
+</ul></li>
+<li>}</li>
+</ul><br/><br/>");
+        foreach (var field in par.fields.Values)
+        {
+            if (field.fields == null || field.fields.Count == 0)
+            {
+                continue;
+            }
+
+            if (field.IsEnum)
+            {
+                enumCSharp(field, sb);
+            }
+            else
+            {
+                classCSharp(field, sb);
+            }
+        }
+    }
+
+    void enumCSharp(TypeDocument par, StringBuilder sb)
+    {
+        if (par?.TypeName == null)
+        {
+            return;
+        }
+        var name = par.TypeName.Split(new char[] { '[', ']' })[0];
+        sb.AppendLine($@"
+<ul>
+<li><span class='class'>/// &lt;summary&gt;</span>{par.Caption}<span class='class'>&lt;/summary&gt;</span></li>
+<li><span class='bool'>public&nbsp;enum</span>&nbsp;<span class='class' v-html='rawHtml'>{name}</span></li>
+<li>{{</li>
+<li><ul>");
+
+        foreach (var field in par.fields.Values)
+        {
+            if (!string.IsNullOrEmpty(field.Caption))
+                sb.AppendLine($@"
+<li><span class='class'>/// &lt;summary&gt;</span>{field.Caption}<span class='class'>&lt;/summary&gt;</span></li>");
+
+            sb.AppendLine($@"
+<li><span class='name'>{field.Name} </span> = <span class='number'>{field.Example},</span></li><br/>");
+        }
+        sb.AppendLine(@"
+</ul></li>
+<li>}</li>
+</ul>");
     }
     void outputCSharp(TypeDocument par, StringBuilder sb)
     {
+        if (par?.TypeName == null)
+        {
+            return;
+        }
         bool first = true;
+        var name = par.TypeName.Split(new char[] {'[', '{', '{'})[0];
+        if (par.ObjectType == ObjectType.Array)
+            sb.AppendLine($@"
+
+<li><span class='bool'>new</span>&nbsp;<span class='class' v-html='rawHtml'>List&lt;{name}&gt;</span></li>
+<li>{{</li>
+<li>
+<ul>");
         sb.AppendLine($@"
-<span class='bool'>new</span> <span class='class'>{par.ClassName}</span>{{</li>
+
+<li><span class='bool'>new</span>&nbsp;<span class='class' v-html='rawHtml'>{name}</span></li>
+<li>{{</li>
 <li>
 <ul>");
         foreach (var field in par.fields.Values)
@@ -293,7 +432,9 @@
             sb.AppendLine("</li>");
         sb.AppendLine(@"
 </ul>
-<li>}</li><li>");
+<li>}");
+        if (par.ObjectType == ObjectType.Array)
+            sb.AppendLine(@"</li></ul><li>}");
     }
 
     string outputJson(TypeDocument field)
@@ -378,7 +519,7 @@
                             <ul>
                                 @foreach (var api in category)
                                 {
-                                    <li><a href="#@(api.RouteName.Replace('/', '_'))">@api.Caption</a></li>
+                                    <li><a href="#@(api.RouteName.Replace('/', '_'))">@(api.Caption ?? api.Name)(@api.ApiName)</a></li>
                                 }
                             </ul>
                         </li>
@@ -412,7 +553,7 @@
                         }
                         foreach (var api in Model.Aips.Values)
                         {
-                            <h3 id="@(api.RouteName.Replace('/','_'))">@(api.Caption)(@api.Name)</h3>
+                            <h3 id="@(api.RouteName.Replace('/','_'))">@(api.Caption ?? api.Name)(@api.Name)</h3>
                             <h4>Api</h4>
                             <p>@Model.Name/@api.RouteName</p>
                             <h4>Token</h4>
@@ -452,14 +593,14 @@
                                     }
                                 </table>
                                 <div class="code">
-                                    <h5>C#</h5>
-                                    <ul>
-                                        <li>
-                                            @Html.Raw(outputCSharp(api.ArgumentInfo))
-                                        </li>
-                                    </ul>
-                                    <h5>Json</h5>
-                                    <ul>
+                                    <h5>
+                                        <a style="cursor:grabbing" onclick="show('@(api.RouteName.Replace('/','_'))_arg','_cs');">C#</a>&nbsp;&nbsp;&nbsp;
+                                        <a style="cursor:grabbing" onclick="show('@(api.RouteName.Replace('/','_'))_arg','_js');">Json</a>
+                                    </h5>
+                                    <div id="@(api.RouteName.Replace('/','_'))_arg_cs" style="display:none">
+                                        @Html.Raw(outputCSharp(api.ArgumentInfo))
+                                    </div>
+                                    <ul id="@(api.RouteName.Replace('/','_'))_arg_js" style="display:block">
                                         <li>
                                             @Html.Raw(outputJson(api.ArgumentInfo))
                                         </li>
@@ -494,14 +635,14 @@
                                     }
                                 </table>
                                 <div class="code">
-                                    <h5>C#</h5>
-                                    <ul>
-                                        <li>
-                                            @Html.Raw(outputCSharp(api.ResultInfo))
-                                        </li>
-                                    </ul>
-                                    <h5>Json</h5>
-                                    <ul>
+                                    <h5>
+                                        <a style="cursor:grabbing" onclick="show('@(api.RouteName.Replace('/','_'))_res','_cs');">C#</a>&nbsp;&nbsp;&nbsp;
+                                        <a style="cursor:grabbing" onclick="show('@(api.RouteName.Replace('/','_'))_res','_js');">Json</a>
+                                    </h5>
+                                    <div id="@(api.RouteName.Replace('/','_'))_res_cs" style="display:none">
+                                        @Html.Raw(outputCSharp(api.ResultInfo))
+                                    </div>
+                                    <ul id="@(api.RouteName.Replace('/','_'))_res_js" style="display:block">
                                         <li>
                                             @Html.Raw(outputJson(api.ResultInfo))
                                         </li>

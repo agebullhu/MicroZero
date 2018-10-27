@@ -31,18 +31,18 @@
 
     <style>
         .item {
-            margin - top: 10px;
-            margin - right: 40px;
+            margin-top: 10px;
+            margin-right: 40px;
         }
 
         .my_label {
             width: 60px;
-            display: inline - block;
-            text - align: right
+            display: inline-block;
+            text-align: right
         }
 
         .el-dialog {
-            background - color: whitesmoke
+            background-color: whitesmoke
         }
 
         .el-dialog__body {
@@ -73,7 +73,7 @@
             });
 
         }
-        var stations =@Html.Raw(station);
+        var stations =@(Html.Raw(station));
         extend_data({
             configs: stations,
             editDialogFormVisible: false,
@@ -220,7 +220,7 @@
                         stations.splice(idx,1);
                     }
                     else {
-                        var status = station.status
+                        var status = station.status;
                         Vue.set(stations, idx, station);
                         station.status = status;
                     }
@@ -289,7 +289,6 @@
     </el-aside>
 }
 <template v-for="config in configs">
-
     <el-card shadow="hover" style="margin:8px;padding :2px;width:280px; height: 320px;display:inline-block">
         <div style="display: block; height: 272px">
             <div style="font-size:16pt">

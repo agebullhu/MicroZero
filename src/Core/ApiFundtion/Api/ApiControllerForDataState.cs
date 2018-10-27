@@ -65,10 +65,11 @@ namespace Agebull.Common.WebApi
         #region API
 
         /// <summary>
-        ///      修改数据状态
+        ///      重置数据状态
         /// </summary>
         
         [Route("state/reset")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Reset()
         {
             
@@ -83,10 +84,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///      修改数据状态
+        ///      锁定数据
         /// </summary>
         
         [Route("state/lock")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Lock()
         {
             
@@ -101,10 +103,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///      修改数据状态
+        ///      废弃数据
         /// </summary>
         
         [Route("state/discard")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Discard()
         {
             
@@ -119,10 +122,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///      修改数据状态
+        ///      禁用数据
         /// </summary>
         
         [Route("state/disable")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Disable()
         {
             
@@ -137,10 +141,11 @@ namespace Agebull.Common.WebApi
         }
 
         /// <summary>
-        ///      修改数据状态
+        ///      启用数据
         /// </summary>
         
         [Route("state/enable")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Enable()
         {
             
