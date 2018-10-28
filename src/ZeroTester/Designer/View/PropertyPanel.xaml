@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.PropertyPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:behaviors="clr-namespace:Agebull.Common.Mvvm;assembly=Agebull.Common.Mvvm"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Border Margin="0"
+            Background="White"
+            BorderThickness="0">
+        <WindowsFormsHost HorizontalAlignment="Stretch">
+            <forms:PropertyGrid x:Name="Property" Dock="Fill" />
+            <i:Interaction.Behaviors>
+                <behaviors:DependencyBehavior BehaviorAction="{Binding PropertyGridHostBehavior}" />
+            </i:Interaction.Behaviors>
+        </WindowsFormsHost>
+    </Border>
+</UserControl>

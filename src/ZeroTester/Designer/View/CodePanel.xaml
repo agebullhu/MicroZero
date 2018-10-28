@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.CodePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:mvvm="clr-namespace:Agebull.Common.Mvvm;assembly=Agebull.Common.Mvvm"
+             mc:Ignorable="d" 
+             d:DesignHeight="600"
+             d:DesignWidth="1000">
+    <Grid Background="{x:Static SystemColors.ControlBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.ColumnSpan="2" Style="{StaticResource ToolBar}" DataContext="{Binding Model.NormalCode}">
+            <ItemsControl VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Commands}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource CommandButton}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel VerticalAlignment="Stretch"
+                                   HorizontalAlignment="Stretch" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Border>
+        <TabControl Grid.Column="0" Grid.Row="1" DataContext="{Binding Model.NormalCode}" SelectedIndex="{Binding ViewIndex}">
+            <TabItem Header="代码片断">
+                <TreeView ItemContainerStyle="{DynamicResource SimpleTree}" ItemsSource="{Binding MomentTreeRoot.Items}" />
+            </TabItem>
+            <TabItem Header="项目代码">
+                <TreeView ItemContainerStyle="{DynamicResource SimpleTree}" ItemsSource="{Binding FileTreeRoot.Items}" />
+            </TabItem>
+        </TabControl>
+        <GridSplitter Grid.Column="0" Grid.Row="1" Width="5" BorderThickness="1,0" />
+        <WebBrowser Grid.Column="1" Grid.Row="1" Margin="5,0,0,0">
+            <i:Interaction.Behaviors>
+                <mvvm:DependencyBehavior BehaviorAction="{Binding WebBrowserBehavior}" />
+            </i:Interaction.Behaviors>
+        </WebBrowser>
+    </Grid>
+</UserControl>

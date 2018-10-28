@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.TracePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" DataContext="{Binding Model.Context.CurrentTrace}"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Border Background="{x:Static SystemColors.ControlBrush}">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Style="{StaticResource ToolBar}">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="记录跟踪消息" IsChecked="{Binding MessageToTrace}" VerticalContentAlignment="Center" />
+                    <ContentControl DataContext="{Binding ClearTraceCommand}">
+                        <Button Style="{StaticResource  CommandButton}" />
+                    </ContentControl>
+                    <ContentControl DataContext="{Binding CopyTraceCommand}">
+                        <Button Style="{StaticResource  CommandButton}" />
+                    </ContentControl>
+                    <ContentControl DataContext="{Binding ShowDefaultMessageCommand}">
+                        <Button Style="{StaticResource  CommandButton}" />
+                    </ContentControl>
+                </StackPanel>
+            </Border>
+            <!--<Border DataContext="{Binding TraceMessage}"
+                    DockPanel.Dock="Top"
+                    BorderThickness="1"
+                    Margin="3">
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Message1}" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Message2}" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Message3}" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Message4}" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Status}" />
+                </StackPanel>
+            </Border>-->
+            <TextBox Text="{Binding TraceMessage.Track}"
+                     HorizontalScrollBarVisibility="Auto"
+                     VerticalScrollBarVisibility="Auto"
+                     BorderThickness="1" Margin="3" />
+        </DockPanel>
+    </Border>
+</UserControl>

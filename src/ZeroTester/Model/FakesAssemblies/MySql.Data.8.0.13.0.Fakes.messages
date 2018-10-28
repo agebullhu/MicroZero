@@ -1,0 +1,536 @@
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 <>f__AnonymousType0`2 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.MysqlxReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.ClientMessages 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.ServerMessages 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Ok 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Error 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.MysqlxSqlReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.StmtExecute 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.StmtExecuteOk 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.MysqlxSessionReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateStart 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateContinue 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateOk 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.Reset 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.Close 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.MysqlxResultsetReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ContentType_BYTES 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ContentType_DATETIME 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDoneMoreOutParams 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDoneMoreResultsets 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDone 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ColumnMetaData 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.Row 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.MysqlxNoticeReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.Frame 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.Warning 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.SessionVariableChanged 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.SessionStateChanged 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.MysqlxExprReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Expr 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Identifier 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.DocumentPathItem 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.ColumnIdentifier 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.FunctionCall 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Operator 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Object 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Array 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.MysqlxExpectReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.Open 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.Close 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.MysqlxDatatypesReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Scalar 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Object 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Array 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Any 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.MysqlxCrudReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.DataModel 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewAlgorithm 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewSqlSecurity 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewCheckOption 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Column 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Projection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Collection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Limit 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Order 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.UpdateOperation 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Find 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Insert 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Update 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Delete 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.CreateView 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ModifyView 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.DropView 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.MysqlxConnectionReflection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Capability 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Capabilities 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.CapabilitiesGet 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.CapabilitiesSet 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Close 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.BaseSession 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.SessionState 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Client 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Collection 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.DatabaseObject 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.MySqlXConnectionStringBuilder 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Schema 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Session 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.InternalRowResult 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.Row 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.RowResult 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.SqlResult 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.Table 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.TableDeleteStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.TableInsertStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.TableSelectStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.TableUpdateStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.AddStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.CreateCollectionIndexStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.CreateIndexParams 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.CrudStatement`1 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.DocResult 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.FindParams 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.FindStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.ModifyStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.RemoveStatement 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.UpdateSpec 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.BaseResult 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.BufferingResult`1 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.FilterParams 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.QueryStatement 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.Result 生成存根: 类型没有系列可见的构造函数。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.InternalSession 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.QueueTaskScheduler 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.XInternalSession 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.RoutingServices.DefaultRoutingService 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.RoutingServices.RoutingServiceBase 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.ValueDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.XProtocol 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.BitDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ByteDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.DecimalDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.NoticeType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.RowLock 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XpluginStatementCommand 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprParser 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprUtil 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprUnparser 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.FloatDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.IntegerDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.SetDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XDateTimeDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XTimeDecoder 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XValueDecoderFactory 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverGroup 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverManager 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverMethod 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.SequentialFailoverGroup 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.XServer 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.ConnectionMode 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.AuthenticationMode 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.OS 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Data.CollationMap 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.CommunicationPacket 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.ClientMessageId 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.ServerMessageId 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.XPacketReaderWriter 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Common.Tools 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.ExternalAuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.MySQL41AuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.PlainAuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Web.Security.Runtime 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Resources 生成存根: 类型是编译器生成的。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.ResourcesX 生成存根: 类型是编译器生成的。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MetaData 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlBinary 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlBit 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlByte 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlDateTime 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlDecimal 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlDouble 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlGeometry 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlGuid 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt16 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt32 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt64 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlSingle 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlString 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlTimeSpan 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUByte 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt16 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt32 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt64 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.IMySqlValue 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Cache`2 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.ContextString 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.LowResolutionStopwatch 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.MyNetworkStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.MySqlTokenizer 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.NativeMethods 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.SharedMemory 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.SharedMemoryStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Platform 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.QueryNormalizer 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Token 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.TokenType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Ssl 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.StreamCreator 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.UnixEndPoint 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.DBVersion 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBulkLoaderPriority 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBulkLoaderConflictOption 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CharSetMap 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CharacterSet 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCommand 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CompressedStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlInfoMessageEventHandler 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CommandTimer 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Crypt 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDataReader 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Driver 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.IDriver 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlException 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ColumnFlags 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlField 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.SystemPerformanceMonitor 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCommandBuilder 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDataAdapter 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatingEventHandler 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatedEventHandler 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatingEventArgs 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatedEventArgs 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlClientPermission 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlClientPermissionAttribute 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConfiguration 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.AuthenticationPluginConfigurationElement 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.InterceptorConfigurationElement 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.GenericConfigurationElementCollection`1 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlHelper 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlParameter 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlParameterCollection 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTransactionScope 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPromotableTransaction 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.DriverTransactionManager 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlSecurityPermission 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CommandInterceptor 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptor 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ISSchemaProvider 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringOption 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringOptionCollection 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlClientFactory 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringBuilder 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ClientFlags 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ServerStatusFlags 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.DBCmd 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDbType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Field_Type 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionProtocol 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlSslMode 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDriverType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCertificateStoreLocation 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlAuthenticationMode 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.LockContention 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectAttrs 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlErrorCode 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPacket 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPool 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPoolManager 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlStatementExecutedEventHandler 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlScriptErrorEventHandler 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ScriptStatement 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.UsageAdvisorWarningFlags 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTraceEventType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.NativeDriver 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlParameterConverter 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.PerformanceMonitor 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.PreparableStatement 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ProcedureCacheEntry 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ProcedureCache 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ReplicationConfigurationElement 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ReplicationServerGroupConfigurationElement 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ReplicationServerConfigurationElement 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ResultSet 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.SchemaProvider 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Statement 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.StoredProcedure 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TableCache 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TimedStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TracingDriver 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTransaction 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Utils 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.X.XDevAPI.Common.ColumnType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.X.XDevAPI.Common.ColumnContentType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Replication.ReplicationManager 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Memcached.MemcachedFlags 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptors.StandardExceptionInterceptor 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptors.ExceptionInterceptor 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Common.NamedPipeStream 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.AuthenticationPluginManager 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.PluginInfo 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.CachingSha2AuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.AuthStage 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.Sha256AuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.Sha256MemoryAuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.MySqlWindowsAuthenticationPlugin 生成存根: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecBufferDesc 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecBufferType 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecHandle 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecBuffer 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SECURITY_INTEGER 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SECURITY_HANDLE 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecPkgContext_Sizes 生成存根: 类型是一个值类型。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 <PrivateImplementationDetails> 生成存根: 类型已密封。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 <>f__AnonymousType0`2 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlPemReader+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.MysqlxReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.ClientMessages 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.ServerMessages 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Ok 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Error 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.MysqlxSqlReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.StmtExecute 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Sql.StmtExecuteOk 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.MysqlxSessionReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateStart 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateContinue 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.AuthenticateOk 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.Reset 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Session.Close 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.MysqlxResultsetReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ContentType_BYTES 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ContentType_DATETIME 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDoneMoreOutParams 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDoneMoreResultsets 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.FetchDone 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.ColumnMetaData 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Resultset.Row 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.MysqlxNoticeReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.Frame 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.Warning 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.SessionVariableChanged 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Notice.SessionStateChanged 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.MysqlxExprReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Expr 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Identifier 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.DocumentPathItem 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.ColumnIdentifier 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.FunctionCall 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Operator 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Object 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expr.Array 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.MysqlxExpectReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.Open 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Expect.Close 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.MysqlxDatatypesReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Scalar 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Object 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Array 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Datatypes.Any 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.MysqlxCrudReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.DataModel 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewAlgorithm 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewSqlSecurity 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ViewCheckOption 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Column 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Projection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Collection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Limit 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Order 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.UpdateOperation 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Find 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Insert 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Update 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.Delete 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.CreateView 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.ModifyView 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Crud.DropView 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.MysqlxConnectionReflection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Capability 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Capabilities 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.CapabilitiesGet 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.CapabilitiesSet 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 Mysqlx.Connection.Close 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.BaseSession+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.BaseSession+<>c__DisplayClass34_0 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.SessionState 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Client+ClientSession 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Client+ConnectionOptions 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Relational.InternalRowResult+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.CreateIndexParams 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.CrudStatement`1+<GetDocs>d__1 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.FindParams 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.CRUD.UpdateSpec 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.BaseStatement`1+<ExecuteAsync>d__6 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.FilterParams 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.XDevAPI.Common.QueryStatement 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.InternalSession 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.QueueTaskScheduler 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Sessions.XInternalSession 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.RoutingServices.DefaultRoutingService 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.RoutingServices.RoutingServiceBase 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.ValueDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.XProtocol 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.BitDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ByteDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.DecimalDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.NoticeType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.RowLock 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XpluginStatementCommand 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprParser 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprUtil 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.ExprUnparser 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.FloatDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.IntegerDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.SetDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XDateTimeDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XTimeDecoder 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Protocol.X.XValueDecoderFactory 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverGroup 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverManager 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.FailoverMethod 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.SequentialFailoverGroup 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Failover.XServer 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.ConnectionMode 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.AuthenticationMode 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.DataAccess.OS 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Data.CollationMap 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.CommunicationPacket 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.ClientMessageId 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.ServerMessageId 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Communication.XPacketReaderWriter 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Common.Tools 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.ExternalAuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.MySQL41AuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySqlX.Security.PlainAuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Web.Security.Runtime 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Resources 生成填充码: 类型是编译器生成的。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.ResourcesX 生成填充码: 类型是编译器生成的。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MetaData 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlBinary 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlBit 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlByte 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlDouble 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlGuid 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt16 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt32 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlInt64 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlSingle 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlString 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlTimeSpan 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUByte 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt16 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt32 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.MySqlUInt64 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Types.IMySqlValue 生成填充码: 类型是一个接口。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Cache`2 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.ContextString 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.LowResolutionStopwatch 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.MyNetworkStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.MySqlTokenizer 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.NativeMethods 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.SharedMemory 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.SharedMemoryStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Platform 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.QueryNormalizer 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Token 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.TokenType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.Ssl 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.StreamCreator 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.UnixEndPoint 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.Common.DBVersion 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBulkLoaderPriority 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBulkLoaderConflictOption 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CharSetMap 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CharacterSet 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCommand+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCommand+AsyncDelegate 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CompressedStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlInfoMessageEventHandler 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CommandTimer 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Crypt 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Driver 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.IDriver 生成填充码: 类型是一个接口。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ColumnFlags 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlField 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.SystemPerformanceMonitor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatingEventHandler 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlRowUpdatedEventHandler 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.GenericConfigurationElementCollection`1+<>c__DisplayClass2_0 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlHelper+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlHelper+CharClass 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTransactionScope 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPromotableTransaction 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.DriverTransactionManager 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.CommandInterceptor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ISSchemaProvider 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBaseConnectionStringBuilder+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlBaseConnectionStringBuilder+<>c__DisplayClass69_0 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringOption 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringOptionCollection 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionStringBuilder+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ClientFlags 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ServerStatusFlags 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.DBCmd 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDbType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Field_Type 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectionProtocol 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlSslMode 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlDriverType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlCertificateStoreLocation 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlAuthenticationMode 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.LockContention 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlConnectAttrs 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlErrorCode 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPacket 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPool 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlPoolManager 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlScript+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlStatementExecutedEventHandler 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlScriptErrorEventHandler 生成填充码: 类型是一个委托。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ScriptStatement 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTrace+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.UsageAdvisorWarningFlags 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlTraceEventType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.NativeDriver 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.MySqlParameterConverter 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.PerformanceMonitor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.PreparableStatement 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ProcedureCacheEntry 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ProcedureCache 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.ResultSet 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.SchemaProvider 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Statement 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.StoredProcedure 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TableCache 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.BaseTableCache+<>c 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.BaseTableCache+<>c__DisplayClass7_0 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.BaseTableCache+CacheEntry 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TimedStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.TracingDriver 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Utils 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.X.XDevAPI.Common.ColumnType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.X.XDevAPI.Common.ColumnContentType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Replication.ReplicationManager 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Replication.ReplicationServerGroup+<>c__DisplayClass19_0 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Replication.ReplicationServerGroup+<>c__DisplayClass19_1 生成填充码: 类型不受支持，因为存在内部限制。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Memcached.BinaryClient+MagicByte 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Memcached.BinaryClient+OpCodes 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Memcached.BinaryClient+ResponseStatus 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Memcached.MemcachedFlags 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptors.StandardExceptionInterceptor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Interceptors.ExceptionInterceptor 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Common.NamedPipeStream 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.AuthenticationPluginManager 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.PluginInfo 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.CachingSha2AuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.AuthStage 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.Sha256AuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.Sha256MemoryAuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.MySqlWindowsAuthenticationPlugin 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecBufferDesc 生成填充码: 类型对 exported or assembly(MySql.Data.8.0.13.0.Fakes) 不可见。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 MySql.Data.MySqlClient.Authentication.SecBufferType 生成填充码: 类型是一个枚举。
+D:\开源项目\ZeroNet\src\ZeroTester\Model\Fakes\MySql.Data.fakes : warning : 无法为 <PrivateImplementationDetails> 生成填充码: 类型不受支持，因为存在内部限制。

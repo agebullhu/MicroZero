@@ -1,0 +1,15 @@
+﻿<Application x:Class="Agebull.EntityModel.Designer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="View/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Style\Button.xaml" />
+                <ResourceDictionary Source="Style\Icon.xaml"/>
+                <ResourceDictionary Source="Style\TreeView.xaml"/>
+                <ResourceDictionary Source="Style\Menu.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

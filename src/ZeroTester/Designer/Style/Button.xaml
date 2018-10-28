@@ -1,0 +1,740 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ed="http://schemas.microsoft.com/expression/2010/drawing"
+                    xmlns:mvvm="clr-namespace:Agebull.Common.Mvvm;assembly=Agebull.Common.Mvvm">
+
+    <mvvm:BoolToVisibleConverter x:Key="BoolToVisibleConverter" />
+    <mvvm:ReversionVisibleConverter x:Key="ReversionVisibleConverter" />
+    <mvvm:ReversionBoolToVisibleConverter x:Key="ReversionBoolToVisibleConverter" />
+    <mvvm:BoolReversalConverter x:Key="BoolReversalConverter" />
+    <mvvm:NullVisibleConverter x:Key="NullVisibleConverter"/>
+
+    <Style TargetType="Border"
+               x:Key="ToolBar">
+        <Setter Property="Padding"
+                    Value="3" />
+        <Setter Property="BorderThickness"
+                    Value="1" />
+        <Setter Property="MinHeight"
+                Value="28" />
+        <Setter Property="BorderBrush"
+                Value="{x:Static SystemColors.ActiveCaptionBrush}" />
+        <Setter Property="Background"
+                Value="{x:Static SystemColors.ControlBrush}" />
+
+    </Style>
+
+    <DataTemplate x:Key="CommandButtonTemplate" DataType="{x:Type mvvm:CommandItem}">
+        <Border x:Name="ctrBorder"
+                    BorderBrush="Transparent"
+                    BorderThickness="1"
+                    Padding="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                           x:Name="ctrIcon"
+                           Source="{Binding Image}"
+                           Width="16"
+                           Height="16" />
+                <TextBlock Grid.Column="1"
+                               Text="{Binding Caption}"
+                               Margin="5,0" />
+                <ed:Arc Grid.Column="0"
+                            x:Name="ctrBusy"
+                            ArcThicknessUnit="Pixel"
+                            EndAngle="360"
+                            Width="16"
+                            Height="16"
+                            Stretch="None"
+                            Stroke="Black"
+                            StartAngle="0"
+                            ArcThickness="4"
+                            StrokeThickness="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Visibility="Collapsed">
+                    <ed:Arc.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform />
+                            <SkewTransform />
+                            <RotateTransform />
+                            <TranslateTransform />
+                        </TransformGroup>
+                    </ed:Arc.RenderTransform>
+                    <ed:Arc.Fill>
+                        <LinearGradientBrush EndPoint="0.5,0"
+                                                 MappingMode="RelativeToBoundingBox"
+                                                 StartPoint="0.5,0.5">
+                            <GradientStop Color="#FFF50C8C"
+                                              Offset="0" />
+                            <GradientStop Color="#FF1116EB"
+                                              Offset="1" />
+                        </LinearGradientBrush>
+                    </ed:Arc.Fill>
+                </ed:Arc>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <!--鼠标移入移出-->
+            <Trigger Property="IsMouseOver"
+                         Value="True">
+                <Setter Property="BorderBrush"
+                            TargetName="ctrBorder"
+                            Value="WhiteSmoke" />
+                <Setter Property="Background"
+                            TargetName="ctrBorder"
+                            Value="#881116EB" />
+            </Trigger>
+            <Trigger Property="IsMouseOver"
+                         Value="False">
+                <Setter Property="BorderBrush"
+                            TargetName="ctrBorder"
+                            Value="Transparent" />
+                <Setter Property="Background"
+                            TargetName="ctrBorder"
+                            Value="Transparent" />
+            </Trigger>
+            <DataTrigger Binding="{Binding Command.IsBusy}"
+                             Value="True">
+                <Setter Property="Visibility"
+                            TargetName="ctrIcon"
+                            Value="Collapsed" />
+                <Setter Property="Visibility"
+                            TargetName="ctrBusy"
+                            Value="Visible" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="_beginStoryboard1">
+                        <Storyboard>
+                            <DoubleAnimationUsingKeyFrames
+                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)"
+                                    Storyboard.TargetName="ctrBusy"
+                                    RepeatBehavior="Forever">
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.1"
+                                                          Value="30" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.2"
+                                                          Value="60" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.3"
+                                                          Value="90" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.4"
+                                                          Value="120" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.5"
+                                                          Value="150" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.6"
+                                                          Value="180" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.7"
+                                                          Value="210" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.8"
+                                                          Value="240" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.9"
+                                                          Value="270" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:1.0"
+                                                          Value="300" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:1.1"
+                                                          Value="330" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:1.2"
+                                                          Value="360" />
+                            </DoubleAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="_beginStoryboard1" />
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Command.IsBusy}"
+                             Value="False">
+                <Setter Property="Visibility"
+                            TargetName="ctrIcon"
+                            Value="Visible" />
+                <Setter Property="Visibility"
+                            TargetName="ctrBusy"
+                            Value="Collapsed" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+    <Style TargetType="Button">
+        <!--修改模板属性-->
+        <Setter Property="Background"
+                    Value="{x:Null}" />
+        <Setter Property="BorderBrush"
+                    Value="{x:Null}" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="ToolTip"
+                Value="{Binding Description}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="ctrBorder"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                BorderThickness="1"
+                                BorderBrush="Transparent"
+                                CornerRadius="4">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!--鼠标移入移出-->
+                        <Trigger Property="IsMouseOver"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="PowderBlue" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver"
+                                     Value="False">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Button" x:Key="IconCommand">
+        <!--修改模板属性-->
+        <Setter Property="Background"
+                    Value="{x:Null}" />
+        <Setter Property="BorderBrush"
+                    Value="{x:Null}" />
+        <Setter Property="BorderThickness"
+                    Value="0" />
+        <Setter Property="Command"
+                    Value="{Binding Command}" />
+        <Setter Property="CommandParameter"
+                    Value="{Binding Parameter}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="PART_Content"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <ContentPresenter.Content>
+                            <Border x:Name="ctrBorder"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="1"
+                                        Padding="2"
+                                        CornerRadius="4,4,0,0">
+                                <Grid Width="56">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="48" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Image Grid.Column="0"
+                                               HorizontalAlignment="Center"
+                                               x:Name="ctrIcon"
+                                               Source="{Binding Image}"
+                                               Width="48"
+                                               Height="48" />
+                                    <TextBlock Grid.Row="1"
+                                                   HorizontalAlignment="Center"
+                                                   Text="{Binding Caption}"
+                                                   Margin="0,5" />
+                                </Grid>
+                            </Border>
+                        </ContentPresenter.Content>
+                    </ContentPresenter>
+                    <ControlTemplate.Triggers>
+                        <!--鼠标移入移出-->
+                        <Trigger Property="IsMouseOver"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="WhiteSmoke" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="#881116EB" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver"
+                                     Value="False">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Button"
+               x:Key="CommandButton">
+        <!--修改模板属性-->
+        <Setter Property="Background"
+                    Value="{x:Null}" />
+        <Setter Property="BorderBrush"
+                    Value="{x:Null}" />
+        <Setter Property="BorderThickness"
+                    Value="0" />
+        <Setter Property="Visibility"
+                    Value="{Binding Command.Visibility}" />
+        <Setter Property="Command"
+                    Value="{Binding Command}" />
+        <Setter Property="CommandParameter"
+                    Value="{Binding Parameter}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="PART_Content"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <ContentPresenter.Content>
+                            <Border x:Name="ctrBorder"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="1"
+                                        Padding="2">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0"
+                                               x:Name="ctrIcon"
+                                               Source="{Binding Image}"
+                                               Width="16"
+                                               Height="16" />
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center" 
+                                                   Text="{Binding Caption}"
+                                                   Margin="5,0" />
+                                    <ed:Arc Grid.Column="0"
+                                                x:Name="ctrBusy"
+                                                ArcThicknessUnit="Pixel"
+                                                EndAngle="360"
+                                                Width="16"
+                                                Height="16"
+                                                Stretch="None"
+                                                Stroke="Black"
+                                                StartAngle="0"
+                                                ArcThickness="4"
+                                                StrokeThickness="0"
+                                                RenderTransformOrigin="0.5,0.5"
+                                                Visibility="Collapsed">
+                                        <ed:Arc.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <SkewTransform />
+                                                <RotateTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </ed:Arc.RenderTransform>
+                                        <ed:Arc.Fill>
+                                            <LinearGradientBrush EndPoint="0.5,0"
+                                                                     MappingMode="RelativeToBoundingBox"
+                                                                     StartPoint="0.5,0.5">
+                                                <GradientStop Color="#FFF50C8C"
+                                                                  Offset="0" />
+                                                <GradientStop Color="#FF1116EB"
+                                                                  Offset="1" />
+                                            </LinearGradientBrush>
+                                        </ed:Arc.Fill>
+                                    </ed:Arc>
+                                </Grid>
+                            </Border>
+                        </ContentPresenter.Content>
+                    </ContentPresenter>
+                    <ControlTemplate.Triggers>
+                        <!--鼠标移入移出-->
+                        <Trigger Property="IsMouseOver"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="WhiteSmoke" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="#881116EB" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver"
+                                     Value="False">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                         Value="True">
+                            <Setter Property="Visibility"
+                                        TargetName="ctrIcon"
+                                        Value="Collapsed" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Visible" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="_beginStoryboard1">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)"
+                                                Storyboard.TargetName="ctrBusy"
+                                                RepeatBehavior="Forever">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.1"
+                                                                      Value="30" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2"
+                                                                      Value="60" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="90" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4"
+                                                                      Value="120" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.5"
+                                                                      Value="150" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.6"
+                                                                      Value="180" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.7"
+                                                                      Value="210" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.8"
+                                                                      Value="240" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.9"
+                                                                      Value="270" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.0"
+                                                                      Value="300" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.1"
+                                                                      Value="330" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.2"
+                                                                      Value="360" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="_beginStoryboard1" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                         Value="False">
+                            <Setter Property="Visibility"
+                                        TargetName="ctrIcon"
+                                        Value="Visible" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Collapsed" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Button" x:Key="CustomButton">
+        <!--修改模板属性-->
+        <Setter Property="Visibility" Value="{Binding Command.Visibility}" />
+        <Setter Property="Command" Value="{Binding Command}" />
+        <Setter Property="CommandParameter" Value="{Binding Parameter}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="PART_Content"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <ContentPresenter.Content>
+                            <Border x:Name="ctrBorder"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                    Background="{TemplateBinding Background}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Padding="2">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0"
+                                               x:Name="ctrIcon"
+                                               Source="{Binding Image}"
+                                               Width="16"
+                                               Height="16" />
+                                    <TextBlock Grid.Column="1"
+                                               VerticalAlignment="Center" 
+                                                   Text="{Binding Caption}"
+                                                   Margin="5,0" />
+                                    <ed:Arc Grid.Column="0"
+                                                x:Name="ctrBusy"
+                                                ArcThicknessUnit="Pixel"
+                                                EndAngle="360"
+                                                Width="16"
+                                                Height="16"
+                                                Stretch="None"
+                                                Stroke="Black"
+                                                StartAngle="0"
+                                                ArcThickness="4"
+                                                StrokeThickness="0"
+                                                RenderTransformOrigin="0.5,0.5"
+                                                Visibility="Collapsed">
+                                        <ed:Arc.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <SkewTransform />
+                                                <RotateTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </ed:Arc.RenderTransform>
+                                        <ed:Arc.Fill>
+                                            <LinearGradientBrush EndPoint="0.5,0"
+                                                                     MappingMode="RelativeToBoundingBox"
+                                                                     StartPoint="0.5,0.5">
+                                                <GradientStop Color="#FFF50C8C"
+                                                                  Offset="0" />
+                                                <GradientStop Color="#FF1116EB"
+                                                                  Offset="1" />
+                                            </LinearGradientBrush>
+                                        </ed:Arc.Fill>
+                                    </ed:Arc>
+                                </Grid>
+                            </Border>
+                        </ContentPresenter.Content>
+                    </ContentPresenter>
+                    <ControlTemplate.Triggers>
+                        <!--鼠标移入移出-->
+                        <Trigger Property="IsMouseOver"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="WhiteSmoke" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="#881116EB" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver"
+                                     Value="False">
+                            <Setter Property="BorderBrush"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                            <Setter Property="Background"
+                                        TargetName="ctrBorder"
+                                        Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                         Value="True">
+                            <Setter Property="Visibility"
+                                        TargetName="ctrIcon"
+                                        Value="Collapsed" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Visible" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="_beginStoryboard1">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)"
+                                                Storyboard.TargetName="ctrBusy"
+                                                RepeatBehavior="Forever">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.1"
+                                                                      Value="30" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2"
+                                                                      Value="60" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="90" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4"
+                                                                      Value="120" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.5"
+                                                                      Value="150" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.6"
+                                                                      Value="180" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.7"
+                                                                      Value="210" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.8"
+                                                                      Value="240" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.9"
+                                                                      Value="270" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.0"
+                                                                      Value="300" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.1"
+                                                                      Value="330" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.2"
+                                                                      Value="360" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="_beginStoryboard1" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                         Value="False">
+                            <Setter Property="Visibility"
+                                        TargetName="ctrIcon"
+                                        Value="Visible" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Collapsed" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style TargetType="Button" x:Key="MyButton">
+        <!--修改模板属性-->
+        <Setter Property="Visibility" Value="{Binding Command.Visibility}" />
+        <Setter Property="Command" Value="{Binding Command}" />
+        <Setter Property="CommandParameter" Value="{Binding Parameter}" />
+        <Setter Property="BorderBrush" Value="Silver"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="PART_Content"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                        <ContentPresenter.Content>
+                            <Border Padding="5"
+                                        Width="{TemplateBinding Width}"
+                                        Height="{TemplateBinding Height}">
+                                <Border x:Name="ctrBorder"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            Background="{TemplateBinding Background}"
+                                            BorderThickness="{TemplateBinding BorderThickness}" >
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Grid.Column="0" Margin="10,0,0,0"
+                                                   x:Name="ctrIcon"
+                                                   Source="{Binding Image}"
+                                                   Width="16"
+                                                   Height="16" />
+                                        <TextBlock Grid.Column="1"
+                                                       VerticalAlignment="Center"
+                                                       TextAlignment="Center"
+                                                       FontSize="{TemplateBinding FontSize}"
+                                                       FontStyle="{TemplateBinding FontStyle}"
+                                                       Text="{Binding Caption}"
+                                                       Margin="5,0" />
+                                        <ed:Arc Grid.Column="0"
+                                                    x:Name="ctrBusy"
+                                                    ArcThicknessUnit="Pixel"
+                                                    EndAngle="360"
+                                                    Width="16"
+                                                    Height="16"
+                                                    Stretch="None"
+                                                    Stroke="Black"
+                                                    StartAngle="0"
+                                                    ArcThickness="4"
+                                                    StrokeThickness="0"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Visibility="Collapsed">
+                                            <ed:Arc.RenderTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform />
+                                                    <SkewTransform />
+                                                    <RotateTransform />
+                                                    <TranslateTransform />
+                                                </TransformGroup>
+                                            </ed:Arc.RenderTransform>
+                                            <ed:Arc.Fill>
+                                                <LinearGradientBrush EndPoint="0.5,0"
+                                                                         MappingMode="RelativeToBoundingBox"
+                                                                         StartPoint="0.5,0.5">
+                                                    <GradientStop Color="#FFF50C8C"
+                                                                      Offset="0" />
+                                                    <GradientStop Color="#FF1116EB"
+                                                                      Offset="1" />
+                                                </LinearGradientBrush>
+                                            </ed:Arc.Fill>
+                                        </ed:Arc>
+                                    </Grid>
+                                </Border>
+                            </Border>
+                        </ContentPresenter.Content>
+                    </ContentPresenter>
+                    <ControlTemplate.Triggers>
+                        <!--鼠标移入移出-->
+                        <Trigger Property="IsMouseOver"
+                                         Value="True">
+                            <Setter Property="BorderBrush"
+                                            TargetName="ctrBorder"
+                                            Value="WhiteSmoke" />
+                            <Setter Property="Background"
+                                            TargetName="ctrBorder"
+                                            Value="#881116EB" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled"
+                                         Value="false">
+                            <Setter Property="Foreground"
+                                            Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                             Value="True">
+                            <Setter Property="Visibility"
+                                            TargetName="ctrIcon"
+                                            Value="Collapsed" />
+                            <Setter Property="Visibility"
+                                            TargetName="ctrBusy"
+                                            Value="Visible" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="_beginStoryboard1">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)"
+                                                    Storyboard.TargetName="ctrBusy"
+                                                    RepeatBehavior="Forever">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.1"
+                                                                          Value="30" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2"
+                                                                          Value="60" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                          Value="90" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4"
+                                                                          Value="120" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.5"
+                                                                          Value="150" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.6"
+                                                                          Value="180" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.7"
+                                                                          Value="210" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.8"
+                                                                          Value="240" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.9"
+                                                                          Value="270" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.0"
+                                                                          Value="300" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.1"
+                                                                          Value="330" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.2"
+                                                                          Value="360" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="_beginStoryboard1" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Command.IsBusy}"
+                                             Value="False">
+                            <Setter Property="Visibility"
+                                            TargetName="ctrIcon"
+                                            Value="Visible" />
+                            <Setter Property="Visibility"
+                                            TargetName="ctrBusy"
+                                            Value="Collapsed" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

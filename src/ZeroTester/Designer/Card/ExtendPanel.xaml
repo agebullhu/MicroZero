@@ -1,0 +1,67 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.ExtendPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <Border DataContext="{Binding Model.ExtendConfig}">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Style="{StaticResource ToolBar}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Padding="5" VerticalAlignment="Center" Text="新名称" />
+                    <TextBox Width="160" Padding="5" VerticalAlignment="Center"
+                             Text="{Binding NewName,Mode = OneWayToSource}" />
+
+                    <ItemsControl VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding Commands}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource CommandButton}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border>
+                <ItemsControl VerticalAlignment="Stretch"
+                              HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding ExtendItems,Mode=OneWay}">
+                    <ItemsControl.Template>
+                        <ControlTemplate>
+                            <ScrollViewer Padding="{TemplateBinding Padding}">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ItemsControl.Template>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <TextBlock Padding="5" VerticalAlignment="Center" MinWidth="200" Text="{Binding Name}" />
+                                <TextBox MinWidth="500" Padding="5" VerticalAlignment="Center"
+                                         Text="{Binding Value,Mode = TwoWay}" />
+                                <GroupBox Header="" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel VerticalAlignment="Stretch"
+                                       HorizontalAlignment="Stretch"
+                                       Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Border>
+        </DockPanel>
+    </Border>
+</UserControl>

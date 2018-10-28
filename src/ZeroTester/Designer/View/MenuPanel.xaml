@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.MenuPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" Background="WhiteSmoke">
+    <StackPanel Orientation="Vertical">
+        <DockPanel>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <TextBox Text="{Binding Model.Context.FindKey,Mode=OneWayToSource,UpdateSourceTrigger=PropertyChanged}" Margin="2" Width="300"  />
+                <ContentControl DataContext="{Binding Model.Tree.FindCommand}">
+                    <Button Style="{StaticResource  CommandButton}" />
+                </ContentControl>
+            </StackPanel>
+            <Menu ItemsSource="{Binding Model.Editor.WindowMenu.Items}"  DockPanel.Dock="Right"/>
+            <Menu ItemsSource="{Binding Model.Editor.Menus}"/>
+        </DockPanel>
+        <Border BorderBrush="WhiteSmoke" BorderThickness="0,0,1,0" Padding="2" MinHeight="32">
+        <ItemsControl VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Model.Editor.Buttons}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Style="{StaticResource CommandButton}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                        <WrapPanel VerticalAlignment="Stretch"
+                                   HorizontalAlignment="Stretch" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Border>
+    </StackPanel>
+</UserControl>

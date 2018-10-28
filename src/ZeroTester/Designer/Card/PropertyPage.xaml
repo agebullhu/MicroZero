@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.PropertyPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:simpleDesign="clr-namespace:Agebull.EntityModel.Designer"
+             xmlns:designer="clr-namespace:Agebull.EntityModel.Designer"
+             xmlns:card="clr-namespace:Agebull.EntityModel.Designer.Card"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <TabControl TabStripPlacement="Top">
+        <TabControl.Items>
+            <TabItem Header="设计属性">
+                <card:DesignInfoPanel/>
+            </TabItem>
+            <TabItem Header="扩展属性">
+                <designer:ExtendPanel />
+            </TabItem>
+            <TabItem Header="属性表格">
+                <simpleDesign:PropertyPanel />
+            </TabItem>
+        </TabControl.Items>
+    </TabControl>
+</UserControl>

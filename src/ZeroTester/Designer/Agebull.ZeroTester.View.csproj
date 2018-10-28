@@ -1,0 +1,323 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{030A33C1-E68A-4ED1-914C-F84ECF1469E2}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Agebull.ZeroTester.View</RootNamespace>
+    <AssemblyName>Agebull.ZeroTester.View</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <HockeyAppResourceId>f797c69f6c584b05a1f32bf404413816</HockeyAppResourceId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Presentation" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Card\ConfigForm.xaml.cs">
+      <DependentUpon>ConfigForm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ConfigTreePanel.xaml.cs">
+      <DependentUpon>ConfigTreePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StatusPanel.xaml.cs">
+      <DependentUpon>StatusPanel.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="appSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Card\ConfigForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
+    <Page Include="Style\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Style\Form.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Style\Icon.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Style\Menu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Style\TreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ConfigTreePanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\MainPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\StatusPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\async_Executing.png" />
+    <Resource Include="Style\Images\async_Faulted.png" />
+    <Resource Include="Style\Images\async_None.png" />
+    <Resource Include="Style\Images\async_Succeed.png" />
+    <Resource Include="Style\Images\check.png" />
+    <Resource Include="Style\Images\clear.png" />
+    <Resource Include="Style\Images\code.png" />
+    <Resource Include="Style\Images\defBackup.jpg" />
+    <Resource Include="Style\Images\filter.png" />
+    <Resource Include="Style\Images\Icon.png" />
+    <Resource Include="Style\Images\inte.png" />
+    <Resource Include="Style\Images\link.png" />
+    <Resource Include="Style\Images\lock.png" />
+    <Resource Include="Style\Images\man.png" />
+    <Resource Include="Style\Images\reDo.png" />
+    <Resource Include="Style\Images\save.png" />
+    <Resource Include="Style\Images\SolutionManage.png" />
+    <Resource Include="Style\Images\sum.png" />
+    <Resource Include="Style\Images\tree_Assembly.png" />
+    <Resource Include="Style\Images\tree_Child1.png" />
+    <Resource Include="Style\Images\tree_Child2.png" />
+    <Resource Include="Style\Images\tree_Child4.png" />
+    <Resource Include="Style\Images\tree_Child5.png" />
+    <Resource Include="Style\Images\tree_Close.png" />
+    <Resource Include="Style\Images\tree_default.png" />
+    <Resource Include="Style\Images\tree_File.png" />
+    <Resource Include="Style\Images\tree_Folder.png" />
+    <Resource Include="Style\Images\tree_item.png" />
+    <Resource Include="Style\Images\tree_Open.png" />
+    <Resource Include="Style\Images\tree_Para.png" />
+    <Resource Include="Style\Images\tree_Project.png" />
+    <Resource Include="Style\Images\tree_Solution.png" />
+    <Resource Include="Style\Images\tree_Type.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="B.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\audit.png" />
+    <Resource Include="Style\Images\a_again.png" />
+    <Resource Include="Style\Images\a_deny.png" />
+    <Resource Include="Style\Images\a_end.png" />
+    <Resource Include="Style\Images\a_none.png" />
+    <Resource Include="Style\Images\a_pass.png" />
+    <Resource Include="Style\Images\a_submit.png" />
+    <Resource Include="Style\Images\bm.png" />
+    <Resource Include="Style\Images\cancel.png" />
+    <Resource Include="Style\Images\com.png" />
+    <Resource Include="Style\Images\cus.png" />
+    <Resource Include="Style\Images\disable.png" />
+    <Resource Include="Style\Images\enable.png" />
+    <Resource Include="Style\Images\end.png" />
+    <Resource Include="Style\Images\excel.png" />
+    <Resource Include="Style\Images\export.png" />
+    <Resource Include="Style\Images\file.png" />
+    <Resource Include="Style\Images\global.png" />
+    <Resource Include="Style\Images\join.png" />
+    <Resource Include="Style\Images\left.png" />
+    <Resource Include="Style\Images\ok.png" />
+    <Resource Include="Style\Images\pause.png" />
+    <Resource Include="Style\Images\Pay.png" />
+    <Resource Include="Style\Images\root.png" />
+    <Resource Include="Style\Images\self.png" />
+    <Resource Include="Style\Images\self_left.png" />
+    <Resource Include="Style\Images\start.png" />
+    <Resource Include="Style\Images\switch.png" />
+    <Resource Include="Style\Images\trans.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\cpp2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\cpp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\lua.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\add.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\del.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\bull.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\bull.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\bull2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\find.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\baidu.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Style\Images\baidu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Expression.Blend.Sdk">
+      <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Expression.Drawing">
+      <Version>3.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>11.0.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="libzmq.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Entities\Agebull.Common.Entity.csproj">
+      <Project>{0d626dda-02c0-4bd8-b2fd-efee0971510f}</Project>
+      <Name>Agebull.Common.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Model\Agebull.ZeroTester.Model.csproj">
+      <Project>{675ee1a7-84fe-47e4-968f-1e3d43c8c019}</Project>
+      <Name>Agebull.ZeroTester.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WpfMvvmBase\Agebull.Common.Mvvm.csproj">
+      <Project>{6f6dc5d2-85ef-4bb5-82fa-bd21f7aa3053}</Project>
+      <Name>Agebull.Common.Mvvm</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

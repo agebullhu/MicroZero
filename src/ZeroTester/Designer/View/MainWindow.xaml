@@ -1,0 +1,15 @@
+﻿<Window x:Class="Gboxt.Design.Main.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:EfMove="clr-namespace:Gboxt.Design.EFMove"
+        mc:Ignorable="d"
+        Title="ZeroNet API 测试工具"
+        d:DesignHeight="350"
+        d:DesignWidth="525"
+        WindowState="Maximized" Icon="/Style/Images/bull.png">
+    <Border BorderThickness="1" Margin="0" Padding="0">
+        <EfMove:MainPage VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+    </Border>
+</Window>

@@ -1,0 +1,123 @@
+﻿<UserControl x:Class="Agebull.EntityModel.Designer.Card.ConfigForm"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="1000" d:DesignWidth="1100">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="..\Style\Form.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <TabControl SelectedIndex="0">
+        <TabItem Header="Api">
+            <Grid Visibility="{Binding Visibility,Mode=OneWay}" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource ToolBar}" BorderBrush="WhiteSmoke" BorderThickness="0,0,1,0" Padding="2" MinHeight="32">
+                    <ItemsControl VerticalAlignment="Stretch"
+                                      HorizontalAlignment="Stretch"
+                                      ItemsSource="{Binding Commands}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource CommandButton}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel VerticalAlignment="Stretch"
+                                               HorizontalAlignment="Stretch" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal"  DataContext="{Binding Model.SelecTestItem}">
+                    <StackPanel>
+                        <Label Content="站点" />
+                        <TextBox Text="{Binding Station,Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel>
+                        <Label Content="路由"/>
+                        <TextBox Text="{Binding Api,Mode=TwoWay}" Style="{StaticResource MidTextBox}" />
+                    </StackPanel>
+                    <StackPanel>
+                        <Label Content="请求标识" />
+                        <TextBox Text="{Binding RequestId,Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <Label Content="全局标识" />
+                        <TextBox Text="{Binding GlobalId,Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Label Grid.Column="0" Grid.Row="2" Content="参数" Margin="5"/>
+                <TextBox Grid.Column="0" Grid.Row="3"  Margin="5" Tag="调用API的JSON"
+                         Text="{Binding Arguments,Mode=TwoWay}" Style="{StaticResource AutoTextBox}" DataContext="{Binding Model.SelecTestItem}" />
+
+                <Label Grid.Column="1" Grid.Row="2" Content="返回值" Margin="5"/>
+                <TextBox Grid.Column="1" Grid.Row="3" IsReadOnly="True"
+                         Margin="5" Text="{Binding ResultJson,Mode=OneWay}" 
+                         Style="{StaticResource AutoTextBox}" 
+                         DataContext="{Binding Model.SelecTestItem}" />
+            </Grid>
+        </TabItem>
+        <TabItem Header="上下文">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" Margin="0">
+                <Border Style="{StaticResource ToolBar}" BorderBrush="WhiteSmoke" BorderThickness="0,0,1,0" Padding="2" Margin="0" MinHeight="32" HorizontalAlignment="Stretch">
+                    <ItemsControl VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding UserCommands}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource CommandButton}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel VerticalAlignment="Stretch"
+                                           HorizontalAlignment="Stretch" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Border>
+                <StackPanel Orientation="Horizontal" DataContext="{Binding Model.User}">
+                    <StackPanel>
+                        <Label Content="用户名" />
+                        <TextBox Text="{Binding UserName,Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel>
+                        <Label Content="密码" />
+                        <TextBox Text="{Binding PassWord,Mode=TwoWay}" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel DataContext="{Binding Model.User}"  Margin="10">
+                    <Label Content="DeviceId" />
+                    <TextBox Text="{Binding DeviceId,Mode=TwoWay}" Style="{StaticResource MidTextBox}"/>
+                </StackPanel>
+                <StackPanel DataContext="{Binding Model.User}"  Margin="10">
+                    <Label Content="AT" />
+                    <TextBox Text="{Binding AccessToken,Mode=TwoWay}" Style="{StaticResource MidTextBox}"/>
+                </StackPanel>
+                <StackPanel DataContext="{Binding Model.User}"  Margin="10">
+                    <Label Content="RT" />
+                    <TextBox Text="{Binding RefreshToken,Mode=TwoWay}" Style="{StaticResource MidTextBox}"/>
+                </StackPanel>
+                <StackPanel DataContext="{Binding Model.User}"  Margin="10">
+                    <Label Content="上下文"/>
+                    <TextBox Text="{Binding ContextJson,Mode=TwoWay}" Height="560" Style="{StaticResource MidTextBox}"/>
+                </StackPanel>
+            </StackPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>

@@ -1,0 +1,405 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ed="http://schemas.microsoft.com/expression/2010/drawing">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Icon.xaml"/>
+        <ResourceDictionary Source="Menu.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+
+    <Style TargetType="ToggleButton"
+               x:Key="TreeHeaderButton">
+        <!--修改模板属性-->
+        <Setter Property="Background"
+                    Value="{x:Null}" />
+        <Setter Property="BorderBrush"
+                    Value="{x:Null}" />
+        <Setter Property="BorderThickness"
+                    Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid Margin="0,0,0,5">
+                        <Image x:Name="ctrImage"
+                                   Source="{StaticResource tree_Open}"
+                                   Width="16"
+                                   Height="16" />
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked"
+                                     Value="False">
+                            <Setter Property="Source"
+                                        TargetName="ctrImage"
+                                        Value="{StaticResource tree_Open}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked"
+                                     Value="True">
+                            <Setter Property="Source"
+                                        TargetName="ctrImage"
+                                        Value="{StaticResource tree_Close}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded"
+                    Value="{Binding IsExpanded ,Mode=TwoWay}" />
+        <Setter Property="ItemsSource"
+                    Value="{Binding Items}" />
+        <Setter Property="IsSelected"
+                    Value="{Binding IsUiSelected,Mode=TwoWay}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="3"
+                                    Margin="-1600,0,0,0"
+                                    x:Name="Bd"
+                                    HorizontalAlignment="Stretch"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    SnapsToDevicePixels="true" />
+
+                        <ToggleButton Grid.Row="0" Grid.Column="0" x:Name="Expander" ClickMode="Press"
+                                      IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Style="{StaticResource TreeHeaderButton}" />
+                        <ContentPresenter Grid.Row="0" Grid.Column="1"
+                                          Margin="0"
+                                          x:Name="PART_Header"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <ContentPresenter.Content>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="16" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="{Binding BackgroundColor}">
+                                        <StackPanel Orientation="Horizontal ">
+                                            <StackPanel.ContextMenu>
+                                                <ContextMenu ItemsSource="{Binding Commands}">
+                                                    <!--<ContextMenu.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,0,0,5">
+                                                                <Button Content="{Binding Name}"
+                                                                            Command="{Binding Command}"
+                                                                            CommandParameter="{Binding Parameter}" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ContextMenu.ItemTemplate>-->
+                                                </ContextMenu>
+                                            </StackPanel.ContextMenu>
+                                            <Image Source="{Binding SoruceTypeIcon}"
+                                                   Width="16"
+                                                   Height="16"
+                                                   Margin="6,0,0,0" />
+                                            <TextBlock Text="{Binding Header}"
+                                                       x:Name="ctrHeader"
+                                                       Foreground="{Binding Color}"
+                                                       FontWeight="{Binding FontWeight}"
+                                                       Margin="5,0" />
+                                            <Image Source="{Binding StatusIcon}"
+                                                   Width="16"
+                                                   Height="16"
+                                                   Margin="6,0,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <ed:Arc x:Name="ctrBusy"
+                                            Grid.Column="1" 
+                                                ArcThicknessUnit="Pixel"
+                                                EndAngle="360"
+                                                Width="16"
+                                                Height="16"
+                                                Stretch="None"
+                                                Stroke="Black"
+                                                StartAngle="0"
+                                                ArcThickness="4"
+                                                StrokeThickness="0"
+                                                RenderTransformOrigin="0.5,0.5"
+                                                Visibility="Collapsed">
+                                        <ed:Arc.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <SkewTransform />
+                                                <RotateTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </ed:Arc.RenderTransform>
+                                        <ed:Arc.Fill>
+                                            <LinearGradientBrush EndPoint="0.5,0"
+                                                                     MappingMode="RelativeToBoundingBox"
+                                                                     StartPoint="0.5,0.5">
+                                                <GradientStop Color="#FFF50C8C"
+                                                                  Offset="0" />
+                                                <GradientStop Color="#FF1116EB"
+                                                                  Offset="1" />
+                                            </LinearGradientBrush>
+                                        </ed:Arc.Fill>
+                                    </ed:Arc>
+                                </Grid>
+                            </ContentPresenter.Content>
+                        </ContentPresenter>
+                        <ItemsPresenter x:Name="ItemsHost"
+                                            Grid.ColumnSpan="2"
+                                            Grid.Column="1"
+                                            Grid.Row="1" />
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsExpanded"
+                                     Value="false">
+                            <Setter Property="Visibility"
+                                        TargetName="ItemsHost"
+                                        Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="HasItems"
+                                     Value="false">
+                            <Setter Property="Visibility"
+                                        TargetName="Expander"
+                                        Value="Hidden" />
+                        </Trigger>
+                        <Trigger Property="IsSelected"
+                                     Value="true">
+                            <Setter Property="Background"
+                                        TargetName="Bd"
+                                        Value="#AA404040" />
+
+                            <!--<Setter Property="Foreground"
+                                        TargetName="ctrHeader"
+                                        Value="#FFF0F0F0" />-->
+
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                        </Trigger>
+                        <Trigger Property="IsSelected"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="Black" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected"
+                                               Value="true" />
+                                <Condition Property="IsSelectionActive"
+                                               Value="false" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background"
+                                        TargetName="Bd"
+                                        Value="#AA404040" />
+
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding IsBusy}"
+                                         Value="False">
+                            <Setter Property="Width"
+                                        TargetName="Expander"
+                                        Value="16" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsBusy}"
+                                         Value="True">
+                            <Setter Property="Width"
+                                        TargetName="Expander"
+                                        Value="0" />
+                            <Setter Property="Visibility"
+                                        TargetName="ctrBusy"
+                                        Value="Visible" />
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="_beginStoryboard1">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[2].(RotateTransform.Angle)"
+                                                Storyboard.TargetName="ctrBusy"
+                                                RepeatBehavior="Forever">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.1"
+                                                                      Value="30" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.2"
+                                                                      Value="60" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.3"
+                                                                      Value="90" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.4"
+                                                                      Value="120" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.5"
+                                                                      Value="150" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.6"
+                                                                      Value="180" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.7"
+                                                                      Value="210" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.8"
+                                                                      Value="240" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:0.9"
+                                                                      Value="270" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.0"
+                                                                      Value="300" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.1"
+                                                                      Value="330" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1.2"
+                                                                      Value="360" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="_beginStoryboard1" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SimpleTree" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded"
+                    Value="{Binding IsExpanded ,Mode=TwoWay}" />
+        <Setter Property="ItemsSource"
+                    Value="{Binding Items}" />
+        <Setter Property="IsSelected"
+                    Value="{Binding IsUiSelected,Mode=TwoWay}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="3"
+                                    Margin="-1600,0,0,0"
+                                    x:Name="Bd"
+                                    HorizontalAlignment="Stretch"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    SnapsToDevicePixels="true" />
+
+                        <ToggleButton Grid.Row="0"
+                                          Grid.Column="0"
+                                          x:Name="Expander"
+                                          ClickMode="Press"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Style="{StaticResource TreeHeaderButton}" />
+                        <ContentPresenter Grid.Row="0"
+                                          Grid.Column="1"
+                                              Margin="-6,0,0,0"
+                                              x:Name="PART_Header"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                            <ContentPresenter.Content>
+                                <Border Grid.Column="1" BorderThickness="0,0,0,1" BorderBrush="{Binding BackgroundColor}">
+                                        <StackPanel Orientation="Horizontal ">
+                                            <Image Source="{Binding SoruceTypeIcon}"
+                                                   Width="16"
+                                                   Height="16"
+                                                   Margin="6,0,0,0" />
+                                            <TextBlock Text="{Binding Header}"
+                                                       x:Name="ctrHeader"
+                                                       Foreground="{Binding Color}"
+                                                       FontWeight="{Binding FontWeight}"
+                                                       Margin="5,0" />
+                                        </StackPanel>
+                                    </Border>
+                            </ContentPresenter.Content>
+                        </ContentPresenter>
+                        <ItemsPresenter x:Name="ItemsHost"
+                                            Grid.ColumnSpan="2"
+                                            Grid.Column="1"
+                                            Grid.Row="1" />
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsExpanded"
+                                     Value="false">
+                            <Setter Property="Visibility"
+                                        TargetName="ItemsHost"
+                                        Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="HasItems"
+                                     Value="false">
+                            <Setter Property="Visibility"
+                                        TargetName="Expander"
+                                        Value="Hidden" />
+                        </Trigger>
+                        <Trigger Property="IsSelected"
+                                     Value="true">
+                            <Setter Property="Background"
+                                        TargetName="Bd"
+                                        Value="#AA404040" />
+
+                            <!--<Setter Property="Foreground"
+                                        TargetName="ctrHeader"
+                                        Value="#FFF0F0F0" />-->
+
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                        </Trigger>
+                        <Trigger Property="IsSelected"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="Black" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected"
+                                               Value="true" />
+                                <Condition Property="IsSelectionActive"
+                                               Value="false" />
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background"
+                                        TargetName="Bd"
+                                        Value="#AA404040" />
+
+                            <Setter Property="Background"
+                                        TargetName="Expander"
+                                        Value="#AA404040" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled"
+                                     Value="false">
+                            <Setter Property="Foreground"
+                                        Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
