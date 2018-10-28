@@ -6,7 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -42,13 +45,13 @@ namespace Agebull.ZeroNet.Core
                 var words = cmd.Split(' ', '\t', '\r', '\n');
                 if (words.Length == 0)
                 {
-                    ZeroTrace.WriteLine("请输入正确命令");
+                    Console.WriteLine("请输入正确命令");
                     continue;
                 }
 
                 var result = SystemManager.Instance.CallCommand(words);
                 if (result.InteractiveSuccess)
-                    ZeroTrace.WriteInfo("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
+                    ZeroTrace.SystemLog("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
                         ? value
                         : result.State.Text());
                 else
@@ -126,9 +129,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void CheckOption()
         {
-            ZeroTrace.WriteLine("Weconme ZeroNet");
+            ZeroTrace.SystemLog("Weconme ZeroNet");
             ZContext.Initialize();
             ZeroTrace.Initialize();
+            IocHelper.AddScoped<GlobalContext, GlobalContext>();
             CheckConfig();
             InitializeDependency();
         }
@@ -139,13 +143,13 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void InitializeDependency()
         {
-            ApiContext.MyRealName = Config.RealName;
-            ApiContext.MyServiceKey = Config.ServiceKey;
-            ApiContext.MyServiceName = Config.ServiceName;
+            GlobalContext.ServiceRealName = Config.RealName;
+            GlobalContext.ServiceKey = Config.ServiceKey;
+            GlobalContext.ServiceName = Config.ServiceName;
             LogRecorder.GetMachineNameFunc = () => Config.ServiceName;
-            LogRecorder.GetUserNameFunc = () => ApiContext.Customer?.Account ?? "Unknow";
-            LogRecorder.GetRequestIdFunc = () => ApiContext.RequestContext?.RequestId ?? Guid.NewGuid().ToString();
-
+            LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
+            LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
+            IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();
             LogRecorder.Initialize();
@@ -183,7 +187,7 @@ namespace Agebull.ZeroNet.Core
                 StationName = stationName ?? Config.StationName,
                 Assembly = assembly
             };
-            ZeroTrace.WriteInfo("Discove", discover.Assembly.FullName);
+            ZeroTrace.SystemLog("Discove", discover.Assembly.FullName);
             discover.FindApies();
             discover.FindZeroObjects();
         }
@@ -237,7 +241,7 @@ namespace Agebull.ZeroNet.Core
         public static void RunAwaite()
         {
             Console.CancelKeyPress += OnCancelKeyPress;
-            Console.WriteLine("Application start...");
+            Console.WriteLine("Zeronet application start...");
             Start();
             Task.Factory.StartNew(WaitTask).Wait();
         }
@@ -252,7 +256,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void WaitTask()
         {
-            Console.WriteLine("Application started. Press Ctrl+C to shutdown.");
+            Console.WriteLine("Zeronet application runing. Press Ctrl+C to shutdown.");
             WaitToken.Wait();
         }
 
@@ -261,7 +265,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static bool JoinCenter()
         {
-            ZeroTrace.WriteLine($"try connect zero center ({Config.ZeroManageAddress})...");
+            ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
                 ApplicationState = StationState.Failed;
@@ -286,7 +290,7 @@ namespace Agebull.ZeroNet.Core
                 ZerCenterStatus = ZeroCenterState.Failed;
                 return false;
             }
-            ZeroTrace.WriteLine("be connected successfully,start local stations.");
+            ZeroTrace.SystemLog("be connected successfully,start local stations.");
             OnZeroStart();
             SystemManager.Instance.UploadDocument();
             return true;
@@ -301,7 +305,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Shutdown()
         {
-            ZeroTrace.WriteLine("Begin shutdown...");
+            ZeroTrace.SystemLog("Begin shutdown...");
             switch (ApplicationState)
             {
                 case StationState.Destroy:
@@ -323,7 +327,7 @@ namespace Agebull.ZeroNet.Core
             SystemMonitor.WaitMe();
             GC.Collect();
             ZContext.Destroy();
-            ZeroTrace.WriteLine("Application shutdown ,see you late.");
+            ZeroTrace.SystemLog("Application shutdown ,see you late.");
             ApplicationState = StationState.Disposed;
             WaitToken.Release();
         }

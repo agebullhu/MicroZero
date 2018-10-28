@@ -1,10 +1,21 @@
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.PubSub
 {
+    /// <summary>
+    ///     消息发布
+    /// </summary>
+    internal class ZPublisher : Agebull.Common.Rpc.IZeroPublisher
+    {
+        bool IZeroPublisher.Publish(string station, string title, string sub, string arg)
+        {
+            return ZeroPublisher.Publish(station, title, sub, arg);
+        }
+    }
+
     /// <summary>
     ///     消息发布
     /// </summary>
@@ -57,11 +68,11 @@ namespace Agebull.ZeroNet.PubSub
                     Station = station,
                     Title = title,
                     SubTitle = sub,
-                    RequestId = ApiContext.RequestContext.RequestId,
+                    RequestId = GlobalContext.RequestInfo.RequestId,
                     Content = value ?? "{}"
                 });
             }
         }
-        
+
     }
 }

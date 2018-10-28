@@ -9,11 +9,6 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-#define zsco_key "plan:time:set"
-
-#define def_msg_key(key,msg)\
-			char key[MAX_PATH];\
-			sprintf(key, "msg:%s:%llx",*((msg)->station), (msg)->plan_id);
 
 		/**
 		* \brief 计划类型
@@ -277,7 +272,7 @@ namespace agebull
 			/**
 			* \brief 删除一个消息
 			*/
-			bool remove();
+			bool remove() const;
 
 			/**
 			* \brief 保存消息

@@ -1,5 +1,8 @@
 namespace ZeroMQ
 {
+    /// <summary>
+    /// pool½Úµã
+    /// </summary>
     public class ZPollItem
 	{
 		public ZPollEvent Events;

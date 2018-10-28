@@ -208,26 +208,27 @@ namespace Agebull.ZeroNet.Core
         /// 状态转换
         /// </summary>
         /// <param name="state"></param>
+        /// <param name="remote">是否远程状态</param>
         /// <returns></returns>
-        public static OperatorStatus ToOperatorStatus(this ZeroOperatorStateType state)
+        public static ZeroOperatorStatus ToOperatorStatus(this ZeroOperatorStateType state,bool remote)
         {
             if (state < ZeroOperatorStateType.Failed)
-                return OperatorStatus.Success;
+                return ZeroOperatorStatus.Success;
             if (state < ZeroOperatorStateType.Bug)
-                return OperatorStatus.LogicalError;
+                return ZeroOperatorStatus.LogicalError;
             if (state < ZeroOperatorStateType.Error)
-                return OperatorStatus.FormalError;
+                return ZeroOperatorStatus.FormalError;
             if (state <= ZeroOperatorStateType.NotSupport)
-                return OperatorStatus.NotFind;
+                return ZeroOperatorStatus.NotFind;
             if (state == ZeroOperatorStateType.DenyAccess)
-                return OperatorStatus.DenyAccess;
+                return ZeroOperatorStatus.DenyAccess;
             if (state == ZeroOperatorStateType.Unavailable)
-                return OperatorStatus.Unavailable;
+                return ZeroOperatorStatus.Unavailable;
             if (state == ZeroOperatorStateType.LocalException)
-                return OperatorStatus.LocalException;
+                return remote ? ZeroOperatorStatus.RemoteException : ZeroOperatorStatus.LocalException;
             if (state >= ZeroOperatorStateType.LocalNoReady || state == ZeroOperatorStateType.TimeOut)
-                return OperatorStatus.LocalError;
-            return OperatorStatus.RemoteError;
+                return remote ? ZeroOperatorStatus.RemoteError : ZeroOperatorStatus.LocalError;
+            return ZeroOperatorStatus.RemoteError;
         }
     }
 

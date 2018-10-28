@@ -11,21 +11,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>
-      实现消息队列功能：
-      1 Api站点
-      2 消息发布与订阅
-      3 网络投票（并行工作流）
+      基于ZMQ通讯的微服务框架,包含服务治理\RPC通讯\网络监控\消息队列等功能.
     </Description>
-    <Version>1.0.8.3</Version>
+    <Version>1.2.0.55</Version>
     <!--monoandroid60;xamarinios10-->
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
     <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <PackageVersion>1.0.8.3</PackageVersion>
+    <PackageVersion>1.2.0.55</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -48,23 +45,39 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
     <Optimize>true</Optimize>
-    <DefineConstants>RELEASE;NETSTANDARD2_0</DefineConstants>
+    <DefineConstants>RELEASE;</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ApiContract\**" />
+    <Compile Remove="Context\**" />
     <Compile Remove="Entity\**" />
     <Compile Remove="Rpc\**" />
     <Compile Remove="Services\**" />
+    <Compile Remove="Tson\**" />
+    <EmbeddedResource Remove="ApiContract\**" />
+    <EmbeddedResource Remove="Context\**" />
     <EmbeddedResource Remove="Entity\**" />
     <EmbeddedResource Remove="Rpc\**" />
     <EmbeddedResource Remove="Services\**" />
+    <EmbeddedResource Remove="Tson\**" />
+    <None Remove="ApiContract\**" />
+    <None Remove="Context\**" />
     <None Remove="Entity\**" />
     <None Remove="Rpc\**" />
     <None Remove="Services\**" />
+    <None Remove="Tson\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Config\ZeroCommandStatus.cs" />
+    <Compile Remove="Discover\ApiActionInfo.cs" />
+    <Compile Remove="Discover\ApiDocument.cs" />
+    <Compile Remove="Discover\DocumentItem.cs" />
+    <Compile Remove="Discover\ObjectType.cs" />
+    <Compile Remove="Discover\StationDocument.cs" />
+    <Compile Remove="Discover\TypeDocument.cs" />
+    <Compile Remove="Discover\XmlMember.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
     <Compile Remove="PubSub\LogQueue.cs" />
     <Compile Remove="Queue\PublishQueue.cs" />
@@ -79,12 +92,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.1.6" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.60" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZeroMq\ClrZMQ.Core.csproj" />
+    <ProjectReference Include="..\ZeroMq\Agebull.ZeroNet.ClrZMQ.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\hotfix\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\hotfix\ /y" />

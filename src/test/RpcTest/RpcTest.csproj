@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="EntityEventProxy.cs" />
     <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />

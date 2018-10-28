@@ -11,6 +11,11 @@ namespace Agebull.ZeroNet.Core
     {
         #region IZeroObject
 
+        /// <summary>
+        /// 名称
+        /// </summary>
+        string IZeroObject.StationName => "___";
+
         //readonly Dictionary<string, ConnectionProxy> proxys = new Dictionary<string, ConnectionProxy>();
 
         readonly PollProxy proxy = new PollProxy();

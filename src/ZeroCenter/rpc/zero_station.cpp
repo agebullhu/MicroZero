@@ -10,8 +10,9 @@ namespace agebull
 		//map<int64, vector<shared_char>> zero_station::results;
 		//boost::mutex zero_station::results_mutex_;
 
-		zero_station::zero_station(const string name, int type, int request_zmq_type)
-			: request_zmq_type_(request_zmq_type)
+		zero_station::zero_station(const string name, int type, int req_zmq_type, int res_zmq_type)
+			: req_zmq_type_(req_zmq_type)
+			, res_zmq_type_(res_zmq_type)
 			, station_type_(type)
 			, poll_items_(nullptr)
 			, poll_count_(0)
@@ -27,11 +28,12 @@ namespace agebull
 			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
-			assert(request_zmq_type_ != ZMQ_PUB);
+			assert(req_zmq_type_ != ZMQ_PUB);
 		}
 
-		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type)
-			: request_zmq_type_(request_zmq_type)
+		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int req_zmq_type, int res_zmq_type)
+			: req_zmq_type_(req_zmq_type)
+			, res_zmq_type_(res_zmq_type)
 			, station_type_(type)
 			, poll_items_(nullptr)
 			, poll_count_(0)
@@ -47,7 +49,7 @@ namespace agebull
 			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
-			assert(request_zmq_type_ != ZMQ_PUB);
+			assert(req_zmq_type_ != ZMQ_PUB);
 		}
 
 		/**
@@ -66,7 +68,7 @@ namespace agebull
 			poll_items_ = new zmq_pollitem_t[5];
 			memset(poll_items_, 0, sizeof(zmq_pollitem_t) * 5);
 			poll_count_ = 0;
-			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, request_zmq_type_, config_->request_port_);
+			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, req_zmq_type_, config_->request_port_);
 			if (request_scoket_tcp_ == nullptr)
 			{
 				config_->runtime_state(station_state::Failed);
@@ -76,7 +78,7 @@ namespace agebull
 			poll_items_[poll_count_++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
 			if (json_config::use_ipc_protocol)
 			{
-				request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", request_zmq_type_);
+				request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", req_zmq_type_);
 				if (request_socket_ipc_ == nullptr)
 				{
 					config_->runtime_state(station_state::Failed);
@@ -86,7 +88,7 @@ namespace agebull
 				poll_items_[poll_count_++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
 			}
 
-			request_socket_inproc_ = socket_ex::create_res_socket_inproc(station_name, request_zmq_type_);
+			request_socket_inproc_ = socket_ex::create_res_socket_inproc(station_name, req_zmq_type_);
 			if (request_socket_inproc_ == nullptr)
 			{
 				config_->runtime_state(station_state::Failed);
@@ -99,7 +101,45 @@ namespace agebull
 			if (station_type_ > STATION_TYPE_DISPATCHER && station_type_ < STATION_TYPE_SPECIAL)
 				plan_socket_inproc_ = socket_ex::create_req_socket_inproc("PlanDispatcher", station_name);
 
-			if (station_type_ >= STATION_TYPE_API && station_type_ < STATION_TYPE_SPECIAL)
+			if (station_type_ < STATION_TYPE_API || station_type_ >= STATION_TYPE_SPECIAL)
+			{
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port_);
+				if (worker_out_socket_tcp_ == nullptr)
+				{
+					config_->runtime_state(station_state::Failed);
+					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
+					return false;
+				}
+				if (json_config::use_ipc_protocol)
+				{
+					worker_out_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "sub", ZMQ_PUB);
+					if (worker_out_socket_ipc_ == nullptr)
+					{
+						config_->runtime_state(station_state::Failed);
+						config_->error("initialize worker out", zmq_strerror(zmq_errno()));
+						return false;
+					}
+				}
+			}
+			else if (station_type_ == STATION_TYPE_ROUTE_API)
+			{
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_ROUTER, config_->worker_out_port_);
+				if (worker_out_socket_tcp_ == nullptr)
+				{
+					config_->runtime_state(station_state::Failed);
+					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
+					return false;
+				}
+				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port_);
+				if (worker_in_socket_tcp_ == nullptr)
+				{
+					config_->runtime_state(station_state::Failed);
+					config_->error("initialize worker in", zmq_strerror(zmq_errno()));
+					return false;
+				}
+				poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
+			}
+			else
 			{
 				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUSH, config_->worker_out_port_);
 				if (worker_out_socket_tcp_ == nullptr)
@@ -120,26 +160,6 @@ namespace agebull
 					return false;
 				}
 				poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
-			}
-			else
-			{
-				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port_);
-				if (worker_out_socket_tcp_ == nullptr)
-				{
-					config_->runtime_state(station_state::Failed);
-					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
-					return false;
-				}
-				if (json_config::use_ipc_protocol)
-				{
-					worker_out_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "sub", ZMQ_PUB);
-					if (worker_out_socket_ipc_ == nullptr)
-					{
-						config_->runtime_state(station_state::Failed);
-						config_->error("initialize worker out", zmq_strerror(zmq_errno()));
-						return false;
-					}
-				}
 			}
 			config_->start();
 			return true;
@@ -275,7 +295,6 @@ namespace agebull
 		*/
 		void zero_station::response()
 		{
-
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(worker_in_socket_tcp_, list);
 			if (zmq_state_ == zmq_socket_state::TimedOut)
@@ -331,7 +350,7 @@ namespace agebull
 			const size_t descr_size = description.size();
 			const size_t frame_size = description.frame_size();
 			const uchar state = description.state();
-			if (state < ZERO_BYTE_COMMAND_NONE || (frame_size + 2) > descr_size || (frame_size + 2) != list_size)
+			if (state < ZERO_BYTE_COMMAND_NONE || (frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
 				return;

@@ -92,6 +92,9 @@
     <ClCompile Include="rpc\plan_dispatcher.cpp">
       <Filter>rpc\plan</Filter>
     </ClCompile>
+    <ClCompile Include="rpc\route_api_station.cpp">
+      <Filter>rpc\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h">
@@ -156,6 +159,9 @@
     </ClInclude>
     <ClInclude Include="rpc\zero_default.h">
       <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\route_api_station.h">
+      <Filter>rpc\api</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

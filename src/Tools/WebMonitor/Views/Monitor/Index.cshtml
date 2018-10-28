@@ -21,7 +21,7 @@
     var stations = ZeroApplication.Config.GetConfigs().OrderBy(p => p.RequestPort).ToArray();
 
     long min = 0;
-    long max=0;
+    long max = 0;
     if (!string.IsNullOrEmpty(Url.ActionContext.HttpContext.Request.QueryString.Value))
     {
         var m = Url.ActionContext.HttpContext.Request.Query["min"];
@@ -35,10 +35,10 @@
             max = 0;
         }
     }
-    if(max == 0)
+    if (max == 0)
     {
         max = (long)(item.MaxQps * 1.5);
-        if(item.AvgQps > 0 && (max / item.AvgQps) > 4)
+        if (item.AvgQps > 0 && (max / item.AvgQps) > 4)
         {
             max = item.AvgQps * 4;
         }
@@ -61,6 +61,25 @@
             min-width: 248px;
             margin: 0 auto;
             max-width: 248px;
+        }
+        .menu_boards {
+            overflow: auto;
+            text-align: left;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: auto;
+            min-width: 200px;
+            border-top: solid 1px whitesmoke;
+            border-bottom: solid 1px whitesmoke;
+        }
+
+        .menu_panel {
+            overflow: visible;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            width: auto;
         }
     </style>
 }
@@ -126,7 +145,7 @@
                         }
                     ]
                 }));
-        
+
         var chart_q_max = Highcharts.chart('q_max',
             gauge_chart_option(@max,
                 {
@@ -407,51 +426,53 @@
 }
 
 @section Menus{
-    <el-aside class="message_boards" style="width:240px">
-        <el-menu default-active="@Model.Name"
-                 @@select="menu_select"
-                 class="el-menu-vertical-demo"
-                 background-color="#545c64"
-                 text-color="#fff" unique-opened
-                 active-text-color="#ffd04b">
-            @foreach (var station in stations)
-            {
-                <el-menu-item index="@station.Name">
-                    <template slot="title">
-                        @switch (station.StationType)
-                        {
-                            case ZeroStationType.Api:
-                                {
-                                    <i class="el-icon-star-on"></i>
-                                    break;
-                                }
-                            case ZeroStationType.Vote:
-                                {
-                                    <i class="el-icon-star-off"></i>
-                                    break;
-                                }
-                            case ZeroStationType.Publish:
-                                {
-                                    <i class="el-icon-share"></i>
-                                    break;
-                                }
-                            case ZeroStationType.Plan:
-                                {
-                                    <i class="el-icon-time"></i>
-                                    break;
-                                }
-                            case ZeroStationType.Dispatcher:
-                                {
-                                    <i class="el-icon-setting"></i>
-                                    break;
-                                }
-                        }
-                        <span>@station.Name</span>
-                    </template>
-                </el-menu-item>
-            }
-        </el-menu>
-    </el-aside>
+    <div class="menu_boards">
+
+        <el-aside class="menu_panel">
+            <el-menu default-active="@Model.Name"
+                     @@select="menu_select"
+                     background-color="#545c64"
+                     text-color="#fff" unique-opened
+                     active-text-color="#ffd04b">
+                @foreach (var station in stations)
+                {
+                    <el-menu-item index="@station.Name">
+                        <template slot="title">
+                            @switch (station.StationType)
+                            {
+                                case ZeroStationType.Api:
+                                    {
+                                        <i class="el-icon-star-on"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Vote:
+                                    {
+                                        <i class="el-icon-star-off"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Publish:
+                                    {
+                                        <i class="el-icon-share"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Plan:
+                                    {
+                                        <i class="el-icon-time"></i>
+                                        break;
+                                    }
+                                case ZeroStationType.Dispatcher:
+                                    {
+                                        <i class="el-icon-setting"></i>
+                                        break;
+                                    }
+                            }
+                            <span>@station.Name</span>
+                        </template>
+                    </el-menu-item>
+                }
+            </el-menu>
+        </el-aside>
+    </div>
 }
 
 <el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">

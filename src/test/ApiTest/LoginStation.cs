@@ -1,4 +1,7 @@
-﻿using Agebull.ZeroNet.ZeroApi;
+﻿using System;
+using Agebull.Common.Rpc;
+using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using System.ComponentModel;
 
 namespace ApiTest
@@ -6,40 +9,39 @@ namespace ApiTest
     /// <summary>
     /// 登录服务
     /// </summary>
-    [Station("Login")]
-    public class LoginStation : ZeroApiController
+    public abstract class ApiControlleraaa : ApiController
     {
-        //public LoginStation()
-        //{
-        //    Name = "Login";
-        //    StationName = "Login";
-        //}
-
-        ///// <summary>
-        ///// 初始化
-        ///// </summary>
-        //protected override void Initialize()
-        //{
-        //    RegistAction<LoginArg, ApiResult>("api/login", Login, ApiAccessOption.Anymouse);
-        //}
-
         /// <summary>
         /// 登录
         /// </summary>
-        /// <param name="user">用户信息</param>
         /// <returns></returns>
-        [Route("api/login"), Category("登录")]
-        public ApiResult Login(LoginArg user)
+        [Route("api/test")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiPageResult<LoginArg> Login(LoginArg arg)
         {
-            return new ApiResult
+            Test();
+            return new ApiPageResult<LoginArg>
             {
                 Success = true,
-                Status = new ApiStatsResult
+                Status = new ApiStatusResult
                 {
                     ErrorCode = 0,
-                    ClientMessage = $"Wecome {user.MobilePhone}!"
+                    //ClientMessage = $"Wecome {user.MobilePhone}!"
                 }
             };
+        }
+        public abstract void Test();
+    }
+
+    /// <summary>
+    /// 登录服务
+    /// </summary>
+    [Station("TestCtr")]
+    public class LoginStation : ApiControlleraaa
+    {
+        public override void Test()
+        {
+            Console.WriteLine("OK");
         }
     }
 }

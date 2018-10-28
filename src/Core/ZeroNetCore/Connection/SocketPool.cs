@@ -13,6 +13,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 名称
         /// </summary>
+        string IZeroObject.StationName => "___";
+
+
+        /// <summary>
+        /// 名称
+        /// </summary>
         public string Name => nameof(ZeroConnectionPool);
 
         /// <summary>

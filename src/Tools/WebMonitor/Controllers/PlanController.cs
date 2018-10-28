@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Agebull.Common.Ioc;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using ZeroNet.Http.Route;
 
@@ -165,7 +167,7 @@ namespace WebMonitor.Controllers
         protected DateTime? GetDateArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value, out var date))
             {
                 return null;
             }
@@ -180,11 +182,11 @@ namespace WebMonitor.Controllers
         protected DateTime GetDateArg2(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value,out var date))
             {
                 return DateTime.MinValue;
             }
-            return DateTime.Parse(value);
+            return date;
         }
 
         /// <summary>

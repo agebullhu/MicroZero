@@ -117,14 +117,14 @@ namespace ZeroNet.Http.Route
         /// 子级
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
-        public Dictionary<string, CountItem> Items { get; } = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, CountItem> Items { get; set; } = new Dictionary<string, CountItem>(StringComparer.OrdinalIgnoreCase);
 
 
         /// <summary>
         /// 子级
         /// </summary>
         [DataMember, JsonProperty("children")]
-        public List<CountItem> Children { get; } = new List<CountItem>();
+        public List<CountItem> Children { get; set; } = new List<CountItem>();
 
 
         /// <summary>
@@ -178,18 +178,18 @@ namespace ZeroNet.Http.Route
                 MinTime = tm;
             switch (data.Status)
             {
-                case OperatorStatus.Success:
+                case ZeroOperatorStatus.Success:
                     break;
-                case OperatorStatus.Unavailable:
-                case OperatorStatus.NotFind:
-                case OperatorStatus.DenyAccess:
+                case ZeroOperatorStatus.Unavailable:
+                case ZeroOperatorStatus.NotFind:
+                case ZeroOperatorStatus.DenyAccess:
                     Deny += 1;
                     break;
-                case OperatorStatus.FormalError:
+                case ZeroOperatorStatus.FormalError:
                     FormalError += 1;
                     break;
-                case OperatorStatus.LocalException:
-                case OperatorStatus.LogicalError:
+                case ZeroOperatorStatus.LocalException:
+                case ZeroOperatorStatus.LogicalError:
                     Bug += 1;
                     break;
                 default:

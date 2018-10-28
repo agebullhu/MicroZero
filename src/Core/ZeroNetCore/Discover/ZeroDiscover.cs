@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.Serialization;
+using Agebull.Common.ApiDocuments;
 using Agebull.Common.Reflection;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
@@ -30,9 +33,10 @@ namespace Agebull.ZeroNet.ZeroApi
         public Dictionary<string, StationDocument> StationInfo = new Dictionary<string, StationDocument>();
         public ZeroDiscover()
         {
-            XmlMember.Load(this.GetType().Assembly);
+            XmlMember.Load(GetType().Assembly);
         }
-        StationDocument DefStation;
+
+        private StationDocument _defStation;
 
         /// <summary>
         /// 查找API
@@ -40,11 +44,11 @@ namespace Agebull.ZeroNet.ZeroApi
         public void FindApies()
         {
             XmlMember.Load(Assembly);
-            StationInfo.Add(StationName, DefStation = new StationDocument
+            StationInfo.Add(StationName, _defStation = new StationDocument
             {
                 Name = StationName
             });
-            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ZeroApiController))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiController))).ToArray();
             foreach (var type in types)
             {
                 FindApi(type, false);
@@ -85,6 +89,8 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="onlyDoc"></param>
         private void FindApi(Type type, bool onlyDoc)
         {
+            if (type.IsAbstract)
+                return;
             StationDocument station;
             var sa = type.GetCustomAttribute<StationAttribute>();
             if (sa != null)
@@ -99,9 +105,8 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             else
             {
-                station = DefStation;
+                station = _defStation;
             }
-            var xdoc = XmlMember.Find(type);
             //station.Copy(XmlMember.Find(type));
             string routeHead = null;
             var attrib = type.GetCustomAttribute<RouteAttribute>();
@@ -109,27 +114,38 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 routeHead = attrib.Name;
             }
+            else
+            {
+                var attrib2 = type.GetCustomAttribute<RoutePrefixAttribute>();
+                if (attrib2 != null)
+                {
+                    routeHead = attrib2.Name;
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(routeHead))
                 routeHead = null;
             else
                 routeHead = routeHead.Trim(' ', '\t', '\r', '\n', '/') + "/";
 
-            var methods = type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance
+            var methods = type.GetMethods(BindingFlags.Instance
                                                                     | BindingFlags.Public
                                                                     | BindingFlags.NonPublic);
 
+            var xdoc = XmlMember.Find(type);
             foreach (var method in methods)
             {
-                if (method.GetParameters().Length > 1)
+                var route = method.GetCustomAttribute<RouteAttribute>();
+                if (route == null)
                 {
-                    ZeroTrace.WriteError("ApiDiscover", "argument size must 0 or 1", station.Name, type.Name, method.Name);
+                    //ZeroTrace.WriteError("ApiDiscover", "exclude", station.Name, type.Name, method.Name);
                     continue;
                 }
-                var route = method.GetCustomAttribute<RouteAttribute>();
-                if (route == null && !method.IsPublic)
+                if (method.Name.Length > 4 && (method.Name.IndexOf("get_") == 0 || method.Name.IndexOf("set_") == 0))
+                    continue;
+                if (method.GetParameters().Length > 1)
                 {
-                    ZeroTrace.WriteError("ApiDiscover", "exclude", station.Name, type.Name, method.Name);
+                    //ZeroTrace.WriteError("ApiDiscover", "argument size must 0 or 1", station.Name, type.Name, method.Name);
                     continue;
                 }
                 var name = route?.Name == null
@@ -140,13 +156,12 @@ namespace Agebull.ZeroNet.ZeroApi
                 var api = new ApiActionInfo
                 {
                     Name = method.Name,
+                    ApiName= route?.Name ?? method.Name,
                     RouteName = name,
-                    Category = ca?.Category ?? xdoc.Caption,
-                    Controller = type.FullName,
-                    AccessOption = accessOption != null ? accessOption.Option : ApiAccessOption.Public | ApiAccessOption.Anymouse | ApiAccessOption.ArgumentCanNil,
+                    Category = ca?.Category ?? xdoc?.Caption,
+                    AccessOption = accessOption?.Option ?? ApiAccessOption.Public | ApiAccessOption.ArgumentCanNil,
                     ResultInfo = ReadEntity(method.ReturnType, "result")
                 };
-                station.Aips.Add(api.RouteName, api);
                 var doc = XmlMember.Find(type, method.Name, "M");
                 api.Copy(doc);
 
@@ -163,7 +178,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     if (!onlyDoc)
                     {
                         api.ArgumenType = arg.ParameterType;
-                        api.ArgumentAction = TypeExtend.CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
+                        api.ArgumentAction = CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
                             method.Name,
                             arg.ParameterType.GetTypeInfo(),
                             method.ReturnType.GetTypeInfo());
@@ -171,11 +186,98 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 else if (!onlyDoc)
                 {
-                    api.Action = TypeExtend.CreateFunc<IApiResult>(type.GetTypeInfo(), method.Name, method.ReturnType.GetTypeInfo());
+                    api.Action = CreateFunc<IApiResult>(type.GetTypeInfo(), method.Name, method.ReturnType.GetTypeInfo());
                 }
+                station.Aips.Add(api.RouteName, api);
             }
         }
 
+        /// <summary>生成动态匿名调用内部方法（参数由TArg转为实际类型后调用，并将调用返回值转为TRes）</summary>
+        /// <typeparam name="TArg">参数类型（接口）</typeparam>
+        /// <typeparam name="TRes">返回值类型（接口）</typeparam>
+        /// <param name="callInfo">调用对象类型</param>
+        /// <param name="argInfo">原始参数类型</param>
+        /// <param name="resInfo">原始返回值类型</param>
+        /// <param name="methodName">原始调用方法</param>
+        /// <returns>匿名委托</returns>
+        public static Func<TArg, TRes> CreateFunc<TArg, TRes>(TypeInfo callInfo, string methodName, TypeInfo argInfo, TypeInfo resInfo)
+        {
+            ConstructorInfo constructor = callInfo.GetConstructor(Type.EmptyTypes);
+            if (constructor == (ConstructorInfo)null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有无参构造函数");
+            MethodInfo method = callInfo.GetMethod(methodName);
+            if (method == (MethodInfo)null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有名称为" + methodName + "的方法");
+            if (method.ReturnType != (Type)resInfo)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "返回值不为" + resInfo.FullName);
+            ParameterInfo[] parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "参数不是一个");
+            if (parameters[0].ParameterType != (Type)argInfo)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "唯一参数不为" + argInfo.FullName);
+            DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(TRes), new Type[1]
+            {
+        typeof (TArg)
+            });
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            ilGenerator.Emit(OpCodes.Nop);
+            ilGenerator.Emit(OpCodes.Ldarg, 0);
+            ilGenerator.Emit(OpCodes.Castclass, (Type)argInfo);
+            LocalBuilder local1 = ilGenerator.DeclareLocal((Type)argInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local1);
+            ilGenerator.Emit(OpCodes.Newobj, constructor);
+            LocalBuilder local2 = ilGenerator.DeclareLocal((Type)callInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local2);
+            ilGenerator.Emit(OpCodes.Ldloc, local2);
+            ilGenerator.Emit(OpCodes.Ldloc, local1);
+            ilGenerator.Emit(OpCodes.Callvirt, method);
+            LocalBuilder local3 = ilGenerator.DeclareLocal(method.ReturnType);
+            ilGenerator.Emit(OpCodes.Stloc, local3);
+            ilGenerator.Emit(OpCodes.Ldloc, local3);
+            ilGenerator.Emit(OpCodes.Castclass, (Type)typeof(TRes).GetTypeInfo());
+            LocalBuilder local4 = ilGenerator.DeclareLocal((Type)resInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local4);
+            ilGenerator.Emit(OpCodes.Ldloc, local4);
+            ilGenerator.Emit(OpCodes.Ret);
+            return dynamicMethod.CreateDelegate(typeof(Func<TArg, TRes>)) as Func<TArg, TRes>;
+        }
+
+        /// <summary>生成动态匿名调用内部方法（无参，调用返回值转为TRes）</summary>
+        /// <typeparam name="TRes">返回值类型（接口）</typeparam>
+        /// <param name="callInfo">调用对象类型</param>
+        /// <param name="resInfo">原始返回值类型</param>
+        /// <param name="methodName">原始调用方法</param>
+        /// <returns>匿名委托</returns>
+        public static Func<TRes> CreateFunc<TRes>(TypeInfo callInfo, string methodName, TypeInfo resInfo)
+        {
+            ConstructorInfo constructor = callInfo.GetConstructor(Type.EmptyTypes);
+            if (constructor == (ConstructorInfo)null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有无参构造函数");
+            MethodInfo method = callInfo.GetMethod(methodName);
+            if (method == (MethodInfo)null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有名称为" + methodName + "的方法");
+            if (method.ReturnType != (Type)resInfo)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "返回值不为" + resInfo.FullName);
+            if ((uint)method.GetParameters().Length > 0U)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "参数不为空");
+            DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(TRes), (Type[])null);
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            ilGenerator.Emit(OpCodes.Nop);
+            ilGenerator.Emit(OpCodes.Newobj, constructor);
+            LocalBuilder local1 = ilGenerator.DeclareLocal((Type)callInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local1);
+            ilGenerator.Emit(OpCodes.Ldloc, local1);
+            ilGenerator.Emit(OpCodes.Callvirt, method);
+            LocalBuilder local2 = ilGenerator.DeclareLocal(method.ReturnType);
+            ilGenerator.Emit(OpCodes.Stloc, local2);
+            ilGenerator.Emit(OpCodes.Ldloc, local2);
+            ilGenerator.Emit(OpCodes.Castclass, (Type)typeof(TRes).GetTypeInfo());
+            LocalBuilder local3 = ilGenerator.DeclareLocal((Type)resInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local3);
+            ilGenerator.Emit(OpCodes.Ldloc, local3);
+            ilGenerator.Emit(OpCodes.Ret);
+            return dynamicMethod.CreateDelegate(typeof(Func<TRes>)) as Func<TRes>;
+        }
         #endregion
 
         #region ZeroObject发现
@@ -185,7 +287,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public void FindZeroObjects()
         {
-            Console.WriteLine(Assembly.Location);
+            ZeroTrace.SystemLog("FindZeroObjects", Assembly.Location);
             Type[] types;
             try
             {
@@ -194,18 +296,19 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (ReflectionTypeLoadException ex)
             {
                 types = ex.Types.Where(p => p != null).ToArray();
-                Console.WriteLine(ex);
+                ZeroTrace.WriteException("FindZeroObjects:GetTypes", ex);
             }
             try
             {
                 foreach (var type in types)
                 {
+                    XmlMember.Find(type);
                     ZeroApplication.RegistZeroObject(type.CreateObject() as IZeroObject);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                ZeroTrace.WriteException("FindZeroObjects:RegistZeroObject", ex);
             }
         }
 
@@ -217,6 +320,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (!type.IsSubclassOf(typeof(ApiStation)))
                 return;
+            ZeroTrace.SystemLog("DiscoverApiDocument", type.FullName);
             ZeroDiscover discover = new ZeroDiscover();
             discover.FindApi(type, true);
             discover.RegistDocument();
@@ -248,12 +352,13 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
             }
         }
+        bool IsLetter(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+
+        private Dictionary<Type, TypeDocument> typeDocs2 = new Dictionary<Type, TypeDocument>();
+
+        private Dictionary<Type, TypeDocument> typeDocs = new Dictionary<Type, TypeDocument>();
         private TypeDocument ReadEntity(Type type, string name)
         {
-            if (type == typeof(void))
-                return null;
-            if (!IsLetter(type.Name[0]))
-                return null;
             var typeDocument = new TypeDocument
             {
                 Name = name,
@@ -261,22 +366,80 @@ namespace Agebull.ZeroNet.ZeroApi
                 ClassName = ReflectionHelper.GetTypeName(type),
                 ObjectType = ObjectType.Object
             };
-            typeDocument.Copy(XmlMember.Find(type));
+
+            //if (typeDocs.TryGetValue(type, out var doc))
+            //    return doc;
             ReadEntity(typeDocument, type);
             return typeDocument;
         }
-        bool IsLetter(char ch) => (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
-
         private void ReadEntity(TypeDocument typeDocument, Type type)
         {
-            if (type == typeof(object))
+            if (type == null || type.IsAutoClass || !IsLetter(type.Name[0]) ||
+                type.IsInterface || type.IsMarshalByRef || type.IsCOMObject ||
+                type == typeof(object) || type == typeof(void) ||
+                type == typeof(ValueType) || type == typeof(Type) || type == typeof(Enum) ||
+                type.Namespace == "System" || type.Namespace?.Contains("System.") == true)
                 return;
-            if (type.BaseType != typeof(object) && !type.BaseType.IsInterface)
-                ReadEntity(typeDocument, type.BaseType);
+            if (typeDocs.TryGetValue(type, out var doc))
+            {
+                foreach (var field in doc.Fields)
+                {
+                    if (typeDocument.Fields.ContainsKey(field.Key))
+                        typeDocument.Fields[field.Key] = field.Value;
+                    else
+                        typeDocument.Fields.Add(field.Key, field.Value);
+                }
+                return;
+            }
+            if (typeDocs2.TryGetValue(type, out var _))
+            {
+                ZeroTrace.WriteError("ReadEntity", "over flow", type.Name);
+
+                return;
+            }
+
+            typeDocs2.Add(type, typeDocument);
+            if (type.IsArray)
+            {
+                ReadEntity(typeDocument, type.Assembly.GetType(type.FullName.Split('[')[0]));
+                return;
+            }
+            if (type.IsGenericType && !type.IsValueType &&
+                type.GetGenericTypeDefinition().GetInterface(typeof(IEnumerable<>).FullName) != null)
+            {
+                ReadEntity(typeDocument, type.GetGenericArguments().Last());
+                return;
+            }
+
+            XmlMember.Find(type);
+            if (type.IsEnum)
+            {
+                foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public))
+                {
+                    if (field.IsSpecialName)
+                    {
+                        continue;
+                    }
+                    var info = CheckMember(typeDocument, type, field, field.FieldType, false, false, false);
+                    if (info != null)
+                    {
+                        info.TypeName = "int";
+                        info.Example = ((int)field.GetValue(null)).ToString();
+                        info.JsonName = null;
+                    }
+                }
+                typeDocs.Add(type, new TypeDocument
+                {
+                    fields = typeDocument.fields?.ToDictionary(p => p.Key, p => p.Value)
+                });
+                typeDocument.Copy(XmlMember.Find(type));
+                return;
+            }
+
             var dc = type.GetAttribute<DataContractAttribute>();
             var jo = type.GetAttribute<JsonObjectAttribute>();
 
-            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (property.IsSpecialName)
                 {
@@ -284,95 +447,115 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 CheckMember(typeDocument, type, property, property.PropertyType, jo != null, dc != null);
             }
-            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                if (field.IsSpecialName)
+                if (!char.IsLetter(field.Name[0]) || field.IsSpecialName)
                 {
                     continue;
                 }
                 CheckMember(typeDocument, type, field, field.FieldType, jo != null, dc != null);
             }
+
+            typeDocs.Add(type, new TypeDocument
+            {
+                fields = typeDocument.fields?.ToDictionary(p => p.Key, p => p.Value)
+            });
+            typeDocument.Copy(XmlMember.Find(type));
         }
-        void CheckMember(TypeDocument document, Type parent, MemberInfo member, Type memType, bool json, bool dc)
+        TypeDocument CheckMember(TypeDocument document, Type parent, MemberInfo member, Type memType, bool json, bool dc, bool checkBase = true)
         {
-            if (!IsLetter(member.Name[0]))
-                return;
-            var field = new TypeDocument();
-            try
-            {
-                Type type = memType;
-                if (memType.IsSubclassOf(typeof(IList<>)))
-                {
-                    type = type.GetGenericArguments()[0];
-                }
-                if (memType.IsSubclassOf(typeof(IDictionary<,>)))
-                {
-                    type = type.GetGenericArguments()[1];
-                }
-                if (memType.IsArray)
-                {
-                    type = type.MakeArrayType();
-                }
-                if (type.IsEnum)
-                {
-                    field = ReadEntity(type, member.Name);
-                    field.ObjectType = ObjectType.Base;
-                    field.IsEnum = type.IsEnum;
-                }
-                else if (type.IsBaseType())
-                {
-                    field.ObjectType = ObjectType.Base;
-                    field.TypeName = ReflectionHelper.GetTypeName(type);
-                }
-                else
-                {
-                    field = ReadEntity(type, member.Name);
-                    field.ObjectType = ObjectType.Object;
-                }
-            }
-            catch
-            {
-                field.TypeName = "object";
-            }
-            field.Copy(XmlMember.Find(parent, member.Name, member is PropertyInfo ? "P" : "F"));
-            field.Name = field.JsonName = member.Name;
-            field.ClassName = ReflectionHelper.GetTypeName(memType);
+            if (document.Fields.ContainsKey(member.Name))
+                return null;
+            var jp = member.GetAttribute<JsonPropertyAttribute>();
+            var dm = member.GetAttribute<DataMemberAttribute>();
             if (json)
             {
                 var ji = member.GetAttribute<JsonIgnoreAttribute>();
                 if (ji != null)
                 {
-                    return;
+                    return null;
                 }
-                var jp = member.GetAttribute<JsonPropertyAttribute>();
                 if (jp == null)
-                    return;
-                if (!string.IsNullOrWhiteSpace(jp.PropertyName))
-                    field.JsonName = jp.PropertyName;
+                    return null;
             }
             else if (dc)
             {
                 var id = member.GetAttribute<IgnoreDataMemberAttribute>();
                 if (id != null)
-                {
-                    return;
-                }
-                var dm = member.GetAttribute<DataMemberAttribute>();
-                if (dm != null && !string.IsNullOrWhiteSpace(dm.Name))
-                    field.JsonName = dm.Name;
+                    return null;
             }
-            if (memType.IsSubclassOf(typeof(IList<>)))
+
+            var field = new TypeDocument();
+            var doc = XmlMember.Find(parent, member.Name);
+            field.Copy(doc);
+            bool isArray = false;
+            bool isDictionary = false;
+            try
             {
+                Type type = memType;
+                if (memType.IsArray)
+                {
+                    isArray = true;
+                    type = type.Assembly.GetType(type.FullName.Split('[')[0]);
+                }
+                else if (type.IsGenericType)
+                {
+                    if (memType.IsSupperInterface(typeof(ICollection<>)))
+                    {
+                        isArray = true;
+                        type = type.GetGenericArguments()[0];
+                    }
+                    else if (memType.IsSupperInterface(typeof(IDictionary<,>)))
+                    {
+                        var fields = type.GetGenericArguments();
+                        field.Fields.Add("Key", ReadEntity(fields[0], "Key"));
+                        field.Fields.Add("Value", ReadEntity(fields[1], "Value"));
+                        isDictionary = true;
+                        checkBase = false;
+                    }
+                }
+                if (type.IsEnum)
+                {
+                    if (checkBase)
+                        field = ReadEntity(type, member.Name);
+                    field.ObjectType = ObjectType.Base;
+                    field.IsEnum = true;
+                }
+                else if (type.IsBaseType())
+                {
+                    field.ObjectType = ObjectType.Base;
+                }
+                else if(!isDictionary)
+                {
+                    if (checkBase)
+                        field = ReadEntity(type, member.Name);
+                    field.ObjectType = ObjectType.Object;
+                }
+                field.TypeName = ReflectionHelper.GetTypeName(type);
+            }
+            catch
+            {
+                field.TypeName = "object";
+            }
+            if (isArray)
+            {
+                field.TypeName += "[]";
                 field.ObjectType = ObjectType.Array;
             }
-            else if (memType.IsSubclassOf(typeof(IDictionary<,>)))
+            else if (isDictionary)
             {
+                field.TypeName = "Dictionary";
                 field.ObjectType = ObjectType.Dictionary;
             }
-            else if (memType.IsArray)
-            {
-                field.ObjectType = ObjectType.Array;
-            }
+
+            field.Name = member.Name;
+            field.JsonName = member.Name;
+            field.ClassName = ReflectionHelper.GetTypeName(memType);
+
+            if (!string.IsNullOrWhiteSpace(dm?.Name))
+                field.JsonName = dm.Name;
+            if (!string.IsNullOrWhiteSpace(jp?.PropertyName))
+                field.JsonName = jp.PropertyName;
             var rule = member.GetAttribute<DataRuleAttribute>();
             if (rule != null)
             {
@@ -388,6 +571,8 @@ namespace Agebull.ZeroNet.ZeroApi
                     field.MaxDate = rule.MaxDate;
             }
             document.Fields.Add(member.Name, field);
+
+            return field;
         }
         #endregion
     }

@@ -1,7 +1,6 @@
 ﻿@using Agebull.ZeroNet.Core
 @using Newtonsoft.Json
-@using ZeroNet.Http.Route
-@model Agebull.ZeroNet.ZeroApi.AnnotationsConfig
+@model Agebull.Common.ApiDocuments.AnnotationsConfig
 @{
     var filter = Model.Name?.ToLower();
     ViewData["Title"] = "ZeroNet";
@@ -16,6 +15,9 @@
         case "pub":
             options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Publish).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
+        case "rapi":
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.RouteApi).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            break;
         default:
             filter = "api";
             options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Api).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
@@ -29,18 +31,18 @@
 
     <style>
         .item {
-            margin - top: 10px;
-            margin - right: 40px;
+            margin-top: 10px;
+            margin-right: 40px;
         }
 
         .my_label {
             width: 60px;
-            display: inline - block;
-            text - align: right
+            display: inline-block;
+            text-align: right
         }
 
         .el-dialog {
-            background - color: whitesmoke
+            background-color: whitesmoke
         }
 
         .el-dialog__body {
@@ -71,7 +73,7 @@
             });
 
         }
-        var stations =@Html.Raw(station);
+        var stations =@(Html.Raw(station));
         extend_data({
             configs: stations,
             editDialogFormVisible: false,
@@ -107,6 +109,9 @@
                         return;
                     case "type-api":
                         location.href = "/Home/Index/api";
+                        return;
+                    case "type-rapi":
+                        location.href = "/Home/Index/rapi";
                         return;
                 }
             },
@@ -215,7 +220,7 @@
                         stations.splice(idx,1);
                     }
                     else {
-                        var status = station.status
+                        var status = station.status;
                         Vue.set(stations, idx, station);
                         station.status = status;
                     }
@@ -262,6 +267,12 @@
                     <span>Api站点</span>
                 </template>
             </el-menu-item>
+            <el-menu-item index="type-rapi">
+                <template slot="title">
+                    <i class="el-icon-star-off"></i>
+                    <span>RouteApi站点</span>
+                </template>
+            </el-menu-item>
             <el-menu-item index="type-pub">
                 <template slot="title">
                     <i class="el-icon-share"></i>
@@ -278,7 +289,6 @@
     </el-aside>
 }
 <template v-for="config in configs">
-
     <el-card shadow="hover" style="margin:8px;padding :2px;width:280px; height: 320px;display:inline-block">
         <div style="display: block; height: 272px">
             <div style="font-size:16pt">
@@ -425,6 +435,7 @@
                         <el-radio disabled label="Plan">Plan</el-radio>
                         <el-radio label="Pub">Pub</el-radio>
                         <el-radio label="API">Api</el-radio>
+                        <el-radio label="rApi">RouteApi</el-radio>
                         <el-radio disabled label="Vote">Vote</el-radio>
                     </el-radio-group>
                 </el-form-item>

@@ -70,6 +70,16 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         CenterStationDocument,
 
+        /**
+        *\brief 客户端加入
+        */
+        CenterClientJoin,
+
+        /**
+        *\brief 客户端退出
+        */
+        CenterClientLeft,
+
         /// <summary>
         /// 
         /// </summary>

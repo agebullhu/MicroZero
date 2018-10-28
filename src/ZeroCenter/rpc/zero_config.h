@@ -293,6 +293,9 @@ namespace agebull
 				case STATION_TYPE_API:
 					type_name_ = "API";
 					break;
+				case STATION_TYPE_ROUTE_API:
+					type_name_ = "ROUTE_API";
+					break;
 				case STATION_TYPE_VOTE:
 					type_name_ = "VOTE";
 					break;
@@ -313,7 +316,8 @@ namespace agebull
 
 			bool is_general() const
 			{
-				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || station_type_ == STATION_TYPE_VOTE;
+				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || 
+					station_type_ == STATION_TYPE_VOTE || station_type_ == STATION_TYPE_ROUTE_API;
 			}
 
 			bool is_state(station_state state) const

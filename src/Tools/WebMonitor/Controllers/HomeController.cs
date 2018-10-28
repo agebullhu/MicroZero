@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using Agebull.Common.ApiDocuments;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using WebMonitor.Models;
 
@@ -32,7 +32,7 @@ namespace WebMonitor.Controler
                 Description = info.Description,
                 StationAlias = string.IsNullOrWhiteSpace(info.Alias)
                     ? new List<string>()
-                    : info.Alias.Trim().Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                    : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
             if (!ZeroApplication.Config.Check(old, config))
                 return Json(ApiResult.Error(ErrorCode.LogicalError, "名称存在重复"));
@@ -57,23 +57,23 @@ namespace WebMonitor.Controler
                 case "api":
                     type = ZeroStationType.Api;
                     break;
+                case "rapi":
+                    type = ZeroStationType.RouteApi;
+                    break;
                 default:
                     return Json(ApiResult.Error(ErrorCode.LogicalError, "参数错误"));
             }
             var config = new StationConfig
             {
-                Name = info.Name,
+                Name = info.Name.Trim(),
                 Description = info.Description,
                 StationType = type,
-                ShortName = info.short_name ?? info.Name,
+                ShortName = info.short_name?.Trim() ?? info.Name.Trim(),
                 StationAlias = string.IsNullOrWhiteSpace(info.Alias)
                     ? new List<string>()
-                    : info.Alias.Trim().Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
+                    : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
-            if (!ZeroApplication.Config.Check(config, config))
-                return Json(ApiResult.Error(ErrorCode.LogicalError, "名称存在重复"));
-
-            return Json(ZeroManager.Install(config));
+            return Json(!ZeroApplication.Config.Check(config, config) ? ApiResult.Error(ErrorCode.LogicalError, "名称存在重复") : ZeroManager.Install(config));
         }
 
         [HttpGet]

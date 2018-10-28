@@ -3,7 +3,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// 一次路由执行状态
     /// </summary>
-    public enum OperatorStatus
+    public enum ZeroOperatorStatus
     {
         /// <summary>
         /// 正常
@@ -30,9 +30,21 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         RemoteError,
         /// <summary>
+        /// 远程异常
+        /// </summary>
+        RemoteException,
+        /// <summary>
+        /// 网络错误
+        /// </summary>
+        NetWorkError,
+        /// <summary>
         /// 拒绝服务
         /// </summary>
         Unavailable,
+        /// <summary>
+        /// 未准备好
+        /// </summary>
+        NotReady,
         /// <summary>
         /// 页面不存在
         /// </summary>

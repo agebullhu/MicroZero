@@ -259,6 +259,9 @@
                 },
                 go_doc() {
                     location.href = "/Doc";
+                },
+                go_event() {
+                    location.href = "/MachineEvent";
                 }
             }
         };
@@ -271,9 +274,10 @@
         function extend_methods(methods) {
             vue_option.methods = $.extend(vue_option.methods, methods);
         }
-        ws_state = function (active) {
+
+        ws_state = function(active) {
             vue_option.data.ws_active = active;
-        }
+        };
     </script>
 
     @RenderSection("InitScript", required: false)

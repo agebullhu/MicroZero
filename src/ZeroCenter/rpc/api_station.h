@@ -17,7 +17,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(string name)
-				: zero_station(name, STATION_TYPE_API, ZMQ_ROUTER)
+				: zero_station(name, STATION_TYPE_API, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 
@@ -25,7 +25,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(shared_ptr<zero_config>& config)
-				: zero_station(config, STATION_TYPE_API, ZMQ_ROUTER)
+				: zero_station(config, STATION_TYPE_API, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 			/**

@@ -1,0 +1,6 @@
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters]
+
+
+“KeepAliveTime”=dword:006ddd00
+“KeepAliveInterval”=dword:000003e8
+“MaxDataRetries”=”5″

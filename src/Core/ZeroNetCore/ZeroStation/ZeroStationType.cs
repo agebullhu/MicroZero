@@ -22,6 +22,10 @@
         /// </summary>
         Vote = 4,
         /// <summary>
+        /// 定向路由API
+        /// </summary>
+        RouteApi = 5,
+        /// <summary>
         /// 计划任务
         /// </summary>
         Plan = 0xFF

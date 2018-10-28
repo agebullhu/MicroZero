@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Agebull.Common;
 using Agebull.Common.Logging;
 
 namespace Agebull.ZeroNet.Core
@@ -10,14 +9,14 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class ZeroTrace
     {
-        class ConsoleMessage
-        {
-            public string Title { get; set; }
+        /* class ConsoleMessage
+         {
+             public string Title { get; set; }
 
-            public object[] Messages { get; set; }
+             public object[] Messages { get; set; }
 
-            public int Type { get; set; }
-        }
+             public int Type { get; set; }
+         }*/
 
         //private static readonly SyncQueue<ConsoleMessage> ConsoleMessages = new SyncQueue<ConsoleMessage>();
 
@@ -34,7 +33,7 @@ namespace Agebull.ZeroNet.Core
             //thread.Start();
         }
 
-        //internal static void Shutdown()
+        /*/internal static void Shutdown()
         //{
         //    //thread?.Abort();
         //}
@@ -57,10 +56,10 @@ namespace Agebull.ZeroNet.Core
                 switch (message.Type)
                 {
                     case 0:
-                        Console.WriteLine(message.Title);
+                        LogRecorder.Debug(message.Title);
                         break;
                     default:
-                        Console.WriteLine(message.Messages.LinkToString($"[{message.Title}]  ", " > "));
+                        LogRecorder.Debug(message.Messages.LinkToString($"[{message.Title}]  ", " > "));
                         break;
                 }
             //if (message.Title == null)
@@ -143,43 +142,19 @@ namespace Agebull.ZeroNet.Core
             }
 
             //ShowTrace(message);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        public static void WriteLine(string message)
-        {
-            Push(new ConsoleMessage { Title = message });
-        }
+        }*/
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="title"></param>
         /// <param name="messages"></param>
-        public static void WriteLoop(string title, params object[] messages)
+        public static void SystemLog(string title, params object[] messages)
         {
-            Push(new ConsoleMessage
-            {
-                Type = 1,
-                Title = title,
-                Messages = messages
-            });
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="messages"></param>
-        public static void WriteInfo(string title, params object[] messages)
-        {
-            Push(new ConsoleMessage
-            {
-                Type = 2,
-                Title = title,
-                Messages = messages
-            });
+            if (messages.Length == 0)
+                LogRecorder.SystemLog(title);
+            else
+                LogRecorder.SystemLog("{0} : {1}", title, messages.LinkToString(" > "));
         }
         /// <summary>
         /// 
@@ -189,12 +164,6 @@ namespace Agebull.ZeroNet.Core
         public static void WriteError(string title, params object[] messages)
         {
             LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" > "));
-            Push(new ConsoleMessage
-            {
-                Type = 3,
-                Title = title,
-                Messages = messages
-            });
         }
         /// <summary>
         /// 
@@ -204,18 +173,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="exception"></param>
         public static void WriteException(string title, Exception exception, params object[] messages)
         {
-            var msgs = messages.ToList();
-            msgs.Insert(0, "Exception");
-            msgs.Add("\r\n");
-            msgs.Add(exception);
             LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" > "));
-            Push(new ConsoleMessage
-            {
-                Type = 3,
-                Title = title,
-                Messages = msgs.ToArray()
-            });
         }
-
     }
 }

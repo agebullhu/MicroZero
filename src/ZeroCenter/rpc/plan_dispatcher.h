@@ -27,7 +27,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher()
-				:zero_station("PlanDispatcher", STATION_TYPE_PLAN, ZMQ_ROUTER)
+				:zero_station("PlanDispatcher", STATION_TYPE_PLAN, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -35,7 +35,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher(shared_ptr<zero_config>& config)
-				:zero_station(config, STATION_TYPE_PLAN, ZMQ_ROUTER)
+				:zero_station(config, STATION_TYPE_PLAN, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}

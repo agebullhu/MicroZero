@@ -49,7 +49,7 @@
 		}
 
 		/// <summary>
-		/// Configure the socket to connect to a given endpoint. See <see cref="ZSocket.Connect"/> for details.
+		/// Configure the socket to connect to a given endpoint. See for details.
 		/// </summary>
 		/// <param name="endpoint">A string representing the endpoint to which the socket will connect.</param>
 		/// <returns>The current <see cref="ZSocketSetup"/> object.</returns>

@@ -17,6 +17,11 @@ namespace Agebull.ZeroNet.Log
     {
         #region Override
 
+        /// <summary>
+        /// 是否初始化
+        /// </summary>
+        public bool IsInitialized { get; set; }
+
         /// <inheritdoc />
         /// <summary>
         ///     启动
@@ -24,8 +29,9 @@ namespace Agebull.ZeroNet.Log
         void ILogRecorder.Initialize()
         {
             LogRecorder.TraceToConsole = false;
+            IsInitialized = true;
             _state = StationState.Initialized;
-            ZeroTrace.WriteInfo("RemoteLogRecorder", "ILogRecorder.Initialize",LogRecorder.Level);
+            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize", LogRecorder.Level);
         }
         /// <inheritdoc />
         /// <summary>
@@ -117,6 +123,8 @@ namespace Agebull.ZeroNet.Log
         /// 配置
         /// </summary>
         private StationConfig Config;
+        public string StationName => "RemoteLog";
+
 
         /// <summary>
         /// 节点名称
@@ -188,7 +196,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void OnRun()
         {
-            ZeroTrace.WriteInfo("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
+            ZeroTrace.SystemLog("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
             State = StationState.Run;
             ZeroApplication.OnObjectActive(this);
         }
@@ -275,12 +283,12 @@ namespace Agebull.ZeroNet.Log
                 return;
             if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
             {
-                ZeroTrace.WriteInfo("RemoteLog", "Start by config state changed");
+                ZeroTrace.SystemLog("RemoteLog", "Start by config state changed");
                 Start();
             }
             else
             {
-                ZeroTrace.WriteInfo("RemoteLog", "Close by config state changed");
+                ZeroTrace.SystemLog("RemoteLog", "Close by config state changed");
                 Close();
             }
         }

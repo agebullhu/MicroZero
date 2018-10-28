@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Log;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using ZeroMQ;
@@ -45,7 +44,14 @@ namespace Agebull.ZeroNet.PubSub
                 datas.Add(data);
                 return;
             }
-
+            PushToLocalQueue(data);
+        }
+        /// <summary>
+        /// 数据写到本地发布队列中
+        /// </summary>
+        /// <param name="data"></param>
+        protected virtual void PushToLocalQueue(TData data)
+        {
             int idx = random.Next(0, 64);
             var socket = sockets[idx];
             lock (socket)
@@ -63,7 +69,7 @@ namespace Agebull.ZeroNet.PubSub
 
                         socket.SendTo(ZeroPublishExtend.PubDescriptionTson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestContext.RequestId.ToZeroBytes(),
+                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             buf);
                     }
@@ -71,7 +77,7 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         socket.SendTo(ZeroPublishExtend.PubDescriptionJson,
                             data.Title.ToZeroBytes(),
-                            ApiContext.RequestContext.RequestId.ToZeroBytes(),
+                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             data.ToZeroBytes());
                     }
@@ -85,11 +91,10 @@ namespace Agebull.ZeroNet.PubSub
             }
         }
 
-
         /// <inheritdoc />
         protected override bool OnStart()
         {
-            inporcName = $"inproc://{StationName}_{RandomOperate.Generate(8)}.pub";
+            _inporcName = $"inproc://{StationName}_{RandomOperate.Generate(8)}.pub";
             return base.OnStart();
 
         }
@@ -130,15 +135,6 @@ namespace Agebull.ZeroNet.PubSub
         #region Task
 
         /// <summary>
-        /// 数据进入的处理
-        /// </summary>
-        protected virtual void OnSend(TData data)
-        {
-
-        }
-
-
-        /// <summary>
         /// 缓存文件名称
         /// </summary>
         private string CacheFileName => Path.Combine(ZeroApplication.Config.DataFolder, $"{StationName}.{Name}.sub.json");
@@ -167,7 +163,7 @@ namespace Agebull.ZeroNet.PubSub
                 datas = new List<TData>();
         }
 
-        private string inporcName;
+        private string _inporcName;
 
 
         /// <summary>
@@ -178,32 +174,27 @@ namespace Agebull.ZeroNet.PubSub
         {
             using (var socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity))
             {
-                foreach (var data in datas)
-                {
-                    socket.Publish(data);
-                }
-                datas.Clear();
-                File.Delete(CacheFileName);
                 using (var poll = ZmqPool.CreateZmqPool())
                 {
-                    poll.Prepare(ZPollEvent.In,
-                        ZSocket.CreateServiceSocket(inporcName, ZSocketType.PULL));
+                    poll.Prepare(ZPollEvent.In,ZSocket.CreateServiceSocket(_inporcName, ZSocketType.PULL));
                     for (int i = 0; i < 64; i++)
                     {
-                        sockets.Add(ZSocket.CreateClientSocket(inporcName, ZSocketType.PUSH));
+                        sockets.Add(ZSocket.CreateClientSocket(_inporcName, ZSocketType.PUSH));
                     }
                     SystemManager.Instance.HeartReady(StationName, RealName);
                     State = StationState.Run;
                     Thread.Sleep(5);
+                    //历史数据重新入列
                     foreach (var data in datas)
                     {
-                        socket.Publish(data);
+                        PushToLocalQueue(data);
                     }
                     datas.Clear();
+                    File.Delete(CacheFileName);
                     while (true)
                     {
-                        if (poll.CheckIn(0, out var message))
-                            socket.SendTo(message);
+                        if (poll.Poll() && poll.CheckIn(0, out var message))
+                            Send(socket, message);
                         else if (!CanLoop)//保证发送完成
                             break;
                     }
@@ -212,7 +203,18 @@ namespace Agebull.ZeroNet.PubSub
             }
             return true;
         }
-
+        /// <summary>
+        /// 执行发送
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="message"></param>
+        protected virtual void Send(ZSocket socket,ZMessage message)
+        {
+            if (!socket.SendTo(message))
+            {
+                ZeroTrace.WriteError(StationName, "Pub", socket.LastError.Text, socket.Connects.LinkToString(','));
+            }
+        }
         #endregion
     }
 }

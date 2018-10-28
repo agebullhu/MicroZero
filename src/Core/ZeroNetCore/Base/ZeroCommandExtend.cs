@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text;
-using Agebull.ZeroNet.Log;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -131,7 +130,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','));
                 return new ZeroResultData
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }
@@ -162,7 +161,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), "Exception");
                 return new ZeroResultData<byte[]>
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }
@@ -208,7 +207,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }
@@ -244,7 +243,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','));
                 return new ZeroResultData<byte[]>
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }
@@ -268,7 +267,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }
@@ -333,7 +332,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Unpack", e);
                 return new ZeroResultData
                 {
-                    State = ZeroOperatorStateType.LocalException,
+                    State = ZeroOperatorStateType.LocalRecvError,
                     Exception = e
                 };
             }

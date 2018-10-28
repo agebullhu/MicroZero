@@ -21,7 +21,11 @@ namespace agebull
 			/**
 			* \brief 外部SOCKET类型
 			*/
-			int request_zmq_type_;
+			int req_zmq_type_;
+			/**
+			* \brief 外部SOCKET类型
+			*/
+			int res_zmq_type_;
 
 			/**
 			* \brief 站点类型
@@ -109,12 +113,12 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			zero_station(string name, int type, int request_zmq_type);
+			zero_station(string name, int type, int request_zmq_type, int res_zmq_type);
 
 			/**
 			* \brief 构造
 			*/
-			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type);
+			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type, int res_zmq_type);
 
 			/**
 			* \brief 析构

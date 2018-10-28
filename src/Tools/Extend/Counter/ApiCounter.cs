@@ -24,10 +24,7 @@ namespace Agebull.ZeroNet.ZeroApi
         protected override void Initialize()
         {
             base.Initialize();
-            if (ConfigurationManager.AppSettings.GetBool("HookApi", true))
-            {
-                HookApi();
-            }
+            HookApi();
         }
 
         /// <summary>
@@ -60,7 +57,7 @@ namespace Agebull.ZeroNet.ZeroApi
             _isEnable = true;
             ApiStation.RegistHandlers<ApiCountHandler>();
             ApiClient.RegistHandlers<ApiClientCountHandler>();
-            ZeroTrace.WriteInfo("ApiCounter", "HookApi");
+            ZeroTrace.SystemLog("ApiCounter", "HookApi");
         }
 
         /// <summary>

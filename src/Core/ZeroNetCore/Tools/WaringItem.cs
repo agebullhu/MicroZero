@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Route

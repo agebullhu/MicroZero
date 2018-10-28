@@ -37,7 +37,7 @@ namespace Agebull.ZeroNet.ZeroApi
             string path = ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory);
             if (!string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
                 path = IOHelper.CheckPath(path, ZeroApplication.Config.AddInPath);
-            ZeroTrace.WriteInfo("AddIn", path);
+            ZeroTrace.SystemLog("AddIn", path);
             Instance = new AddInImporter();
             IocHelper.ServiceCollection.AddSingleton(pro => Instance);
             // 通过容器对象将宿主和部件组装到一起。 
@@ -46,7 +46,7 @@ namespace Agebull.ZeroNet.ZeroApi
             container.ComposeParts(Instance);
             foreach (var reg in Instance.Registers)
             {
-                ZeroTrace.WriteInfo("AddIn", reg.GetType().Assembly.FullName);
+                ZeroTrace.SystemLog("AddIn", reg.GetType().Assembly.FullName);
             }
         }
 

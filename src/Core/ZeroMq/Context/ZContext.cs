@@ -183,7 +183,11 @@ namespace ZeroMQ
             }
             return true;
         }
-
+        /// <summary>
+        /// 设置Zmq上下文配置
+        /// </summary>
+        /// <param name="option"></param>
+        /// <param name="optionValue"></param>
         public void SetOption(ZContextOption option, int optionValue)
         {
             EnsureNotDisposed();
