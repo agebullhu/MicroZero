@@ -61,7 +61,8 @@ sudo ufw disable
 3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
 
 # 6 运行ZeroCenter
-进入Shell，输入 ：/root/zero/center/zero_center.out
+> /root/zero/center/zero_center.out
+查看是否运行正常，运行完成关闭（ctr+c)
 
 # 7 启用守护进程
 1. 复制守护进程
