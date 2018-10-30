@@ -64,17 +64,14 @@ sudo ufw disable
 进入Shell，输入 ：/root/zero/center/zero_center.out
 
 # 7 启用守护进程
-1. 复制守护进程配置到 /etc/supervisor/conf.d
-
-> Insall\supervisor目录下的所有文件
+1. 复制守护进程
+> Insall\supervisor目录下的所有文件到install\supervisor
 
 2. 更新守护进程
 
-Shell下执行如下命令
+> supervisorctl reread
 
-supervisorctl reread
-
-supervisorctl update
+> supervisorctl update
 
 # 8 完成
 
