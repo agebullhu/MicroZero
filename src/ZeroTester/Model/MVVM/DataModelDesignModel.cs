@@ -139,7 +139,7 @@ namespace Agebull.EntityModel.Designer
         internal void FirstSelect()
         {
             Tree.SetSelect(null);
-            Tree.SetSelect(Tree.TreeRoot.Items[0]);
+            //Tree.SetSelect(Tree.TreeRoot.Items[0]);
         }
 
         #endregion
@@ -363,7 +363,7 @@ namespace Agebull.EntityModel.Designer
         /// </summary>
         internal void LoadUserScreen()
         {
-            var folder = IOHelper.CheckPath(ZeroApplication.Config.DataFolder, "Scripts", "Context");
+            var folder = IOHelper.CheckPath(ZeroApplication.Config.DataFolder, "Context");
             var file = Path.Combine(folder, "user.json");
             if (!File.Exists(file))
             {

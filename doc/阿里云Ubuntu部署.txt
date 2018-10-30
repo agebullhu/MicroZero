@@ -1,4 +1,4 @@
-# 阿里云Ubuntu部署
+# Ubuntu部署ZeroCenter
 
 # 1 系统更新
 
@@ -42,3 +42,27 @@ sudo ufw status
 ​
 sudo ufw enable|disable
 sudo ufw disable
+
+# 5 复制文件
+5.1 建立/root/zero目录并复制install\zero目录下的内容到此目录
+5.2 在/root/zero下建立logs与datas目录
+5.2 权限都设置为777
+5.3 将install\lib目录下的文件复制到 /usr/local/lib目录下
+
+# 6 运行ZeroCenter
+进入Shell，输入 ：/root/zero/center/zero_center.out
+
+# 7 启用守护进程
+1. 复制守护进程配置到 /etc/supervisor/conf.d
+
+> Insall\supervisor目录下的所有文件
+
+2. 更新守护进程
+Shell下执行如下命令
+supervisorctl reread
+supervisorctl update
+
+# 8 完成
+
+
+

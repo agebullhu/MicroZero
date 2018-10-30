@@ -76,7 +76,8 @@ ZRANGEBYSCORE plan:time:set +inf -inf  WITHSCORES #命令
 sudo apt-get install supervisor
 修改配置为HTTP
 supervisord -c /etc/supervisor/supervisord.conf
-
+> 失败请先杀死进程
+## 其它命令
 supervisorctl status
 supervisorctl stop tomcat
 supervisorctl start tomcat
