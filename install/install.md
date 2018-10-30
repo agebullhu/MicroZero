@@ -35,7 +35,7 @@ supervisorctl reread
 
 supervisorctl update
 
-# 4 安装redis
+## 4 安装redis
 > https://www.cnblogs.com/zongfa/p/7808807.html
 
 sudo apt-get install redis-server
@@ -47,24 +47,24 @@ databases 16 => 32
 > sudo /etc/init.d/redis-server restart 
 
 
-# 5 防火墙
+## 5 复制文件
+1. 建立/root/zero目录并复制install\zero目录下的内容到此目录
+2. 在/root/zero下建立logs与datas目录
+2. 权限都设置为777
+3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
+
+## 6 运行ZeroCenter
+> /root/zero/center/zero_center.out
+查看是否运行正常，运行完成关闭（ctr+c)
+
+### 如有外网无法访问，请配置防火墙或暂时关闭它
 sudo ufw status
 
 sudo ufw enable|disable
 
 sudo ufw disable
 
-# 5 复制文件
-1. 建立/root/zero目录并复制install\zero目录下的内容到此目录
-2. 在/root/zero下建立logs与datas目录
-2. 权限都设置为777
-3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
-
-# 6 运行ZeroCenter
-> /root/zero/center/zero_center.out
-查看是否运行正常，运行完成关闭（ctr+c)
-
-# 7 启用守护进程
+## 7 启用守护进程
 1. 复制守护进程
 > Insall\supervisor目录下的所有文件到install\supervisor
 
@@ -74,7 +74,8 @@ sudo ufw disable
 
 > supervisorctl update
 
-# 8 完成
+
+## 8 完成
 
 
 
