@@ -1,10 +1,10 @@
 # Ubuntu部署ZeroCenter
 
-# 1 系统更新
+## 1 系统更新
 
 sudo apt-get update
 
-# 2 Net Core
+## 2 Net Core
 > https://www.microsoft.com/net/learn/get-started/linux/ubuntu16-04
 
 wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
@@ -17,12 +17,12 @@ sudo apt-get update
 
 sudo apt-get install dotnet-sdk-2.1
 
-# 3 安装 supervisor
+## 3 安装 supervisor
 
 sudo apt-get install supervisor
 修改配置为HTTP
-supervisord -c /etc/supervisor/supervisord.conf
-
+> supervisord -c /etc/supervisor/supervisord.conf
+### supervisorctl命令
 supervisorctl status
 
 supervisorctl stop tomcat
@@ -40,16 +40,16 @@ supervisorctl update
 
 sudo apt-get install redis-server
 
-注意：使用了16以外的库ID所以要修改Redis.Conf(/etc/redis/Redis.Conf) 
+> 注意：使用了16以外的库ID所以要修改Redis.Conf(/etc/redis/Redis.Conf) 
 
 databases 16 => 32
 重启
-sudo /etc/init.d/redis-server restart 
+> sudo /etc/init.d/redis-server restart 
 
 
 # 5 防火墙
 sudo ufw status
-​
+
 sudo ufw enable|disable
 
 sudo ufw disable
