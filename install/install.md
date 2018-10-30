@@ -35,6 +35,7 @@ supervisorctl reread
 
 supervisorctl update
 
+
 ## 4 安装redis
 > https://www.cnblogs.com/zongfa/p/7808807.html
 
