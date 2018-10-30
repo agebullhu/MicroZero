@@ -1,0 +1,36 @@
+{
+  "ASPNETCORE_ENVIRONMENT_": "Production",
+  /*ZeroNet站点配置*/
+  "Zero": {
+    "Global": {
+      /*ZeroCenter主机IP地址*/
+      "ZeroAddress": "127.0.0.1",
+      /*ZeroCenter监测端口号*/
+      "ZeroMonitorPort": 8001,
+      /*ZeroCenter管理端口号*/
+      "ZeroManagePort": 8000,
+      "ServiceKey": "route"
+    },
+    "socketOption": {
+      "Backlog": 50000, //连接队列数量
+      "ConnectTimeout": 500, // 连接失败时长
+      "HeartbeatIvl": 1000, //心跳间隔时长
+      "HeartbeatTimeout": 200, //心跳超时时长
+      "HeartbeatTtl": 200, //心跳TTL
+      "Linger": 200, //自动关闭时长
+      "ReconnectIvl": 100, // 重新连接时间间隔
+      "ReconnectIvlMax": 500, //重新连接失败时长
+      "RecvTimeout": 30000, //接收超时时长
+      "SendTimeout": 30000, //发送超时时长
+      "TcpKeepalive": 1, //启用Keeplive
+      "TcpKeepaliveIdle": 4096, //TCP发送keepalive消息的频度,单位秒
+      "TcpKeepaliveIntvl": 4096 //当TcpKeepalive探测没有确认时，重新发送探测的频度,单位秒
+    }
+  },
+  "LogRecorder": {
+    /*是否记录跟踪日志*/
+    "monitor": true,
+    "level": "Trace",
+	"console":true
+  }
+}

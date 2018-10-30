@@ -1,0 +1,20 @@
+{
+  "time": 0,
+  "LastCall": "0001-01-01T00:00:00",
+  "id": "root",
+  "label": "Zero Net",
+  "MaxTime": 0,
+  "MinTime": 0,
+  "TotalTime": 0,
+  "AvgTime": 0,
+  "Ideal": 0,
+  "LastTime": 0,
+  "Count": 0,
+  "UnitCount": 0,
+  "TimeOut": 0,
+  "Bug": 0,
+  "Error": 0,
+  "Deny": 0,
+  "FormalError": 0,
+  "children": []
+}
