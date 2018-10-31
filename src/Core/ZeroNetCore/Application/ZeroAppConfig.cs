@@ -162,6 +162,19 @@ namespace Agebull.ZeroNet.Core
         [DataMember]
         public string ConfigFolder { get; set; }
 
+        /// <summary>
+        /// 程序所在地址
+        /// </summary>
+        [IgnoreDataMember]
+        public string BinPath { get; set; }
+
+
+        /// <summary>
+        /// 应用所在的顶级目录
+        /// </summary>
+        [IgnoreDataMember]
+        public string RootPath { get; set; }
+
 
         /// <summary>
         /// 插件地址,如为空则与运行目录相同
@@ -416,7 +429,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ZeroTrace.SystemLog("Option", RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Windows");
                 rootPath = Path.GetDirectoryName(curPath);
-                AppName = Path.GetFileName(curPath);
+                AppName= Path.GetFileName(curPath);
                 // ReSharper disable once AssignNullToNotNullAttribute
                 var file = Path.Combine(rootPath, "config", "zero.json");
                 if (File.Exists(file))
@@ -442,9 +455,12 @@ namespace Agebull.ZeroNet.Core
             Config = string.IsNullOrWhiteSpace(AppName)
                 ? sec.Child<ZeroAppConfig>("Station")
                 : sec.Child<ZeroAppConfig>(AppName) ?? sec.Child<ZeroAppConfig>("Station");
+            
 
             if (Config == null)
                 throw new Exception($"无法找到主配置节点,路径为Zero.{AppName}或Zero.Station,在appsettings.json中设置");
+            Config.BinPath = curPath;
+            Config.RootPath = rootPath;
 
             var socketOption = sec.Child<SocketOption>("socketOption");
             if (socketOption != null)

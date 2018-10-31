@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using Agebull.Common;
-using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Agebull.ZeroNet.ZeroApi
@@ -25,7 +22,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 插件对象
         /// </summary>
         [ImportMany(typeof(IAutoRegister))]
-        public IEnumerable<IAutoRegister> Registers {get; set; }
+        public IEnumerable<IAutoRegister> Registers { get; set; }
 
         /// <summary>
         /// 导入
@@ -34,11 +31,30 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (Instance != null)
                 return;
-            string path = ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory);
-            if (!string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
-                path = IOHelper.CheckPath(path, ZeroApplication.Config.AddInPath);
-            ZeroTrace.SystemLog("AddIn", path);
             Instance = new AddInImporter();
+            IocHelper.ServiceCollection.AddSingleton(pro => Instance);
+            CheckSystemAddIn();
+            CheckAddIn();
+        }
+
+        static void CheckSystemAddIn()
+        {
+            // 通过容器对象将宿主和部件组装到一起。 
+            DirectoryCatalog directoryCatalog = new DirectoryCatalog(ZeroApplication.Config.BinPath, "*.sys_addin.dll");
+            var container = new CompositionContainer(directoryCatalog);
+            container.ComposeParts(Instance);
+            foreach (var reg in Instance.Registers)
+            {
+                ZeroTrace.SystemLog("AddIn(System)", reg.GetType().Assembly.FullName);
+            }
+        }
+
+        static void CheckAddIn()
+        {
+            if (string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
+                return;
+            var path = IOHelper.CheckPath(ZeroApplication.Config.RootPath, ZeroApplication.Config.AddInPath);
+            ZeroTrace.SystemLog("AddIn(Service)", path);
             IocHelper.ServiceCollection.AddSingleton(pro => Instance);
             // 通过容器对象将宿主和部件组装到一起。 
             DirectoryCatalog directoryCatalog = new DirectoryCatalog(path);
@@ -46,10 +62,9 @@ namespace Agebull.ZeroNet.ZeroApi
             container.ComposeParts(Instance);
             foreach (var reg in Instance.Registers)
             {
-                ZeroTrace.SystemLog("AddIn", reg.GetType().Assembly.FullName);
+                ZeroTrace.SystemLog("AddIn(System)", reg.GetType().Assembly.FullName);
             }
         }
-
         /// <summary>
         /// 初始化
         /// </summary>

@@ -1,9 +1,5 @@
-using System;
-using System.IO;
 using System.Text;
-using Agebull.Common.Configuration;
 using Gboxt.Common.DataModel;
-using Microsoft.Extensions.Configuration;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -30,10 +26,9 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetRequestAddress(string station, int port)
         {
-            if (!UseIpc)
-                return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-            var path = Path.GetDirectoryName(ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory));
-            return $"ipc://{path}/ipc/{station}_req.ipc";
+            return !UseIpc 
+                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}" 
+                : $"ipc://{ZeroApplication.Config.RootPath}/ipc/{station}_req.ipc";
         }
         /// <summary>
         /// 格式化地址
@@ -43,10 +38,9 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetSubscriberAddress(string station, int port)
         {
-            if (!UseIpc)
-                return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-            var path = Path.GetDirectoryName(ConfigurationManager.Root.GetValue("contentRoot", Environment.CurrentDirectory));
-            return $"ipc://{path}/ipc/{station}_sub.ipc";
+            return !UseIpc 
+                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}" 
+                : $"ipc://{ZeroApplication.Config.RootPath}/ipc/{station}_sub.ipc";
         }
         /// <summary>
         /// 格式化地址

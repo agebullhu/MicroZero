@@ -1,8 +1,8 @@
 {
-  "base_tcp_port": "7999",
+  "base_tcp_port": "10999",
   "use_ipc_protocol": "false",
   "redis_addr": "127.0.0.1:6379",
-  "redis_defdb": "15",
+  "redis_defdb": "20",
   "worker_sound_ivl": 2000,
   "plan_exec_timeout": 300,
   "plan_cache_size": 1024,

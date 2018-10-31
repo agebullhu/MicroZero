@@ -44,7 +44,6 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <IncludePath>\usr\Include;\usr\local\include</IncludePath>
-    <OutDir>/root/zero/center/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />

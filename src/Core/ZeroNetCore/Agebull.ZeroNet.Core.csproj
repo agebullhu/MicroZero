@@ -92,7 +92,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.60" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.62" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 
