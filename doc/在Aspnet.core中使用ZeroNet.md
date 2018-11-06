@@ -43,6 +43,7 @@ namespace WebMonitor
 代码说明:
 
 1 注1：因Aspnet.core全局关闭并不能主动关闭ZeroNet，故需要手动销毁
+
 2 注2：虽然Zeronet内部是使用标准的NetCore的配置对象，但由于实例不同，如不使用这一句，会导致内部两个配置实例而产生配置内容差异化。
 
 #### Startup.cs
@@ -155,7 +156,9 @@ namespace WebMonitor
 
 ##### 内部调用
 > 使用ApiClient类
+
 调用的方法
+
 ``` csharp
         /// <summary>
         /// 调用远程方法
@@ -198,15 +201,23 @@ namespace WebMonitor
         public static ApiResult CallApi(string station, string api)；
         
 ```
-:
+
 ##### 外部调用
+
 > 使用标准的HTTP Rustful方式调用。
+
 特殊说明：
+
 1 接口名称规范 http://[host]/[station]/[apiName]
+
  - host: HttpGateway的部署根地址,如 www.agebull.com
+ 
  - sttion:Api站点的部署名称
+ 
  - apiName:Api定义的路由名称
+ 
 2 Post?Get？由于是进行了映射，所以两种方式均可，但由于Get方式受限比较多，不建议使用
+
 3 Auth2.0：如Api定义为需要登录用户，则必须在Authorization头上加入Bear [token]
 
 
