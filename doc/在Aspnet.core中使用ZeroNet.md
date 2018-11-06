@@ -47,9 +47,13 @@ namespace WebMonitor
 2 注2：虽然Zeronet内部是使用标准的NetCore的配置对象，但由于实例不同，如不使用这一句，会导致内部两个配置实例而产生配置内容差异化。
 
 #### Startup.cs
+
 Startup过程中使ZeroNet按预定流程正确启动
+
 1 Startup构造时：初始化配置对象
+
 2 ConfigureServices时：对象依赖发现与初始化ZeroNet
+
 3 Configure时：启动ZeroNet主线程
 
 ``` csharp
