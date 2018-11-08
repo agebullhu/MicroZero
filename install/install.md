@@ -20,8 +20,8 @@ sudo apt-get install dotnet-sdk-2.1
 ## 3 安装 supervisor
 
 sudo apt-get install supervisor
-修改配置为HTTP
-> supervisord -c /etc/supervisor/supervisord.conf
+
+> 运行命令为：supervisord -c /etc/supervisor/supervisord.conf
 ### supervisorctl命令(备用）
 supervisorctl status
 
