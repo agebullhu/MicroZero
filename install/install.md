@@ -53,7 +53,7 @@ databases 16 => 32
 2. 在/root/zero下建立logs与datas目录
 2. 权限都设置为777
 3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
-> 有些情况，/usr/local/lib目录下运行会找不到对应的库，那么就将文件复制到~/usr/lib~目录下
+> 有些情况，/usr/local/lib目录下运行会找不到对应的库，那么就将文件复制到/usr/lib目录下
 ## 6 运行ZeroCenter
 > /root/zero/center/zero_center.out
 查看是否运行正常，运行完成关闭（ctr+c)
