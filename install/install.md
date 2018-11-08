@@ -39,13 +39,8 @@ supervisorctl update
 ## 4 安装redis
 > https://www.cnblogs.com/zongfa/p/7808807.html
 
-sudo apt-get install redis-server
-
-> 注意：使用了16以外的库ID所以要修改Redis.Conf(/etc/redis/Redis.Conf) 
-
-databases 16 => 32
-重启
-> sudo /etc/init.d/redis-server restart 
+1 安装 sudo apt-get install redis-server
+2 重启 sudo /etc/init.d/redis-server restart 
 
 
 ## 5 复制文件
@@ -71,12 +66,13 @@ sudo ufw disable
 
 2. 更新守护进程
 
-> supervisorctl reread
+ supervisorctl reread
 
-> supervisorctl update
+ supervisorctl update
 
 
 ## 8 完成
-
+1 在浏览器打开你的站点的 81端口，看三个项目是否正确运行
+2 在浏览器打开你的站点的5000端口，看监控后台是否正确运行
 
 
