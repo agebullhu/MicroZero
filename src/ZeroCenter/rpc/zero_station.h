@@ -73,12 +73,12 @@ namespace agebull
 			/**
 			* \brief 调用句柄
 			*/
-			ZMQ_HANDLE request_socket_ipc_;
-		private:
+			ZMQ_HANDLE request_socket_inproc_;
 			/**
 			* \brief 调用句柄
 			*/
-			ZMQ_HANDLE request_socket_inproc_;
+			//ZMQ_HANDLE request_socket_ipc_;
+		private:
 
 			/**
 			* \brief 调用句柄
@@ -96,7 +96,7 @@ namespace agebull
 			/**
 			* \brief 工作句柄
 			*/
-			ZMQ_HANDLE worker_out_socket_ipc_;
+			//ZMQ_HANDLE worker_out_socket_ipc_;
 		protected:
 			/**
 			* \brief 实例队列访问锁
@@ -248,12 +248,14 @@ namespace agebull
 				}
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				config_->worker_out++;
-				ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
-				//#pragma omp parallel  for schedule(static,2)
-				for (size_t i = 0; i < 2; i++)
-				{
-					send_response(socket[i], datas, first_index);
-				}
+
+				send_response(worker_out_socket_tcp_, datas, first_index);
+				//ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
+				////#pragma omp parallel  for schedule(static,2)
+				//for (size_t i = 0; i < 2; i++)
+				//{
+				//	send_response(socket[i], datas, first_index);
+				//}
 				return zmq_state_ == zmq_socket_state::Succeed;
 			}
 
@@ -321,18 +323,7 @@ namespace agebull
 			void request(ZMQ_HANDLE socket, bool inner);
 
 		protected:
-			/**
-			* \brief 网络监控
-			*/
-			static void monitor_poll(zero_station* station)
-			{
-				station->monitor();
-			}
-			/**
-			* \brief 网络监控
-			* \return
-			*/
-			void monitor() const;
+
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/

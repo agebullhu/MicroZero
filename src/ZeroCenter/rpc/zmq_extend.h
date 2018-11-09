@@ -148,9 +148,10 @@ namespace agebull
 		};
 
 
-#define make_ipc_address(addr,type,name)\
+/*#define make_ipc_address(addr,type,name)\
 			char addr[MAX_PATH];\
 			sprintf(addr, "ipc://%sipc/%s_%s.ipc", json_config::root_path.c_str(),type, name)
+*/
 
 #define make_inproc_address(addr,name)\
 			char addr[MAX_PATH];\
@@ -307,21 +308,23 @@ namespace agebull
 
 			/**
 			* \brief 生成ZMQ连接对象
+			* \param station
 			* \param addr
 			* \param type
 			* \param name
 			* \return
 			*/
-			ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name);
+			ZMQ_HANDLE create_req_socket(const char* station, int type, const char* addr, const char* name);
 
 			/**
 			* \brief 生成ZMQ连接对象
+			* \param station
 			* \param addr
 			* \param type
 			* \param name
 			* \return
 			*/
-			ZMQ_HANDLE create_res_socket(const char* addr, int type, const char* name);
+			ZMQ_HANDLE create_res_socket(const char* station, const char* addr, int type, const char* name);
 
 			/**
 			* \brief 生成用于TCP的套接字
@@ -335,7 +338,7 @@ namespace agebull
 			{
 				char host[MAX_PATH];
 				sprintf(host, "tcp://*:%d", port);
-				ZMQ_HANDLE socket = create_res_socket(host, type, name);
+				ZMQ_HANDLE socket = create_res_socket(name, host, type, name);
 				if (socket == nullptr)
 				{
 					return nullptr;
@@ -347,54 +350,57 @@ namespace agebull
 			/**
 			* \brief 生成用于TCP的套接字
 			*/
-			inline ZMQ_HANDLE create_req_socket_tcp(const char* name, int type, int port)
+			inline ZMQ_HANDLE create_req_socket_tcp(const char* station, const char* name, int type, int port)
 			{
-				char host[MAX_PATH];
-				sprintf(host, "tcp://*:%d", port);
-				ZMQ_HANDLE socket = create_req_socket(host, type, name);
+				char addr[MAX_PATH];
+				sprintf(addr, "tcp://*:%d", port);
+				ZMQ_HANDLE socket = create_req_socket(station, type, addr, name);
 				if (socket == nullptr)
 				{
 					return nullptr;
 				}
 				if (!set_tcp_nodelay(socket))
-					log_error2("socket(%s) option TCP_NODELAY bad:%s", host, zmq_strerror(zmq_errno()));
+					log_error2("socket(%s) option TCP_NODELAY bad:%s", addr, zmq_strerror(zmq_errno()));
 				return socket;
 			}
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
-			inline ZMQ_HANDLE create_req_socket_ipc(const char* station, const char* name, int type)
-			{
-				make_ipc_address(address, station, name);
-				make_zmq_identity(identity, station, name);
-				return create_req_socket(address, type, identity);
-			}
+			//inline ZMQ_HANDLE create_req_socket_ipc(const char* station, const char* name, int type)
+			//{
+			//	make_ipc_address(address, station, name);
+			//	make_zmq_identity(identity, station, name);
+			//	return create_req_socket(address, type, identity);
+			//}
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
-			inline ZMQ_HANDLE create_res_socket_ipc(const char* station, const char* name, int type)
-			{
-				make_ipc_address(address, station, name);
-				make_zmq_identity(identity, station, name);
-				return create_res_socket(address, type, identity);
-			}
+			//inline ZMQ_HANDLE create_res_socket_ipc(const char* station, const char* name, int type)
+			//{
+			//	make_ipc_address(address, station, name);
+			//	make_zmq_identity(identity, station, name);
+			//	return create_res_socket(address, type, identity);
+			//}
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
 			inline ZMQ_HANDLE create_req_socket_inproc(const char* station, const char* name)
 			{
 				make_inproc_address(address, station);
-				make_zmq_identity(identity, station, name);
-				return create_req_socket(address, ZMQ_DEALER, identity);
+				char identity[MAX_PATH];
+				sprintf(identity, "->%s_%s", station, name);
+				return create_req_socket(station, ZMQ_DEALER, address, identity);
 			}
+
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
 			inline ZMQ_HANDLE create_res_socket_inproc(const char* station, int type)
 			{
 				make_inproc_address(address, station);
-				make_zmq_identity(identity, station, "inproc");
-				return create_res_socket(address, type, identity);
+				char identity[MAX_PATH];
+				sprintf(identity, "%s_inp", station);
+				return create_res_socket(station, address, type, identity);
 			}
 			/**
 			* \brief 接收
@@ -672,22 +678,20 @@ namespace agebull
 
 		namespace zmq_monitor
 		{
-			typedef struct
-			{
-				ushort event;
-				int value;
-				char address[256];
-			}zmq_event_t;
-
-			int read_event_msg(void* s, zmq_event_t* event);
+			/**
+			* \brief 网络监控
+			* \param {shared_char} station 站点名称
+			* \param {shared_char} addr 地址
+			*/
+			void do_monitor(shared_char station, shared_char addr);
 
 			/**
 			* \brief 网络监控
-			* \param address
-			* \return
+			* \param {shared_char} station 站点名称
+			* \param {ZMQ_HANDLE} socket socket
+			* \param {shared_char} addr 地址
 			*/
-			inline void zmq_monitor(shared_char address);
-
+			void set_monitor(const char* station, ZMQ_HANDLE socket, const char* type);
 		}
 
 	}

@@ -14,7 +14,7 @@ namespace agebull
 		static int base_tcp_port;
 		static int plan_exec_timeout;
 		static int plan_cache_size;
-		static bool use_ipc_protocol;
+		//static bool use_ipc_protocol;
 		static char redis_addr[512];
 		static int redis_defdb;
 		static int worker_sound_ivl;

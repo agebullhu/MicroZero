@@ -448,7 +448,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         max = 1;
                     _processSemaphore = new SemaphoreSlim(0, max);
                     for (int idx = 0; idx < max; idx++)
-                        Task.Factory.StartNew(RunSignle);
+                        Task.Factory.StartNew(RunThread);
 
                     for (int idx = 0; idx < max; idx++)
                         _processSemaphore.Wait();
@@ -478,6 +478,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private void RunWait()
         {
+            ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, RealName);
             var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
             {
                 using (var pool = ZmqPool.CreateZmqPool())
@@ -513,10 +514,51 @@ namespace Agebull.ZeroNet.ZeroApi
                     }
                 }
             }
+            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, RealName);
             socket.Dispose();
         }
 
         private SemaphoreSlim _processSemaphore;
+        /// <summary>
+        /// 具体执行
+        /// </summary>
+        private void RunThread()
+        {
+            var realName = ZeroIdentityHelper.CreateRealName(IsService, Name == Config.StationName ? null : Name);
+            var identity = realName.ToAsciiBytes();
+            ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
+            var socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+            using (var pool = ZmqPool.CreateZmqPool())
+            {
+                pool.Prepare(new[] {ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, identity)},
+                    ZPollEvent.In);
+                State = StationState.Run;
+                while (CanLoop)
+                {
+                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    {
+                        continue;
+                    }
+
+                    Interlocked.Increment(ref RecvCount);
+                    using (message)
+                    {
+                        if (!Unpack(message, out var item))
+                        {
+                            SendLayoutErrorResult(ref socket, item.Caller);
+                            continue;
+                        }
+
+                        ApiCall(ref socket, item);
+                    }
+                }
+            }
+
+            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
+            socket.Dispose();
+            _processSemaphore?.Release();
+        }
+
         /// <summary>
         /// 具体执行
         /// </summary>

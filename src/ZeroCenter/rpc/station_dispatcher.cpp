@@ -244,7 +244,7 @@ namespace agebull
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
-			boost::thread(boost::bind(monitor_poll));
+			boost::thread(boost::bind(worker_monitor));
 			station->poll();
 			//等待monitor_poll结束
 			station->task_semaphore_.wait();
@@ -268,10 +268,11 @@ namespace agebull
 			}
 			set_command_thread_end(config.station_name_.c_str());
 		}
+
 		/**
 		* \brief 监控轮询
 		*/
-		void station_dispatcher::monitor_poll()
+		void station_dispatcher::worker_monitor()
 		{
 			zero_config& config = instance->get_config();
 			config.log("monitor poll start");
