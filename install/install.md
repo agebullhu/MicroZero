@@ -1,4 +1,4 @@
-# Ubuntu部署ZeroCenter
+# Ubuntu16.4 部署ZeroCenter
 
 ## 1 系统更新
 
@@ -20,9 +20,9 @@ sudo apt-get install dotnet-sdk-2.1
 ## 3 安装 supervisor
 
 sudo apt-get install supervisor
-修改配置为HTTP
-> supervisord -c /etc/supervisor/supervisord.conf
-### supervisorctl命令
+
+> 运行命令为：supervisord -c /etc/supervisor/supervisord.conf
+### supervisorctl命令(备用）
 supervisorctl status
 
 supervisorctl stop tomcat
@@ -39,13 +39,8 @@ supervisorctl update
 ## 4 安装redis
 > https://www.cnblogs.com/zongfa/p/7808807.html
 
-sudo apt-get install redis-server
-
-> 注意：使用了16以外的库ID所以要修改Redis.Conf(/etc/redis/Redis.Conf) 
-
-databases 16 => 32
-重启
-> sudo /etc/init.d/redis-server restart 
+1 安装 sudo apt-get install redis-server
+2 重启 sudo /etc/init.d/redis-server restart 
 
 
 ## 5 复制文件
@@ -53,7 +48,7 @@ databases 16 => 32
 2. 在/root/zero下建立logs与datas目录
 2. 权限都设置为777
 3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
-
+> 有些情况，/usr/local/lib目录下运行会找不到对应的库，那么就将文件复制到/usr/lib目录下
 ## 6 运行ZeroCenter
 > /root/zero/center/zero_center.out
 查看是否运行正常，运行完成关闭（ctr+c)
@@ -71,12 +66,13 @@ sudo ufw disable
 
 2. 更新守护进程
 
-> supervisorctl reread
+ supervisorctl reread
 
-> supervisorctl update
+ supervisorctl update
 
 
 ## 8 完成
-
+1 在浏览器打开你的站点的 81端口，看三个项目是否正确运行
+2 在浏览器打开你的站点的5000端口，看监控后台是否正确运行
 
 
