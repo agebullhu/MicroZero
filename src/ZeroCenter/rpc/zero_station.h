@@ -5,7 +5,7 @@
 #include "zmq_extend.h"
 #include "zero_plan.h"
 #include "station_warehouse.h"
-
+#include "message_storage.h"
 
 
 namespace agebull
@@ -45,6 +45,7 @@ namespace agebull
 			* \brief 子任务同步结束使用的信号量
 			*/
 			boost::interprocess::interprocess_semaphore task_semaphore_;
+			message_storage _storage;
 		private:
 			/**
 			* \brief 实例队列访问锁
@@ -73,12 +74,11 @@ namespace agebull
 			/**
 			* \brief 调用句柄
 			*/
-			ZMQ_HANDLE request_socket_inproc_;
+			//ZMQ_HANDLE request_socket_ipc_;
 			/**
 			* \brief 调用句柄
 			*/
-			//ZMQ_HANDLE request_socket_ipc_;
-		private:
+			ZMQ_HANDLE request_socket_inproc_;
 
 			/**
 			* \brief 调用句柄
@@ -97,7 +97,6 @@ namespace agebull
 			* \brief 工作句柄
 			*/
 			//ZMQ_HANDLE worker_out_socket_ipc_;
-		protected:
 			/**
 			* \brief 实例队列访问锁
 			*/
@@ -127,6 +126,93 @@ namespace agebull
 			{
 				zero_station::close(true);
 			}
+
+		protected:
+			/**
+			* \brief 初始化
+			*/
+			bool initialize();
+			/**
+			* \brief 扩展初始化
+			*/
+			virtual void initialize_ext() {}
+			/**
+			* \brief 网络轮询
+			*/
+			bool poll();
+
+			/**
+			* \brief 析构
+			*/
+			bool destruct();
+		public:
+			/**
+			* \brief 暂停
+			*/
+			virtual bool pause(bool waiting);
+			/**
+			* \brief 继续
+			*/
+			virtual bool resume(bool waiting);
+			/**
+			* \brief 结束
+			*/
+			virtual bool close(bool waiting);
+		protected:
+			/**
+			*\brief 发送消息
+			*/
+			inline bool send_response(ZMQ_HANDLE socket, const  vector<shared_char>& datas, size_t first_index = 0);
+			/**
+			*\brief 发送消息
+			*/
+			inline bool send_response(const vector<shared_char>& datas, size_t first_index = 0);
+
+			/**
+			* \brief 发送
+			*/
+			inline bool send_request_result(ZMQ_HANDLE socket, vector<shared_char>& ls);
+			/**
+			* \brief 发送帧
+			*/
+			inline bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr);
+			/**
+			* \brief 发送帧
+			*/
+			inline bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+			/**
+			* \brief 发送帧
+			*/
+			inline bool send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+		private:
+			/**
+			* \brief 工作集合的响应
+			*/
+			void response();
+
+			/**
+			* \brief 调用集合的响应
+			*/
+			void request(ZMQ_HANDLE socket, bool inner);
+
+		protected:
+			/**
+			* \brief 工作开始（发送到工作者）
+			*/
+			virtual void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) = 0;//, shared_char& global_id
+			/**
+			* \brief 工作结束(发送到请求者)
+			*/
+			virtual void job_end(vector<shared_char>& list) {}
+		private:
+			/**
+			* \brief 工作进入计划
+			*/
+			void job_plan(ZMQ_HANDLE socket, vector<shared_char>& list);
+			/**
+			* \brief 计划执行完成
+			*/
+			void plan_end(vector<shared_char>& list);
 
 		public:
 			/**
@@ -192,159 +278,92 @@ namespace agebull
 				return config_->is_run() && get_net_state() == NET_STATE_RUNING;
 			}
 
-		protected:
-			/**
-			* \brief 初始化
-			*/
-			bool initialize();
-
-			/**
-			* \brief 网络轮询
-			*/
-			bool poll();
-
-			/**
-			* \brief 析构
-			*/
-			bool destruct();
-		public:
-			/**
-			* \brief 暂停
-			*/
-			virtual bool pause(bool waiting);
-			/**
-			* \brief 继续
-			*/
-			virtual bool resume(bool waiting);
-			/**
-			* \brief 结束
-			*/
-			virtual bool close(bool waiting);
-		private:
-			/**
-			*\brief 发送消息
-			*/
-			bool send_response(ZMQ_HANDLE socket, const  vector<shared_char>& datas, const  size_t first_index = 0)
-			{
-				if (socket == nullptr)
-					return false;
-				zmq_state_ = socket_ex::send(socket, datas, first_index);
-				if (zmq_state_ == zmq_socket_state::Succeed)
-					return true;
-				config_->worker_err++;
-				const char* err_msg = socket_ex::state_str(zmq_state_);
-				log_error2("send_response error %d:%s", zmq_state_, err_msg);
-				return false;
-			}
-		protected:
-			/**
-			*\brief 发送消息
-			*/
-			bool send_response(const vector<shared_char>& datas, const  size_t first_index = 0)
-			{
-				if (!config_->hase_ready_works())
-				{
-					return false;
-				}
-				boost::lock_guard<boost::mutex> guard(send_mutex_);
-				config_->worker_out++;
-
-				send_response(worker_out_socket_tcp_, datas, first_index);
-				//ZMQ_HANDLE socket[2] = { worker_out_socket_tcp_ ,worker_out_socket_ipc_ };
-				////#pragma omp parallel  for schedule(static,2)
-				//for (size_t i = 0; i < 2; i++)
-				//{
-				//	send_response(socket[i], datas, first_index);
-				//}
-				return zmq_state_ == zmq_socket_state::Succeed;
-			}
-
-			/**
-			* \brief 发送
-			*/
-			bool send_request_result(ZMQ_HANDLE socket, vector<shared_char>& ls)
-			{
-				boost::lock_guard<boost::mutex> guard(send_mutex_);
-				config_->request_out++;
-				zmq_state_ = socket_ex::send(socket, ls);
-
-				if (zmq_state_ == zmq_socket_state::Succeed)
-					return true;
-				++config_->worker_err;
-				const char* err_msg = socket_ex::state_str(zmq_state_);
-				log_error2("send_request_result error %d:%s", zmq_state_, err_msg);
-				return false;
-			}
-			/**
-			* \brief 发送帧
-			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr)
-			{
-				++config_->request_out;
-				zmq_state_ = socket_ex::send_status(socket, addr, state, global_id, req_id, reqer, msg);
-				if (zmq_state_ == zmq_socket_state::Succeed)
-					return true;
-				++config_->request_err;
-				const char* err_msg = socket_ex::state_str(zmq_state_);
-				log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
-				return false;
-			}
-			/**
-			* \brief 发送帧
-			*/
-			bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
-			{
-				return send_request_status(socket, addr, state,
-					glbid_idx == 0 ? nullptr : *ls[glbid_idx],
-					reqid_idx == 0 ? nullptr : *ls[reqid_idx],
-					reqer_idx == 0 ? nullptr : *ls[reqer_idx],
-					msg);
-			}
-			/**
-			* \brief 发送帧
-			*/
-			bool send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr)
-			{
-				return send_request_status(socket, *ls[0], state,
-					glbid_idx == 0 ? nullptr : *ls[glbid_idx],
-					reqid_idx == 0 ? nullptr : *ls[reqid_idx],
-					reqer_idx == 0 ? nullptr : *ls[reqer_idx],
-					msg);
-			}
-		private:
-			/**
-			* \brief 工作集合的响应
-			*/
-			void response();
-
-			/**
-			* \brief 调用集合的响应
-			*/
-			void request(ZMQ_HANDLE socket, bool inner);
-
-		protected:
-
-			/**
-			* \brief 工作开始（发送到工作者）
-			*/
-			virtual void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) = 0;//, shared_char& global_id
-			/**
-			* \brief 工作结束(发送到请求者)
-			*/
-			virtual void job_end(vector<shared_char>& list)
-			{
-			}
-		private:
-			/**
-			* \brief 工作进入计划
-			*/
-			void job_plan(ZMQ_HANDLE socket, vector<shared_char>& list);
-			/**
-			* \brief 计划执行完成
-			*/
-			void plan_end(vector<shared_char>& list);
-
 		};
+
+
+		/**
+		*\brief 发送消息
+		*/
+		bool zero_station::send_response(ZMQ_HANDLE socket, const  vector<shared_char>& datas, const  size_t first_index)
+		{
+			if (socket == nullptr)
+				return false;
+			zmq_state_ = socket_ex::send(socket, datas, first_index);
+			if (zmq_state_ == zmq_socket_state::Succeed)
+				return true;
+			config_->worker_err++;
+			const char* err_msg = socket_ex::state_str(zmq_state_);
+			log_error2("send_response error %d:%s", zmq_state_, err_msg);
+			return false;
+		}
+		/**
+		*\brief 发送消息
+		*/
+		bool zero_station::send_response(const vector<shared_char>& datas, const  size_t first_index)
+		{
+			if (!config_->hase_ready_works())
+			{
+				return false;
+			}
+			boost::lock_guard<boost::mutex> guard(send_mutex_);
+			config_->worker_out++;
+			send_response(worker_out_socket_tcp_, datas, first_index);
+			return zmq_state_ == zmq_socket_state::Succeed;
+		}
+
+		/**
+		* \brief 发送
+		*/
+		bool zero_station::send_request_result(ZMQ_HANDLE socket, vector<shared_char>& ls)
+		{
+			boost::lock_guard<boost::mutex> guard(send_mutex_);
+			config_->request_out++;
+			zmq_state_ = socket_ex::send(socket, ls);
+
+			if (zmq_state_ == zmq_socket_state::Succeed)
+				return true;
+			++config_->worker_err;
+			const char* err_msg = socket_ex::state_str(zmq_state_);
+			log_error2("send_request_result error %d:%s", zmq_state_, err_msg);
+			return false;
+		}
+		/**
+		* \brief 发送帧
+		*/
+		bool zero_station::send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
+		{
+			++config_->request_out;
+			zmq_state_ = socket_ex::send_status(socket, addr, state, global_id, req_id, reqer, msg);
+			if (zmq_state_ == zmq_socket_state::Succeed)
+				return true;
+			++config_->request_err;
+			const char* err_msg = socket_ex::state_str(zmq_state_);
+			log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
+			return false;
+		}
+		/**
+		* \brief 发送帧
+		*/
+		bool zero_station::send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		{
+			return send_request_status(socket, addr, state,
+				glbid_idx == 0 ? nullptr : *ls[glbid_idx],
+				reqid_idx == 0 ? nullptr : *ls[reqid_idx],
+				reqer_idx == 0 ? nullptr : *ls[reqer_idx],
+				msg);
+		}
+		/**
+		* \brief 发送帧
+		*/
+		bool zero_station::send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		{
+			return send_request_status(socket, *ls[0], state,
+				glbid_idx == 0 ? nullptr : *ls[glbid_idx],
+				reqid_idx == 0 ? nullptr : *ls[reqid_idx],
+				reqer_idx == 0 ? nullptr : *ls[reqer_idx],
+				msg);
+		}
 	}
+
 }
 #endif//!_ZERO_STATION_H

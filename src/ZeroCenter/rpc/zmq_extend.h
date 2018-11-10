@@ -587,7 +587,7 @@ namespace agebull
 				}
 				if (msg != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_STATUS;
+					descirpt[idx++] = ZERO_FRAME_MESSAGE;
 				}
 				if (req_id != nullptr)
 				{

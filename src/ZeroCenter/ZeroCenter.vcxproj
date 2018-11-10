@@ -65,7 +65,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalOptions>-pthread -Bstatic  -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
@@ -78,6 +78,7 @@
     <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="redis\redis.cpp" />
     <ClCompile Include="rpc\api_station.cpp" />
+    <ClCompile Include="rpc\message_storage.cpp" />
     <ClCompile Include="rpc\net_crc.cpp" />
     <ClCompile Include="rpc\plan_dispatcher.cpp" />
     <ClCompile Include="rpc\route_api_station.cpp" />
@@ -94,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
+    <ClInclude Include="rpc\message_storage.h" />
     <ClInclude Include="rpc\route_api_station.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="stdafx.h" />

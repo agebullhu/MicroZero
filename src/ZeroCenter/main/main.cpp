@@ -1,18 +1,61 @@
 #include "../stdafx.h"
 #include "service.h"
 #include <mcheck.h>  
-
+#include "../rpc/message_storage.h"
+using namespace agebull;
+int zero_center_main();
+void test_sqlite();
 int main(int argc, char *argv[])
+{
+	test_sqlite();
+	getchar();
+	return 0;
+	return zero_center_main();
+}
+
+void test_sqlite()
+{
+	if (!zmq_net::rpc_service::initialize())
+		return;
+	var tm = boost::posix_time::microsec_clock::local_time();
+	vector<vector<zmq_net::shared_char>> datas;
+	zmq_net::message_storage storage;
+	shared_ptr < zmq_net::zero_config>  config (new zmq_net::zero_config());
+	config->station_name_ = "Test";
+	storage.prepare_storage(config);
+	auto sp = boost::posix_time::microsec_clock::local_time() - tm;
+	log_msg2("prepare(%lldms) : %lld", sp.total_milliseconds(), storage.get_last_id());
+	tm = boost::posix_time::microsec_clock::local_time();
+	for (int i = 0; i < 10000; i++)
+		storage.save("agebull", "test", "abc", "{}", "a", i);
+	sp = boost::posix_time::microsec_clock::local_time() - tm;
+	log_msg1("write(%lldms)", sp.total_milliseconds());
+	tm = boost::posix_time::microsec_clock::local_time();
+	storage.load(0, 100000, datas);
+	sp = boost::posix_time::microsec_clock::local_time() - tm;
+	log_msg1("load(%lldms)", sp.total_milliseconds());
+	//for (auto data : datas)
+	//{
+	//	cout << "row: ";
+	//	for (auto col : data)
+	//	{
+	//		cout << col.get_buffer() << " ";
+	//	}
+	//	cout << endl;
+	//}
+}
+
+int zero_center_main()
 {
 	//加入内存检测
 	//setenv("MALLOC_TRACE", "output", 1);
 	//mtrace();
 	//初始化
-	if (!agebull::zmq_net::rpc_service::initialize())
+	if (!zmq_net::rpc_service::initialize())
 		return 0;
 	//agebull::zmq_net::station_warehouse::clear();
 	//启动
-	agebull::zmq_net::rpc_service::start();
+	zmq_net::rpc_service::start();
 #ifdef _DEBUG
 	while (agebull::zmq_net::get_net_state() == agebull::zmq_net::NET_STATE_RUNING)
 	{
@@ -40,8 +83,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 	//等待
-	agebull::zmq_net::rpc_service::wait_zero();
+	zmq_net::rpc_service::wait_zero();
 	//关闭
-	agebull::zmq_net::rpc_service::stop();
+	zmq_net::rpc_service::stop();
 	return 0;
 }

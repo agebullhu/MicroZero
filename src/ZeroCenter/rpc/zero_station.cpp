@@ -1,7 +1,5 @@
 #include "../stdafx.h"
 #include "zero_station.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #define port_redis_key "net:port:next"
 
@@ -9,7 +7,6 @@ namespace agebull
 {
 	namespace zmq_net
 	{
-
 		//map<int64, vector<shared_char>> zero_station::results;
 		//boost::mutex zero_station::results_mutex_;
 
@@ -23,12 +20,12 @@ namespace agebull
 			, station_name_(name)
 			, config_(station_warehouse::get_config(name))
 			, request_scoket_tcp_(nullptr)
-			//, request_socket_ipc_(nullptr)
+			, request_socket_ipc_(nullptr)
 			, request_socket_inproc_(nullptr)
 			, plan_socket_inproc_(nullptr)
 			, worker_in_socket_tcp_(nullptr)
 			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
+			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
@@ -44,12 +41,12 @@ namespace agebull
 			, station_name_(config->station_name_)
 			, config_(config)
 			, request_scoket_tcp_(nullptr)
-			//, request_socket_ipc_(nullptr)
+			, request_socket_ipc_(nullptr)
 			, request_socket_inproc_(nullptr)
 			, plan_socket_inproc_(nullptr)
 			, worker_in_socket_tcp_(nullptr)
 			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
+			, worker_out_socket_ipc_(nullptr)
 			, zmq_state_(zmq_socket_state::Succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
@@ -79,17 +76,17 @@ namespace agebull
 				return false;
 			}
 			poll_items_[poll_count_++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
-			//if (json_config::use_ipc_protocol)
-			//{
-			//	request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", req_zmq_type_);
-			//	if (request_socket_ipc_ == nullptr)
-			//	{
-			//		config_->runtime_state(station_state::Failed);
-			//		config_->error("initialize request ipc", zmq_strerror(zmq_errno()));
-			//		return false;
-			//	}
-			//	poll_items_[poll_count_++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
-			//}
+			if (json_config::use_ipc_protocol)
+			{
+				request_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "req", req_zmq_type_);
+				if (request_socket_ipc_ == nullptr)
+				{
+					config_->runtime_state(station_state::Failed);
+					config_->error("initialize request ipc", zmq_strerror(zmq_errno()));
+					return false;
+				}
+				poll_items_[poll_count_++] = { request_socket_ipc_, 0, ZMQ_POLLIN, 0 };
+			}
 
 			request_socket_inproc_ = socket_ex::create_res_socket_inproc(station_name, req_zmq_type_);
 			if (request_socket_inproc_ == nullptr)
@@ -104,7 +101,7 @@ namespace agebull
 			if (station_type_ > STATION_TYPE_DISPATCHER && station_type_ < STATION_TYPE_SPECIAL)
 				plan_socket_inproc_ = socket_ex::create_req_socket_inproc("PlanDispatcher", station_name);
 
-			if (station_type_ < STATION_TYPE_API || station_type_ >= STATION_TYPE_SPECIAL)
+			if (station_type_ == STATION_TYPE_DISPATCHER || station_type_ >= STATION_TYPE_SPECIAL)
 			{
 				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port_);
 				if (worker_out_socket_tcp_ == nullptr)
@@ -113,16 +110,16 @@ namespace agebull
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
 					return false;
 				}
-				//if (json_config::use_ipc_protocol)
-				//{
-				//	worker_out_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "sub", ZMQ_PUB);
-				//	if (worker_out_socket_ipc_ == nullptr)
-				//	{
-				//		config_->runtime_state(station_state::Failed);
-				//		config_->error("initialize worker out", zmq_strerror(zmq_errno()));
-				//		return false;
-				//	}
-				//}
+				if (json_config::use_ipc_protocol)
+				{
+					worker_out_socket_ipc_ = socket_ex::create_res_socket_ipc(station_name, "sub", ZMQ_PUB);
+					if (worker_out_socket_ipc_ == nullptr)
+					{
+						config_->runtime_state(station_state::Failed);
+						config_->error("initialize worker out", zmq_strerror(zmq_errno()));
+						return false;
+					}
+				}
 			}
 			else if (station_type_ == STATION_TYPE_ROUTE_API)
 			{
@@ -160,20 +157,9 @@ namespace agebull
 				}
 				poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
-			switch (station_type_)
-			{
-			case STATION_TYPE_DISPATCHER:
-				zmq_monitor::set_monitor(station_name, worker_out_socket_tcp_, "disp");
-				break;
-			case STATION_TYPE_PUBLISH:
-				zmq_monitor::set_monitor(station_name, worker_out_socket_tcp_, "pub");
-				break;
-			case STATION_TYPE_API:
-			case STATION_TYPE_ROUTE_API:
-			case STATION_TYPE_VOTE:
-				zmq_monitor::set_monitor(station_name, worker_in_socket_tcp_, "api");
-				break;
-			}
+			if (config_->is_base)
+				_storage.prepare_storage(config_);
+			initialize_ext();
 			config_->start();
 			return true;
 		}
@@ -191,11 +177,11 @@ namespace agebull
 			{
 				socket_ex::close_res_socket(request_scoket_tcp_, config_->get_request_address().c_str());
 			}
-			//if (request_socket_ipc_ != nullptr)
-			//{
-			//	make_ipc_address(address, get_station_name(), "req");
-			//	socket_ex::close_res_socket(request_socket_ipc_, address);
-			//}
+			if (request_socket_ipc_ != nullptr)
+			{
+				make_ipc_address(address, get_station_name(), "req");
+				socket_ex::close_res_socket(request_socket_ipc_, address);
+			}
 			if (request_socket_inproc_ != nullptr)
 			{
 				make_inproc_address(address, get_station_name());
@@ -214,11 +200,11 @@ namespace agebull
 			{
 				socket_ex::close_res_socket(worker_out_socket_tcp_, config_->get_work_out_address().c_str());
 			}
-			//if (worker_out_socket_ipc_ != nullptr)
-			//{
-			//	make_ipc_address(address, get_station_name(), "sub");
-			//	socket_ex::close_res_socket(worker_out_socket_ipc_, address);
-			//}
+			if (worker_out_socket_ipc_ != nullptr)
+			{
+				make_ipc_address(address, get_station_name(), "sub");
+				socket_ex::close_res_socket(worker_out_socket_ipc_, address);
+			}
 			delete[]poll_items_;
 			poll_items_ = nullptr;
 			return true;
@@ -260,11 +246,11 @@ namespace agebull
 							config_->request_in++;
 							request(poll_items_[idx].socket, false);
 						}
-						//else if (poll_items_[idx].socket == request_socket_ipc_)
-						//{
-						//	config_->request_in++;
-						//	request(poll_items_[idx].socket, false);
-						//}
+						else if (poll_items_[idx].socket == request_socket_ipc_)
+						{
+							config_->request_in++;
+							request(poll_items_[idx].socket, false);
+						}
 						else if (poll_items_[idx].socket == request_socket_inproc_)
 						{
 							config_->request_in++;
@@ -450,6 +436,8 @@ namespace agebull
 				return false;
 			config_->log("pause");
 			config_->runtime_state(station_state::Pause);
+			while (waiting && !config_->is_state(station_state::Pause))
+				thread_sleep(50);
 			zero_event(zero_net_event::event_station_pause, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
@@ -463,6 +451,8 @@ namespace agebull
 				return false;
 			config_->log("resume");
 			config_->runtime_state(station_state::Run);
+			while (waiting && !config_->is_state(station_state::Run))
+				thread_sleep(50);
 			zero_event(zero_net_event::event_station_resume, "station", config_->station_name_.c_str(), nullptr);
 			return true;
 		}
@@ -486,9 +476,8 @@ namespace agebull
 			config_->runtime_state(station_state::Closing);
 			zero_event(zero_net_event::event_station_closing, "station", config_->station_name_.c_str(), nullptr);
 			while (waiting && config_->is_state(station_state::Closing))
-				thread_sleep(200);
+				thread_sleep(50);
 			return true;
 		}
-
 	}
 }

@@ -85,10 +85,6 @@ namespace agebull
 			station_state station_state_;
 		public:
 			/**
-			* \brief 是否基础站点
-			*/
-			bool is_base;
-			/**
 			* \brief 实例队列访问锁
 			*/
 			boost::mutex mutex_;
@@ -112,6 +108,16 @@ namespace agebull
 			* \brief 站点别名
 			*/
 			vector<string> alias_;
+
+			/**
+			* \brief 是否基础站点
+			*/
+			bool is_base;
+
+			/**
+			* \brief 是否做保真处理
+			*/
+			bool is_fidelity;
 
 			/**
 			* \brief 站点类型
@@ -152,6 +158,7 @@ namespace agebull
 				, type_name_("ERR")
 				, station_state_(station_state::None)
 				, is_base(false)
+				, is_fidelity(false)
 				, station_type_(0)
 				, request_port_(0)
 				, worker_out_port_(0)
@@ -173,8 +180,8 @@ namespace agebull
 			zero_config(const string& name, int type)
 				: ready_works_(0)
 				, station_state_(station_state::None)
-				, is_base(false)
 				, station_name_(std::move(name))
+				, is_base(false)
 				, station_type_(type)
 				, request_port_(0)
 				, worker_out_port_(0)
@@ -316,7 +323,7 @@ namespace agebull
 
 			bool is_general() const
 			{
-				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH || 
+				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH ||
 					station_type_ == STATION_TYPE_VOTE || station_type_ == STATION_TYPE_ROUTE_API;
 			}
 

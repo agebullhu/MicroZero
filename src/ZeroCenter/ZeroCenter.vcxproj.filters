@@ -95,6 +95,9 @@
     <ClCompile Include="rpc\route_api_station.cpp">
       <Filter>rpc\api</Filter>
     </ClCompile>
+    <ClCompile Include="rpc\message_storage.cpp">
+      <Filter>rpc\notify</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h">
@@ -162,6 +165,9 @@
     </ClInclude>
     <ClInclude Include="rpc\route_api_station.h">
       <Filter>rpc\api</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\message_storage.h">
+      <Filter>rpc\notify</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

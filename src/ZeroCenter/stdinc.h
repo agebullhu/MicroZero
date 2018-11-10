@@ -32,7 +32,6 @@
 #include <memory>
 #include <queue>
 //#include <uuid/uuid.h>  
-
 #include "acl/acl_cpp/lib_acl.hpp"
 #include "acl/lib_acl.h"
 #include "zeromq/zmq.h"

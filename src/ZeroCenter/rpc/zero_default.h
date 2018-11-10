@@ -86,6 +86,10 @@ namespace agebull
 #define ZERO_FRAME_REQUEST_ID  '\4'
 		//执行计划
 #define ZERO_FRAME_PLAN  '\5'
+		//本地标识
+#define ZERO_FRAME_LOCAL_ID  '\6'
+		//消息内容
+#define ZERO_FRAME_MESSAGE  '\7'
 		//命令
 #define ZERO_FRAME_COMMAND  '$'
 		//参数

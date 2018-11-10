@@ -4,6 +4,7 @@
 #include "../stdinc.h"
 #include <utility>
 #include "zero_station.h"
+#include "message_storage.h"
 
 namespace agebull
 {
@@ -17,7 +18,7 @@ namespace agebull
 		public:
 			/**
 			 * \brief 构造
-			 * \param name 
+			 * \param name
 			 */
 			broadcasting_station(string name)
 				: zero_station(std::move(name), STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB)
@@ -26,7 +27,7 @@ namespace agebull
 
 			/**
 			 * \brief 构造
-			 * \param config 
+			 * \param config
 			 */
 			broadcasting_station(shared_ptr<zero_config>& config)
 				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB)
@@ -36,7 +37,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list,bool inner) final;
+			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
 			/**
 			*\brief 发送消息
 			*/
@@ -50,7 +51,10 @@ namespace agebull
 			*\brief 广播内容
 			*/
 			bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
-			
+			/**
+			*\brief 发布消息
+			*/
+			bool publish(const string& publiher, const string& title, const string& sub, const string& arg, const string& rid, const int64 gid, const int64 lid);
 			/**
 			 * \brief 析构
 			 */

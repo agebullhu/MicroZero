@@ -43,6 +43,22 @@ namespace agebull
 			{
 				*count_ = 1;
 			}
+			shared_char(const unsigned char* buffer)
+			{
+				if (buffer == nullptr)
+				{
+					set_empty();
+					return;
+				}
+				size_ = strlen(reinterpret_cast<const char*>(buffer));
+				if (size_ == 0)
+				{
+					set_empty();
+					return;
+				}
+				copy_(size_, buffer);
+				is_binary_ = 1;
+			}
 
 			shared_char(const char* buffer)
 			{
@@ -86,7 +102,7 @@ namespace agebull
 			/**
 			 *\bref 用指定大小构造(注意不是等于)
 			**/
-			explicit shared_char(size_t size) : buffer_(nullptr), is_binary_(0), is_const_(false)
+			shared_char(size_t size) : buffer_(nullptr), is_binary_(0), is_const_(false)
 			{
 				size_ = size;
 				if (size_ == 0)
