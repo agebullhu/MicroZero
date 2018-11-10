@@ -6,7 +6,7 @@ namespace agebull
 	int json_config::base_tcp_port = 7999;
 	int json_config::plan_exec_timeout = 300;
 	int json_config::plan_cache_size = 1024;
-	bool json_config::use_ipc_protocol = false;
+	//bool json_config::use_ipc_protocol = false;
 	char json_config::redis_addr[512] = "127.0.0.1:6379";
 	int json_config::redis_defdb = 0x10;
 	int json_config::worker_sound_ivl = 2000;
@@ -66,7 +66,7 @@ namespace agebull
 			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
 			plan_cache_size = get_global_int("plan_cache_size", plan_cache_size);
 			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
-			use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
+			//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
 			var addr = get_global_string("redis_addr");
 			if (addr.length() > 0)
 				strcpy(redis_addr, addr.c_str());
@@ -75,7 +75,7 @@ namespace agebull
 		}
 		log_msg1("config => base_tcp_port : %d", base_tcp_port);
 		log_msg1("config => worker_sound_ivl : %d", worker_sound_ivl);
-		log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
+		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
 		log_msg1("config => redis_addr : %s", redis_addr);
 		log_msg1("config => redis_defdb : %d", redis_defdb);
 		log_msg1("config => plan_exec_timeout : %d", plan_exec_timeout);

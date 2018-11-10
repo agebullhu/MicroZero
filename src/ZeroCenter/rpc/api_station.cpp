@@ -24,7 +24,6 @@ namespace agebull
 				set_command_thread_bad(config.station_name_.c_str());
 				return;
 			}
-			//boost::thread(boost::bind(monitor_poll, station.get()));
 			station->task_semaphore_.post();
 			station->poll();
 			station_warehouse::left(station.get());
@@ -118,7 +117,7 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			send_request_result(list[0][0] == '-' ? request_socket_ipc_ : request_scoket_tcp_, list);
+			send_request_result(list[0][0] == '-' ? request_socket_inproc_ : request_scoket_tcp_, list);
 		}
 
 	}

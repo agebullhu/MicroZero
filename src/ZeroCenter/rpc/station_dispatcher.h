@@ -64,7 +64,7 @@ namespace agebull
 			/**
 			* \brief 监控轮询
 			*/
-			static void monitor_poll();
+			static void worker_monitor();
 
 			/**
 			* \brief 暂停

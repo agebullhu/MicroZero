@@ -56,9 +56,9 @@ namespace agebull
 
 			}
 
-			ZMQ_HANDLE create_req_socket(const char* addr, int type, const char* name)
+			ZMQ_HANDLE create_req_socket(const char* station, int type, const char* addr, const char* name)
 			{
-				log_msg3("create_req_socket: %s(%d) > %s", name, type, addr);
+				log_msg4("[%s] : create_req_socket(%d) > %s > %s", station,type, name, addr);
 				ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 				if (socket == nullptr)
 				{
@@ -71,9 +71,9 @@ namespace agebull
 				return nullptr;
 			}
 
-			ZMQ_HANDLE create_res_socket(const char* addr, int type, const char* name)
+			ZMQ_HANDLE create_res_socket(const char* station, const char* addr, int type, const char* name)
 			{
-				log_msg3("create_res_socket : %s(%d) > %s", name, type, addr);
+				log_msg3("[%s] : create_res_socket(%d) > %s", station, type, addr);
 				ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
 				if (socket == nullptr)
 				{
@@ -120,13 +120,62 @@ namespace agebull
 				socket = nullptr;
 			}
 		}
+
 		namespace zmq_monitor
 		{
-			//网络监控
-			void do_monitor(shared_char addr)
+
+			typedef struct
 			{
+				ushort event;
+				int value;
+				char address[256];
+			}zmq_event_t;
+
+			int read_event_msg(void* s, zmq_event_t* event);
+
+			/**
+			* \brief 网络监控
+			* \para {int} _fd Socket句柄
+			*/
+			bool print_client_addr(int _fd, acl::string& str)
+			{
+				socklen_t          peer_addr_size;
+				struct sockaddr_in peer_addr;
+				peer_addr_size = sizeof(struct sockaddr);
+				if (getpeername(_fd, reinterpret_cast<struct sockaddr*>(&peer_addr), &peer_addr_size) != 0)
+					return false;
+				char esme_ip[200];
+				str.format("%s:%d(%d)",
+					inet_ntop(peer_addr.sin_family, &peer_addr.sin_addr, esme_ip, sizeof(esme_ip)),
+					ntohs(peer_addr.sin_port),
+					_fd);
+				return true;
+			}
+
+			/**
+			* \brief 网络监控
+			* \param {shared_char} station 站点名称
+			* \param {ZMQ_HANDLE} socket socket
+			* \param {shared_char} addr 地址
+			*/
+			void set_monitor(const char* station, ZMQ_HANDLE socket, const char* type)
+			{
+				shared_char addr(256);
+				sprintf(addr.get_buffer(), "inproc://%s_%s_monitor.rep", station, type);
+				zmq_socket_monitor(socket, *addr, ZMQ_EVENT_ALL);
+				boost::thread thread_xxx(boost::bind(&zmq_monitor::do_monitor, station, addr));
+			}
+
+			/**
+			* \brief 网络监控
+			* \param {shared_char} station 站点名称
+			* \param {shared_char} addr 地址
+			*/
+			void do_monitor(shared_char station, shared_char addr)
+			{
+				acl::string str;
 				zmq_event_t event;
-				printf("starting monitor...\n");
+				log_msg2("[%s] : station starting monitor by %s", station.c_str(), addr.c_str());
 				void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 				assert(inproc);
 				agebull::zmq_net::socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
@@ -138,54 +187,52 @@ namespace agebull
 					switch (event.event)
 					{
 					case ZMQ_EVENT_CLOSED:
-						log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:连接已关闭", event.value);
+						log_msg1("[%s] : monitor > 连接关闭", station.c_str());
 						zmq_close(inproc);
 						return;
 					case ZMQ_EVENT_CLOSE_FAILED:
-						log_error1("ZMQ网络监控%d:连接关闭失败", event.value);
+						log_msg1("[%s] : monitor > 关闭失败", station.c_str());
 						zmq_close(inproc);
 						return;
 					case ZMQ_EVENT_MONITOR_STOPPED:
-						log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:监控关闭", event.value);
+						log_msg1("[%s] : monitor > 监控关闭", station.c_str());
 						zmq_close(inproc);
 						return;
 					case ZMQ_EVENT_LISTENING:
-						log_debug1(DEBUG_BASE, 1, "ZMQ网络监控%d:正在侦听数据", event.value);
+						log_msg1("[%s] : monitor > 正在侦听", station.c_str());
 						break;
 					case ZMQ_EVENT_BIND_FAILED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:绑定端口失败%s", event.value, event.address);
+						log_msg2("[%s] : monitor > 绑定失败 > %s", station.c_str(), event.address);
 						break;
 					case ZMQ_EVENT_ACCEPTED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:接收到%s的数据", event.value, event.address);
-						break;
-					case ZMQ_EVENT_ACCEPT_FAILED:
-						log_error2("ZMQ网络监控%d:接收%s的数据出错", event.value, event.address);
-						break;
-					case ZMQ_EVENT_CONNECTED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接成功", event.value, event.address);
-						break;
-					case ZMQ_EVENT_CONNECT_DELAYED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接发生延迟", event.value, event.address);
-						break;
-					case ZMQ_EVENT_CONNECT_RETRIED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:重新连接%s", event.value, event.address);
+						print_client_addr(event.value, str);
+						log_msg2("[%s] : monitor > 客户端连接 > %s", station.c_str(), str.c_str());
 						break;
 					case ZMQ_EVENT_DISCONNECTED:
-						log_debug2(DEBUG_BASE, 1, "ZMQ网络监控%d:与%s连接关闭", event.value, event.address);
+						print_client_addr(event.value, str);
+						log_msg2("[%s] : monitor > 客户端断开 > %s", station.c_str(), str.c_str());
+						break;
+					case ZMQ_EVENT_ACCEPT_FAILED:
+						print_client_addr(event.value, str);
+						log_msg2("[%s] : monitor > 客户端连接出错 > %s", station.c_str(), str.c_str());
+						break;
+					case ZMQ_EVENT_CONNECTED:
+						log_msg2("[%s] : monitor > 连接成功 > %s", station.c_str(), event.address);
+						break;
+					case ZMQ_EVENT_CONNECT_DELAYED:
+						log_msg2("[%s] : monitor > 延迟连接 > %s", station.c_str(), event.address);
+						break;
+					case ZMQ_EVENT_CONNECT_RETRIED:
+						log_msg2("[%s] : monitor > 重新连接 > %s", station.c_str(), event.address);
 						break;
 					default: break;
 					}
 				}
 				zmq_close(inproc);
 			}
-			//网络监控
-			void zmq_monitor(shared_char addr)
-			{
-				boost::thread thread_xxx(boost::bind(&do_monitor, addr));
-			}
-
 			int read_event_msg(void* s, zmq_event_t* event)
 			{
+				memset(event, 0, sizeof(zmq_event_t));
 				zmq_msg_t msg1;  // binary part
 				zmq_msg_init(&msg1);
 				int rc = zmq_msg_recv(&msg1, s, 0);
