@@ -175,7 +175,7 @@ namespace agebull
 			{
 				acl::string str;
 				zmq_event_t event;
-				log_msg2("[%s] : station starting monitor by %s", station.c_str(), addr.c_str());
+				log_msg2("[%s] : monitor > starting > %s", station.c_str(), addr.c_str());
 				void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 				assert(inproc);
 				agebull::zero_net::socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);

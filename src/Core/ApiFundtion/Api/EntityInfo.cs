@@ -1,12 +1,19 @@
 ﻿using System;
-using Newtonsoft.Json;
 
 namespace Agebull.Common.WebApi
 {
+    /// <summary>
+    /// 兼容性
+    /// </summary>
+    [Obsolete]
     public class HttpPostAttribute : Attribute
     {
 
     }
+    /// <summary>
+    /// 兼容性
+    /// </summary>
+    [Obsolete]
     public class HttpGetAttribute : Attribute
     {
 
