@@ -31,7 +31,11 @@ namespace Agebull.ZeroNet.ZeroApi
             /// <summary>当前用户</summary>
             User
         }
-
+        /// <summary>
+        /// 序列化到TSON
+        /// </summary>
+        /// <param name="serializer"></param>
+        /// <param name="info"></param>
         public static void ToTson(ITsonSerializer serializer, RecordInfo info)
         {
             serializer.Write((byte)MyIndex.Local, info.Local);
@@ -46,7 +50,11 @@ namespace Agebull.ZeroNet.ZeroApi
             serializer.Write((byte)MyIndex.TypeName, info.TypeName);
             serializer.Write((byte)MyIndex.User, info.User);
         }
-
+        /// <summary>
+        /// 从TSON反序列化
+        /// </summary>
+        /// <param name="serializer"></param>
+        /// <param name="info"></param>
         public static void FromTson(ITsonDeserializer serializer, RecordInfo info)
         {
             while (!serializer.IsEof)

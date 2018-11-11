@@ -4,7 +4,7 @@
 #include "../stdafx.h"
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		//初始化网络命令环境
 		int config_zero_center();

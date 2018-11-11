@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
@@ -53,10 +54,11 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         static readonly byte[] LogDescription =
         {
-            2,
+            3,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.TsonValue,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -87,7 +89,7 @@ namespace Agebull.ZeroNet.Log
                         }
                         buf = serializer.Close();
                     }
-                    if (_socket.SendTo(LogDescription, _logsByte, buf))
+                    if (_socket.SendTo(LogDescription, _logsByte, buf,GlobalContext.ServiceKey.ToZeroBytes()))
                         return;
                 }
             }
@@ -109,7 +111,7 @@ namespace Agebull.ZeroNet.Log
                     RecordInfoTson.ToTson(serializer, info);
                     buf = serializer.Close();
                 }
-                if (_socket.SendTo(LogDescription, _logsByte, buf))
+                if (_socket.SendTo(LogDescription, _logsByte, buf, GlobalContext.ServiceKey.ToZeroBytes()))
                     return;
             }
             LogRecorder.BaseRecorder.RecordLog(info);

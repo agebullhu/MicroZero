@@ -17,10 +17,10 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
-		ZMQ_HANDLE zmq_context;
-		volatile NET_STATE net_state = NET_STATE_NONE;
+		zmq_handler zmq_context;
+		volatile int net_state = net_state_none;
 		//应该启动的线程数量
 		volatile int zero_thread_count = 0;
 		//当前启动了多少命令线程
@@ -121,7 +121,7 @@ namespace agebull
 		}
 
 		//ZMQ上下文对象
-		ZMQ_HANDLE get_zmq_context()
+		zmq_handler get_zmq_context()
 		{
 			return zmq_context;
 		}
@@ -168,7 +168,7 @@ namespace agebull
 				task_semaphore.post();
 		}
 		//运行状态
-		NET_STATE get_net_state()
+		int get_net_state()
 		{
 			return net_state;
 		}
@@ -177,7 +177,7 @@ namespace agebull
 		int config_zero_center()
 		{
 			log_msg("$initiate...");
-			net_state = NET_STATE_NONE;
+			net_state = net_state_none;
 			zmq_context = zmq_ctx_new();
 			assert(zmq_context != nullptr);
 			if (json_config::MAX_SOCKETS > 0)
@@ -195,12 +195,12 @@ namespace agebull
 		{
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
-			net_state = NET_STATE_RUNING;
+			net_state = net_state_runing;
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			log_msg("$start system dispatcher ...");
 			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				if (cfg->station_type_ == STATION_TYPE_DISPATCHER)
+				if (cfg->station_type_ == station_type_dispatcher)
 					log_msg(cfg->to_info_json());
 			});
 			station_dispatcher::run();
@@ -208,12 +208,12 @@ namespace agebull
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$system dispatcher failed ...");
-				return	net_state = NET_STATE_FAILED;
+				return	net_state = net_state_failed;
 			}
 			log_msg("$start plan dispatcher ...");
 			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				if (cfg->station_type_ > STATION_TYPE_SPECIAL)
+				if (cfg->station_type_ == station_type_plan)
 					log_msg(cfg->to_info_json());
 			});
 			plan_dispatcher::run();
@@ -221,12 +221,12 @@ namespace agebull
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$plan dispatcher failed ...");
-				return	net_state = NET_STATE_FAILED;
+				return	net_state = net_state_failed;
 			}
 			log_msg("$start business stations...");
 			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
 			{
-				if (cfg->station_type_ > STATION_TYPE_DISPATCHER && cfg->station_type_ <= STATION_TYPE_SPECIAL)
+				if (IS_GENERAL_STATION(cfg->station_type_))
 				{
 					log_msg(cfg->to_info_json());
 				}
@@ -252,7 +252,7 @@ namespace agebull
 		//关闭网络命令环境
 		void close_net_command()
 		{
-			if (net_state != NET_STATE_RUNING)
+			if (net_state != net_state_runing)
 				return;
 			var tm = boost::posix_time::microsec_clock::local_time();
 			var sp = tm - rpc_service::start_time;
@@ -263,13 +263,13 @@ namespace agebull
 				system_event(zero_net_event::event_system_closing);
 				thread_sleep(40);
 			}
-			net_state = NET_STATE_CLOSING;
+			net_state = net_state_closing;
 			task_semaphore.wait();
-			net_state = NET_STATE_CLOSED;
+			net_state = net_state_closed;
 			system_event(zero_net_event::event_system_stop, nullptr, ">>ZeroNet close,see you late!<<");
 			close_semaphore.post();
 			task_semaphore.wait();
-			net_state = NET_STATE_DISTORY;
+			net_state = net_state_distory;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
 			log_msg("$zmq shutdown\n");

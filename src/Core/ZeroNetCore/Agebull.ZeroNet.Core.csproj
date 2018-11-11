@@ -81,9 +81,6 @@
     <Compile Remove="Discover\XmlMember.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
     <Compile Remove="PubSub\LogQueue.cs" />
-    <Compile Remove="Queue\PublishQueue.cs" />
-    <Compile Remove="Queue\SyncQueue.cs" />
-    <Compile Remove="Queue\TaskQueue.cs" />
     <Compile Remove="ZeroApi\ApiStationItem.cs" />
     <Compile Remove="Application\ZeroHelper.cs" />
   </ItemGroup>

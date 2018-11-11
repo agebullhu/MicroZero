@@ -5,7 +5,7 @@
 #include "zero_station.h"
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief API站点
@@ -17,7 +17,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(string name)
-				: zero_station(name, STATION_TYPE_API, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(name, station_type_api, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 
@@ -25,7 +25,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(shared_ptr<zero_config>& config)
-				: zero_station(config, STATION_TYPE_API, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(config, station_type_api, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 			/**
@@ -46,7 +46,7 @@ namespace agebull
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
-				if (config->is_state(station_state::Stop))
+				if (config->is_state(station_state::stop))
 					return;
 				boost::thread(boost::bind(launch, std::make_shared<api_station>(config)));
 			}
@@ -56,9 +56,13 @@ namespace agebull
 			static void launch(shared_ptr<api_station>& station);
 		private:
 			/**
+			* \brief 内部命令
+			*/
+			bool extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
+			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/

@@ -7,7 +7,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 
 		/**

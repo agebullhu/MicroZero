@@ -54,7 +54,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 请求格式说明
         /// </summary>
-        private static readonly byte[] NetErrorDescription = {
+        private static readonly byte[] NetErrorDescription = {//BUG:疑似
             0,
             (byte)ZeroOperatorStateType.NetError,
             ZeroFrameType.End

@@ -63,14 +63,9 @@ namespace Agebull.ZeroNet.Core
             StringBuilder sb = new StringBuilder();
             sb.Append(UseIpc ? '-' : '+');
             sb.Append(isService ? "<" : ">");
-            //sb.Append(ZeroApplication.Config.ServiceName);
-            //sb.Append("-");
-            sb.Append(ZeroApplication.Config.ShortName);
-            if (ZeroApplication.Config.ServiceKey != "*")
-            {
-                sb.Append("-");
-                sb.Append(ZeroApplication.Config.ServiceKey);
-            }
+            sb.Append(ZeroApplication.Config.ServiceName);
+            sb.Append("-");
+            sb.Append(ZeroApplication.Config.StationName);
             foreach (var range in ranges)
             {
                 if (range == null)

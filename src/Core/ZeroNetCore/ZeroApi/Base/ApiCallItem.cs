@@ -1,28 +1,8 @@
 ﻿using System.Collections.Generic;
+using Agebull.ZeroNet.PubSub;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
-
-    /// <summary>
-    /// Api处理器
-    /// </summary>
-    public interface IApiHandler
-    {
-        /// <summary>
-        /// 准备
-        /// </summary>
-        /// <param name="station"></param>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        void Prepare(ApiStation station, ApiCallItem item);
-
-        /// <summary>
-        /// 结束处理
-        /// </summary>
-        /// <param name="station"></param>
-        /// <param name="item"></param>
-        void End(ApiStation station, ApiCallItem item);
-    }
 
     /// <summary>
     /// Api调用节点
@@ -38,6 +18,11 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public string GlobalId { get; set; }
 
+        /// <summary>
+        /// 站点请求ID
+        /// </summary>
+        public string StationCallId { get; set; }
+        
         /// <summary>
         /// 调用方的全局ID
         /// </summary>

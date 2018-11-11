@@ -11,6 +11,11 @@ namespace ZeroMQ
         private ZError error;
         public ZError ZError => error ?? (error = ZError.GetLastErr());
         public DispoIntPtr Ptr { get; set; }
+        /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="sockets"></param>
+        /// <param name="events"></param>
         public void Prepare(ZSocket[] sockets, ZPollEvent events)
         {
             Sockets = sockets;
@@ -33,18 +38,7 @@ namespace ZeroMQ
         /// <param name="events"></param>
         public void Prepare(ZPollEvent events, params ZSocket[] sockets)
         {
-            Sockets = sockets;
-            error = null;
-            Size = sockets.Length;
-            Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_windows_t) * sockets.Length);
-            zmq_pollitem_windows_t* natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
-            for (int i = 0; i < Size; ++i)
-            {
-                zmq_pollitem_windows_t* native = natives + i;
-                native->SocketPtr = sockets[i].SocketPtr;
-                native->Events = (short)(events);
-                native->ReadyEvents = (short)ZPollEvent.None;
-            }
+            Prepare(sockets, events);
         }
 
         /// <summary>

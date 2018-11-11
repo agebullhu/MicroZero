@@ -4,7 +4,7 @@
 #include "zero_default.h"
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 
 		/**
@@ -15,59 +15,59 @@ namespace agebull
 			/**
 			* \brief 无，刚构造
 			*/
-			None,
+			none,
 			/**
 			* \brief 重新启动
 			*/
-			ReStart,
+			re_start,
 			/**
 			* \brief 正在启动
 			*/
-			Start,
+			start,
 			/**
 			* \brief 正在运行
 			*/
-			Run,
+			run,
 			/**
 			* \brief 已暂停
 			*/
-			Pause,
+			pause,
 			/**
 			* \brief 错误状态
 			*/
-			Failed,
+			failed,
 			/**
 			* \brief 将要关闭
 			*/
-			Closing,
+			closing,
 			/**
 			* \brief 已关闭
 			*/
-			Closed,
+			closed,
 			/**
 			* \brief 已销毁，析构已调用
 			*/
-			Destroy,
+			destroy,
 			/**
 			* \brief 已关停
 			*/
-			Stop,
+			stop,
 			/**
 			* \brief 未知
 			*/
-			Unknow
+			unknow
 		};
 
 
 		/**
 		*\brief ZMQ上下文对象
 		*/
-		ZMQ_HANDLE get_zmq_context();
+		zmq_handler get_zmq_context();
 
 		/**
 		*\brief 运行状态
 		*/
-		NET_STATE get_net_state();
+		int get_net_state();
 
 		/**
 		*\brief 线程计数清零
@@ -223,12 +223,12 @@ namespace agebull
 		};
 
 		/**
-		*\brief 系统事件广播
+		*\brief 系统事件通知
 		*/
 		bool system_event(zero_net_event event_type, const char* sub = nullptr, const char* content = nullptr);
 
 		/**
-		*\brief 事件广播
+		*\brief 事件通知
 		*/
 		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content);
 	}

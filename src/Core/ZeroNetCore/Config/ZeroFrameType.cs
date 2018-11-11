@@ -16,6 +16,11 @@ namespace Agebull.ZeroNet.Core
         public const byte GlobalId = 1;
 
         /// <summary>
+        ///     站点ID
+        /// </summary>
+        public const byte StationId = 8;
+
+        /// <summary>
         ///     站点名称帧
         /// </summary>
         public const byte Station = 2;
@@ -38,7 +43,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     计划时间
         /// </summary>
-        public const byte PlanTIme = 6;
+        public const byte PlanTime = 6;
+
+        /// <summary>
+        ///     服务认证标识
+        /// </summary>
+        public const byte SerivceKey = 7;
 
         /// <summary>
         ///     参数
@@ -65,17 +75,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public const byte Subscriber = Responser;
 
-
-        /// <summary>
-        ///     广播主题
-        /// </summary>
-        public const byte PubTitle = (byte)'*';
-
-        /// <summary>
-        ///     广播副题
-        /// </summary>
-        public const byte SubTitle = (byte)'@';
-
         /// <summary>
         ///     网络上下文信息
         /// </summary>
@@ -85,6 +84,17 @@ namespace Agebull.ZeroNet.Core
         ///     请求命令
         /// </summary>
         public const byte Command = (byte)'$';
+
+        /// <summary>
+        ///     广播主题
+        /// </summary>
+        public const byte PubTitle = (byte)'*';
+
+        /// <summary>
+        ///     广播副题
+        /// </summary>
+        public const byte SubTitle = Command;
+
 
         /// <summary>
         ///     一般文本内容
@@ -125,7 +135,9 @@ namespace Agebull.ZeroNet.Core
                     return @"请求ID";
                 case Plan:// 5;
                     return @"执行计划";
-                case PlanTIme:// 5;
+                case SerivceKey:// 5;
+                    return @"服务认证标识"; 
+                case PlanTime:// 5;
                     return @"计划时间"; 
                 case Argument:// (byte)'%';
                     return @"参数";
@@ -135,8 +147,6 @@ namespace Agebull.ZeroNet.Core
                     return @"回复者/订阅者/浪费者";
                 case PubTitle:// (byte)'*';
                     return @"广播主题";
-                case SubTitle:// (byte)'@';
-                    return @"广播副题";
                 case Context:// (byte)'#';
                     return @"网络上下文信息";
                 case Command:// (byte)'$';

@@ -11,6 +11,7 @@ namespace Agebull.ZeroNet.Log
     [ExportMetadata("Symbol", '%')]
     public sealed class AutoRegister : IAutoRegister
     {  
+
         /// <summary>
         /// 初始化
         /// </summary>

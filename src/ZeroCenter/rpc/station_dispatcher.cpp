@@ -5,11 +5,11 @@
 #include "../stdafx.h"
 #include "station_dispatcher.h"
 #include <utility>
-#include "broadcasting_station.h"
+#include "notify_station.h"
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 当前活动的发布类
@@ -17,7 +17,7 @@ namespace agebull
 		station_dispatcher* station_dispatcher::instance = nullptr;
 
 		/**
-		*\brief 事件广播
+		*\brief 事件通知
 		*/
 		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content)
 		{
@@ -25,7 +25,7 @@ namespace agebull
 		}
 
 		/**
-		*\brief 系统事件广播
+		*\brief 系统事件通知
 		*/
 		bool system_event(zero_net_event event_type, const char* sub, const char* content)
 		{
@@ -33,12 +33,12 @@ namespace agebull
 		}
 
 		/**
-		*\brief 广播内容
+		*\brief 通知内容
 		*/
 		bool station_dispatcher::publish_event(const zero_net_event event_name, const char* title, const char* sub, const char* content)
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
-			if (instance == nullptr || get_net_state() == NET_STATE_DISTORY)
+			if (instance == nullptr || get_net_state() == net_state_distory)
 				return false;
 			shared_char description;
 
@@ -65,7 +65,7 @@ namespace agebull
 		bool station_dispatcher::publish(const string& title, const string& publiher, const string& arg)
 		{
 			//boost::lock_guard<boost::mutex> guard(_mutex);
-			if (get_net_state() == NET_STATE_DISTORY)
+			if (get_net_state() == net_state_distory)
 				return false;
 			shared_char description;
 			description.alloc_frame(frames);
@@ -93,7 +93,7 @@ namespace agebull
 		/**
 		* \brief 执行命令
 		*/
-		char station_dispatcher::exec_command(const char* command, vector<shared_char>& arguments, string& json)
+		char station_dispatcher::exec_command(const char* command, vector<shared_char>& arguments, string& json) const
 		{
 			int idx = strmatchi(command, station_commands_1);
 			switch (static_cast<station_commands_2>(idx))
@@ -169,26 +169,33 @@ namespace agebull
 			}
 		}
 
-
 		/**
-		* \brief 工作开始（发送到工作者）
+		* \brief 内部命令
 		*/
-		void station_dispatcher::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
+		bool station_dispatcher::extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
 		{
-			auto state = list[1].state();
-			switch (state)
+			auto command = description.command();
+			switch (command)
 			{
 			case ZERO_BYTE_COMMAND_PING:
 				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID);
-				return;
+				return true;
 			case ZERO_BYTE_COMMAND_HEART_JOIN:
 			case ZERO_BYTE_COMMAND_HEART_READY:
 			case ZERO_BYTE_COMMAND_HEART_PITPAT:
 			case ZERO_BYTE_COMMAND_HEART_LEFT:
-				const bool success = list.size() > 2 && station_warehouse::heartbeat(state, list);
+				const bool success = list.size() > 2 && station_warehouse::heartbeat(command, list);
 				send_request_status(socket, *list[0], success ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID);
-				return;
+				return true;
 			}
+			return false;
+		}
+
+		/**
+		* \brief 工作开始（发送到工作者）
+		*/
+		void station_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
+		{
 			const char* cmd = nullptr;
 			size_t rqid_index = 0, glid_index = 0, reqer_index = 0;
 			vector<shared_char> arg;
@@ -249,7 +256,7 @@ namespace agebull
 			//等待monitor_poll结束
 			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
-			if (get_net_state() == NET_STATE_RUNING)
+			if (get_net_state() == net_state_runing)
 			{
 				instance = nullptr;
 				station->destruct();
@@ -277,7 +284,7 @@ namespace agebull
 			zero_config& config = instance->get_config();
 			config.log("monitor poll start");
 			instance->task_semaphore_.post();
-			while (get_net_state() < NET_STATE_CLOSING)
+			while (get_net_state() < net_state_closing)
 			{
 				thread_sleep(json_config::worker_sound_ivl);
 				vector<string> cfgs;//复制避免锁定时间过长

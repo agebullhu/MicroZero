@@ -8,7 +8,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 表示计划任务调度服务
@@ -27,7 +27,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher()
-				:zero_station("PlanDispatcher", STATION_TYPE_PLAN, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station("PlanDispatcher", station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -35,7 +35,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher(shared_ptr<zero_config>& config)
-				:zero_station(config, STATION_TYPE_PLAN, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(config, station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -45,7 +45,7 @@ namespace agebull
 			~plan_dispatcher() final = default;
 
 			/**
-			* \brief 运行一个广播线程
+			* \brief 运行一个通知线程
 			*/
 			static void run()
 			{
@@ -85,14 +85,14 @@ namespace agebull
 			bool result_event(shared_ptr<plan_message>& message, vector<shared_char>& result);
 			
 			/**
-			*\brief 广播内容
+			*\brief 通知内容
 			*/
 			bool zero_event(zero_net_event event_type, const plan_message* message);
 
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
@@ -114,11 +114,11 @@ namespace agebull
 			/**
 			* \brief 计划进入
 			*/
-			bool on_plan_start(ZMQ_HANDLE socket, vector<shared_char>& list);
+			bool on_plan_start(zmq_handler socket, vector<shared_char>& list);
 			/**
 			* \brief 计划管理
 			*/
-			void on_plan_manage(ZMQ_HANDLE socket, vector<shared_char>& list);
+			void on_plan_manage(zmq_handler socket, vector<shared_char>& list);
 			/**
 			* \brief 执行命令
 			*/

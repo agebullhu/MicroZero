@@ -441,6 +441,7 @@
                             @switch (station.StationType)
                             {
                                 case ZeroStationType.Api:
+                                case ZeroStationType.RouteApi:
                                     {
                                         <i class="el-icon-star-on"></i>
                                         break;
@@ -450,7 +451,8 @@
                                         <i class="el-icon-star-off"></i>
                                         break;
                                     }
-                                case ZeroStationType.Publish:
+                                case ZeroStationType.Notify:
+                                case ZeroStationType.Queue:
                                     {
                                         <i class="el-icon-share"></i>
                                         break;

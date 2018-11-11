@@ -37,12 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Agebull.Rpc.Flysh.sys_addin">
-      <HintPath>..\..\..\..\..\玢翔医疗\研发部\源代码\扩展系统框架\FlyshContext\bin\Debug\netstandard2.0\Agebull.Rpc.Flysh.sys_addin.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

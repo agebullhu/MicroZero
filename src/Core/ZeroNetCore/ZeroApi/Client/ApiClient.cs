@@ -336,12 +336,13 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private static readonly byte[] SimpleCallDescription =
         {
-            4,
+            5,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.Command,
             ZeroFrameType.RequestId,
             ZeroFrameType.Argument,
             ZeroFrameType.Requester,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -350,7 +351,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private static readonly byte[] CallDescription =
         {
-            8,
+            9,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.Command,
             ZeroFrameType.RequestId,
@@ -359,7 +360,8 @@ namespace Agebull.ZeroNet.ZeroApi
             ZeroFrameType.Content,
             ZeroFrameType.Requester,
             ZeroFrameType.Responser,
-            ZeroFrameType.GlobalId
+            ZeroFrameType.GlobalId,
+            ZeroFrameType.SerivceKey
         };
 
         /// <summary>
@@ -367,11 +369,46 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private static readonly byte[] GetGlobalIdDescription =
         {
-            1,
+            2,
             (byte)ZeroByteCommand.GetGlobalId,
             ZeroFrameType.RequestId,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="desicription"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        static ZeroResultData QuietSend(ZSocket socket, byte[] desicription, params string[] args)
+        {
+            var message = new ZMessage();
+            var frame = new ZFrame(desicription);
+            message.Add(frame);
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    message.Add(new ZFrame(arg.ToZeroBytes()));
+                }
+            }
+            if (!socket.SendTo(message))
+            {
+                return new ZeroResultData
+                {
+                    State = ZeroOperatorStateType.LocalRecvError,
+                    ZmqError = socket.LastError
+                };
+            }
+            return new ZeroResultData
+            {
+                State = ZeroOperatorStateType.Ok,
+                InteractiveSuccess = true
+            };
+        }
 
         private void ReadNetWork(PoolSocket socket)
         {
@@ -379,7 +416,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var old = GlobalContext.RequestInfo.LocalGlobalId;
             if (Simple)
             {
-                result = socket.Socket.QuietSend(CallDescription,
+                result = QuietSend(socket.Socket,CallDescription,
                     Commmand,
                     GlobalContext.RequestInfo.RequestId,
                     null,//JsonConvert.SerializeObject(GlobalContext.Current),
@@ -387,11 +424,14 @@ namespace Agebull.ZeroNet.ZeroApi
                     null,
                     ZeroApplication.Config.StationName,
                     null,
-                    "0");
+                    "0",
+                    GlobalContext.ServiceKey);
             }
             else
             {
-                result = socket.Socket.QuietSend(GetGlobalIdDescription, GlobalContext.RequestInfo.RequestId);
+                result = QuietSend(socket.Socket,GetGlobalIdDescription, 
+                    GlobalContext.RequestInfo.RequestId,
+                    GlobalContext.ServiceKey);
                 if (!result.InteractiveSuccess)
                 {
                     socket.HaseFailed = true;
@@ -424,7 +464,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     LogRecorder.MonitorTrace($"GlobalId:{GlobalId}");
                 }
 
-                result = socket.Socket.QuietSend(CallDescription,
+                result = QuietSend(socket.Socket,CallDescription,
                     Commmand,
                     GlobalContext.RequestInfo.RequestId,
                     JsonConvert.SerializeObject(GlobalContext.Current),
@@ -432,7 +472,8 @@ namespace Agebull.ZeroNet.ZeroApi
                     ExtendArgument,
                     ZeroApplication.Config.StationName,
                     GlobalContext.Current.Organizational.RouteName,
-                    GlobalContext.RequestInfo.LocalGlobalId);
+                    GlobalContext.RequestInfo.LocalGlobalId,
+                    GlobalContext.ServiceKey);
                 GlobalContext.RequestInfo.LocalGlobalId = old;
             }
 

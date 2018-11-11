@@ -7,7 +7,7 @@ using namespace boost::posix_time;
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 
 		//map<string, shared_ptr<plan_message>> local_chche;
@@ -448,7 +448,7 @@ namespace agebull
 		*/
 		bool plan_message::save_message_worker(vector<const char*>& workers) const
 		{
-			if (station_type != STATION_TYPE_VOTE)
+			if (station_type != station_type_vote)
 				return false;
 			redis_live_scope redis(json_config::redis_defdb);
 			char key[256];
@@ -470,7 +470,7 @@ namespace agebull
 		*/
 		bool plan_message::save_message_result(const char* worker, vector<shared_char>& response)
 		{
-			if (station_type == STATION_TYPE_VOTE)
+			if (station_type == station_type_vote)
 			{
 				redis_live_scope scope(json_config::redis_defdb);
 				trans_redis* redis = scope.t();
@@ -516,7 +516,7 @@ namespace agebull
 		vector<shared_char> plan_message::get_message_result(const char* worker) const
 		{
 			vector<shared_char> result;
-			if (station_type != STATION_TYPE_VOTE)
+			if (station_type != station_type_vote)
 				return result;
 			redis_live_scope scope(json_config::redis_defdb);
 			trans_redis* redis = scope.t();

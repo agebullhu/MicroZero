@@ -8,7 +8,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 消息持久化存储(使用SQLite)
@@ -62,7 +62,7 @@ namespace agebull
 			/**
 			*\brief 取数据
 			*/
-			void load(int64 min, int64 max,vector<vector<shared_char>>& datas) const;
+			void load(int64 min, int64 max, std::function<void(vector<shared_char>&)> exec);
 		private:
 			bool read_last_id();
 		};

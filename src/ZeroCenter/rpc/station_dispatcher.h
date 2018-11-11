@@ -6,7 +6,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		 * \brief 表示站点调度服务
@@ -22,7 +22,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			station_dispatcher()
-				:zero_station("SystemManage", STATION_TYPE_DISPATCHER, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station("SystemManage", station_type_dispatcher, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -30,7 +30,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			station_dispatcher(shared_ptr<zero_config>& config)
-				:zero_station(config, STATION_TYPE_DISPATCHER, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(config, station_type_dispatcher, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -40,7 +40,7 @@ namespace agebull
 			~station_dispatcher() final = default;
 
 			/**
-			* \brief 运行一个广播线程
+			* \brief 运行一个通知线程
 			*/
 			static void run()
 			{
@@ -92,7 +92,7 @@ namespace agebull
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
 			/**
 			*\brief 发布消息
 			*/
@@ -101,12 +101,17 @@ namespace agebull
 			/**
 			* \brief 执行命令
 			*/
-			char exec_command(const char* command, vector<shared_char>& arguments, string& json);
+			char exec_command(const char* command, vector<shared_char>& arguments, string& json) const;
 			
 			/**
-			*\brief 广播内容
+			*\brief 通知内容
 			*/
 			static bool publish_event(zero_net_event event_name, const char* title, const char* sub, const char* content);
+		private:
+			/**
+			* \brief 内部命令
+			*/
+			bool extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
 		};
 	}
 }

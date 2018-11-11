@@ -22,7 +22,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 构造
         /// </summary>
-        protected SignlePublisher() : base(ZeroStationType.Publish, false)
+        protected SignlePublisher() : base(ZeroStationType.Notify, false)
         {
         }
 
@@ -71,7 +71,8 @@ namespace Agebull.ZeroNet.PubSub
                             data.Title.ToZeroBytes(),
                             GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
-                            buf);
+                            buf,
+                            GlobalContext.ServiceKey.ToZeroBytes());
                     }
                     else
                     {
@@ -79,7 +80,8 @@ namespace Agebull.ZeroNet.PubSub
                             data.Title.ToZeroBytes(),
                             GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
-                            data.ToZeroBytes());
+                            data.ToZeroBytes(),
+                            GlobalContext.ServiceKey.ToZeroBytes());
                     }
                 }
                 catch (Exception e)
@@ -172,7 +174,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            using (var socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity))
+            using (var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity))
             {
                 using (var poll = ZmqPool.CreateZmqPool())
                 {

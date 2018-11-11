@@ -4,7 +4,7 @@
 #include "zero_config.h"
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		class zero_station;
 		class station_dispatcher;
@@ -88,7 +88,7 @@ namespace agebull
 				int cnt = 0;
 				for (auto& kv : configs_)
 				{
-					if (kv.second->is_state(station_state::Stop))
+					if (kv.second->is_state(station_state::stop))
 						continue;
 					cnt++;
 				}

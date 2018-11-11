@@ -20,12 +20,13 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionTson =
         {
-            4,
+            5,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.TsonValue,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -34,12 +35,13 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionJson =
         {
-            4,
+            5,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.Content,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
         /// <summary>
@@ -47,12 +49,13 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionData =
         {
-            4,
+            5,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.BinaryValue,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -61,13 +64,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionTson2 =
         {
-            5,
+            6,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
             ZeroFrameType.Publisher,
             ZeroFrameType.TsonValue,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -76,13 +80,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionJson2 =
         {
-            5,
+            6,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
             ZeroFrameType.Publisher,
             ZeroFrameType.Content,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
         /// <summary>
@@ -90,13 +95,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionData2 =
         {
-            5,
+            6,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
             ZeroFrameType.Publisher,
             ZeroFrameType.BinaryValue,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -105,11 +111,12 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static readonly byte[] PubDescriptionEmpty =
         {
-            3,
+            4,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -219,7 +226,8 @@ namespace Agebull.ZeroNet.Core
                 if (!socket.SendTo(PubDescriptionEmpty,
                     title.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    ZeroApplication.Config.RealName.ToZeroBytes()))
+                    ZeroApplication.Config.RealName.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes()))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title);
                     return false;
@@ -266,7 +274,8 @@ namespace Agebull.ZeroNet.Core
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     subTitle.ToZeroBytes(),
                     ZeroApplication.Config.RealName.ToZeroBytes(),
-                    content))
+                    content,
+                    GlobalContext.ServiceKey.ToZeroBytes()))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title, subTitle);
                     return false;
@@ -300,7 +309,8 @@ namespace Agebull.ZeroNet.Core
                     title.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     ZeroApplication.Config.RealName.ToZeroBytes(),
-                    content))
+                    content,
+                    GlobalContext.ServiceKey.ToZeroBytes()))
                 {
                     ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Connects.LinkToString(','), title);
                     return false;

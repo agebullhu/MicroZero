@@ -12,7 +12,7 @@
         /// <summary>
         /// 广播
         /// </summary>
-        Publish = 2,
+        Notify = 2,
         /// <summary>
         /// API
         /// </summary>
@@ -25,6 +25,10 @@
         /// 定向路由API
         /// </summary>
         RouteApi = 5,
+        /// <summary>
+        /// 队列任务
+        /// </summary>
+        Queue = 6,
         /// <summary>
         /// 计划任务
         /// </summary>

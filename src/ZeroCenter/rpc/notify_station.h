@@ -1,5 +1,5 @@
-#ifndef ZMQ_API_BROADCASTING_STATION_H
-#define ZMQ_API_BROADCASTING_STATION_H
+#ifndef ZMQ_API_NOTIFY_STATION_H
+#define ZMQ_API_NOTIFY_STATION_H
 #pragma once
 #include "../stdinc.h"
 #include <utility>
@@ -8,20 +8,21 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
-		* \brief 表示一个广播站点
+		* \brief 表示一个通知站点
 		*/
-		class broadcasting_station :public zero_station
+		class notify_station :public zero_station
 		{
+			static char frames1[], frames2[], frames3[];
 		public:
 			/**
 			 * \brief 构造
 			 * \param name
 			 */
-			broadcasting_station(string name)
-				: zero_station(std::move(name), STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB)
+			notify_station(string name)
+				: zero_station(std::move(name), station_type_notify, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -29,15 +30,15 @@ namespace agebull
 			 * \brief 构造
 			 * \param config
 			 */
-			broadcasting_station(shared_ptr<zero_config>& config)
-				: zero_station(config, STATION_TYPE_PUBLISH, ZMQ_ROUTER, ZMQ_PUB)
+			notify_station(shared_ptr<zero_config>& config)
+				: zero_station(config, station_type_notify, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
 			/**
 			*\brief 发送消息
 			*/
@@ -48,7 +49,7 @@ namespace agebull
 			*/
 			bool publish(const string& publiher, const string& title, const string& arg);
 			/**
-			*\brief 广播内容
+			*\brief 通知内容
 			*/
 			bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
 			/**
@@ -58,28 +59,28 @@ namespace agebull
 			/**
 			 * \brief 析构
 			 */
-			virtual ~broadcasting_station() = default;
+			virtual ~notify_station() = default;
 			/**
-			* \brief 运行一个广播线程
+			* \brief 运行一个通知线程
 			*/
 			static void run(string name)
 			{
-				boost::thread(launch, make_shared<broadcasting_station>(name));
+				boost::thread(launch, make_shared<notify_station>(name));
 			}
 			/**
 			*\brief 运行
 			*/
 			static void run(shared_ptr<zero_config>& config)
 			{
-				if (config->is_state(station_state::Stop))
+				if (config->is_state(station_state::stop))
 					return;
-				boost::thread(boost::bind(launch, std::make_shared<broadcasting_station>(config)));
+				boost::thread(boost::bind(launch, std::make_shared<notify_station>(config)));
 			}
 			/**
-			*\brief 运行一个广播线程
+			*\brief 运行一个通知线程
 			*/
-			static void launch(shared_ptr<broadcasting_station> station);
+			static void launch(shared_ptr<notify_station> station);
 		};
 	}
 }
-#endif//!ZMQ_API_BROADCASTING_STATION_H
+#endif//!ZMQ_API_NOTIFY_STATION_H

@@ -241,7 +241,7 @@ namespace agebull
 		bool del_hash(const char* key, const char* sub_key) const;
 		bool get_hash(const char* key, std::map<acl::string, acl::string>& vl) const;
 
-		bool set_hash_val(const char* key, const char* sub_key, const agebull::zmq_net::shared_char& ptr) const
+		bool set_hash_val(const char* key, const char* sub_key, const agebull::zero_net::shared_char& ptr) const
 		{
 			return m_redis_cmd->hset(key, sub_key, *ptr, ptr.size()) >= 0;
 		}
@@ -286,7 +286,7 @@ namespace agebull
 			m_redis_cmd->hset(key, sub_key, buf);
 		}
 
-		bool get_hash_val(const char* key, const char* sub_key, agebull::zmq_net::shared_char& ptr) const
+		bool get_hash_val(const char* key, const char* sub_key, agebull::zero_net::shared_char& ptr) const
 		{
 			acl::string val;
 			if (!m_redis_cmd->hget(key, sub_key, val))
@@ -366,14 +366,14 @@ namespace agebull
 			num = atoll(val.c_str());
 			return true;
 		}
-		agebull::zmq_net::shared_char get_hash_ptr(const char* key, const char* sub_key) const
+		agebull::zero_net::shared_char get_hash_ptr(const char* key, const char* sub_key) const
 		{
 			acl::string val;
 			if (!m_redis_cmd->hget(key, sub_key, val))
 			{
-				return agebull::zmq_net::shared_char();
+				return agebull::zero_net::shared_char();
 			}
-			return agebull::zmq_net::shared_char(val);
+			return agebull::zero_net::shared_char(val);
 		}
 		long get_hash_num(const char* key, const char* sub_key) const
 		{

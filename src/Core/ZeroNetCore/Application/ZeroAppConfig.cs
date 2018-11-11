@@ -473,8 +473,6 @@ namespace Agebull.ZeroNet.Core
             
             global.LogFolder = string.IsNullOrWhiteSpace(global.LogFolder) ? IOHelper.CheckPath(rootPath, "logs") : global.LogFolder.Trim();
             global.DataFolder = string.IsNullOrWhiteSpace(global.DataFolder) ? IOHelper.CheckPath(rootPath, "datas") : global.DataFolder.Trim();
-            global.ServiceName = string.IsNullOrWhiteSpace(global.ServiceName) ? Dns.GetHostName() : global.ServiceName.Trim();
-            global.ServiceKey = string.IsNullOrWhiteSpace(global.ServiceKey) ? RandomOperate.Generate(8) : global.ServiceKey.Trim();
             global.ConfigFolder = string.IsNullOrWhiteSpace(global.ConfigFolder) ? IOHelper.CheckPath(rootPath, "config") : global.ConfigFolder.Trim();
 
             global.ZeroAddress = string.IsNullOrWhiteSpace(global.ZeroAddress) ? "127.0.0.1" : global.ZeroAddress.Trim();
@@ -484,10 +482,10 @@ namespace Agebull.ZeroNet.Core
                 global.ZeroMonitorPort = 8001;
 
 
+            Config.ServiceKey = global.ServiceKey;
+            Config.ServiceName = Dns.GetHostName();
             if (global.StationIsolate || Config.StationIsolate)
             {
-                Config.ServiceName = string.IsNullOrWhiteSpace(Config.ServiceName) ? global.ServiceName : Config.ServiceName.Trim();
-                Config.ServiceKey = string.IsNullOrWhiteSpace(Config.ServiceKey) ? global.ServiceKey : Config.ServiceKey.Trim();
                 Config.ZeroAddress = string.IsNullOrWhiteSpace(Config.ZeroAddress) ? global.ZeroAddress : Config.ZeroAddress.Trim();
                 if (Config.ZeroManagePort <= 1024 || Config.ZeroManagePort >= 65000)
                     Config.ZeroManagePort = global.ZeroManagePort;
@@ -500,8 +498,6 @@ namespace Agebull.ZeroNet.Core
             }
             else
             {
-                Config.ServiceName = global.ServiceName;
-                Config.ServiceKey = global.ServiceKey;
                 Config.ZeroAddress = global.ZeroAddress;
                 Config.ZeroManagePort = global.ZeroManagePort;
                 Config.ZeroMonitorPort = global.ZeroMonitorPort;

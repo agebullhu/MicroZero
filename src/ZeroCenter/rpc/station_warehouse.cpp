@@ -1,13 +1,12 @@
 #include "../stdafx.h"
-#include "broadcasting_station.h"
 #include "api_station.h"
 #include "route_api_station.h"
-//#include "vote_station.h"
-#include<stdio.h>
-#include<string.h>
+#include "notify_station.h"
+#include "queue_station.h"
+
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 端口自动分配的Redis键名
@@ -71,10 +70,10 @@ namespace agebull
 				acl::string port;
 				port.format_append("%d", json_config::base_tcp_port);
 				redis->set(port_redis_key, port);
-				install("SystemManage", STATION_TYPE_DISPATCHER, "man", "ZeroNet system mamage station.", true);
-				install("PlanDispatcher", STATION_TYPE_PLAN, "plan", "ZeroNet plan & task mamage station.", true);
-				install("RemoteLog", STATION_TYPE_PUBLISH, "log", "ZeroNet remote log station.", true);
-				install("HealthCenter", STATION_TYPE_PUBLISH, "hea", "ZeroNet health center log station.", true);
+				install("SystemManage", station_type_dispatcher, "man", "ZeroNet system mamage station.", true);
+				install("PlanDispatcher", station_type_plan, "plan", "ZeroNet plan & task mamage station.", true);
+				install("RemoteLog", station_type_notify, "log", "ZeroNet remote log station.", true);
+				install("HealthCenter", station_type_notify, "hea", "ZeroNet health center log station.", true);
 			}
 			return true;
 		}
@@ -89,7 +88,7 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto& kv : configs_)
 			{
-				if (kv.second->station_type_ <= STATION_TYPE_DISPATCHER || kv.second->station_type_ > STATION_TYPE_SPECIAL)
+				if (IS_SYS_STATION(kv.second->station_type_))
 					continue;
 				if (restore(kv.second))
 					cnt++;
@@ -102,21 +101,24 @@ namespace agebull
 		*/
 		bool station_warehouse::restore(shared_ptr<zero_config>& config)
 		{
-			if (config->is_state(station_state::Stop))
+			if (config->is_state(station_state::stop))
 				return false;
 			switch (config->station_type_)
 			{
-			case STATION_TYPE_API:
+			case station_type_api:
 				api_station::run(config);
 				return true;
-			case STATION_TYPE_ROUTE_API:
+			case station_type_route_api:
 				route_api_station::run(config);
 				return true;
 				//case STATION_TYPE_VOTE:
 				//	vote_station::run(config);
 				//	return true;
-			case STATION_TYPE_PUBLISH:
-				broadcasting_station::run(config);
+			case station_type_notify:
+				notify_station::run(config);
+				return true;
+			case station_type_queue:
+				queue_station::run(config);
 				return true;
 			default:
 				return false;
@@ -273,10 +275,10 @@ namespace agebull
 			return install(config);
 		}
 
-		const char* station_types_1[] = { "api", "pub", "vote", "rapi" };
+		const char* station_types_1[] = { "api", "pub", "vote", "rapi", "queue" };
 		enum class station_types_2
 		{
-			api, pub, vote, rapi
+			api, pub, vote, rapi,queue
 		};
 
 		/**
@@ -289,16 +291,19 @@ namespace agebull
 			switch (static_cast<station_types_2>(idx))
 			{
 			case station_types_2::api:
-				type = STATION_TYPE_API;
+				type = station_type_api;
 				break;
 			case station_types_2::rapi:
-				type = STATION_TYPE_ROUTE_API;
+				type = station_type_route_api;
 				break;
 			case station_types_2::pub:
-				type = STATION_TYPE_PUBLISH;
+				type = station_type_notify;
 				break;
 			case station_types_2::vote:
-				type = STATION_TYPE_VOTE;
+				type = station_type_vote;
+				break;
+			case station_types_2::queue:
+				type = station_type_queue;
 				break;
 			default:
 				return false;
@@ -345,15 +350,14 @@ namespace agebull
 			config->request_port_ = static_cast<int>(port);
 			redis->incr(port_redis_key, &port);
 			config->worker_out_port_ = static_cast<int>(port);
-			//API与VOTE有返回值接口
-			switch(config->station_type_)
+			switch (config->station_type_)
 			{
-			case STATION_TYPE_API:
-			case STATION_TYPE_VOTE:
-			case STATION_TYPE_ROUTE_API:
+			case station_type_api:
+			case station_type_vote:
+			case station_type_route_api:
+			case station_type_queue:
 				redis->incr(port_redis_key, &port);
 				config->worker_in_port_ = static_cast<int>(port);
-
 			}
 			acl::string json = save(config);
 			insert_config(config);
@@ -375,7 +379,7 @@ namespace agebull
 				return false;
 			config->station_caption_ = new_cfg->station_caption_;
 			config->station_description_ = new_cfg->station_description_;
-			if (config->station_type_ > STATION_TYPE_DISPATCHER && config->station_type_ < STATION_TYPE_SPECIAL)
+			if (IS_GENERAL_STATION(config->station_type_))
 			{
 				config->alias_ = new_cfg->alias_;
 			}
@@ -391,9 +395,9 @@ namespace agebull
 		bool station_warehouse::recover(const char* station_name)
 		{
 			shared_ptr<zero_config> config = get_config(station_name);
-			if (!config || !config->is_state(station_state::Stop) || config->is_base)
+			if (!config || !config->is_state(station_state::stop) || config->is_base)
 				return false;
-			config->set_state(station_state::None);
+			config->set_state(station_state::none);
 			acl::string json = save(config);
 			config->log("recover");
 			zero_event(zero_net_event::event_station_install, "station", config->station_name_.c_str(), json.c_str());
@@ -405,7 +409,7 @@ namespace agebull
 		bool station_warehouse::remove(const char* station_name)
 		{
 			shared_ptr<zero_config> config = get_config(station_name);
-			if (!config || !config->is_state(station_state::Stop) || config->is_base)
+			if (!config || !config->is_state(station_state::stop) || config->is_base)
 				return false;
 			host_json.clear();
 			boost::format fmt("net:host:%1%");
@@ -424,9 +428,9 @@ namespace agebull
 		bool station_warehouse::stop(const string& station_name)
 		{
 			shared_ptr<zero_config> config = get_config(station_name);
-			if (!config || config->is_state(station_state::Stop) || config->is_base)
+			if (!config || config->is_state(station_state::stop) || config->is_base)
 				return false;
-			config->set_state(station_state::Stop);
+			config->set_state(station_state::stop);
 			save(config);
 			config->log("stop");
 			auto station = instance(station_name);
@@ -448,7 +452,7 @@ namespace agebull
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
 				if (examples_.find(station->config_->station_name_) != examples_.end())
 					return false;
-				station->config_->runtime_state(station_state::Run);
+				station->config_->runtime_state(station_state::run);
 				examples_.insert(make_pair(station->config_->station_name_, station));
 			}
 			acl::string json = station->config_->to_full_json();
@@ -467,7 +471,7 @@ namespace agebull
 				const auto iter = examples_.find(station->config_->station_name_);
 				if (iter == examples_.end() || iter->second != station)
 					return false;
-				station->config_->runtime_state(station_state::Closed);
+				station->config_->runtime_state(station_state::closed);
 				examples_.erase(iter);
 			}
 			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name_.c_str(), "");
@@ -538,7 +542,7 @@ namespace agebull
 			if (station != nullptr)
 				return station->resume(true) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 			shared_ptr<zero_config> config = get_config(arg);
-			if (!config||config->is_state(station_state::Stop))
+			if (!config || config->is_state(station_state::stop))
 				return ZERO_STATUS_NOT_FIND_ID;
 			return restore(config) ? ZERO_STATUS_OK_ID : ZERO_STATUS_FAILED_ID;
 		}
@@ -608,7 +612,7 @@ namespace agebull
 			foreach_configs([](shared_ptr<zero_config>& config)
 			{
 				boost::lock_guard<boost::mutex> guard(config->mutex_);
-				config->runtime_state(station_state::Destroy);
+				config->runtime_state(station_state::destroy);
 			});
 			save_configs();
 		}

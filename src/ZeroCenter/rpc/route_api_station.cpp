@@ -4,7 +4,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 执行
@@ -28,7 +28,7 @@ namespace agebull
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::Stop) && get_net_state() == NET_STATE_RUNING)
+			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -43,7 +43,7 @@ namespace agebull
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		inline void route_api_station::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
+		inline void route_api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
 		{
 			shared_char caller = list[0];
 			if (inner)

@@ -48,8 +48,11 @@ namespace WebMonitor.Controler
             ZeroStationType type;
             switch (info.Type.ToLower())
             {
-                case "pub":
-                    type = ZeroStationType.Publish;
+                case "notify":
+                    type = ZeroStationType.Notify;
+                    break;
+                case "queue":
+                    type = ZeroStationType.Queue;
                     break;
                 case "vote":
                     type = ZeroStationType.Vote;

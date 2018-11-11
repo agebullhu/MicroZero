@@ -1,25 +1,31 @@
-﻿using System;
-using Agebull.Common.Rpc;
+﻿using Agebull.Common.Rpc;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using System.ComponentModel;
+using Agebull.ZeroNet.PubSub;
 
 namespace ApiTest
 {
     /// <summary>
     /// 登录服务
     /// </summary>
-    public abstract class ApiControlleraaa : ApiController
+    [Station("QUEUE")]
+    public class TestQueue : QueueStation
     {
+        /// <summary>
+        /// 构造
+        /// </summary>
+        public TestQueue()
+        {
+            StationName = "QUEUE";
+        }
         /// <summary>
         /// 登录
         /// </summary>
         /// <returns></returns>
-        [Route("api/test")]
+        [Route("test")]
         [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
         public ApiPageResult<LoginArg> Login(LoginArg arg)
         {
-            Test();
             return new ApiPageResult<LoginArg>
             {
                 Success = true,
@@ -30,18 +36,6 @@ namespace ApiTest
                 }
             };
         }
-        public abstract void Test();
     }
 
-    /// <summary>
-    /// 登录服务
-    /// </summary>
-    [Station("TestCtr")]
-    public class LoginStation : ApiControlleraaa
-    {
-        public override void Test()
-        {
-            Console.WriteLine("OK");
-        }
-    }
 }

@@ -1,37 +1,36 @@
 #pragma once
 #ifndef ZERO_DEFAULT_H_
-#define  ZERO_DEFAULT_H_
+#define ZERO_DEFAULT_H_
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
-		typedef void* ZMQ_HANDLE;
+		typedef void* zmq_handler;
 
-		typedef uchar* TSON_BUFFER;
+		typedef uchar* tson_buffer;
 
 		/*!
 		* 站点类型
 		*/
-		typedef int STATION_TYPE;
-		const STATION_TYPE STATION_TYPE_DISPATCHER = 1;//系统调度
-		const STATION_TYPE STATION_TYPE_PUBLISH = 2;//发布订阅
-		const STATION_TYPE STATION_TYPE_API = 3;//普通API
-		const STATION_TYPE STATION_TYPE_VOTE = 4;//投票即并发机制
-		const STATION_TYPE STATION_TYPE_ROUTE_API = 5;//2018.08.03:新增,定向路由API
-		const STATION_TYPE STATION_TYPE_SPECIAL = 0xA0;//专用站点分割标记,不使用
-		const STATION_TYPE STATION_TYPE_PLAN = 0xFF;//计划任务
+		typedef int station_type;
+		const station_type station_type_dispatcher = 1;//系统调度
+		const station_type station_type_notify = 2;//发布订阅
+		const station_type station_type_api = 3;//普通API
+		const station_type station_type_vote = 4;//投票即并发机制
+		const station_type station_type_route_api = 5;//2018.08.03:新增,定向路由API
+		const station_type station_type_queue = 6;//2018.11.10:新增,队列任务(发完请求后进队列处理)
+		const station_type station_type_plan = 0xFF;//计划任务
+#define IS_PUB_STATION(type) type == station_type_dispatcher ||type == station_type_notify ||type == station_type_plan ||type == station_type_queue
+#define IS_SYS_STATION(type) (type == station_type_dispatcher ||type == station_type_plan)
+#define IS_GENERAL_STATION(type) (type == station_type_api || type == station_type_notify || type == station_type_queue || type == station_type_vote || type == station_type_route_api)
 
-		/*!
-		* 网络状态
-		*/
-		typedef int NET_STATE;
-		const NET_STATE NET_STATE_NONE = 0;
-		const NET_STATE NET_STATE_RUNING = 1;
-		const NET_STATE NET_STATE_CLOSING = 2;
-		const NET_STATE NET_STATE_CLOSED = 3;
-		const NET_STATE NET_STATE_DISTORY = 4;
-		const NET_STATE NET_STATE_FAILED = 5;
+		const int net_state_none = 0;
+		const int net_state_runing = 1;
+		const int net_state_closing = 2;
+		const int net_state_closed = 3;
+		const int net_state_distory = 4;
+		const int net_state_failed = 5;
 
 		/*!
 		*以下为状态文字
@@ -52,11 +51,12 @@ namespace agebull
 #define ZERO_STATUS_VOTE_BYE  "+bye"
 #define ZERO_STATUS_VOTE_START  "+start"
 #define ZERO_STATUS_VOTE_END  "+end"
-
+		
 		/*!
 		* 错误状态
 		*/
 #define ZERO_STATUS_BAD  '-'
+#define ZERO_STATUS_DENY_ACCESS  "-deny"
 #define ZERO_STATUS_FAILED  "-failed"
 #define ZERO_STATUS_ERROR  "-error"
 #define ZERO_STATUS_NOT_SUPPORT  "-not support"
@@ -86,18 +86,20 @@ namespace agebull
 #define ZERO_FRAME_REQUEST_ID  '\4'
 		//执行计划
 #define ZERO_FRAME_PLAN  '\5'
+		//执行计划
+#define ZERO_FRAME_PLAN_TIME  '\6'
+		//服务认证标识
+#define ZERO_FRAME_SERVICE_KEY  '\a'
 		//本地标识
-#define ZERO_FRAME_LOCAL_ID  '\6'
-		//消息内容
-#define ZERO_FRAME_MESSAGE  '\7'
+#define ZERO_FRAME_LOCAL_ID  '\b'
 		//命令
 #define ZERO_FRAME_COMMAND  '$'
 		//参数
 #define ZERO_FRAME_ARG  '%'
-		//广播主题
+		//通知主题
 #define ZERO_FRAME_PUB_TITLE  '*'
-		//广播副题
-#define ZERO_FRAME_SUBTITLE  '@'
+		//通知副题
+#define ZERO_FRAME_SUBTITLE  ZERO_FRAME_COMMAND
 		//网络上下文信息
 #define ZERO_FRAME_CONTEXT  '#'
 		//请求者/生产者
@@ -149,6 +151,7 @@ namespace agebull
 #define ZERO_STATUS_PLAN_ERROR_ID uchar(0xF6)
 #define ZERO_STATUS_SEND_ERROR_ID uchar(0xF7)
 #define ZERO_STATUS_RECV_ERROR_ID uchar(0xF8)
+#define ZERO_STATUS_DENY_ERROR_ID uchar(0xF9)
 
 		 /*!
 		  * 以下为请求时的快捷命令:说明帧的第二节字([1])
@@ -168,6 +171,10 @@ namespace agebull
 		  * \brief 代理执行
 		  */
 #define ZERO_BYTE_COMMAND_PROXY '\3'
+		  /**
+		  * \brief 取得未处理数据
+		  */
+#define ZERO_BYTE_COMMAND_RESTART '\4'
 
 		  /**
 		  * \brief 取全局标识
@@ -379,13 +386,9 @@ namespace agebull
 				case ZERO_FRAME_RESPONSER:
 					str.append(",\"RESPONSER\"");
 					break;
-					//广播主题
+					//通知主题
 				case ZERO_FRAME_PUB_TITLE:
 					str.append(",\"PUB_TITLE\"");
-					break;
-					//广播副题
-				case ZERO_FRAME_SUBTITLE:
-					str.append(",\"SUBTITLE\"");
 					break;
 				case ZERO_FRAME_STATUS:
 					str.append(",\"STATUS\"");

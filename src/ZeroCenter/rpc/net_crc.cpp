@@ -2,7 +2,7 @@
 using namespace std;
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		static unsigned char auchCRCHi[] = {
 			0x00,0xC1,0x81,0x40,0x01,0xC0,0x80,0x41,0x01,0xC0,

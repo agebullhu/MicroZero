@@ -128,6 +128,11 @@ namespace Agebull.ZeroNet.Core
         public const string ZeroUnknowError = "-error";
 
         /// <summary>
+        /// 拒绝访问
+        /// </summary>
+        public const string DenyAccess = "-deny";
+
+        /// <summary>
         /// 状态原始文本
         /// </summary>
         /// <param name="state"></param>
@@ -199,6 +204,8 @@ namespace Agebull.ZeroNet.Core
                     return "-error. ZeroApplication no ready.";
                 case ZeroOperatorStateType.LocalZmqError:
                     return "-error. ZeroMQ  error.";
+                case ZeroOperatorStateType.DenyAccess:
+                    return DenyAccess;
                 default:
                     return ZeroCommandError;
             }

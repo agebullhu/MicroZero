@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using Agebull.Common.Rpc;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -10,96 +11,6 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class ZeroCommandExtend
     {
-
-        #region 调用支持
-
-        /// <summary>
-        ///     一次请求
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="desicription"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static ZeroResultData QuietSend(this ZSocket socket, byte[] desicription, params string[] args)
-        {
-            var message = new ZMessage();
-            var frame = new ZFrame(desicription);
-            message.Add(frame);
-            if (args != null)
-            {
-                foreach (var arg in args)
-                {
-                    message.Add(new ZFrame(arg.ToZeroBytes()));
-                }
-            }
-            if (!socket.SendTo(message))
-            {
-                return new ZeroResultData
-                {
-                    State = ZeroOperatorStateType.LocalRecvError,
-                    ZmqError = socket.LastError
-                };
-            }
-            return new ZeroResultData
-            {
-                State = ZeroOperatorStateType.Ok,
-                InteractiveSuccess = true
-            };
-        }
-        /// <summary>
-        ///     一次请求
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="desicription"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static ZeroResultData SendTo(this ZSocket socket, byte[] desicription, params string[] args)
-        {
-            var message = new ZMessage
-            {
-                new ZFrame(desicription)
-            };
-            if (args != null)
-            {
-                foreach (var arg in args)
-                {
-                    message.Add(new ZFrame((arg).ToZeroBytes()));
-                }
-            }
-            if (!socket.SendTo(message))
-            {
-#if DEBUG
-                        ZeroTrace.WriteError("SendTo", /*error.Text,*/ socket.Connects.LinkToString(','),
-                            $"Socket Ptr:{socket.SocketPtr}");
-#endif
-                return new ZeroResultData
-                {
-                    State = ZeroOperatorStateType.LocalRecvError,
-                    ZmqError = socket.LastError
-                };
-            }
-            return new ZeroResultData
-            {
-                State = ZeroOperatorStateType.Ok,
-                InteractiveSuccess = true
-            };
-        }
-
-        /// <summary>
-        ///     一次请求
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="desicription"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static ZeroResultData Call(this ZSocket socket, byte[] desicription, params string[] args)
-        {
-            var result = SendTo(socket, desicription, args);
-            return !result.InteractiveSuccess ? result : socket.ReceiveString();
-        }
-
-        #endregion
-
         #region 接收支持
 
         /// <summary>

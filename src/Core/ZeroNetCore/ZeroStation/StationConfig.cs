@@ -38,7 +38,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [DataMember]
         [JsonProperty("is_general")]
-        public bool IsGeneralStation => StationType == ZeroStationType.Api || StationType == ZeroStationType.Publish || StationType == ZeroStationType.Vote;
+        public bool IsGeneralStation => StationType == ZeroStationType.Api || StationType == ZeroStationType.Notify || StationType == ZeroStationType.Vote;
 
         /// <summary>
         ///     站点简称
@@ -60,6 +60,12 @@ namespace Agebull.ZeroNet.Core
         [DataMember]
         [JsonProperty("station_type")]
         public ZeroStationType StationType { get; set; }
+
+        /// <summary>
+        ///     站点类型
+        /// </summary>
+        [DataMember]
+        [JsonProperty("type")] public string Type => StationType.ToString();
 
         /// <summary>
         ///     入站端口

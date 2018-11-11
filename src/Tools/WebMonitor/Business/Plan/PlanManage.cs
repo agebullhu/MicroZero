@@ -1,20 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Agebull.Common.Configuration;
-using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
-using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
 using WebMonitor;
-using ZeroMQ;
 
 namespace ZeroNet.Http.Route
 {
@@ -68,26 +59,22 @@ namespace ZeroNet.Http.Route
         }
         public static void RemovePlan(ZeroPlan plan)
         {
-            if (Plans.TryGetValue(plan.plan_id, out var old))
-            {
-                Plans.Remove(plan.plan_id);
-                plan.plan_state = plan_message_state.remove;
-                WebSocketNotify.Publish("plan_notify", "remove", JsonConvert.SerializeObject(plan));
-            }
+            if (!Plans.TryGetValue(plan.plan_id, out _)) return;
+            Plans.Remove(plan.plan_id);
+            plan.plan_state = plan_message_state.remove;
+            WebSocketNotify.Publish("plan_notify", "remove", JsonConvert.SerializeObject(plan));
         }
         public static void UpdatePlan(ZeroPlan plan)
         {
-            if (Plans.TryGetValue(plan.plan_id, out var old))
-            {
-                old.exec_time = plan.exec_time;
-                old.exec_state = plan.exec_state;
-                old.plan_state = plan.plan_state;
-                old.plan_time = plan.plan_time;
-                old.real_repet = plan.real_repet;
-                old.skip_set = plan.skip_set;
-                old.skip_num = plan.skip_num;
-                WebSocketNotify.Publish("plan_notify", "update", JsonConvert.SerializeObject(plan));
-            }
+            if (!Plans.TryGetValue(plan.plan_id, out var old)) return;
+            old.exec_time = plan.exec_time;
+            old.exec_state = plan.exec_state;
+            old.plan_state = plan.plan_state;
+            old.plan_time = plan.plan_time;
+            old.real_repet = plan.real_repet;
+            old.skip_set = plan.skip_set;
+            old.skip_num = plan.skip_num;
+            WebSocketNotify.Publish("plan_notify", "update", JsonConvert.SerializeObject(plan));
         }
 
         public static void SyncPlan(ZeroPlan plan)
@@ -233,28 +220,30 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     请求格式说明
         /// </summary>
-        private readonly byte[] planApiDescription =
+        private readonly byte[] _planApiDescription =
         {
-            4,
+            5,
             (byte)ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Context,
             ZeroFrameType.Command,
             ZeroFrameType.Argument,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
         /// <summary>
         ///     请求格式说明
         /// </summary>
-        private readonly byte[] planPubDescription =
+        private readonly byte[] _planPubDescription =
         {
-            4,
+            5,
            (byte) ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Context,
             ZeroFrameType.PubTitle,
             ZeroFrameType.Content,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -263,11 +252,12 @@ namespace ZeroNet.Http.Route
         /// </summary>
         private readonly byte[] commandDescription =
         {
-            3,
+            4,
            (byte) ZeroByteCommand.Plan,
             ZeroFrameType.Plan,
             ZeroFrameType.Command,
             ZeroFrameType.Argument,
+            ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
 
@@ -315,19 +305,21 @@ namespace ZeroNet.Http.Route
 
             if (config.StationType == ZeroStationType.Api || config.StationType == ZeroStationType.Vote)
             {
-                success = socket.Socket.SendTo(planApiDescription,
+                success = socket.Socket.SendTo(_planApiDescription,
                     plan.ToZeroBytes(),
                     clientPlan.context.ToZeroBytes(),
                     clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes());
+                    clientPlan.argument.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
             }
-            else if (config.StationType == ZeroStationType.Publish)
+            else if (config.StationType == ZeroStationType.Notify)
             {
-                success = socket.Socket.SendTo(planPubDescription,
+                success = socket.Socket.SendTo(_planPubDescription,
                     plan.ToZeroBytes(),
                     clientPlan.context.ToZeroBytes(),
                     clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes());
+                    clientPlan.argument.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
             }
             else//Manage
             {
@@ -341,7 +333,8 @@ namespace ZeroNet.Http.Route
                 success = socket.Socket.SendTo(commandDescription,
                     plan.ToZeroBytes(),
                     clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes());
+                    clientPlan.argument.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
             }
             if (!success)
             {

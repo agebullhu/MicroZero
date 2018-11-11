@@ -1,5 +1,5 @@
 /**
- * ZMQ广播代理类
+ * ZMQ通知代理类
  *
  *
  */
@@ -10,7 +10,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		//const char* publiher, const char* title, const char* sub, const char* arg, const char* rid, const int64 gid
 		const char* create_sql =
@@ -37,7 +37,7 @@ namespace agebull
 			_config = config;
 
 			acl::string path;
-			path.format("%sdatas/%s.db", json_config::root_path.c_str(), config.station_name_.c_str());
+			path.format("%sdatas/%s.db", json_config::root_path.c_str(), config->station_name_.c_str());
 			int result = sqlite3_open(path.c_str(), &_sqlite_db);
 			if (result != SQLITE_OK)
 			{
@@ -53,8 +53,8 @@ namespace agebull
 				_sqlite_db = nullptr;
 				return false;
 			}
-			sqlite3_prepare_v2(_sqlite_db, insert_sql, strlen(insert_sql), &_insert_stmt, nullptr);
-			sqlite3_prepare_v2(_sqlite_db, load_sql, strlen(load_sql), &_load_stmt, nullptr);
+			sqlite3_prepare_v2(_sqlite_db, insert_sql, static_cast<int>(strlen(insert_sql)), &_insert_stmt, nullptr);
+			sqlite3_prepare_v2(_sqlite_db, load_sql, static_cast<int>(strlen(load_sql)), &_load_stmt, nullptr);
 			log_msg2("[%s] : db > Open database(%s)", _config->station_name_.c_str(), path.c_str());
 			return true;
 		}
@@ -105,23 +105,23 @@ namespace agebull
 			if (publiher == nullptr)
 				sqlite3_bind_null(_insert_stmt, ++idx);
 			else
-				sqlite3_bind_text(_insert_stmt, ++idx, publiher, strlen(publiher), nullptr);//publiher
+				sqlite3_bind_text(_insert_stmt, ++idx, publiher, static_cast<int>(strlen(publiher)), nullptr);//publiher
 			if (title == nullptr)
 				sqlite3_bind_null(_insert_stmt, ++idx);
 			else
-				sqlite3_bind_text(_insert_stmt, ++idx, title, strlen(title), nullptr);//pri_title
+				sqlite3_bind_text(_insert_stmt, ++idx, title, static_cast<int>(strlen(title)), nullptr);//pri_title
 			if (sub == nullptr)
 				sqlite3_bind_null(_insert_stmt, ++idx);
 			else
-				sqlite3_bind_text(_insert_stmt, ++idx, sub, strlen(title), nullptr);//sub_title
+				sqlite3_bind_text(_insert_stmt, ++idx, sub, static_cast<int>(strlen(title)), nullptr);//sub_title
 			if (reqid == nullptr)
 				sqlite3_bind_null(_insert_stmt, ++idx);
 			else
-				sqlite3_bind_text(_insert_stmt, ++idx, reqid, strlen(reqid), nullptr);//rid
+				sqlite3_bind_text(_insert_stmt, ++idx, reqid, static_cast<int>(strlen(reqid)), nullptr);//rid
 			if (arg == nullptr)
 				sqlite3_bind_null(_insert_stmt, ++idx);
 			else
-				sqlite3_bind_text(_insert_stmt, ++idx, arg, strlen(arg), nullptr);//arg
+				sqlite3_bind_text(_insert_stmt, ++idx, arg, static_cast<int>(strlen(arg)), nullptr);//arg
 			if (sqlite3_step(_insert_stmt) == SQLITE_DONE)
 				return _last_id;
 			log_error2("[%s] : db > Can't save data:%s", _config->station_name_.c_str(), sqlite3_errmsg(_sqlite_db));
@@ -131,15 +131,14 @@ namespace agebull
 		/**
 		*\brief 取数据
 		*/
-		void message_storage::load(int64 min, int64 max, vector<vector<shared_char>>& datas) const
+		void message_storage::load(int64 min, int64 max, std::function<void(vector<shared_char>&)> exec)
 		{
 			sqlite3_reset(_load_stmt);
-			sqlite3_bind_int64(_load_stmt, 1, ++min);
-			sqlite3_bind_int64(_load_stmt, 2, max);
+			sqlite3_bind_int64(_load_stmt, 1, min);
+			sqlite3_bind_int64(_load_stmt, 2, max ==0 ? _last_id +1: max);
 			while (sqlite3_step(_load_stmt) == SQLITE_ROW)
 			{
 				vector<shared_char> row;
-				row.emplace_back("");//sender
 				row.emplace_back(sqlite3_column_text(_load_stmt, 3));//pri_title
 				shared_char description;
 				description.alloc_frame(frames4);
@@ -156,8 +155,7 @@ namespace agebull
 				shared_char local_id;
 				local_id.set_int64x(sqlite3_column_int64(_load_stmt, 0));
 				row.emplace_back(local_id);
-
-				datas.push_back(row);
+				exec(row);
 			}
 		}
 	}

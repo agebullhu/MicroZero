@@ -21,7 +21,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 构造
         /// </summary>
-        protected SubStation() : base(ZeroStationType.Publish, true)
+        protected SubStation() : base(ZeroStationType.Notify, true)
         {
 
         }
@@ -78,13 +78,6 @@ namespace Agebull.ZeroNet.PubSub
             }
         }
 
-        /// <summary>
-        /// 空转
-        /// </summary>
-        /// <returns></returns>
-        public virtual void Idle()
-        {
-        }
 
         //private string inporcName;
 

@@ -148,7 +148,7 @@ namespace Agebull.ZeroNet.Core
             GlobalContext.ServiceRealName = Config.RealName;
             GlobalContext.ServiceKey = Config.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
-            LogRecorder.GetMachineNameFunc = () => Config.ServiceName;
+            LogRecorder.GetMachineNameFunc = () => Config.RealName;
             LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
             LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
             IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();

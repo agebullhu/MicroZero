@@ -3,66 +3,71 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     /// Zmq帮助类
     /// </summary>
-    public enum ZeroByteCommand : byte
+    public enum ZeroByteCommand : sbyte
     {
         /// <summary>
         /// 标准调用
         /// </summary>
-        General = (byte)1,
+        General = (sbyte)1,
 
         /// <summary>
         /// 计划任务
         /// </summary>
-        Plan = (byte)2,
+        Plan = (sbyte)2,
 
         /// <summary>
         /// 代理执行
         /// </summary>
-        Proxy = (byte)3,
+        Proxy = (sbyte)3,
+
+        /// <summary>
+        /// 重启
+        /// </summary>
+        Restart = (sbyte)4,
+
+        /// <summary>
+        /// 全局标识
+        /// </summary>
+        GetGlobalId = (sbyte)'>',
 
         /// <summary>
         /// 等待结果
         /// </summary>
-        GetGlobalId = (byte)'>',
-
-        /// <summary>
-        /// 等待结果
-        /// </summary>
-        Waiting = (byte)'#',
+        Waiting = (sbyte)'#',
 
         /// <summary>
         /// 查找结果
         /// </summary>
-        Find = (byte)'%',
+        Find = (sbyte)'%',
 
         /// <summary>
         /// 关闭结果
         /// </summary>
-        Close = (byte)'-',
+        Close = (sbyte)'-',
 
         /// <summary>
         /// Ping
         /// </summary>
-        Ping = (byte)'*',
+        Ping = (sbyte)'*',
 
         /// <summary>
         /// 心跳加入
         /// </summary>
-        HeartJoin = (byte)'J',
+        HeartJoin = (sbyte)'J',
 
         /// <summary>
         /// 心跳加入
         /// </summary>
-        HeartReady = (byte)'R',
+        HeartReady = (sbyte)'R',
 
         /// <summary>
         /// 心跳进行
         /// </summary>
-        HeartPitpat = (byte)'P',
+        HeartPitpat = (sbyte)'P',
 
         /// <summary>
         /// 心跳退出
         /// </summary>
-        HeartLeft = (byte)'L',
+        HeartLeft = (sbyte)'L',
     }
 }

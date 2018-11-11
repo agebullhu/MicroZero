@@ -9,7 +9,7 @@
 #include<boost/unordered_map.hpp>
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 工作对象
@@ -156,7 +156,7 @@ namespace agebull
 			zero_config()
 				: ready_works_(0)
 				, type_name_("ERR")
-				, station_state_(station_state::None)
+				, station_state_(station_state::none)
 				, is_base(false)
 				, is_fidelity(false)
 				, station_type_(0)
@@ -179,7 +179,7 @@ namespace agebull
 			*/
 			zero_config(const string& name, int type)
 				: ready_works_(0)
-				, station_state_(station_state::None)
+				, station_state_(station_state::none)
 				, station_name_(std::move(name))
 				, is_base(false)
 				, station_type_(type)
@@ -225,11 +225,11 @@ namespace agebull
 			void check_works();
 
 			/**
-			* \brief 是否有准备就绪的工作站(广播模式时都有)
+			* \brief 是否有准备就绪的工作站(通知模式时都有)
 			*/
 			bool hase_ready_works() const
 			{
-				return station_type_ <= STATION_TYPE_PUBLISH || station_type_ > STATION_TYPE_SPECIAL || ready_works_ > 0;
+				return IS_PUB_STATION(station_type_) || ready_works_ > 0;
 			}
 
 			/**
@@ -297,22 +297,22 @@ namespace agebull
 			{
 				switch (station_type_)
 				{
-				case STATION_TYPE_API:
+				case station_type_api:
 					type_name_ = "API";
 					break;
-				case STATION_TYPE_ROUTE_API:
+				case station_type_route_api:
 					type_name_ = "ROUTE_API";
 					break;
-				case STATION_TYPE_VOTE:
+				case station_type_vote:
 					type_name_ = "VOTE";
 					break;
-				case STATION_TYPE_PUBLISH:
+				case station_type_notify:
 					type_name_ = "PUB";
 					break;
-				case  STATION_TYPE_DISPATCHER:
+				case  station_type_dispatcher:
 					type_name_ = "DISP";
 					break;
-				case  STATION_TYPE_PLAN:
+				case  station_type_plan:
 					type_name_ = "PLAN";
 					break;
 				default:
@@ -323,8 +323,7 @@ namespace agebull
 
 			bool is_general() const
 			{
-				return station_type_ == STATION_TYPE_API || station_type_ == STATION_TYPE_PUBLISH ||
-					station_type_ == STATION_TYPE_VOTE || station_type_ == STATION_TYPE_ROUTE_API;
+				return IS_GENERAL_STATION(station_type_);
 			}
 
 			bool is_state(station_state state) const
@@ -333,7 +332,7 @@ namespace agebull
 			}
 			bool is_run() const
 			{
-				return station_state_ >= station_state::Start && station_state_ <= station_state::Pause;
+				return station_state_ >= station_state::start && station_state_ <= station_state::pause;
 			}
 			station_state get_state() const
 			{
@@ -345,7 +344,7 @@ namespace agebull
 			}
 			void runtime_state(station_state state)
 			{
-				if (station_state_ != station_state::Stop)
+				if (station_state_ != station_state::stop)
 					station_state_ = state;
 			}
 			/**
@@ -353,8 +352,8 @@ namespace agebull
 			*/
 			void start()
 			{
-				full_log(station_state_ == station_state::ReStart || station_state_ == station_state::Failed ? "restart" : "start");
-				runtime_state(station_state::Start);
+				full_log(station_state_ == station_state::re_start || station_state_ == station_state::failed ? "restart" : "start");
+				runtime_state(station_state::start);
 			}
 
 			/**
@@ -363,7 +362,7 @@ namespace agebull
 			void failed(const char* msg)
 			{
 				error("con`t launch", msg);
-				runtime_state(station_state::Failed);
+				runtime_state(station_state::failed);
 			}
 
 			/**
@@ -372,7 +371,7 @@ namespace agebull
 			void runing()
 			{
 				log("runing");
-				runtime_state(station_state::Run);
+				runtime_state(station_state::run);
 			}
 
 			/**
@@ -381,7 +380,7 @@ namespace agebull
 			void closing()
 			{
 				log("closing...");
-				runtime_state(station_state::Closing);
+				runtime_state(station_state::closing);
 			}
 
 			/**
@@ -390,7 +389,7 @@ namespace agebull
 			void restart()
 			{
 				full_log("restart");
-				runtime_state(station_state::ReStart);
+				runtime_state(station_state::re_start);
 			}
 
 			/**
@@ -398,7 +397,7 @@ namespace agebull
 			*/
 			void closed()
 			{
-				runtime_state(station_state::Closed);
+				runtime_state(station_state::closed);
 				log("closed");
 			}
 

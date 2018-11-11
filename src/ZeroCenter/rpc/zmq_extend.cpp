@@ -4,7 +4,7 @@
 using namespace std;
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		namespace socket_ex
 		{
@@ -14,7 +14,7 @@ namespace agebull
 			* \param name
 			* \return
 			*/
-			void set_sockopt(ZMQ_HANDLE& socket, const char* name)
+			void set_sockopt(zmq_handler& socket, const char* name)
 			{
 				if (name != nullptr)
 					zmq_setsockopt(socket, ZMQ_IDENTITY, name, strlen(name));
@@ -56,10 +56,10 @@ namespace agebull
 
 			}
 
-			ZMQ_HANDLE create_req_socket(const char* station, int type, const char* addr, const char* name)
+			zmq_handler create_req_socket(const char* station, int type, const char* addr, const char* name)
 			{
 				log_msg4("[%s] : create_req_socket(%d) > %s > %s", station,type, name, addr);
-				ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+				zmq_handler socket = zmq_socket(get_zmq_context(), type);
 				if (socket == nullptr)
 				{
 					return nullptr;
@@ -71,10 +71,10 @@ namespace agebull
 				return nullptr;
 			}
 
-			ZMQ_HANDLE create_res_socket(const char* station, const char* addr, int type, const char* name)
+			zmq_handler create_res_socket(const char* station, const char* addr, int type, const char* name)
 			{
 				log_msg3("[%s] : create_res_socket(%d) > %s", station, type, addr);
-				ZMQ_HANDLE socket = zmq_socket(get_zmq_context(), type);
+				zmq_handler socket = zmq_socket(get_zmq_context(), type);
 				if (socket == nullptr)
 				{
 					return nullptr;
@@ -89,7 +89,7 @@ namespace agebull
 			/**
 			* \brief 生成用于TCP的套接字
 			*/
-			bool set_tcp_nodelay(ZMQ_HANDLE socket)
+			bool set_tcp_nodelay(zmq_handler socket)
 			{
 				//boost::asio::detail::socket_type fd = 0;
 				//size_t sz = sizeof(boost::asio::detail::socket_type);
@@ -104,7 +104,7 @@ namespace agebull
 				return true;
 			}
 
-			void close_res_socket(ZMQ_HANDLE& socket, const char* addr)
+			void close_res_socket(zmq_handler& socket, const char* addr)
 			{
 				zmq_unbind(socket, addr);
 				while (zmq_close(socket) == -1)
@@ -112,7 +112,7 @@ namespace agebull
 				socket = nullptr;
 			}
 
-			void close_req_socket(ZMQ_HANDLE& socket, const char* addr)
+			void close_req_socket(zmq_handler& socket, const char* addr)
 			{
 				zmq_disconnect(socket, addr);
 				while (zmq_close(socket) == -1)
@@ -158,7 +158,7 @@ namespace agebull
 			* \param {ZMQ_HANDLE} socket socket
 			* \param {shared_char} addr 地址
 			*/
-			void set_monitor(const char* station, ZMQ_HANDLE socket, const char* type)
+			void set_monitor(const char* station, zmq_handler socket, const char* type)
 			{
 				shared_char addr(256);
 				sprintf(addr.get_buffer(), "inproc://%s_%s_monitor.rep", station, type);
@@ -178,9 +178,9 @@ namespace agebull
 				log_msg2("[%s] : station starting monitor by %s", station.c_str(), addr.c_str());
 				void* inproc = zmq_socket(get_zmq_context(), ZMQ_PAIR);
 				assert(inproc);
-				agebull::zmq_net::socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
+				agebull::zero_net::socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
 				zmq_connect(inproc, *addr);
-				while (get_net_state() < NET_STATE_DISTORY)
+				while (get_net_state() < net_state_distory)
 				{
 					if (read_event_msg(inproc, &event) == 1)
 						continue;

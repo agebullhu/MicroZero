@@ -17,7 +17,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		const int MAX_STACK_FRAMES = 128;
 

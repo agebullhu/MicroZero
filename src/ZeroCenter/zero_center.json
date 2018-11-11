@@ -6,6 +6,7 @@
   "worker_sound_ivl": 2000,
   "plan_exec_timeout": 300,
   "plan_cache_size": 1024,
+  "service_key": "",
 
   "ZMQ_MAX_SOCKETS": -1,
   "ZMQ_IO_THREADS": -1,

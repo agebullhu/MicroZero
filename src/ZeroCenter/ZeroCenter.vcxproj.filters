@@ -42,6 +42,9 @@
     <Filter Include="rpc\zmq">
       <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rpc\parallel">
+      <UniqueIdentifier>{07868764-e030-407c-b0da-38cb55cff6ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
@@ -58,9 +61,6 @@
     </ClCompile>
     <ClCompile Include="rpc\station_dispatcher.cpp">
       <Filter>rpc\dispatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="rpc\broadcasting_station.cpp">
-      <Filter>rpc\notify</Filter>
     </ClCompile>
     <ClCompile Include="rpc\zero_station.cpp">
       <Filter>rpc\zero</Filter>
@@ -96,7 +96,13 @@
       <Filter>rpc\api</Filter>
     </ClCompile>
     <ClCompile Include="rpc\message_storage.cpp">
+      <Filter>rpc\parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\notify_station.cpp">
       <Filter>rpc\notify</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\queue_station.cpp">
+      <Filter>rpc\parallel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -126,9 +132,6 @@
     </ClInclude>
     <ClInclude Include="rpc\station_dispatcher.h">
       <Filter>rpc\dispatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="rpc\broadcasting_station.h">
-      <Filter>rpc\notify</Filter>
     </ClInclude>
     <ClInclude Include="rpc\zero_station.h">
       <Filter>rpc\zero</Filter>
@@ -167,7 +170,13 @@
       <Filter>rpc\api</Filter>
     </ClInclude>
     <ClInclude Include="rpc\message_storage.h">
+      <Filter>rpc\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\notify_station.h">
       <Filter>rpc\notify</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\queue_station.h">
+      <Filter>rpc\parallel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

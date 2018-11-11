@@ -209,7 +209,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
-            if (obj.GetType().IsSubclassOf(typeof(ApiStation)))
+            if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
                 ZeroDiscover.DiscoverApiDocument(obj.GetType());
             using (OnceScope.CreateScope(ZeroObjects))
             {

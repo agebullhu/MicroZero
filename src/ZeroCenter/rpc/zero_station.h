@@ -5,12 +5,11 @@
 #include "zmq_extend.h"
 #include "zero_plan.h"
 #include "station_warehouse.h"
-#include "message_storage.h"
 
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 表示一个基于ZMQ的网络站点
@@ -45,7 +44,6 @@ namespace agebull
 			* \brief 子任务同步结束使用的信号量
 			*/
 			boost::interprocess::interprocess_semaphore task_semaphore_;
-			message_storage _storage;
 		private:
 			/**
 			* \brief 实例队列访问锁
@@ -60,39 +58,36 @@ namespace agebull
 			* \brief 站点名称
 			*/
 			string station_name_;
-		private:
 			/**
 			* \brief 配置
 			*/
 			shared_ptr<zero_config> config_;
-
-		protected:
 			/**
 			* \brief 调用句柄
 			*/
-			ZMQ_HANDLE request_scoket_tcp_;
+			zmq_handler request_scoket_tcp_;
+			/**
+			* \brief 调用句柄
+			*/
+			zmq_handler request_socket_inproc_;
 			/**
 			* \brief 调用句柄
 			*/
 			//ZMQ_HANDLE request_socket_ipc_;
-			/**
-			* \brief 调用句柄
-			*/
-			ZMQ_HANDLE request_socket_inproc_;
 
 			/**
 			* \brief 调用句柄
 			*/
-			ZMQ_HANDLE plan_socket_inproc_;
+			zmq_handler plan_socket_inproc_;
 
 			/**
 			* \brief 工作句柄
 			*/
-			ZMQ_HANDLE worker_in_socket_tcp_;
+			zmq_handler worker_in_socket_tcp_;
 			/**
 			* \brief 工作句柄
 			*/
-			ZMQ_HANDLE worker_out_socket_tcp_;
+			zmq_handler worker_out_socket_tcp_;
 			/**
 			* \brief 工作句柄
 			*/
@@ -162,28 +157,31 @@ namespace agebull
 			/**
 			*\brief 发送消息
 			*/
-			inline bool send_response(ZMQ_HANDLE socket, const  vector<shared_char>& datas, size_t first_index = 0);
+			inline bool send_response(zmq_handler socket, const  vector<shared_char>& datas, size_t first_index = 0);
 			/**
 			*\brief 发送消息
 			*/
 			inline bool send_response(const vector<shared_char>& datas, size_t first_index = 0);
-
+			/**
+			* \brief 内部命令
+			*/
+			void send_request_status(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner, uchar state);
 			/**
 			* \brief 发送
 			*/
-			inline bool send_request_result(ZMQ_HANDLE socket, vector<shared_char>& ls);
+			inline bool send_request_result(zmq_handler socket, vector<shared_char>& ls);
 			/**
 			* \brief 发送帧
 			*/
-			inline bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr);
+			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr);
 			/**
 			* \brief 发送帧
 			*/
-			inline bool send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
 			/**
 			* \brief 发送帧
 			*/
-			inline bool send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+			inline bool send_request_status(zmq_handler socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
 		private:
 			/**
 			* \brief 工作集合的响应
@@ -193,13 +191,24 @@ namespace agebull
 			/**
 			* \brief 调用集合的响应
 			*/
-			void request(ZMQ_HANDLE socket, bool inner);
+			void request(zmq_handler socket, bool inner);
 
+			/**
+			* \brief 内部命令
+			*/
+			bool inner_command(zmq_handler socket, vector<shared_char>& list,shared_char& description, bool inner);
 		protected:
+			/**
+			* \brief 内部命令
+			*/
+			virtual bool extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+			{
+				return false;
+			}
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
-			virtual void job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner) = 0;//, shared_char& global_id
+			virtual void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) = 0;//, shared_char& global_id
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
@@ -208,7 +217,7 @@ namespace agebull
 			/**
 			* \brief 工作进入计划
 			*/
-			void job_plan(ZMQ_HANDLE socket, vector<shared_char>& list);
+			void job_plan(zmq_handler socket, vector<shared_char>& list);
 			/**
 			* \brief 计划执行完成
 			*/
@@ -275,7 +284,7 @@ namespace agebull
 			*/
 			bool can_do() const
 			{
-				return config_->is_run() && get_net_state() == NET_STATE_RUNING;
+				return config_->is_run() && get_net_state() == net_state_runing;
 			}
 
 		};
@@ -284,12 +293,12 @@ namespace agebull
 		/**
 		*\brief 发送消息
 		*/
-		bool zero_station::send_response(ZMQ_HANDLE socket, const  vector<shared_char>& datas, const  size_t first_index)
+		bool zero_station::send_response(zmq_handler socket, const  vector<shared_char>& datas, const  size_t first_index)
 		{
 			if (socket == nullptr)
 				return false;
 			zmq_state_ = socket_ex::send(socket, datas, first_index);
-			if (zmq_state_ == zmq_socket_state::Succeed)
+			if (zmq_state_ == zmq_socket_state::succeed)
 				return true;
 			config_->worker_err++;
 			const char* err_msg = socket_ex::state_str(zmq_state_);
@@ -308,19 +317,19 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(send_mutex_);
 			config_->worker_out++;
 			send_response(worker_out_socket_tcp_, datas, first_index);
-			return zmq_state_ == zmq_socket_state::Succeed;
+			return zmq_state_ == zmq_socket_state::succeed;
 		}
 
 		/**
 		* \brief 发送
 		*/
-		bool zero_station::send_request_result(ZMQ_HANDLE socket, vector<shared_char>& ls)
+		bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls)
 		{
 			boost::lock_guard<boost::mutex> guard(send_mutex_);
 			config_->request_out++;
 			zmq_state_ = socket_ex::send(socket, ls);
 
-			if (zmq_state_ == zmq_socket_state::Succeed)
+			if (zmq_state_ == zmq_socket_state::succeed)
 				return true;
 			++config_->worker_err;
 			const char* err_msg = socket_ex::state_str(zmq_state_);
@@ -330,11 +339,11 @@ namespace agebull
 		/**
 		* \brief 发送帧
 		*/
-		bool zero_station::send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
+		bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
 		{
 			++config_->request_out;
 			zmq_state_ = socket_ex::send_status(socket, addr, state, global_id, req_id, reqer, msg);
-			if (zmq_state_ == zmq_socket_state::Succeed)
+			if (zmq_state_ == zmq_socket_state::succeed)
 				return true;
 			++config_->request_err;
 			const char* err_msg = socket_ex::state_str(zmq_state_);
@@ -344,7 +353,7 @@ namespace agebull
 		/**
 		* \brief 发送帧
 		*/
-		bool zero_station::send_request_status(ZMQ_HANDLE socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
 		{
 			return send_request_status(socket, addr, state,
 				glbid_idx == 0 ? nullptr : *ls[glbid_idx],
@@ -355,7 +364,7 @@ namespace agebull
 		/**
 		* \brief 发送帧
 		*/
-		bool zero_station::send_request_status(ZMQ_HANDLE socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		bool zero_station::send_request_status(zmq_handler socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
 		{
 			return send_request_status(socket, *ls[0], state,
 				glbid_idx == 0 ? nullptr : *ls[glbid_idx],

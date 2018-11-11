@@ -6,7 +6,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		 * \brief 字节智能指针
@@ -520,6 +520,10 @@ namespace agebull
 				memcpy(buffer_ + 1, &s, 1);
 			}
 			uchar state() const
+			{
+				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
+			}
+			uchar command() const
 			{
 				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
 			}

@@ -20,7 +20,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 构造
         /// </summary>
-        protected BatchPublisher() : base(ZeroStationType.Publish, false)
+        protected BatchPublisher() : base(ZeroStationType.Notify, false)
         {
         }
         /// <summary>
@@ -86,7 +86,7 @@ namespace Agebull.ZeroNet.Log
         /// <returns>返回False表明需要重启</returns>
         protected sealed override bool RunInner(CancellationToken token)
         {
-            _socket = ZSocket.CreateRequestSocket(Config.RequestAddress, Identity);
+            _socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity);
             SystemManager.Instance.HeartReady(StationName, RealName);
             State = StationState.Run;
             int cnt = 0;

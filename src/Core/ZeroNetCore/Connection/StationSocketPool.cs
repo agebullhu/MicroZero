@@ -45,7 +45,7 @@ namespace Agebull.ZeroNet.Core
                 }
             }
 
-            socket = ZSocket.CreateRequestSocket(Config.RequestAddress);
+            socket = ZSocket.CreateDealerSocket(Config.RequestAddress);
             if (socket == null)
                 return null;
             socket.IsUsing = true;

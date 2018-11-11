@@ -7,7 +7,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 连接的SOCKET简单封装
@@ -18,14 +18,14 @@ namespace agebull
 			char station_[MAX_PATH];
 			char caller_[MAX_PATH];
 		public:
-			ZMQ_HANDLE socket_;
+			zmq_handler socket_;
 
 			/**
 			* \brief 构造
 			* \param caller
 			* \param station
 			*/
-			inner_socket(const char* caller, const char* station) : state_(zmq_socket_state::Succeed)
+			inner_socket(const char* caller, const char* station) : state_(zmq_socket_state::succeed)
 			{
 				strcpy(station_, station);
 				strcpy(caller_, caller);
@@ -114,7 +114,7 @@ namespace agebull
 				log_debug2(DEBUG_TIMER, 3, "[%s] send-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 
-				if (state_ != zmq_socket_state::Succeed)
+				if (state_ != zmq_socket_state::succeed)
 					return false;
 
 #ifdef TIMER
@@ -124,17 +124,17 @@ namespace agebull
 				do
 				{
 					state_ = recv(result);
-					if (state_ == zmq_socket_state::Succeed)
+					if (state_ == zmq_socket_state::succeed)
 					{
 						break;
 					}
 				}
-				while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
+				while (state_ == zmq_socket_state::timed_out && ++cnt < retry);
 
 #ifdef TIMER
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
-				return state_ == zmq_socket_state::Succeed;
+				return state_ == zmq_socket_state::succeed;
 			}
 
 			/**
@@ -152,7 +152,7 @@ namespace agebull
 				log_debug2(DEBUG_TIMER, 3, "[%s] send-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
 
-				if (state_ != zmq_socket_state::Succeed)
+				if (state_ != zmq_socket_state::succeed)
 					return false;
 
 #ifdef TIMER
@@ -162,17 +162,17 @@ namespace agebull
 				do
 				{
 					state_ = recv(result);
-					if (state_ == zmq_socket_state::Succeed)
+					if (state_ == zmq_socket_state::succeed)
 					{
 						break;
 					}
 				}
-				while (state_ == zmq_socket_state::TimedOut && ++cnt < retry);
+				while (state_ == zmq_socket_state::timed_out && ++cnt < retry);
 
 #ifdef TIMER
 				log_debug2(DEBUG_TIMER, 3, "[%s] recv-%d-ns", station_, (boost::posix_time::microsec_clock::universal_time() - start).total_microseconds());
 #endif
-				return state_ == zmq_socket_state::Succeed;
+				return state_ == zmq_socket_state::succeed;
 			}
 		};
 	}

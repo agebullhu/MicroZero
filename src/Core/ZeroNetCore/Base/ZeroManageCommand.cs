@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Agebull.Common.Rpc;
 using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
@@ -25,8 +27,8 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public ZeroResultData CallCommand(params string[] args)
         {
-            byte[] description = new byte[3 + args.Length];
-            description[0] = (byte)(args.Length);
+            byte[] description = new byte[5 + args.Length];
+            description[0] = (byte)(args.Length + 1);
             description[1] = (byte)ZeroByteCommand.General;
             description[2] = ZeroFrameType.Command;
             int idx = 3;
@@ -34,6 +36,7 @@ namespace Agebull.ZeroNet.Core
             {
                 description[idx++] = ZeroFrameType.Argument;
             }
+            description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.End;
             return CallCommand(description, args);
         }
@@ -61,11 +64,11 @@ namespace Agebull.ZeroNet.Core
                             InteractiveSuccess = false,
                             Message = "地址无效"
                         };
-                    _socket = ZSocket.CreateRequestSocket(ManageAddress);
+                    _socket = ZSocket.CreateDealerSocket(ManageAddress);
                 }
                 try
                 {
-                    var result = _socket.SendTo(description, args);
+                    var result = SendTo(_socket, description, args);
                     if (!result.InteractiveSuccess)
                     {
                         _socket.TryClose();
@@ -93,6 +96,45 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="desicription"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static ZeroResultData SendTo(ZSocket socket, byte[] desicription, params string[] args)
+        {
+            var message = new ZMessage
+            {
+                new ZFrame(desicription)
+            };
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    message.Add(new ZFrame(arg.ToZeroBytes()));
+                }
+                message.Add(new ZFrame(GlobalContext.ServiceKey.ToZeroBytes()));
+            }
+
+            if (socket.SendTo(message))
+                return new ZeroResultData
+                {
+                    State = ZeroOperatorStateType.Ok,
+                    InteractiveSuccess = true
+                };
+#if DEBUG
+            ZeroTrace.WriteError("SendTo", /*error.Text,*/ socket.Connects.LinkToString(','),
+                $"Socket Ptr:{socket.SocketPtr}");
+#endif
+            return new ZeroResultData
+            {
+                State = ZeroOperatorStateType.LocalRecvError,
+                ZmqError = socket.LastError
+            };
+        }
+
 
         /// <summary>
         ///     执行管理命令(快捷命令，命令在说明符号的第二个字节中)
@@ -103,13 +145,14 @@ namespace Agebull.ZeroNet.Core
         protected bool ByteCommand(ZeroByteCommand commmand, params string[] args)
         {
             byte[] description = new byte[4 + args.Length];
-            description[0] = (byte)(args.Length);
+            description[0] = (byte)(args.Length + 1);
             description[1] = (byte)commmand;
             int idx = 2;
             for (var index = 0; index < args.Length; index++)
             {
                 description[idx++] = ZeroFrameType.Argument;
             }
+            description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.End;
             return CallCommand(description, args).InteractiveSuccess;
         }

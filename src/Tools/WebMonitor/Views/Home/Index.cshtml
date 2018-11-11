@@ -13,7 +13,10 @@
             options = ZeroApplication.Config.GetConfigs(p => p.IsBaseStation).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         case "pub":
-            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Publish).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Notify).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            break;
+        case "queue":
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Queue).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         case "rapi":
             options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.RouteApi).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
@@ -113,6 +116,9 @@
                     case "type-rapi":
                         location.href = "/Home/Index/rapi";
                         return;
+                    case "type-queue":
+                        location.href = "/Home/Index/queue";
+                        return;
                 }
             },
             go_station_info(station) {
@@ -187,23 +193,23 @@
 
         });
         function filter_station(station) {
-            @if(@filter == "base")
+            @if(filter == "base")
             {
                 <text>
-            return station.is_base;
-            </text>
+                return station.is_base;
+                </text>
             }
-            @if(@filter == "pub")
+            @if(filter == "pub" || filter == "queue")
             {
                 <text>
-            return !station.is_base && station.type == "Pub";
-            </text>
+                    return !station.is_base && station.type == "Pub";
+                </text>
             }
-            @if(@filter == "api")
+            @if(filter == "api" || filter == "rapi")
             {
                 <text>
-            return !station.is_base && station.type == "API";
-            </text>
+                    return !station.is_base && station.type == "API";
+                </text>
             }
         }
     </script>
@@ -276,7 +282,13 @@
             <el-menu-item index="type-pub">
                 <template slot="title">
                     <i class="el-icon-share"></i>
-                    <span>广播站点</span>
+                    <span>通知站点</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="type-queue">
+                <template slot="title">
+                    <i class="el-icon-share"></i>
+                    <span>队列站点</span>
                 </template>
             </el-menu-item>
             <el-menu-item index="type-base">
@@ -385,8 +397,8 @@
                 <el-button-group>
                     <el-button v-if="config.type == 'API'" size="mini" icon="el-icon-document" @@click="go_doc(config.name)"></el-button>
                     <el-button v-if="!config.is_base && config.state != 'Stop'" size="mini" icon="el-icon-edit" @@click="edit_station(config)"></el-button>
-                    <el-button v-if="config.is_general && config.state == 'Run'" size="mini" icon="el-icon-remove-outline" @@click="pause_station(config.name)"></el-button>
-                    <el-button v-if="config.state != 'Run' && config.state != 'Stop'" size="mini" icon="el-icon-caret-right" @@click="resume_station(config.name)"></el-button>
+                    <el-button v-if="!config.is_base && config.state == 'Run'" size="mini" icon="el-icon-remove-outline" @@click="pause_station(config.name)"></el-button>
+                    <el-button v-if="!config.is_base && config.state != 'Run' && config.state != 'Stop'" size="mini" icon="el-icon-caret-right" @@click="resume_station(config.name)"></el-button>
                     <el-button v-if="!config.is_base && config.state == 'Stop'" size="mini" icon="el-icon-success" @@click="recover_station(config.name)"></el-button>
                     <el-button v-if="!config.is_base && config.state != 'Stop'" size="mini" icon="el-icon-close" @@click="stop_station(config.name)"></el-button>
                     <el-button v-if="!config.is_base && config.state == 'Stop'" size="mini" icon="el-icon-delete" @@click="remove_station(config.name)"></el-button>
@@ -433,7 +445,8 @@
                     <el-radio-group v-model="nowStation.type" :disabled="nowStation.edit">
                         <el-radio disabled label="Dispatcher">Dispatcher</el-radio>
                         <el-radio disabled label="Plan">Plan</el-radio>
-                        <el-radio label="Pub">Pub</el-radio>
+                        <el-radio label="Notify">Notify</el-radio>
+                        <el-radio label="Queue">Queue</el-radio>
                         <el-radio label="API">Api</el-radio>
                         <el-radio label="rApi">RouteApi</el-radio>
                         <el-radio disabled label="Vote">Vote</el-radio>

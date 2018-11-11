@@ -110,18 +110,15 @@ namespace WebMonitor.Models
 
             switch (src.StationType)
             {
-                default:
-                    Type = "Error"; break;
+                case ZeroStationType.RouteApi:
+                case ZeroStationType.Vote:
                 case ZeroStationType.Api:
                     Type = "API"; break;
                 case ZeroStationType.Dispatcher:
-                    Type = "Dispatcher"; break;
-                case ZeroStationType.Publish:
-                    Type = "Pub"; break;
-                case ZeroStationType.Vote:
-                    Type = "Vote"; break;
                 case ZeroStationType.Plan:
-                    Type = "Plan"; break;
+                case ZeroStationType.Queue:
+                case ZeroStationType.Notify:
+                    Type = "Pub"; break;
             }
             RequestAddress = src.RequestAddress;
             WorkerCallAddress = src.WorkerCallAddress;

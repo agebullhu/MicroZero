@@ -30,6 +30,7 @@ namespace agebull
 		static int MAX_SOCKETS;
 		static int IO_THREADS;
 		static int MAX_MSGSZ;
+		static char service_key[512];
 		/**
 		* \brief 全局配置初始化
 		*/

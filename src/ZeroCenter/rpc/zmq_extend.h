@@ -5,9 +5,8 @@
 #include "../ext/shared_char.h"
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
-
 		/**
 		* \brief ZMQ套接字状态
 		*/
@@ -16,135 +15,135 @@ namespace agebull
 			/**
 			* \brief 没问题
 			*/
-			Succeed,
+			succeed,
 			/**
 			* \brief 后续还有消息
 			*/
-			More,
+			more,
 
 			/**
 			* \brief 空帧
 			*/
-			Empty,
+			empty,
 
 			/**
 			* \brief 主机不可达
 			*/
-			HostUnReach,
+			host_un_reach,
 			/**
 			* \brief 网络关闭
 			*/
-			NetDown,
+			net_down,
 
 			/**
 			* \brief 网络不可达
 			*/
-			NetUnReach,
+			net_un_reach,
 
 			/**
 			* \brief 网络重置
 			*/
-			NetReset,
+			net_reset,
 
 			/**
 			* \brief 未连接
 			*/
-			NotConn,
+			not_conn,
 			/**
 			* \brief 连接已在使用中？
 			*/
-			ConnRefUsed,
+			conn_ref_used,
 			/**
 			* \brief 连接中断
 			*/
-			ConnAborted,
+			conn_aborted,
 
 			/**
 			* \brief 连接重置
 			*/
-			ConnReset,
+			conn_reset,
 
 			/**
 			* \brief 超时
 			*/
-			TimedOut,
+			timed_out,
 
 			/**
 			* \brief 正在处理中？
 			*/
-			InProgress,
+			in_progress,
 
 			/**
 			* \brief 跨线程调用？
 			*/
-			Mthread,
+			m_thread,
 
 			/**
 			* \brief 指定的socket不可用
 			*/
-			NotSocket,
+			not_socket,
 
 			/**
 			* \brief 内存不足
 			*/
-			NoBufs,
+			no_bufs,
 
 			/**
 			* \brief 消息大小不合适？
 			*/
-			MsgSize,
+			msg_size,
 
 			/**
 			* \brief 指定的socket相关联的context已关闭
 			*/
-			Term,
+			term,
 
 			/**
 			* \brief 系统信号中断
 			*/
-			Intr,
+			intr,
 
 			/**
 			* \brief 不支持？
 			*/
-			NotSup,
+			not_sup,
 
 			/**
 			* \brief 不支持的协议
 			*/
-			ProtoNoSupport,
+			proto_no_support,
 
 			/**
 			* \brief 协议不兼容
 			*/
-			NoCompatProto,
+			no_compat_proto,
 
 			/**
 			* \brief ？
 			*/
-			AfNoSupport,
+			af_no_support,
 
 			/**
 			* \brief 地址问题？
 			*/
-			AddrNotAvAll,
+			addr_not_av_all,
 			/**
 			* \brief 地址已被使用
 			*/
-			AddrInUse,
+			addr_in_use,
 			/**
 			* \brief ？
 			*/
-			Fsm,
+			fsm,
 
 			/**
 			* \brief 重启
 			*/
-			Again,
+			again,
 			/**
 			* \brief 其它错误
 			*/
-			Unknow
+			unknow
 		};
 
 
@@ -172,34 +171,34 @@ namespace agebull
 			{
 				switch (state)
 				{
-				case zmq_socket_state::Succeed: return "Succeed";
-				case zmq_socket_state::More: return "More";
-				case zmq_socket_state::Empty: return "Empty";
-				case zmq_socket_state::HostUnReach: return "HostUnReach";
-				case zmq_socket_state::NetDown: return "NetDown";
-				case zmq_socket_state::NetUnReach: return "NetUnReach";
-				case zmq_socket_state::NetReset: return "NetReset";
-				case zmq_socket_state::NotConn: return "NotConn";
-				case zmq_socket_state::ConnRefUsed: return "ConnRefUsed";
-				case zmq_socket_state::ConnAborted: return "ConnAborted";
-				case zmq_socket_state::ConnReset: return "ConnReset";
-				case zmq_socket_state::TimedOut: return "TimedOut";
-				case zmq_socket_state::InProgress: return "InProgress";
-				case zmq_socket_state::Mthread: return "Mthread";
-				case zmq_socket_state::NotSocket: return "NotSocket";
-				case zmq_socket_state::NoBufs: return "NoBufs";
-				case zmq_socket_state::MsgSize: return "MsgSize";
-				case zmq_socket_state::Term: return "Term";
-				case zmq_socket_state::Intr: return "Intr";
-				case zmq_socket_state::NotSup: return "NotSup";
-				case zmq_socket_state::ProtoNoSupport: return "ProtoNoSupport";
-				case zmq_socket_state::NoCompatProto: return "NoCompatProto";
-				case zmq_socket_state::AfNoSupport: return "AfNoSupport";
-				case zmq_socket_state::AddrNotAvAll: return "AddrNotAvAll";
-				case zmq_socket_state::AddrInUse: return "AddrInUse";
-				case zmq_socket_state::Fsm: return "Fsm";
-				case zmq_socket_state::Again: return "Again";
-				case zmq_socket_state::Unknow: return "Unknow";
+				case zmq_socket_state::succeed: return "Succeed";
+				case zmq_socket_state::more: return "More";
+				case zmq_socket_state::empty: return "Empty";
+				case zmq_socket_state::host_un_reach: return "HostUnReach";
+				case zmq_socket_state::net_down: return "NetDown";
+				case zmq_socket_state::net_un_reach: return "NetUnReach";
+				case zmq_socket_state::net_reset: return "NetReset";
+				case zmq_socket_state::not_conn: return "NotConn";
+				case zmq_socket_state::conn_ref_used: return "ConnRefUsed";
+				case zmq_socket_state::conn_aborted: return "ConnAborted";
+				case zmq_socket_state::conn_reset: return "ConnReset";
+				case zmq_socket_state::timed_out: return "TimedOut";
+				case zmq_socket_state::in_progress: return "InProgress";
+				case zmq_socket_state::m_thread: return "Mthread";
+				case zmq_socket_state::not_socket: return "NotSocket";
+				case zmq_socket_state::no_bufs: return "NoBufs";
+				case zmq_socket_state::msg_size: return "MsgSize";
+				case zmq_socket_state::term: return "Term";
+				case zmq_socket_state::intr: return "Intr";
+				case zmq_socket_state::not_sup: return "NotSup";
+				case zmq_socket_state::proto_no_support: return "ProtoNoSupport";
+				case zmq_socket_state::no_compat_proto: return "NoCompatProto";
+				case zmq_socket_state::af_no_support: return "AfNoSupport";
+				case zmq_socket_state::addr_not_av_all: return "AddrNotAvAll";
+				case zmq_socket_state::addr_in_use: return "AddrInUse";
+				case zmq_socket_state::fsm: return "Fsm";
+				case zmq_socket_state::again: return "Again";
+				case zmq_socket_state::unknow: return "Unknow";
 				default:return "*";
 				}
 			}
@@ -215,60 +214,60 @@ namespace agebull
 				switch (err)
 				{
 				case 0:
-					state = zmq_socket_state::Empty; break;
+					state = zmq_socket_state::empty; break;
 				case ETERM:
-					state = zmq_socket_state::Intr; break;
+					state = zmq_socket_state::intr; break;
 				case ENOTSOCK:
-					state = zmq_socket_state::NotSocket; break;
+					state = zmq_socket_state::not_socket; break;
 				case EINTR:
-					state = zmq_socket_state::Intr; break;
+					state = zmq_socket_state::intr; break;
 				case EAGAIN:
 				case ETIMEDOUT:
-					state = zmq_socket_state::TimedOut; break;
+					state = zmq_socket_state::timed_out; break;
 					//state = ZmqSocketState::TimedOut;break;
 				case ENOTSUP:
-					state = zmq_socket_state::NotSup; break;
+					state = zmq_socket_state::not_sup; break;
 				case EPROTONOSUPPORT:
-					state = zmq_socket_state::ProtoNoSupport; break;
+					state = zmq_socket_state::proto_no_support; break;
 				case ENOBUFS:
-					state = zmq_socket_state::NoBufs; break;
+					state = zmq_socket_state::no_bufs; break;
 				case ENETDOWN:
-					state = zmq_socket_state::NetDown; break;
+					state = zmq_socket_state::net_down; break;
 				case EADDRINUSE:
-					state = zmq_socket_state::AddrInUse; break;
+					state = zmq_socket_state::addr_in_use; break;
 				case EADDRNOTAVAIL:
-					state = zmq_socket_state::AddrNotAvAll; break;
+					state = zmq_socket_state::addr_not_av_all; break;
 				case ECONNREFUSED:
-					state = zmq_socket_state::ConnRefUsed; break;
+					state = zmq_socket_state::conn_ref_used; break;
 				case EINPROGRESS:
-					state = zmq_socket_state::InProgress; break;
+					state = zmq_socket_state::in_progress; break;
 				case EMSGSIZE:
-					state = zmq_socket_state::MsgSize; break;
+					state = zmq_socket_state::msg_size; break;
 				case EAFNOSUPPORT:
-					state = zmq_socket_state::AfNoSupport; break;
+					state = zmq_socket_state::af_no_support; break;
 				case ENETUNREACH:
-					state = zmq_socket_state::NetUnReach; break;
+					state = zmq_socket_state::net_un_reach; break;
 				case ECONNABORTED:
-					state = zmq_socket_state::ConnAborted; break;
+					state = zmq_socket_state::conn_aborted; break;
 				case ECONNRESET:
-					state = zmq_socket_state::ConnReset; break;
+					state = zmq_socket_state::conn_reset; break;
 				case ENOTCONN:
-					state = zmq_socket_state::NotConn; break;
+					state = zmq_socket_state::not_conn; break;
 				case EHOSTUNREACH:
-					state = zmq_socket_state::HostUnReach; break;
+					state = zmq_socket_state::host_un_reach; break;
 				case ENETRESET:
-					state = zmq_socket_state::NetReset; break;
+					state = zmq_socket_state::net_reset; break;
 				case EFSM:
-					state = zmq_socket_state::Fsm; break;
+					state = zmq_socket_state::fsm; break;
 				case ENOCOMPATPROTO:
-					state = zmq_socket_state::NoCompatProto; break;
+					state = zmq_socket_state::no_compat_proto; break;
 				case EMTHREAD:
-					state = zmq_socket_state::Mthread; break;
+					state = zmq_socket_state::m_thread; break;
 				default:
-					state = zmq_socket_state::Unknow; break;
+					state = zmq_socket_state::unknow; break;
 				}
 #if _DEBUG_
-				if (state != zmq_socket_state::Succeed)
+				if (state != zmq_socket_state::succeed)
 					log_debug(0, 0, state_str(state));
 #endif // _DEBUG_
 				return state;
@@ -277,7 +276,7 @@ namespace agebull
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
-			inline void setsockopt(ZMQ_HANDLE& socket, int type, int value)
+			inline void setsockopt(zmq_handler& socket, int type, int value)
 			{
 				zmq_setsockopt(socket, type, &value, sizeof(int));
 			}
@@ -288,7 +287,7 @@ namespace agebull
 			* \param addr
 			* \return
 			*/
-			void close_res_socket(ZMQ_HANDLE& socket, const char* addr);
+			void close_res_socket(zmq_handler& socket, const char* addr);
 
 			/**
 			* \brief 关闭套接字
@@ -296,7 +295,7 @@ namespace agebull
 			* \param addr
 			* \return
 			*/
-			void close_req_socket(ZMQ_HANDLE& socket, const char* addr);
+			void close_req_socket(zmq_handler& socket, const char* addr);
 
 			/**
 			* \brief 配置ZMQ连接对象
@@ -304,7 +303,7 @@ namespace agebull
 			* \param name
 			* \return
 			*/
-			void set_sockopt(ZMQ_HANDLE& socket, const char* name = nullptr);
+			void set_sockopt(zmq_handler& socket, const char* name = nullptr);
 
 			/**
 			* \brief 生成ZMQ连接对象
@@ -314,7 +313,7 @@ namespace agebull
 			* \param name
 			* \return
 			*/
-			ZMQ_HANDLE create_req_socket(const char* station, int type, const char* addr, const char* name);
+			zmq_handler create_req_socket(const char* station, int type, const char* addr, const char* name);
 
 			/**
 			* \brief 生成ZMQ连接对象
@@ -324,21 +323,21 @@ namespace agebull
 			* \param name
 			* \return
 			*/
-			ZMQ_HANDLE create_res_socket(const char* station, const char* addr, int type, const char* name);
+			zmq_handler create_res_socket(const char* station, const char* addr, int type, const char* name);
 
 			/**
 			* \brief 生成用于TCP的套接字
 			*/
-			bool set_tcp_nodelay(ZMQ_HANDLE socket);
+			bool set_tcp_nodelay(zmq_handler socket);
 
 			/**
 			* \brief 生成用于TCP的套接字
 			*/
-			inline ZMQ_HANDLE create_res_socket_tcp(const char* name, int type, int port)
+			inline zmq_handler create_res_socket_tcp(const char* name, int type, int port)
 			{
 				char host[MAX_PATH];
 				sprintf(host, "tcp://*:%d", port);
-				ZMQ_HANDLE socket = create_res_socket(name, host, type, name);
+				zmq_handler socket = create_res_socket(name, host, type, name);
 				if (socket == nullptr)
 				{
 					return nullptr;
@@ -350,11 +349,11 @@ namespace agebull
 			/**
 			* \brief 生成用于TCP的套接字
 			*/
-			inline ZMQ_HANDLE create_req_socket_tcp(const char* station, const char* name, int type, int port)
+			inline zmq_handler create_req_socket_tcp(const char* station, const char* name, int type, int port)
 			{
 				char addr[MAX_PATH];
 				sprintf(addr, "tcp://*:%d", port);
-				ZMQ_HANDLE socket = create_req_socket(station, type, addr, name);
+				zmq_handler socket = create_req_socket(station, type, addr, name);
 				if (socket == nullptr)
 				{
 					return nullptr;
@@ -384,7 +383,7 @@ namespace agebull
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
-			inline ZMQ_HANDLE create_req_socket_inproc(const char* station, const char* name)
+			inline zmq_handler create_req_socket_inproc(const char* station, const char* name)
 			{
 				make_inproc_address(address, station);
 				char identity[MAX_PATH];
@@ -395,7 +394,7 @@ namespace agebull
 			/**
 			* \brief 生成用于本机调用的套接字
 			*/
-			inline ZMQ_HANDLE create_res_socket_inproc(const char* station, int type)
+			inline zmq_handler create_res_socket_inproc(const char* station, int type)
 			{
 				make_inproc_address(address, station);
 				char identity[MAX_PATH];
@@ -405,14 +404,14 @@ namespace agebull
 			/**
 			* \brief 接收
 			*/
-			inline zmq_socket_state recv(ZMQ_HANDLE socket, shared_char& data, int flag = 0)
+			inline zmq_socket_state recv(zmq_handler socket, shared_char& data, int flag = 0)
 			{
 				//接收命令请求
 				zmq_msg_t msg_call;
 				int state = zmq_msg_init(&msg_call);
 				if (state < 0)
 				{
-					return zmq_socket_state::NoBufs;
+					return zmq_socket_state::no_bufs;
 				}
 				state = zmq_msg_recv(&msg_call, socket, flag);
 				if (state < 0)
@@ -424,13 +423,13 @@ namespace agebull
 				int more;
 				size_t size = sizeof(int);
 				zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &size);
-				return more == 0 ? zmq_socket_state::Succeed : zmq_socket_state::More;
+				return more == 0 ? zmq_socket_state::succeed : zmq_socket_state::more;
 			}
 
 			/**
 			* \brief 接收
 			*/
-			inline zmq_socket_state recv(ZMQ_HANDLE socket, vector<shared_char>& ls, int flag = 0)
+			inline zmq_socket_state recv(zmq_handler socket, vector<shared_char>& ls, int flag = 0)
 			{
 				size_t size = sizeof(int);
 				int more;
@@ -440,7 +439,7 @@ namespace agebull
 					int re = zmq_msg_init(&msg);
 					if (re < 0)
 					{
-						return zmq_socket_state::NoBufs;
+						return zmq_socket_state::no_bufs;
 					}
 					re = zmq_msg_recv(&msg, socket, flag);
 					if (re < 0)
@@ -454,38 +453,38 @@ namespace agebull
 					zmq_msg_close(&msg);
 					zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &size);
 				} while (more != 0);
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 
 			/**
 			* \brief 发送最后一帧
 			*/
-			inline zmq_socket_state send_late(ZMQ_HANDLE socket, const char* string)
+			inline zmq_socket_state send_late(zmq_handler socket, const char* string)
 			{
 				const int state = zmq_send(socket, string, strlen(string), ZMQ_DONTWAIT);
 				if (state < 0)
 				{
 					return check_zmq_error();
 				}
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 
 			/**
 			* \brief 发送帧
 			*/
-			inline zmq_socket_state send_more(ZMQ_HANDLE socket, const char* string)
+			inline zmq_socket_state send_more(zmq_handler socket, const char* string)
 			{
 				const int state = zmq_send(socket, string, strlen(string), ZMQ_SNDMORE);
 				if (state < 0)
 				{
 					return check_zmq_error();
 				}
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 			/**
 			* \brief 发送帧
 			*/
-			inline zmq_socket_state send_addr(ZMQ_HANDLE socket, const char* addr)
+			inline zmq_socket_state send_addr(zmq_handler socket, const char* addr)
 			{
 				int state = zmq_send(socket, addr, strlen(addr), ZMQ_SNDMORE);
 				if (state < 0)
@@ -497,12 +496,12 @@ namespace agebull
 				{
 					return check_zmq_error();
 				}*/
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 			/**
 			* \brief 发送
 			*/
-			inline int send_shared_char(ZMQ_HANDLE socket, const shared_char& iter, int flag)
+			inline int send_shared_char(zmq_handler socket, const shared_char& iter, int flag)
 			{
 				if (iter.empty())
 					return zmq_send(socket, "", 0, flag);
@@ -512,7 +511,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			inline zmq_socket_state send(ZMQ_HANDLE socket, vector<shared_char>::iterator& iter, const vector<shared_char>::iterator& end)
+			inline zmq_socket_state send(zmq_handler socket, vector<shared_char>::iterator& iter, const vector<shared_char>::iterator& end)
 			{
 				while (iter != end)
 				{
@@ -528,7 +527,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			inline zmq_socket_state send(ZMQ_HANDLE socket, const vector<shared_char>& ls, const size_t first_index = 0)
+			inline zmq_socket_state send(zmq_handler socket, const vector<shared_char>& ls, const size_t first_index = 0)
 			{
 				if (first_index >= ls.size())
 					return send_late(socket, "");
@@ -546,12 +545,12 @@ namespace agebull
 				{
 					return check_zmq_error();
 				}
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 			/**
 			* \brief 发送
 			*/
-			inline zmq_socket_state send(ZMQ_HANDLE socket, vector<string>& ls, size_t first_index = 0)
+			inline zmq_socket_state send(zmq_handler socket, vector<string>& ls, size_t first_index = 0)
 			{
 				if (first_index >= ls.size())
 					return send_late(socket, "");
@@ -570,12 +569,12 @@ namespace agebull
 				{
 					return check_zmq_error();
 				}
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 			/**
 			* \brief 发送帧
 			*/
-			inline zmq_socket_state send_status(ZMQ_HANDLE socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
+			inline zmq_socket_state send_status(zmq_handler socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
 			{
 				uchar descirpt[8];
 				descirpt[1] = state;
@@ -587,7 +586,7 @@ namespace agebull
 				}
 				if (msg != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_MESSAGE;
+					descirpt[idx++] = ZERO_FRAME_STATUS;
 				}
 				if (req_id != nullptr)
 				{
@@ -672,7 +671,7 @@ namespace agebull
 					}
 				}
 
-				return zmq_socket_state::Succeed;
+				return zmq_socket_state::succeed;
 			}
 		};
 
@@ -691,7 +690,7 @@ namespace agebull
 			* \param {ZMQ_HANDLE} socket socket
 			* \param {shared_char} addr 地址
 			*/
-			void set_monitor(const char* station, ZMQ_HANDLE socket, const char* type);
+			void set_monitor(const char* station, zmq_handler socket, const char* type);
 		}
 
 	}

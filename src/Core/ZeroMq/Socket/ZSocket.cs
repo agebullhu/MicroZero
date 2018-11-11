@@ -24,9 +24,8 @@ namespace ZeroMQ
         /// <param name="address"></param>
         /// <param name="type"></param>
         /// <param name="identity"></param>
-        /// <param name="subscribe"></param>
         /// <returns></returns>
-        public static ZSocket CreateServiceSocket(string address, ZSocketType type, byte[] identity = null, string subscribe = null)
+        public static ZSocket CreateServiceSocket(string address, ZSocketType type, byte[] identity = null)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -36,14 +35,13 @@ namespace ZeroMQ
                 Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            if (identity == null)
-                identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
-            socket.SetOption(ZSocketOption.IDENTITY, identity);
+            socket.SetOption(ZSocketOption.IDENTITY, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
             socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl );
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
 
             socket.SetOption(ZSocketOption.LINGER, Option.Linger);
             socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
+            socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
 
             socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
             socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
@@ -53,10 +51,6 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
             socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
-            if (type != ZSocketType.SUB)
-            {
-                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
-            }
 
             if (socket.Bind(address, out error))
                 return socket;
@@ -78,30 +72,45 @@ namespace ZeroMQ
         {
             if (!ZContext.IsAlive)
                 return null;
-            var socket = Create(type, out var error);
-            if (error != null)
+            var socket = CreateClientSocket(type, address, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
+            if (socket == null)
             {
-                Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            if (identity == null)
-                identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
-            socket.SetOption(ZSocketOption.IDENTITY, identity);
-            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
-            socket.SetOption(ZSocketOption.LINGER, Option.Linger);
-            socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
             if (type == ZSocketType.SUB)
             {
-                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe ?? "");
-            }
-            else
-            {
-                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
+                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe);
             }
 
-            if (socket.Connect(address, out error))
+            if (socket.Connect(address, out var error))
+                return socket;
+            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            socket.Close();
+            socket.Dispose();
+            return null;
+        }
+        /// <summary>
+        /// 构建套接字
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="type"></param>
+        /// <param name="identity"></param>
+        /// <param name="subscribe"></param>
+        /// <returns></returns>
+        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity, byte[] subscribe)
+        {
+            if (!ZContext.IsAlive)
+                return null;
+            var socket = CreateClientSocket(type, address, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
+            if (socket == null)
+            {
+                return null;
+            }
+            if (type == ZSocketType.SUB)
+            {
+                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe);
+            }
+            if (socket.Connect(address, out var error))
                 return socket;
             Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Close();
@@ -113,13 +122,32 @@ namespace ZeroMQ
         /// 构建套接字
         /// </summary>
         /// <param name="address"></param>
+        /// <param name="type"></param>
         /// <param name="identity"></param>
         /// <returns></returns>
-        public static ZSocket CreateRequestSocket(string address, byte[] identity = null)
+        private static ZSocket CreateClientSocket(ZSocketType type, string address, byte[] identity)
         {
-            return CreateClientSocket(address, ZSocketType.DEALER, identity);
+            if (!ZContext.IsAlive)
+                return null;
+            var socket = Create(type, out var error);
+            if (error != null)
+            {
+                Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                return null;
+            }
+            identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
+            socket.SetOption(ZSocketOption.IDENTITY, identity);
+            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
+            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
+            socket.SetOption(ZSocketOption.LINGER, Option.Linger);
+            socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
+            if (type != ZSocketType.SUB)
+            {
+                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
+            }
+            return socket;
         }
-
         /// <summary>
         /// 构建套接字
         /// </summary>

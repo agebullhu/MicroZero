@@ -9,7 +9,7 @@ namespace Agebull.ZeroNet.ZeroApi
     internal sealed class ApiCountHandler : IApiHandler
     {
         private CountData count;
-        void IApiHandler.Prepare(ApiStation station, ApiCallItem item)
+        void IApiHandler.Prepare(ApiStationBase station, ApiCallItem item)
         {
             count = new CountData
             {
@@ -21,7 +21,7 @@ namespace Agebull.ZeroNet.ZeroApi
             };
         }
 
-        void IApiHandler.End(ApiStation station, ApiCallItem item)
+        void IApiHandler.End(ApiStationBase station, ApiCallItem item)
         {
             count.End = DateTime.Now.Ticks;
             count.Status = item.Status;

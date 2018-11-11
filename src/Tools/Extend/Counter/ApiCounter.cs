@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using Agebull.Common.Configuration;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.Log;
-using Agebull.ZeroNet.PubSub;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -55,7 +51,7 @@ namespace Agebull.ZeroNet.ZeroApi
             if (_isEnable)
                 return;
             _isEnable = true;
-            ApiStation.RegistHandlers<ApiCountHandler>();
+            ApiStationBase.RegistHandlers<ApiCountHandler>();
             ApiClient.RegistHandlers<ApiClientCountHandler>();
             ZeroTrace.SystemLog("ApiCounter", "HookApi");
         }
@@ -66,7 +62,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="data"></param>
         public void Count(CountData data)
         {
-            data.Machine = ZeroApplication.Config.ServiceKey ??  ZeroApplication.Config.ServiceName;
+            data.Machine = ZeroApplication.Config.ServiceName;
             data.Station = ZeroApplication.Config.StationName;
             //data.User = ApiContext.Customer?.Account ?? "Unknow";
             //data.RequestId = ApiContext.RequestContext.RequestId;

@@ -10,7 +10,8 @@ namespace agebull
 	char json_config::redis_addr[512] = "127.0.0.1:6379";
 	int json_config::redis_defdb = 0x10;
 	int json_config::worker_sound_ivl = 2000;
-
+	char json_config::service_key[512] = "agebull";
+	
 	int json_config::IMMEDIATE = 1;
 	int json_config::LINGER = -1;
 	int json_config::SNDHWM = -1;
@@ -62,7 +63,7 @@ namespace agebull
 			MAX_SOCKETS = get_global_int("ZMQ_MAX_SOCKETS", MAX_SOCKETS);
 			IO_THREADS = get_global_int("ZMQ_IO_THREADS", IO_THREADS);
 			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
-
+			
 			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
 			plan_cache_size = get_global_int("plan_cache_size", plan_cache_size);
 			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
@@ -72,6 +73,11 @@ namespace agebull
 				strcpy(redis_addr, addr.c_str());
 			redis_defdb = get_global_int("redis_defdb", redis_defdb);
 			worker_sound_ivl = get_global_int("worker_sound_ivl", worker_sound_ivl);
+
+
+			var key = get_global_string("service_key");
+			if (key.length() > 0)
+				strcpy(service_key, key.c_str());
 		}
 		log_msg1("config => base_tcp_port : %d", base_tcp_port);
 		log_msg1("config => worker_sound_ivl : %d", worker_sound_ivl);

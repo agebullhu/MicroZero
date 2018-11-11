@@ -48,7 +48,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Name = StationName
             });
-            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiController))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiControllerBase))).ToArray();
             foreach (var type in types)
             {
                 FindApi(type, false);
@@ -63,7 +63,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 if (sta.Aips.Count == 0)
                     continue;
-                var station = (ApiStation)ZeroApplication.TryGetZeroObject(sta.Name);
+                var station = (ApiStationBase)ZeroApplication.TryGetZeroObject(sta.Name);
                 if (station == null)
                 {
                     ZeroApplication.RegistZeroObject(station = new ApiStation
@@ -318,7 +318,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="type"></param>
         public static void DiscoverApiDocument(Type type)
         {
-            if (!type.IsSubclassOf(typeof(ApiStation)))
+            if (!type.IsSubclassOf(typeof(ApiStationBase)))
                 return;
             ZeroTrace.SystemLog("DiscoverApiDocument", type.FullName);
             ZeroDiscover discover = new ZeroDiscover();

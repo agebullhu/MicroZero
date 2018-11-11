@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.ZeroNet.ZeroApi;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -126,7 +129,7 @@ namespace Agebull.ZeroNet.Core
                 }
 
                 //名称初始化
-                RealName = ZeroIdentityHelper.CreateRealName(IsService, Name == Config.StationName ? null : Name);
+                RealName = ZeroIdentityHelper.CreateRealName(IsService, Config.StationName);
                 Identity = RealName.ToAsciiBytes();
                 ZeroTrace.SystemLog(StationName, Config.WorkerCallAddress, Name, RealName);
                 //扩展动作
@@ -192,6 +195,13 @@ namespace Agebull.ZeroNet.Core
             GC.Collect();
         }
 
+        /// <summary>
+        /// 空转
+        /// </summary>
+        /// <returns></returns>
+        public virtual void Idle()
+        {
+        }
         /// <summary>
         /// 具体执行
         /// </summary>

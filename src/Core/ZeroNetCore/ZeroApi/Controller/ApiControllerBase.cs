@@ -1,35 +1,34 @@
-using Agebull.Common.OAuth;
+ï»¿using Agebull.Common.OAuth;
 using Agebull.Common.Rpc;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
     /// <summary>
-    /// ZeroApi¿ØÖÆÆ÷»ùÀà
+    /// ZeroApiæ§åˆ¶å™¨åŸºç±»
     /// </summary>
-    public class ApiController
+    public class ApiControllerBase
     {
         /// <summary>
-        /// µ±Ç°µÇÂ¼ÓÃ»§
+        /// å½“å‰ç™»å½•ç”¨æˆ·
         /// </summary>
         public ILoginUserInfo UserInfo => GlobalContext.Customer;
         /// <summary>
-        /// µ÷ÓÃÕß£¨»úÆ÷Ãû£©
+        /// è°ƒç”¨è€…ï¼ˆæœºå™¨åï¼‰
         /// </summary>
         public string Caller => GlobalContext.RequestInfo.ServiceKey;
         /// <summary>
-        /// µ÷ÓÃ±êÊ¶
+        /// è°ƒç”¨æ ‡è¯†
         /// </summary>
         public string RequestId => GlobalContext.RequestInfo.RequestId;
         /// <summary>
-        /// HTTPµ÷ÓÃÊ±µÄUserAgent
+        /// HTTPè°ƒç”¨æ—¶çš„UserAgent
         /// </summary>
         public string UserAgent => GlobalContext.RequestInfo.UserAgent;
 
-    }
-    /// <summary>
-    /// ZeroApi¿ØÖÆÆ÷»ùÀà
-    /// </summary>
-    public class ZeroApiController : ApiController
-    {
+        /// <summary>
+        /// HTTPè°ƒç”¨æ—¶çš„UserAgent
+        /// </summary>
+        public ApiCallItem ApiCallItem => GlobalContext.Current.DependencyObjects.Dependency<ApiCallItem>();
+        
     }
 }

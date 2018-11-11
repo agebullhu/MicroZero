@@ -5,7 +5,7 @@
 
 namespace agebull
 {
-	namespace zmq_net
+	namespace zero_net
 	{
 		/**
 		* \brief 单例
@@ -36,7 +36,7 @@ namespace agebull
 			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::Stop) && get_net_state() == NET_STATE_RUNING)
+			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -50,7 +50,7 @@ namespace agebull
 		/**
 		* \brief 工作开始（发送到工作者）
 		*/
-		inline void plan_dispatcher::job_start(ZMQ_HANDLE socket, vector<shared_char>& list, bool inner)
+		inline void plan_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
 		{
 			if (!inner)
 			{
@@ -74,7 +74,7 @@ namespace agebull
 		/**
 		* \brief 计划管理
 		*/
-		void plan_dispatcher::on_plan_manage(ZMQ_HANDLE socket, vector<shared_char>& list)
+		void plan_dispatcher::on_plan_manage(zmq_handler socket, vector<shared_char>& list)
 		{
 			const char* buf = *list[1];
 
@@ -291,7 +291,7 @@ namespace agebull
 		/**
 		* \brief 计划进入
 		*/
-		bool plan_dispatcher::on_plan_start(ZMQ_HANDLE socket, vector<shared_char>& list)
+		bool plan_dispatcher::on_plan_start(zmq_handler socket, vector<shared_char>& list)
 		{
 			shared_char caller = list[0];
 			list.erase(list.begin());
@@ -402,7 +402,7 @@ namespace agebull
 			message->frames[message->frames.size() - 2] = "";//防止无义的保存
 
 			vector<shared_char> result;
-			if (state != zmq_socket_state::Succeed)
+			if (state != zmq_socket_state::succeed)
 			{
 				auto config = station_warehouse::get_config(message->station, false);
 				shared_char frame;
@@ -412,7 +412,7 @@ namespace agebull
 				return;
 			}
 			state = socket->recv(result);
-			if (state != zmq_socket_state::Succeed)
+			if (state != zmq_socket_state::succeed)
 			{
 				shared_char frame;
 				frame.alloc_frame(6, ZERO_STATUS_RECV_ERROR_ID);
@@ -496,7 +496,7 @@ namespace agebull
 		}
 
 		/**
-		*\brief 广播内容
+		*\brief 通知内容
 		*/
 		bool plan_dispatcher::zero_event(zero_net_event event_type, const plan_message* message)
 		{
