@@ -484,32 +484,42 @@ namespace Agebull.ZeroNet.ZeroApi
                     var bytes = messages[idx].Read();
                     if (bytes.Length == 0)
                         continue;
-                    var val = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
-                            item.GlobalId = val;
+                            item.GlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.StationId:
-                            item.StationCallId = val;
+                            item.StationCallId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.RequestId:
-                            item.RequestId = val;
+                            item.RequestId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Requester:
-                            item.Requester = val;
+                            item.Requester = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Context:
-                            item.ContextJson = val;
+                            item.ContextJson = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Command:
-                            item.ApiName = val;
+                            item.ApiName = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Argument:
-                            item.Argument = val;
+                            item.Argument = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Content:
-                            item.Content = val;
+                            item.Content = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            break;
+                        case ZeroFrameType.Original1:
+                        case ZeroFrameType.Original2:
+                        case ZeroFrameType.Original3:
+                        case ZeroFrameType.Original4:
+                        case ZeroFrameType.Original5:
+                        case ZeroFrameType.Original6:
+                        case ZeroFrameType.Original7:
+                        case ZeroFrameType.Original8:
+                            if (!item.Originals.ContainsKey(description[idx]))
+                                item.Originals.Add(description[idx], bytes);
                             break;
                     }
                 }

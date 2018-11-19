@@ -45,6 +45,9 @@
     <Filter Include="rpc\parallel">
       <UniqueIdentifier>{07868764-e030-407c-b0da-38cb55cff6ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rpc\proxy">
+      <UniqueIdentifier>{38e86814-3e47-4a02-857a-c9202bfbb6db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
@@ -103,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="rpc\queue_station.cpp">
       <Filter>rpc\parallel</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\proxy_dispatcher.cpp">
+      <Filter>rpc\proxy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +183,9 @@
     </ClInclude>
     <ClInclude Include="rpc\queue_station.h">
       <Filter>rpc\parallel</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\proxy_dispatcher.h">
+      <Filter>rpc\proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

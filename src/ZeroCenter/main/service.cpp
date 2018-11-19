@@ -13,6 +13,7 @@
 #include <time.h>
 #include <execinfo.h>
 #include <string>
+#include "../rpc/proxy_dispatcher.h"
 
 
 namespace agebull
@@ -56,19 +57,19 @@ namespace agebull
 			// 初始化配置
 			char buf[512];
 			acl::string curpath = getcwd(buf, 512);
+			acl::string path;
 			var list = curpath.split("/");
 			list.pop_back();
-			json_config::root_path = "/";
 			for (var& word : list)
 			{
-				json_config::root_path.append(word);
-				json_config::root_path.append("/");
+				path.append("/");
+				path.append(word);
 			}
-			json_config::init();
+			strcpy(global_config::root_path, path.c_str());
 			// 初始化日志
 			var log = log_init();
 			log_msg3("ØMQ version:%d.%d.%d", major, minor, patch);
-			log_msg3("folder exec:%s\n    root:%s\n    log:%s", curpath.c_str(), json_config::root_path.c_str(), log.c_str());
+			log_msg3("folder\nexec:%s\nroot:%s\nlog:%s", curpath.c_str(), global_config::root_path, log.c_str());
 			//本机IP信息
 			acl::string host;
 			vector<acl::string> ips;
@@ -86,12 +87,14 @@ namespace agebull
 			}
 			log_msg(ip_info);
 			//REDIS环境检查
+
+			json_config::init();
 			if (!ping_redis())
 			{
-				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
+				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), global_config::redis_defdb);
 				return false;
 			}
-			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), json_config::redis_defdb);
+			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), global_config::redis_defdb);
 			//站点仓库管理初始化
 			return station_warehouse::initialize();
 		}
@@ -136,7 +139,7 @@ namespace agebull
 		}
 		void check_semaphore_start()
 		{
-			if (zero_thread_run + zero_thread_bad <= 2)
+			if (zero_thread_run + zero_thread_bad <= 3)
 				task_semaphore.post();
 			else
 				if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
@@ -180,14 +183,53 @@ namespace agebull
 			net_state = net_state_none;
 			zmq_context = zmq_ctx_new();
 			assert(zmq_context != nullptr);
-			if (json_config::MAX_SOCKETS > 0)
-				zmq_ctx_set(zmq_context, ZMQ_MAX_SOCKETS, json_config::MAX_SOCKETS);
-			if (json_config::IO_THREADS > 0)
-				zmq_ctx_set(zmq_context, ZMQ_IO_THREADS, json_config::IO_THREADS);
-			if (json_config::MAX_MSGSZ > 0)
-				zmq_ctx_set(zmq_context, ZMQ_MAX_MSGSZ, json_config::MAX_MSGSZ);
+			if (global_config::MAX_SOCKETS > 0)
+				zmq_ctx_set(zmq_context, ZMQ_MAX_SOCKETS, global_config::MAX_SOCKETS);
+			if (global_config::IO_THREADS > 0)
+				zmq_ctx_set(zmq_context, ZMQ_IO_THREADS, global_config::IO_THREADS);
+			if (global_config::MAX_MSGSZ > 0)
+				zmq_ctx_set(zmq_context, ZMQ_MAX_MSGSZ, global_config::MAX_MSGSZ);
 
 			log_msg("$initiated");
+			return net_state;
+		}
+		//启动网络命令环境
+		int start_system_manage()
+		{
+			log_msg("$start system dispatcher ...");
+			station_dispatcher::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("$system dispatcher failed ...");
+				net_state = net_state_failed;
+			}
+			return	net_state;
+		}
+		//启动网络命令环境
+		int start_proxy_dispatcher()
+		{
+			log_msg("$start proxy dispatcher ...");
+			proxy_dispatcher::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("$proxy dispatcher failed ...");
+				net_state = net_state_failed;
+			}
+			return	net_state;
+		}
+		//启动网络命令环境
+		int start_plan_dispatcher()
+		{
+			log_msg("$start plan dispatcher ...");
+			plan_dispatcher::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("$plan dispatcher failed ...");
+				net_state = net_state_failed;
+			}
 			return net_state;
 		}
 		//启动网络命令环境
@@ -197,40 +239,14 @@ namespace agebull
 
 			net_state = net_state_runing;
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
-			log_msg("$start system dispatcher ...");
-			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
-			{
-				if (cfg->station_type_ == station_type_dispatcher)
-					log_msg(cfg->to_info_json());
-			});
-			station_dispatcher::run();
-			task_semaphore.wait();
-			if (zero_thread_bad == 1)
-			{
-				log_msg("$system dispatcher failed ...");
-				return	net_state = net_state_failed;
-			}
-			log_msg("$start plan dispatcher ...");
-			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
-			{
-				if (cfg->station_type_ == station_type_plan)
-					log_msg(cfg->to_info_json());
-			});
-			plan_dispatcher::run();
-			task_semaphore.wait();
-			if (zero_thread_bad == 1)
-			{
-				log_msg("$plan dispatcher failed ...");
-				return	net_state = net_state_failed;
-			}
+			if (start_system_manage() == net_state_failed)
+				return net_state_failed;
+			if (start_proxy_dispatcher() == net_state_failed)
+				return net_state_failed;
+			if (start_plan_dispatcher() == net_state_failed)
+				return net_state_failed;
+
 			log_msg("$start business stations...");
-			station_warehouse::foreach_configs([](shared_ptr<zero_config>& cfg)
-			{
-				if (IS_GENERAL_STATION(cfg->station_type_))
-				{
-					log_msg(cfg->to_info_json());
-				}
-			});
 			station_warehouse::restore();
 			task_semaphore.wait();
 			var sp = boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;

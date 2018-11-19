@@ -13,19 +13,55 @@ namespace ZeroMQ
     /// </summary>
     public class ZSocket : MemoryCheck
     {
-        #region Socket支持
+        #region Option
         /// <summary>
         /// 配置
         /// </summary>
         public static SocketOption Option = new SocketOption();
+        
+#if UNMANAGE_MONEY_CHECK
+        protected override string TypeName => nameof(ZMessage);
+#endif
+        /// <summary>
+        /// 关联的站点名称（仅用于ZeroNet）
+        /// </summary>
+        public string StationName
+        {
+            get;
+            set;
+        }
+        /// <summary>
+        /// 是否使用中（仅用于ZeroNet）
+        /// </summary>
+        public bool IsUsing
+        {
+            get;
+            set;
+        }
+
+        public static List<ZSocket> AliveSockets = new List<ZSocket>();
+
+
+        /// <summary>
+        ///     已绑定地址
+        /// </summary>
+        public List<string> Binds = new List<string>();
+
+        /// <summary>
+        ///     已连接对象
+        /// </summary>
+        public List<string> Connects = new List<string>();
+        #endregion
+
+        #region Create
+
         /// <summary>
         /// 构建套接字
         /// </summary>
         /// <param name="address"></param>
         /// <param name="type"></param>
-        /// <param name="identity"></param>
         /// <returns></returns>
-        public static ZSocket CreateServiceSocket(string address, ZSocketType type, byte[] identity = null)
+        public static ZSocket CreateServiceSocket(string address, ZSocketType type)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -35,8 +71,7 @@ namespace ZeroMQ
                 Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            socket.SetOption(ZSocketOption.IDENTITY, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl );
+            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
 
             socket.SetOption(ZSocketOption.LINGER, Option.Linger);
@@ -68,64 +103,7 @@ namespace ZeroMQ
         /// <param name="identity"></param>
         /// <param name="subscribe"></param>
         /// <returns></returns>
-        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity = null, string subscribe = null)
-        {
-            if (!ZContext.IsAlive)
-                return null;
-            var socket = CreateClientSocket(type, address, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
-            if (socket == null)
-            {
-                return null;
-            }
-            if (type == ZSocketType.SUB)
-            {
-                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe);
-            }
-
-            if (socket.Connect(address, out var error))
-                return socket;
-            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-            socket.Close();
-            socket.Dispose();
-            return null;
-        }
-        /// <summary>
-        /// 构建套接字
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
-        /// <param name="subscribe"></param>
-        /// <returns></returns>
         public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity, byte[] subscribe)
-        {
-            if (!ZContext.IsAlive)
-                return null;
-            var socket = CreateClientSocket(type, address, identity ?? Encoding.ASCII.GetBytes(RandomOperate.Generate(8)));
-            if (socket == null)
-            {
-                return null;
-            }
-            if (type == ZSocketType.SUB)
-            {
-                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe);
-            }
-            if (socket.Connect(address, out var error))
-                return socket;
-            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-            socket.Close();
-            socket.Dispose();
-            return null;
-        }
-
-        /// <summary>
-        /// 构建套接字
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        private static ZSocket CreateClientSocket(ZSocketType type, string address, byte[] identity)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -135,8 +113,7 @@ namespace ZeroMQ
                 Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            identity = Encoding.ASCII.GetBytes(RandomOperate.Generate(8));
-            socket.SetOption(ZSocketOption.IDENTITY, identity);
+            socket.SetOption(ZSocketOption.IDENTITY, identity ?? Encoding.ASCII.GetBytes("+>" + RandomOperate.Generate(8)));
             socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
             socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
@@ -146,7 +123,31 @@ namespace ZeroMQ
             {
                 socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
             }
-            return socket;
+            else
+            {
+                socket.SetOption(ZSocketOption.SUBSCRIBE, subscribe);
+            }
+            if (socket.Connect(address, out error))
+                return socket;
+            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            socket.Close();
+            socket.Dispose();
+            return null;
+        }
+
+        /// <summary>
+        /// 构建套接字
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="type"></param>
+        /// <param name="identity"></param>
+        /// <param name="subscribe"></param>
+        /// <returns></returns>
+        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity = null, string subscribe = null)
+        {
+            if (!ZContext.IsAlive)
+                return null;
+            return CreateClientSocket(address, type, identity, Encoding.ASCII.GetBytes(subscribe ?? ""));
         }
         /// <summary>
         /// 构建套接字
@@ -156,7 +157,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static ZSocket CreateDealerSocket(string address, byte[] identity = null)
         {
-            return CreateClientSocket(address, ZSocketType.DEALER, identity);
+            return CreateClientSocket(address, ZSocketType.DEALER, identity, new byte[0]);
         }
 
 
@@ -169,30 +170,9 @@ namespace ZeroMQ
         /// <returns></returns>
         public static ZSocket CreateSubscriberSocket(string address, byte[] identity = null, string subscribe = "")
         {
-            return CreateClientSocket(address, ZSocketType.SUB, identity, subscribe);
+            return CreateClientSocket(address, ZSocketType.SUB, identity, Encoding.ASCII.GetBytes(subscribe ?? ""));
         }
 
-        public static List<ZSocket> AliveSockets = new List<ZSocket>();
-
-#if UNMANAGE_MONEY_CHECK
-        protected override string TypeName => nameof(ZMessage);
-#endif
-        /// <summary>
-        /// 关联的站点名称（仅用于ZeroNet）
-        /// </summary>
-        public string StationName
-        {
-            get;
-            set;
-        }
-        /// <summary>
-        /// 是否使用中（仅用于ZeroNet）
-        /// </summary>
-        public bool IsUsing
-        {
-            get;
-            set;
-        }
         #endregion
 
         #region MySend
@@ -245,7 +225,7 @@ namespace ZeroMQ
             }
             using (var f = new ZFrame(array[i]))
                 return Send(f, first, 1, ref retry);
-        } 
+        }
 
         /// <summary>
         /// 发送
@@ -927,35 +907,6 @@ namespace ZeroMQ
 
         #region 状态
 
-
-        /// <summary>
-        ///     已绑定地址
-        /// </summary>
-        public List<string> Binds = new List<string>();
-
-        /// <summary>
-        ///     已连接对象
-        /// </summary>
-        public List<string> Connects = new List<string>();
-
-
-        private ZError _error;
-
-        public ZError LastError => _error;
-
-        public ZError GetLastError()
-        {
-            return _error = ZError.GetLastErr();
-        }
-        #endregion
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
-        // From options.hpp: unsigned char identity [256];
-        private const int MaxBinaryOptionSize = 256;
-
-        public const int BinaryKeySize = 32;
-
-
-
         /// <summary>
         ///     Create a <see cref="ZSocket" /> instance.
         ///     You are using ZContext.Current!
@@ -999,6 +950,25 @@ namespace ZeroMQ
         protected ZSocket()
         {
         }
+
+
+
+        private ZError _error;
+
+        public ZError LastError => _error;
+
+        public ZError GetLastError()
+        {
+            return _error = ZError.GetLastErr();
+        }
+        #endregion
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        // From options.hpp: unsigned char identity [256];
+        private const int MaxBinaryOptionSize = 256;
+
+        public const int BinaryKeySize = 32;
+
+
 
         /// <summary>
         ///     是否为空
@@ -1082,7 +1052,8 @@ namespace ZeroMQ
                 return false;
             }
             error = _error = default(ZError);
-            try{
+            try
+            {
                 AliveSockets.Add(this);
 
             }

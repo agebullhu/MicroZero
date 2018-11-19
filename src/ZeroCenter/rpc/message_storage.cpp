@@ -37,7 +37,7 @@ namespace agebull
 			_config = config;
 
 			acl::string path;
-			path.format("%sdatas/%s.db", json_config::root_path.c_str(), config->station_name_.c_str());
+			path.format("%s/datas/%s.db", global_config::root_path, config->station_name_.c_str());
 			int result = sqlite3_open(path.c_str(), &_sqlite_db);
 			if (result != SQLITE_OK)
 			{

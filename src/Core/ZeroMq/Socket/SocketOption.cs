@@ -6,17 +6,17 @@
     public class SocketOption
     {
         /// <summary>
-        /// 重新连接时间间隔
+        /// 重新连接时间间隔(最小)
         /// </summary>
-        public int ReconnectIvl { get; set; } = 10;
+        public int ReconnectIvl { get; set; } = 200;
         /// <summary>
-        /// 重新连接失败时长
+        /// 重新连接时间间隔(最长)(200+400+800)
         /// </summary>
-        public int ReconnectIvlMax { get; set; } = 500;
+        public int ReconnectIvlMax { get; set; } = 1400;
         /// <summary>
         /// 连接失败时长
         /// </summary>
-        public int ConnectTimeout { get; set; } = 500;
+        public int ConnectTimeout { get; set; } = 3000;
         /// <summary>
         /// 自动关闭时长
         /// </summary>

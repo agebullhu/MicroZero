@@ -344,7 +344,10 @@ namespace ZeroMQ
         {
             return Duplicate();
         }
-
+        /// <summary>
+        /// 重用
+        /// </summary>
+        /// <returns></returns>
         public ZMessage Duplicate()
         {
             var message = new ZMessage();

@@ -46,8 +46,8 @@ namespace agebull
 	*/
 	acl::string log_init()
 	{
-		auto log = json_config::root_path;
-		log.append("logs/zero_center.log");
+		acl::string log = global_config::root_path;
+		log.append("/logs/zero_center.log");
 		acl::acl_cpp_init();
 		logger_open(log, "zero_center", DEBUG_CONFIG);
 		return log;

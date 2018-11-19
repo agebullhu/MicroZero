@@ -231,6 +231,15 @@ namespace agebull
 		*\brief 事件通知
 		*/
 		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content);
+
+		constexpr auto DEF_SYSTEM_MANAGE = "SystemManage";
+		constexpr auto DEF_PLAN_DISPATCHER = "PlanDispatcher";
+		constexpr auto DEF_PROXY_DISPATCHER = "ProxyDispatcher";
+		constexpr auto DEF_HEAD_TCP = "+";
+		constexpr auto DEF_HEAD_INPROC = '-';
+		constexpr auto DEF_HEAD_REQ = '<';
+		constexpr auto DEF_HEAD_RES = '>';
+		
 	}
 }
 #endif

@@ -27,7 +27,7 @@ namespace agebull
 			* \brief ππ‘Ï
 			*/
 			plan_dispatcher()
-				:zero_station("PlanDispatcher", station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(DEF_PLAN_DISPATCHER, station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}

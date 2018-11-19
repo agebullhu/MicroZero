@@ -21,6 +21,7 @@ int zero_center_main()
 	//初始化
 	if (!zero_net::rpc_service::initialize())
 		return 0;
+	zero_net::station_warehouse::clear();
 	//启动
 	zero_net::rpc_service::start();
 	//等待

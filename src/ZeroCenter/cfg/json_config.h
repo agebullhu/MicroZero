@@ -3,14 +3,62 @@
 #include "../stdinc.h"
 namespace agebull
 {
-	class json_config
+	struct config_item
+	{
+	private:
+		static config_item empty;
+	public:
+		std::string name;
+		std::string value;
+		bool is_value;
+		/**
+		* \brief 配置内容
+		*/
+		std::map<std::string, config_item> value_map;
+		config_item() : is_value(false)
+		{
+		}
+
+		/**
+		* \brief 取配置
+		* \param name 名称
+		 * \param def 缺省值
+		* \return 文本
+		*/
+		const char* str(const char * name, const char* def = nullptr);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		 * \param def 缺省值
+		* \return 数字
+		*/
+		int number(const char * name, int def = 0);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		 * \param def 缺省值
+		* \return 布尔
+		*/
+		bool boolean(const char * name, bool def = false);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		* \return 子节点
+		*/
+		config_item& item(const char * name);
+		/**
+		* \brief 取配置
+		* \param name 名称
+		* \return 子节点
+		*/
+		config_item& operator[](const char * name);
+	};
+	struct global_config :public config_item
 	{
 		/**
-		 * \brief 全局配置
-		 */
-		static std::map<std::string, std::string> global_cfg_;
-
-	public:
+		* \brief 系统根目录
+		*/
+		static char root_path[512];
 		static int base_tcp_port;
 		static int plan_exec_timeout;
 		static int plan_cache_size;
@@ -31,74 +79,33 @@ namespace agebull
 		static int IO_THREADS;
 		static int MAX_MSGSZ;
 		static char service_key[512];
+	};
+	class json_config
+	{
+	public:
+		/**
+		 * \brief 全局配置
+		 */
+		static global_config global;
 		/**
 		* \brief 全局配置初始化
 		*/
 		static void init();
 
-		/**
-		* \brief 系统根目录
-		*/
-		static acl::string root_path;
 
-		/**
-		 * \brief 取全局配置
-		 * \param name 名称
-		 * \param def 缺省值
-		 * \return 值
-		 */
-		static int get_global_int(const char * name, int def = 0);
-		/**
-		* \brief 取全局配置
-		* \param name 名称
-		 * \param def 缺省值
-		* \return 值
-		*/
-		static bool get_global_bool(const char * name, bool def = false);
-		/**
-		* \brief 取全局配置
-		* \param name 名称
-		* \return 文本
-		*/
-		static std::string& get_global_string(const char * name);
-	private:
-		/**
-		* \brief 配置内容
-		*/
-		std::map<std::string, std::string> value_map_;
 		/**
 		* \brief 读取配置内容
 		*/
-		static void read(const char* json, std::map<std::string, std::string>& cfg);
-	public:
+		static void read(acl::string& json, config_item& root);
 		/**
-		* \brief 构造
-		* \param json JSON内容
+		* \brief 读取配置内容
 		*/
-		explicit json_config(const char* json);
-
+		static void read(acl::json_node* json, config_item& item);
 		/**
-		* \brief 取配置
-		* \param name 名称
-		 * \param def 缺省值
-		* \return 数字
+		* \brief 读取配置内容
 		*/
-		int number(const char * name, int def = 0);
-		/**
-		* \brief 取配置
-		* \param name 名称
-		 * \param def 缺省值
-		* \return 布尔
-		*/
-		bool boolean(const char * name, bool def = false);
-		/**
-		* \brief 取配置
-		* \param name 名称
-		* \return 文本
-		*/
-		std::string& operator[](const char * name);
+		static bool load_file(const char* file_name, config_item& root);
 	};
-
 	/**
 	* \brief 大小写敏感的文本匹配，返回匹配的下标
 	* \param dests 目标
@@ -186,6 +193,6 @@ namespace agebull
 #define json_add_bool(node,key,num) if(num)  node.add_bool(key, true)
 
 #define json_add_array_str(node,text) if(!text.empty()) node.add_array_text(text.c_str())
-	
+
 }
 #endif

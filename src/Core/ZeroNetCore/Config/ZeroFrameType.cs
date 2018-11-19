@@ -51,6 +51,43 @@ namespace Agebull.ZeroNet.Core
         public const byte SerivceKey = 7;
 
         /// <summary>
+        ///     服务认证标识
+        /// </summary>
+        public const byte LocalId = 8;
+
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original1 = 9;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original2 = 0xA;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original3 = 0xB;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original4 = 0xC;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original5 = 0xD;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original6 = 0xE;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original7 = 0xF;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original8 = 0x10;
+        /// <summary>
         ///     参数
         /// </summary>
         public const byte Argument = (byte)'%';

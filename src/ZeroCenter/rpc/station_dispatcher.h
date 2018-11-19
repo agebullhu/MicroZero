@@ -22,7 +22,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			station_dispatcher()
-				:zero_station("SystemManage", station_type_dispatcher, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(DEF_SYSTEM_MANAGE, station_type_dispatcher, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}

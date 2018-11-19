@@ -315,6 +315,9 @@ namespace agebull
 				case  station_type_plan:
 					type_name_ = "PLAN";
 					break;
+				case  station_type_proxy:
+					type_name_ = "PROXY";
+					break;
 				default:
 					type_name_ = "ERR";
 					break;
@@ -352,7 +355,7 @@ namespace agebull
 			*/
 			void start()
 			{
-				full_log(station_state_ == station_state::re_start || station_state_ == station_state::failed ? "restart" : "start");
+				start_log(station_state_ == station_state::re_start || station_state_ == station_state::failed ? "restart" : "start");
 				runtime_state(station_state::start);
 			}
 
@@ -388,7 +391,7 @@ namespace agebull
 			*/
 			void restart()
 			{
-				full_log("restart");
+				start_log("restart");
 				runtime_state(station_state::re_start);
 			}
 
@@ -404,12 +407,9 @@ namespace agebull
 			/**
 			* \brief 日志
 			*/
-			void full_log(const char* state) const
+			void start_log(const char* state)
 			{
-				if (worker_in_port_ > 0)
-					log_msg6("[%s] > %s (type:%s prot:%d | %d<=>%d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_, worker_in_port_)
-				else
-					log_msg5("[%s] > %s (type:%s prot:%d | %d)", station_name_.c_str(), state, type_name_, request_port_, worker_out_port_)
+				log_msg3("[%s] > %s \n%s", station_name_.c_str(), state, to_info_json().c_str());
 			}
 
 			/**

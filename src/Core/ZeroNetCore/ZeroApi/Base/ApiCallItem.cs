@@ -62,6 +62,10 @@ namespace Agebull.ZeroNet.ZeroApi
         public string Result { get; set; }
 
         /// <summary>
+        /// 原样帧
+        /// </summary>
+        public Dictionary<byte, byte[]> Originals { get; } = new Dictionary<byte, byte[]>();
+        /// <summary>
         /// 执行状态
         /// </summary>
         public ZeroOperatorStatus Status { get; set; }
