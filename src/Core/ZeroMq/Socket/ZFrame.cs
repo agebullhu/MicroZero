@@ -880,6 +880,9 @@ namespace ZeroMQ
             return Duplicate();
         }
 
+        /// <summary>
+        /// 重用
+        /// </summary>
         public ZFrame Duplicate()
         {
             var frame = CreateEmpty();

@@ -44,7 +44,7 @@ namespace agebull
 			{
 				if (reboot_num_ == 0)
 				{
-					redis_live_scope redis(json_config::redis_defdb);
+					redis_live_scope redis(global_config::redis_defdb);
 					redis->incr("sys:gid", &reboot_num_);
 					if (reboot_num_ > 0xFFF)
 					{

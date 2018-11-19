@@ -2,162 +2,165 @@
 #include "../log/mylogger.h"
 namespace agebull
 {
-	std::map<std::string, std::string> json_config::global_cfg_;
-	int json_config::base_tcp_port = 7999;
-	int json_config::plan_exec_timeout = 300;
-	int json_config::plan_cache_size = 1024;
-	//bool json_config::use_ipc_protocol = false;
-	char json_config::redis_addr[512] = "127.0.0.1:6379";
-	int json_config::redis_defdb = 0x10;
-	int json_config::worker_sound_ivl = 2000;
-	char json_config::service_key[512] = "agebull";
+	config_item config_item::empty;
+	global_config json_config::global;
+	int global_config::base_tcp_port = 7999;
+	int global_config::plan_exec_timeout = 300;
+	int global_config::plan_cache_size = 1024;
+	//bool global_config::use_ipc_protocol = false;
+	char global_config::redis_addr[512] = "127.0.0.1:6379";
+	int global_config::redis_defdb = 0x10;
+	int global_config::worker_sound_ivl = 2000;
+	char global_config::service_key[512] = "agebull";
 	
-	int json_config::IMMEDIATE = 1;
-	int json_config::LINGER = -1;
-	int json_config::SNDHWM = -1;
-	int json_config::SNDBUF = -1;
-	int json_config::RCVTIMEO = 500;
-	int json_config::RCVHWM = -1;
-	int json_config::RCVBUF = -1;
-	int json_config::SNDTIMEO = 500;
-	int json_config::BACKLOG = -1;
-	int json_config::MAX_SOCKETS = -1;
-	int json_config::IO_THREADS = -1;
-	int json_config::MAX_MSGSZ = -1;
+	int global_config::IMMEDIATE = 1;
+	int global_config::LINGER = -1;
+	int global_config::SNDHWM = -1;
+	int global_config::SNDBUF = -1;
+	int global_config::RCVTIMEO = 500;
+	int global_config::RCVHWM = -1;
+	int global_config::RCVBUF = -1;
+	int global_config::SNDTIMEO = 500;
+	int global_config::BACKLOG = -1;
+	int global_config::MAX_SOCKETS = -1;
+	int global_config::IO_THREADS = -1;
+	int global_config::MAX_MSGSZ = -1;
 
 	/**
 	* \brief 系统根目录
 	*/
-	acl::string json_config::root_path;
+	char global_config::root_path[512] = "";
 
 	/**
 	* \brief 全局配置初始化
 	*/
 	void json_config::init()
 	{
-		acl::string path;
-		path.format("%sconfig/zero_center.json", root_path.c_str());
-		std::cout << path.c_str() << endl;
-		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
-		if (fp != nullptr)
+		if (load_file("zero_center.json", global))
 		{
-			acl::string cfg;
-			int ret = 0;
-			char buf[1024];
-			while (ret != ACL_VSTREAM_EOF) {
-				ret = acl_vstream_gets_nonl(fp, buf, sizeof(buf));
-				cfg += buf;
+			auto& zmq = global["ZMQ"]; 
+			if (zmq.value_map.size() > 0)
+			{
+				global_config::IMMEDIATE = zmq.number("IMMEDIATE", global_config::IMMEDIATE);
+				global_config::LINGER = zmq.number("LINGER", global_config::LINGER);
+				global_config::RCVHWM = zmq.number("RCVHWM", global_config::RCVHWM);
+				global_config::RCVBUF = zmq.number("RCVBUF", global_config::RCVBUF);
+				global_config::RCVTIMEO = zmq.number("RCVTIMEO", global_config::RCVTIMEO);
+				global_config::SNDHWM = zmq.number("SNDHWM", global_config::SNDHWM);
+				global_config::SNDBUF = zmq.number("SNDBUF", global_config::SNDBUF);
+				global_config::SNDTIMEO = zmq.number("SNDTIMEO", global_config::SNDTIMEO);
+				global_config::BACKLOG = zmq.number("BACKLOG", global_config::BACKLOG);
+				global_config::MAX_SOCKETS = zmq.number("MAX_SOCKETS", global_config::MAX_SOCKETS);
+				global_config::IO_THREADS = zmq.number("IO_THREADS", global_config::IO_THREADS);
+				global_config::MAX_MSGSZ = zmq.number("MAX_MSGSZ", global_config::MAX_MSGSZ);
 			}
-			acl_vstream_fclose(fp);
-			read(cfg.c_str(), global_cfg_);
+			auto& zero = global["zero"];
+			if(zero.value_map.size() > 0)
+			{
+				global_config::plan_exec_timeout = zero.number("plan_exec_timeout", global_config::plan_exec_timeout);
+				global_config::plan_cache_size = zero.number("plan_cache_size", global_config::plan_cache_size);
+				global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
+				global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
 
-			IMMEDIATE = get_global_int("ZMQ_IMMEDIATE", IMMEDIATE);
-			LINGER = get_global_int("ZMQ_LINGER", LINGER);
-			RCVHWM = get_global_int("ZMQ_RCVHWM", RCVHWM);
-			RCVBUF = get_global_int("ZMQ_RCVBUF", RCVBUF);
-			RCVTIMEO = get_global_int("ZMQ_RCVTIMEO", RCVTIMEO);
-			SNDHWM = get_global_int("ZMQ_SNDHWM", SNDHWM);
-			SNDBUF = get_global_int("ZMQ_SNDBUF", SNDBUF);
-			SNDTIMEO = get_global_int("ZMQ_SNDTIMEO", SNDTIMEO);
-			BACKLOG = get_global_int("ZMQ_BACKLOG", BACKLOG);
-			MAX_SOCKETS = get_global_int("ZMQ_MAX_SOCKETS", MAX_SOCKETS);
-			IO_THREADS = get_global_int("ZMQ_IO_THREADS", IO_THREADS);
-			MAX_MSGSZ = get_global_int("ZMQ_MAX_MSGSZ", MAX_MSGSZ);
-			
-			plan_exec_timeout = get_global_int("plan_exec_timeout", plan_exec_timeout);
-			plan_cache_size = get_global_int("plan_cache_size", plan_cache_size);
-			base_tcp_port = get_global_int("base_tcp_port", base_tcp_port);
+				var key = zero.str("service_key");
+				if (key != nullptr)
+					strcpy(global_config::service_key, key);
+			}
+			auto& redis = global["redis"];
+			if (redis.value_map.size() > 0)
+			{
+				var addr = redis.str("addr");
+				if (addr != nullptr)
+					strcpy(global_config::redis_addr, addr);
+				global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
+			}
 			//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
-			var addr = get_global_string("redis_addr");
-			if (addr.length() > 0)
-				strcpy(redis_addr, addr.c_str());
-			redis_defdb = get_global_int("redis_defdb", redis_defdb);
-			worker_sound_ivl = get_global_int("worker_sound_ivl", worker_sound_ivl);
 
-
-			var key = get_global_string("service_key");
-			if (key.length() > 0)
-				strcpy(service_key, key.c_str());
 		}
-		log_msg1("config => base_tcp_port : %d", base_tcp_port);
-		log_msg1("config => worker_sound_ivl : %d", worker_sound_ivl);
+		log_msg1("config => base_tcp_port : %d", global_config::base_tcp_port);
+		log_msg1("config => worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
-		log_msg1("config => redis_addr : %s", redis_addr);
-		log_msg1("config => redis_defdb : %d", redis_defdb);
-		log_msg1("config => plan_exec_timeout : %d", plan_exec_timeout);
-		log_msg1("config => plan_cache_size : %d", plan_cache_size);
+		log_msg1("config => plan_exec_timeout : %d", global_config::plan_exec_timeout);
+		log_msg1("config => plan_cache_size : %d", global_config::plan_cache_size);
 
-		log_msg1("config => ZMQ_IMMEDIATE : %d", IMMEDIATE);
-		log_msg1("config => ZMQ_LINGER : %d", LINGER);
-		log_msg1("config => ZMQ_RCVHWM : %d", RCVHWM);
-		log_msg1("config => ZMQ_RCVBUF : %d", RCVBUF);
-		log_msg1("config => ZMQ_RCVTIMEO : %d", RCVTIMEO);
-		log_msg1("config => ZMQ_SNDHWM : %d", SNDHWM);
-		log_msg1("config => ZMQ_SNDBUF : %d", SNDBUF);
-		log_msg1("config => ZMQ_SNDTIMEO : %d", SNDTIMEO);
-		log_msg1("config => ZMQ_BACKLOG : %d", BACKLOG);
-		log_msg1("config => ZMQ_MAX_SOCKETS : %d", MAX_SOCKETS);
-		log_msg1("config => ZMQ_IO_THREADS : %d", IO_THREADS);
-		log_msg1("config => ZMQ_MAX_MSGSZ : %d", MAX_MSGSZ);
+		log_msg1("redis => addr : %s", global_config::redis_addr);
+		log_msg1("redis => defdb : %d", global_config::redis_defdb);
 
+		log_msg1("ZMQ => IMMEDIATE : %d", global_config::IMMEDIATE);
+		log_msg1("ZMQ => LINGER : %d", global_config::LINGER);
+		log_msg1("ZMQ => RCVHWM : %d", global_config::RCVHWM);
+		log_msg1("ZMQ => RCVBUF : %d", global_config::RCVBUF);
+		log_msg1("ZMQ => RCVTIMEO : %d", global_config::RCVTIMEO);
+		log_msg1("ZMQ => SNDHWM : %d", global_config::SNDHWM);
+		log_msg1("ZMQ => SNDBUF : %d", global_config::SNDBUF);
+		log_msg1("ZMQ => SNDTIMEO : %d", global_config::SNDTIMEO);
+		log_msg1("ZMQ => BACKLOG : %d", global_config::BACKLOG);
+		log_msg1("ZMQ => MAX_SOCKETS : %d", global_config::MAX_SOCKETS);
+		log_msg1("ZMQ => IO_THREADS : %d", global_config::IO_THREADS);
+		log_msg1("ZMQ => MAX_MSGSZ : %d", global_config::MAX_MSGSZ);
+
+	}
+
+	/**
+	* \brief 读取配置内容
+	*/
+	bool json_config::load_file(const char* file_name, config_item& root)
+	{
+		acl::string path;
+		path.format("%s/config/%s", global_config::root_path, file_name);
+		std::cout << path.c_str() << endl;
+		root.name = path.c_str();
+		ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
+		if (fp == nullptr)
+			return false;
+		acl::string cfg;
+		int ret = 0;
+		char buf[1024];
+		while (ret != ACL_VSTREAM_EOF) {
+			ret = acl_vstream_gets_nonl(fp, buf, sizeof(buf));
+			cfg += buf;
+		}
+		acl_vstream_fclose(fp);
+		read(cfg, root);
+		return true;
 	}
 	/**
 	* \brief 读取配置内容
 	*/
-	void json_config::read(const char* str, std::map<std::string, std::string>& cfg)
+	void json_config::read(acl::string& str, config_item& root)
 	{
-		cfg.clear();
+		root.value_map.clear();
 		acl::json json;
 		json.update(str);
-		acl::json_node* iter = json.first_node();
+		read(&json.get_root(),root);
+	}
+
+	/**
+	* \brief 读取配置内容
+	*/
+	void json_config::read(acl::json_node* json, config_item& par)
+	{
+		acl::json_node* iter = json->first_child();
 		while (iter)
 		{
 			if (iter->tag_name())
 			{
-				cfg.insert(std::make_pair(iter->tag_name(), iter->get_text()));
+				config_item  item;
+				item.name = iter->tag_name();
+				var obj = iter->get_obj();
+				item.is_value = obj == nullptr;
+				if(item.is_value)
+				{
+					item.value = iter->get_text();
+				}
+				else
+				{
+					read(obj, item);
+				}
+				par.value_map.insert(std::make_pair(item.name, item));
 			}
-			iter = json.next_node();
+			iter = json->next_child();
 		}
-	}
-	/**
-	* \brief 构造
-	* \param json JSON内容
-	*/
-	json_config::json_config(const char* json)
-	{
-		read(acl::string(json), value_map_);
-	}
-	/**
-	* \brief 取全局配置
-	* \param name 名称
-	* \return 值
-	*/
-	std::string& json_config::get_global_string(const char * name)
-	{
-		return global_cfg_[name];
-	}
-
-	/**
-	* \brief 取全局配置
-	* \param name 名称
-	* \param def 缺省值
-	* \return 值
-	*/
-	int json_config::get_global_int(const char * name, int def)
-	{
-		auto vl = global_cfg_[name];
-		return vl.empty() ? def : atoi(vl.c_str());
-	}
-	/**
-	* \brief 取全局配置
-	* \param name 名称
-	* \param def 缺省值
-	* \return 值
-	*/
-	bool json_config::get_global_bool(const char * name, bool def)
-	{
-		auto vl = global_cfg_[name];
-		return vl.empty() ? def : strcasecmp(vl.c_str(), "true") == 0;
 	}
 	/**
 	* \brief 取配置
@@ -165,10 +168,10 @@ namespace agebull
 	* \param def 缺省值
 	* \return 布尔
 	*/
-	bool json_config::boolean(const char * name, bool def)
+	bool config_item::boolean(const char * name, bool def)
 	{
-		auto vl = value_map_[name];
-		return vl.empty() ? def : strcasecmp(vl.c_str(), "true") == 0;
+		auto vl = value_map.find(name);
+		return vl== value_map.end() ? def : strcasecmp(vl->second.value.c_str(), "true") == 0;
 	}
 	/**
 	* \brief 取配置
@@ -176,19 +179,40 @@ namespace agebull
 	* \param def 缺省值
 	* \return 数字
 	*/
-	int json_config::number(const char * name, int def)
+	int config_item::number(const char * name, int def)
 	{
-		auto vl = value_map_[name];
-		return vl.empty() ? def : atoi(vl.c_str());
+		auto vl = value_map.find(name);
+		return vl == value_map.end() ? def : atoi(vl->second.value.c_str());
+	}
+	/**
+	* \brief 取配置
+	* \param name 名称
+	* \param def 不存在时的缺省值
+	* \return 文本
+	*/
+	const char* config_item::str(const char * name, const char* def)
+	{
+		auto vl = value_map.find(name);
+		return vl == value_map.end() ? def : vl->second.value.c_str();
 	}
 	/**
 	* \brief 取配置
 	* \param name 名称
 	* \return 文本
 	*/
-	std::string& json_config::operator[](const char * name)
+	config_item& config_item::operator[](const char * name)
 	{
-		return value_map_[name];
+		auto vl = value_map.find(name);
+		return vl == value_map.end() ? empty : vl->second;
 	}
-
+	/**
+	* \brief 取配置
+	* \param name 名称
+	* \return 子节点
+	*/
+	config_item& config_item::item(const char * name)
+	{
+		auto vl = value_map.find(name);
+		return vl == value_map.end() ? empty : vl->second;
+	}
 }

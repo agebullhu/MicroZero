@@ -20,9 +20,10 @@ namespace agebull
 		const station_type station_type_vote = 4;//投票即并发机制
 		const station_type station_type_route_api = 5;//2018.08.03:新增,定向路由API
 		const station_type station_type_queue = 6;//2018.11.10:新增,队列任务(发完请求后进队列处理)
+		const station_type station_type_proxy = 0xFE;//反向代理
 		const station_type station_type_plan = 0xFF;//计划任务
 #define IS_PUB_STATION(type) type == station_type_dispatcher ||type == station_type_notify ||type == station_type_plan ||type == station_type_queue
-#define IS_SYS_STATION(type) (type == station_type_dispatcher ||type == station_type_plan)
+#define IS_SYS_STATION(type) (type == station_type_dispatcher ||type == station_type_plan ||type == station_type_proxy)
 #define IS_GENERAL_STATION(type) (type == station_type_api || type == station_type_notify || type == station_type_queue || type == station_type_vote || type == station_type_route_api)
 
 		const int net_state_none = 0;
@@ -77,21 +78,37 @@ namespace agebull
 		 //终止符号
 #define ZERO_FRAME_END  '\0'
 		//全局标识
-#define ZERO_FRAME_GLOBAL_ID  '\1'
+#define ZERO_FRAME_GLOBAL_ID  '\001'
 		//站点
-#define ZERO_FRAME_STATION_ID  '\2'
+#define ZERO_FRAME_STATION_ID  '\002'
 		//状态
-#define ZERO_FRAME_STATUS  '\3'
+#define ZERO_FRAME_STATUS  '\003'
 		//请求ID
-#define ZERO_FRAME_REQUEST_ID  '\4'
+#define ZERO_FRAME_REQUEST_ID  '\004'
 		//执行计划
-#define ZERO_FRAME_PLAN  '\5'
+#define ZERO_FRAME_PLAN  '\005'
 		//执行计划
-#define ZERO_FRAME_PLAN_TIME  '\6'
+#define ZERO_FRAME_PLAN_TIME  '\006'
 		//服务认证标识
-#define ZERO_FRAME_SERVICE_KEY  '\a'
+#define ZERO_FRAME_SERVICE_KEY  '\007'
 		//本地标识
-#define ZERO_FRAME_LOCAL_ID  '\b'
+#define ZERO_FRAME_LOCAL_ID  '\010'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_1  '\011'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_2  '\012'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_3  '\013'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_4  '\014'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_5  '\015'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_6  '\016'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_7  '\017'
+		//原样参数
+#define ZERO_FRAME_ORIGINAL_8  '\020'
 		//命令
 #define ZERO_FRAME_COMMAND  '$'
 		//参数
@@ -224,200 +241,7 @@ namespace agebull
 		  /**
 		  * \brief 说明帧解析
 		  */
-		inline acl::string desc_str(bool in, char* desc, size_t len)
-		{
-			if (desc == nullptr || len == 0)
-				return "[EMPTY]";
-			acl::string str;
-			str.format_append("{\"size\":%d", desc[0]);
-			uchar state = *reinterpret_cast<uchar*>(desc + 1);
-			if (in)
-			{
-				str.append(R"(,"command":")");
-				switch (state)
-				{
-				case ZERO_BYTE_COMMAND_NONE: //!\1 无特殊说明
-					str.append("none");
-					break;
-				case ZERO_BYTE_COMMAND_PLAN: //!\2  取全局标识
-					str.append("plan");
-					break;
-				case ZERO_BYTE_COMMAND_GLOBAL_ID: //!>  
-					str.append("global_id");
-					break;
-				case ZERO_BYTE_COMMAND_WAITING: //!# 等待结果
-					str.append("waiting");
-					break;
-				case ZERO_BYTE_COMMAND_FIND_RESULT: //!% 关闭结果
-					str.append("find result");
-					break;
-				case ZERO_BYTE_COMMAND_CLOSE_REQUEST: //!- Ping
-					str.append("close request");
-					break;
-				case ZERO_BYTE_COMMAND_PING: //!* 心跳加入
-					str.append("ping");
-					break;
-				case ZERO_BYTE_COMMAND_HEART_JOIN: //!J  心跳已就绪
-					str.append("heart join");
-					break;
-				case ZERO_BYTE_COMMAND_HEART_READY: //!R  心跳进行
-					str.append("heart ready");
-					break;
-				case ZERO_BYTE_COMMAND_HEART_PITPAT: //!P  心跳退出
-					str.append("heart pitpat");
-					break;
-				case ZERO_BYTE_COMMAND_HEART_LEFT: //!L  
-					str.append("heart left");
-					break;
-				}
-			}
-			else
-			{
-				str.append(R"(,"state":")");
-				switch (state)
-				{
-				case ZERO_STATUS_OK_ID: //!(0x1)
-					str.append(ZERO_STATUS_OK);
-					break;
-				case ZERO_STATUS_PLAN_ID: //!(0x2)
-					str.append(ZERO_STATUS_PLAN);
-					break;
-				case ZERO_STATUS_RUNING_ID: //!(0x3)
-					str.append(ZERO_STATUS_RUNING);
-					break;
-				case ZERO_STATUS_BYE_ID: //!(0x4)
-					str.append(ZERO_STATUS_BYE);
-					break;
-				case ZERO_STATUS_WECOME_ID: //!(0x5)
-					str.append(ZERO_STATUS_WECOME);
-					break;
-				case ZERO_STATUS_VOTE_SENDED_ID: //!(0x20)
-					str.append(ZERO_STATUS_VOTE_SENDED);
-					break;
-				case ZERO_STATUS_VOTE_BYE_ID: //!(0x21)
-					str.append(ZERO_STATUS_VOTE_BYE);
-					break;
-				case ZERO_STATUS_WAIT_ID: //!(0x22)
-					str.append(ZERO_STATUS_WAITING);
-					break;
-				case ZERO_STATUS_VOTE_WAITING_ID: //!(0x22)
-					str.append(ZERO_STATUS_WAITING);
-					break; 
-				case ZERO_STATUS_VOTE_START_ID: //!(0x23)
-					str.append(ZERO_STATUS_VOTE_START);
-					break;
-				case ZERO_STATUS_VOTE_END_ID: //!(0x24)
-					str.append(ZERO_STATUS_VOTE_END);
-					break;
-				case ZERO_STATUS_VOTE_CLOSED_ID: //!(0x25)
-					str.append(ZERO_STATUS_VOTE_CLOSED);
-					break;
-				case ZERO_STATUS_ERROR_ID: //!(0x81)
-					str.append(ZERO_STATUS_ERROR);
-					break;
-				case ZERO_STATUS_FAILED_ID: //!(0x82)
-					str.append(ZERO_STATUS_FAILED);
-					break;
-				case ZERO_STATUS_NOT_FIND_ID: //!(0x83)
-					str.append(ZERO_STATUS_NOT_FIND);
-					break;
-				case ZERO_STATUS_NOT_SUPPORT_ID: //!(0x84)
-					str.append(ZERO_STATUS_NOT_SUPPORT);
-					break;
-				case ZERO_STATUS_FRAME_INVALID_ID: //!(0x85)
-					str.append(ZERO_STATUS_FRAME_INVALID);
-					break;
-				case ZERO_STATUS_ARG_INVALID_ID: //!(0x85)
-					str.append(ZERO_STATUS_ARG_INVALID);
-					break;
-				case ZERO_STATUS_TIMEOUT_ID: //!(0x86)
-					str.append(ZERO_STATUS_TIMEOUT);
-					break;
-				case ZERO_STATUS_NET_ERROR_ID: //!(0x87)
-					str.append(ZERO_STATUS_NET_ERROR);
-					break;
-				case ZERO_STATUS_NOT_WORKER_ID: //!(0x88)
-					str.append(ZERO_STATUS_NOT_WORKER);
-					break;
-				case ZERO_STATUS_PLAN_ERROR_ID: //!(0x8B)
-					str.append(ZERO_STATUS_PLAN_ERROR);
-					break; 
-				}
-			}
-			str.append(R"(","frames":[)");
-
-			str.append(R"("Caller","FrameDescr")");
-			for (size_t idx = 2; idx < len; idx++)
-			{
-				switch (desc[idx])
-				{
-				case ZERO_FRAME_END:
-					str.append(",\"End\"");
-					break;
-					//全局标识
-				case ZERO_FRAME_GLOBAL_ID:
-					str.append(",\"GLOBAL_ID\"");
-					break;
-					//站点
-				case ZERO_FRAME_STATION_ID:
-					str.append(",\"STATION_ID\"");
-					break;
-					//执行计划
-				case ZERO_FRAME_PLAN:
-					str.append(",\"PLAN\"");
-					break;
-					//参数
-				case ZERO_FRAME_ARG:
-					str.append(",\"ARG\"");
-					break;
-					//参数
-				case ZERO_FRAME_COMMAND:
-					str.append(",\"COMMAND\"");
-					break;
-					//请求ID
-				case ZERO_FRAME_REQUEST_ID:
-					str.append(",\"REQUEST_ID\"");
-					break;
-					//请求者/生产者
-				case ZERO_FRAME_REQUESTER:
-					str.append(",\"REQUESTER\"");
-					break;
-					//回复者/浪费者
-				case ZERO_FRAME_RESPONSER:
-					str.append(",\"RESPONSER\"");
-					break;
-					//通知主题
-				case ZERO_FRAME_PUB_TITLE:
-					str.append(",\"PUB_TITLE\"");
-					break;
-				case ZERO_FRAME_STATUS:
-					str.append(",\"STATUS\"");
-					break;
-					//网络上下文信息
-				case ZERO_FRAME_CONTEXT:
-					str.append(",\"CONTEXT\"");
-					break;
-				case ZERO_FRAME_CONTENT_TEXT:
-					str.append(",\"CONTENT\"");
-					break;
-				case ZERO_FRAME_CONTENT_JSON:
-					str.append(",\"JSON\"");
-					break;
-				case ZERO_FRAME_CONTENT_BIN:
-					str.append(",\"BIN\"");
-					break;
-				case ZERO_FRAME_CONTENT_XML:
-					str.append(",\"XML\"");
-					break;
-				default:
-					str.append(",\"Arg\"");
-					break;
-				}
-			}
-			str.append("]}");
-			return str;
-		}
-
+          acl::string desc_str(bool in, char* desc, size_t len);
 	}
 }
 #endif

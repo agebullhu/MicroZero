@@ -81,6 +81,11 @@ namespace agebull
 			zmq_handler plan_socket_inproc_;
 
 			/**
+			* \brief 调用句柄
+			*/
+			zmq_handler proxy_socket_inproc_;
+
+			/**
 			* \brief 工作句柄
 			*/
 			zmq_handler worker_in_socket_tcp_;
@@ -134,12 +139,12 @@ namespace agebull
 			/**
 			* \brief 网络轮询
 			*/
-			bool poll();
+			virtual bool poll();
 
 			/**
 			* \brief 析构
 			*/
-			bool destruct();
+			virtual bool destruct();
 		public:
 			/**
 			* \brief 暂停
@@ -223,6 +228,10 @@ namespace agebull
 			*/
 			void plan_end(vector<shared_char>& list);
 
+			/**
+			* \brief 反向代理执行完成
+			*/
+			void proxy_end(vector<shared_char>& list) const;
 		public:
 			/**
 			* \brief 取得配置内容

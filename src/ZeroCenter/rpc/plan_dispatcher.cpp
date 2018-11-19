@@ -119,7 +119,7 @@ namespace agebull
 		*/
 		void plan_dispatcher::plan_list(string& json)
 		{
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			json = "[";
 			bool first = true;
 			int cursor = 0;
@@ -282,7 +282,6 @@ namespace agebull
 					return exec_plan(msg);
 				});
 			}
-
 			sockets_.clear();
 			get_config().log("plan poll end");
 			task_semaphore_.post();
@@ -451,7 +450,7 @@ namespace agebull
 		void plan_dispatcher::on_plan_result(shared_ptr<plan_message>& message, char st, vector<shared_char>& list)
 		{
 			uchar state = *reinterpret_cast<uchar*>(&st);
-			redis_live_scope scope(json_config::redis_defdb);
+			redis_live_scope scope(global_config::redis_defdb);
 			if (state == ZERO_BYTE_COMMAND_WAITING)
 			{
 				message->exec_state = ZERO_STATUS_WAIT_ID;

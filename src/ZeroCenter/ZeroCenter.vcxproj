@@ -80,6 +80,7 @@
     <ClCompile Include="rpc\api_station.cpp" />
     <ClCompile Include="rpc\message_storage.cpp" />
     <ClCompile Include="rpc\net_crc.cpp" />
+    <ClCompile Include="rpc\proxy_dispatcher.cpp" />
     <ClCompile Include="rpc\queue_station.cpp" />
     <ClCompile Include="rpc\plan_dispatcher.cpp" />
     <ClCompile Include="rpc\route_api_station.cpp" />
@@ -97,6 +98,7 @@
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
     <ClInclude Include="rpc\message_storage.h" />
+    <ClInclude Include="rpc\proxy_dispatcher.h" />
     <ClInclude Include="rpc\queue_station.h" />
     <ClInclude Include="rpc\route_api_station.h" />
     <ClInclude Include="stdinc.h" />

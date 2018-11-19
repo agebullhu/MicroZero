@@ -44,9 +44,9 @@ namespace agebull
 		*/
 		bool station_warehouse::initialize()
 		{
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			acl::string val;
-			if (redis->get(port_redis_key, val) && atol(val.c_str()) >= json_config::base_tcp_port)
+			if (redis->get(port_redis_key, val) && atol(val.c_str()) >= global_config::base_tcp_port)
 			{
 				int cursor = 0;
 				do
@@ -68,10 +68,11 @@ namespace agebull
 			else
 			{
 				acl::string port;
-				port.format_append("%d", json_config::base_tcp_port);
+				port.format_append("%d", global_config::base_tcp_port);
 				redis->set(port_redis_key, port);
-				install("SystemManage", station_type_dispatcher, "man", "ZeroNet system mamage station.", true);
-				install("PlanDispatcher", station_type_plan, "plan", "ZeroNet plan & task mamage station.", true);
+				install(DEF_SYSTEM_MANAGE, station_type_dispatcher, "man", "ZeroNet system mamage station.", true);
+				install(DEF_PLAN_DISPATCHER, station_type_plan, "plan", "ZeroNet plan & task mamage station.", true);
+				install(DEF_PROXY_DISPATCHER, station_type_proxy, "proxy", "ZeroNet reverse proxy station.", true);
 				install("RemoteLog", station_type_notify, "log", "ZeroNet remote log station.", true);
 				install("HealthCenter", station_type_notify, "hea", "ZeroNet health center log station.", true);
 			}
@@ -132,7 +133,7 @@ namespace agebull
 		{
 			glogal_id_ = 0LL;
 			{
-				redis_live_scope redis(json_config::redis_defdb);
+				redis_live_scope redis(global_config::redis_defdb);
 				redis->flushdb();
 			}
 			{
@@ -210,7 +211,7 @@ namespace agebull
 		void station_warehouse::save_configs()
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			for (auto& iter : configs_)
 			{
 				boost::format fmt("net:host:%1%");
@@ -235,7 +236,7 @@ namespace agebull
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			acl::string json;
 			if (redis->get(key.c_str(), json) && !json.empty())
 			{
@@ -256,7 +257,7 @@ namespace agebull
 			var json = config->to_full_json();
 			boost::format fmt("net:host:%1%");
 			fmt % config->station_name_;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			redis->set(fmt.str().c_str(), json);
 			return json;
 		}
@@ -344,7 +345,7 @@ namespace agebull
 			});
 			if (failed)
 				return false;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			int64 port;
 			redis->incr(port_redis_key, &port);
 			config->request_port_ = static_cast<int>(port);
@@ -354,8 +355,9 @@ namespace agebull
 			{
 			case station_type_api:
 			case station_type_vote:
-			case station_type_route_api:
 			case station_type_queue:
+			case station_type_route_api:
+			case station_type_proxy:
 				redis->incr(port_redis_key, &port);
 				config->worker_in_port_ = static_cast<int>(port);
 			}
@@ -414,7 +416,7 @@ namespace agebull
 			host_json.clear();
 			boost::format fmt("net:host:%1%");
 			fmt % config->station_name_;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis(global_config::redis_defdb);
 			redis->del(fmt.str().c_str());
 			config->log("remove");
 			var json = config->to_full_json();
@@ -625,16 +627,16 @@ namespace agebull
 		{
 			zero_event(zero_net_event::event_station_doc, "doc", station_name, *doc);
 			acl::string path;
-			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			path.format("%s/doc/%s.json", global_config::root_path, station_name);
 			std::cout << path.c_str() << endl;
 			int fid = open(path, O_RDWR | O_CREAT, 00777);
 			int re;
 			if (fid < 0)
 			{
-				path.format("%sdoc", json_config::root_path.c_str());
+				path.format("%s/doc", global_config::root_path);
 				re = mkdir(path, 00777);
 				std::cout << path.c_str() << re << endl;
-				path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+				path.format("%s/doc/%s.json", global_config::root_path, station_name);
 				fid = open(path, O_RDWR | O_CREAT, 00777);
 			}
 			if (fid >= 0)
@@ -648,9 +650,9 @@ namespace agebull
 			/*FILE *fp = fopen(path.c_str(),"w");
 			if (fp == nullptr)
 			{
-			path.format("%sdoc", json_config::root_path.c_str());
+			path.format("%sdoc", global_config::root_path);
 			mkdir(path, 00700);
-			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			path.format("%sdoc/%s.json", global_config::root_path, station_name);
 			fp = fopen(path.c_str(), "w");
 			}
 			if (fp == nullptr)
@@ -667,7 +669,7 @@ namespace agebull
 		bool station_warehouse::get_doc(const char* station_name, string& doc)
 		{
 			acl::string path;
-			path.format("%sdoc/%s.json", json_config::root_path.c_str(), station_name);
+			path.format("%s/doc/%s.json", global_config::root_path, station_name);
 			std::cout << path.c_str() << endl;
 			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
 			if (fp == nullptr)

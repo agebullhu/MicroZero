@@ -55,7 +55,7 @@ namespace agebull
 		*/
 		static const char* redis_ip()
 		{
-			return json_config::redis_addr;
+			return global_config::redis_addr;
 		}
 
 		/**

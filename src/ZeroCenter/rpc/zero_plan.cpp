@@ -29,7 +29,7 @@ namespace agebull
 		*/
 		bool plan_message::next()
 		{
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			if (plan_state == plan_message_state::none)
 			{
 				save_message(true, false, false, false, false, false);
@@ -227,7 +227,7 @@ namespace agebull
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			map<acl::string, double> value;
 			value.insert(make_pair(key, static_cast<double>(time)));
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			redis->zadd("plan:time:set", value);
 			save_message(false, false, true, false, false, false);
 		}
@@ -240,7 +240,7 @@ namespace agebull
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::error;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			save_message(false, false, false, false, false, true);
 			//local_chche.erase(key);
 			redis->zrem("plan:time:set", key);
@@ -255,7 +255,7 @@ namespace agebull
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::none;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			redis.t()->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
 			join_queue(plan_time);
 			return true;
@@ -269,7 +269,7 @@ namespace agebull
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::pause;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			redis.t()->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
 			redis->zrem("plan:time:set", key);
 			plan_dispatcher::instance->zero_event(zero_net_event::event_plan_pause, this);
@@ -283,7 +283,7 @@ namespace agebull
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::close;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			redis->zrem("plan:time:set", key);
 			save_message(false, false, false, false, false, true);
 			//local_chche.erase(key);
@@ -296,7 +296,7 @@ namespace agebull
 		{
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			redis->del(key);
 			//local_chche.erase(key);
 			plan_dispatcher::instance->zero_event(zero_net_event::event_plan_remove, this);
@@ -317,7 +317,7 @@ namespace agebull
 			//{
 			//	local_chche.erase(local_chche.begin());
 			//}
-			redis_live_scope scope(json_config::redis_defdb);
+			redis_live_scope scope;
 			if (!scope->exists(key))
 				return nullptr;
 			//local_chche[key] = message;
@@ -377,7 +377,7 @@ namespace agebull
 		{
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
-			redis_live_scope scope(json_config::redis_defdb);
+			redis_live_scope scope;
 			trans_redis* redis = scope.t();
 			if (add_time == 0)
 			{
@@ -450,7 +450,7 @@ namespace agebull
 		{
 			if (station_type != station_type_vote)
 				return false;
-			redis_live_scope redis(json_config::redis_defdb);
+			redis_live_scope redis;
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			char skey[64];
@@ -472,7 +472,7 @@ namespace agebull
 		{
 			if (station_type == station_type_vote)
 			{
-				redis_live_scope scope(json_config::redis_defdb);
+				redis_live_scope scope;
 				trans_redis* redis = scope.t();
 				char key[256];
 				sprintf(key, "msg:%s:%llx", *station, plan_id);
@@ -518,7 +518,7 @@ namespace agebull
 			vector<shared_char> result;
 			if (station_type != station_type_vote)
 				return result;
-			redis_live_scope scope(json_config::redis_defdb);
+			redis_live_scope scope;
 			trans_redis* redis = scope.t();
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
@@ -539,7 +539,7 @@ namespace agebull
 		*/
 		map<acl::string, vector<shared_char>> plan_message::get_message_result() const
 		{
-			redis_live_scope scope(json_config::redis_defdb);
+			redis_live_scope scope;
 			trans_redis* redis = scope.t();
 			map<acl::string, vector<shared_char>> results;
 			char skey[256];
@@ -575,7 +575,7 @@ namespace agebull
 			vector<acl::string> keys;
 			{
 				//快速关闭Redis
-				redis_live_scope redis(json_config::redis_defdb);
+				redis_live_scope redis;
 				redis->zrangebyscore("plan:time:set", 0, static_cast<double>(time(nullptr)), &keys);
 			}
 			vector<acl::string> err_keys;
@@ -608,7 +608,7 @@ namespace agebull
 				{
 					var span = second_clock::universal_time() - from_time_t(message->exec_time);
 					//超时未到且还未执行完成,不重复下发
-					if (span.total_seconds() < json_config::plan_exec_timeout)
+					if (span.total_seconds() < global_config::plan_exec_timeout)
 					{
 						log_error1("plan delay to short %lld", span.total_seconds());
 						continue;
@@ -631,7 +631,7 @@ namespace agebull
 				exec(message);
 			}
 			//{
-			//	redis_live_scope redis(json_config::redis_defdb);
+			//	redis_live_scope redis;
 			//	for (const acl::string& key : err_keys)
 			//		redis->zrem("plan:time:set", key);
 			//}

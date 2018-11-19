@@ -54,7 +54,7 @@ namespace agebull
 			/**
 			* \brief 接收
 			*/
-			zmq_socket_state recv(shared_char& data, int flag = 0) const
+			zmq_socket_state recv(shared_char& data, int flag = 0)
 			{
 				return socket_ex::recv(socket_, data, flag);
 			}
@@ -62,7 +62,7 @@ namespace agebull
 			/**
 			* \brief 接收
 			*/
-			zmq_socket_state recv(vector<shared_char>& ls, int flag = 0) const
+			zmq_socket_state recv(vector<shared_char>& ls, int flag = 0)
 			{
 				return socket_ex::recv(socket_, ls, flag);
 			}
@@ -70,7 +70,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			zmq_socket_state send_late(const char* string) const
+			zmq_socket_state send_late(const char* string)
 			{
 				return socket_ex::send_late(socket_, string);
 			}
@@ -78,7 +78,7 @@ namespace agebull
 			/**
 			* \brief 发送帧
 			*/
-			zmq_socket_state send_more(const char* string) const
+			zmq_socket_state send_more(const char* string) 
 			{
 				return socket_ex::send_more(socket_, string);
 			}
@@ -86,7 +86,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			zmq_socket_state send(vector<shared_char>& ls) const
+			zmq_socket_state send(vector<shared_char>& ls) 
 			{
 				return socket_ex::send(socket_, ls);
 			}
@@ -94,7 +94,7 @@ namespace agebull
 			/**
 			* \brief 发送
 			*/
-			zmq_socket_state send(vector<string>& ls) const
+			zmq_socket_state send(vector<string>& ls) 
 			{
 				return socket_ex::send(socket_, ls);
 			}

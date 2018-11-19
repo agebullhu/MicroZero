@@ -267,7 +267,7 @@ namespace agebull
 			{
 				config.log("waiting closed");
 				wait_close();
-				thread_sleep(json_config::SNDTIMEO < 0 ? 1000 : json_config::SNDTIMEO + 10);//让未发送数据完成发送
+				thread_sleep(global_config::SNDTIMEO < 0 ? 1000 : global_config::SNDTIMEO + 10);//让未发送数据完成发送
 
 				instance = nullptr;
 				station->destruct();
@@ -286,7 +286,7 @@ namespace agebull
 			instance->task_semaphore_.post();
 			while (get_net_state() < net_state_closing)
 			{
-				thread_sleep(json_config::worker_sound_ivl);
+				thread_sleep(global_config::worker_sound_ivl);
 				vector<string> cfgs;//复制避免锁定时间过长
 				vector<string> names;//复制避免锁定时间过长
 				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<zero_config>& cfg)

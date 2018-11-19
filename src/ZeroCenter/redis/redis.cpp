@@ -9,7 +9,7 @@ namespace agebull
 	static thread_local trans_redis* thread_context_ = nullptr;
 
 
-	redis_live_scope::redis_live_scope() : redis_live_scope(json_config::redis_defdb)
+	redis_live_scope::redis_live_scope() : redis_live_scope(global_config::redis_defdb)
 	{
 	}
 
@@ -61,7 +61,7 @@ namespace agebull
 	*/
 	bool trans_redis::open_context()
 	{
-		return open_context(json_config::redis_defdb);
+		return open_context(global_config::redis_defdb);
 	}
 	/**
 	* \brief 生成当前线程上下文的事务Redis对象

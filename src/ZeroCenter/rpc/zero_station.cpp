@@ -15,42 +15,42 @@ namespace agebull
 
 		zero_station::zero_station(const string name, int type, int req_zmq_type, int res_zmq_type)
 			: req_zmq_type_(req_zmq_type)
-			, res_zmq_type_(res_zmq_type)
-			, station_type_(type)
-			, poll_items_(nullptr)
-			, poll_count_(0)
-			, task_semaphore_(0)
-			, station_name_(name)
-			, config_(station_warehouse::get_config(name))
-			, request_scoket_tcp_(nullptr)
-			//, request_socket_ipc_(nullptr)
-			, request_socket_inproc_(nullptr)
-			, plan_socket_inproc_(nullptr)
-			, worker_in_socket_tcp_(nullptr)
-			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
-			, zmq_state_(zmq_socket_state::succeed)
+			  , res_zmq_type_(res_zmq_type)
+			  , station_type_(type)
+			  , poll_items_(nullptr)
+			  , poll_count_(0)
+			  , task_semaphore_(0)
+			  , station_name_(name)
+			  , config_(station_warehouse::get_config(name))
+			  , request_scoket_tcp_(nullptr)
+			  //, request_socket_ipc_(nullptr)
+			  , request_socket_inproc_(nullptr)
+			  , plan_socket_inproc_(nullptr)
+			  , proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
+			  , worker_out_socket_tcp_(nullptr)
+			  //, worker_out_socket_ipc_(nullptr)
+			  , zmq_state_(zmq_socket_state::succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
 		}
 
 		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int req_zmq_type, int res_zmq_type)
 			: req_zmq_type_(req_zmq_type)
-			, res_zmq_type_(res_zmq_type)
-			, station_type_(type)
-			, poll_items_(nullptr)
-			, poll_count_(0)
-			, task_semaphore_(0)
-			, station_name_(config->station_name_)
-			, config_(config)
-			, request_scoket_tcp_(nullptr)
-			//, request_socket_ipc_(nullptr)
-			, request_socket_inproc_(nullptr)
-			, plan_socket_inproc_(nullptr)
-			, worker_in_socket_tcp_(nullptr)
-			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
-			, zmq_state_(zmq_socket_state::succeed)
+			  , res_zmq_type_(res_zmq_type)
+			  , station_type_(type)
+			  , poll_items_(nullptr)
+			  , poll_count_(0)
+			  , task_semaphore_(0)
+			  , station_name_(config->station_name_)
+			  , config_(config)
+			  , request_scoket_tcp_(nullptr)
+			  //, request_socket_ipc_(nullptr)
+			  , request_socket_inproc_(nullptr)
+			  , plan_socket_inproc_(nullptr)
+			  , proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
+			  , worker_out_socket_tcp_(nullptr)
+			  //, worker_out_socket_ipc_(nullptr)
+			  , zmq_state_(zmq_socket_state::succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
 		}
@@ -63,9 +63,8 @@ namespace agebull
 			if (config_->is_state(station_state::stop))
 				return false;
 			boost::lock_guard<boost::mutex> guard(mutex_);
-			config_->runtime_state(station_state::start);
+			config_->start();
 			zmq_state_ = zmq_socket_state::succeed;
-
 
 			const char* station_name = get_station_name();
 			poll_items_ = new zmq_pollitem_t[5];
@@ -102,7 +101,10 @@ namespace agebull
 
 
 			if (IS_GENERAL_STATION(station_type_))
-				plan_socket_inproc_ = socket_ex::create_req_socket_inproc("PlanDispatcher", station_name);
+			{
+				proxy_socket_inproc_ = socket_ex::create_req_socket_inproc(DEF_PROXY_DISPATCHER, station_name);
+				plan_socket_inproc_ = socket_ex::create_req_socket_inproc(DEF_PLAN_DISPATCHER, station_name);
+			}
 
 			if (IS_PUB_STATION(station_type_))
 			{
@@ -157,21 +159,20 @@ namespace agebull
 			switch (station_type_)
 			{
 			case station_type_dispatcher:
-				zmq_monitor::set_monitor(station_name, worker_out_socket_tcp_, "dis");
+				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "dis");
 				break;
 			case station_type_queue:
-				zmq_monitor::set_monitor(station_name, worker_out_socket_tcp_, "que");
+				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "que");
 				break;
 			case station_type_notify:
-				zmq_monitor::set_monitor(station_name, worker_out_socket_tcp_, "pub");
+				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "pub");
 				break;
 			case station_type_api:
 			case station_type_vote:
 			case station_type_route_api:
-				zmq_monitor::set_monitor(station_name, worker_in_socket_tcp_, "api");
+				zmq_monitor::set_monitor(station_name, &worker_in_socket_tcp_, "api");
 				break;
 			}
-			config_->start();
 			return true;
 		}
 
@@ -200,8 +201,13 @@ namespace agebull
 			}
 			if (plan_socket_inproc_ != nullptr)
 			{
-				make_inproc_address(address, "PlanDispatcher");
+				make_inproc_address(address, DEF_PLAN_DISPATCHER);
 				socket_ex::close_req_socket(plan_socket_inproc_, address);
+			}
+			if (proxy_socket_inproc_ != nullptr)
+			{
+				make_inproc_address(address, DEF_PROXY_DISPATCHER);
+				socket_ex::close_req_socket(proxy_socket_inproc_, address);
 			}
 			if (worker_in_socket_tcp_ != nullptr)
 			{
@@ -252,6 +258,7 @@ namespace agebull
 				{
 					if (poll_items_[idx].revents & ZMQ_POLLIN)
 					{
+						poll_items_[idx].revents = 0;
 						if (poll_items_[idx].socket == request_scoket_tcp_)
 						{
 							config_->request_in++;
@@ -328,7 +335,12 @@ namespace agebull
 			{
 				plan_end(list);
 			}
-			else {
+			if (list[0][0] == '#' && station_type_ != station_type_proxy)
+			{
+				proxy_end(list);
+			}
+			else 
+			{
 				job_end(list);
 			}
 		}
@@ -369,7 +381,7 @@ namespace agebull
 					send_request_status(socket, *list[0], ZERO_STATUS_DENY_ERROR_ID);
 					return;
 				}
-				if(strcmp(*list[list.size() - 1], json_config::service_key) != 0)
+				if(strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 				{
 					send_request_status(socket, *list[0], ZERO_STATUS_DENY_ERROR_ID);
 					return;
@@ -476,6 +488,16 @@ namespace agebull
 			else
 			{
 				send_request_status(socket, *list[0], ZERO_STATUS_RECV_ERROR_ID);
+			}
+		}
+		/**
+		* \brief 反向代理执行完成
+		*/
+		void zero_station::proxy_end(vector<shared_char>& list) const
+		{
+			if (socket_ex::send(proxy_socket_inproc_, list) != zmq_socket_state::succeed)
+			{
+				config_->error("send to plan dispatcher failed", desc_str(false, list[1].get_buffer(), list.size()));
 			}
 		}
 		/**

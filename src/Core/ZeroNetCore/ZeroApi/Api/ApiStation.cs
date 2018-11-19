@@ -60,46 +60,37 @@ namespace Agebull.ZeroNet.ZeroApi
                 ZeroTrace.WriteError("SendResult", "is closed", StationName);
                 return false;
             }
-            if (item.Result == null)
-                return SendResult(ref socket, new ZMessage
-                {
-                    new ZFrame(item.Caller),
-                    new ZFrame(new byte[]
-                    {
-                        4,
-                        (byte) state,
-                        ZeroFrameType.Requester,
-                        ZeroFrameType.RequestId,
-                        ZeroFrameType.GlobalId,
-                        ZeroFrameType.SerivceKey,
-                        ZeroFrameType.End
-                    }),
-                    new ZFrame(item.Requester.ToZeroBytes()),
-                    new ZFrame(item.RequestId.ToZeroBytes()),
-                    new ZFrame(item.GlobalId.ToZeroBytes()),
-                    new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
-                });
 
-            return SendResult(ref socket, new ZMessage
+            int i = 0;
+            var des = new byte[(item.Result == null ? 7 : 8) + item.Originals.Count];
+            des[i++] = (byte)(4 + item.Originals.Count);
+            des[i++] = (byte)state;
+            des[i++] = ZeroFrameType.Requester;
+            des[i++] = ZeroFrameType.RequestId;
+            des[i++] = ZeroFrameType.GlobalId;
+            des[i++] = ZeroFrameType.SerivceKey;
+            var msg = new ZMessage
             {
                 new ZFrame(item.Caller),
-                new ZFrame(new byte[]
-                {
-                    5,
-                    (byte) state,
-                    ZeroFrameType.JsonValue,
-                    ZeroFrameType.Requester,
-                    ZeroFrameType.RequestId,
-                    ZeroFrameType.GlobalId,
-                    ZeroFrameType.SerivceKey,
-                    ZeroFrameType.End
-                }),
-                new ZFrame(item.Result.ToZeroBytes()),
+                new ZFrame(des),
                 new ZFrame(item.Requester.ToZeroBytes()),
                 new ZFrame(item.RequestId.ToZeroBytes()),
                 new ZFrame(item.GlobalId.ToZeroBytes()),
                 new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
-            });
+            };
+            if (item.Result != null)
+            {
+                des[i++] = ZeroFrameType.JsonValue;
+                msg.Add(new ZFrame(item.Result.ToZeroBytes()));
+            }
+
+            foreach (var org in item.Originals)
+            {
+                des[i++] = org.Key;
+                msg.Add(new ZFrame(org.Value));
+            }
+            des[i] = ZeroFrameType.End;
+            return SendResult(ref socket, msg);
         }
 
         private static readonly byte[] LayoutErrorFrame = new byte[]
