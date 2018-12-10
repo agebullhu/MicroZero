@@ -13,3 +13,4 @@
 #include "rpc/station_warehouse.h"
 #include "rpc/station_dispatcher.h"
 #include "rpc/plan_dispatcher.h"
+#include "rpc/proxy_dispatcher.h"

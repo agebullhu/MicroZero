@@ -102,6 +102,33 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
+        /// 配置检查
+        /// </summary>
+        /// <returns></returns>
+        protected virtual bool CheckConfig()
+        {
+            //取配置
+            Config = ZeroApplication.Config[StationName];
+            if (Config == null && !OnNofindConfig())
+            {
+                ZeroApplication.OnObjectFailed(this);
+                ZeroTrace.WriteError(StationName, "No config");
+                State = StationState.ConfigError;
+                return false;
+            }
+
+            if (Config.State == ZeroCenterState.Stop)
+            {
+                ZeroApplication.OnObjectFailed(this);
+                ZeroTrace.WriteError(StationName, "Uninstall");
+                State = StationState.ConfigError;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// 开始
         /// </summary>
         /// <returns></returns>
@@ -110,21 +137,8 @@ namespace Agebull.ZeroNet.Core
             using (OnceScope.CreateScope(this))
             {
                 State = StationState.Start;
-                //取配置
-                Config = ZeroApplication.Config[StationName];
-                if (Config == null && !OnNofindConfig())
+                if (!CheckConfig())
                 {
-                    ZeroApplication.OnObjectFailed(this);
-                    ZeroTrace.WriteError(StationName, "No config");
-                    State = StationState.ConfigError;
-                    return false;
-                }
-
-                if (Config.State == ZeroCenterState.Stop)
-                {
-                    ZeroApplication.OnObjectFailed(this);
-                    ZeroTrace.WriteError(StationName, "Uninstall");
-                    State = StationState.ConfigError;
                     return false;
                 }
 

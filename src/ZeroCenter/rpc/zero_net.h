@@ -1,6 +1,6 @@
 #pragma once
 #ifndef ZERO_NET_H_
-#define  ZERO_NET_H_
+#define ZERO_NET_H_
 #include "zero_default.h"
 namespace agebull
 {
@@ -177,6 +177,26 @@ namespace agebull
 			event_client_left,
 
 			/**
+			*\brief 准备连接
+			*/
+			event_monitor_net_try,
+
+			/**
+			*\brief 连接失败
+			*/
+			event_monitor_net_failed,
+
+			/**
+			*\brief 连接成功
+			*/
+			event_monitor_net_connected,
+
+			/**
+			*\brief 关闭
+			*/
+			event_monitor_net_close,
+
+			/**
 			*\brief 计划加入
 			*/
 			event_plan_add = 0x1,
@@ -232,13 +252,6 @@ namespace agebull
 		*/
 		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content);
 
-		constexpr auto DEF_SYSTEM_MANAGE = "SystemManage";
-		constexpr auto DEF_PLAN_DISPATCHER = "PlanDispatcher";
-		constexpr auto DEF_PROXY_DISPATCHER = "ProxyDispatcher";
-		constexpr auto DEF_HEAD_TCP = "+";
-		constexpr auto DEF_HEAD_INPROC = '-';
-		constexpr auto DEF_HEAD_REQ = '<';
-		constexpr auto DEF_HEAD_RES = '>';
 		
 	}
 }

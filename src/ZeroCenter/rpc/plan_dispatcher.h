@@ -5,6 +5,7 @@
 #include "zero_plan.h"
 #include "zero_station.h"
 #include "inner_socket.h"
+#include "../sqlite/plan_storage.h"
 
 namespace agebull
 {
@@ -16,6 +17,7 @@ namespace agebull
 		class plan_dispatcher :public zero_station
 		{
 			friend plan_message;
+			plan_storage storage_;
 			map<string, shared_ptr<inner_socket>> sockets_;
 		public:
 			/**
@@ -27,7 +29,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher()
-				:zero_station(DEF_PLAN_DISPATCHER, station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(zero_def::name::plan_dispatcher, zero_def::station_type::plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}
@@ -35,7 +37,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			plan_dispatcher(shared_ptr<zero_config>& config)
-				:zero_station(config, station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
+				:zero_station(config, zero_def::station_type::plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
 			}

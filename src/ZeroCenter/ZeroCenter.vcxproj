@@ -44,12 +44,13 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <IncludePath>\usr\Include;\usr\local\include</IncludePath>
+    <OutDir>/root/zero/center/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -78,7 +79,6 @@
     <ClCompile Include="log\mylogger.cpp" />
     <ClCompile Include="redis\redis.cpp" />
     <ClCompile Include="rpc\api_station.cpp" />
-    <ClCompile Include="rpc\message_storage.cpp" />
     <ClCompile Include="rpc\net_crc.cpp" />
     <ClCompile Include="rpc\proxy_dispatcher.cpp" />
     <ClCompile Include="rpc\queue_station.cpp" />
@@ -94,13 +94,23 @@
     <ClCompile Include="main\service.cpp" />
     <ClCompile Include="main\sig.cpp" />
     <ClCompile Include="main\main.cpp" />
+    <ClCompile Include="sqlite\plan_storage.cpp" />
+    <ClCompile Include="sqlite\queue_storage.cpp" />
+    <ClCompile Include="sqlite\sqlite_storage.cpp" />
+    <ClCompile Include="test\sqlite_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
-    <ClInclude Include="rpc\message_storage.h" />
+    <ClInclude Include="main\main.h" />
     <ClInclude Include="rpc\proxy_dispatcher.h" />
     <ClInclude Include="rpc\queue_station.h" />
     <ClInclude Include="rpc\route_api_station.h" />
+    <ClInclude Include="rpc\zero_def_command.h" />
+    <ClInclude Include="rpc\zero_def_frame.h" />
+    <ClInclude Include="rpc\zero_def_status.h" />
+    <ClInclude Include="sqlite\plan_storage.h" />
+    <ClInclude Include="sqlite\queue_storage.h" />
+    <ClInclude Include="sqlite\sqlite_storage.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="cfg\json_config.h" />

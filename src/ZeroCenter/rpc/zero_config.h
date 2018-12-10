@@ -6,7 +6,6 @@
 #include <utility>
 #include "../log/mylogger.h"
 
-#include<boost/unordered_map.hpp>
 namespace agebull
 {
 	namespace zero_net
@@ -87,27 +86,27 @@ namespace agebull
 			/**
 			* \brief 实例队列访问锁
 			*/
-			boost::mutex mutex_;
+			boost::mutex mutex;
 			/**
 			* \brief 站点名称
 			*/
-			string station_name_;
+			string station_name;
 			/**
 			* \brief 站点标题
 			*/
-			string station_caption_;
+			string station_caption;
 			/**
 			* \brief 站点名称
 			*/
-			string short_name_;
+			string short_name;
 			/**
 			* \brief 站点说明
 			*/
-			string station_description_;
+			string station_description;
 			/**
 			* \brief 站点别名
 			*/
-			vector<string> alias_;
+			vector<string> alias;
 
 			/**
 			* \brief 是否基础站点
@@ -122,22 +121,22 @@ namespace agebull
 			/**
 			* \brief 站点类型
 			*/
-			int station_type_;
+			int station_type;
 
 			/**
 			* \brief 外部地址
 			*/
-			int request_port_;
+			int request_port;
 
 			/**
 			* \brief 工作出站地址
 			*/
-			int worker_out_port_;
+			int worker_out_port;
 
 			/**
 			* \brief 工作返回地址
 			*/
-			int worker_in_port_;
+			int worker_in_port;
 
 			/**
 			* \brief 总请求次数
@@ -159,10 +158,10 @@ namespace agebull
 				, station_state_(station_state::none)
 				, is_base(false)
 				, is_fidelity(false)
-				, station_type_(0)
-				, request_port_(0)
-				, worker_out_port_(0)
-				, worker_in_port_(0)
+				, station_type(0)
+				, request_port(0)
+				, worker_out_port(0)
+				, worker_in_port(0)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -180,12 +179,12 @@ namespace agebull
 			zero_config(const string& name, int type)
 				: ready_works_(0)
 				, station_state_(station_state::none)
-				, station_name_(std::move(name))
+				, station_name(std::move(name))
 				, is_base(false)
-				, station_type_(type)
-				, request_port_(0)
-				, worker_out_port_(0)
-				, worker_in_port_(0)
+				, station_type(type)
+				, request_port(0)
+				, worker_out_port(0)
+				, worker_in_port(0)
 				, request_in(0)
 				, request_out(0)
 				, request_err(0)
@@ -229,7 +228,7 @@ namespace agebull
 			*/
 			bool hase_ready_works() const
 			{
-				return IS_PUB_STATION(station_type_) || ready_works_ > 0;
+				return zero_def::station_type::is_pub_station(station_type) || ready_works_ > 0;
 			}
 
 			/**
@@ -237,7 +236,7 @@ namespace agebull
 			*/
 			int get_station_type() const
 			{
-				return station_type_;
+				return station_type;
 			}
 
 			/**
@@ -253,7 +252,7 @@ namespace agebull
 			*/
 			const string& get_station_name() const
 			{
-				return station_name_;
+				return station_name;
 			}
 
 			/**
@@ -262,7 +261,7 @@ namespace agebull
 			string get_request_address() const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(request_port_);
+				addr += std::to_string(request_port);
 				return addr;
 			}
 
@@ -272,7 +271,7 @@ namespace agebull
 			string get_work_out_address() const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(worker_out_port_);
+				addr += std::to_string(worker_out_port);
 				return addr;
 			}
 
@@ -282,7 +281,7 @@ namespace agebull
 			string get_work_in_address() const
 			{
 				string addr("tcp://*:");
-				addr += std::to_string(worker_in_port_);
+				addr += std::to_string(worker_in_port);
 				return addr;
 			}
 			/**
@@ -295,27 +294,27 @@ namespace agebull
 			*/
 			void check_type_name()
 			{
-				switch (station_type_)
+				switch (station_type)
 				{
-				case station_type_api:
+				case zero_def::station_type::api:
 					type_name_ = "API";
 					break;
-				case station_type_route_api:
+				case zero_def::station_type::route_api:
 					type_name_ = "ROUTE_API";
 					break;
-				case station_type_vote:
+				case zero_def::station_type::vote:
 					type_name_ = "VOTE";
 					break;
-				case station_type_notify:
+				case zero_def::station_type::notify:
 					type_name_ = "PUB";
 					break;
-				case  station_type_dispatcher:
+				case  zero_def::station_type::dispatcher:
 					type_name_ = "DISP";
 					break;
-				case  station_type_plan:
+				case  zero_def::station_type::plan:
 					type_name_ = "PLAN";
 					break;
-				case  station_type_proxy:
+				case  zero_def::station_type::proxy:
 					type_name_ = "PROXY";
 					break;
 				default:
@@ -326,7 +325,7 @@ namespace agebull
 
 			bool is_general() const
 			{
-				return IS_GENERAL_STATION(station_type_);
+				return zero_def::station_type::is_general_station(station_type);
 			}
 
 			bool is_state(station_state state) const
@@ -344,11 +343,50 @@ namespace agebull
 			void set_state(station_state state)
 			{
 				station_state_ = state;
+				switch (station_state_)
+				{
+				case station_state::none:
+					log("state : none");
+					break;
+				case station_state::re_start:
+					log("state : re_start");
+					break;
+				case station_state::start:
+					log("state : start");
+					break;
+				case station_state::run:
+					log("state : run");
+					break;
+				case station_state::pause:
+					log("state : pause");
+					break;
+				case station_state::failed:
+					log("state : failed");
+					break;
+				case station_state::closing:
+					log("state : closing");
+					break;
+				case station_state::closed:
+					log("state : closed");
+					break;
+				case station_state::destroy:
+					log("state : destroy");
+					break;
+				case station_state::stop:
+					log("state : stop");
+					break;
+				case station_state::unknow:
+					log("state : unknow");
+					break;
+				default: ;
+				}
 			}
-			void runtime_state(station_state state)
+			bool runtime_state(station_state state)
 			{
-				if (station_state_ != station_state::stop)
-					station_state_ = state;
+				if (station_state_ == station_state::stop)
+					return false;
+				set_state(state);
+				return true;
 			}
 			/**
 			* \brief 开机日志
@@ -409,7 +447,7 @@ namespace agebull
 			*/
 			void start_log(const char* state)
 			{
-				log_msg3("[%s] > %s \n%s", station_name_.c_str(), state, to_info_json().c_str());
+				log_msg3("[%s] > %s \n%s", station_name.c_str(), state, to_info_json().c_str());
 			}
 
 			/**
@@ -418,9 +456,9 @@ namespace agebull
 			void log(const char* msg, bool works = false) const
 			{
 				if (works)
-					log_msg3("[%s] > %s (ready_works:%d)", station_name_.c_str(), msg, ready_works_)
+					log_msg3("[%s] > %s (ready_works:%d)", station_name.c_str(), msg, ready_works_)
 				else
-					log_msg2("[%s] > %s", station_name_.c_str(), msg)
+					log_msg2("[%s] > %s", station_name.c_str(), msg)
 			}
 
 			/**
@@ -429,20 +467,30 @@ namespace agebull
 			void log(const char* title, const char* msg, bool works = false) const
 			{
 				if (works)
-					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
 				else
-					log_msg3("[%s] > %s > %s", station_name_.c_str(), title, msg)
+					log_msg3("[%s] > %s > %s", station_name.c_str(), title, msg)
 			}
 
+			/**
+			* \brief 日志
+			*/
+			void flow_log(int step, const char* title, const char* msg = nullptr) const
+			{
+				if (msg != nullptr)
+					log_msg4("[%s] step %d. > %s  > %s", station_name.c_str(), step, title, msg)
+				else
+					log_msg3("[%s] step %d. > %s", station_name.c_str(), step, title)
+			}
 			/**
 			* \brief 日志
 			*/
 			void error(const char* title, const char* msg, bool works = false) const
 			{
 				if (works)
-					log_error4("[%s] > %s > %s (ready_works:%d)", station_name_.c_str(), title, msg, ready_works_)
+					log_error4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
 				else
-					log_error3("[%s] > %s > %s", station_name_.c_str(), title, msg)
+					log_error3("[%s] > %s > %s", station_name.c_str(), title, msg)
 			}
 
 			/**
@@ -450,7 +498,7 @@ namespace agebull
 			*/
 			void error(const char* title, const int64 id) const
 			{
-				log_error3("[%s] > %s > %lld", station_name_.c_str(), title, id);
+				log_error3("[%s] > %s > %lld", station_name.c_str(), title, id);
 			}
 			/**
 			* \brief 写入基本信息JSON

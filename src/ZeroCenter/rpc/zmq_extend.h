@@ -369,7 +369,8 @@ namespace agebull
 			{
 				make_inproc_address(address, station);
 				char identity[MAX_PATH];
-				sprintf(identity, "%c%c%s_%s", DEF_HEAD_INPROC, DEF_HEAD_REQ, station, name);
+
+				sprintf(identity, "%c%c%s_%s", zero_def::name::head::inproc, zero_def::name::head::client, station, name);
 				return create_req_socket(name, ZMQ_DEALER, address, identity);
 			}
 
@@ -562,22 +563,22 @@ namespace agebull
 				int idx = 2;
 				if (reqer != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_REQUESTER;
+					descirpt[idx++] = zero_def::frame::requester;
 				}
 				if (msg != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_STATUS;
+					descirpt[idx++] = zero_def::frame::status;
 				}
 				if (req_id != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_REQUEST_ID;
+					descirpt[idx++] = zero_def::frame::request_id;
 				}
 				if (global_id != nullptr)
 				{
-					descirpt[idx++] = ZERO_FRAME_GLOBAL_ID;
+					descirpt[idx++] = zero_def::frame::global_id;
 				}
 				descirpt[0] = static_cast<char>(idx - 2);
-				descirpt[idx] = ZERO_FRAME_END;
+				descirpt[idx] = zero_def::frame::end;
 
 				int reqer_flags = ZMQ_SNDMORE;
 				int reqId_flags = ZMQ_SNDMORE;
@@ -659,11 +660,9 @@ namespace agebull
 		{
 			/**
 			* \brief 网络监控
-			* \param {shared_char} station 站点名称
-			* \param {shared_char} addr 地址
+			* \para {int} _fd Socket句柄
 			*/
-			void do_monitor(shared_char station, shared_char addr, zmq_handler*);
-
+			bool print_client_addr(int fd, acl::string& str);
 			/**
 			* \brief 网络监控
 			* \param {shared_char} station 站点名称

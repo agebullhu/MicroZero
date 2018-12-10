@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define port_redis_key "net:port:next"
+
 
 namespace agebull
 {
@@ -15,42 +15,42 @@ namespace agebull
 
 		zero_station::zero_station(const string name, int type, int req_zmq_type, int res_zmq_type)
 			: req_zmq_type_(req_zmq_type)
-			  , res_zmq_type_(res_zmq_type)
-			  , station_type_(type)
-			  , poll_items_(nullptr)
-			  , poll_count_(0)
-			  , task_semaphore_(0)
-			  , station_name_(name)
-			  , config_(station_warehouse::get_config(name))
-			  , request_scoket_tcp_(nullptr)
-			  //, request_socket_ipc_(nullptr)
-			  , request_socket_inproc_(nullptr)
-			  , plan_socket_inproc_(nullptr)
-			  , proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
-			  , worker_out_socket_tcp_(nullptr)
-			  //, worker_out_socket_ipc_(nullptr)
-			  , zmq_state_(zmq_socket_state::succeed)
+			, res_zmq_type_(res_zmq_type)
+			, station_type_(type)
+			, poll_items_(nullptr)
+			, poll_count_(0)
+			, task_semaphore_(0)
+			, station_name_(name)
+			, config_(station_warehouse::get_config(name))
+			, request_scoket_tcp_(nullptr)
+			//, request_socket_ipc_(nullptr)
+			, request_socket_inproc_(nullptr)
+			, plan_socket_inproc_(nullptr)
+			, proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
+			, worker_out_socket_tcp_(nullptr)
+			//, worker_out_socket_ipc_(nullptr)
+			, zmq_state_(zmq_socket_state::succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
 		}
 
 		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int req_zmq_type, int res_zmq_type)
 			: req_zmq_type_(req_zmq_type)
-			  , res_zmq_type_(res_zmq_type)
-			  , station_type_(type)
-			  , poll_items_(nullptr)
-			  , poll_count_(0)
-			  , task_semaphore_(0)
-			  , station_name_(config->station_name_)
-			  , config_(config)
-			  , request_scoket_tcp_(nullptr)
-			  //, request_socket_ipc_(nullptr)
-			  , request_socket_inproc_(nullptr)
-			  , plan_socket_inproc_(nullptr)
-			  , proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
-			  , worker_out_socket_tcp_(nullptr)
-			  //, worker_out_socket_ipc_(nullptr)
-			  , zmq_state_(zmq_socket_state::succeed)
+			, res_zmq_type_(res_zmq_type)
+			, station_type_(type)
+			, poll_items_(nullptr)
+			, poll_count_(0)
+			, task_semaphore_(0)
+			, station_name_(config->station_name)
+			, config_(config)
+			, request_scoket_tcp_(nullptr)
+			//, request_socket_ipc_(nullptr)
+			, request_socket_inproc_(nullptr)
+			, plan_socket_inproc_(nullptr)
+			, proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
+			, worker_out_socket_tcp_(nullptr)
+			//, worker_out_socket_ipc_(nullptr)
+			, zmq_state_(zmq_socket_state::succeed)
 		{
 			assert(req_zmq_type_ != ZMQ_PUB);
 		}
@@ -70,7 +70,7 @@ namespace agebull
 			poll_items_ = new zmq_pollitem_t[5];
 			memset(poll_items_, 0, sizeof(zmq_pollitem_t) * 5);
 			poll_count_ = 0;
-			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, req_zmq_type_, config_->request_port_);
+			request_scoket_tcp_ = socket_ex::create_res_socket_tcp(station_name, req_zmq_type_, config_->request_port);
 			if (request_scoket_tcp_ == nullptr)
 			{
 				config_->runtime_state(station_state::failed);
@@ -100,24 +100,24 @@ namespace agebull
 			poll_items_[poll_count_++] = { request_socket_inproc_, 0, ZMQ_POLLIN, 0 };
 
 
-			if (IS_GENERAL_STATION(station_type_))
+			if (zero_def::station_type::is_general_station(station_type_))
 			{
-				proxy_socket_inproc_ = socket_ex::create_req_socket_inproc(DEF_PROXY_DISPATCHER, station_name);
-				plan_socket_inproc_ = socket_ex::create_req_socket_inproc(DEF_PLAN_DISPATCHER, station_name);
+				proxy_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::proxy_dispatcher, station_name);
+				plan_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::plan_dispatcher, station_name);
 			}
 
-			if (IS_PUB_STATION(station_type_))
+			if (zero_def::station_type::is_pub_station(station_type_))
 			{
-				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port_);
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_out_port);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->runtime_state(station_state::failed);
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
 					return false;
 				}
-				if (station_type_ == station_type_queue)
+				if (station_type_ == zero_def::station_type::queue)
 				{
-					worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_in_port_);
+					worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_in_port);
 					if (worker_in_socket_tcp_ == nullptr)
 					{
 						config_->runtime_state(station_state::failed);
@@ -138,15 +138,15 @@ namespace agebull
 			}
 			else
 			{
-				int type = station_type_ == station_type_route_api ? ZMQ_ROUTER : ZMQ_PUSH;
-				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, type, config_->worker_out_port_);
+				int type = station_type_ == zero_def::station_type::route_api ? ZMQ_ROUTER : ZMQ_PUSH;
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, type, config_->worker_out_port);
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->runtime_state(station_state::failed);
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
 					return false;
 				}
-				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port_);
+				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port);
 				if (worker_in_socket_tcp_ == nullptr)
 				{
 					config_->runtime_state(station_state::failed);
@@ -158,18 +158,18 @@ namespace agebull
 			initialize_ext();
 			switch (station_type_)
 			{
-			case station_type_dispatcher:
+			case zero_def::station_type::dispatcher:
 				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "dis");
 				break;
-			case station_type_queue:
+			case zero_def::station_type::queue:
 				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "que");
 				break;
-			case station_type_notify:
+			case zero_def::station_type::notify:
 				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "pub");
 				break;
-			case station_type_api:
-			case station_type_vote:
-			case station_type_route_api:
+			case zero_def::station_type::api:
+			case zero_def::station_type::vote:
+			case zero_def::station_type::route_api:
 				zmq_monitor::set_monitor(station_name, &worker_in_socket_tcp_, "api");
 				break;
 			}
@@ -201,12 +201,12 @@ namespace agebull
 			}
 			if (plan_socket_inproc_ != nullptr)
 			{
-				make_inproc_address(address, DEF_PLAN_DISPATCHER);
+				make_inproc_address(address, zero_def::name::plan_dispatcher);
 				socket_ex::close_req_socket(plan_socket_inproc_, address);
 			}
 			if (proxy_socket_inproc_ != nullptr)
 			{
-				make_inproc_address(address, DEF_PROXY_DISPATCHER);
+				make_inproc_address(address, zero_def::name::proxy_dispatcher);
 				socket_ex::close_req_socket(proxy_socket_inproc_, address);
 			}
 			if (worker_in_socket_tcp_ != nullptr)
@@ -248,6 +248,7 @@ namespace agebull
 				if (state < 0)
 				{
 					zmq_state_ = socket_ex::check_zmq_error();
+					config_->log("pool error", socket_ex::state_str(zmq_state_));
 					if (zmq_state_ < zmq_socket_state::again)
 						continue;
 					break;
@@ -262,7 +263,7 @@ namespace agebull
 						if (poll_items_[idx].socket == request_scoket_tcp_)
 						{
 							config_->request_in++;
-							request(poll_items_[idx].socket, false);
+							on_request(poll_items_[idx], false);
 						}
 						//else if (poll_items_[idx].socket == request_socket_ipc_)
 						//{
@@ -272,12 +273,12 @@ namespace agebull
 						else if (poll_items_[idx].socket == request_socket_inproc_)
 						{
 							config_->request_in++;
-							request(poll_items_[idx].socket, true);
+							on_request(poll_items_[idx].socket, true);
 						}
 						else if (poll_items_[idx].socket == worker_in_socket_tcp_)
 						{
 							config_->worker_in++;
-							response();
+							on_response();
 						}
 					}
 					/*if (poll_items_[idx].revents & ZMQ_POLLOUT)
@@ -310,7 +311,7 @@ namespace agebull
 		/**
 		* \brief 工作集合的响应
 		*/
-		void zero_station::response()
+		void zero_station::on_response()
 		{
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(worker_in_socket_tcp_, list);
@@ -331,70 +332,83 @@ namespace agebull
 				config_->error("work result layout error", "size < 2");
 				return;
 			}
-			if (list[0][0] == '*' && station_type_ != station_type_plan)
+			if (list[0][0] == '*' && station_type_ != zero_def::station_type::plan)
 			{
 				plan_end(list);
 			}
-			if (list[0][0] == '#' && station_type_ != station_type_proxy)
+			if (list[0][0] == '#' && station_type_ != zero_def::station_type::proxy)
 			{
 				proxy_end(list);
 			}
-			else 
+			else
 			{
 				job_end(list);
 			}
+		}
+		/**
+		* \brief 调用集合的响应
+		*/
+		void zero_station::on_request(zmq_pollitem_t& socket, bool inner)
+		{
+			//if(!inner)
+			//{
+			//	acl::string addr;
+			//	zmq_monitor::print_client_addr(socket.fd, addr);
+			//	cout << addr.c_str() << endl;
+			//}
+			on_request(socket.socket, inner);
 		}
 
 		/**
 		* \brief 调用集合的响应
 		*/
-		void zero_station::request(zmq_handler socket, bool inner)
+		void zero_station::on_request(zmq_handler socket, bool inner)
 		{
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(socket, list);
 			if (zmq_state_ != zmq_socket_state::succeed)
 			{
-				config_->log(socket_ex::state_str(zmq_state_));
+				config_->log("on_request", socket_ex::state_str(zmq_state_));
 				return;
 			}
 			if (config_->station_state_ == station_state::pause)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_PAUSE_ID);
+				send_request_status(socket, *list[0], zero_def::status::pause);
 				return;
 			}
 			const size_t list_size = inner ? list.size() - 1 : list.size();
 			if (list_size < 2)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
 				return;
 			}
 			shared_char& description = list[inner ? 2 : 1];
-			if (description.command() < ZERO_BYTE_COMMAND_NONE)
+			if (description.command() < zero_def::command::none)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
 				return;
-			}
-			if (!inner)
-			{
-				if(description[description.frame_size()+1] != ZERO_FRAME_SERVICE_KEY)
-				{
-					send_request_status(socket, *list[0], ZERO_STATUS_DENY_ERROR_ID);
-					return;
-				}
-				if(strcmp(*list[list.size() - 1], global_config::service_key) != 0)
-				{
-					send_request_status(socket, *list[0], ZERO_STATUS_DENY_ERROR_ID);
-					return;
-				}
 			}
 			const size_t descr_size = description.size();
 			const size_t frame_size = description.frame_size();
 			if ((frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_FRAME_INVALID_ID);
+				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
 				return;
 			}
-			if (!IS_SYS_STATION(station_type_) && inner_command(socket, list, description, inner))
+			if (!inner)
+			{
+				if (description[description.frame_size() + 1] != zero_def::frame::service_key)
+				{
+					send_request_status(socket, *list[0], zero_def::status::deny_error);
+					return;
+				}
+				if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
+				{
+					send_request_status(socket, *list[0], zero_def::status::deny_error);
+					return;
+				}
+			}
+			if (simple_command(socket, list, description, inner))
 			{
 				return;
 			}
@@ -404,78 +418,64 @@ namespace agebull
 		/**
 		* \brief 内部命令
 		*/
-		bool zero_station::inner_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		bool zero_station::simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
 		{
-			
 			const uchar state = description.command();
-			if (state == ZERO_BYTE_COMMAND_PLAN)
+			switch (state)
 			{
+			case zero_def::command::ping:
+				send_request_status(socket, *list[0], zero_def::status::ok);
+				return true;
+			case zero_def::command::plan:
+				if (station_type_ == zero_def::station_type::plan)
+					return false;
 				job_plan(socket, list);
 				return true;
-			}
-			if (state == ZERO_BYTE_COMMAND_GLOBAL_ID)
-			{
-				char global_id[32];
-				sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
-
-				size_t reqid = 0, reqer = 0;
-				for (size_t i = 2; i <= description.frame_size() + 2; i++)
-				{
-					switch (description[i])
-					{
-					case ZERO_FRAME_REQUESTER:
-						reqer = i;
-						break;
-					case ZERO_FRAME_REQUEST_ID:
-						reqid = i;
-						break;
-					}
-				}
-				send_request_status(socket, *list[0], ZERO_STATUS_OK_ID,
-					global_id,
-					reqid == 0 ? nullptr : *list[reqid],
-					reqer == 0 ? nullptr : *list[reqer]);
+			case zero_def::command::global_id:
+				global_id_req(socket, list, description);
 				return true;
+			default:
+				return simple_command_ex(socket, list, description, inner);
 			}
-			return extend_command(socket, list, description, inner);
 		}
 
 		/**
-		* \brief 内部命令
+		* \brief 请求取得全局标识
 		*/
-		void zero_station::send_request_status(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner, uchar state)
+		void zero_station::global_id_req(zmq_handler socket, vector<shared_char>& list, shared_char& description)
 		{
-			shared_char caller = list[0];
-			if (inner)
-				list.erase(list.begin());
-			size_t reqid = 0, reqer = 0, glid_index = 0;
-			for (size_t i = 2; i <= static_cast<size_t>(description[0] + 2); i++)
+			char global_id[32];
+			sprintf(global_id, "%llx", station_warehouse::get_glogal_id());
+
+			size_t reqid = 0, reqer = 0;
+			for (size_t i = 2; i <= description.frame_size() + 2; i++)
 			{
 				switch (description[i])
 				{
-				case ZERO_FRAME_REQUESTER:
+				case zero_def::frame::requester:
 					reqer = i;
 					break;
-				case ZERO_FRAME_REQUEST_ID:
+				case zero_def::frame::request_id:
 					reqid = i;
-					break;
-				case ZERO_FRAME_GLOBAL_ID:
-					glid_index = i;
 					break;
 				}
 			}
-			send_request_status(socket, *caller, state, list, glid_index, reqid, reqer);
+			send_request_status(socket, *list[0], zero_def::status::ok,
+				global_id,
+				reqid == 0 ? nullptr : *list[reqid],
+				reqer == 0 ? nullptr : *list[reqer]);
 		}
+
 		/**
 		* \brief 工作进入计划
 		*/
 		void zero_station::job_plan(zmq_handler socket, vector<shared_char>& list)
 		{
 			list.emplace_back(station_name_);
-			list[1].append_frame(ZERO_FRAME_STATION_ID);
+			list[1].append_frame(zero_def::frame::station_id);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_SEND_ERROR_ID);
+				send_request_status(socket, *list[0], zero_def::status::send_error);
 				return;
 			}
 
@@ -487,7 +487,7 @@ namespace agebull
 			}
 			else
 			{
-				send_request_status(socket, *list[0], ZERO_STATUS_RECV_ERROR_ID);
+				send_request_status(socket, *list[0], zero_def::status::recv_error);
 			}
 		}
 		/**
@@ -497,7 +497,7 @@ namespace agebull
 		{
 			if (socket_ex::send(proxy_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
-				config_->error("send to plan dispatcher failed", desc_str(false, list[1].get_buffer(), list.size()));
+				config_->error("send to plan dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
 			}
 		}
 		/**
@@ -505,51 +505,46 @@ namespace agebull
 		*/
 		void zero_station::plan_end(vector<shared_char>& list)
 		{
-			shared_char description = list[1];
+			shared_char& description = list[1];
 			list.emplace_back(station_name_);
-			description.append_frame(ZERO_FRAME_STATION_ID);
+			description.append_frame(zero_def::frame::station_id);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
-				config_->error("send to plan dispatcher failed", desc_str(false, list[1].get_buffer(), list.size()));
+				config_->error("send to plan dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
 			}
 		}
 		/**
 		* \brief 暂停
 		*/
-
-		bool zero_station::pause(bool waiting)
+		bool zero_station::pause()
 		{
-			if (!config_->is_state(station_state::run))
+			if (zero_def::station_type::is_sys_station(config_->station_type) || !config_->is_state(station_state::run))
 				return false;
-			config_->log("pause");
-			config_->runtime_state(station_state::pause);
-			while (waiting && !config_->is_state(station_state::pause))
-				thread_sleep(50);
-			zero_event(zero_net_event::event_station_pause, "station", config_->station_name_.c_str(), nullptr);
+			config_->set_state(station_state::pause);
+			zero_event(zero_net_event::event_station_pause, "station", config_->station_name.c_str(), nullptr);
 			return true;
 		}
 
 		/**
 		* \brief 继续
 		*/
-		bool zero_station::resume(bool waiting)
+		bool zero_station::resume()
 		{
-			if (!config_->is_state(station_state::pause))
+			if (zero_def::station_type::is_sys_station(config_->station_type) || !config_->is_state(station_state::pause))
 				return false;
-			config_->log("resume");
-			config_->runtime_state(station_state::run);
-			while (waiting && !config_->is_state(station_state::run))
-				thread_sleep(50);
-			zero_event(zero_net_event::event_station_resume, "station", config_->station_name_.c_str(), nullptr);
+			config_->set_state(station_state::run);
+			zero_event(zero_net_event::event_station_resume, "station", config_->station_name.c_str(), nullptr);
 			return true;
 		}
 
 		/**
-		* \brief 结束
+		* \brief 关闭
 		*/
 
 		bool zero_station::close(bool waiting)
 		{
+			if (zero_def::station_type::is_sys_station(config_->station_type))
+				return false;
 			switch (config_->get_state())
 			{
 			case station_state::run:
@@ -561,9 +556,9 @@ namespace agebull
 			}
 			config_->log("close");
 			config_->runtime_state(station_state::closing);
-			zero_event(zero_net_event::event_station_closing, "station", config_->station_name_.c_str(), nullptr);
+			zero_event(zero_net_event::event_station_closing, "station", config_->station_name.c_str(), nullptr);
 			while (waiting && config_->is_state(station_state::closing))
-				thread_sleep(50);
+				THREAD_SLEEP(50);
 			return true;
 		}
 	}

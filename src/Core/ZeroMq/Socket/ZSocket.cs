@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Agebull.Common.Logging;
+using Gboxt.Common.DataModel;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -68,28 +71,28 @@ namespace ZeroMQ
             var socket = Create(type, out var error);
             if (error != null)
             {
-                Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
+            //socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
+            //socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
 
             socket.SetOption(ZSocketOption.LINGER, Option.Linger);
             socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
             socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
 
             socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
-            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
-            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
-            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
+            //socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            //socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            //socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
 
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
-            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
+            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
+            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
+            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
 
             if (socket.Bind(address, out error))
                 return socket;
-            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorder.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Close();
             socket.Dispose();
             return null;
@@ -110,7 +113,7 @@ namespace ZeroMQ
             var socket = Create(type, out var error);
             if (error != null)
             {
-                Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             socket.SetOption(ZSocketOption.IDENTITY, identity ?? Encoding.ASCII.GetBytes("+>" + RandomOperate.Generate(8)));
@@ -129,7 +132,7 @@ namespace ZeroMQ
             }
             if (socket.Connect(address, out error))
                 return socket;
-            Console.WriteLine($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Close();
             socket.Dispose();
             return null;
@@ -719,8 +722,7 @@ namespace ZeroMQ
 
         public byte[] GetOptionBytes(ZSocketOption option, int size = MaxBinaryOptionSize)
         {
-            byte[] result;
-            if (GetOption(option, out result, size)) return result;
+            if (GetOption(option, out byte[] result, size)) return result;
             return null;
         }
 
@@ -743,8 +745,7 @@ namespace ZeroMQ
 
         public string GetOptionString(ZSocketOption option)
         {
-            string result;
-            if (GetOption(option, out result)) return result;
+            if (GetOption(option, out string result)) return result;
             return null;
         }
 
@@ -767,23 +768,20 @@ namespace ZeroMQ
 
         public int GetOptionInt32(ZSocketOption option)
         {
-            int result;
-            if (GetOption(option, out result)) return result;
+            if (GetOption(option, out int result)) return result;
             return default(int);
         }
 
         public bool GetOption(ZSocketOption option, out uint value)
         {
-            int resultValue;
-            var result = GetOption(option, out resultValue);
+            var result = GetOption(option, out int resultValue);
             value = (uint)resultValue;
             return result;
         }
 
         public uint GetOptionUInt32(ZSocketOption option)
         {
-            uint result;
-            if (GetOption(option, out result)) return result;
+            if (GetOption(option, out uint result)) return result;
             return default(uint);
         }
 
@@ -806,23 +804,20 @@ namespace ZeroMQ
 
         public long GetOptionInt64(ZSocketOption option)
         {
-            long result;
-            if (GetOption(option, out result)) return result;
+            if (GetOption(option, out long result)) return result;
             return default(long);
         }
 
         public bool GetOption(ZSocketOption option, out ulong value)
         {
-            long resultValue;
-            var result = GetOption(option, out resultValue);
+            var result = GetOption(option, out long resultValue);
             value = (ulong)resultValue;
             return result;
         }
 
         public ulong GetOptionUInt64(ZSocketOption option)
         {
-            ulong result;
-            if (GetOption(option, out result)) return result;
+            if (GetOption(option, out ulong result)) return result;
             return default(ulong);
         }
 
@@ -865,8 +860,7 @@ namespace ZeroMQ
         {
             if (value == null) return SetOptionNull(option);
 
-            int optionLength;
-            using (var optionValue = DispoIntPtr.AllocString(value, out optionLength))
+            using (var optionValue = DispoIntPtr.AllocString(value, out int optionLength))
             {
                 return SetOption(option, optionValue, optionLength);
             }
@@ -1095,31 +1089,42 @@ namespace ZeroMQ
         public bool Close(out ZError error)
         {
             error = _error = ZError.None;
-            if (SocketPtr == IntPtr.Zero)
-                return true;
-            if (ZContext.IsAlive)
+            if (SocketPtr != IntPtr.Zero)
             {
-                foreach (var con in Connects.ToArray())
+                if (ZContext.IsAlive)
                 {
-                    Disconnect(con, out _);
+                    foreach (var con in Connects.ToArray())
+                    {
+                        Disconnect(con, out _);
+                    }
+
+                    foreach (var bin in Binds.ToArray())
+                    {
+                        Unbind(bin, out _);
+                    }
+
+                    if (-1 == zmq.close(SocketPtr))
+                    {
+                        error = _error = ZError.GetLastErr();
+                        return false;
+                    }
                 }
 
-                foreach (var bin in Binds.ToArray())
-                {
-                    Unbind(bin, out _);
-                }
-                if (-1 == zmq.close(SocketPtr))
-                {
-                    error = _error = ZError.GetLastErr();
-                    return false;
-                }
             }
+
             try
             {
                 AliveSockets.Remove(this);
             }
-            catch { }
-            SocketPtr = IntPtr.Zero;
+            catch
+            {
+            }
+            finally
+            {
+                SocketPtr = IntPtr.Zero;
+                GC.SuppressFinalize(this);
+                GC.Collect();
+            }
             return true;
         }
 
@@ -1149,7 +1154,7 @@ namespace ZeroMQ
 
             error = _error = default(ZError);
 
-            if (String.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
+            if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
             using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
             {
@@ -1159,7 +1164,7 @@ namespace ZeroMQ
                     return false;
                 }
             }
-
+            LogRecorder.SystemLog($"Bind:{endpoint}");
             Binds.Add(endpoint);
 
             return true;
@@ -1191,7 +1196,7 @@ namespace ZeroMQ
 
             error = _error = default(ZError);
 
-            if (String.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
+            if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
             using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
             {
@@ -1202,7 +1207,9 @@ namespace ZeroMQ
                 }
             }
 
+            LogRecorder.SystemLog($"Unbind:{endpoint}");
             Binds.Remove(endpoint);
+            LogRecorder.RecordStackTrace(endpoint);
             return true;
         }
 
@@ -1232,7 +1239,7 @@ namespace ZeroMQ
 
             error = _error = default(ZError);
 
-            if (String.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
+            if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
             using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
             {
@@ -1270,7 +1277,7 @@ namespace ZeroMQ
 
             error = _error = default(ZError);
 
-            if (String.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
+            if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
             using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
             {
@@ -1425,7 +1432,7 @@ namespace ZeroMQ
         {
             //EnsureNotDisposed();
 
-            var count = Int32.MaxValue;
+            var count = int.MaxValue;
             return ReceiveFrames(ref count, ref message, flags, out error);
         }
 
@@ -1748,20 +1755,15 @@ namespace ZeroMQ
 
             using (var msg = ZFrame.CreateEmpty())
             {
-                var more = false;
+                bool more;
                 do
                 {
                     while (-1 == zmq.msg_recv(msg.Ptr, SocketPtr, (int)ZSocketFlags.None))
                     {
                         error = _error = ZError.GetLastErr();
 
-                        if (Equals(error, ZError.EINTR))
-                        {
-                            error = _error = default(ZError);
-                            continue;
-                        }
-
-                        return false;
+                        if (!Equals(error, ZError.EINTR)) return false;
+                        error = _error = default(ZError);
                     }
 
                     // will have to receive more?
@@ -1773,13 +1775,9 @@ namespace ZeroMQ
                     {
                         error = _error = ZError.GetLastErr();
 
-                        if (Equals(error, ZError.EINTR))
-                        {
-                            error = _error = default(ZError);
-                            continue;
-                        }
-
-                        return false;
+                        if (!Equals(error, ZError.EINTR))
+                            return false;
+                        error = _error = default(ZError);
                     }
 
                     // msg.Dismiss
@@ -1872,7 +1870,7 @@ namespace ZeroMQ
         /// <param name="filter">IPV6 or IPV4 CIDR filter.</param>
         public void AddTcpAcceptFilter(string filter)
         {
-            if (String.IsNullOrWhiteSpace(filter)) throw new ArgumentNullException(nameof(filter));
+            if (string.IsNullOrWhiteSpace(filter)) throw new ArgumentNullException(nameof(filter));
 
             SetOption(ZSocketOption.TCP_ACCEPT_FILTER, filter);
         }
@@ -1892,80 +1890,5 @@ namespace ZeroMQ
                 throw new ObjectDisposedException(GetType().FullName);
         }
 #pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
-    }
-
-
-    /// <summary>随机字符串生成器</summary>
-    internal class RandomOperate
-    {
-        /// <summary>字符</summary>
-        private static readonly char[] keys = new char[35]
-        {
-            '0',
-            '1',
-            '2',
-            '3',
-            '4',
-            '5',
-            '6',
-            '7',
-            '8',
-            '9',
-            'A',
-            'B',
-            'C',
-            'D',
-            'E',
-            'F',
-            'G',
-            'H',
-            'i',
-            'J',
-            'K',
-            'L',
-            'M',
-            'N',
-            'P',
-            'Q',
-            'R',
-            'S',
-            'T',
-            'U',
-            'V',
-            'W',
-            'X',
-            'Y',
-            'Z'
-        };
-        /// <summary>基准数字</summary>
-        private static readonly long BaseTicks = new DateTime(2015, 1, 1).Ticks;
-
-        /// <summary>内部构架</summary>
-        private RandomOperate()
-        {
-        }
-
-        /// <summary>随机生成字符串（数字和字母混和）</summary>
-        /// <param name="codeCount"></param>
-        /// <returns></returns>
-        public static string Generate(int codeCount)
-        {
-            return new RandomOperate().GenerateCode(codeCount);
-        }
-
-        private string GenerateCode(int codeCount)
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-            Random random1 = new Random((int)(DateTime.Now.Ticks - BaseTicks));
-            Random random2 = new Random(GetHashCode());
-            int num = 0;
-            while (num < codeCount)
-            {
-                stringBuilder.Append(keys[random1.Next(keys.Length)]);
-                stringBuilder.Append(keys[random2.Next(keys.Length)]);
-                num += 2;
-            }
-            return stringBuilder.ToString();
-        }
     }
 }

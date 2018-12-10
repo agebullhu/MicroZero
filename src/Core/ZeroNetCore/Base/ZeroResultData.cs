@@ -20,7 +20,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 逻辑操作状态
         /// </summary>
-        public ZeroOperatorStateType State;
+        public ZeroOperatorStateType State { get; set; }
 
         /// <summary>
         /// ZMQ错误码

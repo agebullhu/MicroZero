@@ -34,49 +34,54 @@ namespace agebull
 	/**
 	* \brief 全局配置初始化
 	*/
+	void json_config::read()
+	{
+		if (!load_file("zero_center.json", global))
+			return;
+		auto& zmq = global["ZMQ"];
+		if (zmq.value_map.size() > 0)
+		{
+			global_config::IMMEDIATE = zmq.number("IMMEDIATE", global_config::IMMEDIATE);
+			global_config::LINGER = zmq.number("LINGER", global_config::LINGER);
+			global_config::RCVHWM = zmq.number("RCVHWM", global_config::RCVHWM);
+			global_config::RCVBUF = zmq.number("RCVBUF", global_config::RCVBUF);
+			global_config::RCVTIMEO = zmq.number("RCVTIMEO", global_config::RCVTIMEO);
+			global_config::SNDHWM = zmq.number("SNDHWM", global_config::SNDHWM);
+			global_config::SNDBUF = zmq.number("SNDBUF", global_config::SNDBUF);
+			global_config::SNDTIMEO = zmq.number("SNDTIMEO", global_config::SNDTIMEO);
+			global_config::BACKLOG = zmq.number("BACKLOG", global_config::BACKLOG);
+			global_config::MAX_SOCKETS = zmq.number("MAX_SOCKETS", global_config::MAX_SOCKETS);
+			global_config::IO_THREADS = zmq.number("IO_THREADS", global_config::IO_THREADS);
+			global_config::MAX_MSGSZ = zmq.number("MAX_MSGSZ", global_config::MAX_MSGSZ);
+		}
+		auto& zero = global["zero"];
+		if (zero.value_map.size() > 0)
+		{
+			global_config::plan_exec_timeout = zero.number("plan_exec_timeout", global_config::plan_exec_timeout);
+			global_config::plan_cache_size = zero.number("plan_cache_size", global_config::plan_cache_size);
+			global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
+			global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
+
+			var key = zero.str("service_key");
+			if (key != nullptr)
+				strcpy(global_config::service_key, key);
+		}
+		auto& redis = global["redis"];
+		if (redis.value_map.size() > 0)
+		{
+			var addr = redis.str("addr");
+			if (addr != nullptr)
+				strcpy(global_config::redis_addr, addr);
+			global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
+		}
+		//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
+	}
+	/**
+	* \brief 全局配置初始化
+	*/
 	void json_config::init()
 	{
-		if (load_file("zero_center.json", global))
-		{
-			auto& zmq = global["ZMQ"]; 
-			if (zmq.value_map.size() > 0)
-			{
-				global_config::IMMEDIATE = zmq.number("IMMEDIATE", global_config::IMMEDIATE);
-				global_config::LINGER = zmq.number("LINGER", global_config::LINGER);
-				global_config::RCVHWM = zmq.number("RCVHWM", global_config::RCVHWM);
-				global_config::RCVBUF = zmq.number("RCVBUF", global_config::RCVBUF);
-				global_config::RCVTIMEO = zmq.number("RCVTIMEO", global_config::RCVTIMEO);
-				global_config::SNDHWM = zmq.number("SNDHWM", global_config::SNDHWM);
-				global_config::SNDBUF = zmq.number("SNDBUF", global_config::SNDBUF);
-				global_config::SNDTIMEO = zmq.number("SNDTIMEO", global_config::SNDTIMEO);
-				global_config::BACKLOG = zmq.number("BACKLOG", global_config::BACKLOG);
-				global_config::MAX_SOCKETS = zmq.number("MAX_SOCKETS", global_config::MAX_SOCKETS);
-				global_config::IO_THREADS = zmq.number("IO_THREADS", global_config::IO_THREADS);
-				global_config::MAX_MSGSZ = zmq.number("MAX_MSGSZ", global_config::MAX_MSGSZ);
-			}
-			auto& zero = global["zero"];
-			if(zero.value_map.size() > 0)
-			{
-				global_config::plan_exec_timeout = zero.number("plan_exec_timeout", global_config::plan_exec_timeout);
-				global_config::plan_cache_size = zero.number("plan_cache_size", global_config::plan_cache_size);
-				global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
-				global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
-
-				var key = zero.str("service_key");
-				if (key != nullptr)
-					strcpy(global_config::service_key, key);
-			}
-			auto& redis = global["redis"];
-			if (redis.value_map.size() > 0)
-			{
-				var addr = redis.str("addr");
-				if (addr != nullptr)
-					strcpy(global_config::redis_addr, addr);
-				global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
-			}
-			//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
-
-		}
+		read();
 		log_msg1("config => base_tcp_port : %d", global_config::base_tcp_port);
 		log_msg1("config => worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);

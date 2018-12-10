@@ -1,0 +1,8 @@
+{
+  "Default": {
+    "hosts": [ "Http://116.62.122.157:8080/" ]
+  },
+  "GoodLin-OAuth-Api": {
+    "hosts": [ "http://47.97.173.25/" ]
+  }
+}

@@ -6,22 +6,18 @@
     <Compile Remove="datas\**" />
     <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
-    <Compile Remove="Pages\**" />
     <Compile Remove="WebSocket\**" />
     <Content Remove="datas\**" />
     <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
-    <Content Remove="Pages\**" />
     <Content Remove="WebSocket\**" />
     <EmbeddedResource Remove="datas\**" />
     <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
-    <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="WebSocket\**" />
     <None Remove="datas\**" />
     <None Remove="Debug\**" />
     <None Remove="logs\**" />
-    <None Remove="Pages\**" />
     <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>

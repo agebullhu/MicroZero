@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +66,11 @@ namespace Agebull.ZeroNet.Core
 
 
         #region State
+        /// <summary>
+        /// 不连接ZeroCenter
+        /// </summary>
+        public static bool NotZeroCenter { get; set; }
+
 
         /// <summary>
         ///     ZeroCenter是否正在运行
@@ -81,7 +87,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool CanDo =>
             (ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run) &&
-            ZerCenterStatus == ZeroCenterState.Run;
+            (NotZeroCenter || ZerCenterStatus == ZeroCenterState.Run);
 
         /// <summary>
         ///     运行状态（本地未关闭）
@@ -234,7 +240,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Run()
         {
-            Start();
+            if (NotZeroCenter)
+                ApplicationState = StationState.Run;
+            else
+                Start();
         }
 
         /// <summary>
@@ -314,24 +323,35 @@ namespace Agebull.ZeroNet.Core
                     return;
                 case StationState.BeginRun:
                 case StationState.Run:
-                    OnZeroEnd();
+                    if (!NotZeroCenter)
+                        OnZeroEnd();
                     break;
                 case StationState.Failed:
                     SystemManager.Instance.HeartLeft();
                     break;
             }
             ApplicationState = StationState.Destroy;
-            if (GlobalObjects.Count > 0)
-                GlobalSemaphore.Wait();
-            OnZeroDestory();
-            SystemManager.Instance.Destroy();
-            LogRecorder.Shutdown();
-            SystemMonitor.WaitMe();
+            if (!NotZeroCenter)
+            {
+                if (GlobalObjects.Count > 0)
+                    GlobalSemaphore.Wait();
+                OnZeroDestory();
+                SystemManager.Instance.Destroy();
+                SystemMonitor.WaitMe();
+            }
+            else
+            {
+                Thread.Sleep(1000);
+            }
             GC.Collect();
             ZContext.Destroy();
             ZeroTrace.SystemLog("Application shutdown ,see you late.");
             ApplicationState = StationState.Disposed;
-            WaitToken.Release();
+            if (!NotZeroCenter)
+            {
+                WaitToken.Release();
+            }
+            LogRecorder.Shutdown();
         }
 
         private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)

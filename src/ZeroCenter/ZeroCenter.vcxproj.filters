@@ -1,18 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="sys">
-      <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sys\redis">
-      <UniqueIdentifier>{74d6ab0d-ffc5-4b5b-aecc-2f702db1d183}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sys\log">
-      <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sys\cfg">
-      <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
-    </Filter>
     <Filter Include="std">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -42,16 +30,34 @@
     <Filter Include="rpc\zmq">
       <UniqueIdentifier>{e6b24755-be55-4d36-b7ee-b297bd4f53a1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rpc\parallel">
+    <Filter Include="sqlite">
+      <UniqueIdentifier>{f2b28bdf-1e14-4f17-b7c8-ba86ed457273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rpc\queue">
       <UniqueIdentifier>{07868764-e030-407c-b0da-38cb55cff6ad}</UniqueIdentifier>
     </Filter>
     <Filter Include="rpc\proxy">
       <UniqueIdentifier>{38e86814-3e47-4a02-857a-c9202bfbb6db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ext">
+      <UniqueIdentifier>{42c1d61c-0e77-4761-9645-8214c6976ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext\cfg">
+      <UniqueIdentifier>{1084aa72-d37f-4621-a4ca-6d9da3ed1f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext\redis">
+      <UniqueIdentifier>{74d6ab0d-ffc5-4b5b-aecc-2f702db1d183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext\log">
+      <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{02e9cd96-f340-4810-962e-5f3cf0281a0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
-      <Filter>sys\log</Filter>
+      <Filter>ext\log</Filter>
     </ClCompile>
     <ClCompile Include="main\main.cpp">
       <Filter>main</Filter>
@@ -75,13 +81,13 @@
       <Filter>rpc\dispatcher</Filter>
     </ClCompile>
     <ClCompile Include="redis\redis.cpp">
-      <Filter>sys\redis</Filter>
+      <Filter>ext\redis</Filter>
     </ClCompile>
     <ClCompile Include="rpc\net_crc.cpp">
-      <Filter>sys</Filter>
+      <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="cfg\json_config.cpp">
-      <Filter>sys\cfg</Filter>
+      <Filter>ext\cfg</Filter>
     </ClCompile>
     <ClCompile Include="main\sig.cpp">
       <Filter>main</Filter>
@@ -98,17 +104,26 @@
     <ClCompile Include="rpc\route_api_station.cpp">
       <Filter>rpc\api</Filter>
     </ClCompile>
-    <ClCompile Include="rpc\message_storage.cpp">
-      <Filter>rpc\parallel</Filter>
-    </ClCompile>
     <ClCompile Include="rpc\notify_station.cpp">
       <Filter>rpc\notify</Filter>
     </ClCompile>
     <ClCompile Include="rpc\queue_station.cpp">
-      <Filter>rpc\parallel</Filter>
+      <Filter>rpc\queue</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite\sqlite_storage.cpp">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite\queue_storage.cpp">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite\plan_storage.cpp">
+      <Filter>sqlite</Filter>
     </ClCompile>
     <ClCompile Include="rpc\proxy_dispatcher.cpp">
       <Filter>rpc\proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="test\sqlite_test.cpp">
+      <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,10 +134,10 @@
       <Filter>std</Filter>
     </ClInclude>
     <ClInclude Include="redis\redis.h">
-      <Filter>sys\redis</Filter>
+      <Filter>ext\redis</Filter>
     </ClInclude>
     <ClInclude Include="log\mylogger.h">
-      <Filter>sys\log</Filter>
+      <Filter>ext\log</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>std</Filter>
@@ -131,7 +146,7 @@
       <Filter>main</Filter>
     </ClInclude>
     <ClInclude Include="ext\tm_extend.h">
-      <Filter>sys</Filter>
+      <Filter>ext</Filter>
     </ClInclude>
     <ClInclude Include="rpc\zmq_extend.h">
       <Filter>rpc\zmq</Filter>
@@ -152,16 +167,13 @@
       <Filter>rpc\zero</Filter>
     </ClInclude>
     <ClInclude Include="cfg\json_config.h">
-      <Filter>sys\cfg</Filter>
+      <Filter>ext\cfg</Filter>
     </ClInclude>
     <ClInclude Include="rpc\zero_plan.h">
       <Filter>rpc\plan</Filter>
     </ClInclude>
     <ClInclude Include="rpc\plan_dispatcher.h">
       <Filter>rpc\plan</Filter>
-    </ClInclude>
-    <ClInclude Include="ext\shared_char.h">
-      <Filter>sys</Filter>
     </ClInclude>
     <ClInclude Include="rpc\inner_socket.h">
       <Filter>rpc\zmq</Filter>
@@ -175,17 +187,38 @@
     <ClInclude Include="rpc\route_api_station.h">
       <Filter>rpc\api</Filter>
     </ClInclude>
-    <ClInclude Include="rpc\message_storage.h">
-      <Filter>rpc\parallel</Filter>
-    </ClInclude>
     <ClInclude Include="rpc\notify_station.h">
       <Filter>rpc\notify</Filter>
     </ClInclude>
     <ClInclude Include="rpc\queue_station.h">
-      <Filter>rpc\parallel</Filter>
+      <Filter>rpc\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\sqlite_storage.h">
+      <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\queue_storage.h">
+      <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\plan_storage.h">
+      <Filter>sqlite</Filter>
     </ClInclude>
     <ClInclude Include="rpc\proxy_dispatcher.h">
       <Filter>rpc\proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\shared_char.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="main\main.h">
+      <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_def_frame.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_def_status.h">
+      <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_def_command.h">
+      <Filter>rpc\zero</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

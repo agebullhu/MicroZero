@@ -1,15 +1,16 @@
-#ifndef ___STDINC_H
-#define ___STDINC_H
+#ifndef MH_STDINC_H
+#define MH_STDINC_H
 #pragma once
 #include <omp.h>
 #include <cassert>
-#include <stdio.h>
-#include <stddef.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstddef>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
+#include <utility>
 #include <cstdio>
 #include <csignal>
 #include <ctime>
@@ -22,34 +23,43 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <time.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
+#include <ctime>
+#include <cassert>
 #include <memory>
 #include <queue>
-//#include <uuid/uuid.h>  
+#include <uuid/uuid.h>  
 #include "acl/acl_cpp/lib_acl.hpp"
 #include "acl/lib_acl.h"
 #include "zeromq/zmq.h"
 #include "boostinc.h"
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <cstdio>
+#include <csignal>
+#include <ctime>
+#include <execinfo.h>
+#include <string>
 
 //typedef uuid_t GUID;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 typedef unsigned int uint;
-typedef unsigned int DWORD;
+typedef unsigned int dword;
 typedef long long int64;
 typedef unsigned long long uint64;
-typedef void* HANDLE;
+typedef void* handle;
 
 //线程中断
-#define thread_sleep(n) boost::this_thread::sleep(boost::posix_time::milliseconds(n))
+#define THREAD_SLEEP(n) boost::this_thread::sleep(boost::posix_time::milliseconds(n))
 //启动线程
-#define start_thread(func, args) \
+#define START_THREAD(func, args) \
 {\
 	boost::thread thread_xxx(boost::bind<DWORD>(&func, args));\
 }

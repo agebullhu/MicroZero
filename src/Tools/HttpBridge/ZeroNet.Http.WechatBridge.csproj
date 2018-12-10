@@ -1,0 +1,99 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>3909b577-6324-4fb6-b394-f48db7e0ad07</UserSecretsId>
+    <StartupObject></StartupObject>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.3.1.1" />
+    <PackageReference Include="Senparc.Weixin.MP.MVC" Version="7.1.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="AddIn\**" />
+    <Compile Remove="Chahe\**" />
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="Datas\**" />
+    <Compile Remove="Http\**" />
+    <Compile Remove="logs\**" />
+    <Compile Remove="wwwroot\**" />
+    <Compile Remove="Zero\**" />
+    <Content Remove="AddIn\**" />
+    <Content Remove="Chahe\**" />
+    <Content Remove="Controllers\**" />
+    <Content Remove="Datas\**" />
+    <Content Remove="Http\**" />
+    <Content Remove="logs\**" />
+    <Content Remove="wwwroot\**" />
+    <Content Remove="Zero\**" />
+    <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="Chahe\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Datas\**" />
+    <EmbeddedResource Remove="Http\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
+    <EmbeddedResource Remove="Zero\**" />
+    <None Remove="AddIn\**" />
+    <None Remove="Chahe\**" />
+    <None Remove="Controllers\**" />
+    <None Remove="Datas\**" />
+    <None Remove="Http\**" />
+    <None Remove="logs\**" />
+    <None Remove="wwwroot\**" />
+    <None Remove="Zero\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="App\RouteCounter.cs" />
+    <Compile Remove="Option\HostConfig.cs" />
+    <Compile Remove="Option\SecurityConfig.cs" />
+    <Compile Remove="Security\SecurityChecker.cs" />
+    <Compile Remove="WeiXin\WeixinController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.Development.json" />
+    <Content Remove="appsettings.json" />
+    <Content Remove="bower.json" />
+    <Content Remove="bundleconfig.json" />
+    <Content Remove="cache.json" />
+    <Content Remove="machine.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".bowerrc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Http\HttpProtocol.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Security\" />
+  </ItemGroup>
+
+</Project>

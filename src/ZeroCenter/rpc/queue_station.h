@@ -1,10 +1,8 @@
 #ifndef _ZMQ_API_QUEUE_STATION_H
 #define _ZMQ_API_QUEUE_STATION_H
 #pragma once
-#include "../stdinc.h"
-#include <utility>
+#include "../sqlite/queue_storage.h"
 #include "zero_station.h"
-#include "message_storage.h"
 
 namespace agebull
 {
@@ -15,14 +13,14 @@ namespace agebull
 		*/
 		class queue_station :public zero_station
 		{
-			message_storage _storage;
+			queue_storage storage_;
 		public:
 			/**
 			 * \brief 构造
 			 * \param name
 			 */
 			queue_station(string name)
-				: zero_station(std::move(name), station_type_queue, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(std::move(name), zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -31,7 +29,7 @@ namespace agebull
 			 * \param config
 			 */
 			queue_station(shared_ptr<zero_config>& config)
-				: zero_station(config, station_type_queue, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(config, zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -68,7 +66,7 @@ namespace agebull
 			/**
 			* \brief 内部命令
 			*/
-			bool extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
+			bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
 		};
 	}
 }

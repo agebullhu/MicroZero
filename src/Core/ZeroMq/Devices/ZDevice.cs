@@ -74,12 +74,11 @@
 		{
 			Context = context;
 
-			ZError error;
-			if (!Initialize(frontendType, backendType, out error))
-			{
-				throw new ZException(error);
-			}
-		}
+            if (!Initialize(frontendType, backendType, out ZError error))
+            {
+                throw new ZException(error);
+            }
+        }
 
 		protected virtual bool Initialize(ZSocketType frontendType, ZSocketType backendType, out ZError error)
 		{

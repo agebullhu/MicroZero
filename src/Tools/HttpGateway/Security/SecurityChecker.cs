@@ -109,7 +109,7 @@ namespace ZeroNet.Http.Gateway
         private bool CheckApisInner()
         {
             //if (Data.ApiItem == null)
-                return true;
+            return true;
             if (!string.IsNullOrWhiteSpace(Data.ApiItem.Os))
                 if (Data.Token.IndexOf(Data.ApiItem.Os, StringComparison.OrdinalIgnoreCase) < 0)
                     return false;
@@ -174,7 +174,7 @@ namespace ZeroNet.Http.Gateway
                 //var header = Request.Headers.Values.LinkToString(" ");
                 //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))
                 //    return false;
-                ApiResult<LoginUserInfo> result;
+                ApiResult<FlyshUserInfo> result;
                 switch (Data.Token[0])
                 {
                     default:
@@ -228,8 +228,8 @@ namespace ZeroNet.Http.Gateway
                 return true;
             }
         }
-        static readonly ApiResult<LoginUserInfo> DenyAccessResult = ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
-        private ApiResult<LoginUserInfo> CheckToken(string name, string api, out string result)
+        static readonly ApiResult<FlyshUserInfo> DenyAccessResult = ApiResult.Error<FlyshUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
+        private ApiResult<FlyshUserInfo> CheckToken(string name, string api, out string result)
         {
             // 远程调用
             using (MonitorScope.CreateScope($"Check{name}:{Data.Token}"))
@@ -246,8 +246,8 @@ namespace ZeroNet.Http.Gateway
                 result = caller.Result;
                 LogRecorder.MonitorTrace($"Result:{caller.Result}");
                 return caller.Result == null
-                    ? ApiResult.Succees(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"))
-                    : JsonConvert.DeserializeObject<ApiResult<LoginUserInfo>>(caller.Result) ?? DenyAccessResult;
+                    ? null
+                    : JsonConvert.DeserializeObject<ApiResult<FlyshUserInfo>>(caller.Result) ?? DenyAccessResult;
             }
         }
         #endregion

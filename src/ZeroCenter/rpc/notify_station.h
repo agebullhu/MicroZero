@@ -4,7 +4,6 @@
 #include "../stdinc.h"
 #include <utility>
 #include "zero_station.h"
-#include "message_storage.h"
 
 namespace agebull
 {
@@ -22,7 +21,7 @@ namespace agebull
 			 * \param name
 			 */
 			notify_station(string name)
-				: zero_station(std::move(name), station_type_notify, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(std::move(name), zero_def::station_type::notify, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -31,7 +30,7 @@ namespace agebull
 			 * \param config
 			 */
 			notify_station(shared_ptr<zero_config>& config)
-				: zero_station(config, station_type_notify, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(config, zero_def::station_type::notify, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 

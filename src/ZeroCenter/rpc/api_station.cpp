@@ -15,20 +15,20 @@ namespace agebull
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			station->task_semaphore_.post();
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
+			if (!config.is_state(station_state::stop) && get_net_state() == zero_def::net_state::runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -37,7 +37,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name_.c_str());
+			set_command_thread_end(config.station_name.c_str());
 		}
 
 		/**
@@ -51,21 +51,21 @@ namespace agebull
 			var description = list[1];
 			if (!send_response(list))
 			{
-				send_request_status(socket, list, description, inner, ZERO_STATUS_NOT_WORKER_ID);
+				send_request_status(socket, list, description, inner, zero_def::status::not_worker);
 			}
-			else if (description[1] == ZERO_BYTE_COMMAND_PROXY)//必须返回信息到代理
+			else if (description[1] == zero_def::command::proxy)//必须返回信息到代理
 			{
-				send_request_status(socket, list, description, inner, ZERO_STATUS_RUNING_ID);
+				send_request_status(socket, list, description, inner, zero_def::status::runing);
 			}
 		}
 		/**
 		* \brief 内部命令
-		*/
-		bool api_station::extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		* /
+		bool api_station::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
 		{
 			switch (description[1])
 			{
-			case ZERO_BYTE_COMMAND_FIND_RESULT:
+			case zero_def::command::find_result:
 			{
 				//boost::lock_guard<boost::mutex> guard(results_mutex_);
 				//auto iter = results.find(atoll(*list[glid_index]));
@@ -75,21 +75,22 @@ namespace agebull
 				//	send_request_result(iter->second);
 				//}
 				//else
-				send_request_status(socket, list, description, inner, ZERO_STATUS_NOT_WORKER_ID);
+				send_request_status(socket, list, description, inner, zero_def::status::not_worker);
 				return true;
 			};
-			case ZERO_BYTE_COMMAND_CLOSE_REQUEST:
+			case zero_def::command::close_request:
 			{
-				/*boost::lock_guard<boost::mutex> guard(results_mutex_);
-				const auto iter = results.find(atoll(*list[glid_index]));
-				if (iter != results.end())
-					results.erase(iter);*/
-				send_request_status(socket, list, description, inner, ZERO_STATUS_OK_ID);
+				//boost::lock_guard<boost::mutex> guard(results_mutex_);
+				//const auto iter = results.find(atoll(*list[glid_index]));
+				//if (iter != results.end())
+				//	results.erase(iter);
+				send_request_status(socket, list, description, inner, zero_def::status::ok);
 				return true;
 			}
 			}
 			return false;
-		}
+		}*/
+
 		/**
 		* \brief 工作结束(发送到请求者)
 		*/

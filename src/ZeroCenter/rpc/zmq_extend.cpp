@@ -50,9 +50,9 @@ namespace agebull
 				//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
 				//setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);
 
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
 
 			}
 
@@ -103,9 +103,9 @@ namespace agebull
 				setsockopt(socket, ZMQ_RECONNECT_IVL, 100);
 				setsockopt(socket, ZMQ_CONNECT_TIMEOUT, 3000);
 				setsockopt(socket, ZMQ_RECONNECT_IVL_MAX, 3000);
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
-				//setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
+				setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
 				
 				int state = zmq_connect(socket, addr);
 				if (state == 0)
@@ -180,20 +180,27 @@ namespace agebull
 			* \brief 网络监控
 			* \para {int} _fd Socket句柄
 			*/
-			bool print_client_addr(int _fd, acl::string& str)
+			bool print_client_addr(int fd, acl::string& str)
 			{
 				socklen_t          peer_addr_size;
 				struct sockaddr_in peer_addr;
 				peer_addr_size = sizeof(struct sockaddr);
-				if (getpeername(_fd, reinterpret_cast<struct sockaddr*>(&peer_addr), &peer_addr_size) != 0)
+				if (getpeername(fd, reinterpret_cast<struct sockaddr*>(&peer_addr), &peer_addr_size) != 0)
 					return false;
 				char esme_ip[200];
 				str.format("%s:%d(%d)",
 					inet_ntop(peer_addr.sin_family, &peer_addr.sin_addr, esme_ip, sizeof(esme_ip)),
 					ntohs(peer_addr.sin_port),
-					_fd);
+					fd);
 				return true;
 			}
+
+			/**
+			* \brief 网络监控
+			* \param {shared_char} station 站点名称
+			* \param {shared_char} addr 地址
+			*/
+			void do_monitor(shared_char station, shared_char addr, zmq_handler*);
 
 			/**
 			* \brief 网络监控
@@ -206,13 +213,14 @@ namespace agebull
 				shared_char addr(256);
 				sprintf(addr.get_buffer(), "inproc://%s_%s_monitor.inp", station, type);
 				zmq_socket_monitor(*socket, *addr, ZMQ_EVENT_ALL);
-				boost::thread thread_xxx(boost::bind(&zmq_monitor::do_monitor, station, addr, socket));
+				boost::thread thread_xxx(boost::bind(&do_monitor, station, addr, socket));
 			}
 
 			/**
 			* \brief 网络监控
-			* \param {shared_char} station 站点名称
-			* \param {shared_char} addr 地址
+			* \param station 站点
+			* \param addr 地址
+			* \param socket 连接
 			*/
 			void do_monitor(shared_char station, shared_char addr, zmq_handler* socket)
 			{
@@ -223,7 +231,7 @@ namespace agebull
 				assert(inproc);
 				agebull::zero_net::socket_ex::setsockopt(inproc, ZMQ_RCVTIMEO, 1000);
 				zmq_connect(inproc, *addr);
-				while (get_net_state() < net_state_distory)
+				while (get_net_state() < zero_def::net_state::distory)
 				{
 					if (read_event_msg(inproc, &event) == 1)
 						continue;
@@ -231,44 +239,50 @@ namespace agebull
 					{
 					case ZMQ_EVENT_CLOSED:
 						print_client_addr(event.value, str);
-						log_msg2("[%s] : monitor > 连接关闭 > %s", station.c_str(), str.c_str());
+						log_msg2("[%s] : monitor > closed > %s", station.c_str(), str.c_str());
+						zero_event(zero_net_event::event_monitor_net_close, "monitor", *station, str.c_str());
 						//zmq_close(inproc);
 						//*socket = nullptr;
 						break;
 					case ZMQ_EVENT_CLOSE_FAILED:
-						log_msg1("[%s] : monitor > 关闭失败", station.c_str());
+						log_msg1("[%s] : monitor > close failed", station.c_str());
 						zmq_close(inproc);
 						return;
 					case ZMQ_EVENT_MONITOR_STOPPED:
-						log_msg1("[%s] : monitor > 监控关闭", station.c_str());
+						log_msg1("[%s] : monitor > monitor stepped", station.c_str());
 						zmq_close(inproc);
 						return;
 					case ZMQ_EVENT_LISTENING:
-						log_msg1("[%s] : monitor > 正在侦听", station.c_str());
+						log_msg1("[%s] : monitor > listening", station.c_str());
 						break;
 					case ZMQ_EVENT_BIND_FAILED:
-						log_msg2("[%s] : monitor > 绑定失败 > %s", station.c_str(), event.address);
+						log_msg2("[%s] : monitor > bind failed > %s", station.c_str(), event.address);
 						break;
 					case ZMQ_EVENT_ACCEPTED:
 						print_client_addr(event.value, str);
-						log_msg2("[%s] : monitor > 客户端连接 > %s", station.c_str(), str.c_str());
+						log_msg2("[%s] : monitor > join > %s", station.c_str(), str.c_str());
+						zero_event(zero_net_event::event_monitor_net_connected, "monitor", *station, str.c_str());
 						break;
 					case ZMQ_EVENT_DISCONNECTED:
 						print_client_addr(event.value, str);
-						log_msg2("[%s] : monitor > 客户端断开 > %s", station.c_str(), str.c_str());
+						log_msg2("[%s] : monitor > left > %s", station.c_str(), str.c_str());
+						zero_event(zero_net_event::event_monitor_net_close, "monitor", *station, str.c_str());
 						break;
 					case ZMQ_EVENT_ACCEPT_FAILED:
 						print_client_addr(event.value, str);
-						log_msg2("[%s] : monitor > 客户端连接出错 > %s", station.c_str(), str.c_str());
+						log_msg2("[%s] : monitor > join failed > %s", station.c_str(), str.c_str());
+						zero_event(zero_net_event::event_monitor_net_failed, "monitor", *station, str.c_str());
 						break;
 					case ZMQ_EVENT_CONNECTED:
-						log_msg2("[%s] : monitor > 连接成功 > %s", station.c_str(), event.address);
+						log_msg2("[%s] : monitor > connected > %s", station.c_str(), event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_DELAYED:
-						log_msg2("[%s] : monitor > 延迟连接 > %s", station.c_str(), event.address);
+						log_msg2("[%s] : monitor > connect delayed > %s", station.c_str(), event.address);
+						zero_event(zero_net_event::event_monitor_net_failed, "monitor", *station, event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_RETRIED:
-						log_msg2("[%s] : monitor > 重新连接 > %s", station.c_str(), event.address);
+						log_msg2("[%s] : monitor > retried > %s", station.c_str(), event.address);
+						zero_event(zero_net_event::event_monitor_net_try,"monitor", *station, event.address);
 						break;
 					default: break;
 					}
@@ -317,37 +331,37 @@ namespace agebull
 				str.append(R"(,"command":")");
 				switch (state)
 				{
-				case ZERO_BYTE_COMMAND_NONE: //!\1 无特殊说明
+				case zero_def::command::none: //!\1 无特殊说明
 					str.append("none");
 					break;
-				case ZERO_BYTE_COMMAND_PLAN: //!\2  取全局标识
+				case zero_def::command::plan: //!\2  取全局标识
 					str.append("plan");
 					break;
-				case ZERO_BYTE_COMMAND_GLOBAL_ID: //!>  
+				case zero_def::command::global_id: //!>  
 					str.append("global_id");
 					break;
-				case ZERO_BYTE_COMMAND_WAITING: //!# 等待结果
+				case zero_def::command::waiting: //!# 等待结果
 					str.append("waiting");
 					break;
-				case ZERO_BYTE_COMMAND_FIND_RESULT: //!% 关闭结果
+				case zero_def::command::find_result: //!% 关闭结果
 					str.append("find result");
 					break;
-				case ZERO_BYTE_COMMAND_CLOSE_REQUEST: //!- Ping
+				case zero_def::command::close_request: //!- Ping
 					str.append("close request");
 					break;
-				case ZERO_BYTE_COMMAND_PING: //!* 心跳加入
+				case zero_def::command::ping: //!* 心跳加入
 					str.append("ping");
 					break;
-				case ZERO_BYTE_COMMAND_HEART_JOIN: //!J  心跳已就绪
+				case zero_def::command::heart_join: //!J  心跳已就绪
 					str.append("heart join");
 					break;
-				case ZERO_BYTE_COMMAND_HEART_READY: //!R  心跳进行
+				case zero_def::command::heart_ready: //!R  心跳进行
 					str.append("heart ready");
 					break;
-				case ZERO_BYTE_COMMAND_HEART_PITPAT: //!P  心跳退出
+				case zero_def::command::heart_pitpat: //!P  心跳退出
 					str.append("heart pitpat");
 					break;
-				case ZERO_BYTE_COMMAND_HEART_LEFT: //!L  
+				case zero_def::command::heart_left: //!L  
 					str.append("heart left");
 					break;
 				}
@@ -357,71 +371,71 @@ namespace agebull
 				str.append(R"(,"state":")");
 				switch (state)
 				{
-				case ZERO_STATUS_OK_ID: //!(0x1)
-					str.append(ZERO_STATUS_OK);
+				case zero_def::status::ok: //!(0x1)
+					str.append(zero_def::status_text::OK);
 					break;
-				case ZERO_STATUS_PLAN_ID: //!(0x2)
-					str.append(ZERO_STATUS_PLAN);
+				case zero_def::status::jion_plan: //!(0x2)
+					str.append(zero_def::status_text::PLAN);
 					break;
-				case ZERO_STATUS_RUNING_ID: //!(0x3)
-					str.append(ZERO_STATUS_RUNING);
+				case zero_def::status::runing: //!(0x3)
+					str.append(zero_def::status_text::RUNING);
 					break;
-				case ZERO_STATUS_BYE_ID: //!(0x4)
-					str.append(ZERO_STATUS_BYE);
+				case zero_def::status::bye: //!(0x4)
+					str.append(zero_def::status_text::BYE);
 					break;
-				case ZERO_STATUS_WECOME_ID: //!(0x5)
-					str.append(ZERO_STATUS_WECOME);
+				case zero_def::status::wecome: //!(0x5)
+					str.append(zero_def::status_text::WECOME);
 					break;
-				case ZERO_STATUS_VOTE_SENDED_ID: //!(0x20)
-					str.append(ZERO_STATUS_VOTE_SENDED);
+				case zero_def::status::vote_sended: //!(0x20)
+					str.append(zero_def::status_text::VOTE_SENDED);
 					break;
-				case ZERO_STATUS_VOTE_BYE_ID: //!(0x21)
-					str.append(ZERO_STATUS_VOTE_BYE);
+				case zero_def::status::vote_bye: //!(0x21)
+					str.append(zero_def::status_text::VOTE_BYE);
 					break;
-				case ZERO_STATUS_WAIT_ID: //!(0x22)
-					str.append(ZERO_STATUS_WAITING);
+				case zero_def::status::wait: //!(0x22)
+					str.append(zero_def::status_text::WAITING);
 					break;
-				case ZERO_STATUS_VOTE_WAITING_ID: //!(0x22)
-					str.append(ZERO_STATUS_WAITING);
+				case zero_def::status::vote_waiting: //!(0x22)
+					str.append(zero_def::status_text::WAITING);
 					break;
-				case ZERO_STATUS_VOTE_START_ID: //!(0x23)
-					str.append(ZERO_STATUS_VOTE_START);
+				case zero_def::status::vote_start: //!(0x23)
+					str.append(zero_def::status_text::VOTE_START);
 					break;
-				case ZERO_STATUS_VOTE_END_ID: //!(0x24)
-					str.append(ZERO_STATUS_VOTE_END);
+				case zero_def::status::vote_end: //!(0x24)
+					str.append(zero_def::status_text::VOTE_END);
 					break;
-				case ZERO_STATUS_VOTE_CLOSED_ID: //!(0x25)
-					str.append(ZERO_STATUS_VOTE_CLOSED);
+				case zero_def::status::vote_closed: //!(0x25)
+					str.append(zero_def::status_text::VOTE_CLOSED);
 					break;
-				case ZERO_STATUS_ERROR_ID: //!(0x81)
-					str.append(ZERO_STATUS_ERROR);
+				case zero_def::status::error: //!(0x81)
+					str.append(zero_def::status_text::ERROR);
 					break;
-				case ZERO_STATUS_FAILED_ID: //!(0x82)
-					str.append(ZERO_STATUS_FAILED);
+				case zero_def::status::failed: //!(0x82)
+					str.append(zero_def::status_text::FAILED);
 					break;
-				case ZERO_STATUS_NOT_FIND_ID: //!(0x83)
-					str.append(ZERO_STATUS_NOT_FIND);
+				case zero_def::status::not_find: //!(0x83)
+					str.append(zero_def::status_text::NOT_FIND);
 					break;
-				case ZERO_STATUS_NOT_SUPPORT_ID: //!(0x84)
-					str.append(ZERO_STATUS_NOT_SUPPORT);
+				case zero_def::status::not_support: //!(0x84)
+					str.append(zero_def::status_text::NOT_SUPPORT);
 					break;
-				case ZERO_STATUS_FRAME_INVALID_ID: //!(0x85)
-					str.append(ZERO_STATUS_FRAME_INVALID);
+				case zero_def::status::frame_invalid: //!(0x85)
+					str.append(zero_def::status_text::FRAME_INVALID);
 					break;
-				case ZERO_STATUS_ARG_INVALID_ID: //!(0x85)
-					str.append(ZERO_STATUS_ARG_INVALID);
+				case zero_def::status::arg_invalid: //!(0x85)
+					str.append(zero_def::status_text::ARG_INVALID);
 					break;
-				case ZERO_STATUS_TIMEOUT_ID: //!(0x86)
-					str.append(ZERO_STATUS_TIMEOUT);
+				case zero_def::status::timeout: //!(0x86)
+					str.append(zero_def::status_text::TIMEOUT);
 					break;
-				case ZERO_STATUS_NET_ERROR_ID: //!(0x87)
-					str.append(ZERO_STATUS_NET_ERROR);
+				case zero_def::status::net_error: //!(0x87)
+					str.append(zero_def::status_text::NET_ERROR);
 					break;
-				case ZERO_STATUS_NOT_WORKER_ID: //!(0x88)
-					str.append(ZERO_STATUS_NOT_WORKER);
+				case zero_def::status::not_worker: //!(0x88)
+					str.append(zero_def::status_text::NOT_WORKER);
 					break;
-				case ZERO_STATUS_PLAN_ERROR_ID: //!(0x8B)
-					str.append(ZERO_STATUS_PLAN_ERROR);
+				case zero_def::status::plan_error: //!(0x8B)
+					str.append(zero_def::status_text::PLAN_ERROR);
 					break;
 				}
 			}
@@ -432,62 +446,62 @@ namespace agebull
 			{
 				switch (desc[idx])
 				{
-				case ZERO_FRAME_END:
+				case zero_def::frame::end:
 					str.append(",\"End\"");
 					break;
 					//全局标识
-				case ZERO_FRAME_GLOBAL_ID:
+				case zero_def::frame::global_id:
 					str.append(",\"GLOBAL_ID\"");
 					break;
 					//站点
-				case ZERO_FRAME_STATION_ID:
+				case zero_def::frame::station_id:
 					str.append(",\"STATION_ID\"");
 					break;
 					//执行计划
-				case ZERO_FRAME_PLAN:
+				case zero_def::frame::plan:
 					str.append(",\"PLAN\"");
 					break;
 					//参数
-				case ZERO_FRAME_ARG:
+				case zero_def::frame::arg:
 					str.append(",\"ARG\"");
 					break;
 					//参数
-				case ZERO_FRAME_COMMAND:
+				case zero_def::frame::command:
 					str.append(",\"COMMAND\"");
 					break;
 					//请求ID
-				case ZERO_FRAME_REQUEST_ID:
+				case zero_def::frame::request_id:
 					str.append(",\"REQUEST_ID\"");
 					break;
 					//请求者/生产者
-				case ZERO_FRAME_REQUESTER:
+				case zero_def::frame::requester:
 					str.append(",\"REQUESTER\"");
 					break;
 					//回复者/浪费者
-				case ZERO_FRAME_RESPONSER:
+				case zero_def::frame::responser:
 					str.append(",\"RESPONSER\"");
 					break;
 					//通知主题
-				case ZERO_FRAME_PUB_TITLE:
+				case zero_def::frame::pub_title:
 					str.append(",\"PUB_TITLE\"");
 					break;
-				case ZERO_FRAME_STATUS:
+				case zero_def::frame::status:
 					str.append(",\"STATUS\"");
 					break;
 					//网络上下文信息
-				case ZERO_FRAME_CONTEXT:
+				case zero_def::frame::context:
 					str.append(",\"CONTEXT\"");
 					break;
-				case ZERO_FRAME_CONTENT_TEXT:
+				case zero_def::frame::content_text:
 					str.append(",\"CONTENT\"");
 					break;
-				case ZERO_FRAME_CONTENT_JSON:
+				case zero_def::frame::content_json:
 					str.append(",\"JSON\"");
 					break;
-				case ZERO_FRAME_CONTENT_BIN:
+				case zero_def::frame::content_bin:
 					str.append(",\"BIN\"");
 					break;
-				case ZERO_FRAME_CONTENT_XML:
+				case zero_def::frame::content_xml:
 					str.append(",\"XML\"");
 					break;
 				default:

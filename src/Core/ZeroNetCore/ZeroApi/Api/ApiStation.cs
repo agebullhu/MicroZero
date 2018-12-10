@@ -63,34 +63,34 @@ namespace Agebull.ZeroNet.ZeroApi
 
             int i = 0;
             var des = new byte[(item.Result == null ? 7 : 8) + item.Originals.Count];
-            des[i++] = (byte)(4 + item.Originals.Count);
+            des[i++] = (byte)(5 + item.Originals.Count);
             des[i++] = (byte)state;
             des[i++] = ZeroFrameType.Requester;
             des[i++] = ZeroFrameType.RequestId;
             des[i++] = ZeroFrameType.GlobalId;
-            des[i++] = ZeroFrameType.SerivceKey;
-            var msg = new ZMessage
+            var msg = new List<byte[]>
             {
-                new ZFrame(item.Caller),
-                new ZFrame(des),
-                new ZFrame(item.Requester.ToZeroBytes()),
-                new ZFrame(item.RequestId.ToZeroBytes()),
-                new ZFrame(item.GlobalId.ToZeroBytes()),
-                new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
+                item.Caller,
+                des,
+                item.Requester.ToZeroBytes(),
+                item.RequestId.ToZeroBytes(),
+                item.GlobalId.ToZeroBytes()
             };
             if (item.Result != null)
             {
                 des[i++] = ZeroFrameType.JsonValue;
-                msg.Add(new ZFrame(item.Result.ToZeroBytes()));
+                msg.Add(item.Result.ToZeroBytes());
             }
 
             foreach (var org in item.Originals)
             {
                 des[i++] = org.Key;
-                msg.Add(new ZFrame(org.Value));
+                msg.Add((org.Value));
             }
+            des[i++] = ZeroFrameType.SerivceKey;
+            msg.Add((GlobalContext.ServiceKey.ToZeroBytes()));
             des[i] = ZeroFrameType.End;
-            return SendResult(ref socket, msg);
+            return SendResult(ref socket, new ZMessage(msg));
         }
 
         private static readonly byte[] LayoutErrorFrame = new byte[]

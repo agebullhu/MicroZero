@@ -32,8 +32,7 @@
 		    //LoadLib();
 
 			// Set once LibVersion to libversion()
-			int major, minor, patch;
-			version(out major, out minor, out patch);
+		    version(out var major, out var minor, out var patch);
 			LibraryVersion = new Version(major, minor, patch);
 
 			// Trigger static constructor

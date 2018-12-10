@@ -55,9 +55,8 @@ namespace ZeroMQ.Monitoring
 
 		public static ZMonitor Create(ZContext context, string endpoint)
 		{
-			ZError error;
-			ZMonitor monitor;
-			if (null == (monitor = Create(context, endpoint, out error)))
+            ZMonitor monitor;
+            if (null == (monitor = Create(context, endpoint, out ZError error)))
 			{
 				throw new ZException(error);
 			}
@@ -168,31 +167,29 @@ namespace ZeroMQ.Monitoring
 	    {
 	        using (_socket)
 	        {
-	            ZError error;
-	            if (!_socket.Connect(_endpoint, out error))
-	            {
-	                LogError(error, "connect");
-	                return;
-	            }
+                if (!_socket.Connect(_endpoint, out ZError error))
+                {
+                    LogError(error, "connect");
+                    return;
+                }
 
-	            var poller = ZPollItem.CreateReceiver();
+                var poller = ZPollItem.CreateReceiver();
 
 	            while (!Cancellor.IsCancellationRequested)
 	            {
-	                ZMessage incoming;
-	                if (!_socket.PollIn(poller, out incoming, out error, PollingInterval))
-	                {
-	                    if (error == ZError.EAGAIN)
-	                    {
-	                        // TODO: why sleep here? the loop frequency is already controlled by PollingInterval
-	                        Thread.Sleep(1);
-	                        continue;
-	                    }
+                    if (!_socket.PollIn(poller, out ZMessage incoming, out error, PollingInterval))
+                    {
+                        if (error == ZError.EAGAIN)
+                        {
+                            // TODO: why sleep here? the loop frequency is already controlled by PollingInterval
+                            Thread.Sleep(1);
+                            continue;
+                        }
 
-	                    LogError(error, "poll");
-	                }
+                        LogError(error, "poll");
+                    }
 
-	                var eventValue = new ZMonitorEventData();
+                    var eventValue = new ZMonitorEventData();
 
 	                using (incoming)
 	                {

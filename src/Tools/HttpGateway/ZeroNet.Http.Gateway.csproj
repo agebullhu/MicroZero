@@ -19,24 +19,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Agebull.Rpc.Flysh" Version="1.0.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AddIn\**" />
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
+    <Compile Remove="logs\**" />
     <Compile Remove="wwwroot\**" />
     <Content Remove="AddIn\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Datas\**" />
+    <Content Remove="logs\**" />
     <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="AddIn\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Datas\**" />
+    <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="AddIn\**" />
     <None Remove="Controllers\**" />
     <None Remove="Datas\**" />
+    <None Remove="logs\**" />
     <None Remove="wwwroot\**" />
   </ItemGroup>
 

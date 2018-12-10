@@ -21,22 +21,23 @@ namespace agebull
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			boost::thread(boost::bind(run_plan_poll, station.get()));
 			station->task_semaphore_.wait();
+			station->storage_.prepare(station->config_);
 			station->poll();
 			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
+			if (!config.is_state(station_state::stop) && get_net_state() == zero_def::net_state::runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -45,7 +46,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name_.c_str());
+			set_command_thread_end(config.station_name.c_str());
 		}
 		/**
 		* \brief 工作开始（发送到工作者）
@@ -86,26 +87,26 @@ namespace agebull
 			{
 				switch (buf[idx])
 				{
-				case ZERO_FRAME_COMMAND:
+				case zero_def::frame::command:
 					cmd = *list[idx];
 					break;
-				case ZERO_FRAME_REQUEST_ID:
+				case zero_def::frame::request_id:
 					rqid_index = idx;
 					break;
-				case ZERO_FRAME_REQUESTER:
+				case zero_def::frame::requester:
 					rqer_index = idx;
 					break;
-				case ZERO_FRAME_ARG:
+				case zero_def::frame::arg:
 					arg.emplace_back(list[idx]);
 					break;
-				case ZERO_FRAME_GLOBAL_ID:
+				case zero_def::frame::global_id:
 					glid_index = idx;
 					break;
 				}
 			}
 			if (cmd == nullptr)
 			{
-				send_request_status(socket, ZERO_STATUS_ARG_INVALID_ID, list, glid_index, rqid_index, rqer_index);
+				send_request_status(socket, zero_def::status::arg_invalid, list, glid_index, rqid_index, rqer_index);
 				return;
 			}
 			string json;
@@ -162,32 +163,32 @@ namespace agebull
 			case plan_commands_2::list:
 			{
 				plan_list(json);
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::message:
 			{
 				if (arguments.size() < 1)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				json = plan->write_json();
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::skip:
 			{
 				if (arguments.size() < 2)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan || plan->plan_state >= plan_message_state::close)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				int skip = atoi(*arguments[1]);
 				if (skip < 0)
@@ -196,67 +197,67 @@ namespace agebull
 				{
 					plan->set_skip(skip);
 				}
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::pause:
 			{
 				if (arguments.size() < 1)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan || plan->plan_state >= plan_message_state::pause)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				plan->pause();
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::reset:
 			{
 				if (arguments.size() < 1)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan || plan->plan_state < plan_message_state::pause || 
 					plan->plan_state > plan_message_state::error)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				plan->reset();
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::close:
 			{
 				if (arguments.size() < 1)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				plan->close();
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			case plan_commands_2::remove:
 			{
 				if (arguments.size() < 1)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
 				if (!plan || plan->plan_state < plan_message_state::close)
 				{
-					return ZERO_STATUS_ARG_INVALID_ID;
+					return zero_def::status::arg_invalid;
 				}
 				plan->remove();
-				return ZERO_STATUS_OK_ID;
+				return zero_def::status::ok;
 			}
 			default:
-				return ZERO_STATUS_NOT_SUPPORT_ID;
+				return zero_def::status::not_support;
 			}
 		}
 		/**
@@ -272,7 +273,7 @@ namespace agebull
 				int sec = static_cast<int>((boost::posix_time::second_clock::universal_time() - pre).total_milliseconds());
 				if (sec < 1000)//执行时间超过1秒则不等待,继续执行
 				{
-					thread_sleep(1000 - sec);
+					THREAD_SLEEP(1000 - sec);
 				}
 				if (!can_do())
 					break;
@@ -292,86 +293,100 @@ namespace agebull
 		*/
 		bool plan_dispatcher::on_plan_start(zmq_handler socket, vector<shared_char>& list)
 		{
-			shared_char caller = list[0];
+			const shared_char caller = list[0];
 			list.erase(list.begin());
 
 			shared_char description(16);
-			description.state(ZERO_BYTE_COMMAND_PROXY);
-			shared_char plan_caller(128);
+			description.state(zero_def::command::proxy);
+			shared_char frame_head(128);
 
 			shared_ptr<plan_message> message = make_shared<plan_message>();
 			message->caller = list[0];
-			message->frames.emplace_back(plan_caller);
+			message->frames.emplace_back(frame_head);
 			message->frames.emplace_back(description);
 
-			size_t plan = 0, rqid = 0, glid = 0, reqer = 0, cmdid = 0;
-			for (size_t idx = 2; idx <= static_cast<size_t>(list[1][0] + 2); idx++)
+			size_t plan = 0, glid = 0, reqer = 0,pid = 0;
+
+			const size_t rqid = 0;
+			for (size_t idx = 2; idx <= list[1].frame_size() && idx < list.size(); idx++)
 			{
 				switch (list[1][idx])
 				{
-				case ZERO_FRAME_PLAN:
+				case zero_def::frame::plan:
 					plan = idx;
 					continue;
-				case ZERO_FRAME_STATION_ID:
-					message->station = list[idx];
-				case ZERO_FRAME_END:
+				case zero_def::frame::pub_title:
+					frame_head = list[idx];
+					pid = idx;
 					continue;
-				case ZERO_FRAME_REQUEST_ID:
+				case zero_def::frame::station_id:
+					message->station = list[idx];
+					break;
+				case zero_def::frame::request_id:
 					message->request_id = list[idx];
 					break;
-				case ZERO_FRAME_REQUESTER:
+				case zero_def::frame::requester:
 					reqer = idx;
 					break;
-				case ZERO_FRAME_GLOBAL_ID:
+				case zero_def::frame::global_id:
 					glid = idx;
 					break;
-				case ZERO_FRAME_COMMAND:
+				case zero_def::frame::command:
 					message->command = list[idx];
-					cmdid = idx;
 					break;
 				}
 				description.append_frame(list[1][idx]);
 				message->frames.emplace_back(list[idx]);
 			}
-			auto config = station_warehouse::get_config(message->station);
-			if (plan == 0 || !config || message->station.empty() || cmdid == 0)
+			if (plan == 0 || message->station.empty() || message->command.empty())
 			{
-				send_request_status(socket, *caller, ZERO_STATUS_ARG_INVALID_ID, list, glid, rqid, reqer);
+				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
+				return false;
+			}
+			const auto config = station_warehouse::get_config(message->station);
+			if (!config)
+			{
+				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
+				return false;
+			}
+			message->read_plan(*list[plan]);
+			if (message->plan_repet == 0 || (message->skip_set > 0 && message->plan_repet > 0 && message->plan_repet <= message->skip_set))
+			{
+				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
 				return false;
 			}
 
-			description.append_frame(ZERO_FRAME_PLAN);
+			send_request_status(socket, *caller, zero_def::status::jion_plan, list, glid, rqid, reqer);
+
+			message->station_type = config->station_type;
+			if (message->plan_time <= 0)
+			{
+				message->plan_time = time(nullptr);
+			}
+
+			description.append_frame(zero_def::frame::plan);
 			message->frames.emplace_back("");
 
 			shared_char global_id;
 			if (glid == 0)
 			{
-				global_id.set_int64x(message->plan_id = station_warehouse::get_glogal_id());
-				description.append_frame(ZERO_FRAME_GLOBAL_ID);
+				global_id.set_int64x(station_warehouse::get_glogal_id());
+				description.append_frame(zero_def::frame::global_id);
 				message->frames.emplace_back(global_id);
 			}
 			else
 			{
 				global_id = list[glid];
-				message->plan_id = atoll(*list[glid]);
 			}
-			sprintf(plan_caller.get_buffer(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
-
-			message->station_type = config->station_type_;
-			message->read_plan(*list[plan]);
-
-			if (message->plan_repet == 0 || (message->skip_set > 0 && message->plan_repet > 0 && message->plan_repet <= message->skip_set))
+			message->plan_id = atoll(*global_id);
+			
+			if (pid == 0)
 			{
-				send_request_status(socket, *caller, ZERO_STATUS_ARG_INVALID_ID, list, glid, rqid, reqer);
-				return false;
+				sprintf(frame_head.get_buffer(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
 			}
-			if (message->plan_time <= 0)
-			{
-				message->plan_time =time(nullptr);
-			}
+
 			message->next();
-			plan_message::add_local(message);
-			send_request_status(socket, *caller, ZERO_STATUS_PLAN_ID, list, glid, rqid, reqer);
+			storage_.save_plan(*message);
 			return true;
 		}
 
@@ -384,7 +399,7 @@ namespace agebull
 				return;
 			message->plan_state = plan_message_state::execute;
 			message->exec_time = time(nullptr);
-			auto ptr = sockets_.find(*message->station);
+			const auto ptr = sockets_.find(*message->station);
 			shared_ptr<inner_socket> socket;
 			if (ptr == sockets_.end())
 			{
@@ -395,36 +410,38 @@ namespace agebull
 			{
 				socket = ptr->second;
 			}
-			message->frames[1].state(ZERO_BYTE_COMMAND_PROXY);
+			message->frames[1].state(zero_def::command::proxy);
 			message->frames[message->frames.size() - 2] = message->write_info();
 			var state = socket->send(message->frames);
-			message->frames[message->frames.size() - 2] = "";//防止无义的保存
+			message->frames[message->frames.size() - 2].free();//防止无义的保存
 
 			vector<shared_char> result;
 			if (state != zmq_socket_state::succeed)
 			{
-				auto config = station_warehouse::get_config(message->station, false);
+				const auto config = station_warehouse::get_config(message->station, false);
 				shared_char frame;
-				frame.alloc_frame(6, config ? ZERO_STATUS_SEND_ERROR_ID : ZERO_STATUS_NOT_FIND_ID);
+				frame.alloc_desc(6, config ? zero_def::status::send_error : zero_def::status::not_find);
 				result.emplace_back(frame);
-				on_plan_result(message, config ? ZERO_STATUS_SEND_ERROR_ID : ZERO_STATUS_NOT_FIND_ID, result);
+				on_plan_result(message, config ? zero_def::status::send_error : zero_def::status::not_find, result);
 				return;
 			}
 			state = socket->recv(result);
 			if (state != zmq_socket_state::succeed)
 			{
 				shared_char frame;
-				frame.alloc_frame(6, ZERO_STATUS_RECV_ERROR_ID);
+				frame.alloc_desc(6, zero_def::status::recv_error);
 				result.emplace_back(frame);
-				on_plan_result(message, ZERO_STATUS_RECV_ERROR_ID, result);
+				on_plan_result(message, zero_def::status::recv_error, result);
 				return;
 			}
-			if (result[0][1] != ZERO_STATUS_RUNING_ID)
+			if (result[0][1] != zero_def::status::runing)
 			{
 				on_plan_result(message, result[0].state(), result);
 				return;
 			}
 			message->exec_state = result[0].state();
+
+			storage_.save_log(*message);
 			message->save_message(false, true, false, false, false, false);
 		}
 
@@ -451,23 +468,23 @@ namespace agebull
 		{
 			uchar state = *reinterpret_cast<uchar*>(&st);
 			redis_live_scope scope(global_config::redis_defdb);
-			if (state == ZERO_BYTE_COMMAND_WAITING)
+			if (state == zero_def::command::waiting)
 			{
-				message->exec_state = ZERO_STATUS_WAIT_ID;
+				message->exec_state = zero_def::status::wait;
 			}
 			else
 			{
 				message->exec_state = state;
-				if (state == ZERO_STATUS_NOT_FIND_ID || state == ZERO_STATUS_NOT_SUPPORT_ID)//无法执行
+				if (state == zero_def::status::not_find || state == zero_def::status::not_support)//无法执行
 				{
 					message->pause();
 				}
-				else if (state < ZERO_STATUS_BUG_ID)//执行成功或逻辑失败
+				else if (state < zero_def::status::bug)//执行成功或逻辑失败
 				{
 					message->real_repet += 1;
 					message->next();
 				}
-				else if (state < ZERO_STATUS_ERROR_ID)//有BUG无法执行
+				else if (state < zero_def::status::error)//有BUG无法执行
 				{
 					message->real_repet += 1;
 					message->pause();
@@ -491,6 +508,7 @@ namespace agebull
 				}
 			}
 			result_event(message, list);
+			storage_.save_log(*message, list);
 			message->save_message_result(*message->station, list);
 		}
 
@@ -501,9 +519,9 @@ namespace agebull
 		{
 			shared_char description;
 			if (message != nullptr)
-				description.alloc_frame_2(static_cast<char>(event_type), ZERO_FRAME_SUBTITLE, ZERO_FRAME_CONTEXT);
+				description.alloc_desc_frame(static_cast<char>(event_type), zero_def::frame::sub_title, zero_def::frame::context);
 			else
-				description.alloc_frame(static_cast<char>(event_type), ZERO_FRAME_SUBTITLE);
+				description.alloc_desc(static_cast<char>(event_type), zero_def::frame::sub_title);
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
 			datas.emplace_back(description);
@@ -520,8 +538,8 @@ namespace agebull
 		bool plan_dispatcher::result_event(shared_ptr<plan_message>& message, vector<shared_char>& result)
 		{
 			shared_char description;
-			description.alloc_frame_3(static_cast<char>(zero_net_event::event_plan_result)
-				, ZERO_FRAME_SUBTITLE, ZERO_FRAME_CONTEXT, ZERO_FRAME_STATUS);
+			description.alloc_desc_frame(static_cast<char>(zero_net_event::event_plan_result)
+				, zero_def::frame::sub_title, zero_def::frame::context, zero_def::frame::status);
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
 			datas.emplace_back(description);
@@ -530,7 +548,7 @@ namespace agebull
 			datas.emplace_back(result[0]);
 			for (size_t idx = 2; idx < result.size() && idx < result[0].size(); idx++)
 			{
-				if (result[0][idx] == ZERO_FRAME_END)
+				if (result[0][idx] == zero_def::frame::end)
 					break;
 				description.append_frame(result[0][idx]);
 				datas.emplace_back(result[idx - 1]);

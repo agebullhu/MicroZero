@@ -24,9 +24,9 @@ namespace ApiTest
         /// <returns></returns>
         [Route("test")]
         [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
-        public ApiPageResult<LoginArg> Login(LoginArg arg)
+        public ApiPageResult<TestArg> Login(TestArg arg)
         {
-            return new ApiPageResult<LoginArg>
+            return new ApiPageResult<TestArg>
             {
                 Success = true,
                 Status = new ApiStatusResult

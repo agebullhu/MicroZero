@@ -113,18 +113,17 @@ namespace ZeroMQ
 			if (((ZPollEvent)item.ReadyEvents & ZPollEvent.In) == ZPollEvent.In)
 			{
 
-				ZError recvWorkerE;
-				if (item.ReceiveMessage == null)
-				{
-					// throw?
-				}
-				else if (item.ReceiveMessage(socket, out message, out recvWorkerE))
-				{
-					// what to do?
+                if (item.ReceiveMessage == null)
+                {
+                    // throw?
+                }
+                else if (item.ReceiveMessage(socket, out message, out ZError recvWorkerE))
+                {
+                    // what to do?
 
-					return true;
-				}
-			}
+                    return true;
+                }
+            }
 			return false;
 		}
 
@@ -133,18 +132,17 @@ namespace ZeroMQ
 			if (((ZPollEvent)item.ReadyEvents & ZPollEvent.Out) == ZPollEvent.Out)
 			{
 
-				ZError sendWorkerE;
-				if (item.SendMessage == null)
-				{
-					// throw?
-				}
-				else if (item.SendMessage(socket, message, out sendWorkerE))
-				{
-					// what to do?
+                if (item.SendMessage == null)
+                {
+                    // throw?
+                }
+                else if (item.SendMessage(socket, message, out ZError sendWorkerE))
+                {
+                    // what to do?
 
-					return true;
-				}
-			}
+                    return true;
+                }
+            }
 			return false;
 		}
 

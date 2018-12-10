@@ -24,16 +24,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoRegister.cs" />
     <Compile Remove="MachineEventArg.cs" />
     <Compile Remove="MachineEventStation.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Senparc.Weixin.MP" Version="16.5.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Caching.Memory">
+      <HintPath>C:\Users\DELL\.nuget\packages\microsoft.extensions.caching.memory\2.0.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

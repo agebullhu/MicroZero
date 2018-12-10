@@ -42,7 +42,7 @@ namespace agebull
 
 		void zero_config::worker_join(const char* real_name, const char* ip)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			auto iter = workers.find(real_name);
 			if (iter == workers.end())
 			{
@@ -67,7 +67,7 @@ namespace agebull
 
 		void zero_config::worker_ready(const char* real_name)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			auto iter = workers.find(real_name);
 			if (iter == workers.end())
 			{
@@ -93,7 +93,7 @@ namespace agebull
 
 		void zero_config::worker_left(const char* real_name)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			auto iter = workers.find(real_name);
 			if (iter == workers.end())
 				return;
@@ -105,7 +105,7 @@ namespace agebull
 
 		void zero_config::check_works()
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			int ready = 0;
 			vector<string> lefts;
 			for (auto& work : workers)
@@ -169,7 +169,7 @@ namespace agebull
 		};
 		void zero_config::read_json(const char* val)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			acl::json json;
 			json.update(val);
 			acl::json_node* iter = json.first_node();
@@ -186,25 +186,25 @@ namespace agebull
 				switch (static_cast<config_fields>(idx))
 				{
 				case config_fields::station_name:
-					station_name_ = iter->get_string();
+					station_name = iter->get_string();
 					break;
 				case config_fields::station_type:
-					station_type_ = json_read_int(iter);
+					station_type = json_read_int(iter);
 					break;
 				case config_fields::short_name:
-					short_name_ = iter->get_string();
+					short_name = iter->get_string();
 					break;
 				case config_fields::description:
-					station_description_ = iter->get_string();
+					station_description = iter->get_string();
 					break;
 				case config_fields::caption:
-					station_caption_ = iter->get_string();
+					station_caption = iter->get_string();
 					break;
 				case config_fields::is_base:
 					is_base = json_read_bool(iter);
 					break;
 				case config_fields::station_alias:
-					alias_.clear();
+					alias.clear();
 					{
 						var ch = iter->first_child();
 						var iter_arr = ch->first_child();
@@ -212,19 +212,19 @@ namespace agebull
 						{
 							auto txt = iter_arr->get_text();
 							if (txt != nullptr)
-								alias_.emplace_back(txt);
+								alias.emplace_back(txt);
 							iter_arr = ch->next_child();
 						}
 					}
 					break;
 				case config_fields::request_port:
-					request_port_ = json_read_int(iter);
+					request_port = json_read_int(iter);
 					break;
 				case config_fields::worker_out_port:
-					worker_out_port_ = json_read_int(iter);
+					worker_out_port = json_read_int(iter);
 					break;
 				case config_fields::worker_in_port:
-					worker_in_port_ = json_read_int(iter);
+					worker_in_port = json_read_int(iter);
 					break;
 				case config_fields::station_state:
 					station_state_ = static_cast<station_state>(json_read_num(iter));
@@ -260,31 +260,35 @@ namespace agebull
 		*/
 		acl::string zero_config::to_json(int type)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex_);
+			boost::lock_guard<boost::mutex> guard(mutex);
 			acl::json json;
 			acl::json_node& node = json.create_node();
-			json_add_str(node, "name", station_name_);
-			json_add_num(node, "station_state", static_cast<int>(station_state_));
 			//站点基础信息,不包含在状态中
 			if (type != 2)
 			{
 				json_add_bool(node, "is_base", is_base);
-				json_add_str(node, "short_name", short_name_);
-				json_add_str(node, "description", station_description_);
-				json_add_num(node, "station_type", station_type_);
-				json_add_num(node, "request_port", request_port_);
-				json_add_num(node, "worker_in_port", worker_in_port_);
-				json_add_num(node, "worker_out_port", worker_out_port_);
-				if (alias_.size() > 0)
+				json_add_num(node, "station_type", station_type);
+				json_add_num(node, "request_port", request_port);
+				json_add_num(node, "worker_in_port", worker_in_port);
+				json_add_num(node, "worker_out_port", worker_out_port);
+			}
+			json_add_str(node, "name", station_name);
+			//站点基础信息,不包含在状态中
+			if (type != 2)
+			{
+				json_add_str(node, "short_name", short_name);
+				json_add_str(node, "description", station_description);
+				if (alias.size() > 0)
 				{
 					acl::json_node& array = json.create_array();
-					for (auto alia : alias_)
+					for (auto alia : alias)
 					{
 						json_add_array_str(array, alia);
 					}
 					node.add_child("station_alias", array);
 				}
 			}
+			json_add_num(node, "station_state", static_cast<int>(station_state_));
 			//站点计数,不包含在基础信息中
 			if (type != 1)
 			{

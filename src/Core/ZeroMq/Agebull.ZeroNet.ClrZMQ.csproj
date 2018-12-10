@@ -4,7 +4,6 @@
     <Description>
       ClrZmq的ZeroNet专用版本
     </Description>
-    <Version>1.2.0.1</Version>
     <!--monoandroid60;xamarinios10-->
     <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
     <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
@@ -14,7 +13,6 @@
     <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/clrzmq4</RepositoryUrl>
-    <PackageVersion>1.2.0.1</PackageVersion>
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -24,8 +22,7 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>ClrZmq的ZeroNet专用版本</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <AssemblyVersion>1.2.0.1</AssemblyVersion>
-    <FileVersion>1.2.0.1</FileVersion>
+    <Version>1.3.0-alpha</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -82,6 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Agebull.Rpc.Abstractions" Version="2.3.2.68" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

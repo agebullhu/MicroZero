@@ -23,30 +23,30 @@ namespace agebull
 				list.erase(list.begin());
 			var description = list[1];
 			size_t pid = 0, gid = 0, tid = 0, rid = 0;
-			for (size_t idx = 2; idx <= description.frame_size() + 2; idx++)
+			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
 				{
-				case ZERO_FRAME_REQUEST_ID:
+				case zero_def::frame::request_id:
 					pid = idx;
 					break;
-				case ZERO_FRAME_REQUESTER:
+				case zero_def::frame::requester:
 					rid = idx;
 					break;
-				case ZERO_FRAME_GLOBAL_ID:
+				case zero_def::frame::global_id:
 					gid = idx;
 					break;
-				case ZERO_FRAME_PUB_TITLE:
+				case zero_def::frame::pub_title:
 					tid = idx;
 					break;
 				}
 			}
 			if (tid == 0)
 			{
-				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID_ID, list, gid, rid, pid);
+				send_request_status(socket, *caller, zero_def::status::frame_invalid, list, gid, rid, pid);
 				return;
 			}
-			send_request_status(socket, *caller, ZERO_STATUS_OK_ID, list, gid, rid, pid);
+			send_request_status(socket, *caller, zero_def::status::ok, list, gid, rid, pid);
 			list[0] = list[tid];
 			send_response(list, 0);
 		}
@@ -60,7 +60,7 @@ namespace agebull
 			return send_response(datas);
 		}
 
-		char notify_station::frames1[] = { ZERO_FRAME_PUBLISHER, ZERO_FRAME_CONTENT, ZERO_FRAME_GLOBAL_ID };
+		char notify_station::frames1[] = { zero_def::frame::publisher, zero_def::frame::content, zero_def::frame::global_id };
 		/**
 		*\brief 发布消息
 		*/
@@ -70,7 +70,7 @@ namespace agebull
 			if (!can_do() || publiher.length() == 0)
 				return false;
 			shared_char description;
-			description.alloc_frame(frames1);
+			description.alloc_desc(frames1);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
@@ -82,7 +82,7 @@ namespace agebull
 
 			return send_response(datas);
 		}
-		char notify_station::frames2[] = { ZERO_FRAME_PUBLISHER,ZERO_FRAME_SUBTITLE, ZERO_FRAME_CONTENT, ZERO_FRAME_GLOBAL_ID };
+		char notify_station::frames2[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content, zero_def::frame::global_id };
 		/**
 		*\brief 发布消息
 		*/
@@ -92,7 +92,7 @@ namespace agebull
 			if (!can_do() || publiher.empty())
 				return false;
 			shared_char description;
-			description.alloc_frame(frames2);
+			description.alloc_desc(frames2);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
@@ -108,7 +108,7 @@ namespace agebull
 			return send_response(datas);
 		}
 
-		char notify_station::frames3[] = { ZERO_FRAME_PUBLISHER,ZERO_FRAME_SUBTITLE, ZERO_FRAME_CONTENT,ZERO_FRAME_REQUEST_ID, ZERO_FRAME_GLOBAL_ID,ZERO_FRAME_LOCAL_ID };
+		char notify_station::frames3[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content,zero_def::frame::request_id, zero_def::frame::global_id,zero_def::frame::local_id };
 		/**
 		*\brief 发布消息
 		*/
@@ -118,7 +118,7 @@ namespace agebull
 			if (!can_do() || publiher.length() == 0)
 				return false;
 			shared_char description;
-			description.alloc_frame(frames3);
+			description.alloc_desc(frames3);
 			vector<shared_char> datas;
 			datas.emplace_back(title.c_str());
 			datas.emplace_back(description);
@@ -146,19 +146,19 @@ namespace agebull
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
+			if (!config.is_state(station_state::stop) && get_net_state() == zero_def::net_state::runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -167,7 +167,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name_.c_str());
+			set_command_thread_end(config.station_name.c_str());
 		}
 	}
 }

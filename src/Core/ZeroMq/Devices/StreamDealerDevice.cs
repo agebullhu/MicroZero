@@ -59,16 +59,15 @@
 			// receiving scope
 			// STREAM: get 2 frames, identity and body
 			ZMessage incoming = null;
-			// IPAddress address = null;
-			string address;
-			if (!ReceiveMsg(sock, ref incoming, out address, out error))
-			{
-				return false;
-			}
+            // IPAddress address = null;
+            if (!ReceiveMsg(sock, ref incoming, out string address, out error))
+            {
+                return false;
+            }
 
-			// sending scope
-			// DEALER: forward
-			using (incoming)
+            // sending scope
+            // DEALER: forward
+            using (incoming)
 			{
 				if (incoming[1].Length == 0)
 				{

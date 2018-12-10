@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-
+using Agebull.Common.Logging;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -19,7 +19,7 @@ namespace ZeroMQ
 		/// Gets and protected sets the default Encoding.
 		/// Note: Do not set the Encoding after ZContext.Create.
 		/// </summary>
-		public static Encoding Encoding { get; } = Encoding.ASCII;
+		public static Encoding Encoding => Encoding.UTF8;
 
         /// <summary>
         /// 初始化
@@ -101,21 +101,35 @@ namespace ZeroMQ
             }
             return false;
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
         public static void Proxy(ZSocket frontend, ZSocket backend)
         {
             Proxy(frontend, backend, null);
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         public static bool Proxy(ZSocket frontend, ZSocket backend, out ZError error)
         {
             return Proxy(frontend, backend, null, out error);
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="capture"></param>
         public static void Proxy(ZSocket frontend, ZSocket backend, ZSocket capture)
         {
-            ZError error;
-            if (!Proxy(frontend, backend, capture, out error))
+            if (!Proxy(frontend, backend, capture, out ZError error))
             {
                 if (error == ZError.ETERM)
                 {
@@ -124,7 +138,14 @@ namespace ZeroMQ
                 throw new ZException(error);
             }
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="capture"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         public static bool Proxy(ZSocket frontend, ZSocket backend, ZSocket capture, out ZError error)
         {
             error = ZError.None;
@@ -133,30 +154,44 @@ namespace ZeroMQ
             {
                 error = ZError.GetLastErr();
 
-                if (error == ZError.EINTR)
-                {
-                    error = default(ZError);
-                    continue;
-                }
-                return false;
+                if (!Equals(error, ZError.EINTR))
+                    return false;
+                error = default(ZError);
             }
             return true;
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="control"></param>
         public static void ProxySteerable(ZSocket frontend, ZSocket backend, ZSocket control)
         {
             ProxySteerable(frontend, backend, null, control);
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="control"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         public static bool ProxySteerable(ZSocket frontend, ZSocket backend, ZSocket control, out ZError error)
         {
             return ProxySteerable(frontend, backend, null, control, out error);
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="capture"></param>
+        /// <param name="control"></param>
         public static void ProxySteerable(ZSocket frontend, ZSocket backend, ZSocket capture, ZSocket control)
         {
-            ZError error;
-            if (!ProxySteerable(frontend, backend, capture, control, out error))
+            if (!ProxySteerable(frontend, backend, capture, control, out ZError error))
             {
                 if (error == ZError.ETERM)
                 {
@@ -165,7 +200,15 @@ namespace ZeroMQ
                 throw new ZException(error);
             }
         }
-
+        /// <summary>
+        /// 代理
+        /// </summary>
+        /// <param name="frontend"></param>
+        /// <param name="backend"></param>
+        /// <param name="capture"></param>
+        /// <param name="control"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         public static bool ProxySteerable(ZSocket frontend, ZSocket backend, ZSocket capture, ZSocket control, out ZError error)
         {
             error = ZError.None;
@@ -203,7 +246,11 @@ namespace ZeroMQ
             }
             throw new ZException(error);
         }
-
+        /// <summary>
+        /// 取Zmq上下文配置
+        /// </summary>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public int GetOption(ZContextOption option)
         {
             EnsureNotDisposed();
@@ -239,7 +286,7 @@ namespace ZeroMQ
         }
 
         /// <summary>
-        /// Gets or sets the supported socket protocol(s) when using TCP transports. (Default = <see cref="ProtocolType.Ipv4Only"/>).
+        /// Gets or sets the supported socket protocol(s) when using TCP transports. (Default = <see cref="ProtocolType.Ipv4"/>).
         /// </summary>
         public bool IPv6Enabled
         {
@@ -282,6 +329,7 @@ namespace ZeroMQ
         /// </summary>
         public bool Terminate(out ZError error)
         {
+            LogRecorder.SystemLog("Terminate the ZeroMQ context.");
             error = ZError.None;
             if (_contextPtr == IntPtr.Zero)
                 return true;
@@ -292,8 +340,10 @@ namespace ZeroMQ
                 array = ZSocket.AliveSockets.Where(p => p != null).ToArray();
             foreach (var alive in array)
             {
-                Console.WriteLine(string.Join(",", alive.Connects));
-                Console.WriteLine(string.Join(",", alive.Binds));
+                if (alive.Connects.Count > 0)
+                    LogRecorder.SystemLog(string.Join(",", alive.Connects));
+                if (alive.Binds.Count > 0)
+                    LogRecorder.SystemLog(string.Join(",", alive.Binds));
                 alive.Dispose();
             }
             if (zmq.ctx_shutdown(ptr) != -1)
@@ -308,8 +358,7 @@ namespace ZeroMQ
         /// </summary>
         public void Terminate()
         {
-            ZError error;
-            if (!Terminate(out error))
+            if (!Terminate(out ZError error))
             {
                 throw new ZException(error);
             }

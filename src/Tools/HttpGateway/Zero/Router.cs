@@ -14,7 +14,6 @@ namespace ZeroNet.Http.Gateway
     /// </summary>
     internal partial class Router
     {
-
         /// <summary>
         ///     远程调用
         /// </summary>

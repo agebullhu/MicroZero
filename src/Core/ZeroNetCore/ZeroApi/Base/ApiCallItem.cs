@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using Agebull.ZeroNet.PubSub;
+using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -7,6 +9,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// Api调用节点
     /// </summary>
+    [JsonObject(MemberSerialization.OptOut)]
     public class ApiCallItem
     {
         /// <summary>
@@ -31,7 +34,14 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 请求者
         /// </summary>
+        [JsonIgnore]
         public byte[] Caller { get; set; }
+
+        /// <summary>
+        /// 请求者
+        /// </summary>
+        [JsonProperty("Caller")]
+        public string Caller2 => Caller == null || Caller.Length == 0 ? "" : Encoding.ASCII.GetString(Caller).Trim('\0');
         /// <summary>
         /// 请求标识
         /// </summary>

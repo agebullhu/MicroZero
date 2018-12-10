@@ -9,21 +9,6 @@ namespace agebull
 {
 	namespace zero_net
 	{
-
-		//map<string, shared_ptr<plan_message>> local_chche;
-		/**
-		* \brief 加入本地缓存
-		*/
-		void plan_message::add_local(shared_ptr<plan_message>& msg)
-		{
-			//while (local_chche.size() > static_cast<size_t>(json_config::plan_cache_size))
-			//{
-			//	local_chche.erase(local_chche.begin());
-			//}
-			//def_msg_key(key, msg);
-			//local_chche[key] = msg;
-		}
-
 		/**
 		* \brief 保存下一次执行时间
 		*/
@@ -292,7 +277,7 @@ namespace agebull
 		/**
 		* \brief 删除一个消息
 		*/
-		bool plan_message::remove() const
+		bool plan_message::remove()
 		{
 			char key[256];
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
@@ -387,12 +372,12 @@ namespace agebull
 			}
 			if (full)
 			{
-				redis->set_hash_val(key, "caller", caller);
-				redis->set_hash_val(key, "request_id", request_id);
+				redis->set_hash_val(key, "caller", *caller);
+				redis->set_hash_val(key, "request_id", *request_id);
 				redis->set_hash_val(key, "plan_id", plan_id);
-				redis->set_hash_val(key, "description", description);
-				redis->set_hash_val(key, "station", station);
-				redis->set_hash_val(key, "command", command);
+				redis->set_hash_val(key, "description", *description);
+				redis->set_hash_val(key, "station", *station);
+				redis->set_hash_val(key, "command", *command);
 				redis->set_hash_val(key, "station_type", static_cast<int>(station_type));
 				redis->set_hash_val(key, "no_skip", no_skip);
 				redis->set_hash_val(key, "plan_repet", plan_repet);
@@ -405,29 +390,30 @@ namespace agebull
 				for (const auto& line : frames)
 				{
 					sprintf(skey, "frames:%d", ++idx);
-					redis->set_hash_val(key, skey, line);
+					redis->set_hash_val(key, skey, *line);
 				}
-			}
-			redis->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
-			if (full || plan || exec || res)
-			{
-				redis->set_hash_val(key, "skip_set", skip_set);
-			}
-			if (full || skip || plan || exec || res || close)
-			{
-				redis->set_hash_val(key, "skip_num", skip_num);
 			}
 			if (full || plan)
 			{
+				redis->set_hash_val(key, "no_skip", no_skip);
+				redis->set_hash_val(key, "plan_repet", plan_repet);
+				redis->set_hash_val(key, "plan_type", static_cast<int>(plan_type));
+				redis->set_hash_val(key, "plan_value", plan_value);
 				redis->set_hash_val(key, "plan_time", static_cast<int64>(plan_time));
 			}
-
 			if (full || exec || res)
 			{
 				redis->set_hash_val(key, "exec_time", static_cast<int64>(exec_time));
 				redis->set_hash_val(key, "exec_state", exec_state);
 				redis->set_hash_val(key, "real_repet", real_repet);
 			}
+			if (full || plan || skip)
+			{
+				redis->set_hash_val(key, "skip_set", skip_set);
+				redis->set_hash_val(key, "skip_num", skip_num);
+			}
+			redis->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
+
 			if (res || skip)
 				return true;
 			if (exec)
@@ -448,7 +434,7 @@ namespace agebull
 		*/
 		bool plan_message::save_message_worker(vector<const char*>& workers) const
 		{
-			if (station_type != station_type_vote)
+			if (station_type != zero_def::station_type::vote)
 				return false;
 			redis_live_scope redis;
 			char key[256];
@@ -470,7 +456,7 @@ namespace agebull
 		*/
 		bool plan_message::save_message_result(const char* worker, vector<shared_char>& response)
 		{
-			if (station_type == station_type_vote)
+			if (station_type == zero_def::station_type::vote)
 			{
 				redis_live_scope scope;
 				trans_redis* redis = scope.t();
@@ -478,7 +464,7 @@ namespace agebull
 				sprintf(key, "msg:%s:%llx", *station, plan_id);
 				char skey[64];
 				sprintf(skey, "wroks:%s:size", worker);
-				size_t size = redis->get_hash_num(key, skey);
+				const size_t size = redis->get_hash_num(key, skey);
 
 				for (size_t idx = 1; idx <= size; idx++)
 				{
@@ -506,7 +492,7 @@ namespace agebull
 			}
 			log_trace3(DEBUG_RESULT, 2, "[plan](%lld) %s \n%s", plan_id, worker, json.c_str());
 
-			save_message(false, false, false, true, false, false);
+			save_message(false, false, false, true, true, false);
 			return true;
 		}
 
@@ -516,7 +502,7 @@ namespace agebull
 		vector<shared_char> plan_message::get_message_result(const char* worker) const
 		{
 			vector<shared_char> result;
-			if (station_type != station_type_vote)
+			if (station_type != zero_def::station_type::vote)
 				return result;
 			redis_live_scope scope;
 			trans_redis* redis = scope.t();
@@ -524,7 +510,7 @@ namespace agebull
 			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			char skey[64];
 			sprintf(skey, "wroks:%s:size", worker);
-			size_t size = redis->get_hash_num(key, skey);
+			const size_t size = redis->get_hash_num(key, skey);
 
 			for (size_t idx = 1; idx <= size; idx++)
 			{
@@ -553,9 +539,10 @@ namespace agebull
 				for (pair<const acl::string, acl::string>& iter : values)
 				{
 					vector<shared_char> result;
-					size_t size = atol(iter.second);
+					const size_t size = atol(iter.second);
 					acl::string worker;
-					iter.first.substr(worker, 6, iter.first.length() - 11);
+					acl::string key = iter.first;
+					key.substr(worker, 6, key.length() - 11);
 					for (size_t idx = 1; idx <= size; idx++)
 					{
 						sprintf(skey, "wroks:%s:%d", worker.c_str(), idx);
@@ -587,24 +574,24 @@ namespace agebull
 					err_keys.emplace_back(key);
 					continue;
 				}
-				if (message->exec_state == ZERO_STATUS_WAIT_ID)
+				if (message->exec_state == zero_def::status::wait)
 				{
 					++message->skip_num;
 					message->save_message(false, false, false, false, true, false);
 					continue;
 				}
-				else if (message->plan_state == plan_message_state::pause)
+				if (message->plan_state == plan_message_state::pause)
 				{
 					continue;
 				}
-				if (message->exec_state == ZERO_STATUS_PLAN_ERROR_ID || message->plan_id == 0 || message->frames.size() == 0)
+				if (message->exec_state == zero_def::status::plan_error || message->plan_id == 0 || message->frames.size() == 0)
 				{
 					plan_dispatcher::instance->get_config().error("error plan state remove from plan queue", *message->frames[0]);
 					message->error();
 					continue;
 				}
 
-				if (message->exec_state == ZERO_STATUS_RUNING_ID)
+				if (message->exec_state == zero_def::status::runing)
 				{
 					var span = second_clock::universal_time() - from_time_t(message->exec_time);
 					//超时未到且还未执行完成,不重复下发
@@ -725,28 +712,6 @@ namespace agebull
 		/**
 		* \brief JSON序列化
 		*/
-		void plan_message::write_info(acl::json_node& node) const
-		{
-			json_add_str(node, "caller", caller);
-			json_add_num(node, "plan_id", plan_id);
-			json_add_str(node, "caller", caller);
-			json_add_str(node, "request_id", request_id);
-			json_add_num(node, "plan_type", static_cast<int>(plan_type));
-			json_add_num(node, "no_skip", no_skip);
-			json_add_num(node, "plan_value", plan_value);
-			json_add_num(node, "plan_repet", plan_repet);
-			json_add_num(node, "plan_time", plan_time);
-			json_add_num(node, "real_repet", real_repet);
-			json_add_num(node, "skip_set", skip_set);
-			json_add_num(node, "skip_num", skip_num);
-			json_add_num(node, "exec_time", exec_time);
-			json_add_num(node, "exec_state", exec_state);
-			json_add_num(node, "plan_state", static_cast<int>(plan_state));
-		}
-
-		/**
-		* \brief JSON序列化
-		*/
 		acl::string plan_message::write_info() const
 		{
 			acl::json json;
@@ -773,6 +738,42 @@ namespace agebull
 			return node.to_string();
 		}
 
+		/**
+		* \brief JSON序列化
+		*/
+		void plan_message::write_state(acl::json_node& node) const
+		{
+			json_add_num(node, "plan_id", plan_id);
+			json_add_num(node, "exec_time", exec_time);
+			json_add_num(node, "exec_state", exec_state);
+			json_add_num(node, "plan_state", static_cast<int>(plan_state));
+			json_add_num(node, "plan_time", plan_time);
+			json_add_num(node, "real_repet", real_repet);
+			json_add_num(node, "skip_set", skip_set);
+			json_add_num(node, "skip_num", skip_num);
+		}
+
+		/**
+		* \brief JSON序列化
+		*/
+		void plan_message::write_info(acl::json_node& node) const
+		{
+			json_add_str(node, "caller", caller);
+			json_add_num(node, "plan_id", plan_id);
+			json_add_str(node, "caller", caller);
+			json_add_str(node, "request_id", request_id);
+			json_add_num(node, "plan_type", static_cast<int>(plan_type));
+			json_add_num(node, "no_skip", no_skip);
+			json_add_num(node, "plan_value", plan_value);
+			json_add_num(node, "plan_repet", plan_repet);
+			json_add_num(node, "plan_time", plan_time);
+			json_add_num(node, "real_repet", real_repet);
+			json_add_num(node, "skip_set", skip_set);
+			json_add_num(node, "skip_num", skip_num);
+			json_add_num(node, "exec_time", exec_time);
+			json_add_num(node, "exec_state", exec_state);
+			json_add_num(node, "plan_state", static_cast<int>(plan_state));
+		}
 		/**
 		* \brief JSON序列化
 		*/

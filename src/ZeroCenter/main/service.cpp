@@ -4,16 +4,6 @@
 
 #include "../stdafx.h"
 #include "service.h"
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <signal.h>
-#include <time.h>
-#include <execinfo.h>
-#include <string>
-#include "../rpc/proxy_dispatcher.h"
 
 
 namespace agebull
@@ -21,7 +11,7 @@ namespace agebull
 	namespace zero_net
 	{
 		zmq_handler zmq_context;
-		volatile int net_state = net_state_none;
+		volatile int net_state = zero_def::net_state::none;
 		//应该启动的线程数量
 		volatile int zero_thread_count = 0;
 		//当前启动了多少命令线程
@@ -180,7 +170,7 @@ namespace agebull
 		int config_zero_center()
 		{
 			log_msg("$initiate...");
-			net_state = net_state_none;
+			net_state = zero_def::net_state::none;
 			zmq_context = zmq_ctx_new();
 			assert(zmq_context != nullptr);
 			if (global_config::MAX_SOCKETS > 0)
@@ -202,7 +192,7 @@ namespace agebull
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$system dispatcher failed ...");
-				net_state = net_state_failed;
+				net_state = zero_def::net_state::failed;
 			}
 			return	net_state;
 		}
@@ -215,7 +205,7 @@ namespace agebull
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$proxy dispatcher failed ...");
-				net_state = net_state_failed;
+				net_state = zero_def::net_state::failed;
 			}
 			return	net_state;
 		}
@@ -228,7 +218,7 @@ namespace agebull
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$plan dispatcher failed ...");
-				net_state = net_state_failed;
+				net_state = zero_def::net_state::failed;
 			}
 			return net_state;
 		}
@@ -237,14 +227,14 @@ namespace agebull
 		{
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
-			net_state = net_state_runing;
+			net_state = zero_def::net_state::runing;
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
-			if (start_system_manage() == net_state_failed)
-				return net_state_failed;
-			if (start_proxy_dispatcher() == net_state_failed)
-				return net_state_failed;
-			if (start_plan_dispatcher() == net_state_failed)
-				return net_state_failed;
+			if (start_system_manage() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
+			if (start_proxy_dispatcher() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
+			if (start_plan_dispatcher() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
 
 			log_msg("$start business stations...");
 			station_warehouse::restore();
@@ -254,7 +244,7 @@ namespace agebull
 			for (int i = 0; i < 10; i++)
 			{
 				system_event(zero_net_event::event_system_start, nullptr, ">>Wecome ZeroNet,luck every day!<<");
-				thread_sleep(50);
+				THREAD_SLEEP(50);
 			}
 			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
 			log_msg1("$success(%lldms)\n", sp.total_milliseconds());
@@ -268,7 +258,7 @@ namespace agebull
 		//关闭网络命令环境
 		void close_net_command()
 		{
-			if (net_state != net_state_runing)
+			if (net_state != zero_def::net_state::runing)
 				return;
 			var tm = boost::posix_time::microsec_clock::local_time();
 			var sp = tm - rpc_service::start_time;
@@ -277,15 +267,15 @@ namespace agebull
 			for (int i = 0; i < 5; i++)
 			{
 				system_event(zero_net_event::event_system_closing);
-				thread_sleep(40);
+				THREAD_SLEEP(40);
 			}
-			net_state = net_state_closing;
+			net_state = zero_def::net_state::closing;
 			task_semaphore.wait();
-			net_state = net_state_closed;
+			net_state = zero_def::net_state::closed;
 			system_event(zero_net_event::event_system_stop, nullptr, ">>ZeroNet close,see you late!<<");
 			close_semaphore.post();
 			task_semaphore.wait();
-			net_state = net_state_distory;
+			net_state = zero_def::net_state::distory;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
 			log_msg("$zmq shutdown\n");

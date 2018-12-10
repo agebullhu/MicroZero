@@ -23,7 +23,37 @@ namespace ZeroMQ
         {
             _frames = new List<ZFrame>();
         }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ZMessage"/> class.
+        /// Creates an empty message.
+        /// </summary>
+        public ZMessage(byte[] desc, params string[] args)
+        {
+            _frames = new List<ZFrame>{ new ZFrame(desc) };
+            foreach (var frame in args)
+                _frames.Add(new ZFrame(frame));
+        }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ZMessage"/> class.
+        /// Creates an empty message.
+        /// </summary>
+        public static ZMessage Create(params byte[][] frames)
+        {
+            return new ZMessage(frames);
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ZMessage"/> class.
+        /// Creates a message that contains the given <see cref="ZFrame"/> objects.
+        /// </summary>
+        /// <param name="frames">A collection of <see cref="ZFrame"/> objects to be stored by this <see cref="ZMessage"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="frames"/> is null.</exception>
+        public ZMessage(IEnumerable<byte[]> frames)
+        {
+            _frames = new List<ZFrame>();
+            foreach (var frame in frames)
+                _frames.Add(new ZFrame(frame));
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="ZMessage"/> class.
         /// Creates a message that contains the given <see cref="ZFrame"/> objects.
@@ -356,6 +386,17 @@ namespace ZeroMQ
                 message.Add(frame.Duplicate());
             }
             return message;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder co = new StringBuilder();
+            co.AppendLine($"Frames:{Count}");
+            foreach (var f in _frames)
+            {
+                co.AppendLine(f.ReadString());
+            }
+            return co.ToString();
         }
 
         #endregion

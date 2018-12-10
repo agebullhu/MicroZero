@@ -74,11 +74,23 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 foreach (var api in sta.Aips)
                 {
-                    var action = (ApiActionInfo)api.Value;
-                    var a = action.HaseArgument
-                        ? station.RegistAction(api.Key, action.ArgumentAction, action.AccessOption, action)
-                        : station.RegistAction(api.Key, action.Action, action.AccessOption, action);
-                    a.ArgumenType = action.ArgumenType;
+                    var info = (ApiActionInfoEx)api.Value;
+                    ApiAction action;
+                    switch (info.ArgumentType)
+                    {
+                        case 0:
+                            action = station.RegistAction(api.Key, info.Action, info.AccessOption, info);
+                            break;
+                        case 1:
+                            action = station.RegistAction(api.Key, info.ArgumentAction, info.AccessOption, info);
+                            break;
+                        case 2:
+                            action = station.RegistAction(api.Key, info.ArgumentAction2, info.AccessOption, info);
+                            break;
+                        default:
+                            continue;
+                    }
+                    action.ArgumenType = info.ArgumenType;
                 }
             }
         }
@@ -153,10 +165,10 @@ namespace Agebull.ZeroNet.ZeroApi
                     : $"{routeHead}{route.Name.Trim(' ', '\t', '\r', '\n', '/')}";
                 var accessOption = method.GetCustomAttribute<ApiAccessOptionFilterAttribute>();
                 var ca = method.GetAttribute<CategoryAttribute>();
-                var api = new ApiActionInfo
+                var api = new ApiActionInfoEx
                 {
                     Name = method.Name,
-                    ApiName= route?.Name ?? method.Name,
+                    ApiName = route?.Name ?? method.Name,
                     RouteName = name,
                     Category = ca?.Category ?? xdoc?.Caption,
                     AccessOption = accessOption?.Option ?? ApiAccessOption.Public | ApiAccessOption.ArgumentCanNil,
@@ -170,6 +182,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 //动态生成并编译
                 if (api.HaseArgument)
                 {
+
                     api.ArgumentInfo = ReadEntity(arg.ParameterType, "argument") ?? new TypeDocument();
                     api.ArgumentInfo.Name = arg.Name;
                     if (doc != null)
@@ -178,18 +191,78 @@ namespace Agebull.ZeroNet.ZeroApi
                     if (!onlyDoc)
                     {
                         api.ArgumenType = arg.ParameterType;
-                        api.ArgumentAction = CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
-                            method.Name,
-                            arg.ParameterType.GetTypeInfo(),
-                            method.ReturnType.GetTypeInfo());
+                        if (api.ArgumenType.IsSupperInterface(typeof(IApiArgument)))
+                        {
+                            api.ArgumentType = 1;
+                            api.ArgumentAction = CreateFunc<IApiArgument, IApiResult>(type.GetTypeInfo(),
+                                method.Name,
+                                arg.ParameterType.GetTypeInfo(),
+                                method.ReturnType.GetTypeInfo());
+                        }
+                        else
+                        {
+                            api.ArgumentType = 2;
+                            api.ArgumentAction2 = CreateFunc(type.GetTypeInfo(),
+                                method.Name,
+                                arg.ParameterType.GetTypeInfo(),
+                                method.ReturnType.GetTypeInfo());
+                        }
                     }
                 }
                 else if (!onlyDoc)
                 {
+                    api.ArgumentType = 0;
                     api.Action = CreateFunc<IApiResult>(type.GetTypeInfo(), method.Name, method.ReturnType.GetTypeInfo());
                 }
                 station.Aips.Add(api.RouteName, api);
             }
+        }
+        /// <summary>生成动态匿名调用内部方法（参数由TArg转为实际类型后调用，并将调用返回值转为TRes）</summary>
+        /// <param name="callInfo">调用对象类型</param>
+        /// <param name="argInfo">原始参数类型</param>
+        /// <param name="resInfo">原始返回值类型</param>
+        /// <param name="methodName">原始调用方法</param>
+        /// <returns>匿名委托</returns>
+        public static Func<object, object> CreateFunc(TypeInfo callInfo, string methodName, TypeInfo argInfo, TypeInfo resInfo)
+        {
+            ConstructorInfo constructor = callInfo.GetConstructor(Type.EmptyTypes);
+            if (constructor == null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有无参构造函数");
+            MethodInfo method = callInfo.GetMethod(methodName);
+            if (method == null)
+                throw new ArgumentException("类型" + callInfo.FullName + "没有名称为" + methodName + "的方法");
+            if (method.ReturnType != resInfo)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "返回值不为" + resInfo.FullName);
+            ParameterInfo[] parameters = method.GetParameters();
+            if (parameters.Length != 1)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "参数不是一个");
+            if (parameters[0].ParameterType != argInfo)
+                throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "唯一参数不为" + argInfo.FullName);
+            DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(object), new Type[]
+            {
+                typeof(object)
+            });
+            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            ilGenerator.Emit(OpCodes.Nop);
+            ilGenerator.Emit(OpCodes.Ldarg, 0);
+            ilGenerator.Emit(OpCodes.Castclass, argInfo);
+            LocalBuilder local1 = ilGenerator.DeclareLocal(argInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local1);
+            ilGenerator.Emit(OpCodes.Newobj, constructor);
+            LocalBuilder local2 = ilGenerator.DeclareLocal(callInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local2);
+            ilGenerator.Emit(OpCodes.Ldloc, local2);
+            ilGenerator.Emit(OpCodes.Ldloc, local1);
+            ilGenerator.Emit(OpCodes.Callvirt, method);
+            LocalBuilder local3 = ilGenerator.DeclareLocal(method.ReturnType);
+            ilGenerator.Emit(OpCodes.Stloc, local3);
+            ilGenerator.Emit(OpCodes.Ldloc, local3);
+            ilGenerator.Emit(OpCodes.Castclass, typeof(object).GetTypeInfo());
+            LocalBuilder local4 = ilGenerator.DeclareLocal(resInfo);
+            ilGenerator.Emit(OpCodes.Stloc, local4);
+            ilGenerator.Emit(OpCodes.Ldloc, local4);
+            ilGenerator.Emit(OpCodes.Ret);
+            return dynamicMethod.CreateDelegate(typeof(Func<object, object>)) as Func<object, object>;
         }
 
         /// <summary>生成动态匿名调用内部方法（参数由TArg转为实际类型后调用，并将调用返回值转为TRes）</summary>
@@ -203,30 +276,30 @@ namespace Agebull.ZeroNet.ZeroApi
         public static Func<TArg, TRes> CreateFunc<TArg, TRes>(TypeInfo callInfo, string methodName, TypeInfo argInfo, TypeInfo resInfo)
         {
             ConstructorInfo constructor = callInfo.GetConstructor(Type.EmptyTypes);
-            if (constructor == (ConstructorInfo)null)
+            if (constructor == null)
                 throw new ArgumentException("类型" + callInfo.FullName + "没有无参构造函数");
             MethodInfo method = callInfo.GetMethod(methodName);
-            if (method == (MethodInfo)null)
+            if (method == null)
                 throw new ArgumentException("类型" + callInfo.FullName + "没有名称为" + methodName + "的方法");
-            if (method.ReturnType != (Type)resInfo)
+            if (method.ReturnType != resInfo)
                 throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "返回值不为" + resInfo.FullName);
             ParameterInfo[] parameters = method.GetParameters();
             if (parameters.Length != 1)
                 throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "参数不是一个");
-            if (parameters[0].ParameterType != (Type)argInfo)
+            if (parameters[0].ParameterType != argInfo)
                 throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "唯一参数不为" + argInfo.FullName);
             DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(TRes), new Type[1]
             {
-        typeof (TArg)
+                typeof (TArg)
             });
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
             ilGenerator.Emit(OpCodes.Nop);
             ilGenerator.Emit(OpCodes.Ldarg, 0);
-            ilGenerator.Emit(OpCodes.Castclass, (Type)argInfo);
-            LocalBuilder local1 = ilGenerator.DeclareLocal((Type)argInfo);
+            ilGenerator.Emit(OpCodes.Castclass, argInfo);
+            LocalBuilder local1 = ilGenerator.DeclareLocal(argInfo);
             ilGenerator.Emit(OpCodes.Stloc, local1);
             ilGenerator.Emit(OpCodes.Newobj, constructor);
-            LocalBuilder local2 = ilGenerator.DeclareLocal((Type)callInfo);
+            LocalBuilder local2 = ilGenerator.DeclareLocal(callInfo);
             ilGenerator.Emit(OpCodes.Stloc, local2);
             ilGenerator.Emit(OpCodes.Ldloc, local2);
             ilGenerator.Emit(OpCodes.Ldloc, local1);
@@ -234,8 +307,8 @@ namespace Agebull.ZeroNet.ZeroApi
             LocalBuilder local3 = ilGenerator.DeclareLocal(method.ReturnType);
             ilGenerator.Emit(OpCodes.Stloc, local3);
             ilGenerator.Emit(OpCodes.Ldloc, local3);
-            ilGenerator.Emit(OpCodes.Castclass, (Type)typeof(TRes).GetTypeInfo());
-            LocalBuilder local4 = ilGenerator.DeclareLocal((Type)resInfo);
+            ilGenerator.Emit(OpCodes.Castclass, typeof(TRes).GetTypeInfo());
+            LocalBuilder local4 = ilGenerator.DeclareLocal(resInfo);
             ilGenerator.Emit(OpCodes.Stloc, local4);
             ilGenerator.Emit(OpCodes.Ldloc, local4);
             ilGenerator.Emit(OpCodes.Ret);
@@ -251,28 +324,28 @@ namespace Agebull.ZeroNet.ZeroApi
         public static Func<TRes> CreateFunc<TRes>(TypeInfo callInfo, string methodName, TypeInfo resInfo)
         {
             ConstructorInfo constructor = callInfo.GetConstructor(Type.EmptyTypes);
-            if (constructor == (ConstructorInfo)null)
+            if (constructor == null)
                 throw new ArgumentException("类型" + callInfo.FullName + "没有无参构造函数");
             MethodInfo method = callInfo.GetMethod(methodName);
-            if (method == (MethodInfo)null)
+            if (method == null)
                 throw new ArgumentException("类型" + callInfo.FullName + "没有名称为" + methodName + "的方法");
-            if (method.ReturnType != (Type)resInfo)
+            if (method.ReturnType != resInfo)
                 throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "返回值不为" + resInfo.FullName);
             if ((uint)method.GetParameters().Length > 0U)
                 throw new ArgumentException("类型" + callInfo.FullName + "的方法" + methodName + "参数不为空");
-            DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(TRes), (Type[])null);
+            DynamicMethod dynamicMethod = new DynamicMethod(methodName, typeof(TRes), null);
             ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
             ilGenerator.Emit(OpCodes.Nop);
             ilGenerator.Emit(OpCodes.Newobj, constructor);
-            LocalBuilder local1 = ilGenerator.DeclareLocal((Type)callInfo);
+            LocalBuilder local1 = ilGenerator.DeclareLocal(callInfo);
             ilGenerator.Emit(OpCodes.Stloc, local1);
             ilGenerator.Emit(OpCodes.Ldloc, local1);
             ilGenerator.Emit(OpCodes.Callvirt, method);
             LocalBuilder local2 = ilGenerator.DeclareLocal(method.ReturnType);
             ilGenerator.Emit(OpCodes.Stloc, local2);
             ilGenerator.Emit(OpCodes.Ldloc, local2);
-            ilGenerator.Emit(OpCodes.Castclass, (Type)typeof(TRes).GetTypeInfo());
-            LocalBuilder local3 = ilGenerator.DeclareLocal((Type)resInfo);
+            ilGenerator.Emit(OpCodes.Castclass, typeof(TRes).GetTypeInfo());
+            LocalBuilder local3 = ilGenerator.DeclareLocal(resInfo);
             ilGenerator.Emit(OpCodes.Stloc, local3);
             ilGenerator.Emit(OpCodes.Ldloc, local3);
             ilGenerator.Emit(OpCodes.Ret);
@@ -525,7 +598,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     field.ObjectType = ObjectType.Base;
                 }
-                else if(!isDictionary)
+                else if (!isDictionary)
                 {
                     if (checkBase)
                         field = ReadEntity(type, member.Name);

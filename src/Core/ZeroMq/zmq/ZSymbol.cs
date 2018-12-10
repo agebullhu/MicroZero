@@ -24,8 +24,7 @@
         {
             get
             {
-                string result;
-                return _zsymbolToName.TryGetValue(this, out result) ? result : "<unknown>";
+                return _zsymbolToName.TryGetValue(this, out string result) ? result : "<unknown>";
             }
         }
 

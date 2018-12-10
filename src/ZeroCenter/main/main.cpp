@@ -1,15 +1,7 @@
-#include "../stdafx.h"
-#include "service.h"
-#include <mcheck.h>  
-#include "../rpc/message_storage.h"
-using namespace agebull;
-int zero_center_main();
-void test_sqlite();
+#include "main.h"
+
 int main(int argc, char *argv[])
 {
-	//test_sqlite();
-	//getchar();
-	//return 0;
 	return zero_center_main();
 }
 
@@ -21,7 +13,7 @@ int zero_center_main()
 	//初始化
 	if (!zero_net::rpc_service::initialize())
 		return 0;
-	zero_net::station_warehouse::clear();
+	//zero_net::station_warehouse::clear();
 	//启动
 	zero_net::rpc_service::start();
 	//等待
@@ -29,41 +21,6 @@ int zero_center_main()
 	//关闭
 	zero_net::rpc_service::stop();
 	return 0;
-}
-
-void test_sqlite()
-{
-	if (!zero_net::rpc_service::initialize())
-		return;
-	var tm = boost::posix_time::microsec_clock::local_time();
-	vector<vector<zero_net::shared_char>> datas;
-	zero_net::message_storage storage;
-	shared_ptr < zero_net::zero_config>  config(new zero_net::zero_config());
-	config->station_name_ = "Test";
-	storage.prepare_storage(config);
-	auto sp = boost::posix_time::microsec_clock::local_time() - tm;
-	log_msg2("prepare(%lldms) : %lld", sp.total_milliseconds(), storage.get_last_id());
-	tm = boost::posix_time::microsec_clock::local_time();
-	for (int i = 0; i < 10000; i++)
-		storage.save("agebull", "test", "abc", "{}", "a", i);
-	sp = boost::posix_time::microsec_clock::local_time() - tm;
-	log_msg1("write(%lldms)", sp.total_milliseconds());
-	tm = boost::posix_time::microsec_clock::local_time();
-
-	storage.load(0, 100000, [](vector<zero_net::shared_char>& data)
-	{
-	});
-	sp = boost::posix_time::microsec_clock::local_time() - tm;
-	log_msg1("load(%lldms)", sp.total_milliseconds());
-	//for (auto data : datas)
-	//{
-	//	cout << "row: ";
-	//	for (auto col : data)
-	//	{
-	//		cout << col.get_buffer() << " ";
-	//	}
-	//	cout << endl;
-	//}
 }
 
 /*

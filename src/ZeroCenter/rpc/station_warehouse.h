@@ -170,10 +170,10 @@ namespace agebull
 			static bool install(const char* station_name, int type, const char* short_name, const char* desc, bool is_base)
 			{
 				shared_ptr<zero_config> config = make_shared<zero_config>();
-				config->station_type_ = type;
-				config->station_name_ = station_name;
-				config->short_name_ = short_name;
-				config->station_description_ = desc;
+				config->station_type = type;
+				config->station_name = station_name;
+				config->short_name = short_name;
+				config->station_description = desc;
 				config->is_base = is_base;
 				return install(config);
 			}

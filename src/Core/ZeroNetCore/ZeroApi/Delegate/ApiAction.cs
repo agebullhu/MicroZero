@@ -58,7 +58,7 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行
         /// </summary>
         /// <returns></returns>
-        public abstract IApiResult Execute();
+        public abstract object Execute();
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行
         /// </summary>
         /// <returns></returns>
-        public override IApiResult Execute()
+        public override object Execute()
         {
             return Action();
         }
@@ -164,7 +164,7 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行
         /// </summary>
         /// <returns></returns>
-        public override IApiResult Execute()
+        public override object Execute()
         {
             if (ArgumenType == null)
             {
@@ -232,9 +232,56 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行
         /// </summary>
         /// <returns></returns>
-        public override IApiResult Execute()
+        public override object Execute()
         {
             return Action(_argument);
         }
+    }
+
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiActionObj : ApiAction
+    {
+
+        /// <summary>
+        ///     参数
+        /// </summary>
+        private object _argument;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<object, object> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            _argument = JsonConvert.DeserializeObject(argument, ArgumenType);
+            return _argument != null;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            return Action(_argument);
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            message = "";
+            return true;
+        }
+
     }
 }

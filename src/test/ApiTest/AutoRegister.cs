@@ -19,7 +19,7 @@ namespace Agebull.ZeroNet.Log
         {
             ZeroApplication.Discove(typeof(AutoRegister).Assembly); 
         }
-
+        
         /// <summary>
         /// 注册
         /// </summary>

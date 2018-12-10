@@ -1,15 +1,44 @@
+using Agebull.Common.Configuration;
+using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Log;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Senparc.CO2NET;
+using Senparc.CO2NET.RegisterServices;
+using Senparc.Weixin;
+using Senparc.Weixin.Entities;
+using Senparc.Weixin.MP.Containers;
+using Senparc.Weixin.RegisterServices;
 
 namespace ApiTest
 {
     partial class Program
-    {static void Main(string[] args)
+    {
+
+        static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.Discove(typeof(AutoRegister).Assembly);
+            ZeroApplication.Discove(typeof(WeixinController).Assembly);
             ZeroApplication.Initialize();
+            Weixin();
             ZeroApplication.RunAwaite();
+        }
+
+        static void Weixin()
+        {
+            IocHelper.ServiceCollection.AddMemoryCache();
+
+            IocHelper.ServiceCollection
+                .AddSenparcGlobalServices(ConfigurationManager.Root)//Senparc.CO2NET 全局注册
+                .AddSenparcWeixinServices(ConfigurationManager.Root);//Senparc.Weixin 注册
+
+            var senparcSetting = ConfigurationManager.Root.GetSection("SecurityHeaderOptions").Get<SenparcSetting>();
+            var senparcWeixinSetting = ConfigurationManager.Root.GetSection("SenparcWeixinSetting").Get<SenparcWeixinSetting>();
+            RegisterService.Start(null, senparcSetting)
+                .UseSenparcGlobal()// 启动 CO2NET 全局注册
+                .UseSenparcWeixin(senparcWeixinSetting, senparcSetting);//微信全局注册
+            //注册AppId
+            AccessTokenContainer.Register(senparcWeixinSetting.WeixinAppId, senparcWeixinSetting.WeixinAppSecret);
         }
     }
 }

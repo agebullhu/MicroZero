@@ -18,7 +18,7 @@ namespace agebull
 			char station_[MAX_PATH];
 			char caller_[MAX_PATH];
 		public:
-			zmq_handler socket_;
+			zmq_handler socket;
 
 			/**
 			* \brief 构造
@@ -29,7 +29,7 @@ namespace agebull
 			{
 				strcpy(station_, station);
 				strcpy(caller_, caller);
-				socket_ = socket_ex::create_req_socket_inproc(station, caller_);
+				socket = socket_ex::create_req_socket_inproc(station, caller_);
 			}
 
 
@@ -39,8 +39,8 @@ namespace agebull
 			~inner_socket()
 			{
 				make_inproc_address(address, station_);
-				zmq_disconnect(socket_, address);
-				zmq_close(socket_);
+				zmq_disconnect(socket, address);
+				zmq_close(socket);
 			}
 
 			/**
@@ -56,7 +56,7 @@ namespace agebull
 			*/
 			zmq_socket_state recv(shared_char& data, int flag = 0)
 			{
-				return socket_ex::recv(socket_, data, flag);
+				return socket_ex::recv(socket, data, flag);
 			}
 
 			/**
@@ -64,7 +64,7 @@ namespace agebull
 			*/
 			zmq_socket_state recv(vector<shared_char>& ls, int flag = 0)
 			{
-				return socket_ex::recv(socket_, ls, flag);
+				return socket_ex::recv(socket, ls, flag);
 			}
 
 			/**
@@ -72,7 +72,7 @@ namespace agebull
 			*/
 			zmq_socket_state send_late(const char* string)
 			{
-				return socket_ex::send_late(socket_, string);
+				return socket_ex::send_late(socket, string);
 			}
 
 			/**
@@ -80,7 +80,7 @@ namespace agebull
 			*/
 			zmq_socket_state send_more(const char* string) 
 			{
-				return socket_ex::send_more(socket_, string);
+				return socket_ex::send_more(socket, string);
 			}
 
 			/**
@@ -88,7 +88,7 @@ namespace agebull
 			*/
 			zmq_socket_state send(vector<shared_char>& ls) 
 			{
-				return socket_ex::send(socket_, ls);
+				return socket_ex::send(socket, ls);
 			}
 
 			/**
@@ -96,7 +96,7 @@ namespace agebull
 			*/
 			zmq_socket_state send(vector<string>& ls) 
 			{
-				return socket_ex::send(socket_, ls);
+				return socket_ex::send(socket, ls);
 			}
 
 			/**

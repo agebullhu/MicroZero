@@ -16,12 +16,11 @@ namespace ZeroMQ.Monitoring
 		/// </summary>
 		public static bool Monitor(this ZSocket socket, string endpoint)
 		{
-			ZError error;
-			if (!Monitor(socket, endpoint, ZMonitorEvents.AllEvents, out error))
-			{
-				throw new ZException(error);
-			}
-			return true;
+            if (!Monitor(socket, endpoint, ZMonitorEvents.AllEvents, out ZError error))
+            {
+                throw new ZException(error);
+            }
+            return true;
 		}
 
 		/// <summary>
@@ -39,12 +38,11 @@ namespace ZeroMQ.Monitoring
 		/// </summary>
 		public static bool Monitor(this ZSocket socket, string endpoint, ZMonitorEvents eventsToMonitor)
 		{
-			ZError error;
-			if (!Monitor(socket, endpoint, eventsToMonitor, out error))
-			{
-				throw new ZException(error);
-			}
-			return true;
+            if (!Monitor(socket, endpoint, eventsToMonitor, out ZError error))
+            {
+                throw new ZException(error);
+            }
+            return true;
 		}
 
 		/// <summary>

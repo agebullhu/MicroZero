@@ -15,20 +15,20 @@ namespace agebull
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name_.c_str());
+				set_command_thread_bad(config.station_name.c_str());
 				return;
 			}
 			station->task_semaphore_.post();
 			station->poll();
 			station_warehouse::left(station.get());
 			station->destruct();
-			if (!config.is_state(station_state::stop) && get_net_state() == net_state_runing)
+			if (!config.is_state(station_state::stop) && get_net_state() == zero_def::net_state::runing)
 			{
 				config.restart();
 				run(station->get_config_ptr());
@@ -37,7 +37,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name_.c_str());
+			set_command_thread_end(config.station_name.c_str());
 		}
 
 		/**
@@ -48,34 +48,34 @@ namespace agebull
 			shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
-			var description = list[1];
+			shared_char& description = list[1];
 			size_t reqid = 0, reqer = 0, worker = 0, glid_index = 0;
-			for (size_t i = 2; i <= static_cast<size_t>(description[0] + 2); i++)
+			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
-				switch (description[i])
+				switch (description[idx])
 				{
-				case ZERO_FRAME_REQUESTER:
-					reqer = i;
+				case zero_def::frame::requester:
+					reqer = idx;
 					break;
-				case ZERO_FRAME_RESPONSER:
-					worker = i;
+				case zero_def::frame::responser:
+					worker = idx;
 					break; 
-				case ZERO_FRAME_REQUEST_ID:
-					reqid = i;
+				case zero_def::frame::request_id:
+					reqid = idx;
 					break;
-				case ZERO_FRAME_GLOBAL_ID:
-					glid_index = i;
+				case zero_def::frame::global_id:
+					glid_index = idx;
 					break;
 				}
 			}
 			if (glid_index == 0)
 			{
-				send_request_status(socket, *caller, ZERO_STATUS_FRAME_INVALID_ID, list, 0, reqid, reqer);
+				send_request_status(socket, *caller, zero_def::status::frame_invalid, list, 0, reqid, reqer);
 				return;
 			}
-			switch (description[1])
+			switch (description.command())
 			{
-			case ZERO_BYTE_COMMAND_FIND_RESULT:
+			case zero_def::command::find_result:
 			{
 				//boost::lock_guard<boost::mutex> guard(results_mutex_);
 				//auto iter = results.find(atoll(*list[glid_index]));
@@ -85,25 +85,25 @@ namespace agebull
 				//	send_request_result(iter->second);
 				//}
 				//else
-				send_request_status(socket, *caller, ZERO_STATUS_NOT_WORKER_ID, list, glid_index, reqid, reqer);
+				send_request_status(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
 			}break;
-			case ZERO_BYTE_COMMAND_CLOSE_REQUEST:
+			case zero_def::command::close_request:
 			{
 				/*boost::lock_guard<boost::mutex> guard(results_mutex_);
 				const auto iter = results.find(atoll(*list[glid_index]));
 				if (iter != results.end())
 					results.erase(iter);*/
-				send_request_status(socket, *caller, ZERO_STATUS_OK_ID, list, glid_index, reqid, reqer);
+				send_request_status(socket, *caller, zero_def::status::ok, list, glid_index, reqid, reqer);
 			}break;
 			default:
 				socket_ex::send_addr(socket, *list[worker]);
 				if (!send_response(list))
 				{
-					send_request_status(socket, *caller, ZERO_STATUS_NOT_WORKER_ID, list, glid_index, reqid, reqer);
+					send_request_status(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
 				}
-				else if (description[1] == ZERO_BYTE_COMMAND_PROXY)//必须返回信息到代理
+				else if (description.command() == zero_def::command::proxy)//必须返回信息到代理
 				{
-					send_request_status(socket, *caller, ZERO_STATUS_RUNING_ID, list, glid_index, reqid, reqer);
+					send_request_status(socket, *caller, zero_def::status::runing, list, glid_index, reqid, reqer);
 				}
 				break;
 			}

@@ -92,6 +92,10 @@ namespace agebull
 		*/
 		static void init();
 
+		/**
+		* \brief 全局配置初始化
+		*/
+		static void read();
 
 		/**
 		* \brief 读取配置内容

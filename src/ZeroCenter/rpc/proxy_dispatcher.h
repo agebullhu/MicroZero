@@ -44,7 +44,7 @@ namespace agebull
 		*/
 		class proxy_dispatcher :public zero_station
 		{
-			map<std::string, proxy_item> proxys_{};
+			map<std::string, proxy_item> proxys_;
 		public:
 			/**
 			* \brief 单例
@@ -55,7 +55,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			proxy_dispatcher()
-				: zero_station(DEF_PROXY_DISPATCHER, station_type_proxy, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(zero_def::name::proxy_dispatcher, zero_def::station_type::proxy, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -63,7 +63,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			proxy_dispatcher(shared_ptr<zero_config>& config)
-				: zero_station(config, station_type_plan, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(config, zero_def::station_type::plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
 
@@ -81,10 +81,6 @@ namespace agebull
 				boost::thread(boost::bind(launch, shared_ptr<proxy_dispatcher>(instance)));
 			}
 		private:
-			/**
-			* \brief 扩展初始化
-			*/
-			void initialize_ext() final;
 			/**
 			*\brief 运行
 			*/

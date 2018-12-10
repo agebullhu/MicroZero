@@ -223,6 +223,10 @@ namespace agebull
 			/**
 			* \brief JSON序列化
 			*/
+			void write_state(acl::json_node& node) const;
+			/**
+			* \brief JSON序列化
+			*/
 			void write_info(acl::json_node& node) const;
 			/**
 			* \brief JSON序列化
@@ -236,10 +240,6 @@ namespace agebull
 			* \brief JSON序列化
 			*/
 			acl::string write_json() const;
-			/**
-			* \brief 加入本地缓存
-			*/
-			static void add_local(shared_ptr<plan_message>& msg);
 			/**
 			* \brief 保存下一次执行时间
 			*/
@@ -272,7 +272,7 @@ namespace agebull
 			/**
 			* \brief 删除一个消息
 			*/
-			bool remove() const;
+			bool remove();
 
 			/**
 			* \brief 保存消息

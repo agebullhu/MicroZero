@@ -17,7 +17,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(string name)
-				: zero_station(name, station_type_api, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(name, zero_def::station_type::api, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 
@@ -25,7 +25,7 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(shared_ptr<zero_config>& config)
-				: zero_station(config, station_type_api, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(config, zero_def::station_type::api, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 			/**
@@ -58,7 +58,7 @@ namespace agebull
 			/**
 			* \brief 内部命令
 			*/
-			bool extend_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
+			//bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
 			/**
 			* \brief 工作开始（发送到工作者）
 			*/
