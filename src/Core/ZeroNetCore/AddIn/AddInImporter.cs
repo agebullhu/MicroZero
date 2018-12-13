@@ -62,7 +62,7 @@ namespace Agebull.ZeroNet.ZeroApi
             container.ComposeParts(Instance);
             foreach (var reg in Instance.Registers)
             {
-                ZeroTrace.SystemLog("AddIn(System)", reg.GetType().Assembly.FullName);
+                ZeroTrace.SystemLog("AddIn(Extend)", reg.GetType().Assembly.FullName);
             }
         }
         /// <summary>

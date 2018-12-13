@@ -308,6 +308,9 @@ namespace Agebull.ZeroNet.Core
             return Start();
         }
 
+        /// <summary>
+        /// 站点状态变更时调用
+        /// </summary>
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
             if (IsRun && (config.State == ZeroCenterState.Run || config.State == ZeroCenterState.Pause))

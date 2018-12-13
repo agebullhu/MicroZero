@@ -279,6 +279,9 @@ namespace Agebull.ZeroNet.Log
             return Start();
         }
 
+        /// <summary>
+        /// 站点状态变更时调用
+        /// </summary>
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
             if (State == StationState.Run && (config.State == ZeroCenterState.Run || config.State == ZeroCenterState.Pause))

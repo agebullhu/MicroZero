@@ -275,7 +275,7 @@ namespace agebull
 		const char* station_types_1[] = { "api", "pub", "vote", "rapi", "queue" };
 		enum class station_types_2
 		{
-			api, pub, vote, rapi,queue
+			api, pub, vote, rapi, queue
 		};
 
 		/**
@@ -634,24 +634,24 @@ namespace agebull
 				path.format("%s/doc/%s.json", global_config::root_path, station_name);
 				fid = open(path, O_RDWR | O_CREAT, 00777);
 			}
-			if (fid >= 0)
+			if (fid < 0)
 			{
-				size_t size = write(fid, *doc, doc.size());
-				re = ftruncate(fid, static_cast<__off_t>(size));
-				re = close(fid);
-				return true;
+				return false;
 			}
-			return false;
+			size_t size = write(fid, *doc, doc.size());
+			re = ftruncate(fid, static_cast<__off_t>(size));
+			re = close(fid);
+			return true;
 			/*FILE *fp = fopen(path.c_str(),"w");
 			if (fp == nullptr)
 			{
-			path.format("%sdoc", global_config::root_path);
-			mkdir(path, 00700);
-			path.format("%sdoc/%s.json", global_config::root_path, station_name);
-			fp = fopen(path.c_str(), "w");
+				path.format("%sdoc", global_config::root_path);
+				mkdir(path, 00700);
+				path.format("%sdoc/%s.json", global_config::root_path, station_name);
+				fp = fopen(path.c_str(), "w");
 			}
 			if (fp == nullptr)
-			return false;
+				return false;
 			size_t size = fwrite(*doc, sizeof(char), doc.size(), fp);
 			fflush(fp);
 			fclose(fp);

@@ -198,31 +198,32 @@ namespace Agebull.ZeroNet.Core
                 result = CallCommand("doc", name);
                 if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
                 {
-                    ZeroTrace.WriteError("LoadDocument", result);
+                    ZeroTrace.WriteError("LoadDocument", name, result.State, result);
                     doc = null;
                     return false;
                 }
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("LoadDocument", e);
+                ZeroTrace.WriteException("LoadDocument", e, name);
                 doc = null;
                 return false;
             }
             if (!result.TryGetValue(ZeroFrameType.Status, out var json))
             {
-                ZeroTrace.WriteError("LoadDocument", "Empty");
+                ZeroTrace.WriteError("LoadDocument", name, "Empty");
                 doc = null;
                 return false;
             }
             try
             {
                 doc = JsonConvert.DeserializeObject<StationDocument>(json);
+                ZeroTrace.SystemLog("LoadDocument", name,"success");
                 return true;
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("LoadDocument", e, json);
+                ZeroTrace.WriteException("LoadDocument", e, name, json);
                 doc = null;
                 return false;
             }

@@ -25,6 +25,15 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty]
         public bool CheckResult { get; set; }
 
+        /// <summary>
+        ///     是否开启API预检
+        /// </summary>
+        /// <remarks>
+        ///     即检查API是否存在、是否需要令牌、是否可公开访问
+        /// </remarks>
+        [JsonProperty]
+        public bool CheckApiItem { get; set; }
+
 
         /// <summary>
         ///     超时时间
@@ -44,5 +53,6 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty]
         public string ContextHost { get; set; }
 
+        
     }
 }

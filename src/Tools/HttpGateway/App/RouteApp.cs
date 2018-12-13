@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,51 @@ namespace ZeroNet.Http.Gateway
     /// </summary>
     internal class RouteApp
     {
+        #region 内部命令处理
+
+        /// <summary>
+        ///     内部命令处理
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public static bool InnerCommand(string url, HttpResponse response)
+        {
+            //命令
+            switch (url)
+            {
+                case "/":
+                    response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
+                    return true;
+                case "/_1_clear_1_":
+                    RouteCache.Flush();
+                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                        Encoding.UTF8);
+                    return true;
+                //case "/_1_counter_1_/info":
+                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                //    return true;
+                //case "/_1_counter_1_/save":
+                //    RouteCounter.Save();
+                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                //    return true;
+                case "/_1_config_1_":
+                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                        Encoding.UTF8);
+                    return true;
+                    //case "/_1_warings_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
+                    //case "/_1_cache_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region 初始化
 
         /// <summary>
@@ -28,7 +74,7 @@ namespace ZeroNet.Http.Gateway
         {
             ZeroApplication.Initialize();
             RouteOption.CheckOption();
-            RouteChahe.InitCache();
+            RouteCache.InitCache();
             ZeroApplication.ZeroNetEvent += OnZeroNetEvent;
             ZeroApplication.Run();
         }
@@ -38,7 +84,7 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         public static void Flush()
         {
-            RouteChahe.Flush();
+            RouteCache.Flush();
         }
 
         #endregion
@@ -62,7 +108,7 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         private static void CallTask(object arg)
         {
-            HttpContext context = (HttpContext)arg;
+            var context = (HttpContext)arg;
             var router = new Router(context);
             //跨域支持
             if (router.Data.HttpMethod == "OPTIONS")
@@ -74,22 +120,15 @@ namespace ZeroNet.Http.Gateway
             IoHandler.OnBegin(router.Data);
             try
             {
-
                 if (router.Data.Uri.LocalPath == "/publish")
                 {
-                    bool suc = ZeroPublisher.Publish(context.Request.Form["Host"], context.Request.Form["Title"], context.Request.Form["Sub"], (string)context.Request.Form["Arg"]);
-                    
-                    context.Response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson, Encoding.UTF8);
+                    var suc = ZeroPublisher.Publish(context.Request.Form["Host"], context.Request.Form["Title"],
+                        context.Request.Form["Sub"], (string)context.Request.Form["Arg"]);
+                    context.Response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson,
+                        Encoding.UTF8);
+                    return;
+                }
 
-                    return;
-                }
-                //内容页转向
-                if (router.Data.Uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
-                {
-                    context.Response.Redirect(RouteOption.Option.SystemConfig.ContextHost +
-                                              router.Data.Uri.LocalPath.Trim('/'));
-                    return;
-                }
                 //内容页转向
                 if (router.Data.Uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
                 {
@@ -108,16 +147,15 @@ namespace ZeroNet.Http.Gateway
                 {
                     router.Data.Status = ZeroOperatorStatus.DenyAccess;
                     context.Response.WriteAsync(ApiResult.DenyAccessJson, Encoding.UTF8);
+                    return;
                 }
-                else
-                {
-                    // 正常调用
-                    router.Call();
-                    // 写入返回
-                    router.WriteResult();
-                    // 缓存
-                    RouteChahe.CacheResult(router.Data);
-                }
+
+                // 正常调用
+                router.Call();
+                // 写入返回
+                router.WriteResult();
+                // 缓存
+                RouteCache.CacheResult(router.Data);
             }
             catch (Exception e)
             {
@@ -194,54 +232,10 @@ namespace ZeroNet.Http.Gateway
 
         #endregion
 
-        #region 内部命令处理
-
-
-        /// <summary>
-        ///     内部命令处理
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="response"></param>
-        /// <returns></returns>
-        public static bool InnerCommand(string url, HttpResponse response)
-        {
-            //命令
-            switch (url)
-            {
-                case "/":
-                    response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
-                    return true;
-                case "/_1_clear_1_":
-                    RouteChahe.Flush();
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
-                        Encoding.UTF8);
-                    return true;
-                //case "/_1_counter_1_/info":
-                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
-                //    return true;
-                //case "/_1_counter_1_/save":
-                //    RouteCounter.Save();
-                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
-                //    return true;
-                case "/_1_config_1_":
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
-                        Encoding.UTF8);
-                    return true;
-                    //case "/_1_warings_1_":
-                    //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
-                    //    return true;
-                    //case "/_1_cache_1_":
-                    //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
-                    //    return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
         #region OnZeroNetEvent
-        static DateTime preUpdate;
+
+        private static DateTime _preUpdate;
+
         private static void OnZeroNetEvent(object sender, ZeroNetEventArgument e)
         {
             switch (e.Event)
@@ -252,10 +246,17 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
                     return;
+                case ZeroNetEventType.CenterStationDocument:
+                    if (e.EventConfig.IsBaseStation)
+                        return;
+                    if (Router.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
+                    {
+                        UpdateApiItems(host as ZeroHost);
+                    }
+                    break;
                 case ZeroNetEventType.CenterStationJoin:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
-                case ZeroNetEventType.CenterClientJoin:
                     if (e.EventConfig.IsBaseStation)
                         return;
                     StationJoin(e.EventConfig);
@@ -264,26 +265,27 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
-                case ZeroNetEventType.CenterClientLeft:
+                    //case ZeroNetEventType.CenterClientLeft:
                     if (e.EventConfig.IsBaseStation)
                         return;
                     StationLeft(e.EventConfig);
                     break;
             }
 
-            if ((DateTime.Now - preUpdate).TotalMinutes > 5)
+            if ((DateTime.Now - _preUpdate).TotalMinutes > 5)
                 OnZeroNetRuning();
         }
 
         private static readonly object lock_obj = new object();
+
         private static void OnZeroNetRuning()
         {
             lock (lock_obj)
             {
-                preUpdate = DateTime.Now;
+                _preUpdate = DateTime.Now;
                 ZeroApplication.Config.Foreach(config =>
                 {
-                    if (config.StationType == ZeroStationType.Api)
+                    if (!config.IsBaseStation)
                         StationJoin(config);
                 });
             }
@@ -310,82 +312,73 @@ namespace ZeroNet.Http.Gateway
 
         private static void StationJoin(StationConfig station)
         {
-            SetZeroHost(station, station.StationName);
-            SetZeroHost(station, station.ShortName);
+            if (station.IsBaseStation || station.StationType == ZeroStationType.Notify || string.IsNullOrWhiteSpace(station.StationName))
+                return;
+            var host = SetZeroHost(station);
+            if (Router.RouteMap.ContainsKey(station.ShortName))
+                Router.RouteMap[station.ShortName] = host;
+            else
+                Router.RouteMap.Add(station.ShortName, host);
             if (station.StationAlias == null)
                 return;
             foreach (var alia in station.StationAlias)
-                SetZeroHost(station, alia);
+                if (Router.RouteMap.ContainsKey(alia))
+                    Router.RouteMap[alia] = host;
+                else
+                    Router.RouteMap.Add(alia, host);
         }
-        private static void SetZeroHost(StationConfig station, string name)
+
+        private static ZeroHost SetZeroHost(StationConfig station)
         {
-            if (string.IsNullOrEmpty(name))
-                return;
-            name = name.Trim();
             ZeroHost zeroHost;
-            if (Router.RouteMap.TryGetValue(name, out var host))
+            if (Router.RouteMap.TryGetValue(station.StationName, out var host))
             {
                 zeroHost = host as ZeroHost;
-                if (zeroHost == null)
-                {
-                    Router.RouteMap[name] = zeroHost = new ZeroHost
-                    {
-                        ByZero = true,
-                        Station = station.StationName,
-                        Alias = name != station.StationName
-                               ? null
-                               : station.StationAlias == null
-                                   ? new string[0]
-                                   : station.StationAlias.ToArray()
-                    };
-                }
-                else
-                {
-                    host.Failed = false;
-                    host.ByZero = true;
-                    zeroHost.Station = station.StationName;
-                    if (name == station.StationName)
-                    {
-                        foreach (var alia in host.Alias)
-                        {
-                            Router.RouteMap.Remove(alia);
-                        }
-                        host.Alias = station.StationAlias == null ? new string[0] : station.StationAlias.ToArray();
-                    }
-                    else
-                    {
-                        host.Alias = null;
-                    }
-                }
+                if (zeroHost == null) Router.RouteMap[station.StationName] = zeroHost = new ZeroHost();
             }
             else
             {
                 lock (Router.RouteMap)
                 {
-                    Router.RouteMap.Add(name, zeroHost = new ZeroHost
-                    {
-                        ByZero = true,
-                        Station = station.StationName,
-                        Alias = name != station.StationName
-                            ? null
-                            : station.StationAlias == null
-                                ? new string[0]
-                                : station.StationAlias.ToArray()
-                    });
+                    Router.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
                 }
             }
-            zeroHost.Apis = new System.Collections.Generic.Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
-            if (!SystemManager.Instance.LoadDocument(station.StationName, out var doc))
-                return;
-            foreach (var api in doc.Aips.Values)
-            {
-                zeroHost.Apis.Add(api.RouteName,new ApiItem
-                {
-                    Name = api.RouteName,
-                    Access = api.AccessOption
-                });
-            }
+
+            zeroHost.ByZero = true;
+            zeroHost.Station = station.StationName;
+            zeroHost.Failed = false;
+
+            UpdateApiItems(zeroHost);
+            return zeroHost;
         }
+
+        private static void UpdateApiItems(ZeroHost zeroHost)
+        {
+            if (!SystemManager.Instance.LoadDocument(zeroHost.Station, out var doc))
+            {
+                zeroHost.Apis = null;
+                return;
+            }
+
+            if (zeroHost.Apis == null)
+                zeroHost.Apis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
+            foreach (var api in doc.Aips.Values)
+                if (zeroHost.Apis.TryGetValue(api.RouteName, out var item))
+                {
+                    item.App = zeroHost.AppName;
+                    item.Access = api.AccessOption;
+                }
+                else
+                {
+                    zeroHost.Apis.Add(api.RouteName, new ApiItem
+                    {
+                        Name = api.RouteName,
+                        App = zeroHost.AppName,
+                        Access = api.AccessOption
+                    });
+                }
+        }
+
         #endregion
     }
 }

@@ -87,7 +87,7 @@ namespace Agebull.ZeroNet.Core
             return true;
         }
         /// <summary>
-        /// 系统启动时调用
+        /// 站点状态变更时调用
         /// </summary>
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {

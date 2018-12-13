@@ -80,17 +80,17 @@ namespace agebull
 			}
 			config_->log("proxy_poll", "run");
 			zmq_socket_state state;
+			//boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 			while (can_do())
 			{
 				const int re = zmq_poll(poll_items, index, 500);
-				if (re == 0)
+				if (re <= 0)
 				{
-					continue;
-				}
-				if (re < 0)
-				{
-					state = socket_ex::check_zmq_error();
-					config_->log("proxy_poll", socket_ex::state_str(state));
+					if (re < 0)
+					{
+						state = socket_ex::check_zmq_error();
+						config_->log("proxy_poll", socket_ex::state_str(state));
+					}
 					continue;
 				}
 				for (int idx = 0; idx < index; idx++)
@@ -100,7 +100,7 @@ namespace agebull
 						proxy_item* item = proxys2[idx];
 						vector<shared_char> list;
 						state = socket_ex::recv(item->req_socket, list);
-						if(state == zmq_socket_state::succeed)
+						if (state == zmq_socket_state::succeed)
 							on_start(item->res_socket, item->name, list);
 						else
 							config_->log(item->name.c_str(), socket_ex::state_str(state));

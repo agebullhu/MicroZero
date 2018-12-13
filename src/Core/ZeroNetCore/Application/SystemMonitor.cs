@@ -284,6 +284,9 @@ namespace Agebull.ZeroNet.Core
             {
                 ZeroApplication.Config.Documents.Add(station, doc);
             }
+            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
+                return;
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationDocument, station, config);
         }
 
         private static void center_stop(string content)

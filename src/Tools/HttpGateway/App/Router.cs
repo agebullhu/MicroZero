@@ -21,18 +21,13 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         private bool FindHost()
         {
-
-
-            if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost))
-                Data.RouteHost = HttpHost.DefaultHost;
-            if (Data.RouteHost == null)
-                return false;
-            if (!(Data.RouteHost is ZeroHost host))
+            if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
+                return false; //Data.RouteHost = HttpHost.DefaultHost;
+            if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
                 return true;
-            if (!host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
+            if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
                 return false;
             return Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public);
-
         }
 
         /// <summary>
@@ -117,7 +112,7 @@ namespace ZeroNet.Http.Gateway
                 return;
             }
             // 3 缓存快速处理
-            if (RouteChahe.LoadCache(Data.Uri, Data.Token, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
+            if (RouteCache.LoadCache(Data.Uri, Data.Token, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
             {
                 //找到并返回缓存
                 Data.Status = ZeroOperatorStatus.Success;

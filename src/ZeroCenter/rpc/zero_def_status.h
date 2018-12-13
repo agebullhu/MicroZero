@@ -6,6 +6,57 @@ namespace agebull
 {
 	namespace zero_net
 	{
+
+		/**
+		* \brief  站点状态
+		*/
+		enum class station_state
+		{
+			/**
+			* \brief 无，刚构造
+			*/
+			none,
+			/**
+			* \brief 重新启动
+			*/
+			re_start,
+			/**
+			* \brief 正在启动
+			*/
+			start,
+			/**
+			* \brief 正在运行
+			*/
+			run,
+			/**
+			* \brief 已暂停
+			*/
+			pause,
+			/**
+			* \brief 错误状态
+			*/
+			failed,
+			/**
+			* \brief 将要关闭
+			*/
+			closing,
+			/**
+			* \brief 已关闭
+			*/
+			closed,
+			/**
+			* \brief 已销毁，析构已调用
+			*/
+			destroy,
+			/**
+			* \brief 已关停
+			*/
+			stop,
+			/**
+			* \brief 未知
+			*/
+			unknow
+		};
 		namespace zero_def
 		{
 			/**

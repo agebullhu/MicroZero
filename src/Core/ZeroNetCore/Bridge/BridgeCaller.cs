@@ -402,6 +402,29 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 调用远程方法
         /// </summary>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <returns></returns>
+        public static ApiResult<TResult> CallApi<TResult>(string station, string api)
+        {
+            var client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = null
+            };
+            client.CallCommand();
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client.CheckStateResult();
+            }
+            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+        }
+
+        /// <summary>
+        /// 调用远程方法
+        /// </summary>
         /// <typeparam name="TArgument">参数类型</typeparam>
         /// <typeparam name="TResult">返回值类型</typeparam>
         /// <param name="station">站点</param>

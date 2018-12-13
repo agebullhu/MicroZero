@@ -7,37 +7,8 @@ namespace ZeroNet.Http.Gateway
     /// <summary>
     ///     缓存
     /// </summary>
-    internal class RouteChahe
+    internal class RouteCache
     {
-        #region 数据
-
-
-        /// <summary>
-        ///     路由配置
-        /// </summary>
-        public static Dictionary<string, CacheOption> CacheMap { get; set; }
-
-
-        /// <summary>
-        ///     初始化路由
-        /// </summary>
-        /// <returns></returns>
-        public static void InitCache()
-        {
-            CacheMap = new Dictionary<string, CacheOption>(StringComparer.OrdinalIgnoreCase);
-            if (RouteOption.Option._cacheSettings == null)
-                return;
-            foreach (var setting in RouteOption.Option._cacheSettings)
-            {
-                setting.Initialize();
-                if (!CacheMap.ContainsKey(setting.Api))
-                    CacheMap.Add(setting.Api, setting);
-                else
-                    CacheMap[setting.Api] = setting;
-            }
-        }
-
-        #endregion
         /// <summary>
         ///     缓存数据
         /// </summary>
@@ -102,7 +73,8 @@ namespace ZeroNet.Http.Gateway
             if (data.CacheSetting == null || !data.IsSucceed)
                 return;
             CacheData cacheData;
-            if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) && data.Status == ZeroOperatorStatus.RemoteError)
+            if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) &&
+                data.Status == ZeroOperatorStatus.RemoteError)
                 cacheData = new CacheData
                 {
                     Content = data.ResultMessage,
@@ -123,5 +95,34 @@ namespace ZeroNet.Http.Gateway
                     Cache[data.CacheKey] = cacheData;
             }
         }
+
+        #region 数据
+
+        /// <summary>
+        ///     路由配置
+        /// </summary>
+        public static Dictionary<string, CacheOption> CacheMap { get; set; }
+
+
+        /// <summary>
+        ///     初始化路由
+        /// </summary>
+        /// <returns></returns>
+        public static void InitCache()
+        {
+            CacheMap = new Dictionary<string, CacheOption>(StringComparer.OrdinalIgnoreCase);
+            if (RouteOption.Option._cacheSettings == null)
+                return;
+            foreach (var setting in RouteOption.Option._cacheSettings)
+            {
+                setting.Initialize();
+                if (!CacheMap.ContainsKey(setting.Api))
+                    CacheMap.Add(setting.Api, setting);
+                else
+                    CacheMap[setting.Api] = setting;
+            }
+        }
+
+        #endregion
     }
 }

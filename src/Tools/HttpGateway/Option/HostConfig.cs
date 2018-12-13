@@ -39,6 +39,12 @@ namespace ZeroNet.Http.Gateway
         public string Station { get; set; }
 
         /// <summary>
+        ///     适用于的App的名称组合，全适合则为null，部分适用为用逗号分隔的App名称
+        /// </summary>
+        [IgnoreDataMember]
+        public string AppName { get; set; }
+
+        /// <summary>
         ///  Api
         /// </summary>
         [JsonIgnore]

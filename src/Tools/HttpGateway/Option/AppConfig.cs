@@ -14,13 +14,15 @@ namespace ZeroNet.Http.Gateway
     public class RouteOption
     {
         #region 配置
+
         public static RouteOption Option { get; set; }
 
 
         /// <summary>
         ///     安全设置
         /// </summary>
-        [DataMember, JsonProperty("security")]
+        [DataMember]
+        [JsonProperty("security")]
         public SecurityConfig Security { get; set; }
 
 #pragma warning disable CS0649
@@ -37,7 +39,7 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     系统配置
         /// </summary>
-        [DataMember, JsonProperty("sysConfig")]
+        [DataMember] [JsonProperty("sysConfig")]
         private SystemConfig _systemConfig;
 
         /// <summary>
@@ -89,7 +91,6 @@ namespace ZeroNet.Http.Gateway
             if (Option.Security.denyTokens != null)
                 foreach (var apiItem in Option.Security.denyTokens)
                     Option.Security.DenyTokens.Add(apiItem, apiItem);
-
         }
 
         /// <summary>
