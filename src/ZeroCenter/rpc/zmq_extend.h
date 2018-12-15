@@ -298,9 +298,10 @@ namespace agebull
 			* \brief 配置ZMQ连接对象
 			* \param socket
 			* \param name
+			* \param is_client
 			* \return
 			*/
-			void set_sockopt(zmq_handler& socket, const char* name = nullptr);
+			void set_sockopt(zmq_handler& socket,bool is_client, const char* name = nullptr);
 
 			/**
 			* \brief 生成ZMQ连接对象

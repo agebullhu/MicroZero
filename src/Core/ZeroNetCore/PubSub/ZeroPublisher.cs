@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.PubSub
         private static bool DoPublish(string station, string title, string sub, string value)
         {
             var socket = ZeroConnectionPool.GetSocket(station, RandomOperate.Generate(8));
-            if (socket.Socket == null)
+            if (socket?.Socket == null)
             {
                 return false;
             }

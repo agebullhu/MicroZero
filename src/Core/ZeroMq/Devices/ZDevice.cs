@@ -141,14 +141,13 @@
 		{
 			EnsureNotDisposed();
 
-			if (FrontendSetup != null) FrontendSetup.Configure();
-			if (BackendSetup != null) BackendSetup.Configure();
+		    FrontendSetup?.Configure();
+		    BackendSetup?.Configure();
 		}
 
 		/// <summary>
 		/// Start the device in the current thread. Should be used by implementations of the method.
 		/// </summary>
-		/// <remarks>
 		protected override void Run()
 		{
 			EnsureNotDisposed();
@@ -223,23 +222,22 @@
 			if (FrontendSetup != null) FrontendSetup.BindConnect();
 			if (BackendSetup != null) BackendSetup.BindConnect();
 
-			bool isValid = false;
 			var error = default(ZError);
 			try
 			{
 				while (!Cancellor.IsCancellationRequested)
 				{
 
-					if (!(isValid = sockets.Poll(polls, ZPollEvent.In, ref lastMessageFrames, out error, PollingInterval)))
+					if (!(sockets.Poll(polls, ZPollEvent.In, ref lastMessageFrames, out error, PollingInterval)))
 					{
 
-						if (error == ZError.EAGAIN)
-						{
+						if (error.IsError(ZError.Code.EAGAIN))
+                        {
 							Thread.Sleep(1);
 							continue;
 						}
-						if (error == ZError.ETERM)
-						{
+						if (error.IsError(ZError.Code.ETERM))
+                        {
 							break;
 						}
 
@@ -257,11 +255,11 @@
 				}
 			}
 
-			if (FrontendSetup != null) FrontendSetup.UnbindDisconnect();
-			if (BackendSetup != null) BackendSetup.UnbindDisconnect();
+		    FrontendSetup?.UnbindDisconnect();
+		    BackendSetup?.UnbindDisconnect();
 
-			if (error == ZError.ETERM)
-			{
+		    if (error.IsError(ZError.Code.ETERM))
+            {
 				Close();
 			}
 		}

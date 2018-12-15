@@ -39,8 +39,10 @@ namespace ZeroNet.Http.Route
                         var array = items.ToArray();
                         var line = GetTime(BaseLine);
                         int cnt = 0;
-                        for (int idx = array.Length - 1; idx >= 0; idx++)
+                        for (int idx = array.Length - 1; idx >= 0; idx--)
                         {
+                            if (array[idx] == null)
+                                continue;
                             ++cnt;
                             var sp = line - array[idx].Time;
                             if (sp < 0)

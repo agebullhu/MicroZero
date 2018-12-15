@@ -1,5 +1,5 @@
 {
-  "zero":{
+  "zero": {
     "base_tcp_port": "7999",
     "use_ipc_protocol": "false",
     "worker_sound_ivl": 2000,
@@ -7,7 +7,7 @@
     "plan_cache_size": 1024,
     "service_key": "agebull"
   },
-  "redis":{
+  "redis": {
     "addr": "127.0.0.1:6379",
     "defdb": "20"
   },
@@ -23,9 +23,18 @@
     "RCVHWM": -1,
     "SNDBUF": -1,
     "RCVBUF": -1,
-    "BACKLOG": 8192
+    "BACKLOG": 8192,
+    "RECONNECT_IVL": -1,
+    "CONNECT_TIMEOUT": -1,
+    "RECONNECT_IVL_MAX": -1,
+    "TCP_KEEPALIVE": 1,
+    "TCP_KEEPALIVE_IDLE": 120,
+    "TCP_KEEPALIVE_INTVL": 3,
+    "HEARTBEAT_IVL": -1,
+    "HEARTBEAT_TIMEOUT": -1,
+    "HEARTBEAT_TTL": 1
   },
-  "proxy" : {  
+  "proxy": {
     "weixin": {
       "req": "tcp://192.168.1.31:10000",
       "res": "tcp://192.168.1.31:10001"

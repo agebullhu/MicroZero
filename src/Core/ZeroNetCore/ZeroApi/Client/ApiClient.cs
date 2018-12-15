@@ -30,6 +30,11 @@ namespace Agebull.ZeroNet.ZeroApi
         public string Station { get; set; }
 
         /// <summary>
+        ///     上下文内容（透传方式）
+        /// </summary>
+        public string ContextJson { get; set; }
+
+        /// <summary>
         ///     请求站点
         /// </summary>
         public string RequestId { get; } = RandomOperate.Generate(8);
@@ -229,7 +234,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
 
             var socket = ZeroConnectionPool.GetSocket(Station, GlobalContext.RequestInfo.RequestId);
-            if (socket.Socket == null)
+            if (socket?.Socket == null)
             {
                 //ApiContext.Current.LastError = ErrorCode.NoReady;
                 _json = ApiResult.NoReadyJson;
@@ -467,7 +472,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 result = QuietSend(socket.Socket,CallDescription,
                     Commmand,
                     GlobalContext.RequestInfo.RequestId,
-                    JsonConvert.SerializeObject(GlobalContext.Current),
+                    ContextJson ?? JsonConvert.SerializeObject(GlobalContext.Current),
                     Argument,
                     ExtendArgument,
                     ZeroApplication.Config.StationName,
@@ -532,7 +537,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 };
             if (!socket.Recv(out var messages))
             {
-                if (!Equals(socket.LastError, ZError.EAGAIN))
+                if (!socket.LastError.IsError(ZError.Code.EAGAIN))
                     ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text,
                         $"Socket Ptr:{socket.SocketPtr}");
                 return new ZeroResultData

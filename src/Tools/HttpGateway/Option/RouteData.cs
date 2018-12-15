@@ -46,16 +46,21 @@ namespace ZeroNet.Http.Gateway
         ///     当前适用的缓存设置对象
         /// </summary>
         public CacheOption CacheSetting;
-        
+
+        /// <summary>
+        ///     上下文的JSON内容(透传)
+        /// </summary>
+        public string GlobalContextJson;
+
         /// <summary>
         ///     请求的内容
         /// </summary>
-        [DataMember] [JsonProperty("context")] public string Context;
+        [DataMember] [JsonProperty("context")] public string HttpContext;
 
         /// <summary>
         ///     请求的表单
         /// </summary>
-        [DataMember] [JsonProperty("form")] public string Form;
+        [DataMember] [JsonProperty("form")] public string HttpForm;
 
         /*
         /// <summary>

@@ -21,13 +21,18 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void WaitMe()
         {
-            TaskEndSem.Wait();
+            if (ZeroApplication.WorkModel == ZeroWorkModel.Service)
+                TaskEndSem.Wait();
         }
+
         /// <summary>
         ///     进入系统侦听
         /// </summary>
         internal static void Monitor()
         {
+            if (ZeroApplication.WorkModel != ZeroWorkModel.Service)
+                return;
+
             using (OnceScope.CreateScope(ZeroApplication.Config))
             {
             }
@@ -254,7 +259,7 @@ namespace Agebull.ZeroNet.Core
 
         private static void center_start(string content)
         {
-            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Initialized, StationState.Failed) == StationState.Failed)
+            if (Interlocked.CompareExchange(ref ZeroApplication.AppState, StationState.Initialized, StationState.Failed) == StationState.Failed)
             {
                 ZeroTrace.SystemLog("center_start", content);
                 ZeroApplication.JoinCenter();
@@ -263,7 +268,7 @@ namespace Agebull.ZeroNet.Core
 
         private static void center_closing(string content)
         {
-            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Closing, StationState.Run) == StationState.Run)
+            if (Interlocked.CompareExchange(ref ZeroApplication.AppState, StationState.Closing, StationState.Run) == StationState.Run)
             {
                 ZeroTrace.SystemLog("center_close", content);
                 ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
@@ -303,7 +308,7 @@ namespace Agebull.ZeroNet.Core
         private static void worker_sound_off()
         {
             //SystemManage对象重启时机
-            if (Interlocked.CompareExchange(ref ZeroApplication._appState, StationState.Start, StationState.Failed) == StationState.Failed)
+            if (Interlocked.CompareExchange(ref ZeroApplication.AppState, StationState.Start, StationState.Failed) == StationState.Failed)
             {
                 ZeroApplication.JoinCenter();
                 return;

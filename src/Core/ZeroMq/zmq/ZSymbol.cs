@@ -9,7 +9,7 @@
 	using lib;
 
     /// <summary>
-    /// TODO merge this with its sole subclass, ZError
+    /// ZError
     /// </summary>
     public class ZSymbol
 	{
@@ -20,15 +20,9 @@
 
 	    public int Number { get; }
 
-	    public string Name
-        {
-            get
-            {
-                return _zsymbolToName.TryGetValue(this, out string result) ? result : "<unknown>";
-            }
-        }
+	    public string Name => ZsymbolToName.TryGetValue(this, out string result) ? result : "<unknown>";
 
-        public string Text => Marshal.PtrToStringAnsi(zmq.strerror(Number));
+	    public string Text => Marshal.PtrToStringAnsi(zmq.strerror(Number));
 
 	    private static void PickupConstantSymbols<T>(ref IDictionary<ZSymbol, string> symbols)
             where T : ZSymbol
@@ -69,27 +63,20 @@
 
 			PickupConstantSymbols<ZError>(ref symbols);
 
-			_zsymbolToName = symbols;
+			ZsymbolToName = symbols;
 		}
 
-        [Obsolete]
-		public bool IsEmpty()
-		{
-            // TODO: what is the intended semantics of this method? The following expression is always false, since default(ZSymbol) == null.
-			return this == default(ZSymbol);
-		}
-
-		static IDictionary<ZSymbol, string> _zsymbolToName;
+		static readonly IDictionary<ZSymbol, string> ZsymbolToName;
 
 		public static IEnumerable<ZSymbol> Find(string symbol)
 		{
-			return _zsymbolToName
+			return ZsymbolToName
 				.Where(s => s.Value != null && (s.Value == symbol)).Select(x => x.Key);
 		}
 
 		public static IEnumerable<ZSymbol> Find(string ns, int num)
 		{
-			return _zsymbolToName
+			return ZsymbolToName
 				.Where(s => s.Value != null && (s.Value.StartsWith(ns) && s.Key.Number == num)).Select(x => x.Key);
 		}
 
@@ -105,10 +92,7 @@
 	            return true;
 	        }
 
-	        var symbolA = a as ZSymbol;
-	        var symbolB = b as ZSymbol;
-
-	        return symbolA != null && symbolB != null && symbolA.Number == symbolB.Number;
+	        return a is ZSymbol symbolA && b is ZSymbol symbolB && symbolA.Number == symbolB.Number;
 	    }
 
 		public override int GetHashCode()

@@ -131,7 +131,7 @@ namespace ZeroMQ
         {
             if (!Proxy(frontend, backend, capture, out ZError error))
             {
-                if (error == ZError.ETERM)
+                if (error.IsError(ZError.Code.ETERM))
                 {
                     return; // Interrupted
                 }
@@ -154,7 +154,7 @@ namespace ZeroMQ
             {
                 error = ZError.GetLastErr();
 
-                if (!Equals(error, ZError.EINTR))
+                if (error.Number != ZError.Code.EINTR)
                     return false;
                 error = default(ZError);
             }
@@ -193,7 +193,7 @@ namespace ZeroMQ
         {
             if (!ProxySteerable(frontend, backend, capture, control, out ZError error))
             {
-                if (error == ZError.ETERM)
+                if (error.IsError(ZError.Code.ETERM))
                 {
                     return; // Interrupted
                 }
@@ -217,7 +217,7 @@ namespace ZeroMQ
             {
                 error = ZError.GetLastErr();
 
-                if (error == ZError.EINTR)
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     error = default(ZError);
                     continue;
@@ -239,7 +239,7 @@ namespace ZeroMQ
             if (rc != -1) return;
             var error = ZError.GetLastErr();
 
-            if (Equals(error, ZError.EINVAL))
+            if (error.IsError(ZError.Code.EINVAL))
             {
                 throw new ArgumentOutOfRangeException(
                     $"The requested option optionName \"{option}\" is invalid.");
@@ -259,7 +259,7 @@ namespace ZeroMQ
             if (rc != -1) return rc;
             var error = ZError.GetLastErr();
 
-            if (Equals(error, ZError.EINVAL))
+            if (error.IsError(ZError.Code.EINVAL))
             {
                 throw new ArgumentOutOfRangeException(
                     $"The requested option optionName \"{option}\" is invalid.");
@@ -341,9 +341,9 @@ namespace ZeroMQ
             foreach (var alive in array)
             {
                 if (alive.Connects.Count > 0)
-                    LogRecorder.SystemLog(string.Join(",", alive.Connects));
+                    LogRecorder.SystemLog(alive.Connects.LinkToString("Connects",","));
                 if (alive.Binds.Count > 0)
-                    LogRecorder.SystemLog(string.Join(",", alive.Binds));
+                    LogRecorder.SystemLog(alive.Binds.LinkToString("Binds", ","));
                 alive.Dispose();
             }
             if (zmq.ctx_shutdown(ptr) != -1)

@@ -39,14 +39,14 @@ namespace ZeroNet.Http.Gateway
                         arguments.TryAdd(key, Request.Form[key]);
                 }
                 if (arguments.Count > 0)
-                    Data.Form = JsonConvert.SerializeObject(arguments);
+                    Data.HttpForm = JsonConvert.SerializeObject(arguments);
                 if (Request.ContentLength != null)
                 {
                     using (var texter = new StreamReader(Request.Body))
                     {
-                        Data.Context = texter.ReadToEnd();
-                        if (string.IsNullOrEmpty(Data.Context))
-                            Data.Context = null;
+                        Data.HttpContext = texter.ReadToEnd();
+                        if (string.IsNullOrEmpty(Data.HttpContext))
+                            Data.HttpContext = null;
                         texter.Close();
                     }
                 }
@@ -63,8 +63,9 @@ namespace ZeroNet.Http.Gateway
                 {
                     Station = host.Station,
                     Commmand = Data.ApiName,
-                    Argument = Data.Context ?? Data.Form,
-                    ExtendArgument = Data.Form
+                    Argument = Data.HttpContext ?? Data.HttpForm,
+                    ExtendArgument = Data.HttpForm,
+                    ContextJson = Data.GlobalContextJson
                 };
                 caller.CallCommand();
                 Data.ResultMessage = caller.Result;

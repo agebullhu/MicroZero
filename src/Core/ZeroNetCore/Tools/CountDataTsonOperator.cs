@@ -2,6 +2,9 @@ using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.Common.Tson
 {
+    /// <summary>
+    /// CountData–Ú¡–ªØ
+    /// </summary>
     public class CountDataTsonOperator: ITsonOperator<CountData>
     {
         private const byte Index_Machine = 1;

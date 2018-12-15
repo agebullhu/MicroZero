@@ -97,12 +97,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, Int16.MaxValue);
+        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
 
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static readonly SemaphoreSlim GlobalSemaphore = new SemaphoreSlim(0, Int16.MaxValue);
+        private static readonly SemaphoreSlim GlobalSemaphore = new SemaphoreSlim(0, short.MaxValue);
 
         /// <summary>
         ///     重置当前活动数量
@@ -274,6 +274,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroStart()
         {
+            if (WorkModel != ZeroWorkModel.Service)
+                return;
             Debug.Assert(!HaseActiveObject);
             ZeroTrace.SystemLog("Application", "[OnZeroStart>>");
             using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
@@ -311,17 +313,17 @@ namespace Agebull.ZeroNet.Core
                 if (stations.Length == 0)
                     return;
                 ZeroTrace.SystemLog(config.StationName, "[OnStationStateChanged>>");
-                Parallel.ForEach(stations,obj =>
-                    {
-                        try
-                        {
-                            obj.OnStationStateChanged(config);
-                        }
-                        catch (Exception e)
-                        {
-                            ZeroTrace.WriteException(obj.Name, e, "OnStationStateChanged");
-                        }
-                    });
+                Parallel.ForEach(stations, obj =>
+                     {
+                         try
+                         {
+                             obj.OnStationStateChanged(config);
+                         }
+                         catch (Exception e)
+                         {
+                             ZeroTrace.WriteException(obj.Name, e, "OnStationStateChanged");
+                         }
+                     });
                 ZeroTrace.SystemLog(config.StationName, "<<OnStationStateChanged]");
             }
         }
@@ -357,6 +359,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroEnd()
         {
+            if (WorkModel != ZeroWorkModel.Service)
+                return;
             ZeroTrace.SystemLog("Application", "[OnZeroEnd>>");
             RaiseEvent(ZeroNetEventType.AppStop);
             using (OnceScope.CreateScope(ZeroObjects))
@@ -390,12 +394,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnZeroDestory()
         {
-            if (!Monitor.TryEnter(ZeroObjects))
-                return;
             ZeroTrace.SystemLog("Application", "[OnZeroDestory>>");
-            RaiseEvent(ZeroNetEventType.AppEnd);
             using (OnceScope.CreateScope(ZeroObjects))
             {
+                RaiseEvent(ZeroNetEventType.AppEnd);
                 var array = ZeroObjects.Values.ToArray();
                 ZeroObjects.Clear();
                 Parallel.ForEach(array, obj =>
@@ -427,8 +429,8 @@ namespace Agebull.ZeroNet.Core
                         ZeroTrace.WriteException(obj.Name, e, "*Dispose");
                     }
                 });
-                ZeroTrace.SystemLog("Application", "<<OnZeroDispose]");
             }
+            ZeroTrace.SystemLog("Application", "<<OnZeroDispose]");
         }
 
         #endregion

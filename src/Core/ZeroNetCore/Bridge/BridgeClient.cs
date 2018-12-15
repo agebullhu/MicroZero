@@ -77,7 +77,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             }
             var socket = ZeroConnectionPool.GetSocket(station, RandomOperate.Generate(8));
-            if (socket.Socket == null)
+            if (socket?.Socket == null)
             {
                 SendResult(item, ZeroOperatorStateType.LocalNoReady);
                 return;

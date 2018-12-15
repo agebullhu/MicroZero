@@ -49,7 +49,7 @@ namespace ZeroMQ
 
 					return true;
 				}
-				error = ZError.EAGAIN;
+				error = new ZError(ZError.Code.EAGAIN);
 			}
 			return false;
 		}
@@ -170,10 +170,9 @@ namespace ZeroMQ
 				{
 
 					return true;
-				}
-
-				error = ZError.EAGAIN;
-			}
+			    }
+			    error = new ZError(ZError.Code.EAGAIN);
+            }
 			return false;
 		}
 

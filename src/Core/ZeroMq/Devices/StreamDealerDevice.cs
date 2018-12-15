@@ -108,8 +108,8 @@
 				{
 					error = ZError.GetLastErr();
 
-					if (error == ZError.EINTR) 
-					{
+					if (error.IsError(ZError.Code.EINTR))
+                    {
 						error = default(ZError);
 						continue;
 					}
@@ -193,12 +193,12 @@
 				{
 					error = ZError.GetLastErr();
 
-					if (error == ZError.EINTR)
-					{
+					if (error.IsError(ZError.Code.EINTR))
+                    {
 						error = default(ZError);
 						continue;
 					}
-					/* if (error == ZError.EAGAIN)
+					/* if (error.IsError(ZError.Code.EAGAIN)
 					{
 						error = default(ZError);
 						Thread.Sleep(1);

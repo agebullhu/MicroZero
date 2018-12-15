@@ -23,9 +23,20 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns>返回False表明需要重启</returns>
         public void Check()
         {
-            if (_task.Status != TaskStatus.Faulted)
-                return;
-            _task.Dispose();
+            try
+            {
+                if (_task != null)
+                {
+                    if (_task.Status != TaskStatus.Faulted)
+                        return;
+                    ZeroTrace.SystemLog("BridgeService", "restart");
+                    _task.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+            }
             Run();
         }
 
@@ -36,9 +47,11 @@ namespace Agebull.ZeroNet.ZeroApi
         public void Run()
         {
             ZeroApplication.Run();
-            _task = Task.Factory.StartNew(RunInner);
+            _task = Task.Factory.StartNew(RunInner, null, TaskCreationOptions.LongRunning);
+            semaphore.Wait();
         }
 
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
         private Task _task;
         /// <summary>
         ///     运行状态
@@ -53,46 +66,43 @@ namespace Agebull.ZeroNet.ZeroApi
             get => _state;
             set => Interlocked.Exchange(ref _state, value);
         }
-        /// <summary>
-        ///     运行状态（本地与服务器均正常）
-        /// </summary>
-        public bool CanLoop => ZeroApplication.CanDo && (State == StationState.BeginRun || State == StationState.Run);
 
         /// <summary>
         ///     执行直到连接成功
         /// </summary>
         public void Close()
         {
-            if (State == StationState.BeginRun || State == StationState.Run)
-                State = StationState.Closing;
-
+            switch (State)
+            {
+                case StationState.BeginRun:
+                    State = StationState.Closing;
+                    break;
+                case StationState.Run:
+                    State = StationState.Closing;
+                    semaphore.Wait();
+                    break;
+            }
         }
 
-        private ZSocket socketInner, socketCall, socketResult;
-        private IZmqPool pool;
         /// <summary>
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        bool RunInner()
+        private void RunInner(object arg)
         {
             State = StationState.BeginRun;
             ZeroTrace.SystemLog("BridgeService", "run");
-            socketCall?.Dispose();
-            socketCall?.Dispose();
-            socketResult?.Dispose();
-            socketInner = ZSocket.CreateServiceSocket(ZeroApplication.Config.BridgeLocalAddress, ZSocketType.ROUTER);//收
-            socketCall = ZSocket.CreateServiceSocket($"tcp://*:{ZeroApplication.Config.BridgeCallAddress}", ZSocketType.PUSH);//推
-            socketResult = ZSocket.CreateServiceSocket($"tcp://*:{ZeroApplication.Config.BridgeResultAddress}", ZSocketType.PULL);//拉
+            var socketInner = ZSocket.CreateServiceSocket(ZeroApplication.Config.BridgeLocalAddress, ZSocketType.ROUTER);
+            var socketCall = ZSocket.CreateServiceSocket($"tcp://*:{ZeroApplication.Config.BridgeCallAddress}", ZSocketType.PUSH);
+            var socketResult = ZSocket.CreateServiceSocket($"tcp://*:{ZeroApplication.Config.BridgeResultAddress}", ZSocketType.PULL);
 
-            pool?.Dispose();
-            pool = ZmqPool.CreateZmqPool();
+            var pool = ZmqPool.CreateZmqPool();
             pool.Prepare(ZPollEvent.In, socketInner, socketResult);
             State = StationState.Run;
-
+            semaphore.Release();
             using (pool)
             {
-                while (CanLoop)
+                while (State == StationState.Run)
                 {
                     try
                     {
@@ -103,9 +113,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e, "pool");
-                        Console.WriteLine(e.Source);
-                        Console.WriteLine(e.StackTrace);
+                        LogRecorder.Exception(e, "Poll");
                         continue;
                     }
                     try
@@ -117,41 +125,64 @@ namespace Agebull.ZeroNet.ZeroApi
                                 using (var nm = message.Duplicate())
                                 {
                                     if (!socketCall.SendMessage(nm, out var err))
-                                        Console.WriteLine(err.Text);
-                                }
-                            }
-                        }
-                        if (pool.CheckIn(1, out message))
-                        {
-                            using (message)
-                            {
-                                Console.WriteLine(message);
-                                using (var nm = message.Duplicate())
-                                {
-                                    if (!socketInner.SendMessage(nm, out var err))
-                                        Console.WriteLine(err.Text);
+                                    {
+                                        Thread.Sleep(10);
+                                        using (var nm2 = message.Duplicate())
+                                        {
+                                            if (!socketInner.SendMessage(nm2, out err))
+                                                LogRecorder.Error($"ReQueue(Call):{err.Text}");
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e, "CheckIn");
-                        Console.WriteLine(e.Source);
-                        Console.WriteLine(e.StackTrace);
+                        LogRecorder.Exception(e, "CheckIn(Call)");
+                    }
+                    try
+                    {
+                        if (!pool.CheckIn(1, out var message))
+                        {
+                            continue;
+                        }
+
+                        using (message)
+                        {
+                            bool success = false;
+                            for (int i = 0; i < 3; i++)
+                            {
+                                using (var nm = message.Duplicate())
+                                {
+                                    if (socketInner.SendMessage(nm, out _))
+                                    {
+                                        success = true;
+                                        break;
+                                    }
+                                    Thread.Sleep(10);
+                                }
+                            }
+
+                            if (success)
+                                continue;
+                            LogRecorder.Error("CheckIn(Result):can`t send result");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e, "CheckIn(Result)");
                     }
                 }
             }
-            State = StationState.Closed;
-
+            State = StationState.Closing;
             socketCall.Dispose();
             socketResult.Dispose();
             socketInner.Dispose();
-            socketInner = socketCall = socketResult = null;
-            pool = null;
-            ZeroTrace.SystemLog("BridgeService", "end");
             _task = null;
-            return true;
+            State = StationState.Closed;
+            ZeroTrace.SystemLog("BridgeService", "end");
+            semaphore.Release();
         }
     }
 }

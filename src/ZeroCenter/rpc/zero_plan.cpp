@@ -485,7 +485,7 @@ namespace agebull
 			for (size_t idx = 0; idx < response.size(); idx++)
 			{
 				if (response[idx][0] < ' ')
-					json.append(desc_str(false, response[idx].get_buffer(), response[idx].size()));
+					json.append(zero_def::desc_str(false, response[idx].get_buffer(), response[idx].size()));
 				else
 					json.append(*response[idx]);
 				json.append("\r\n");
@@ -794,7 +794,7 @@ namespace agebull
 				else if (line[0] >= ' ')
 					array.add_array_text(*line);
 				else
-					array.add_array_text(desc_str(false, line.get_buffer(), line.size()));
+					array.add_array_text(zero_def::desc_str(false, line.get_buffer(), line.size()));
 			}
 			node.add_child("frames", array);
 			return node.to_string();

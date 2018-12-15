@@ -21,7 +21,7 @@ namespace ZeroMQ
         /// 配置
         /// </summary>
         public static SocketOption Option = new SocketOption();
-        
+
 #if UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZMessage);
 #endif
@@ -82,13 +82,13 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
 
             socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
-            //socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
+            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
 
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
-            //socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
 
             if (socket.Bind(address, out error))
                 return socket;
@@ -122,6 +122,12 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
             socket.SetOption(ZSocketOption.LINGER, Option.Linger);
             socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
+            socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
+            socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
             if (type != ZSocketType.SUB)
             {
                 socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
@@ -263,7 +269,7 @@ namespace ZeroMQ
             while (zmq.msg_send(frame.Ptr, SocketPtr, flags) == -1)
             {
                 _error = ZError.GetLastErr();
-                if (first || !Equals(_error, ZError.EAGAIN) || retry <= 0)
+                if (first || !_error.IsError(ZError.Code.EAGAIN) || retry <= 0)
                     return false;
                 --retry;
             }
@@ -288,7 +294,7 @@ namespace ZeroMQ
                 while (zmq.msg_recv(frame.Ptr, SocketPtr, flags) == -1)
                 {
                     _error = ZError.GetLastErr();
-                    if (!first && Equals(_error, ZError.EAGAIN) && retry > 0)
+                    if (!first && _error.IsError(ZError.Code.EAGAIN) && retry > 0)
                     {
                         --retry;
                         more = true;
@@ -682,11 +688,10 @@ namespace ZeroMQ
                 {
                     _error = ZError.GetLastErr();
 
-                    if (Equals(_error, ZError.EINTR))
-                    {
-                        _error = default(ZError);
-                        continue;
-                    }
+                    if (!_error.IsError(ZError.Code.EINTR))
+                        throw new ZException(_error);
+                    _error = default(ZError);
+                    continue;
 
                     throw new ZException(_error);
                 }
@@ -830,9 +835,9 @@ namespace ZeroMQ
             while (-1 == zmq.setsockopt(SocketPtr, (int)option, optionValue, optionLength))
             {
                 _error = ZError.GetLastErr();
-
-                if (!Equals(_error, ZError.EINTR)) return false;
-                _error = default(ZError);
+                if (!_error.IsError(ZError.Code.EINTR))
+                    return false;
+                _error = null;
             }
 
             return true;
@@ -1051,7 +1056,10 @@ namespace ZeroMQ
                 AliveSockets.Add(this);
 
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             return true;
         }
 
@@ -1088,36 +1096,35 @@ namespace ZeroMQ
         /// </summary>
         public bool Close(out ZError error)
         {
+            bool success = true;
             error = _error = ZError.None;
             if (SocketPtr != IntPtr.Zero)
             {
-                if (ZContext.IsAlive)
+                foreach (var con in Connects.ToArray())
                 {
-                    foreach (var con in Connects.ToArray())
-                    {
-                        Disconnect(con, out _);
-                    }
-
-                    foreach (var bin in Binds.ToArray())
-                    {
-                        Unbind(bin, out _);
-                    }
-
-                    if (-1 == zmq.close(SocketPtr))
-                    {
-                        error = _error = ZError.GetLastErr();
-                        return false;
-                    }
+                    Disconnect(con, out _);
                 }
 
+                foreach (var bin in Binds.ToArray())
+                {
+                    Unbind(bin, out _);
+                }
+
+                if (-1 == zmq.close(SocketPtr))
+                {
+                    error = _error = ZError.GetLastErr();
+                    LogRecorder.Error($"Socket Close Error:{_error}");
+                    success = false;
+                }
             }
 
             try
             {
                 AliveSockets.Remove(this);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
             }
             finally
             {
@@ -1125,7 +1132,7 @@ namespace ZeroMQ
                 GC.SuppressFinalize(this);
                 GC.Collect();
             }
-            return true;
+            return success;
         }
 
         /// <summary>
@@ -1209,7 +1216,6 @@ namespace ZeroMQ
 
             LogRecorder.SystemLog($"Unbind:{endpoint}");
             Binds.Remove(endpoint);
-            LogRecorder.RecordStackTrace(endpoint);
             return true;
         }
 
@@ -1329,7 +1335,7 @@ namespace ZeroMQ
             while (-1 == (length = zmq.recv(SocketPtr, pinPtr, count, (int)flags)))
             {
                 error = _error = ZError.GetLastErr();
-                if (Equals(error, ZError.EINTR))
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     error = _error = default(ZError);
                     continue;
@@ -1369,7 +1375,7 @@ namespace ZeroMQ
             {
                 error = _error = ZError.GetLastErr();
 
-                if (Equals(error, ZError.EINTR))
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     error = _error = default(ZError);
                     continue;
@@ -1479,7 +1485,8 @@ namespace ZeroMQ
             List<ZFrame> frames = null;
             while (!ReceiveFrames(ref framesToReceive, ref frames, flags, out error))
             {
-                if (Equals(error, ZError.EAGAIN) && (flags & ZSocketFlags.DontWait) == ZSocketFlags.DontWait) break;
+                if (error.IsError(ZError.Code.EAGAIN) && (flags & ZSocketFlags.DontWait) == ZSocketFlags.DontWait)
+                    break;
                 return null;
             }
 
@@ -1505,7 +1512,7 @@ namespace ZeroMQ
                 {
                     error = _error = ZError.GetLastErr();
 
-                    if (Equals(error, ZError.EINTR))
+                    if (error.IsError(ZError.Code.EINTR))
                     {
                         error = _error = default(ZError);
                         continue;
@@ -1732,13 +1739,9 @@ namespace ZeroMQ
             {
                 error = _error = ZError.GetLastErr();
 
-                if (Equals(error, ZError.EINTR))
-                {
-                    error = _error = default(ZError);
-                    continue;
-                }
-
-                return false;
+                if (!error.IsError(ZError.Code.EINTR)) return false;
+                error = _error = default(ZError);
+                continue;
             }
 
             // Tell IDisposable to not unallocate zmq_msg
@@ -1762,7 +1765,8 @@ namespace ZeroMQ
                     {
                         error = _error = ZError.GetLastErr();
 
-                        if (!Equals(error, ZError.EINTR)) return false;
+                        if (!error.IsError(ZError.Code.EINTR))
+                            return false;
                         error = _error = default(ZError);
                     }
 
@@ -1775,7 +1779,7 @@ namespace ZeroMQ
                     {
                         error = _error = ZError.GetLastErr();
 
-                        if (!Equals(error, ZError.EINTR))
+                        if (!error.IsError(ZError.Code.EINTR))
                             return false;
                         error = _error = default(ZError);
                     }

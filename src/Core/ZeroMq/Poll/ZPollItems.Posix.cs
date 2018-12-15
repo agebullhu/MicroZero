@@ -38,8 +38,8 @@
 				{
 					error = ZError.GetLastErr();
 
-					if (error == ZError.EINTR)
-					{
+					if (error.IsError(ZError.Code.EINTR))
+                    {
 						error = default(ZError);
 						continue;
 					}
@@ -78,8 +78,8 @@
 				{
 					error = ZError.GetLastErr();
 
-					if (error == ZError.EINTR)
-					{
+					if (error.IsError(ZError.Code.EINTR))
+                    {
 						error = default(ZError);
 						continue;
 					}

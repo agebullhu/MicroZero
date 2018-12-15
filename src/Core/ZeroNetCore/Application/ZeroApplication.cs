@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +29,7 @@ namespace Agebull.ZeroNet.Core
             while (true)
             {
                 var cmd = Console.ReadLine();
-                if (String.IsNullOrWhiteSpace(cmd))
+                if (string.IsNullOrWhiteSpace(cmd))
                     continue;
                 switch (cmd.Trim().ToLower())
                 {
@@ -66,28 +65,26 @@ namespace Agebull.ZeroNet.Core
 
 
         #region State
+
         /// <summary>
-        /// 不连接ZeroCenter
+        ///     应用中心是否正在运行
         /// </summary>
-        public static bool NotZeroCenter { get; set; }
-
+        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZerCenterStatus == ZeroCenterState.Run;
 
         /// <summary>
-        ///     ZeroCenter是否正在运行
+        ///     本地应用是否正在运行
         /// </summary>
-        public static bool ZerCenterIsRun => ZerCenterStatus == ZeroCenterState.Run;
+        public static bool ApplicationIsRun => ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run;
 
         /// <summary>
-        ///     服务器状态
+        ///     应用中心状态
         /// </summary>
         public static ZeroCenterState ZerCenterStatus { get; internal set; }
 
         /// <summary>
         ///     运行状态（本地与服务器均正常）
         /// </summary>
-        public static bool CanDo =>
-            (ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run) &&
-            (NotZeroCenter || ZerCenterStatus == ZeroCenterState.Run);
+        public static bool CanDo => ApplicationIsRun && ZerCenterIsRun;
 
         /// <summary>
         ///     运行状态（本地未关闭）
@@ -112,15 +109,15 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     运行状态
         /// </summary>
-        internal static int _appState;
+        internal static int AppState;
 
         /// <summary>
         ///     状态
         /// </summary>
         public static int ApplicationState
         {
-            get => _appState;
-            internal set => Interlocked.Exchange(ref _appState, value);
+            get => AppState;
+            internal set => Interlocked.Exchange(ref AppState, value);
         }
 
         #endregion
@@ -209,7 +206,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Initialize()
         {
-            RegistZeroObject(ZeroConnectionPool.CreatePool());
+            if (WorkModel == ZeroWorkModel.Service)
+                RegistZeroObject(ZeroConnectionPool.CreatePool());
             AddInImporter.Instance.AutoRegist();
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
@@ -222,28 +220,15 @@ namespace Agebull.ZeroNet.Core
         #region Run
 
         /// <summary>
-        ///     启动
-        /// </summary>
-        private static void Start()
-        {
-            using (OnceScope.CreateScope(Config))
-            {
-                ApplicationState = StationState.Start;
-                Task.Factory.StartNew(SystemMonitor.Monitor);
-                JoinCenter();
-            }
-            SystemMonitor.WaitMe();
-        }
-
-        /// <summary>
         ///     运行
         /// </summary>
-        public static void Run()
+        public static bool Run()
         {
-            if (NotZeroCenter)
-                ApplicationState = StationState.Run;
-            else
-                Start();
+            if (WorkModel != ZeroWorkModel.Bridge)
+                return Start();
+
+            ApplicationState = StationState.Run;
+            return true;
         }
 
         /// <summary>
@@ -251,8 +236,12 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void RunAwaite()
         {
-            Console.CancelKeyPress += OnCancelKeyPress;
+            Console.CancelKeyPress += (s, e) =>
+            {
+                Shutdown();
+            };
             Console.WriteLine("Zeronet application start...");
+            WaitToken = new SemaphoreSlim(0, 1);
             Start();
             Task.Factory.StartNew(WaitTask).Wait();
         }
@@ -260,7 +249,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     应用程序等待结果的信号量对象
         /// </summary>
-        private static readonly SemaphoreSlim WaitToken = new SemaphoreSlim(0, 1);
+        private static SemaphoreSlim WaitToken;
 
         /// <summary>
         ///     执行直到连接成功
@@ -269,6 +258,24 @@ namespace Agebull.ZeroNet.Core
         {
             Console.WriteLine("Zeronet application runing. Press Ctrl+C to shutdown.");
             WaitToken.Wait();
+        }
+
+
+        /// <summary>
+        ///     启动
+        /// </summary>
+        private static bool Start()
+        {
+            bool success;
+            using (OnceScope.CreateScope(Config))
+            {
+                ApplicationState = StationState.Start;
+                if (WorkModel == ZeroWorkModel.Service)
+                    Task.Factory.StartNew(SystemMonitor.Monitor);
+                success = JoinCenter();
+            }
+            SystemMonitor.WaitMe();
+            return success;
         }
 
         /// <summary>
@@ -287,7 +294,7 @@ namespace Agebull.ZeroNet.Core
 
             ZerCenterStatus = ZeroCenterState.Run;
             ApplicationState = StationState.BeginRun;
-            if (!SystemManager.Instance.HeartJoin())
+            if (WorkModel == ZeroWorkModel.Service && !SystemManager.Instance.HeartJoin())
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
@@ -299,11 +306,20 @@ namespace Agebull.ZeroNet.Core
             {
                 ApplicationState = StationState.Failed;
                 ZerCenterStatus = ZeroCenterState.Failed;
+                ZeroTrace.WriteError("JoinCenter", "station configs can`t loaded.");
                 return false;
             }
             ZeroTrace.SystemLog("be connected successfully,start local stations.");
-            OnZeroStart();
-            SystemManager.Instance.UploadDocument();
+            if (WorkModel == ZeroWorkModel.Service)
+            {
+                OnZeroStart();
+                SystemManager.Instance.UploadDocument();
+            }
+            else if (WorkModel == ZeroWorkModel.Client)
+            {
+                ZeroConnectionPool.Pool = new SocketPool();
+                ZeroConnectionPool.Pool.OnZeroStart();
+            }
             return true;
         }
 
@@ -316,22 +332,22 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Shutdown()
         {
-            ZeroTrace.SystemLog("Begin shutdown...");
             switch (ApplicationState)
             {
                 case StationState.Destroy:
                     return;
                 case StationState.BeginRun:
                 case StationState.Run:
-                    if (!NotZeroCenter)
-                        OnZeroEnd();
+                    OnZeroEnd();
                     break;
                 case StationState.Failed:
-                    SystemManager.Instance.HeartLeft();
+                    if (WorkModel == ZeroWorkModel.Service)
+                        SystemManager.Instance.HeartLeft();
                     break;
             }
+            ZeroTrace.SystemLog("Begin shutdown...");
             ApplicationState = StationState.Destroy;
-            if (!NotZeroCenter)
+            if (WorkModel != ZeroWorkModel.Bridge)
             {
                 if (GlobalObjects.Count > 0)
                     GlobalSemaphore.Wait();
@@ -345,18 +361,10 @@ namespace Agebull.ZeroNet.Core
             }
             GC.Collect();
             ZContext.Destroy();
-            ZeroTrace.SystemLog("Application shutdown ,see you late.");
             ApplicationState = StationState.Disposed;
-            if (!NotZeroCenter)
-            {
-                WaitToken.Release();
-            }
+            WaitToken?.Release();
+            ZeroTrace.SystemLog("Application shutdown ,see you late.");
             LogRecorder.Shutdown();
-        }
-
-        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            Shutdown();
         }
 
         #endregion

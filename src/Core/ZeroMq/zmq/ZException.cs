@@ -9,55 +9,56 @@
     [Serializable]
 	public class ZException : Exception
 	{
-	    private ZError _error;
-
-		/// <summary>
-		/// Gets the error code returned by libzmq.
-		/// </summary>
+	    /// <summary>
+        /// Gets the error code returned by libzmq.
+        /// </summary>
         [Obsolete("Use Error property instead")]
-        public int ErrNo => _error != null ? _error.Number : 0;
+        public int ErrNo => Error?.Number ?? 0;
 
 	    /// <summary>
-		/// Gets the error code returned by libzmq.
-		/// </summary>
+        /// Gets the error code returned by libzmq.
+        /// </summary>
         [Obsolete("Use Error property instead")]
-        public string ErrName => _error != null ? _error.Name : string.Empty;
+        public string ErrName => Error != null ? Error.Name : string.Empty;
 
 	    /// <summary>
         /// Gets the error text returned by libzmq.
         /// </summary>
         [Obsolete("Use Error property instead")]
-        public string ErrText => _error != null ? _error.Text : string.Empty;
-
-	    public ZError Error => _error;
+        public string ErrText => Error != null ? Error.Text : string.Empty;
+        /// <summary>
+        /// Error Object
+        /// </summary>
+	    public ZError Error { get; }
 
 	    /// <summary>
         /// Initializes a new instance of the <see cref="ZException"/> class.
         /// </summary>
-        /// <param name="errorCode">The error code returned by the ZeroMQ library call.</param>
         protected ZException()
-		{ }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ZException"/> class.
-		/// </summary>
-		/// <param name="errorCode">The error code returned by the ZeroMQ library call.</param>
-		public ZException(ZError errorSymbol)
-			: this(errorSymbol, default(string), default(Exception))
 		{ }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZException"/> class.
         /// </summary>
-        /// <param name="errorCode">The error code returned by the ZeroMQ library call.</param>
-        public ZException(ZError errorSymbol, string message)
+        /// <param name="errorSymbol">The error code returned by the ZeroMQ library call.</param>
+        public ZException(ZError errorSymbol)
+			: this(errorSymbol, default(string), default(Exception))
+		{ }
+
+	    /// <summary>
+	    /// Initializes a new instance of the <see cref="ZException"/> class.
+	    /// </summary>
+	    /// <param name="errorSymbol">The error code returned by the ZeroMQ library call.</param>
+	    /// <param name="message"></param>
+	    public ZException(ZError errorSymbol, string message)
 			: this(errorSymbol, message, default(Exception))
 		{ }
 
-		public ZException(ZError errorSymbol, string message, Exception inner)
+	    /// <inheritdoc />
+	    public ZException(ZError errorSymbol, string message, Exception inner)
 			: base(MakeMessage(errorSymbol, message), inner)
 		{
-		    _error = errorSymbol;
+		    Error = errorSymbol;
 		}
 
 		static string MakeMessage(ZError error, string additionalMessage)

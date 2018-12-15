@@ -7,6 +7,7 @@ using Agebull.Common.Rpc;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using ZeroNet.Http.Route;
 
 namespace ZeroNet.Http.Gateway
@@ -30,7 +31,7 @@ namespace ZeroNet.Http.Gateway
 
         private static readonly string UnknowAccessTokenJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_Unknow));
 
-        private static readonly ApiResult<FlyshUserInfo> DenyAccessResult = ApiResult.Error<FlyshUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
+        private static readonly ApiResult<LoginUserInfo> DenyAccessResult = ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
 
         #endregion
 
@@ -195,7 +196,7 @@ namespace ZeroNet.Http.Gateway
                     return false;
                 }
 
-                ApiResult<FlyshUserInfo> result;
+                ApiResult result;
                 switch (Data.Token[0])
                 {
                     default:
@@ -215,14 +216,6 @@ namespace ZeroNet.Http.Gateway
                         }
                         if (result.Success)
                         {
-                            GlobalContext.SetUser(result.ResultData);
-                            GlobalContext.SetOrganizational(new OrganizationalInfo
-                            {
-                                OrgId = result.ResultData.OrganizationId,
-                                Name = result.ResultData.Organization,
-                                OrgKey = result.ResultData.Organization,
-                                RouteName = result.ResultData.Organization
-                            });
                             return true;
                         }
                         Data.ResultMessage = vl;
@@ -236,7 +229,6 @@ namespace ZeroNet.Http.Gateway
                         }
                         if (result.Success)
                         {
-                            GlobalContext.SetUser(result.ResultData);
                             return true;
                         }
                         Data.ResultMessage = vl;
@@ -249,7 +241,7 @@ namespace ZeroNet.Http.Gateway
                 return true;
             }
         }
-        private ApiResult<FlyshUserInfo> CheckToken(string name, string api, out string result)
+        private ApiResult<LoginUserInfo> CheckToken(string name, string api, out string json)
         {
             // 远程调用
             using (MonitorScope.CreateScope($"Check{name}:{Data.Token}"))
@@ -263,11 +255,29 @@ namespace ZeroNet.Http.Gateway
                 };
                 caller.CallCommand();
 
-                result = caller.Result;
-                LogRecorder.MonitorTrace($"Result:{caller.Result}");
-                return caller.Result == null
-                    ? null
-                    : JsonConvert.DeserializeObject<ApiResult<FlyshUserInfo>>(caller.Result) ?? DenyAccessResult;
+                json = caller.Result;
+
+                if (caller.Result == null)
+                    return null;
+                //GlobalContext.Current.Request.Token = Data.Token;
+                var result = JsonConvert.DeserializeObject<ApiResult<LoginUserInfo>>(caller.Result);
+                if (result == null)
+                    return DenyAccessResult;
+                if (!result.Success)
+                    return result;
+                //形成透传上下文
+                GlobalContext.SetOrganizational(new OrganizationalInfo
+                {
+                    OrgId = result.ResultData.OrganizationId,
+                    Name = result.ResultData.Organization,
+                    OrgKey = result.ResultData.Organization,
+                    RouteName = result.ResultData.Organization
+                });
+                var context = (JObject)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(GlobalContext.Current));
+                JObject obj = (JObject)JsonConvert.DeserializeObject(json);
+                context["user"] = obj["data"];
+                Data.GlobalContextJson = context.ToString();
+                return result;
             }
         }
         #endregion

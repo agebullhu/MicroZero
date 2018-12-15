@@ -1,23 +1,43 @@
 {
-  "base_tcp_port": "7999",
-  "use_ipc_protocol": "false",
-  "redis_addr": "127.0.0.1:6379",
-  "redis_defdb": "8",
-  "worker_sound_ivl": 2000,
-  "plan_exec_timeout": 30,
-  "plan_cache_size": 1024,
-
-  "ZMQ_MAX_SOCKETS": -1,
-  "ZMQ_IO_THREADS": -1,
-  "ZMQ_MAX_MSGSZ": 8192,
-
-  "ZMQ_IMMEDIATE": 1,
-  "ZMQ_LINGER": 50,
-  "ZMQ_RCVTIMEO": 500,
-  "ZMQ_SNDTIMEO": 500,
-  "ZMQ_SNDHWM": -1,
-  "ZMQ_RCVHWM": -1,
-  "ZMQ_SNDBUF": -1,
-  "ZMQ_RCVBUF": -1,
-  "ZMQ_BACKLOG": 8192
+  "zero": {
+    "base_tcp_port": "7999",
+    "use_ipc_protocol": "false",
+    "worker_sound_ivl": 2000,
+    "plan_exec_timeout": 300,
+    "plan_cache_size": 1024,
+    "service_key": "agebull"
+  },
+  "redis": {
+    "addr": "127.0.0.1:6379",
+    "defdb": "20"
+  },
+  "ZMQ": {
+    "MAX_SOCKETS": -1,
+    "IO_THREADS": -1,
+    "MAX_MSGSZ": -1,
+    "IMMEDIATE": 1,
+    "LINGER": 50,
+    "RCVTIMEO": 500,
+    "SNDTIMEO": 500,
+    "SNDHWM": -1,
+    "RCVHWM": -1,
+    "SNDBUF": -1,
+    "RCVBUF": -1,
+    "BACKLOG": 8192,
+    "RECONNECT_IVL": -1,
+    "CONNECT_TIMEOUT": -1,
+    "RECONNECT_IVL_MAX": -1,
+    "TCP_KEEPALIVE": 1,
+    "TCP_KEEPALIVE_IDLE": 120,
+    "TCP_KEEPALIVE_INTVL": 3,
+    "HEARTBEAT_IVL": -1,
+    "HEARTBEAT_TIMEOUT": -1,
+    "HEARTBEAT_TTL": 1
+  },
+  "proxy": {
+    "weixin": {
+      "req": "tcp://192.168.1.31:10000",
+      "res": "tcp://192.168.1.31:10001"
+    }
+  }
 }

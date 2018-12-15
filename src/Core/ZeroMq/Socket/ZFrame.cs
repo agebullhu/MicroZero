@@ -187,7 +187,7 @@ namespace ZeroMQ
             {
                 var error = ZError.GetLastErr();
 
-                if (Equals(error, ZError.EINTR))
+                if ((error.IsError(ZError.Code.EINTR)))
                 {
                     continue;
                 }
@@ -206,14 +206,14 @@ namespace ZeroMQ
             {
                 var error = ZError.GetLastErr();
 
-                if (Equals(error, ZError.EINTR))
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     continue;
                 }
 
                 msg.Dispose();
 
-                if (Equals(error, ZError.ENOMEM))
+                if (error.IsError(ZError.Code.ENOMEM))
                 {
                     throw new OutOfMemoryException("zmq_msg_init_size");
                 }
@@ -230,13 +230,13 @@ namespace ZeroMQ
 			while (-1 == zmq.msg_init_data(msg, data, size, /* msg_free_delegate null, /* hint IntPtr.Zero)) {
 				error = ZError.GetLastError();
 
-				if (error == ZError.EINTR) {
+				if (error.IsError(ZError.Code.EINTR) {
 					continue;
 				}
 
 				msg.Dispose();
 
-				if (error == ZError.ENOMEM) {
+				if (error.IsError(ZError.Code.ENOMEM) {
 					throw new OutOfMemoryException ("zmq_msg_init_size");
 				}
 				throw new ZException (error, "zmq_msg_init_size");
@@ -751,9 +751,8 @@ namespace ZeroMQ
             //ZError error;
             while (-1 == zmq.msg_close(ptr))
             {
-                if (Equals(ZError.GetLastErr(), ZError.EINTR))
+                if (ZError.GetLastErr().IsError(ZError.Code.EINTR))
                 {
-                    //error = default(ZError);
                     continue;
                 }
                 break;
@@ -772,12 +771,12 @@ namespace ZeroMQ
                 // zmq.msg_copy(dest, src)
                 ZError error = ZError.GetLastErr();
 
-                if (Equals(error, ZError.EINTR))
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     error = default(ZError);
                     continue;
                 }
-                if (error == ZError.EFAULT)
+                if (error.IsError(ZError.Code.EFAULT))
                 {
                     // Invalid message. 
                 }
@@ -792,12 +791,12 @@ namespace ZeroMQ
             {
                 var error = ZError.GetLastErr();
 
-                if (error == ZError.EINTR)
+                if (error.IsError(ZError.Code.EINTR))
                 {
                     error = default(ZError);
                     continue;
                 }
-                if (error == ZError.EFAULT)
+                if (error.IsError(ZError.Code.EFAULT))
                 {
                     // Invalid message. 
                 }

@@ -78,6 +78,15 @@ namespace agebull
 		static int MAX_SOCKETS;
 		static int IO_THREADS;
 		static int MAX_MSGSZ;
+		static int RECONNECT_IVL;
+		static int CONNECT_TIMEOUT;
+		static int RECONNECT_IVL_MAX;
+		static int TCP_KEEPALIVE;
+		static int TCP_KEEPALIVE_IDLE;
+		static int TCP_KEEPALIVE_INTVL;
+		static int HEARTBEAT_IVL;
+		static int HEARTBEAT_TIMEOUT;
+		static int HEARTBEAT_TTL;
 		static char service_key[512];
 	};
 	class json_config

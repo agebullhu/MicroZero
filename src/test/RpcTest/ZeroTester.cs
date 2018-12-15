@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
@@ -27,7 +28,7 @@ namespace RpcTest
                     UserType ="用户类型",
                     UserId = random.Next().ToString(),
                     DeviceId ="设备id",
-                    RecordDate=DateTime.Now.ToString(),
+                    RecordDate=DateTime.Now.ToString("yyyy-MM-dd"),
                     RecordUserStatus="状态",
                     InOrOut= $"{((random.Next() % 2) == 1 ? "进" : "出")}",
                     EnterType="进出方式",

@@ -12,12 +12,11 @@ namespace agebull
 			* \brief 配置ZMQ连接对象
 			* \param socket
 			* \param identity
+			* \param is_client
 			* \return
 			*/
-			void set_sockopt(zmq_handler& socket, const char* identity)
+			void set_sockopt(zmq_handler& socket, bool is_client, const char* identity)
 			{
-				if (identity != nullptr)
-					zmq_setsockopt(socket, ZMQ_IDENTITY, identity, strlen(identity));
 				//assert(zmq_result == 0);
 				//列消息只作用于已完成的链接
 				if (global_config::IMMEDIATE >= 0)
@@ -25,37 +24,56 @@ namespace agebull
 				//关闭设置停留时间,毫秒
 				if (global_config::LINGER >= 0)
 					setsockopt(socket, ZMQ_LINGER, global_config::LINGER);
-				if (global_config::RCVTIMEO >= 0)
-					setsockopt(socket, ZMQ_RCVTIMEO, global_config::RCVTIMEO);
-				if (global_config::SNDHWM >= 0)
-					setsockopt(socket, ZMQ_SNDHWM, global_config::SNDHWM);
-				if (global_config::RCVHWM >= 0)
-					setsockopt(socket, ZMQ_RCVHWM, global_config::RCVHWM);
-				if (global_config::SNDBUF >= 0)
-					setsockopt(socket, ZMQ_SNDBUF, global_config::SNDBUF);
-				if (global_config::RCVBUF >= 0)
-					setsockopt(socket, ZMQ_RCVBUF, global_config::RCVBUF);
-				if (global_config::SNDTIMEO >= 0)
-					setsockopt(socket, ZMQ_SNDTIMEO, global_config::SNDTIMEO);
-				if (global_config::BACKLOG >= 0)
-					setsockopt(socket, ZMQ_BACKLOG, global_config::BACKLOG);
-				if (global_config::SNDTIMEO >= 0)
-					setsockopt(socket, ZMQ_SNDTIMEO, global_config::SNDTIMEO);
-				if (global_config::RCVTIMEO >= 0)
-					setsockopt(socket, ZMQ_RCVTIMEO, global_config::RCVTIMEO);
+
 				if (global_config::MAX_MSGSZ > 0)
 					setsockopt(socket, ZMQ_MAXMSGSIZE, global_config::MAX_MSGSZ);
 
-				//setsockopt(socket, ZMQ_HEARTBEAT_IVL, 10000);
-				//setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, 200);
-				//setsockopt(socket, ZMQ_HEARTBEAT_TTL, 200);
+				if (global_config::SNDBUF >= 0)
+					setsockopt(socket, ZMQ_SNDBUF, global_config::SNDBUF);
+				if (global_config::SNDTIMEO >= 0)
+					setsockopt(socket, ZMQ_SNDTIMEO, global_config::SNDTIMEO);
+				if (global_config::SNDHWM >= 0)
+					setsockopt(socket, ZMQ_SNDHWM, global_config::SNDHWM);
 
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
+				if (global_config::RCVHWM >= 0)
+					setsockopt(socket, ZMQ_RCVHWM, global_config::RCVHWM);
+				if (global_config::RCVBUF >= 0)
+					setsockopt(socket, ZMQ_RCVBUF, global_config::RCVBUF);
+				if (global_config::RCVTIMEO >= 0)
+					setsockopt(socket, ZMQ_RCVTIMEO, global_config::RCVTIMEO);
+
+				if (global_config::HEARTBEAT_IVL > 0)
+				{
+					setsockopt(socket, ZMQ_HEARTBEAT_IVL, 1);
+					setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, global_config::HEARTBEAT_TIMEOUT);
+					setsockopt(socket, ZMQ_HEARTBEAT_TTL, global_config::HEARTBEAT_TTL);
+				}
+
+				if (global_config::TCP_KEEPALIVE > 0)
+				{
+					setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
+					setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, global_config::TCP_KEEPALIVE_IDLE);
+					setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, global_config::TCP_KEEPALIVE_INTVL);
+				}
+				if (is_client)
+				{
+					if (identity != nullptr)
+						zmq_setsockopt(socket, ZMQ_IDENTITY, identity, strlen(identity));
+
+					if (global_config::CONNECT_TIMEOUT > 0)
+						setsockopt(socket, ZMQ_CONNECT_TIMEOUT, global_config::CONNECT_TIMEOUT);
+					if (global_config::RECONNECT_IVL > 0)
+						setsockopt(socket, ZMQ_RECONNECT_IVL, global_config::RECONNECT_IVL);
+					if (global_config::RECONNECT_IVL_MAX > 0)
+						setsockopt(socket, ZMQ_RECONNECT_IVL_MAX, global_config::RECONNECT_IVL_MAX);
+				}
+				else
+				{
+					if (global_config::BACKLOG >= 0)
+						setsockopt(socket, ZMQ_BACKLOG, global_config::BACKLOG);
+				}
 
 			}
-
 			/**
 			* \brief 检查类型的可读名称
 			*/
@@ -99,14 +117,8 @@ namespace agebull
 				{
 					return nullptr;
 				}
-				set_sockopt(socket, identity);
-				setsockopt(socket, ZMQ_RECONNECT_IVL, 100);
-				setsockopt(socket, ZMQ_CONNECT_TIMEOUT, 3000);
-				setsockopt(socket, ZMQ_RECONNECT_IVL_MAX, 3000);
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE, 1);
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, 1024);
-				setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, 1024);
-				
+				set_sockopt(socket, true, identity);
+
 				int state = zmq_connect(socket, addr);
 				if (state == 0)
 					return socket;
@@ -122,7 +134,7 @@ namespace agebull
 				{
 					return nullptr;
 				}
-				set_sockopt(socket, nullptr);
+				set_sockopt(socket, false, nullptr);
 				if (zmq_bind(socket, addr) == 0)
 					return socket;
 				zmq_close(socket);
@@ -282,7 +294,7 @@ namespace agebull
 						break;
 					case ZMQ_EVENT_CONNECT_RETRIED:
 						log_msg2("[%s] : monitor > retried > %s", station.c_str(), event.address);
-						zero_event(zero_net_event::event_monitor_net_try,"monitor", *station, event.address);
+						zero_event(zero_net_event::event_monitor_net_try, "monitor", *station, event.address);
 						break;
 					default: break;
 					}
@@ -316,201 +328,204 @@ namespace agebull
 				return 0;
 			}
 		}
-		/**
-		  * \brief 说明帧解析
-		  */
-		acl::string desc_str(bool in, char* desc, size_t len)
+		namespace zero_def
 		{
-			if (desc == nullptr || len == 0)
-				return "[EMPTY]";
-			acl::string str;
-			str.format_append("{\"size\":%d", desc[0]);
-			uchar state = *reinterpret_cast<uchar*>(desc + 1);
-			if (in)
+			/**
+			  * \brief 说明帧解析
+			  */
+			acl::string desc_str(bool in, char* desc, size_t len)
 			{
-				str.append(R"(,"command":")");
-				switch (state)
+				if (desc == nullptr || len == 0)
+					return "[EMPTY]";
+				acl::string str;
+				str.format_append("{\"size\":%d", desc[0]);
+				uchar state = *reinterpret_cast<uchar*>(desc + 1);
+				if (in)
 				{
-				case zero_def::command::none: //!\1 无特殊说明
-					str.append("none");
-					break;
-				case zero_def::command::plan: //!\2  取全局标识
-					str.append("plan");
-					break;
-				case zero_def::command::global_id: //!>  
-					str.append("global_id");
-					break;
-				case zero_def::command::waiting: //!# 等待结果
-					str.append("waiting");
-					break;
-				case zero_def::command::find_result: //!% 关闭结果
-					str.append("find result");
-					break;
-				case zero_def::command::close_request: //!- Ping
-					str.append("close request");
-					break;
-				case zero_def::command::ping: //!* 心跳加入
-					str.append("ping");
-					break;
-				case zero_def::command::heart_join: //!J  心跳已就绪
-					str.append("heart join");
-					break;
-				case zero_def::command::heart_ready: //!R  心跳进行
-					str.append("heart ready");
-					break;
-				case zero_def::command::heart_pitpat: //!P  心跳退出
-					str.append("heart pitpat");
-					break;
-				case zero_def::command::heart_left: //!L  
-					str.append("heart left");
-					break;
+					str.append(R"(,"command":")");
+					switch (state)
+					{
+					case zero_def::command::none: //!\1 无特殊说明
+						str.append("none");
+						break;
+					case zero_def::command::plan: //!\2  取全局标识
+						str.append("plan");
+						break;
+					case zero_def::command::global_id: //!>  
+						str.append("global_id");
+						break;
+					case zero_def::command::waiting: //!# 等待结果
+						str.append("waiting");
+						break;
+					case zero_def::command::find_result: //!% 关闭结果
+						str.append("find result");
+						break;
+					case zero_def::command::close_request: //!- Ping
+						str.append("close request");
+						break;
+					case zero_def::command::ping: //!* 心跳加入
+						str.append("ping");
+						break;
+					case zero_def::command::heart_join: //!J  心跳已就绪
+						str.append("heart join");
+						break;
+					case zero_def::command::heart_ready: //!R  心跳进行
+						str.append("heart ready");
+						break;
+					case zero_def::command::heart_pitpat: //!P  心跳退出
+						str.append("heart pitpat");
+						break;
+					case zero_def::command::heart_left: //!L  
+						str.append("heart left");
+						break;
+					}
 				}
-			}
-			else
-			{
-				str.append(R"(,"state":")");
-				switch (state)
+				else
 				{
-				case zero_def::status::ok: //!(0x1)
-					str.append(zero_def::status_text::OK);
-					break;
-				case zero_def::status::jion_plan: //!(0x2)
-					str.append(zero_def::status_text::PLAN);
-					break;
-				case zero_def::status::runing: //!(0x3)
-					str.append(zero_def::status_text::RUNING);
-					break;
-				case zero_def::status::bye: //!(0x4)
-					str.append(zero_def::status_text::BYE);
-					break;
-				case zero_def::status::wecome: //!(0x5)
-					str.append(zero_def::status_text::WECOME);
-					break;
-				case zero_def::status::vote_sended: //!(0x20)
-					str.append(zero_def::status_text::VOTE_SENDED);
-					break;
-				case zero_def::status::vote_bye: //!(0x21)
-					str.append(zero_def::status_text::VOTE_BYE);
-					break;
-				case zero_def::status::wait: //!(0x22)
-					str.append(zero_def::status_text::WAITING);
-					break;
-				case zero_def::status::vote_waiting: //!(0x22)
-					str.append(zero_def::status_text::WAITING);
-					break;
-				case zero_def::status::vote_start: //!(0x23)
-					str.append(zero_def::status_text::VOTE_START);
-					break;
-				case zero_def::status::vote_end: //!(0x24)
-					str.append(zero_def::status_text::VOTE_END);
-					break;
-				case zero_def::status::vote_closed: //!(0x25)
-					str.append(zero_def::status_text::VOTE_CLOSED);
-					break;
-				case zero_def::status::error: //!(0x81)
-					str.append(zero_def::status_text::ERROR);
-					break;
-				case zero_def::status::failed: //!(0x82)
-					str.append(zero_def::status_text::FAILED);
-					break;
-				case zero_def::status::not_find: //!(0x83)
-					str.append(zero_def::status_text::NOT_FIND);
-					break;
-				case zero_def::status::not_support: //!(0x84)
-					str.append(zero_def::status_text::NOT_SUPPORT);
-					break;
-				case zero_def::status::frame_invalid: //!(0x85)
-					str.append(zero_def::status_text::FRAME_INVALID);
-					break;
-				case zero_def::status::arg_invalid: //!(0x85)
-					str.append(zero_def::status_text::ARG_INVALID);
-					break;
-				case zero_def::status::timeout: //!(0x86)
-					str.append(zero_def::status_text::TIMEOUT);
-					break;
-				case zero_def::status::net_error: //!(0x87)
-					str.append(zero_def::status_text::NET_ERROR);
-					break;
-				case zero_def::status::not_worker: //!(0x88)
-					str.append(zero_def::status_text::NOT_WORKER);
-					break;
-				case zero_def::status::plan_error: //!(0x8B)
-					str.append(zero_def::status_text::PLAN_ERROR);
-					break;
+					str.append(R"(,"state":")");
+					switch (state)
+					{
+					case zero_def::status::ok: //!(0x1)
+						str.append(zero_def::status_text::OK);
+						break;
+					case zero_def::status::jion_plan: //!(0x2)
+						str.append(zero_def::status_text::PLAN);
+						break;
+					case zero_def::status::runing: //!(0x3)
+						str.append(zero_def::status_text::RUNING);
+						break;
+					case zero_def::status::bye: //!(0x4)
+						str.append(zero_def::status_text::BYE);
+						break;
+					case zero_def::status::wecome: //!(0x5)
+						str.append(zero_def::status_text::WECOME);
+						break;
+					case zero_def::status::vote_sended: //!(0x20)
+						str.append(zero_def::status_text::VOTE_SENDED);
+						break;
+					case zero_def::status::vote_bye: //!(0x21)
+						str.append(zero_def::status_text::VOTE_BYE);
+						break;
+					case zero_def::status::wait: //!(0x22)
+						str.append(zero_def::status_text::WAITING);
+						break;
+					case zero_def::status::vote_waiting: //!(0x22)
+						str.append(zero_def::status_text::WAITING);
+						break;
+					case zero_def::status::vote_start: //!(0x23)
+						str.append(zero_def::status_text::VOTE_START);
+						break;
+					case zero_def::status::vote_end: //!(0x24)
+						str.append(zero_def::status_text::VOTE_END);
+						break;
+					case zero_def::status::vote_closed: //!(0x25)
+						str.append(zero_def::status_text::VOTE_CLOSED);
+						break;
+					case zero_def::status::error: //!(0x81)
+						str.append(zero_def::status_text::ERROR);
+						break;
+					case zero_def::status::failed: //!(0x82)
+						str.append(zero_def::status_text::FAILED);
+						break;
+					case zero_def::status::not_find: //!(0x83)
+						str.append(zero_def::status_text::NOT_FIND);
+						break;
+					case zero_def::status::not_support: //!(0x84)
+						str.append(zero_def::status_text::NOT_SUPPORT);
+						break;
+					case zero_def::status::frame_invalid: //!(0x85)
+						str.append(zero_def::status_text::FRAME_INVALID);
+						break;
+					case zero_def::status::arg_invalid: //!(0x85)
+						str.append(zero_def::status_text::ARG_INVALID);
+						break;
+					case zero_def::status::timeout: //!(0x86)
+						str.append(zero_def::status_text::TIMEOUT);
+						break;
+					case zero_def::status::net_error: //!(0x87)
+						str.append(zero_def::status_text::NET_ERROR);
+						break;
+					case zero_def::status::not_worker: //!(0x88)
+						str.append(zero_def::status_text::NOT_WORKER);
+						break;
+					case zero_def::status::plan_error: //!(0x8B)
+						str.append(zero_def::status_text::PLAN_ERROR);
+						break;
+					}
 				}
-			}
-			str.append(R"(","frames":[)");
+				str.append(R"(","frames":[)");
 
-			str.append(R"("Caller","FrameDescr")");
-			for (size_t idx = 2; idx < len; idx++)
-			{
-				switch (desc[idx])
+				str.append(R"("Caller","FrameDescr")");
+				for (size_t idx = 2; idx < len; idx++)
 				{
-				case zero_def::frame::end:
-					str.append(",\"End\"");
-					break;
-					//全局标识
-				case zero_def::frame::global_id:
-					str.append(",\"GLOBAL_ID\"");
-					break;
-					//站点
-				case zero_def::frame::station_id:
-					str.append(",\"STATION_ID\"");
-					break;
-					//执行计划
-				case zero_def::frame::plan:
-					str.append(",\"PLAN\"");
-					break;
-					//参数
-				case zero_def::frame::arg:
-					str.append(",\"ARG\"");
-					break;
-					//参数
-				case zero_def::frame::command:
-					str.append(",\"COMMAND\"");
-					break;
-					//请求ID
-				case zero_def::frame::request_id:
-					str.append(",\"REQUEST_ID\"");
-					break;
-					//请求者/生产者
-				case zero_def::frame::requester:
-					str.append(",\"REQUESTER\"");
-					break;
-					//回复者/浪费者
-				case zero_def::frame::responser:
-					str.append(",\"RESPONSER\"");
-					break;
-					//通知主题
-				case zero_def::frame::pub_title:
-					str.append(",\"PUB_TITLE\"");
-					break;
-				case zero_def::frame::status:
-					str.append(",\"STATUS\"");
-					break;
-					//网络上下文信息
-				case zero_def::frame::context:
-					str.append(",\"CONTEXT\"");
-					break;
-				case zero_def::frame::content_text:
-					str.append(",\"CONTENT\"");
-					break;
-				case zero_def::frame::content_json:
-					str.append(",\"JSON\"");
-					break;
-				case zero_def::frame::content_bin:
-					str.append(",\"BIN\"");
-					break;
-				case zero_def::frame::content_xml:
-					str.append(",\"XML\"");
-					break;
-				default:
-					str.append(",\"Arg\"");
-					break;
+					switch (desc[idx])
+					{
+					case zero_def::frame::end:
+						str.append(",\"End\"");
+						break;
+						//全局标识
+					case zero_def::frame::global_id:
+						str.append(",\"GLOBAL_ID\"");
+						break;
+						//站点
+					case zero_def::frame::station_id:
+						str.append(",\"STATION_ID\"");
+						break;
+						//执行计划
+					case zero_def::frame::plan:
+						str.append(",\"PLAN\"");
+						break;
+						//参数
+					case zero_def::frame::arg:
+						str.append(",\"ARG\"");
+						break;
+						//参数
+					case zero_def::frame::command:
+						str.append(",\"COMMAND\"");
+						break;
+						//请求ID
+					case zero_def::frame::request_id:
+						str.append(",\"REQUEST_ID\"");
+						break;
+						//请求者/生产者
+					case zero_def::frame::requester:
+						str.append(",\"REQUESTER\"");
+						break;
+						//回复者/浪费者
+					case zero_def::frame::responser:
+						str.append(",\"RESPONSER\"");
+						break;
+						//通知主题
+					case zero_def::frame::pub_title:
+						str.append(",\"PUB_TITLE\"");
+						break;
+					case zero_def::frame::status:
+						str.append(",\"STATUS\"");
+						break;
+						//网络上下文信息
+					case zero_def::frame::context:
+						str.append(",\"CONTEXT\"");
+						break;
+					case zero_def::frame::content_text:
+						str.append(",\"CONTENT\"");
+						break;
+					case zero_def::frame::content_json:
+						str.append(",\"JSON\"");
+						break;
+					case zero_def::frame::content_bin:
+						str.append(",\"BIN\"");
+						break;
+					case zero_def::frame::content_xml:
+						str.append(",\"XML\"");
+						break;
+					default:
+						str.append(",\"Arg\"");
+						break;
+					}
 				}
+				str.append("]}");
+				return str;
 			}
-			str.append("]}");
-			return str;
 		}
 	}
 }

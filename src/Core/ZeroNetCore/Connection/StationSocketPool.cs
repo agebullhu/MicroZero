@@ -63,7 +63,8 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             socket.IsUsing = false;
-            if (_isDisposed || socket.IsDisposed || socket.LastError != null)
+            if (ZeroApplication.WorkModel == ZeroWorkModel.Client ||
+                _isDisposed || socket.IsDisposed || socket.LastError != null)
             {
                 Close(ref socket);
             }

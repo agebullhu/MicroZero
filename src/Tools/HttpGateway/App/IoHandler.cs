@@ -73,10 +73,10 @@ namespace ZeroNet.Http.Gateway
             {
                 if (!string.IsNullOrWhiteSpace(data.Uri.Query))
                     LogRecorder.MonitorTrace($"Query：{data.Uri.Query}");
-                if (!string.IsNullOrWhiteSpace(data.Form))
-                    LogRecorder.MonitorTrace($"Form：{data.Form}");
-                if (!string.IsNullOrWhiteSpace(data.Context))
-                    LogRecorder.MonitorTrace("Context:" + data.Context);
+                if (!string.IsNullOrWhiteSpace(data.HttpForm))
+                    LogRecorder.MonitorTrace($"Form：{data.HttpForm}");
+                if (!string.IsNullOrWhiteSpace(data.HttpContext))
+                    LogRecorder.MonitorTrace("Context:" + data.HttpContext);
                 LogRecorder.MonitorTrace($"Status : {data.Status}");
                 LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
             }

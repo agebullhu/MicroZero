@@ -9,7 +9,7 @@ namespace Agebull.ZeroNet
     {
         static void Main(string[] args)
         {
-            ZeroApplication.NotZeroCenter = true;
+            ZeroApplication.WorkModel = ZeroWorkModel.Bridge;
             ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
             BridgeService.Instance.Run();

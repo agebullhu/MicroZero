@@ -35,10 +35,20 @@ namespace Agebull.ZeroNet.Core
         /// <summary>清理资源</summary>
         protected override void OnDispose()
         {
+            if (_socket == null)
+                return;
             if (HaseFailed)
                 ZeroConnectionPool.Close(ref _socket);
             else
                 ZeroConnectionPool.Free(_socket);
+            _socket = null;
+        }
+        /// <summary>
+        /// 析构
+        /// </summary>
+        ~PoolSocket()
+        {
+            _socket?.TryClose();
         }
     }
 
@@ -53,10 +63,8 @@ namespace Agebull.ZeroNet.Core
         internal static IZeroConnectionPool CreatePool()
         {
             //if (ZeroApplication.Config.SpeedLimitModel == SpeedLimitType.ThreadCount)
-            //    Pool = new ProxyPool();
-            //else
-            Pool = new SocketPool();
-            return Pool;
+            //    return Pool = new ProxyPool();
+            return Pool = new SocketPool();
         }
 
         /// <summary>
@@ -67,9 +75,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 取得一个连接对象
         /// </summary>
-        /// <returns></returns>
+        /// <returns>系统正常时返回一个连接对象</returns>
         public static PoolSocket GetSocket(string station, string name)
         {
+            if (Pool == null && ZeroApplication.WorkModel == ZeroWorkModel.Client && !ZeroApplication.Run())
+            {
+                return null;
+            }
+            // ReSharper disable once PossibleNullReferenceException
             return new PoolSocket(Pool.GetSocket(station, name))
             {
                 Station = station,

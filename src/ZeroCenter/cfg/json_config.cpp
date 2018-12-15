@@ -12,7 +12,7 @@ namespace agebull
 	int global_config::redis_defdb = 0x10;
 	int global_config::worker_sound_ivl = 2000;
 	char global_config::service_key[512] = "agebull";
-	
+
 	int global_config::IMMEDIATE = 1;
 	int global_config::LINGER = -1;
 	int global_config::SNDHWM = -1;
@@ -25,6 +25,15 @@ namespace agebull
 	int global_config::MAX_SOCKETS = -1;
 	int global_config::IO_THREADS = -1;
 	int global_config::MAX_MSGSZ = -1;
+	int global_config::RECONNECT_IVL = 100;
+	int global_config::CONNECT_TIMEOUT = 3000;
+	int global_config::RECONNECT_IVL_MAX = 3000;
+	int global_config::TCP_KEEPALIVE = 1;
+	int global_config::TCP_KEEPALIVE_IDLE = 120;
+	int global_config::TCP_KEEPALIVE_INTVL = 3;
+	int global_config::HEARTBEAT_IVL = -1;
+	int global_config::HEARTBEAT_TIMEOUT = -1;
+	int global_config::HEARTBEAT_TTL = -1;
 
 	/**
 	* \brief 系统根目录
@@ -53,6 +62,16 @@ namespace agebull
 			global_config::MAX_SOCKETS = zmq.number("MAX_SOCKETS", global_config::MAX_SOCKETS);
 			global_config::IO_THREADS = zmq.number("IO_THREADS", global_config::IO_THREADS);
 			global_config::MAX_MSGSZ = zmq.number("MAX_MSGSZ", global_config::MAX_MSGSZ);
+
+			global_config::MAX_SOCKETS = zmq.number("RECONNECT_IVL", global_config::RECONNECT_IVL);
+			global_config::IO_THREADS = zmq.number("CONNECT_TIMEOUT", global_config::CONNECT_TIMEOUT);
+			global_config::MAX_MSGSZ = zmq.number("RECONNECT_IVL_MAX", global_config::RECONNECT_IVL_MAX);
+			global_config::MAX_SOCKETS = zmq.number("TCP_KEEPALIVE", global_config::TCP_KEEPALIVE);
+			global_config::IO_THREADS = zmq.number("TCP_KEEPALIVE_IDLE", global_config::TCP_KEEPALIVE_IDLE);
+			global_config::MAX_MSGSZ = zmq.number("TCP_KEEPALIVE_INTVL", global_config::TCP_KEEPALIVE_INTVL);
+			global_config::MAX_SOCKETS = zmq.number("HEARTBEAT_IVL", global_config::HEARTBEAT_IVL);
+			global_config::IO_THREADS = zmq.number("HEARTBEAT_TIMEOUT", global_config::HEARTBEAT_TIMEOUT);
+			global_config::MAX_MSGSZ = zmq.number("HEARTBEAT_TTL", global_config::HEARTBEAT_TTL);
 		}
 		auto& zero = global["zero"];
 		if (zero.value_map.size() > 0)
@@ -137,7 +156,7 @@ namespace agebull
 		root.value_map.clear();
 		acl::json json;
 		json.update(str);
-		read(&json.get_root(),root);
+		read(&json.get_root(), root);
 	}
 
 	/**
@@ -154,7 +173,7 @@ namespace agebull
 				item.name = iter->tag_name();
 				var obj = iter->get_obj();
 				item.is_value = obj == nullptr;
-				if(item.is_value)
+				if (item.is_value)
 				{
 					item.value = iter->get_text();
 				}
@@ -176,7 +195,7 @@ namespace agebull
 	bool config_item::boolean(const char * name, bool def)
 	{
 		auto vl = value_map.find(name);
-		return vl== value_map.end() ? def : strcasecmp(vl->second.value.c_str(), "true") == 0;
+		return vl == value_map.end() ? def : strcasecmp(vl->second.value.c_str(), "true") == 0;
 	}
 	/**
 	* \brief 取配置

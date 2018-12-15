@@ -7,118 +7,156 @@ namespace ZeroMQ
     /// ZMQ错误信息
     /// </summary>
     public class ZError : ZSymbol
-	{
+    {
         static ZError()
         {
             var one = ZSymbol.None;
         }
 
-        internal static class Code
-		{
-			static Code() 
-			{
-				Platform.SetupImplementation(typeof(Code));
-			}
+        public static class Code
+        {
+            static Code()
+            {
+                Platform.SetupImplementation(typeof(Code));
+            }
 
-			private const int HAUSNUMERO = 156384712;
+            #region ZMQ自定义
 
-            // TODO: find a way to make this independent of the Windows SDK version that libzmq was built against
-            // TODO: are all of these actually used by libzmq?
-            // these values are the Windows error codes as defined by the Windows 10 SDK when _CRT_NO_POSIX_ERROR_CODES is not defined
-            public static readonly int
-				EPERM = 1,
-				ENOENT = 2,
-				ESRCH = 3,
-				EINTR = 4,
-				EIO = 5,
-				ENXIO = 6,
-				E2BIG = 7,
-				ENOEXEC = 8,
-				EBADF = 9,
-				ECHILD = 10,
-				EAGAIN = 11,
-				ENOMEM = 12,
-				EACCES = 13,
-				EFAULT = 14,
-				ENOTBLK = 15,
-				EBUSY = 16,
-				EEXIST = 17,
-				EXDEV = 18,
-				ENODEV = 19,
-				ENOTDIR = 20,
-				EISDIR = 21,
-				EINVAL = 22,
-				ENFILE = 23,
-				EMFILE = 24,
-				ENOTTY = 25,
-				ETXTBSY = 26,
-				EFBIG = 27,
-				ENOSPC = 28,
-				ESPIPE = 29,
-				EROFS = 30,
-				EMLINK = 31,
-				EPIPE = 32,
-				EDOM = 33,
-				ERANGE = 34, // 34
+            private const int HAUSNUMERO = 156384712;
 
-				ENOTSUP = 129,
-				EPROTONOSUPPORT = 135,
-				ENOBUFS = 119,
-				ENETDOWN = 116,
-				EADDRINUSE = 100,
-				EADDRNOTAVAIL = 101,
-				ECONNREFUSED = 107,
-				EINPROGRESS = 112,
-				ENOTSOCK = 128,
-				EMSGSIZE = 115,
-							// as of here are differences to nanomsg
-				EAFNOSUPPORT = 102,
-				ENETUNREACH = 118,
-				ECONNABORTED = 106,
-				ECONNRESET = 108,
-				ENOTCONN = 126,
-				ETIMEDOUT = 138,
-				EHOSTUNREACH = 110,
-				ENETRESET = 117,
+            // ENOTSUP
+            public const int ENOTSUP = HAUSNUMERO + 1;
 
-				/*  Native ZeroMQ error codes. */
-				EFSM = HAUSNUMERO + 51,
-				ENOCOMPATPROTO = HAUSNUMERO + 52,
-				ETERM = HAUSNUMERO + 53,
-				EMTHREAD // = HAUSNUMERO + 54
-			;
+            // EPROTONOSUPPORT
+            public const int EPROTONOSUPPORT = HAUSNUMERO + 2;
 
-			internal static class Posix
-			{
-				// source: http://www.virtsync.com/c-error-codes-include-errno
+            // ENOBUFS
+            public const int ENOBUFS = HAUSNUMERO + 3;
 
-				public static readonly int
-					// ENOTSUP = HAUSNUMERO + 1,
-					EPROTONOSUPPORT = 93,
-					ENOBUFS = 105,
-					ENETDOWN = 100,
-					EADDRINUSE = 98,
-					EADDRNOTAVAIL = 99,
-					ECONNREFUSED = 111,
-					EINPROGRESS = 115,
-					ENOTSOCK = 88,
-					EMSGSIZE = 90,
-					EAFNOSUPPORT = 97,
-					ENETUNREACH = 101,
-					ECONNABORTED = 103,
-					ECONNRESET = 104,
-					ENOTCONN = 107,
-					ETIMEDOUT = 110,
-					EHOSTUNREACH = 113,
-					ENETRESET = 102
-				;
-			}
+            // ENETDOWN
+            public const int ENETDOWN = HAUSNUMERO + 4;
+
+            // EADDRINUSE
+            public const int EADDRINUSE = HAUSNUMERO + 5;
+
+            // EADDRNOTAVAIL
+            public const int EADDRNOTAVAIL = HAUSNUMERO + 6;
+
+            // ECONNREFUSED
+            public const int ECONNREFUSED = HAUSNUMERO + 7;
+
+            // EINPROGRESS
+            public const int EINPROGRESS = HAUSNUMERO + 8;
+
+            // ENOTSOCK
+            public const int ENOTSOCK = HAUSNUMERO + 9;
+
+            // EMSGSIZE
+            public const int EMSGSIZE = HAUSNUMERO + 10;
+
+            // EAFNOSUPPORT
+            public const int EAFNOSUPPORT = HAUSNUMERO + 11;
+
+            // ENETUNREACH
+            public const int ENETUNREACH = HAUSNUMERO + 12;
+
+            // ECONNABORTED
+            public const int ECONNABORTED = HAUSNUMERO + 13;
+
+            // ECONNRESET
+            public const int ECONNRESET = HAUSNUMERO + 14;
+
+            // ENOTCONN
+            public const int ENOTCONN = HAUSNUMERO + 15;
+
+            // ETIMEDOUT
+            public const int ETIMEDOUT = HAUSNUMERO + 16;
+
+            // EHOSTUNREACH
+            public const int EHOSTUNREACH = HAUSNUMERO + 17;
+
+            // ENETRESET
+            public const int ENETRESET = HAUSNUMERO + 18;
+
+
+            /*  Native 0MQ error codes.*/
+            public const int EFSM = HAUSNUMERO + 51;
+            public const int ENOCOMPATPROTO = HAUSNUMERO + 52;
+            public const int ETERM = HAUSNUMERO + 53;
+            public const int EMTHREAD = HAUSNUMERO + 54;
+
+            #endregion
+
+            #region Windows && Linux
+            public const int
+                EPERM = 1,
+                ENOENT = 2,
+                ESRCH = 3,
+                EINTR = 4,
+                EIO = 5,
+                ENXIO = 6,
+                E2BIG = 7,
+                ENOEXEC = 8,
+                EBADF = 9,
+                ECHILD = 10,
+                EAGAIN = 11,
+                ENOMEM = 12,
+                EACCES = 13,
+                EFAULT = 14,
+                ENOTBLK = 15,
+                EBUSY = 16,
+                EEXIST = 17,
+                EXDEV = 18,
+                ENODEV = 19,
+                ENOTDIR = 20,
+                EISDIR = 21,
+                EINVAL = 22,
+                ENFILE = 23,
+                EMFILE = 24,
+                ENOTTY = 25,
+                ETXTBSY = 26,
+                EFBIG = 27,
+                ENOSPC = 28,
+                ESPIPE = 29,
+                EROFS = 30,
+                EMLINK = 31,
+                EPIPE = 32,
+                EDOM = 33,
+                ERANGE = 34;
+
+            #endregion
+
+            internal static class Posix
+            {
+                // source: http://www.virtsync.com/c-error-codes-include-errno
+
+                public const int
+                    // ENOTSUP = HAUSNUMERO + 1,
+                    EPROTONOSUPPORT = 93,
+                    ENOBUFS = 105,
+                    ENETDOWN = 100,
+                    EADDRINUSE = 98,
+                    EADDRNOTAVAIL = 99,
+                    ECONNREFUSED = 111,
+                    EINPROGRESS = 115,
+                    ENOTSOCK = 88,
+                    EMSGSIZE = 90,
+                    EAFNOSUPPORT = 97,
+                    ENETUNREACH = 101,
+                    ECONNABORTED = 103,
+                    ECONNRESET = 104,
+                    ENOTCONN = 107,
+                    ETIMEDOUT = 110,
+                    EHOSTUNREACH = 113,
+                    ENETRESET = 102
+                ;
+            }
 
             internal static class MacOSX
             {
-                public static readonly int 
+                public const int
                     EAGAIN = 35,
-					EINPROGRESS = 36,
+                    EINPROGRESS = 36,
                     ENOTSOCK = 38,
                     EMSGSIZE = 40,
                     EPROTONOSUPPORT = 43,
@@ -136,93 +174,39 @@ namespace ZeroMQ
                     EHOSTUNREACH = 65
                     ;
             }
-		}
+        }
+        /// <summary>
+        /// 取最后错误
+        /// </summary>
+        /// <returns></returns>
+        public static ZError GetLastErr()
+        {
+            return new ZError(zmq.errno());
+        }
 
-		public static ZError GetLastErr()
-		{
-			int errno = zmq.errno();
+        internal ZError(int errno)
+            : base(errno)
+        { }
+        /// <summary>
+        /// 空
+        /// </summary>
+        public new static ZError None => default(ZError);
 
-			return FromErrno(errno);
-		}
-
-		public static ZError FromErrno(int num)
-		{
-            // TODO: this can be made more efficient
-			ZError symbol = Find("E", num).OfType<ZError>().FirstOrDefault();
-			if (symbol != null) return symbol;
-
-            // unexpected error
-			return new ZError(num);
-		}
-
-		internal ZError(int errno)
-			: base(errno)
-		{ }
-
-		public new static ZError None => default(ZError);
-
-	    public static readonly ZError
-			// DEFAULT = new ZmqError(0),
-			EPERM,
-			ENOENT,
-			ESRCH,
-			EINTR,
-			EIO,
-			ENXIO,
-			E2BIG,
-			ENOEXEC,
-			EBADF,
-			ECHILD,
-			EAGAIN,
-			ENOMEM,
-			EACCES,
-			EFAULT,
-			ENOTBLK,
-			EBUSY,
-			EEXIST,
-			EXDEV,
-			ENODEV,
-			ENOTDIR,
-			EISDIR,
-			EINVAL,
-			ENFILE,
-			EMFILE,
-			ENOTTY,
-			ETXTBSY,
-			EFBIG,
-			ENOSPC,
-			ESPIPE,
-			EROFS,
-			EMLINK,
-			EPIPE,
-			EDOM,
-			ERANGE, // 34
-
-			ENOTSUP,
-			EPROTONOSUPPORT,
-			ENOBUFS,
-			ENETDOWN,
-			EADDRINUSE,
-			EADDRNOTAVAIL,
-			ECONNREFUSED,
-			EINPROGRESS,
-			ENOTSOCK,
-			EMSGSIZE,
-			// as of here are differences to nanomsg
-			EAFNOSUPPORT,
-			ENETUNREACH,
-			ECONNABORTED,
-			ECONNRESET,
-			ENOTCONN,
-			ETIMEDOUT,
-			EHOSTUNREACH,
-			ENETRESET,
-
-			/*  Native ZeroMQ error codes. */
-			EFSM,
-			ENOCOMPATPROTO,
-			ETERM,
-			EMTHREAD // = HAUSNUMERO + 54
-		;
-	}
+    }
+    /// <summary>
+    /// 扩展方便
+    /// </summary>
+    public static class ZErrorEx
+    {
+        /// <summary>
+        /// 判断是否此错误
+        /// </summary>
+        /// <param name="err"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public static bool IsError(this ZError err, int code)
+        {
+            return err != null && err.Number == code;
+        }
+    }
 }

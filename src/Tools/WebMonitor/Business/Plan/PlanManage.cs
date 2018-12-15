@@ -298,58 +298,68 @@ namespace ZeroNet.Http.Route
                 plan.skip_set = 0;
                 plan.plan_repet = 1;
             }
+
             var socket = ZeroConnectionPool.GetSocket(clientPlan.station, null);
-            if (socket.Socket == null)
+            if (socket?.Socket == null)
                 return ApiResult.Error(ErrorCode.LocalError, "无法联系ZeroCenter");
-            bool success;
 
-            if (config.StationType == ZeroStationType.Api || config.StationType == ZeroStationType.Vote)
+            using (socket)
             {
-                success = socket.Socket.SendTo(_planApiDescription,
-                    plan.ToZeroBytes(),
-                    clientPlan.context.ToZeroBytes(),
-                    clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes());
-            }
-            else if (config.StationType == ZeroStationType.Notify)
-            {
-                success = socket.Socket.SendTo(_planPubDescription,
-                    plan.ToZeroBytes(),
-                    clientPlan.context.ToZeroBytes(),
-                    clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes());
-            }
-            else//Manage
-            {
-                clientPlan.command = clientPlan.command.ToLower();
-                if (clientPlan.command != "pause" && clientPlan.command != "close" && clientPlan.command != "resume")
-                    return ApiResult.Error(ErrorCode.LogicalError, "系统命令仅支持暂停(pause)关闭(close)和恢复(resume) 非系统站点");
-                config = ZeroApplication.Config[clientPlan.station];
-                if (config == null || config.State == ZeroCenterState.Stop || config.IsBaseStation)
-                    return ApiResult.Error(ErrorCode.LogicalError, "命令参数为有效的非系统站点名称");
+                bool success;
+                switch (config.StationType)
+                {
+                    case ZeroStationType.Api:
+                    case ZeroStationType.Vote:
+                        success = socket.Socket.SendTo(_planApiDescription,
+                            plan.ToZeroBytes(),
+                            clientPlan.context.ToZeroBytes(),
+                            clientPlan.command.ToZeroBytes(),
+                            clientPlan.argument.ToZeroBytes(),
+                            GlobalContext.ServiceKey.ToZeroBytes());
+                        break;
+                    //Manage
+                    case ZeroStationType.Notify:
+                        success = socket.Socket.SendTo(_planPubDescription,
+                            plan.ToZeroBytes(),
+                            clientPlan.context.ToZeroBytes(),
+                            clientPlan.command.ToZeroBytes(),
+                            clientPlan.argument.ToZeroBytes(),
+                            GlobalContext.ServiceKey.ToZeroBytes());
+                        break;
+                    default:
+                        clientPlan.command = clientPlan.command.ToLower();
+                        if (clientPlan.command != "pause" && clientPlan.command != "close" && clientPlan.command != "resume")
+                            return ApiResult.Error(ErrorCode.LogicalError, "系统命令仅支持暂停(pause)关闭(close)和恢复(resume) 非系统站点");
+                        config = ZeroApplication.Config[clientPlan.station];
+                        if (config == null || config.State == ZeroCenterState.Stop || config.IsBaseStation)
+                            return ApiResult.Error(ErrorCode.LogicalError, "命令参数为有效的非系统站点名称");
 
-                success = socket.Socket.SendTo(commandDescription,
-                    plan.ToZeroBytes(),
-                    clientPlan.command.ToZeroBytes(),
-                    clientPlan.argument.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes());
-            }
-            if (!success)
-            {
-                ZeroTrace.SystemLog("NewPlan", "Send", socket.Socket.GetLastError());
+                        success = socket.Socket.SendTo(commandDescription,
+                            plan.ToZeroBytes(),
+                            clientPlan.command.ToZeroBytes(),
+                            clientPlan.argument.ToZeroBytes(),
+                            GlobalContext.ServiceKey.ToZeroBytes());
+                        break;
+                }
+                if (!success)
+                {
+                    ZeroTrace.SystemLog("NewPlan", "Send", socket.Socket.GetLastError());
 
-                return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
-            }
-            if (!socket.Socket.Recv(out var message))
-            {
-                ZeroTrace.SystemLog("NewPlan", "Recv", socket.Socket.LastError);
-                return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
-            }
-            var value = message.Unpack();
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
+                }
+                if (!socket.Socket.Recv(out var message))
+                {
+                    ZeroTrace.SystemLog("NewPlan", "Recv", socket.Socket.LastError);
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
+                }
 
-            return value.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, value.State.Text());
+                using (message)
+                {
+                    var value = message.Unpack();
+                    return value.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, value.State.Text());
+                }
+            }
+
         }
     }
 }

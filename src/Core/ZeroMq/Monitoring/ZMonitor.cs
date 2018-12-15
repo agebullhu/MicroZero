@@ -179,7 +179,7 @@ namespace ZeroMQ.Monitoring
 	            {
                     if (!_socket.PollIn(poller, out ZMessage incoming, out error, PollingInterval))
                     {
-                        if (error == ZError.EAGAIN)
+                        if (error.IsError(ZError.Code.EAGAIN))
                         {
                             // TODO: why sleep here? the loop frequency is already controlled by PollingInterval
                             Thread.Sleep(1);
@@ -218,9 +218,9 @@ namespace ZeroMQ.Monitoring
 	    private void LogError(ZError error, string context)
 	    {
 	        // TODO: this error handling is somewhat too subtle; the client should be able to retrieve it
-	        if (error != ZError.ETERM)
+	        if (!error.IsError(ZError.Code.ETERM))
 	        {
-	            Trace.TraceError("error on {0}: {1}", context, error.ToString());
+	            Trace.TraceError($"error on {context}: {error}");
 	        }
 	    }
 

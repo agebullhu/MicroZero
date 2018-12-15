@@ -98,10 +98,10 @@ namespace ZeroNet.Http.Gateway
                         builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
                 }
                 
-                data.Form = builder.ToString();
+                data.HttpForm = builder.ToString();
                 using (var rs = RemoteRequest.GetRequestStream())
                 {
-                    var formData = Encoding.UTF8.GetBytes(data.Form);
+                    var formData = Encoding.UTF8.GetBytes(data.HttpForm);
                     rs.Write(formData, 0, formData.Length);
                 }
             }
@@ -109,13 +109,13 @@ namespace ZeroNet.Http.Gateway
             {
                 using (var texter = new StreamReader(localRequest.Body))
                 {
-                    data.Context = texter.ReadToEnd();
+                    data.HttpContext = texter.ReadToEnd();
                     texter.Close();
                 }
-                if (string.IsNullOrWhiteSpace(data.Context))
+                if (string.IsNullOrWhiteSpace(data.HttpContext))
                     return;
                 RemoteRequest.ContentType = "application/json;charset=utf-8";
-                var buffer = data.Context.ToUtf8Bytes();
+                var buffer = data.HttpContext.ToUtf8Bytes();
                 using (var rs = RemoteRequest.GetRequestStream())
                 {
                     rs.Write(buffer, 0, buffer.Length);
