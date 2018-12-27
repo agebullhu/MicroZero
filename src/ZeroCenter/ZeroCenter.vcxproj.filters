@@ -54,6 +54,9 @@
     <Filter Include="test">
       <UniqueIdentifier>{02e9cd96-f340-4810-962e-5f3cf0281a0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ext\shared_char">
+      <UniqueIdentifier>{d20df558-29f8-44fd-8a57-926121571d2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
@@ -82,9 +85,6 @@
     </ClCompile>
     <ClCompile Include="redis\redis.cpp">
       <Filter>ext\redis</Filter>
-    </ClCompile>
-    <ClCompile Include="rpc\net_crc.cpp">
-      <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="cfg\json_config.cpp">
       <Filter>ext\cfg</Filter>
@@ -124,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="test\sqlite_test.cpp">
       <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\net_crc.cpp">
+      <Filter>ext\shared_char</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -205,9 +208,6 @@
     <ClInclude Include="rpc\proxy_dispatcher.h">
       <Filter>rpc\proxy</Filter>
     </ClInclude>
-    <ClInclude Include="ext\shared_char.h">
-      <Filter>rpc\zero</Filter>
-    </ClInclude>
     <ClInclude Include="main\main.h">
       <Filter>main</Filter>
     </ClInclude>
@@ -219,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="rpc\zero_def_command.h">
       <Filter>rpc\zero</Filter>
+    </ClInclude>
+    <ClInclude Include="ext\shared_char.h">
+      <Filter>ext\shared_char</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

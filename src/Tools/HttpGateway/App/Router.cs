@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Web;
+using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
+using ZeroNet.Http.Route;
 
 namespace ZeroNet.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类
     /// </summary>
-    internal partial class Router
+    internal partial class Router : IRouter
     {
         #region 路由
 
@@ -22,11 +27,17 @@ namespace ZeroNet.Http.Gateway
         private bool FindHost()
         {
             if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
+            {
+                LogRecorder.MonitorTrace($"{Data.HostName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
+            }
             if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
-                return false;
+            {
+                LogRecorder.MonitorTrace($"{Data.ApiName} no find");
+                return false; //Data.RouteHost = HttpHost.DefaultHost;
+            }
             return Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public);
         }
 
@@ -42,50 +53,62 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     Http上下文
         /// </summary>
-        public HttpContext HttpContext { get; }
+        public HttpContext HttpContext { get; set; }
 
         /// <summary>
         ///     Http请求
         /// </summary>
-        public HttpRequest Request { get; }
+        public HttpRequest Request { get; set; }
 
         /// <summary>
         ///     Http返回
         /// </summary>
-        public HttpResponse Response { get; }
+        public HttpResponse Response { get; set; }
 
         /// <summary>
         ///     Http返回
         /// </summary>
-        public RouteData Data { get; }
+        public RouteData Data { get; set; }
 
         /// <summary>
         ///     安全检查器
         /// </summary>
-        public SecurityChecker SecurityChecker { get; }
+        public SecurityChecker SecurityChecker { get; set; }
 
         #endregion
 
         #region 流程
 
         /// <summary>
-        ///     内部构架
+        ///     调用
         /// </summary>
         /// <param name="context"></param>
-        internal Router(HttpContext context)
+        bool IRouter.Prepare(HttpContext context)
         {
+            LogRecorder.MonitorTrace("ApiRouter");
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
-            Data = new RouteData();
-            Data.Prepare(context);
+            Data = new RouteData
+            {
+                Uri = Request.GetUri(),
+                HttpMethod = Request.Method.ToUpper()
+            };
             SecurityChecker = new SecurityChecker { Data = Data };
+            Data.Prepare(HttpContext);
+
+            IoHandler.OnBegin(Data);
+            if (SecurityChecker.PreCheck())
+                return true;
+            Data.Status = ZeroOperatorStatus.DenyAccess;
+            Data.ResultMessage = ApiResult.DenyAccessJson;
+            return false;
         }
 
         /// <summary>
         ///     调用
         /// </summary>
-        internal async void Call()
+        async void IRouter.Call()
         {
             if (!CheckCall())
                 return;
@@ -108,7 +131,8 @@ namespace ZeroNet.Http.Gateway
             if (!TokenCheck())
             {
                 Data.Status = ZeroOperatorStatus.DenyAccess;
-                Data.ResultMessage = ApiResult.DenyAccessJson;
+                if (Data.ResultMessage == null)
+                    Data.ResultMessage = ApiResult.DenyAccessJson;
                 return;
             }
             // 3 缓存快速处理
@@ -140,16 +164,37 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         private bool CheckCall()
         {
-            var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (words.Length <= 1)
+            if (string.IsNullOrWhiteSpace(RouteOption.Option.SystemConfig.SiteFolder))
             {
-                Data.Status = ZeroOperatorStatus.FormalError;
-                Data.ResultMessage = ApiResult.DenyAccessJson;
-                return false;
-            }
+                var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length <= 1)
+                {
 
-            Data.HostName = words[0];
-            Data.ApiName = words[1];
+                    Data.Status = ZeroOperatorStatus.FormalError;
+                    Data.ResultMessage = ApiResult.ArgumentErrorJson;
+                    return false;
+                }
+
+                Data.HostName = words[0];
+                Data.ApiName = words[1];
+            }
+            else
+            {
+                //var path = Data.Uri.LocalPath.Replace(RouteOption.Option.SystemConfig.SiteFolder, "",StringComparison.OrdinalIgnoreCase);
+
+                //LogRecorder.MonitorTrace($"{RouteOption.Option.SystemConfig.SiteFolder}:{Data.Uri.LocalPath}");
+                var words = Data.Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length <= 1)
+                {
+                    Data.Status = ZeroOperatorStatus.FormalError;
+                    Data.ResultMessage = ApiResult.ArgumentErrorJson;
+                    return false;
+                }
+
+                Data.HostName = words[1];
+                Data.ApiName = words[2];
+            }
+            LogRecorder.MonitorTrace($"{Data.HostName}:{Data.ApiName}");
             return true;
         }
 
@@ -158,41 +203,58 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         private bool TokenCheck()
         {
-            if (string.IsNullOrWhiteSpace(Data.Token))
-            {
-                Data.Token = Request.Query["token"];
-            }
-            else
-            {
-                var words = Data.Token.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length != 2 ||
-                    !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
-                    words[1].Equals("null") ||
-                    words[1].Equals("undefined"))
-                    Data.Token = null;
-                else
-                    Data.Token = words[1];
-            }
-            GlobalContext.RequestInfo.Token = Data.Token;
+            
             SecurityChecker.Data = Data;
-            if (SecurityChecker.CheckToken())
-                return true;
+            //if (SecurityChecker.CheckToken())
+            //    return true;
             //Data.ResultMessage = RouteOption.Option.Security.BlockHost;
             //Response.Redirect(RouteOption.Option.Security.BlockHost, false);
             //Data.Redirect = true;
-            return false;
+            return SecurityChecker.CheckToken();
         }
 
 
         /// <summary>
         ///     写入返回
         /// </summary>
-        internal void WriteResult()
+        void IRouter.WriteResult()
         {
-            if (Data.Redirect)
-                return;
+            //if (Data.Redirect)
+            //    return;
+            //// 缓存
+            //RouteCache.CacheResult(Data);
+            LogRecorder.MonitorTrace($"Status : {Data.Status} ResultMessage : {Data.ResultMessage}");
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResult.RemoteEmptyErrorJson), Encoding.UTF8);
+        }
+
+        /// <summary>
+        ///     结束
+        /// </summary>
+        void IRouter.End()
+        {
+            IoHandler.OnEnd(Data);
+        }
+
+        /// <summary>
+        /// 异常处理
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="context"></param>
+        void IRouter.OnError(Exception e, HttpContext context)
+        {
+            try
+            {
+                LogRecorder.MonitorTrace(e.Message);
+                Data.Status = ZeroOperatorStatus.LocalException;
+                ZeroTrace.WriteException("Route", e);
+                IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
+                context.Response.WriteAsync(ApiResult.LocalErrorJson, Encoding.UTF8);
+            }
+            catch (Exception exception)
+            {
+                LogRecorder.Exception(exception);
+            }
         }
 
         #endregion

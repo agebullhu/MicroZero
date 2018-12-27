@@ -55,6 +55,8 @@ namespace agebull
 					setsockopt(socket, ZMQ_TCP_KEEPALIVE_IDLE, global_config::TCP_KEEPALIVE_IDLE);
 					setsockopt(socket, ZMQ_TCP_KEEPALIVE_INTVL, global_config::TCP_KEEPALIVE_INTVL);
 				}
+
+
 				if (is_client)
 				{
 					if (identity != nullptr)
@@ -71,6 +73,7 @@ namespace agebull
 				{
 					if (global_config::BACKLOG >= 0)
 						setsockopt(socket, ZMQ_BACKLOG, global_config::BACKLOG);
+
 				}
 
 			}
@@ -308,8 +311,12 @@ namespace agebull
 				zmq_msg_init(&msg1);
 				int rc = zmq_msg_recv(&msg1, s, 0);
 				if (rc == -1)
+				{
+					zmq_msg_close(&msg1);
 					return 1;
+				}
 				const char* data = static_cast<char*>(zmq_msg_data(&msg1));
+				zmq_msg_close(&msg1);
 				memcpy(&(event->event), data, sizeof(event->event));
 				memcpy(&(event->value), data + sizeof(event->event), sizeof(event->value));
 
@@ -318,12 +325,16 @@ namespace agebull
 				//assert(zmq_msg_more(&msg1) != 0);
 				rc = zmq_msg_recv(&msg2, s, 0);
 				if (rc == -1)
+				{
+					zmq_msg_close(&msg2);
 					return 0;
+				}
 				//assert(zmq_msg_more(&msg2) == 0);
 				// copy binary data to event struct
 				// copy address part
 				const size_t len = zmq_msg_size(&msg2);
 				memcpy(event->address, zmq_msg_data(&msg2), len);
+				zmq_msg_close(&msg2);
 				event->address[len] = '\0';
 				return 0;
 			}

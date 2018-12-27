@@ -53,6 +53,18 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty]
         public string ContextHost { get; set; }
 
+        /// <summary>
+        ///     内容页地址
+        /// </summary>
+        [JsonProperty]
+        public string ContextAddr { get; set; }
+
+
+        /// <summary>
+        ///     内容页地址
+        /// </summary>
+        [JsonProperty]
+        public string SiteFolder { get; set; }
         
     }
 }

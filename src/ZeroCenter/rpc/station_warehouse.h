@@ -98,7 +98,7 @@ namespace agebull
 			/**
 			* \brief 取得配置
 			*/
-			static shared_ptr<zero_config>& get_config(const string& station_name, bool find_redis = true);
+			static shared_ptr<zero_config>& get_config(const char* station_name, bool find_redis = true);
 
 			/**
 			* \brief 加入站点
@@ -209,7 +209,7 @@ namespace agebull
 			/**
 			* 心跳的响应
 			*/
-			static bool heartbeat(uchar cmd, vector<shared_char> lines);
+			static bool heartbeat(uchar cmd, vector<shared_char>& lines);
 		};
 	}
 }

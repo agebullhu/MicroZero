@@ -11,7 +11,7 @@ namespace ZeroNet.Http.Gateway
     /// <summary>
     ///     Http进站出站的处理类
     /// </summary>
-    internal sealed class IoHandler
+    public sealed class IoHandler
     {
         /// <summary>
         ///     开始时的处理

@@ -6,13 +6,17 @@
     /*是否开启返回值检查*/
     "CheckResult": false,
     /*是否开启API预检：即检查API是否存在、是否需要令牌、是否可公开访问*/
-    "CheckApiItem": true,
+    "CheckApiItem": false,
     /*HTTP调用超时*/
     "HttpTimeOut": 30000,
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
     /*内容页地址*/
-    "ContextHost": "http://api.yizuanbao.cn:8080/"
+    "SiteFolder": "",
+    /*内容页地址*/
+    "ContextHost": "http://zero.yizuanbao.cn:8080/",
+    /*内容页地址*/
+    "ContextAddr": "D:\\玢翔医疗\\研发部\\Git\\InternetHospital\\Hospital\\SimpleHIS\\标注\\标注\\玢翔支付后台"
   },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {

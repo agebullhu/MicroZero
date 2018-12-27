@@ -17,6 +17,7 @@ namespace agebull
 		class zero_station
 		{
 			friend class station_warehouse;
+		protected:
 			/**
 			* \brief 外部SOCKET类型
 			*/
@@ -47,7 +48,6 @@ namespace agebull
 			* \brief 实例队列访问锁
 			*/
 			boost::mutex mutex_;
-		protected:
 			/**
 			* \brief 异步子任务同步等待的信号量
 			*/
@@ -161,11 +161,11 @@ namespace agebull
 			/**
 			*\brief 发送消息到工作站点
 			*/
-			inline bool send_response(zmq_handler socket, const  vector<shared_char>& datas, size_t first_index = 0);
+			inline zmq_socket_state send_response(zmq_handler socket, const  vector<shared_char>& datas, size_t first_index = 0);
 			/**
 			*\brief 发送消息到工作站点
 			*/
-			inline bool send_response(const vector<shared_char>& datas, size_t first_index = 0);
+			inline zmq_socket_state send_response(const vector<shared_char>& datas, size_t first_index = 0);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
@@ -187,20 +187,15 @@ namespace agebull
 			*/
 			inline bool send_request_status(zmq_handler socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
 		private:
-			/**
-			* \brief 工作集合的响应
-			*/
-			void on_response();
 
 			/**
 			* \brief 调用集合的响应
 			*/
-			void on_request(zmq_pollitem_t& socket, bool inner);
-
+			void on_response(zmq_pollitem_t& socket);
 			/**
 			* \brief 调用集合的响应
 			*/
-			void on_request(zmq_handler socket, bool inner);
+			virtual void on_request(zmq_pollitem_t& socket, bool inner);
 
 			/**
 			* \brief 简单命令
@@ -340,31 +335,30 @@ namespace agebull
 		/**
 		*\brief 发送消息到工作站点
 		*/
-		inline bool zero_station::send_response(zmq_handler socket, const  vector<shared_char>& datas, const  size_t first_index)
+		inline zmq_socket_state zero_station::send_response(zmq_handler socket, const  vector<shared_char>& datas, const  size_t first_index)
 		{
 			if (socket == nullptr)
-				return false;
+				return zmq_socket_state::unknow;
 			zmq_state_ = socket_ex::send(socket, datas, first_index);
 			if (zmq_state_ == zmq_socket_state::succeed)
-				return true;
+				return zmq_state_;
 			config_->worker_err++;
 			const char* err_msg = socket_ex::state_str(zmq_state_);
-			log_error2("send_response error %d:%s", zmq_state_, err_msg);
-			return false;
+			log_error3("send_response error %d:%s(%s)", zmq_state_, err_msg, *datas[0]);
+			return zmq_state_;
 		}
 		/**
 		*\brief 发送消息到工作站点
 		*/
-		inline bool zero_station::send_response(const vector<shared_char>& datas, const  size_t first_index)
+		inline zmq_socket_state zero_station::send_response(const vector<shared_char>& datas, const  size_t first_index)
 		{
-			if (!config_->hase_ready_works())
-			{
-				return false;
-			}
+			//if (!config_->hase_ready_works())
+			//{
+			//	return false;
+			//}
 			boost::lock_guard<boost::mutex> guard(send_mutex_);
 			config_->worker_out++;
-			send_response(worker_out_socket_tcp_, datas, first_index);
-			return zmq_state_ == zmq_socket_state::succeed;
+			return send_response(worker_out_socket_tcp_, datas, first_index);
 		}
 
 		/**

@@ -17,6 +17,7 @@ namespace agebull
 		*/
 		void plan_dispatcher::launch(shared_ptr<plan_dispatcher>& station)
 		{
+
 			zero_config& config = station->get_config();
 			if (!station->initialize())
 			{
@@ -307,8 +308,8 @@ namespace agebull
 
 			size_t plan = 0, glid = 0, reqer = 0,pid = 0;
 
-			const size_t rqid = 0;
-			for (size_t idx = 2; idx <= list[1].frame_size() && idx < list.size(); idx++)
+			const size_t rqid = 0,size= list[1].frame_size();
+			for (size_t idx = 2; idx <= size && idx < list.size(); idx++)
 			{
 				switch (list[1][idx])
 				{
@@ -343,7 +344,7 @@ namespace agebull
 				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
 				return false;
 			}
-			const auto config = station_warehouse::get_config(message->station);
+			const auto config = station_warehouse::get_config(message->station.c_str());
 			if (!config)
 			{
 				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
@@ -418,7 +419,7 @@ namespace agebull
 			vector<shared_char> result;
 			if (state != zmq_socket_state::succeed)
 			{
-				const auto config = station_warehouse::get_config(message->station, false);
+				const auto config = station_warehouse::get_config(message->station.c_str(), false);
 				shared_char frame;
 				frame.alloc_desc(6, config ? zero_def::status::send_error : zero_def::status::not_find);
 				result.emplace_back(frame);
@@ -519,9 +520,9 @@ namespace agebull
 		{
 			shared_char description;
 			if (message != nullptr)
-				description.alloc_desc_frame(static_cast<char>(event_type), zero_def::frame::sub_title, zero_def::frame::context);
+				description.alloc_frame_desc(static_cast<char>(event_type), zero_def::frame::sub_title, zero_def::frame::context);
 			else
-				description.alloc_desc(static_cast<char>(event_type), zero_def::frame::sub_title);
+				description.alloc_frame_desc(static_cast<char>(event_type), zero_def::frame::sub_title);
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
 			datas.emplace_back(description);
@@ -530,7 +531,7 @@ namespace agebull
 			{
 				datas.emplace_back(event_type == zero_net_event::event_plan_add ? message->write_json() : message->write_state());
 			}
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 		/**
 		*\brief 发布消息
@@ -538,7 +539,7 @@ namespace agebull
 		bool plan_dispatcher::result_event(shared_ptr<plan_message>& message, vector<shared_char>& result)
 		{
 			shared_char description;
-			description.alloc_desc_frame(static_cast<char>(zero_net_event::event_plan_result)
+			description.alloc_frame_desc(static_cast<char>(zero_net_event::event_plan_result)
 				, zero_def::frame::sub_title, zero_def::frame::context, zero_def::frame::status);
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
@@ -553,7 +554,7 @@ namespace agebull
 				description.append_frame(result[0][idx]);
 				datas.emplace_back(result[idx - 1]);
 			}
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 	}
 }

@@ -27,11 +27,20 @@ namespace Agebull.ZeroNet.Core
             ZeroConnectionPool.Close(ref _socket);
             _socket = ZeroConnectionPool.GetSocket2(Station, Name);
         }
+        /// <summary>
+        /// 对应的站点类型
+        /// </summary>
+        public int StationType { get; set; }
 
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="socket"></param>
         internal PoolSocket(ZSocket socket)
         {
             _socket = socket;
         }
+
         /// <summary>清理资源</summary>
         protected override void OnDispose()
         {
@@ -43,6 +52,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroConnectionPool.Free(_socket);
             _socket = null;
         }
+
         /// <summary>
         /// 析构
         /// </summary>

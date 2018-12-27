@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.ZeroNet.ZeroApi;
-using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -22,8 +19,13 @@ namespace Agebull.ZeroNet.Core
         {
             StationType = type;
             IsService = isService;
-            Name = GetType().Name ;
+            Name = GetType().Name;
+            //Hearter = SystemManager.Instance;
         }
+        /// <summary>
+        /// 心跳器
+        /// </summary>
+        protected HeartManager Hearter /*{ get; set; }*/=> SystemManager.Instance;
 
         /// <summary>
         /// 是否服务
@@ -117,15 +119,13 @@ namespace Agebull.ZeroNet.Core
                 return false;
             }
 
-            if (Config.State == ZeroCenterState.Stop)
-            {
-                ZeroApplication.OnObjectFailed(this);
-                ZeroTrace.WriteError(StationName, "Uninstall");
-                State = StationState.ConfigError;
-                return false;
-            }
+            if (Config.State != ZeroCenterState.Stop)
+                return true;
+            ZeroApplication.OnObjectFailed(this);
+            ZeroTrace.WriteError(StationName, "Uninstall");
+            State = StationState.ConfigError;
+            return false;
 
-            return true;
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Agebull.ZeroNet.Core
                     return false;
                 }
                 //可执行
-                SystemManager.Instance.HeartJoin(Config.StationName, RealName);
+                Hearter?.HeartJoin(Config.StationName, RealName);
                 //执行主任务
                 RunTaskCancel = new CancellationTokenSource();
                 Task.Factory.StartNew(Run);
@@ -261,7 +261,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (Interlocked.CompareExchange(ref _state, StationState.Closing, StationState.Run) == StationState.Run)
             {
-                SystemManager.Instance.HeartLeft(StationName, RealName);
+                Hearter?.HeartLeft(StationName, RealName);
                 ZeroTrace.SystemLog(StationName, "Closing....");
                 RunTaskCancel?.Cancel();
                 _waitToken.Wait();
@@ -291,10 +291,10 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     要求心跳
         /// </summary>
-        void IZeroObject.OnHeartbeat()
+        public virtual void OnHeartbeat()
         {
             if (CanLoop)
-                SystemManager.Instance.Heartbeat(Config.StationName, RealName);
+                Hearter?.Heartbeat(Config.StationName, RealName);
         }
 
         void IZeroObject.OnZeroInitialize()

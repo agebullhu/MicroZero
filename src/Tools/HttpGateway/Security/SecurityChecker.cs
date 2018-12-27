@@ -30,7 +30,7 @@ namespace ZeroNet.Http.Gateway
         private static readonly string UnknowDeviceJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_Device_Unknow));
 
         private static readonly string UnknowAccessTokenJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_Unknow));
-
+        private static readonly string AccessTokenTimeOutJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_TimeOut));
         private static readonly ApiResult<LoginUserInfo> DenyAccessResult = ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
 
         #endregion
@@ -225,6 +225,11 @@ namespace ZeroNet.Http.Gateway
                         if (result == null || result.Status.ErrorCode == ErrorCode.Auth_UnknowToken)
                         {
                             Data.ResultMessage = UnknowAccessTokenJson;
+                            return false;
+                        }
+                        if (result.Status.ErrorCode == ErrorCode.Auth_AccessToken_TimeOut)
+                        {
+                            Data.ResultMessage = AccessTokenTimeOutJson;
                             return false;
                         }
                         if (result.Success)

@@ -22,6 +22,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         protected BatchPublisher() : base(ZeroStationType.Notify, false)
         {
+            //Hearter = SystemManager.Instance;
         }
         /// <summary>
         /// 广播
@@ -87,7 +88,7 @@ namespace Agebull.ZeroNet.Log
         protected sealed override bool RunInner(CancellationToken token)
         {
             _socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity);
-            SystemManager.Instance.HeartReady(StationName, RealName);
+            Hearter?.HeartReady(StationName, RealName);
             State = StationState.Run;
             int cnt = 0;
 
@@ -150,7 +151,7 @@ namespace Agebull.ZeroNet.Log
                         Thread.Sleep(10);
                 }
             }
-            SystemManager.Instance.HeartLeft(StationName, RealName);
+            Hearter?.HeartLeft(StationName, RealName);
             _socket.TryClose();
             return true;
         }

@@ -24,6 +24,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         protected SignlePublisher() : base(ZeroStationType.Notify, false)
         {
+            //Hearter = SystemManager.Instance;
         }
 
         private readonly List<ZSocket> sockets = new List<ZSocket>();
@@ -176,32 +177,31 @@ namespace Agebull.ZeroNet.PubSub
         {
             using (var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity))
             {
-                using (var poll = ZmqPool.CreateZmqPool())
+                var poll = ZmqPool.CreateZmqPool();
+                poll.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket(_inporcName, ZSocketType.PULL));
+                for (int i = 0; i < 64; i++)
                 {
-                    poll.Prepare(ZPollEvent.In,ZSocket.CreateServiceSocket(_inporcName, ZSocketType.PULL));
-                    for (int i = 0; i < 64; i++)
-                    {
-                        sockets.Add(ZSocket.CreateClientSocket(_inporcName, ZSocketType.PUSH));
-                    }
-                    SystemManager.Instance.HeartReady(StationName, RealName);
-                    State = StationState.Run;
-                    Thread.Sleep(5);
-                    //历史数据重新入列
-                    foreach (var data in datas)
-                    {
-                        PushToLocalQueue(data);
-                    }
-                    datas.Clear();
-                    File.Delete(CacheFileName);
-                    while (true)
+                    sockets.Add(ZSocket.CreateClientSocket(_inporcName, ZSocketType.PUSH));
+                }
+                Hearter?.HeartReady(StationName, RealName);
+                State = StationState.Run;
+                Thread.Sleep(5);
+                //历史数据重新入列
+                foreach (var data in datas)
+                {
+                    PushToLocalQueue(data);
+                }
+                datas.Clear();
+                File.Delete(CacheFileName);
+                using (poll)
+                {
+                    while (CanLoop)
                     {
                         if (poll.Poll() && poll.CheckIn(0, out var message))
                             Send(socket, message);
-                        else if (!CanLoop)//保证发送完成
-                            break;
                     }
-                    SystemManager.Instance.HeartLeft(StationName, RealName);
                 }
+                Hearter?.HeartLeft(StationName, RealName);
             }
             return true;
         }

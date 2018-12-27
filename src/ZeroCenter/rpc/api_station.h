@@ -17,15 +17,16 @@ namespace agebull
 			* \brief 构造
 			*/
 			api_station(string name)
-				: zero_station(name, zero_def::station_type::api, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(name, zero_def::station_type::api, ZMQ_ROUTER, global_config::api_route_mode ? ZMQ_ROUTER : ZMQ_PUSH)
 			{
+
 			}
 
 			/**
 			* \brief 构造
 			*/
 			api_station(shared_ptr<zero_config>& config)
-				: zero_station(config, zero_def::station_type::api, ZMQ_ROUTER, ZMQ_PUSH)
+				: zero_station(config, zero_def::station_type::api, ZMQ_ROUTER, global_config::api_route_mode ? ZMQ_ROUTER : ZMQ_PUSH)
 			{
 			}
 			/**
@@ -67,6 +68,16 @@ namespace agebull
 			* \brief 工作结束(发送到请求者)
 			*/
 			void job_end(vector<shared_char>& list) final;
+
+			/**
+			* 心跳的响应
+			bool heartbeat(uchar cmd, vector<shared_char> list);
+
+			*/
+			/**
+			* \brief 内部命令
+			*/
+			bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner);
 		};
 
 	}

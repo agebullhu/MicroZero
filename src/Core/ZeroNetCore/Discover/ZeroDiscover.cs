@@ -25,7 +25,11 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         public Assembly Assembly { get; set; }
 
-        public string StationName { get; set; }
+        public string StationName
+        {
+            get => _stationName ?? ZeroApplication.Config.StationName;
+            set => _stationName = value;
+        }
 
         /// <summary>
         /// 站点文档信息
@@ -41,6 +45,22 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 查找API
         /// </summary>
+        public void FindApies(Type type)
+        {
+            XmlMember.Load(type.Assembly);
+            StationInfo.Add(StationName, _defStation = new StationDocument
+            {
+                Name = StationName
+            });
+
+            FindApi(type, false);
+            RegistToZero();
+
+            RegistDocument();
+        }
+        /// <summary>
+        /// 查找API
+        /// </summary>
         public void FindApies()
         {
             XmlMember.Load(Assembly);
@@ -48,7 +68,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Name = StationName
             });
-            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiControllerBase))).ToArray();
+            var types = Assembly.GetTypes().Where(p => p.IsSubclassOf(typeof(ApiControllerBase)) || p.IsSubclassOf(typeof(ApiStationBase))).ToArray();
             foreach (var type in types)
             {
                 FindApi(type, false);
@@ -99,7 +119,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         /// <param name="type"></param>
         /// <param name="onlyDoc"></param>
-        private void FindApi(Type type, bool onlyDoc)
+        public void FindApi(Type type, bool onlyDoc)
         {
             if (type.IsAbstract)
                 return;
@@ -430,6 +450,8 @@ namespace Agebull.ZeroNet.ZeroApi
         private Dictionary<Type, TypeDocument> typeDocs2 = new Dictionary<Type, TypeDocument>();
 
         private Dictionary<Type, TypeDocument> typeDocs = new Dictionary<Type, TypeDocument>();
+        private string _stationName;
+
         private TypeDocument ReadEntity(Type type, string name)
         {
             var typeDocument = new TypeDocument

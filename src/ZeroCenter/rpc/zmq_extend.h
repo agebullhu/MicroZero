@@ -398,6 +398,7 @@ namespace agebull
 				state = zmq_msg_recv(&msg_call, socket, flag);
 				if (state < 0)
 				{
+					zmq_msg_close(&msg_call);
 					return check_zmq_error();
 				}
 				data = msg_call;
@@ -426,6 +427,7 @@ namespace agebull
 					re = zmq_msg_recv(&msg, socket, flag);
 					if (re < 0)
 					{
+						zmq_msg_close(&msg);
 						return check_zmq_error();
 					}
 					if (re == 0)
@@ -487,7 +489,7 @@ namespace agebull
 			{
 				if (iter.empty())
 					return zmq_send(socket, "", 0, flag);
-				return zmq_send(socket, *iter, iter.size(), flag);
+				return zmq_send(socket, iter.get_buffer(), iter.size(), flag);
 			}
 
 			/**

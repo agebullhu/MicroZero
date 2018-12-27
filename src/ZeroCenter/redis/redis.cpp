@@ -111,7 +111,6 @@ namespace agebull
 		if (thread_context_ != nullptr)
 		{
 			delete thread_context_;
-			thread_context_ = nullptr;
 		}
 	}
 	/**
@@ -126,22 +125,6 @@ namespace agebull
 		m_redis_client = new acl::redis_client(redis_ip());
 		m_redis_cmd = new acl::redis(m_redis_client);
 		m_redis_cmd->select(db);
-	}
-
-	/**
-	* 选择 redis-server 中的数据库 ID
-	* SELECT command to select the DB id in redis-server
-	* @param dbnum {int} redis 数据库 ID
-	*  the DB id
-	* @return {bool} 操作是否成功
-	*  return true if success, or false for failed.
-	*/
-	bool trans_redis::select(int dbnum)
-	{
-		if (m_cur_db_ == dbnum)
-			return true;
-		m_cur_db_ = dbnum;
-		return m_redis_cmd->select(dbnum);
 	}
 	/**
 	* \brief 析构
@@ -164,6 +147,22 @@ namespace agebull
 		m_redis_client = nullptr;
 		if (thread_context_ == this)
 			thread_context_ = nullptr;
+	}
+
+	/**
+	* 选择 redis-server 中的数据库 ID
+	* SELECT command to select the DB id in redis-server
+	* @param dbnum {int} redis 数据库 ID
+	*  the DB id
+	* @return {bool} 操作是否成功
+	*  return true if success, or false for failed.
+	*/
+	bool trans_redis::select(int dbnum)
+	{
+		if (m_cur_db_ == dbnum)
+			return true;
+		m_cur_db_ = dbnum;
+		return m_redis_cmd->select(dbnum);
 	}
 
 	/**

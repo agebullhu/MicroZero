@@ -71,3 +71,7 @@ packages
 /src/Test/ZeroSerivce
 /src/Tools/WebMonitor/datas
 /designer
+/src/Tools/HttpBridge/appsettings.json
+/src/test/QueueTest/appsettings.json
+/src/Tools/HttpBridge/wwwroot
+/src/Tools/HttpGateway/wwwroot

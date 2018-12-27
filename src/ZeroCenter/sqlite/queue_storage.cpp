@@ -19,11 +19,13 @@ namespace agebull
 			"	pri_title NVARCHAR(200)," \
 			"	sub_title NVARCHAR(200)," \
 			"	rid       NVARCHAR(200)," \
-			"	arg       TEXT" \
+			"	ctx       TEXT," \
+			"	arg       TEXT," \
+			"	arg2      TEXT" \
 			");";
-		const char* queue_storage::insert_sql_ = "insert into tb_message values(?,?,?,?,?,?,?);";
+		const char* queue_storage::insert_sql_ = "insert into tb_message values(?,?,?,?,?,?,?,?,?);";
 		const char* queue_storage::load_max_sql_ = "select max(local_id) from tb_message;";
-		const char* queue_storage::load_sql_ = "select * from tb_message where local_id > ? AND local_id < ?;";
+		const char* queue_storage::load_sql_ = "select pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2 from tb_message where local_id > ? AND local_id < ?;";
 		/**
 		 * \brief 准备存储
 		 */
@@ -86,7 +88,7 @@ namespace agebull
 		/**
 		*\brief 将数据写入数据库中
 		*/
-		int64 queue_storage::save(const char* title, const char* sub, const char* arg, const char* reqid, const char* publiher, const int64 gid)
+		int64 queue_storage::save(const int64 gid, const char* title, const char* sub, const char* reqid, const char* publiher, const char* ctx, const char* arg, const char* arg2)
 		{
 			sqlite3_reset(insert_stmt_);
 			int idx = 0;
@@ -103,21 +105,42 @@ namespace agebull
 			if (sub == nullptr)
 				sqlite3_bind_null(insert_stmt_, ++idx);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, sub, static_cast<int>(strlen(title)), nullptr);//sub_title
+				sqlite3_bind_text(insert_stmt_, ++idx, sub, static_cast<int>(strlen(sub)), nullptr);//sub_title
 			if (reqid == nullptr)
 				sqlite3_bind_null(insert_stmt_, ++idx);
 			else
 				sqlite3_bind_text(insert_stmt_, ++idx, reqid, static_cast<int>(strlen(reqid)), nullptr);//rid
+			if (ctx == nullptr)
+				sqlite3_bind_null(insert_stmt_, ++idx);
+			else
+				sqlite3_bind_text(insert_stmt_, ++idx, ctx, static_cast<int>(strlen(ctx)), nullptr);//ctx
 			if (arg == nullptr)
 				sqlite3_bind_null(insert_stmt_, ++idx);
 			else
 				sqlite3_bind_text(insert_stmt_, ++idx, arg, static_cast<int>(strlen(arg)), nullptr);//arg
+			if (arg2 == nullptr)
+				sqlite3_bind_null(insert_stmt_, ++idx);
+			else
+				sqlite3_bind_text(insert_stmt_, ++idx, arg2, static_cast<int>(strlen(arg2)), nullptr);//arg
 			if (sqlite3_step(insert_stmt_) == SQLITE_DONE)
 				return last_id_;
 			log_error2("[%s] : db > Can't save data:%s", name_, sqlite3_errmsg(sqlite_db_));
 			return 0;
 		}
-		char queue_storage::frames4_[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content,zero_def::frame::request_id, zero_def::frame::global_id,zero_def::frame::local_id };
+		char queue_storage::queue_frames_[] =
+		{
+			static_cast<char>(8),
+			zero_def::command::none,
+			zero_def::frame::local_id ,
+			zero_def::frame::publisher,
+			zero_def::frame::sub_title,
+			zero_def::frame::arg,
+			zero_def::frame::request_id, 
+			zero_def::frame::global_id,
+			zero_def::frame::context,
+			zero_def::frame::content_text,
+			zero_def::frame::end
+		};
 		/**
 		*\brief 取数据
 		*/
@@ -132,23 +155,33 @@ namespace agebull
 			sqlite3_bind_int64(load_stmt_, 2, max ==0 ? last_id_ +1: max);
 			while (sqlite3_step(load_stmt_) == SQLITE_ROW)
 			{
+				//pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2
 				vector<shared_char> row;
-				row.emplace_back(sqlite3_column_text(load_stmt_, 3));//pri_title
-				shared_char description;
-				description.alloc_desc(frames4_);
-				row.emplace_back(description);
-				row.emplace_back(sqlite3_column_text(load_stmt_, 2));//pri_title
-				row.emplace_back(sqlite3_column_text(load_stmt_, 4));//sub_title
-				row.emplace_back(sqlite3_column_text(load_stmt_, 6));//arg
-				row.emplace_back(sqlite3_column_text(load_stmt_, 5));//rid
-				//global_id
-				shared_char global_id;
-				global_id.set_int64x(sqlite3_column_int64(load_stmt_, 1));
-				row.emplace_back(global_id);
+				//pri_title
+				row.emplace_back(sqlite3_column_text(load_stmt_, 0));
+
+				row.emplace_back(shared_char(queue_frames_, sizeof(queue_frames_)));
+
 				//local_id
 				shared_char local_id;
-				local_id.set_int64x(sqlite3_column_int64(load_stmt_, 0));
+				local_id.set_int64(sqlite3_column_int64(load_stmt_, 1));
 				row.emplace_back(local_id);
+				//publisher
+				row.emplace_back(sqlite3_column_text(load_stmt_, 2));
+				//sub_title
+				row.emplace_back(sqlite3_column_text(load_stmt_, 3));
+				//arg
+				row.emplace_back(sqlite3_column_text(load_stmt_, 4));
+				//rid
+				row.emplace_back(sqlite3_column_text(load_stmt_, 5));
+				//global_id
+				shared_char global_id;
+				global_id.set_int64x(sqlite3_column_int64(load_stmt_, 6));
+				row.emplace_back(global_id);
+				//ctx
+				row.emplace_back(sqlite3_column_text(load_stmt_, 7));
+				//arg2
+				row.emplace_back(sqlite3_column_text(load_stmt_, 8));
 				exec(row);
 			}
 		}

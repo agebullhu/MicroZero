@@ -121,7 +121,7 @@ namespace Agebull.ZeroNet.ZeroApi
 
             item = new ApiCallItem
             {
-                Caller = messages[0].Read(),
+                First = messages[0].Read(),
             };
             try
             {
@@ -142,7 +142,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
-                            item.GlobalId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+                            item.CallerGlobalId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.RequestId:
                             item.RequestId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
@@ -189,7 +189,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         2, (byte) state, ZeroFrameType.RequestId, ZeroFrameType.GlobalId
                     }),
                     new ZFrame(item.RequestId.ToZeroBytes()),
-                    new ZFrame((item.GlobalId).ToZeroBytes())
+                    new ZFrame((item.CallerGlobalId).ToZeroBytes())
                 };
                 using (message4)
                 {

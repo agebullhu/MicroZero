@@ -231,10 +231,10 @@ namespace agebull
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			if (start_system_manage() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
-			if (start_proxy_dispatcher() == zero_def::net_state::failed)
-				return zero_def::net_state::failed;
-			if (start_plan_dispatcher() == zero_def::net_state::failed)
-				return zero_def::net_state::failed;
+			//if (start_plan_dispatcher() == zero_def::net_state::failed)
+			//	return zero_def::net_state::failed;
+			//if (start_proxy_dispatcher() == zero_def::net_state::failed)
+			//	return zero_def::net_state::failed;
 
 			log_msg("$start business stations...");
 			station_warehouse::restore();

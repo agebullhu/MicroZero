@@ -40,7 +40,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
-            ZeroFrameType.Content,
+            ZeroFrameType.TextContent,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -86,7 +86,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.RequestId,
             ZeroFrameType.SubTitle,
             ZeroFrameType.Publisher,
-            ZeroFrameType.Content,
+            ZeroFrameType.TextContent,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -328,25 +328,29 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     广播消息解包
         /// </summary>
-        /// <param name="messages"></param>
+        /// <param name="msg"></param>
         /// <param name="item"></param>
         /// <param name="showError"></param>
         /// <returns></returns>
-        public static bool Unpack(this ZMessage messages, out PublishItem item, bool showError = true)
+        public static bool Unpack(this ZMessage msg, out PublishItem item, bool showError = true)
         {
-            if (messages == null)
+            if (msg == null)
             {
                 item = null;
                 return false;
             }
+
+            byte[][] msgs;
+            using (msg)
+                msgs = msg.Select(p => p.Read()).ToArray();
             try
             {
-                if (messages.Count < 3)
+                if (msgs.Length < 3)
                 {
                     item = null;
                     return false;
                 }
-                var description = messages[1].Read();
+                var description = msgs[1];
                 if (description.Length < 2)
                 {
                     item = null;
@@ -354,7 +358,7 @@ namespace Agebull.ZeroNet.Core
                 }
 
                 int end = description[0] + 2;
-                if (end != messages.Count)
+                if (end != msgs.Length)
                 {
                     item = null;
                     return false;
@@ -362,14 +366,14 @@ namespace Agebull.ZeroNet.Core
 
                 item = new PublishItem
                 {
-                    Title = messages[0].ReadString(),
+                    Title = Encoding.UTF8.GetString(msgs[0]),
                     State = (ZeroOperatorStateType)description[1],
                     ZeroEvent = (ZeroNetEventType)description[1]
                 };
 
                 for (int idx = 2; idx < end; idx++)
                 {
-                    var bytes = messages[idx].Read();
+                    var bytes = msgs[idx];
                     if (bytes.Length == 0)
                         continue;
                     switch (description[idx])
@@ -383,7 +387,7 @@ namespace Agebull.ZeroNet.Core
                         case ZeroFrameType.Publisher:
                             item.Publisher = Encoding.UTF8.GetString(bytes);
                             break;
-                        case ZeroFrameType.Content:
+                        case ZeroFrameType.TextContent:
                             if (item.Content == null)
                                 item.Content = Encoding.UTF8.GetString(bytes);
                             else
@@ -408,10 +412,6 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteException("Unpack", e);
                 item = null;
                 return false;
-            }
-            finally
-            {
-                messages.Dispose();
             }
         }
     }

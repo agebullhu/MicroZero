@@ -13,7 +13,7 @@ namespace ZeroNet.Http.Route
     /// <summary>
     /// 计划管理器
     /// </summary>
-    public class PlanManage : ZeroManageCommand
+    public class PlanManage : ZCommand
     {
         #region 实例
         /// <summary>
@@ -242,7 +242,7 @@ namespace ZeroNet.Http.Route
             ZeroFrameType.Plan,
             ZeroFrameType.Context,
             ZeroFrameType.PubTitle,
-            ZeroFrameType.Content,
+            ZeroFrameType.TextContent,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };

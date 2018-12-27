@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using ZeroMQ;
-using Gboxt.Common.DataModel;
 using Agebull.Common.Rpc;
-using Agebull.Common.ApiDocuments;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -32,11 +27,12 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         protected override IZmqPool Prepare(byte[] identity, out ZSocket socket)
         {
-            socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
+            socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
             var pool = ZmqPool.CreateZmqPool();
             pool.Prepare(new[] { ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, identity) }, ZPollEvent.In);
             return pool;
         }
+        
 
         /// <summary>
         ///     配置校验
@@ -74,7 +70,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 des,
                 item.Requester.ToZeroBytes(),
                 item.RequestId.ToZeroBytes(),
-                item.GlobalId.ToZeroBytes()
+                item.CallerGlobalId.ToZeroBytes()
             };
             if (item.Result != null)
             {
@@ -108,12 +104,21 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         internal override void SendLayoutErrorResult(ref ZSocket socket, ApiCallItem item)
         {
-            SendResult(ref socket, new ZMessage
+            if (item == null)
+                return;
+            try
             {
-                new ZFrame(item.Caller),
-                new ZFrame(LayoutErrorFrame),
-                new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
-            });
+                SendResult(ref socket, new ZMessage
+                {
+                    new ZFrame(item.Caller),
+                    new ZFrame(LayoutErrorFrame),
+                    new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
+                });
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+            }
         }
 
         /// <summary>
@@ -131,8 +136,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     if (socket.Send(message, out error))
                         return true;
+                    byte[] id = socket.Identity;
                     socket.TryClose();
-                    socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, Identity);
+                    socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, id);
                 }
                 ZeroTrace.WriteError(StationName, error.Text, error.Name);
                 Interlocked.Increment(ref SendError);
@@ -142,6 +148,10 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 LogRecorder.Exception(e, "ApiStation.SendResult");
                 return false;
+            }
+            finally
+            {
+                Interlocked.Decrement(ref WaitCount);
             }
         }
 

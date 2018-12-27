@@ -42,7 +42,7 @@ namespace agebull
 				return false;
 			shared_char description;
 
-			description.alloc_desc_frame(static_cast<char>(event_name), zero_def::frame::sub_title);
+			description.alloc_frame_desc(static_cast<char>(event_name), zero_def::frame::sub_title);
 			vector<shared_char> datas;
 			datas.emplace_back(title);
 			datas.emplace_back(description);
@@ -52,7 +52,7 @@ namespace agebull
 				description.append_frame(zero_def::frame::content);
 				datas.emplace_back(content);
 			}
-			return instance->send_response(datas);
+			return instance->send_response(datas) == zmq_socket_state::succeed;
 		}
 		char frames[] = {
 			zero_def::frame::publisher,
@@ -78,7 +78,29 @@ namespace agebull
 			shared_char global_id;
 			global_id.set_int64x(station_warehouse::get_glogal_id());
 			datas.emplace_back(global_id);
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
+		}
+
+		/**
+		* \brief 内部命令
+		*/
+		bool station_dispatcher::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		{
+			auto command = description.command();
+			switch (command)
+			{
+			case zero_def::command::heart_pitpat:
+			case zero_def::command::heart_join:
+			case zero_def::command::heart_ready:
+			case zero_def::command::heart_left:
+			{
+				bool success = list.size() > 2 && station_warehouse::heartbeat(command, list);
+				send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed);
+				return true;
+			}
+
+			}
+			return false;
 		}
 
 		const char* station_commands_1[] =
@@ -90,6 +112,7 @@ namespace agebull
 		{
 			pause, resume, start, close, host, install, stop, recover, update, remove, doc
 		};
+
 		/**
 		* \brief 执行命令
 		*/
@@ -114,8 +137,8 @@ namespace agebull
 				switch (arguments.size())
 				{
 				case 4:
-					return station_warehouse::install(*arguments[1], *arguments[0], *arguments[2], *arguments[3]) 
-						? zero_def::status::ok 
+					return station_warehouse::install(*arguments[1], *arguments[0], *arguments[2], *arguments[3])
+						? zero_def::status::ok
 						: zero_def::status::failed;
 				case 1:
 					return station_warehouse::install(*arguments[0]) ? zero_def::status::ok : zero_def::status::failed;
@@ -167,25 +190,6 @@ namespace agebull
 			default:
 				return zero_def::status::not_support;
 			}
-		}
-
-		/**
-		* \brief 内部命令
-		*/
-		bool station_dispatcher::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
-		{
-			auto command = description.command();
-			switch (command)
-			{
-			case zero_def::command::heart_join:
-			case zero_def::command::heart_ready:
-			case zero_def::command::heart_pitpat:
-			case zero_def::command::heart_left:
-				const bool success = list.size() > 2 && station_warehouse::heartbeat(command, list);
-				send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed);
-				return true;
-			}
-			return false;
 		}
 
 		/**
@@ -292,7 +296,6 @@ namespace agebull
 					cfgs.emplace_back(cfg->to_status_json().c_str());
 				});
 				instance->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
-
 				for (size_t i = 0; i < names.size(); i++)
 				{
 					instance->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());

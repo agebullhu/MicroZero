@@ -1,7 +1,4 @@
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using System.Text.RegularExpressions;
 
 namespace ApiTest
 {
@@ -10,6 +7,7 @@ namespace ApiTest
     /// </summary>
     public class MachineEventArg : IApiArgument
     {
+
         /// <summary>
         /// ÊÂ¼þÃû³Æ
         /// </summary>

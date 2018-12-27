@@ -41,52 +41,66 @@ namespace agebull
 			const shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
-			shared_char& description = list[1];
-			size_t pid = 0, gid = 0, cid = 0, tid = 0, sid = 0, rid = 0;
+			shared_char description(list[1].get_buffer(), list[1].size());
+			size_t request_id = 0, global_id = 0, argument = 0, text = 0, context = 0, pub_title = 0, sub_title = 0, requester = 0;
 			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
 				{
 				case zero_def::frame::request_id:
-					pid = idx;
+					request_id = idx;
 					break;
 				case zero_def::frame::requester:
-					rid = idx;
+					requester = idx;
 					break;
 				case zero_def::frame::global_id:
-					gid = idx;
+					global_id = idx;
 					break;
 				case zero_def::frame::pub_title:
-					tid = idx;
+					pub_title = idx;
 					break;
 				case zero_def::frame::sub_title:
-					sid = idx; 
+					sub_title = idx; 
+					break;
+				case zero_def::frame::arg:
+					argument = idx;
 					break;
 				case zero_def::frame::content:
-					cid = idx;
+					text = idx;
+					break; 
+				case zero_def::frame::context:
+					context = idx;
 					break;
 				}
 			}
-			if (tid == 0)
+			if (pub_title == 0)
+				pub_title = sub_title;
+			else if(sub_title == 0)
+				sub_title = pub_title;
+			if (pub_title == 0)
 			{
-				send_request_status(socket, *caller, zero_def::status::frame_invalid, list, gid, rid, pid);
+				send_request_status(socket, *caller, zero_def::status::frame_invalid, list, global_id, requester, request_id);
 				return;
 			}
-			send_request_status(socket, *caller, zero_def::status::ok, list, gid, rid, pid);
+			send_request_status(socket, *caller, zero_def::status::ok, list, global_id, requester, request_id);
 
-			const int64 id = storage_.save(*list[tid],
-				sid > 0 ? *list[sid] : nullptr,
-				cid > 0 ? *list[cid] : nullptr,
-				rid > 0 ? *list[rid] : nullptr,
-				pid > 0 ? *list[pid] : nullptr,
-				gid > 0 ? atoll(*list[pid]) : 0);
+			const int64 id = storage_.save(
+				global_id > 0 ? atoll(*list[global_id]) : 0 ,
+				*list[pub_title],
+				*list[sub_title],
+				request_id > 0 ? *list[request_id] : nullptr,
+				requester > 0 ? *list[requester] : nullptr,
+				context > 0 ? *list[context] : nullptr,
+				argument > 0 ? *list[argument] : nullptr,
+				text > 0 ? *list[text] : nullptr);
 
 			description.append_frame(zero_def::frame::local_id);
 			shared_char local_id;
-			local_id.set_int64x(id);
+			local_id.set_int64(id);
 			list.emplace_back(local_id);
 
-			list[0] = list[tid];
+			list[0] = list[pub_title];
+			list[1] = description;
 			send_response(list, 0);
 		}
 

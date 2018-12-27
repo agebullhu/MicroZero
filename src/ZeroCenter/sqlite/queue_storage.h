@@ -24,7 +24,7 @@ namespace agebull
 			static const char* insert_sql_;
 			static const char* load_max_sql_;
 			static const char* load_sql_;
-			static char frames4_[];
+			static char queue_frames_[];
 		public:
 			/**
 			 * \brief 构造
@@ -59,7 +59,7 @@ namespace agebull
 			/**
 			*\brief 将数据写入数据库中
 			*/
-			int64 save(const char* title, const char* sub, const char* arg, const char* reqid, const char* publiher, int64 gid);
+			int64 save(const int64 gid, const char* title, const char* sub, const char* reqid, const char* publiher, const char* ctx, const char* arg, const char* arg2);
 			/**
 			*\brief 取数据
 			*/

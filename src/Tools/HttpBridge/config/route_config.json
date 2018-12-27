@@ -1,0 +1,72 @@
+{
+  /*系统设置*/
+  "sysConfig": {
+    /*是否开启ZeroNet网络*/
+    "FireZero": true,
+    /*是否开启返回值检查*/
+    "CheckResult": false,
+    /*是否开启API预检：即检查API是否存在、是否需要令牌、是否可公开访问*/
+    "CheckApiItem": false,
+    /*HTTP调用超时*/
+    "HttpTimeOut": 30000,
+    /*短信超时报警的时长(毫秒)*/
+    "WaringTime": 2000,
+    /*内容页地址*/
+    "ContextHost": "http://zero.yizuanbao.cn:8080/",
+    /*内容页地址*/
+    "ContextAddr": "D:\\玢翔医疗\\研发部\\Git\\InternetHospital\\pub\\Cloud\\dist"
+  },
+  /*HTTP路由信息，缺省地址为找不到时使用的地址*/
+  "route": {
+    /*缺省地址* /
+    "Default": {
+      "hosts": [ "Http://127.0.0.1:8080/" ]
+    },
+    /*User对应的地址* /
+    "GoodLin-User-External-Api": {
+      "hosts": [ "http://172.16.20.142:8081/" ]
+    },
+    /*OAuth对应的地址* /
+    "GoodLin-OAuth-Api": {
+      "hosts": [ "http://172.16.20.142/" /*,"http://192.168.1.192/GoodLin-OAuth-Api/"* /]
+    }*/
+  },
+  /**/
+  "security": {
+    /*是否校验Auth*/
+    "fireBearer": true,
+    "authStation": "Auth",
+    "didApi": "v1/verify/did",
+    "atApi": "v1/verify/at",
+    /*黑洞地址（字母有错，不要介意）*/
+    "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
+    /*拒绝使用的令牌，Key Value一样*/
+    "denyTokens": [],
+    /*
+	Http头拒绝的规则：其中DenyType枚举如下    
+        None,// 不阻止
+        Hase,// 有此内容
+        NonHase,// 没有此内容
+        Count,// 达到数组数量
+        Equals,// 内容等于
+        Like,// 内容包含
+        Regex// 正则匹配
+	*/
+    "denyHttpHeaders": [
+      {
+        "Head": "X-Forwarded-For", /*Http头名称*/
+        "Value": "3", /*比对内容*/
+        "DenyType": "Count" /*比对类型*/
+      }
+    ],
+    /*需要检查的Api*/
+    "checkApis": null
+  },
+  /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
+  "cache": [
+    /*{
+   "Api": "/ForcedUpdating/v2/activty/getconfig",
+   "OnlyName": true
+   }*/
+  ]
+}

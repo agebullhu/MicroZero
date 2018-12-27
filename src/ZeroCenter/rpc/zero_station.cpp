@@ -21,7 +21,7 @@ namespace agebull
 			, poll_count_(0)
 			, task_semaphore_(0)
 			, station_name_(name)
-			, config_(station_warehouse::get_config(name))
+			, config_(station_warehouse::get_config(name.c_str()))
 			, request_scoket_tcp_(nullptr)
 			//, request_socket_ipc_(nullptr)
 			, request_socket_inproc_(nullptr)
@@ -76,6 +76,10 @@ namespace agebull
 				config_->runtime_state(station_state::failed);
 				config_->error("initialize request tpc", zmq_strerror(zmq_errno()));
 				return false;
+			}
+			if (req_zmq_type_ == ZMQ_ROUTER)
+			{
+				socket_ex::setsockopt(request_scoket_tcp_, ZMQ_ROUTER_MANDATORY, 1);
 			}
 			poll_items_[poll_count_++] = { request_scoket_tcp_, 0, ZMQ_POLLIN, 0 };
 			//if (json_config::use_ipc_protocol)
@@ -138,14 +142,19 @@ namespace agebull
 			}
 			else
 			{
-				int type = station_type_ == zero_def::station_type::route_api ? ZMQ_ROUTER : ZMQ_PUSH;
-				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, type, config_->worker_out_port);
+				worker_out_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, res_zmq_type_, config_->worker_out_port);
+
 				if (worker_out_socket_tcp_ == nullptr)
 				{
 					config_->runtime_state(station_state::failed);
 					config_->error("initialize worker out", zmq_strerror(zmq_errno()));
 					return false;
 				}
+				if (res_zmq_type_ == ZMQ_ROUTER)
+				{
+					socket_ex::setsockopt(worker_out_socket_tcp_, ZMQ_ROUTER_MANDATORY, 1);
+				}
+
 				worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_DEALER, config_->worker_in_port);
 				if (worker_in_socket_tcp_ == nullptr)
 				{
@@ -156,22 +165,25 @@ namespace agebull
 				poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
 			initialize_ext();
-			switch (station_type_)
+			if (global_config::monitor_socket)
 			{
-			case zero_def::station_type::dispatcher:
-				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "dis");
-				break;
-			case zero_def::station_type::queue:
-				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "que");
-				break;
-			case zero_def::station_type::notify:
-				zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "pub");
-				break;
-			case zero_def::station_type::api:
-			case zero_def::station_type::vote:
-			case zero_def::station_type::route_api:
-				zmq_monitor::set_monitor(station_name, &worker_in_socket_tcp_, "api");
-				break;
+				switch (station_type_)
+				{
+				case zero_def::station_type::dispatcher:
+					zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "dis");
+					break;
+				case zero_def::station_type::queue:
+					zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "que");
+					break;
+				case zero_def::station_type::notify:
+					zmq_monitor::set_monitor(station_name, &worker_out_socket_tcp_, "pub");
+					break;
+				case zero_def::station_type::api:
+				case zero_def::station_type::vote:
+				case zero_def::station_type::route_api:
+					zmq_monitor::set_monitor(station_name, &worker_in_socket_tcp_, "api");
+					break;
+				}
 			}
 			return true;
 		}
@@ -235,6 +247,7 @@ namespace agebull
 			config_->runing();
 			//登记线程开始
 			set_command_thread_run(get_station_name());
+
 			while (true)
 			{
 				if (!can_do())
@@ -242,9 +255,11 @@ namespace agebull
 					zmq_state_ = zmq_socket_state::intr;
 					break;
 				}
-				const int state = zmq_poll(poll_items_, poll_count_, 10000);
+				const int state = zmq_poll(poll_items_, poll_count_, global_config::pool_timeout);
 				if (state == 0)//超时或需要关闭
+				{
 					continue;
+				}
 				if (state < 0)
 				{
 					zmq_state_ = socket_ex::check_zmq_error();
@@ -265,21 +280,25 @@ namespace agebull
 							config_->request_in++;
 							on_request(poll_items_[idx], false);
 						}
+						else if (poll_items_[idx].socket == request_socket_inproc_)
+						{
+							config_->request_in++;
+							on_request(poll_items_[idx], true);
+						}
+						else if (poll_items_[idx].socket == worker_in_socket_tcp_)
+						{
+							config_->worker_in++;
+							on_response(poll_items_[idx]);
+						}
+						else if (global_config::api_route_mode && poll_items_[idx].socket == worker_out_socket_tcp_)
+						{
+							on_response(poll_items_[idx]);
+						}
 						//else if (poll_items_[idx].socket == request_socket_ipc_)
 						//{
 						//	config_->request_in++;
 						//	request(poll_items_[idx].socket, false);
 						//}
-						else if (poll_items_[idx].socket == request_socket_inproc_)
-						{
-							config_->request_in++;
-							on_request(poll_items_[idx].socket, true);
-						}
-						else if (poll_items_[idx].socket == worker_in_socket_tcp_)
-						{
-							config_->worker_in++;
-							on_response();
-						}
 					}
 					/*if (poll_items_[idx].revents & ZMQ_POLLOUT)
 					{
@@ -309,12 +328,12 @@ namespace agebull
 		}
 
 		/**
-		* \brief 工作集合的响应
+		* \brief 调用集合的响应
 		*/
-		void zero_station::on_response()
+		void zero_station::on_response(zmq_pollitem_t& socket)
 		{
 			vector<shared_char> list;
-			zmq_state_ = socket_ex::recv(worker_in_socket_tcp_, list);
+			zmq_state_ = socket_ex::recv(socket.socket, list);
 			if (zmq_state_ == zmq_socket_state::timed_out)
 			{
 				config_->worker_err++;
@@ -326,17 +345,27 @@ namespace agebull
 				config_->error("read work result", socket_ex::state_str(zmq_state_));
 				return;
 			}
-			if (list.size() < 2)
+			if (list.size() < 3)
 			{
 				config_->worker_err++;
 				config_->error("work result layout error", "size < 2");
 				return;
 			}
-			if (list[0][0] == '*' && station_type_ != zero_def::station_type::plan)
+			if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
+			{
+				send_request_status(socket.socket, *list[0], zero_def::status::deny_error);
+				return;
+			}
+			if (list[1].frame_size() < 0)
+			{
+				list[1].frame_size(0 - list[1][0]);
+				simple_command(socket.socket, list, list[1], false);
+			}
+			else if (list[0][0] == zero_def::name::head::plan && station_type_ != zero_def::station_type::plan)
 			{
 				plan_end(list);
 			}
-			if (list[0][0] == '#' && station_type_ != zero_def::station_type::proxy)
+			else if (list[0][0] == zero_def::name::head::proxy && station_type_ != zero_def::station_type::proxy)
 			{
 				proxy_end(list);
 			}
@@ -346,26 +375,34 @@ namespace agebull
 			}
 		}
 		/**
-		* \brief 调用集合的响应
-		*/
-		void zero_station::on_request(zmq_pollitem_t& socket, bool inner)
+			* \brief 接收
+			*/
+		zmq_socket_state recv_data(zmq_handler socket, vector<shared_char>& ls, int flag = 0)
 		{
-			//if(!inner)
-			//{
-			//	acl::string addr;
-			//	zmq_monitor::print_client_addr(socket.fd, addr);
-			//	cout << addr.c_str() << endl;
-			//}
-			on_request(socket.socket, inner);
+			size_t size = sizeof(int);
+			int more;
+			do
+			{
+				char buf[8193];
+				var re = zmq_recv( socket, buf, 8193, ZMQ_DONTWAIT);
+				if (re < 0)
+				{
+					return socket_ex::check_zmq_error();
+				}
+				ls.push_back(shared_char(buf,re));
+				zmq_getsockopt(socket, ZMQ_RCVMORE, &more, &size);
+			} while (more != 0);
+			return zmq_socket_state::succeed;
 		}
 
 		/**
 		* \brief 调用集合的响应
 		*/
-		void zero_station::on_request(zmq_handler socket, bool inner)
+		void zero_station::on_request(zmq_pollitem_t& socket, bool inner)
 		{
 			vector<shared_char> list;
-			zmq_state_ = socket_ex::recv(socket, list);
+			zmq_state_ = socket_ex::recv(socket.socket, list);
+			
 			if (zmq_state_ != zmq_socket_state::succeed)
 			{
 				config_->log("on_request", socket_ex::state_str(zmq_state_));
@@ -373,46 +410,46 @@ namespace agebull
 			}
 			if (config_->station_state_ == station_state::pause)
 			{
-				send_request_status(socket, *list[0], zero_def::status::pause);
+				send_request_status(socket.socket, *list[0], zero_def::status::pause);
 				return;
 			}
-			const size_t list_size = inner ? list.size() - 1 : list.size();
+			const size_t list_size = int(inner ? list.size() - 1 : list.size());
 			if (list_size < 2)
 			{
-				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid);
 				return;
 			}
 			shared_char& description = list[inner ? 2 : 1];
 			if (description.command() < zero_def::command::none)
 			{
-				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid);
 				return;
 			}
-			const size_t descr_size = description.size();
-			const size_t frame_size = description.frame_size();
+			var frame_size = description.frame_size();
+			if (simple_command(socket.socket, list, list[1], inner))
+			{
+				return;
+			}
+			var descr_size = description.size();
 			if ((frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
-				send_request_status(socket, *list[0], zero_def::status::frame_invalid);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid);
 				return;
 			}
 			if (!inner)
 			{
 				if (description[description.frame_size() + 1] != zero_def::frame::service_key)
 				{
-					send_request_status(socket, *list[0], zero_def::status::deny_error);
+					send_request_status(socket.socket, *list[0], zero_def::status::deny_error);
 					return;
 				}
 				if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 				{
-					send_request_status(socket, *list[0], zero_def::status::deny_error);
+					send_request_status(socket.socket, *list[0], zero_def::status::deny_error);
 					return;
 				}
 			}
-			if (simple_command(socket, list, description, inner))
-			{
-				return;
-			}
-			job_start(socket, list, inner);
+			job_start(socket.socket, list, inner);
 		}
 
 		/**

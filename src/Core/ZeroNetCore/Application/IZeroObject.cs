@@ -209,8 +209,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
-            if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
-                ZeroDiscover.DiscoverApiDocument(obj.GetType());
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 if (ZeroObjects.ContainsKey(obj.Name))
@@ -230,6 +228,13 @@ namespace Agebull.ZeroNet.Core
                     }
                 }
 
+                if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
+                {
+                    ZeroDiscover discover = new ZeroDiscover();
+                    discover.FindApies(obj.GetType());
+                    //ZeroDiscover.DiscoverApiDocument(obj.GetType());
+                }
+
                 if (!CanDo)
                     return true;
                 try
@@ -242,6 +247,7 @@ namespace Agebull.ZeroNet.Core
                     ZeroTrace.WriteException(obj.Name, e, "Start");
                 }
             }
+
             return true;
         }
 
@@ -333,12 +339,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnHeartbeat()
         {
-            if (!InRun)
+            if (!CanDo)
                 return;
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                if (!InRun)
-                    return;
                 SystemManager.Instance.Heartbeat();
                 foreach (var obj in ActiveObjects.ToArray())
                 {

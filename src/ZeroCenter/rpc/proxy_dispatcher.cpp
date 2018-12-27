@@ -17,6 +17,8 @@ namespace agebull
 		void proxy_dispatcher::launch(shared_ptr<proxy_dispatcher>& station)
 		{
 			zero_config& config = station->get_config();
+			set_command_thread_bad(config.station_name.c_str());
+			return;
 			if (!station->initialize())
 			{
 				config.failed("initialize");

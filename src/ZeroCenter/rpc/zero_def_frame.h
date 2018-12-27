@@ -14,6 +14,10 @@ namespace agebull
 			namespace frame
 			{
 				typedef unsigned char uchar;
+				//请求
+				constexpr uchar  req_frame = '\1';
+				//返回
+				constexpr uchar  res_frame = '\2';
 				//终止符号
 				constexpr uchar  end = '\0';
 				//全局标识

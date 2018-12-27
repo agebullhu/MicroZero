@@ -219,7 +219,7 @@ namespace agebull
 		/**
 		* \brief 取得配置
 		*/
-		shared_ptr<zero_config>& station_warehouse::get_config(const string& station_name, bool find_redis)
+		shared_ptr<zero_config>& station_warehouse::get_config(const char* station_name, bool find_redis)
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			const auto iter = configs_.find(station_name);
@@ -315,7 +315,7 @@ namespace agebull
 		{
 			if (!config || config->station_name.empty())
 				return false;
-			var old = get_config(config->station_name);
+			var old = get_config(config->station_name.c_str());
 			if (old)
 				return false;
 			bool failed = false;
@@ -370,7 +370,7 @@ namespace agebull
 		{
 			shared_ptr<zero_config> new_cfg = make_shared<zero_config>();
 			new_cfg->read_json(str);
-			var config = get_config(new_cfg->station_name);
+			var config = get_config(new_cfg->station_name.c_str());
 			if (!config || config->is_base)
 				return false;
 			if (new_cfg->station_name != config->station_name)
@@ -425,7 +425,7 @@ namespace agebull
 		*/
 		bool station_warehouse::stop(const string& station_name)
 		{
-			shared_ptr<zero_config> config = get_config(station_name);
+			shared_ptr<zero_config> config = get_config(station_name.c_str());
 			if (!config || config->is_state(station_state::stop) || config->is_base)
 				return false;
 			config->set_state(station_state::stop);
@@ -538,7 +538,7 @@ namespace agebull
 			zero_station* station = instance(arg);
 			if (station != nullptr)
 				return station->resume() ? zero_def::status::ok : zero_def::status::failed;
-			shared_ptr<zero_config> config = get_config(arg);
+			shared_ptr<zero_config> config = get_config(arg.c_str());
 			if (!config || config->is_state(station_state::stop))
 				return zero_def::status::not_find;
 			return restore(config) ? zero_def::status::ok : zero_def::status::failed;
@@ -554,7 +554,7 @@ namespace agebull
 			{
 				return zero_def::status::runing;
 			}
-			shared_ptr<zero_config> config = get_config(station_name);
+			shared_ptr<zero_config> config = get_config(station_name.c_str());
 			if (config == nullptr)
 				return zero_def::status::not_find;
 			return restore(config) ? zero_def::status::ok : zero_def::status::failed;
@@ -575,9 +575,9 @@ namespace agebull
 		/**
 		* 心跳的响应
 		*/
-		bool station_warehouse::heartbeat(uchar cmd, vector<shared_char> list)
+		bool station_warehouse::heartbeat(uchar cmd, vector<shared_char>& list)
 		{
-			auto config = get_config(list[2], false);
+			auto config = get_config(*list[2], false);
 			if (config == nullptr)
 				return false;
 			switch (cmd)

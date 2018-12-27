@@ -162,7 +162,9 @@ namespace Agebull.ZeroNet.Core
             lock (Pools)
             {
                 if (!ZeroApplication.Config.TryGetConfig(station, out var config))
+                {
                     return null;
+                }
                 Pools.Add(station, pool = new StationSocketPool
                 {
                     Config = config

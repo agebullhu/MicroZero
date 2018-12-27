@@ -15,7 +15,7 @@ void do_sqlite()
 	log_msg2("prepare(%lldms) : %lld", sp.total_milliseconds(), storage.get_last_id());
 	tm = boost::posix_time::microsec_clock::local_time();
 	for (int i = 0; i < 10000; i++)
-		storage.save("agebull", "test", "abc", "{}", "a", i);
+		storage.save(i,"agebull", "test", "abc", "{}", "a", "{}", "{}");
 	sp = boost::posix_time::microsec_clock::local_time() - tm;
 	log_msg1("write(%lldms)", sp.total_milliseconds());
 	tm = boost::posix_time::microsec_clock::local_time();

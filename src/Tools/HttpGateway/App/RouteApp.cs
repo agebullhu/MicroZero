@@ -1,70 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using ZeroNet.Http.Route;
 
 namespace ZeroNet.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类
     /// </summary>
-    internal class RouteApp
+    public class RouteApp
     {
-        #region 内部命令处理
-
-        /// <summary>
-        ///     内部命令处理
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="response"></param>
-        /// <returns></returns>
-        public static bool InnerCommand(string url, HttpResponse response)
-        {
-            //命令
-            switch (url)
-            {
-                case "/":
-                    response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
-                    return true;
-                case "/_1_clear_1_":
-                    RouteCache.Flush();
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
-                        Encoding.UTF8);
-                    return true;
-                //case "/_1_counter_1_/info":
-                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
-                //    return true;
-                //case "/_1_counter_1_/save":
-                //    RouteCounter.Save();
-                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
-                //    return true;
-                case "/_1_config_1_":
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
-                        Encoding.UTF8);
-                    return true;
-                    //case "/_1_warings_1_":
-                    //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
-                    //    return true;
-                    //case "/_1_cache_1_":
-                    //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
-                    //    return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
         #region 初始化
 
         /// <summary>
@@ -98,8 +52,16 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         public static Task Call(HttpContext context)
         {
+            /*
+            在ASP.Net Core的机制中，当接收到http的头为 application/x-www-form-urlencoded 或者 multipart/form-data 时，
+            netcore会通过 FormReader 预先解析 Request.Body 的 Form 的内容，经过 Reader 读取后 Request.Body 就会变 null，
+            这样我们在代码中需要再次使用 Request.Body 时就会报空异常。
+            */
+            //context.Request.EnableRewind();
+
             return Task.Factory.StartNew(CallTask, context);
         }
+        public static Dictionary<string, Func<IRouter>> Extends = new Dictionary<string, Func<IRouter>>();
 
         /// <summary>
         ///     调用
@@ -109,76 +71,54 @@ namespace ZeroNet.Http.Gateway
         private static void CallTask(object arg)
         {
             var context = (HttpContext)arg;
-            var router = new Router(context);
+
             //跨域支持
-            if (router.Data.HttpMethod == "OPTIONS")
+            if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
             {
                 HttpProtocol.Cros(context.Response);
                 return;
             }
-
-            IoHandler.OnBegin(router.Data);
-            try
+            var uri = context.Request.GetUri();
+            //命令
+            using (MonitorScope.CreateScope(uri.AbsolutePath))
             {
-                if (router.Data.Uri.LocalPath == "/publish")
+                if (InnerCommand(uri.AbsolutePath, context.Request, context.Response))
                 {
-                    var suc = ZeroPublisher.Publish(context.Request.Form["Host"], context.Request.Form["Title"],
-                        context.Request.Form["Sub"], (string)context.Request.Form["Arg"]);
-                    context.Response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson,
-                        Encoding.UTF8);
+                    LogRecorder.MonitorTrace("InnerCommand");
+                    return;
+                }
+                var folders = uri.AbsolutePath.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                if (folders.Length == 0)
+                {
+                    LogRecorder.MonitorTrace("Err..");
+                    return;
+                }
+                var ext = Path.GetExtension(folders[folders.Length - 1]);
+                if (!string.IsNullOrWhiteSpace(ext))
+                {
+                    var cr = new ContextRouter(context);
+                    cr.WriteContext(folders, ext);
                     return;
                 }
 
-                //内容页转向
-                if (router.Data.Uri.LocalPath.IndexOf(".", StringComparison.OrdinalIgnoreCase) > 0)
+                var router = Extends.TryGetValue(uri.AbsolutePath, out var creater) ? creater() : new Router();
+
+                try
                 {
-                    context.Response.Redirect(RouteOption.Option.SystemConfig.ContextHost +
-                                              router.Data.Uri.LocalPath.Trim('/'));
-                    return;
+                    HttpProtocol.FormatResponse(context.Response);
+                    //开始调用
+                    if (router.Prepare(context))
+                    {
+                        // 正常调用
+                        router.Call();
+                    }
+                    // 写入返回
+                    router.WriteResult();
                 }
-
-                HttpProtocol.FormatResponse(context.Response);
-                //命令
-                if (InnerCommand(router.Data.Uri.LocalPath, context.Response))
-                    return;
-
-                //开始调用
-                if (!router.SecurityChecker.PreCheck())
+                catch (Exception e)
                 {
-                    router.Data.Status = ZeroOperatorStatus.DenyAccess;
-                    context.Response.WriteAsync(ApiResult.DenyAccessJson, Encoding.UTF8);
-                    return;
+                    router.OnError(e, context);
                 }
-
-                // 正常调用
-                router.Call();
-                // 写入返回
-                router.WriteResult();
-                // 缓存
-                RouteCache.CacheResult(router.Data);
-            }
-            catch (Exception e)
-            {
-                OnError(router, e, context);
-            }
-            finally
-            {
-                IoHandler.OnEnd(router.Data);
-            }
-        }
-
-        private static void OnError(Router router, Exception e, HttpContext context)
-        {
-            try
-            {
-                router.Data.Status = ZeroOperatorStatus.LocalException;
-                ZeroTrace.WriteException("Route", e);
-                IocHelper.Create<IRuntimeWaring>()?.Waring("Route", router.Data.Uri.LocalPath, e.Message);
-                context.Response.WriteAsync(ApiResult.LocalErrorJson, Encoding.UTF8);
-            }
-            catch (Exception exception)
-            {
-                LogRecorder.Exception(exception);
             }
         }
 
@@ -232,6 +172,61 @@ namespace ZeroNet.Http.Gateway
 
         #endregion
 
+        #region 内部命令处理
+
+        /// <summary>
+        ///     内部命令处理
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="request"></param>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public static bool InnerCommand(string url, HttpRequest request, HttpResponse response)
+        {
+            //命令
+            switch (url)
+            {
+                case "/":
+                    //response.Redirect("/index.html");
+                    HttpProtocol.FormatResponse(response);
+                    response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
+                    return true;
+                case "/_1_clear_1_":
+                    HttpProtocol.FormatResponse(response);
+                    RouteCache.Flush();
+                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                        Encoding.UTF8);
+                    return true;
+                //case "/_1_counter_1_/info":
+                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                //    return true;
+                //case "/_1_counter_1_/save":
+                //    RouteCounter.Save();
+                //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
+                //    return true;
+                case "/_1_config_1_":
+                    HttpProtocol.FormatResponse(response);
+                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                        Encoding.UTF8);
+                    return true;
+                case "/publish":
+                    HttpProtocol.FormatResponse(response);
+                    var suc = ZeroPublisher.Publish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], (string)request.Form["Arg"]);
+                    response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson, Encoding.UTF8);
+                    return true;
+                    //case "/_1_warings_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
+                    //case "/_1_cache_1_":
+                    //    response.WriteAsync(JsonConvert.SerializeObject(RouteChahe.Cache, Formatting.Indented), Encoding.UTF8);
+                    //    return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region OnZeroNetEvent
 
         private static DateTime _preUpdate;
@@ -272,8 +267,10 @@ namespace ZeroNet.Http.Gateway
                     break;
             }
 
-            if ((DateTime.Now - _preUpdate).TotalMinutes > 5)
-                OnZeroNetRuning();
+            if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
+                return;
+            LogRecorder.SystemLog($"Reload Document by {e.Event}.");
+            OnZeroNetRuning();
         }
 
         private static readonly object lock_obj = new object();

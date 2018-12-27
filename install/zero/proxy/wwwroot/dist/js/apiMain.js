@@ -1,0 +1,1 @@
+define(["jquery"],function(e){return{root:"/UserCenter/v1/",deviceId:{url:"refresh/did"},sendSms:{url:"phone/sendSms",params:{Value:""}},smsLogin:{url:"login/sms",params:{SMSVerificationCode:"",TraceMark:"活动跟踪码",Channel:"手机登录",MobilePhone:""}},getUrl:function(e){return this.root+this[e].url},getParams:function(){return arguments[0]}}});

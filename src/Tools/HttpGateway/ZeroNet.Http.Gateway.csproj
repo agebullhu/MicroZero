@@ -9,7 +9,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
     <UserSecretsId>3909b577-6324-4fb6-b394-f48db7e0ad07</UserSecretsId>
     <StartupObject></StartupObject>
     <ApplicationIcon />
@@ -19,29 +18,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AddIn\**" />
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
     <Compile Remove="logs\**" />
-    <Compile Remove="wwwroot\**" />
     <Content Remove="AddIn\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Datas\**" />
     <Content Remove="logs\**" />
-    <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="AddIn\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Datas\**" />
     <EmbeddedResource Remove="logs\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="AddIn\**" />
     <None Remove="Controllers\**" />
     <None Remove="Datas\**" />
     <None Remove="logs\**" />
-    <None Remove="wwwroot\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,10 +60,45 @@
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="wwwroot\dist\fonts\icomoon.svg" />
+    <None Include="wwwroot\dist\images\loading.svg" />
+    <None Include="wwwroot\dist\js\apiMain.js" />
+    <None Include="wwwroot\dist\js\common.js" />
+    <None Include="wwwroot\dist\js\discover.js" />
+    <None Include="wwwroot\dist\js\index.js" />
+    <None Include="wwwroot\dist\js\information.js" />
+    <None Include="wwwroot\dist\js\login.js" />
+    <None Include="wwwroot\dist\js\plugin.js" />
+    <None Include="wwwroot\dist\js\require-config.js" />
+    <None Include="wwwroot\dist\js\timer.js" />
+    <None Include="wwwroot\dist\js\toast.js" />
+    <None Include="wwwroot\dist\js\user.js" />
+    <None Include="wwwroot\dist\libs\echarts\echarts.js" />
+    <None Include="wwwroot\dist\libs\echarts\echarts.min.js" />
+    <None Include="wwwroot\dist\libs\fastclick\fastclick.js" />
+    <None Include="wwwroot\dist\libs\jquery\jquery-1.12.4.js" />
+    <None Include="wwwroot\dist\libs\jquery\jquery-1.12.4.min.js" />
+    <None Include="wwwroot\dist\libs\require\require.js" />
+    <None Include="wwwroot\dist\libs\swiper\swiper.min.js" />
+    <None Include="wwwroot\dist\libs\template\template.min.js" />
+    <None Include="wwwroot\static\css\app.46d0003f8e51ec675519ecea00639cf0.css.map" />
+    <None Include="wwwroot\static\img\icomoon.3fa4b21.svg" />
+    <None Include="wwwroot\static\js\app.685600af0eb68ca6577e.js" />
+    <None Include="wwwroot\static\js\app.685600af0eb68ca6577e.js.map" />
+    <None Include="wwwroot\static\js\manifest.3ad1d5771e9b13dbdad2.js" />
+    <None Include="wwwroot\static\js\manifest.3ad1d5771e9b13dbdad2.js.map" />
+    <None Include="wwwroot\static\js\vendor.3176d4419c1b51e31953.js" />
+    <None Include="wwwroot\static\js\vendor.3176d4419c1b51e31953.js.map" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Web">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7\System.Web.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

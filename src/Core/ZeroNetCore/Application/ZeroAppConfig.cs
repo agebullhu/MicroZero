@@ -269,9 +269,7 @@ namespace Agebull.ZeroNet.Core
                     return null;
                 lock (_configs)
                 {
-                    if (!_configMap.TryGetValue(station, out var name))
-                        return null;
-                    _configs.TryGetValue(name, out var config);
+                    _configMap.TryGetValue(station, out var config);
                     return config;
                 }
             }
@@ -294,27 +292,28 @@ namespace Agebull.ZeroNet.Core
         {
             lock (_configs)
             {
-                if (_configs.ContainsKey(station.Name))
-                    _configs[station.Name].Copy(station);
+                if (_configs.TryGetValue(station.Name,out var config))
+                    config.Copy(station);
                 else
-                    _configs.Add(station.Name, station);
+                    _configs.Add(station.Name, config= station);
 
                 if (!_configMap.ContainsKey(station.Name))
-                    _configMap.Add(station.Name, station.Name);
+                    _configMap.Add(station.Name, config);
                 else
-                    _configMap[station.Name] = station.Name;
+                    _configMap[station.Name] = config;
 
                 if (!_configMap.ContainsKey(station.ShortName))
-                    _configMap.Add(station.ShortName, station.Name);
+                    _configMap.Add(station.ShortName, config);
                 else
-                    _configMap[station.ShortName] = station.Name;
-                if (station.StationAlias == null)
-                    return;
-                foreach (var ali in station.StationAlias)
-                    if (!_configMap.ContainsKey(ali))
-                        _configMap.Add(ali, station.Name);
-                    else
-                        _configMap[ali] = station.Name;
+                    _configMap[station.ShortName] = config;
+
+                //if (station.StationAlias == null)
+                //    return;
+                //foreach (var ali in station.StationAlias)
+                //    if (!_configMap.ContainsKey(ali))
+                //        _configMap.Add(ali, config);
+                //    else
+                //        _configMap[ali] = config;
             }
         }
 
@@ -332,8 +331,8 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     站点集合
         /// </summary>
-        private readonly Dictionary<string, string> _configMap =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, StationConfig> _configMap =
+            new Dictionary<string, StationConfig>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     站点集合
@@ -509,9 +508,12 @@ namespace Agebull.ZeroNet.Core
                     global = new ZeroAppConfig();
                 else
                     throw new Exception("无法找到主配置节点,路径为Zero.Global,在zero.json或appsettings.json中设置");
-            Config = sec.Child<ZeroAppConfig>(AppName);
-            if (Config == null)
-                throw new Exception($"无法找到主配置节点,路径为Zero.{AppName},在zero.json或appsettings.json中设置");
+            Config = sec.Child<ZeroAppConfig>(AppName) ?? new ZeroAppConfig
+            {
+                StationName = AppName
+            };
+            //if (Config == null)
+            //    throw new Exception($"无法找到主配置节点,路径为Zero.{AppName},在zero.json或appsettings.json中设置");
 
             #endregion
 

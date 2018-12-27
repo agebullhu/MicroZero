@@ -1,0 +1,132 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>3909b577-6324-4fb6-b394-f48db7e0ad07</UserSecretsId>
+    <StartupObject></StartupObject>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.3.1.1" />
+    <PackageReference Include="Senparc.Weixin.MP.MVC" Version="7.1.13" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="AddIn\**" />
+    <Compile Remove="App_Data\**" />
+    <Compile Remove="Chahe\**" />
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="Datas\**" />
+    <Compile Remove="logs\**" />
+    <Compile Remove="Zero\**" />
+    <Content Remove="AddIn\**" />
+    <Content Remove="App_Data\**" />
+    <Content Remove="Chahe\**" />
+    <Content Remove="Controllers\**" />
+    <Content Remove="Datas\**" />
+    <Content Remove="logs\**" />
+    <Content Remove="Zero\**" />
+    <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="App_Data\**" />
+    <EmbeddedResource Remove="Chahe\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Datas\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="Zero\**" />
+    <None Remove="AddIn\**" />
+    <None Remove="App_Data\**" />
+    <None Remove="Chahe\**" />
+    <None Remove="Controllers\**" />
+    <None Remove="Datas\**" />
+    <None Remove="logs\**" />
+    <None Remove="Zero\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="App\IoHandler.cs" />
+    <Compile Remove="App\RouteApp.cs" />
+    <Compile Remove="App\RouteCounter.cs" />
+    <Compile Remove="App\Router - 复制.cs" />
+    <Compile Remove="WeiXin\WeixinController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+    <Content Remove="bower.json" />
+    <Content Remove="bundleconfig.json" />
+    <Content Remove="cache.json" />
+    <Content Remove="machine.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".bowerrc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="wwwroot\home\fonts\icomoon.svg" />
+    <None Include="wwwroot\home\images\loading.svg" />
+    <None Include="wwwroot\home\js\apiMain.js" />
+    <None Include="wwwroot\home\js\common.js" />
+    <None Include="wwwroot\home\js\discover.js" />
+    <None Include="wwwroot\home\js\host.js" />
+    <None Include="wwwroot\home\js\index.js" />
+    <None Include="wwwroot\home\js\information.js" />
+    <None Include="wwwroot\home\js\login.js" />
+    <None Include="wwwroot\home\js\plugin.js" />
+    <None Include="wwwroot\home\js\require-config.js" />
+    <None Include="wwwroot\home\js\timer.js" />
+    <None Include="wwwroot\home\js\toast.js" />
+    <None Include="wwwroot\home\js\user.js" />
+    <None Include="wwwroot\home\libs\echarts\echarts.js" />
+    <None Include="wwwroot\home\libs\echarts\echarts.min.js" />
+    <None Include="wwwroot\home\libs\fastclick\fastclick.js" />
+    <None Include="wwwroot\home\libs\jquery\jquery-1.12.4.js" />
+    <None Include="wwwroot\home\libs\jquery\jquery-1.12.4.min.js" />
+    <None Include="wwwroot\home\libs\require\require.js" />
+    <None Include="wwwroot\home\libs\swiper\swiper.min.js" />
+    <None Include="wwwroot\home\libs\template\template.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpGateway\ZeroNet.Http.Gateway.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="config\route_config.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

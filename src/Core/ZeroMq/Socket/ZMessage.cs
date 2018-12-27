@@ -29,7 +29,7 @@ namespace ZeroMQ
         /// </summary>
         public ZMessage(byte[] desc, params string[] args)
         {
-            _frames = new List<ZFrame>{ new ZFrame(desc) };
+            _frames = new List<ZFrame> { new ZFrame(desc) };
             foreach (var frame in args)
                 _frames.Add(new ZFrame(frame));
         }
@@ -348,8 +348,19 @@ namespace ZeroMQ
             }
             return item;
         }
+        /// <summary>
+        /// 总数
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                if (_frames == null)
+                    return 0;
 
-        public int Count => _frames.Count;
+                return _frames.Count;
+            }
+        }
 
         bool ICollection<ZFrame>.IsReadOnly => false;
 

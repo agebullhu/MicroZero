@@ -36,13 +36,18 @@ namespace Agebull.ZeroNet.Core
                 return null;
             ZSocket socket;
 
-            while (_pools.TryDequeue(out socket))
+            while (true)
             {
-                if (socket != null && !socket.IsDisposed)
+                lock (_pools)
                 {
-                    socket.IsUsing = true;
-                    return socket;
+                    if (!_pools.TryDequeue(out socket))
+                        break;
                 }
+
+                if (socket == null || socket.IsDisposed)
+                    continue;
+                socket.IsUsing = true;
+                return socket;
             }
 
             socket = ZSocket.CreateDealerSocket(Config.RequestAddress);
@@ -50,7 +55,10 @@ namespace Agebull.ZeroNet.Core
                 return null;
             socket.IsUsing = true;
             socket.StationName = Config.StationName;
-            _sockets.Add(socket);
+            lock (_sockets)
+            {
+                _sockets.Add(socket);
+            }
             return socket;
         }
 
@@ -63,21 +71,26 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             socket.IsUsing = false;
-            if (ZeroApplication.WorkModel == ZeroWorkModel.Client ||
-                _isDisposed || socket.IsDisposed || socket.LastError != null)
-            {
-                Close(ref socket);
-            }
-            //Close(ref socket);
-            if (_pools.Count > 99)
-            {
-                Close(ref socket);
-            }
-            else
-            {
-                _pools.Enqueue(socket);
-            }
+            Close(ref socket);
+            //if (ZeroApplication.WorkModel == ZeroWorkModel.Client ||
+            //    _isDisposed || socket.IsDisposed || socket.LastError != null)
+            //{
+            //    Close(ref socket);
+            //}
+            ////Close(ref socket);
+            //lock (_pools)
+            //{
+            //    if (_pools.Count > 999)
+            //    {
+            //        Close(ref socket);
+            //    }
+            //    else
+            //    {
+            //        _pools.Enqueue(socket);
+            //    }
+            //}
         }
+
         /// <summary>
         /// 释放一个连接对象
         /// </summary>
@@ -87,7 +100,10 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             if (!_isDisposed)
-                _sockets.Remove(socket);
+            {
+                lock (_sockets)
+                    _sockets.Remove(socket);
+            }
             socket.TryClose();
             socket = null;
         }
@@ -128,14 +144,29 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void DoDispose()
         {
-            while (_pools.TryDequeue(out var socket))
-                socket?.TryClose();
-            foreach (var socket in _sockets.ToArray())
+            while (true)
             {
-                if (!socket.IsUsing)
-                    socket?.TryClose();
+                ZSocket socket;
+                lock (_pools)
+                {
+                    if (!_pools.TryDequeue(out socket))
+                        break;
+                }
+                socket?.TryClose();
             }
-            _sockets.Clear();
+            ZSocket[] array;
+            lock (_sockets)
+            {
+                array = _sockets.ToArray();
+                _sockets.Clear();
+            }
+            foreach (var socket in array)
+            {
+                if (socket == null)
+                    continue;
+                if (!socket.IsUsing)
+                    socket.TryClose();
+            }
         }
     }
 }

@@ -1,0 +1,24 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/ZeroNet.Http.Gateway",
+      "sslPort": 0
+    },
+    "iisExpress": {
+      "applicationUrl": "http://localhost:6000/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "ZeroNet.Http.Gateway": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "server.urls": "http://*:8080"
+      },
+      "use64Bit": true,
+      "applicationUrl": "http://192.168.1.192"
+    }
+  }
+}

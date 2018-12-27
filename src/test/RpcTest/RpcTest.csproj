@@ -30,6 +30,7 @@
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
     <Compile Remove="StationTester.cs" />
+    <Compile Remove="ZeroPublishTester.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +40,12 @@
 
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.pdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

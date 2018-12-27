@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.ApiDocuments;
+using Agebull.Common.DataModel;
+using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Gboxt.Common.DataModel;
@@ -117,7 +119,6 @@ namespace Agebull.ZeroNet.ZeroApi
         protected sealed override bool RunInner(CancellationToken token)
         {
             WaitCount = 0;
-            SystemManager.Instance.HeartReady(StationName, RealName);
             var option = GetApiOption();
             switch (option.SpeedLimitModel)
             {
@@ -139,7 +140,6 @@ namespace Agebull.ZeroNet.ZeroApi
                     RunSignle();
                     break;
             }
-            SystemManager.Instance.HeartLeft(StationName, RealName);
             return true;
         }
 
@@ -150,24 +150,35 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             using (var pool = Prepare(Identity, out var socket))
             {
+                //var hearter = new HeartManager
+                //{
+                //    Socket = pool.Sockets[0],
+                //    IsInner = true
+                //};
+                //hearter.HeartJoin(StationName, RealName);
+                //hearter.HeartReady(StationName, RealName);
                 ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, RealName);
                 State = StationState.Run;
                 while (CanLoop)
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    try
                     {
-                        Idle();
-                        continue;
-                    }
-                    Interlocked.Increment(ref RecvCount);
-                    using (message)
-                    {
+                        if (!pool.Poll())
+                        {
+                            //hearter.Heartbeat(StationName, RealName);
+                            Idle();
+                            continue;
+                        }
+                        if (!pool.CheckIn(0, out var message))
+                        {
+                            continue;
+                        }
+                        Interlocked.Increment(ref RecvCount);
                         if (!Unpack(message, out var item))
                         {
                             SendLayoutErrorResult(ref socket, item);
                             continue;
                         }
-
                         Interlocked.Increment(ref WaitCount);
                         if (WaitCount > ZeroApplication.Config.MaxWait)
                         {
@@ -186,50 +197,25 @@ namespace Agebull.ZeroNet.ZeroApi
                             });
                         }
                     }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                    }
                 }
+                //hearter.HeartLeft(StationName, RealName);
                 socket?.Dispose();
             }
             ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, RealName);
         }
         private SemaphoreSlim _processSemaphore;
+
         /// <summary>
         /// 具体执行
         /// </summary>
         private void RunThread()
         {
-            ApiExecuter executer = new ApiExecuter
-            {
-                Station = this
-            };
             var realName = ZeroIdentityHelper.CreateRealName(IsService, Config.StationName);
-            var identity = realName.ToAsciiBytes();
-            using (var pool = Prepare(identity, out var socket))
-            {
-                ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
-                State = StationState.Run;
-                while (CanLoop)
-                {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
-                    {
-                        Idle();
-                        continue;
-                    }
-
-                    Interlocked.Increment(ref RecvCount);
-                    using (message)
-                    {
-                        if (!Unpack(message, out var item))
-                        {
-                            SendLayoutErrorResult(ref socket, item);
-                            continue;
-                        }
-                        Execute(executer, ref socket, item);
-                    }
-                }
-                socket?.Dispose();
-            }
-            _processSemaphore?.Release();
-            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
+            RunSignle(realName, realName.ToAsciiBytes());
         }
 
         /// <summary>
@@ -237,38 +223,63 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private void RunSignle()
         {
+            RunSignle(RealName, Identity);
+        }
+
+        /// <summary>
+        /// 具体执行
+        /// </summary>
+        private void RunSignle(string realName,byte[] identity)
+        {
             ApiExecuter executer = new ApiExecuter
             {
                 Station = this
             };
-            using (var pool = Prepare(Identity, out var socket))
+            using (var pool = Prepare(identity, out var socket))
             {
-                ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, RealName);
+                //var hearter = new HeartManager
+                //{
+                //    Socket = pool.Sockets[0],
+                //    IsInner = true
+                //};
+                //hearter.HeartJoin(StationName, realName);
+                //hearter.HeartReady(StationName, realName);
+                ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
                 State = StationState.Run;
                 while (CanLoop)
                 {
-                    if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    try
                     {
-                        Idle();
-                        continue;
-                    }
-                    Interlocked.Increment(ref RecvCount);
-                    using (message)
-                    {
+                        if (!pool.Poll())
+                        {
+                            //hearter.Heartbeat(StationName, realName);
+                            Idle();
+                            continue;
+                        }
+                        if (!pool.CheckIn(0, out var message))
+                        {
+                            continue;
+                        }
+                        Interlocked.Increment(ref RecvCount);
                         if (!Unpack(message, out var item))
                         {
                             SendLayoutErrorResult(ref socket, item);
                             continue;
                         }
-
+                        Interlocked.Increment(ref WaitCount);
                         Execute(executer, ref socket, item);
                     }
+                    catch (Exception e)
+                    {
+                        LogRecorder.Exception(e);
+                    }
                 }
+                //hearter.HeartLeft(StationName, realName);
                 socket?.Dispose();
             }
+            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
             _processSemaphore?.Release();
         }
-
         #endregion
 
         #region Unpack
@@ -281,13 +292,21 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         private bool Unpack(ZMessage messages, out ApiCallItem item)
         {
+            if (messages.Count == 0)
+            {
+                item = null;
+                return false;
+            }
+            byte[][] buffers;
+            using (messages)
+                buffers = messages.Select(p => p.Read()).ToArray();
             item = new ApiCallItem
             {
-                Caller = messages[0].Read()
+                First = buffers[0]
             };
             try
             {
-                var description = messages[1].Read();
+                var description = buffers[1];
                 if (description.Length < 2)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
@@ -297,26 +316,31 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
 
                 int end = description[0] + 2;
-                if (end != messages.Count)
+                if (end != buffers.Length)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
-                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""));
+                        $"FrameSize{buffers.Length}", description.LinkToString(p => p.ToString("X2"), ""));
                     item = null;
                     return false;
                 }
 
                 for (int idx = 2; idx < end; idx++)
                 {
-                    var bytes = messages[idx].Read();
+                    var bytes = buffers[idx];
+                    item.Frames.Add(new NameValue<byte, byte[]>
+                    {
+                        name = description[idx],
+                        value = bytes
+                    });
                     if (bytes.Length == 0)
                         continue;
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
-                            item.GlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            item.CallerGlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
-                        case ZeroFrameType.StationId:
-                            item.StationCallId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                        case ZeroFrameType.LocalId:
+                            item.LocalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.RequestId:
                             item.RequestId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
@@ -333,7 +357,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         case ZeroFrameType.Argument:
                             item.Argument = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
-                        case ZeroFrameType.Content:
+                        case ZeroFrameType.TextContent:
                             item.Content = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Original1:
@@ -354,12 +378,8 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 ZeroTrace.WriteException("Receive", e,
-                    Config.WorkerResultAddress, $"FrameSize{messages.Count}");
+                    Config.WorkerResultAddress, $"FrameSize{buffers.Length}");
                 return false;
-            }
-            finally
-            {
-                messages.Dispose();
             }
         }
 

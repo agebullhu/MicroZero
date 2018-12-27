@@ -23,7 +23,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         protected SubStation() : base(ZeroStationType.Notify, true)
         {
-
+            //Hearter = SystemManager.Instance;
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns>返回False表明需要重启</returns>
         protected override bool RunInner(CancellationToken token)
         {
-            SystemManager.Instance.HeartReady(StationName, RealName);
+            Hearter?.HeartReady(StationName, RealName);
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
@@ -112,7 +112,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
             }
 
-            SystemManager.Instance.HeartLeft(StationName, RealName);
+            Hearter?.HeartLeft(StationName, RealName);
             return true;
         }
 
@@ -173,7 +173,7 @@ namespace Agebull.ZeroNet.PubSub
                         case ZeroFrameType.Publisher:
                             item.Publisher = Encoding.UTF8.GetString(bytes);
                             break;
-                        case ZeroFrameType.Content:
+                        case ZeroFrameType.TextContent:
                             if (item.Content == null)
                                 item.Content = Encoding.UTF8.GetString(bytes);
                             else

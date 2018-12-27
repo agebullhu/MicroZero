@@ -1,131 +1,177 @@
 #include "../stdinc.h"
 #include "zero_config.h"
+#include "../ext/shared_char.h"
 #include "../cfg/json_config.h"
 
 namespace agebull
 {
 	namespace zero_net
 	{
-		int worker::check()
+		int zero_config::check_worker(worker& worker)
 		{
-			const int64 tm = time(nullptr) - pre_time;
+			if (worker.state == 5)
+				return -1;
+			const int64 tm = time(nullptr) - worker.pre_time;
 
-			if (state == -1)
-				state = 1;
 			if (tm <= 2)
 			{
-				return level = 5;
+				worker.state = 1;
+				return worker.level = 5;
 			}
-			if (tm <= 6)
+			if (tm <= 4)
 			{
-				return level = 4;
+				worker.state = 2;
+				return worker.level = 4;
 			}
-			if (tm <= 10)
+			if (tm <= 8)
 			{
-				return level = 3;
+				worker.state = 2;
+				return worker.level = 3;
 			}
-			state = -1;
-			if (tm <= 15)
+
+			if (tm <= 16)
 			{
-				return level = 2;
+				return worker.level = 2;
 			}
-			if (tm <= 30)
+			worker.state = 3;
+			if (tm <= 32)
 			{
-				return level = 1;
+				return worker.level = 1;
 			}
 			if (tm <= 60)
 			{
-				return level = 0;
+				return worker.level = 0;
 			}
-			return level = -1;
+			return worker.level = -1;
 		}
 
 		void zero_config::worker_join(const char* real_name, const char* ip)
 		{
-			boost::lock_guard<boost::mutex> guard(mutex);
-			auto iter = workers.find(real_name);
-			if (iter == workers.end())
-			{
-				worker wk;
-				wk.real_name = real_name;
-				wk.ip_address = ip;
-				workers.insert(make_pair(real_name, wk));
-			}
-			else
-			{
-				iter->second.ip_address = ip;
-				iter->second.level = -1;
-				iter->second.pre_time = time(nullptr);
-				if (iter->second.state == 1)
-				{
-					--ready_works_;
-				}
-				iter->second.state = 0;
-			}
-			log("worker_join", real_name);
+			//boost::lock_guard<boost::mutex> guard(mutex);
+			//auto iter = find(real_name);
+			//if (iter == nullptr)
+			//{
+			//	worker wk;
+			//	wk.identity = real_name;
+			//	wk.state = 1;
+			//	wk.ip_address = ip;
+			//	++ready_works_;
+			//	workers.push_back(wk);
+			//}
+			//else
+			//{
+			//	iter->ip_address = ip;
+			//	iter->level = -1;
+			//	iter->pre_time = time(nullptr);
+			//	if (iter->state != 1)
+			//	{
+			//		iter->state = 1;
+			//	}
+			//}
+			//log("worker_join", real_name);
 		}
-
-		void zero_config::worker_ready(const char* real_name)
+		void zero_config::worker_Ok(const char* identity)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
-			auto iter = workers.find(real_name);
-			if (iter == workers.end())
+			for (worker& iter : workers)
 			{
-				worker wk;
-				wk.real_name = real_name;
-				wk.state = 1;
-				wk.level = 5;
-				workers.insert(make_pair(real_name, wk));
-				++ready_works_;
-				log("worker_ready", real_name);
-			}
-			else
-			{
-				if (iter->second.state != 1) //曾经失联
+				if (strcmp(iter.identity, identity) == 0)
 				{
-					++ready_works_;
-					iter->second.state = 1;
-					log("worker_ready", real_name);
+					iter.active();
+					return;
 				}
-				iter->second.active();
 			}
 		}
 
-		void zero_config::worker_left(const char* real_name)
+		void zero_config::worker_ready(const char* identity)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
-			auto iter = workers.find(real_name);
-			if (iter == workers.end())
-				return;
-			if (iter->second.state == 1)
-				--ready_works_;
-			workers.erase(real_name);
-			log("worker_left", real_name);
+			for (worker& iter : workers)
+			{
+				if (strcmp(iter.identity, identity) == 0)
+				{
+					if (iter.state != 1) //曾经失联
+					{
+						++ready_works_;
+						iter.state = 1;
+						log("worker_ready*reincarnation ", identity);
+					}
+					iter.active();
+					return;
+				}
+			}
+			worker wk;
+			memset(wk.identity, 0, sizeof(wk.identity));
+			strcpy(wk.identity, identity);
+			wk.state = 1;
+			wk.level = 5;
+			workers.push_back(wk);
+			++ready_works_;
+			log("worker_ready", identity);
+		}
+
+		/**
+		* \brief 站点名称
+		*/
+		worker* zero_config::get_worker()
+		{
+			{
+				boost::lock_guard<boost::mutex> guard(mutex);
+				int size = static_cast<int>(workers.size());
+				if (size == 0)
+				{
+					worker_idx = -1;
+					return nullptr;
+				}
+				if (size == 1)
+				{
+					worker_idx = 0;
+					if (workers[0].state < 5)
+						return &workers[0];
+					workers.erase(workers.begin());
+					return nullptr;
+				}
+				if (++worker_idx >= size)
+				{
+					worker_idx = 0;
+				}
+				if (workers[worker_idx].state < 5)
+					return &workers[worker_idx];
+				workers.erase(workers.begin() + worker_idx);
+			}
+			return get_worker();
+		}
+		void zero_config::worker_left(const char* identity)
+		{
+			log("worker_left", identity);
+			boost::lock_guard<boost::mutex> guard(mutex);
+
+			for (auto iter = workers.begin(); iter != workers.end(); ++iter)
+			{
+				if (strcmp(iter->identity, identity) == 0)
+				{
+					workers.erase(iter);
+					return;
+				}
+			}
 		}
 
 		void zero_config::check_works()
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
-			int ready = 0;
-			vector<string> lefts;
-			for (auto& work : workers)
+			ready_works_ = 0;
+			for (auto iter = workers.begin(); iter != workers.end(); ++iter)
 			{
-				work.second.check();
-				if (work.second.level < 0)
+				check_worker(*iter);
+				if (iter->state <= 2)
 				{
-					lefts.emplace_back(work.first);
+					++ready_works_;
 				}
-				else if (work.second.state == 1)
-				{
-					++ready;
-				}
+				//else
+				//{
+				//	log("worker failed", iter->identity);
+				//}
 			}
-			for (auto& worker : lefts)
-			{
-				workers.erase(worker);
-				log("worker_left", worker.c_str());
-			}
-			ready_works_ = ready;
 		}
 		const char* fields[] =
 		{
@@ -297,7 +343,7 @@ namespace agebull
 				json_add_num(node, "request_err", request_err);
 				json_add_num(node, "worker_in", worker_in);
 				json_add_num(node, "worker_out", worker_out);
-				json_add_num(node, "worker_err", worker_err);
+				json_add_num(node, "worker_err", (int64)shared_char::using_count_);//BUG
 			}
 			//加入的工作站点信息,仅包含在状态
 			if (type >= 2 && workers.size() > 0)
@@ -306,11 +352,11 @@ namespace agebull
 				for (auto& worker : workers)
 				{
 					acl::json_node& work = json.create_node();
-					json_add_num(work, "level", worker.second.level);
-					json_add_num(work, "state", worker.second.state);
-					json_add_num(work, "pre_time", worker.second.pre_time);
-					json_add_str(work, "real_name", worker.second.real_name);
-					json_add_str(work, "ip_address", worker.second.ip_address);
+					json_add_num(work, "level", worker.level);
+					json_add_num(work, "state", worker.state);
+					json_add_num(work, "pre_time", worker.pre_time);
+					json_add_chr(work, "real_name", worker.identity);
+					json_add_str(work, "ip_address", worker.ip_address);
 					array.add_child(work);
 				}
 				node.add_child("workers", array);

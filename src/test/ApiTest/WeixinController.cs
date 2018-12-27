@@ -77,6 +77,7 @@ namespace ApiTest
             msg.Content = requestMessage.Content;
             try
             {
+
                 TemplateApi.SendTemplateMessage(Option.WeixinAppId, requestMessage.FromUserName, new AppointmentTemplateData
                 {
                     first = new TemplateDataItem(msg.Content),

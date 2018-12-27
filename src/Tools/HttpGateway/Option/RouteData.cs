@@ -145,7 +145,6 @@ namespace ZeroNet.Http.Gateway
         public void Prepare(HttpContext context)
         {
             var request = context.Request;
-            Uri = request.GetUri();
             string userAgent = null;
             foreach (var head in request.Headers)
             {
@@ -156,18 +155,27 @@ namespace ZeroNet.Http.Gateway
                 {
                     case "AUTHORIZATION":
                         Token = vl.LinkToString();
+                        var words = Token.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (words.Length != 2 ||
+                            !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
+                            words[1].Equals("null") ||
+                            words[1].Equals("undefined"))
+                            Token = null;
+                        else
+                            Token = words[1];
                         break;
                     case "USER-AGENT":
                         userAgent = head.Value.LinkToString("|");
                         break;
                 }
             }
-            HttpMethod = request.Method.ToUpper();
-
-            
+            if (string.IsNullOrWhiteSpace(Token))
+            {
+                Token = context.Request.Query["token"];
+            }
             GlobalContext.SetRequestContext(new RequestInfo
             {
-                RequestId = RandomOperate.Generate(8),
+                RequestId = context.Connection.Id,
                 UserAgent = userAgent,
                 Token = Token,
                 RequestType = RequestType.Http,

@@ -19,7 +19,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
-            IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
+            IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
         }
 
         /// <summary>

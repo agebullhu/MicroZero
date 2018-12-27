@@ -1,5 +1,6 @@
 #pragma once
-#ifndef _AGEBULL_SHRRP_CHAR_H_
+#ifndef AGEBULL_SHRRP_CHAR_H_
+#define AGEBULL_SHRRP_CHAR_H_
 #include "../rpc/zero_default.h"
 #include <acl/acl_cpp/stdlib/string.hpp>
 #include <zeromq/zmq.h>
@@ -8,6 +9,7 @@ namespace agebull
 {
 	namespace zero_net
 	{
+		
 		/**
 		 * \brief 字节智能指针
 		 */
@@ -27,7 +29,7 @@ namespace agebull
 			*/
 			bool is_const_;
 		public:
-
+			static int using_count_;
 			/**
 			 * \bref 构造
 			 */
@@ -39,7 +41,7 @@ namespace agebull
 			 * \bref 构造
 			 */
 			shared_char(const shared_char& fri) : count_(fri.count_), buffer_(fri.buffer_), size_(fri.size_),
-				alloc_size_(fri.alloc_size_), is_binary_(fri.is_binary_), is_const_(false)
+				alloc_size_(fri.alloc_size_), is_binary_(fri.is_binary_), is_const_(fri.is_const_)
 			{
 				if (count_ != nullptr)
 					*count_ += 1;
@@ -48,10 +50,9 @@ namespace agebull
 			/**
 			 * \bref 构造
 			 */
-			shared_char(char* buffer, int len) : count_(new int()), buffer_(buffer), size_(len), alloc_size_(len),
-				is_binary_(2), is_const_(false)
+			shared_char(char* buffer, size_t len) : shared_char()
 			{
-				*count_ = 1;
+				copy_(len, buffer);
 			}
 
 			/**
@@ -157,22 +158,34 @@ namespace agebull
 			{
 				free();
 			}
+
+			/**
+			 * \bref 分配新内存
+			 */
+			void alloc(size_t size)
+			{
+				free();
+				alloc_(size);
+			}
 			/**
 			 * \bref 释放内存
 			 */
 			void free()
 			{
-				if (count_ == nullptr || size_ == 0)
-					return;
-				const int cnt = --(*count_);
-				if (cnt == 0)
-				{
-					delete count_;
-					delete[] buffer_;
-				}
+				free_();
 				set_empty();
 			}
-		protected:
+		private:
+			/**
+			 * \bref 释放内存
+			 */
+			void free_();
+
+			void alloc_(size_t size);
+
+			void copy_(size_t size, const void* src);
+
+
 			void set_empty()
 			{
 				size_ = 0;
@@ -182,38 +195,6 @@ namespace agebull
 				is_binary_ = 0;
 				is_const_ = false;
 			}
-
-			void alloc(size_t size)
-			{
-				free();
-				alloc_(size);
-			}
-
-
-
-			void alloc_(size_t size)
-			{
-				size_ = size;
-				alloc_size_ = size_ + 8;
-				buffer_ = new char[alloc_size_];
-				memset(buffer_, 0, alloc_size_);
-				count_ = new int();
-				*count_ = 1;
-				is_const_ = false;
-			}
-
-			void copy_(size_t size, const void* src)
-			{
-				size_ = size;
-				count_ = new int();
-				*count_ = 1;
-				is_const_ = false;
-				alloc_size_ = size_ + 8;
-				buffer_ = new char[alloc_size_];
-				memcpy(buffer_, src, size);
-				memset(buffer_ + size, 0, 4);
-			}
-
 		public:
 			/**
 			* \brief 绑定游离内存
@@ -314,6 +295,8 @@ namespace agebull
 
 			shared_char& operator =(const char* msg)
 			{
+				if (buffer_ == msg)
+					return *this;
 				free();
 				size_ = strlen(msg);
 				if (size_ == 0)
@@ -389,6 +372,10 @@ namespace agebull
 
 			shared_char& operator =(const shared_char& fri)
 			{
+				if (&fri == this)
+					return *this;
+				if (buffer_ == fri.buffer_)
+					return *this;
 				free();
 				if (fri.buffer_ != nullptr)
 				{
@@ -443,8 +430,8 @@ namespace agebull
 			{
 				return buffer_;
 			}
-			//对说明帧的支持
 
+			//对说明帧的支持
 			shared_char& alloc_desc(size_t size, uchar state = zero_def::command::none)
 			{
 				free();
@@ -458,23 +445,16 @@ namespace agebull
 			template <size_t TSize>
 			shared_char& alloc_desc(char(&frames)[TSize])
 			{
-				return alloc_desc(zero_def::command::none, frames);
-			}
-
-
-			template <size_t TSize>
-			shared_char& alloc_desc(uchar state, char(&frames)[TSize])
-			{
 				free();
 				alloc_(TSize + 2);
 				is_binary_ = 2;
 				buffer_[0] = static_cast<char>(TSize);
-				buffer_[1] = state;
+				buffer_[1] = zero_def::command::none;
 				memcpy(buffer_ + 2, frames, TSize);
 				return *this;
 			}
 
-			shared_char& alloc_desc_frame(uchar state, char frame)
+			shared_char& alloc_frame_desc(uchar state, char frame)
 			{
 				free();
 				alloc_(4);
@@ -482,10 +462,11 @@ namespace agebull
 				buffer_[0] = static_cast<char>(1);
 				buffer_[1] = state;
 				buffer_[2] = frame;
+				buffer_[3] = state;
 				return *this;
 			}
 
-			shared_char& alloc_desc_frame(uchar state, char frame1, char frame2)
+			shared_char& alloc_frame_desc(uchar state, char frame1, char frame2)
 			{
 				free();
 				alloc_(5);
@@ -497,7 +478,7 @@ namespace agebull
 				return *this;
 			}
 
-			shared_char& alloc_desc_frame(uchar state, char frame1, char frame2, char frame3)
+			shared_char& alloc_frame_desc(uchar state, char frame1, char frame2, char frame3)
 			{
 				free();
 				alloc_(6);
@@ -510,7 +491,7 @@ namespace agebull
 				return *this;
 			}
 
-			shared_char& alloc_desc_frame(uchar state, char frame1, char frame2, char frame3, char frame4)
+			shared_char& alloc_frame_desc(uchar state, char frame1, char frame2, char frame3, char frame4)
 			{
 				free();
 				alloc_(7);
@@ -524,7 +505,7 @@ namespace agebull
 				return *this;
 			}
 
-			shared_char& alloc_desc_frame(uchar state, char frame1, char frame2, char frame3, char frame4, char frame5)
+			shared_char& alloc_frame_desc(uchar state, char frame1, char frame2, char frame3, char frame4, char frame5)
 			{
 				free();
 				alloc_(8);
@@ -551,28 +532,19 @@ namespace agebull
 
 			void frame_size(size_t size)
 			{
-				if (size_ == 0)
-					alloc_desc(size);
-				else
-					buffer_[0] = static_cast<char>(size);
-			}
-
-			void set_state(uchar s)
-			{
-				if (size_ == 0)
-					alloc_desc(10, s);
-				else
-					memcpy(buffer_ + 1, &s, 1);
+				buffer_[0] = static_cast<char>(size);
 			}
 
 			void state(uchar s) const
 			{
 				memcpy(buffer_ + 1, &s, 1);
 			}
+
 			uchar state() const
 			{
 				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
 			}
+
 			uchar command() const
 			{
 				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
@@ -585,32 +557,11 @@ namespace agebull
 
 			void append_frame(char type)
 			{
-				if (size_ == 0)
-					alloc_desc(10);
 				frame_type(buffer_[0], type);
 				buffer_[0] = static_cast<char>(buffer_[0] + 1);
 			}
 
-			void frame_type(size_t index, char type)
-			{
-				index += 2;
-				if (alloc_size_ > index)
-				{
-					if (index >= size_)
-						size_ = index + 1;
-				}
-				else
-				{
-					char* old = buffer_;
-					buffer_ = new char[index + 8];
-					memcpy(buffer_, old, alloc_size_);
-					memset(buffer_ + alloc_size_, 0, index + 8 - alloc_size_);
-					delete[] old;
-					size_ = index + 4;
-					alloc_size_ = index + 8;
-				}
-				buffer_[index] = type;
-			}
+			void frame_type(size_t index, char type);
 
 			size_t check_size()
 			{
@@ -618,25 +569,6 @@ namespace agebull
 				if (max > size_ && max < (size_ + 4))
 					size_ = max;
 				return size_;
-			}
-			void find_frame(size_t& reqid, size_t& reqer, size_t& gid) const
-			{
-				reqid = 0, gid = 0, reqer = 0;
-				for (size_t idx = 2; idx < size_ && idx <= frame_size() + 2; idx++)
-				{
-					switch (buffer_[idx])
-					{
-					case zero_def::frame::request_id:
-						reqid = idx;
-						break;
-					case zero_def::frame::requester:
-						reqer = idx;
-						break;
-					case zero_def::frame::global_id:
-						gid = idx;
-						break;
-					}
-				}
 			}
 		};
 	}

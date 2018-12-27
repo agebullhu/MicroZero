@@ -51,7 +51,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             item.Handlers = Station.CreateHandlers();
             if (item.RequestId == null)
-                item.RequestId = item.GlobalId;
+                item.RequestId = item.CallerGlobalId;
 
             if (item.Handlers == null)
                 return;
@@ -86,11 +86,11 @@ namespace Agebull.ZeroNet.ZeroApi
         }
         private void ApiCallByMonitor(ref ZSocket socket, ApiCallItem item)
         {
-            using (MonitorScope.CreateScope(item.ApiName))
+            using (MonitorScope.CreateScope($"{Station.StationName}/{item.ApiName}"))
             {
                 LogRecorder.MonitorTrace($"Caller:{Encoding.ASCII.GetString(item.Caller)}");
-                LogRecorder.MonitorTrace($"GlobalId:{item.GlobalId}");
-                LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item));
+                LogRecorder.MonitorTrace($"GlobalId:{item.CallerGlobalId}");
+                LogRecorder.MonitorTrace(JsonConvert.SerializeObject(item,Formatting.Indented));
                 ZeroOperatorStateType state = RestoryContext(item);
                 if (state == ZeroOperatorStateType.Ok)
                 {
@@ -159,12 +159,13 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     GlobalContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.ContextJson));
                 }
+                GlobalContext.Current.DependencyObjects.Annex(item);
                 if (!string.IsNullOrWhiteSpace(item.Content))
                 {
                     GlobalContext.Current.DependencyObjects.Annex(JsonConvert.DeserializeObject<Dictionary<string, string>>(item.Content));
                 }
 
-                GlobalContext.Current.Request.SetValue(item.GlobalId, item.Requester, item.RequestId);
+                GlobalContext.Current.Request.SetValue(item.CallerGlobalId, item.Requester, item.RequestId);
                 return ZeroOperatorStateType.Ok;
             }
             catch (Exception e)
@@ -249,9 +250,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     case IApiResult result:
                         if (result.Status == null)
-                            result.Status = new ApiStatusResult { InnerMessage = item.GlobalId };
+                            result.Status = new ApiStatusResult { InnerMessage = item.CallerGlobalId };
                         else
-                            result.Status.InnerMessage = item.GlobalId;
+                            result.Status.InnerMessage = item.CallerGlobalId;
                         item.Result = JsonConvert.SerializeObject(result);
                         item.Status = result.Success ? ZeroOperatorStatus.Success : ZeroOperatorStatus.LogicalError;
                         return result.Success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Failed;

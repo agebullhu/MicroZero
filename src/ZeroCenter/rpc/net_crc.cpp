@@ -4,6 +4,85 @@ namespace agebull
 {
 	namespace zero_net
 	{
+		int shared_char::using_count_ = 0;
+
+		/**
+		 * \bref ÊÍ·ÅÄÚ´æ
+		 */
+		void shared_char::free_()
+		{
+			if (count_ == nullptr || size_ == 0)
+				return;
+			const int cnt = --(*count_);
+			if (cnt == 0)
+			{
+				::free(count_);
+				//delete count_;
+				if (!is_const_)
+				{
+					::free(buffer_);
+					//delete[] buffer_;
+
+					using_count_--;
+				}
+			}
+		}
+		void shared_char::frame_type(size_t index, char type)
+		{
+			index += 2;
+			if (alloc_size_ > index)
+			{
+				if (index >= size_)
+					size_ = index + 1;
+			}
+			else
+			{
+				char* new_buf = static_cast<char*>(::malloc(index + 8));
+				memset(new_buf, 0, index + 8);
+				memcpy(buffer_, new_buf, alloc_size_);
+				free_();
+				count_ = new int();
+				*count_ = 1;
+				size_ = index + 4;
+				alloc_size_ = index + 8;
+
+				buffer_ = new_buf;
+				using_count_++;
+			}
+			buffer_[index] = type;
+		}
+
+		void shared_char::alloc_(size_t size)
+		{
+			size_ = size;
+			alloc_size_ = size_ + 8 + (8 - (size_ % 8));
+			buffer_ = static_cast<char*>(::malloc(alloc_size_));
+			//buffer_ = new char[alloc_size_];
+			memset(buffer_, 0, alloc_size_);
+			count_ = new int();
+			*count_ = 1;
+			is_const_ = false;
+			using_count_++;
+		}
+
+		void shared_char::copy_(size_t size, const void* src)
+		{
+			size_ = size;
+			alloc_size_ = size_ + 8 + (8 - (size_ % 8));
+			buffer_ = static_cast<char*>(::malloc(alloc_size_));
+			//buffer_ = new char[alloc_size_];
+			memset(buffer_, 0, alloc_size_);
+			memcpy(buffer_, src, size);
+
+			count_ = new int();
+			*count_ = 1;
+			is_const_ = false;
+
+			using_count_++;
+		}
+
+
+
 		static unsigned char auchCRCHi[] = {
 			0x00,0xC1,0x81,0x40,0x01,0xC0,0x80,0x41,0x01,0xC0,
 

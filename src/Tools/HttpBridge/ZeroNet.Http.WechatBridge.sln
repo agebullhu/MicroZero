@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroNet.Http.WechatBridge", "ZeroNet.Http.WechatBridge.csproj", "{F38A4029-0C7E-40C9-A094-31BCC45DEDFB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F38A4029-0C7E-40C9-A094-31BCC45DEDFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F38A4029-0C7E-40C9-A094-31BCC45DEDFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F38A4029-0C7E-40C9-A094-31BCC45DEDFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F38A4029-0C7E-40C9-A094-31BCC45DEDFB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7777FF14-B7AA-4EC9-BE91-76F91BDF3040}
+	EndGlobalSection
+EndGlobal

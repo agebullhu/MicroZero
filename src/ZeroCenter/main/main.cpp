@@ -8,8 +8,9 @@ int main(int argc, char *argv[])
 int zero_center_main()
 {
 	//加入内存检测
-	//setenv("MALLOC_TRACE", "output", 1);
-	//mtrace();
+	//valgrind --tool=memcheck --leak-check=full ./zero_center.out 
+	setenv("MALLOC_TRACE", "output", 1);
+	mtrace();
 	//初始化
 	if (!zero_net::rpc_service::initialize())
 		return 0;

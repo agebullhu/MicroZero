@@ -273,6 +273,11 @@
             站点文档信息
             </summary>
         </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ZeroDiscover.FindApies(System.Type)">
+            <summary>
+            查找API
+            </summary>
+        </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ZeroDiscover.FindApies">
             <summary>
             查找API
@@ -628,12 +633,7 @@
             全局ID
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.GlobalId">
-            <summary>
-            全局ID
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.StationCallId">
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.LocalId">
             <summary>
             站点请求ID
             </summary>
@@ -643,14 +643,24 @@
             调用方的全局ID
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.First">
+            <summary>
+            请求者
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Caller">
             <summary>
             请求者
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Caller2">
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.CallerName">
             <summary>
             请求者
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Title">
+            <summary>
+            广播标题
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.RequestId">
@@ -696,6 +706,11 @@
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Status">
             <summary>
             执行状态
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Frames">
+            <summary>
+            原样帧
             </summary>
         </member>
         <member name="T:Agebull.ZeroNet.ZeroApi.ApiExecuter">
@@ -822,6 +837,11 @@
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle">
+            <summary>
+            具体执行
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle(System.String,System.Byte[])">
             <summary>
             具体执行
             </summary>
@@ -953,6 +973,11 @@
                 请求站点
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiClient.Title">
+            <summary>
+                标题
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiClient.Commmand">
             <summary>
                 调用命令
@@ -1026,6 +1051,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallCenter">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CheckStateResult">
             <summary>
                 检查在非成功状态下的返回值
@@ -1070,7 +1101,7 @@
                 注册处理器
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient.SimpleCallDescription">
+        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient.GetGlobalIdDescription">
             <summary>
                 请求格式说明
             </summary>
@@ -1080,25 +1111,27 @@
                 请求格式说明
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient.GetGlobalIdDescription">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.WriteError(System.String,System.Object[])">
             <summary>
-                请求格式说明
+            
             </summary>
+            <param name="title"></param>
+            <param name="messages"></param>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.QuietSend(ZeroMQ.ZSocket,System.Byte[],System.String[])">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Receive(ZeroMQ.ZSocket)">
+            <summary>
+                接收文本
+            </summary>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Send(ZeroMQ.ZSocket,System.Byte[],System.String[])">
             <summary>
                 一次请求
             </summary>
             <param name="socket"></param>
             <param name="desicription"></param>
             <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.ReceiveString(ZeroMQ.ZSocket)">
-            <summary>
-                接收文本
-            </summary>
-            <param name="socket"></param>
             <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Call``2(System.String,System.String,``0)">
@@ -1787,31 +1820,6 @@
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartLeft(System.String,System.String)">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartReady(System.String,System.String)">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartJoin(System.String,System.String)">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.Heartbeat(System.String,System.String)">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartCommand(Agebull.ZeroNet.Core.ZeroByteCommand,System.String[])">
-            <summary>
-                连接到
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.SystemManager.TryInstall(System.String,System.String)">
             <summary>
             尝试安装站点
@@ -2146,6 +2154,31 @@
             配置
             </summary>
         </member>
+        <member name="T:Agebull.ZeroNet.Core.HeartManager">
+            <summary>
+            心跳
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.HeartManager.HeartLeft(System.String,System.String)">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.HeartManager.HeartReady(System.String,System.String)">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.HeartManager.HeartJoin(System.String,System.String)">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.HeartManager.Heartbeat(System.String,System.String)">
+            <summary>
+                连接到
+            </summary>
+        </member>
         <member name="T:Agebull.ZeroNet.Core.OnceScope">
             <summary>
             保证独立操作的范围(让启动的Task中使用相同范围时会在在此范围完成后顺序执行)
@@ -2180,6 +2213,85 @@
         </member>
         <member name="M:Agebull.ZeroNet.Core.OnceScope.OnDispose">
             <inheritdoc />
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZCommand">
+            <summary>
+            管理命令
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZCommand.IsInner">
+            <summary>
+            是否内部
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.GetAddress">
+            <summary>
+            地址错误的情况
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZCommand.ManageAddress">
+            <summary>
+            管理站点地址
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommand(System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="args">请求参数,第一个必须为命令名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.ByteCommand(Agebull.ZeroNet.Core.ZeroByteCommand,System.String[])">
+            <summary>
+                执行管理命令(快捷命令，命令在说明符号的第二个字节中)
+            </summary>
+            <param name="commmand"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZCommand.Socket">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommand(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommandInner(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommandInner2(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
+            <summary>
+                一次请求
+            </summary>
+            <param name="socket"></param>
+            <param name="desicription"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZCommand.Destroy">
+            <summary>
+            关闭仅有的一个连接
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroCommandExtend">
             <summary>
@@ -2259,65 +2371,12 @@
             <param name="ranges"></param>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.ZeroManageCommand">
-            <summary>
-            管理命令
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.GetAddress">
-            <summary>
-            地址错误的情况
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroManageCommand.ManageAddress">
-            <summary>
-            管理站点地址
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.CallCommand(System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="args">请求参数,第一个必须为命令名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.CallCommand(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.ByteCommand(Agebull.ZeroNet.Core.ZeroByteCommand,System.String[])">
-            <summary>
-                执行管理命令(快捷命令，命令在说明符号的第二个字节中)
-            </summary>
-            <param name="commmand"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroManageCommand.Destroy">
-            <summary>
-            关闭仅有的一个连接
-            </summary>
-        </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroResultData`1">
             <summary>
             返回值
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroResultData`1.InteractiveSuccess">
+        <member name="P:Agebull.ZeroNet.Core.ZeroResultData`1.InteractiveSuccess">
             <summary>
             与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
             </summary>
@@ -2624,11 +2683,6 @@
                 全局标识
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.StationId">
-            <summary>
-                站点ID
-            </summary>
-        </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.Station">
             <summary>
                 站点名称帧
@@ -2749,7 +2803,7 @@
                 广播副题
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.Content">
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.TextContent">
             <summary>
                 一般文本内容
             </summary>
@@ -3498,129 +3552,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.PollProxy">
-            <summary>
-                Api站点
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.PollProxy.RunTaskCancel">
-            <summary>
-            取消标记
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.PollProxy.Start">
-            <summary>
-            开始
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.PollProxy.End">
-            <summary>
-            结束
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.PollProxy._waitToken">
-            <summary>
-            应用程序等待结果的信号量对象
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.PollProxy.WaitCount">
-            <summary>
-            未完成的请求数量
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.PollProxy.NetErrorDescription">
-            <summary>
-            请求格式说明
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.PollProxy.Run">
-            <summary>
-            命令轮询
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Agebull.ZeroNet.Core.ProxyPool">
-            <summary>
-            站点连接池
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroObject#StationName">
-            <summary>
-            名称
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ProxyPool.Name">
-            <summary>
-            名称
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ProxyPool._state">
-            <summary>
-                运行状态
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ProxyPool.State">
-            <summary>
-                运行状态
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroObject#OnZeroInitialize">
-            <summary>
-            系统初始化时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroObject#OnHeartbeat">
-            <summary>
-                要求心跳
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.OnZeroStart">
-            <summary>
-            系统启动时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.OnZeroEnd">
-            <summary>
-            系统关闭时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroObject#OnStationStateChanged(Agebull.ZeroNet.Core.StationConfig)">
-            <summary>
-            站点状态变更时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroObject#OnZeroDestory">
-            <summary>
-            注销时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Dispose">
-            <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroConnectionPool#CanDo">
-            <summary>
-            能否工作
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroConnectionPool#GetSocket(System.String,System.String)">
-            <summary>
-            取得一个连接对象
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroConnectionPool#FreeSocket(ZeroMQ.ZSocket)">
-            <summary>
-            释放一个连接对象
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ProxyPool.Agebull#ZeroNet#Core#IZeroConnectionPool#CloseSocket(ZeroMQ.ZSocket@)">
-            <summary>
-            释放一个连接对象
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:Agebull.ZeroNet.Core.SocketPool">
             <summary>
             站点连接池
@@ -3826,6 +3757,17 @@
             重新构造
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.Core.PoolSocket.StationType">
+            <summary>
+            对应的站点类型
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.PoolSocket.#ctor(ZeroMQ.ZSocket)">
+            <summary>
+            构造
+            </summary>
+            <param name="socket"></param>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.PoolSocket.OnDispose">
             <summary>清理资源</summary>
         </member>
@@ -4007,7 +3949,7 @@
             <summary>
                 广播消息解包
             </summary>
-            <param name="messages"></param>
+            <param name="msg"></param>
             <param name="item"></param>
             <param name="showError"></param>
             <returns></returns>
@@ -4109,6 +4051,11 @@
             </summary>
             <param name="type">站点类型</param>
             <param name="isService">是否服务</param>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroStation.Hearter">
+            <summary>
+            心跳器
+            </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroStation.IsService">
             <summary>
@@ -4254,7 +4201,7 @@
             析构
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Agebull#ZeroNet#Core#IZeroObject#OnHeartbeat">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnHeartbeat">
             <summary>
                 要求心跳
             </summary>

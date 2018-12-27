@@ -49,7 +49,32 @@ namespace agebull
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
-			if (!send_response(list))
+			zmq_socket_state state;
+			if (global_config::api_route_mode)
+			{
+				do
+				{
+					worker * wk = config_->get_worker();
+					if (wk == nullptr)
+					{
+						send_request_status(socket, list, description, inner, zero_def::status::not_worker);
+						return;
+					}
+					list.insert(list.begin(), wk->identity);
+					state = send_response(list);
+					list.erase(list.begin());
+					if (state == zmq_socket_state::host_un_reach)
+					{
+						wk->state = 5;
+						THREAD_SLEEP(5);
+					}
+				} while (state == zmq_socket_state::host_un_reach);
+			}
+			else
+			{
+				state = send_response(list);
+			}
+			if (state != zmq_socket_state::succeed)
 			{
 				send_request_status(socket, list, description, inner, zero_def::status::not_worker);
 			}
@@ -57,6 +82,49 @@ namespace agebull
 			{
 				send_request_status(socket, list, description, inner, zero_def::status::runing);
 			}
+		}
+
+		/**
+		* 心跳的响应
+		
+		bool api_station::heartbeat(uchar cmd, vector<shared_char> list)
+		{
+			switch (cmd)
+			{
+			case zero_def::command::heart_join:
+				config_->worker_join(*list[3], *list[4]);
+				return true;
+			case zero_def::command::heart_ready:
+				zero_event(zero_net_event::event_client_join, "station", *list[2], *list[3]);
+				config_->worker_ready(*list[3]);
+				return true;
+			case zero_def::command::heart_pitpat:
+				config_->worker_heartbeat(*list[3]);
+				return true;
+			case zero_def::command::heart_left:
+				zero_event(zero_net_event::event_client_left, "station", *list[2], *list[3]);
+				config_->worker_left(*list[3]);
+				return true;
+			default:
+				return false;
+			}
+		}*/
+
+		/**
+		* \brief 内部命令
+		*/
+		bool api_station::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		{
+			auto command = description.command();
+			switch (command)
+			{
+			case zero_def::command::heart_join:
+			case zero_def::command::heart_ready:
+			case zero_def::command::heart_pitpat:
+			case zero_def::command::heart_left:
+				return true;// heartbeat(command, list);
+			}
+			return false;
 		}
 		/**
 		* \brief 内部命令
@@ -104,8 +172,14 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			send_request_result(list[0][0] == '-' ? request_socket_inproc_ : request_scoket_tcp_, list);
+			if (list[0][0] == zero_def::name::head::inproc)
+			{
+				send_request_result(request_socket_inproc_, list);
+			}
+			else
+			{
+				send_request_result(request_scoket_tcp_, list);
+			}
 		}
-
 	}
 }

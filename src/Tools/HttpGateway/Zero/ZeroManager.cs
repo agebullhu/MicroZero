@@ -47,9 +47,7 @@ namespace ZeroNet.Http.Gateway
                 _data.Status = ZeroOperatorStatus.FormalError;
                 _data.ResultMessage = ApiResult.ArgumentErrorJson;
                 return;
-            }
-            
-
+            }            
             var value = SystemManager.Instance.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {

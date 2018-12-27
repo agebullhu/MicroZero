@@ -8,16 +8,21 @@ using Agebull.ZeroNet.Core;
 
 namespace RpcTest
 {
+
     internal abstract class Tester
     {
         public CancellationToken Token => Cancel.Token;
         public CancellationTokenSource Cancel {get;set;}
 
+        public long SuCount;
         public long ExCount;
         public long BlError;
         public long NetError;
         public long ExError;
         public long TmError;
+        public double Max;
+        public double Min= double.MaxValue;
+        public double Last=Double.NaN;
         public long WkError;
         public long RunTime;
         public DateTime Start;
@@ -54,7 +59,7 @@ namespace RpcTest
                 case ZeroNetEventType.AppStop:
                     ZeroTrace.SystemLog("RpcTest", "Test is stop");
                     test = IocHelper.Create<Tester>();
-                    test.Cancel.Cancel();
+                    test.Cancel?.Cancel();
                     break;
             }
         }
@@ -68,25 +73,27 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Test is start");
             Start = DateTime.Now;
             Cancel = new CancellationTokenSource();
-            var option = ZeroApplication.GetClientOption(Station);
-            switch (option.SpeedLimitModel)
-            {
-                case SpeedLimitType.Single:
-                    new Thread(Test).Start();
-                    break;
-                case SpeedLimitType.ThreadCount:
-                    int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
-                    if (max < 1)
-                        max = 1;
-                    for (int idx = 0; idx < max; idx++)
-                    {
-                        new Thread(Test).Start();
-                    }
-                    break;
-                default:
-                    Task.Factory.StartNew(TestSync, Cancel.Token);
-                    break;
-            }
+            //var option = ZeroApplication.GetClientOption(Station);
+            //switch (option.SpeedLimitModel)
+            //{
+            //    case SpeedLimitType.Single:
+            //        new Thread(Test).Start();
+            //        break;
+            //    case SpeedLimitType.ThreadCount:
+            //        int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
+            //        if (max < 1)
+            //            max = 1;
+            //        for (int idx = 0; idx < max; idx++)
+            //        {
+            //            new Thread(Test).Start();
+            //        }
+            //        break;
+            //    default:
+            //        Task.Factory.StartNew(TestSync, Cancel.Token);
+            //        break;
+            //}
+
+            new Thread(Test1).Start();
         }
 
         void Async()
@@ -99,15 +106,20 @@ namespace RpcTest
 
             Interlocked.Decrement(ref WaitCount);
             var sp = (DateTime.Now - s);
+            Last = sp.TotalMilliseconds;
             Interlocked.Add(ref RunTime, sp.Ticks);
-            if (sp.TotalMilliseconds > 500)
+            if (sp.TotalMilliseconds > Max)
+                Max = sp.TotalMilliseconds;
+            if (sp.TotalMilliseconds < Min)
+                Min = sp.TotalMilliseconds;
+            if (sp.TotalMilliseconds > 1000)
                 Interlocked.Increment(ref TmError);
             if ((Interlocked.Increment(ref ExCount) % 100) == 0)
                 Count();
         }
         protected abstract void DoAsync();
 
-        private int testerCount = 0;
+        private int testerCount;
 
         void WaitToEnd()
         {
@@ -134,7 +146,7 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
                 if (WaitCount > ZeroApplication.Config.MaxWait)
                 {
@@ -152,7 +164,7 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
                 Thread.Sleep(10);
                 Async();
@@ -167,7 +179,7 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Tester.Test", Task.CurrentId, "Start");
             Start = DateTime.Now;
             OnTestStar();
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
                 if (WaitCount > ZeroApplication.Config.MaxWait)
                 {
@@ -185,7 +197,7 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Tester.TestSync", Task.CurrentId, "Start");
 
             OnTestStar();
-            while (!Token.IsCancellationRequested && ZeroApplication.InRun)
+            while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
                 if (WaitCount > ZeroApplication.Config.MaxWait)
                 {
@@ -202,9 +214,9 @@ namespace RpcTest
         {
             TimeSpan ts = TimeSpan.FromTicks(RunTime);
             GC.Collect();
-            ZeroTrace.SystemLog("Count", ExCount,
-                $"{ts.TotalMilliseconds / ExCount}ms | {ExCount / (DateTime.Now - Start).TotalSeconds}/s",
-                "Error", $"net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BlError:D8}");
+            ZeroTrace.SystemLog(
+                $"[Count] {ExCount} Last:{Last:F2}ms | {Max:F2}ms - {Min:F2}ms | {(ts.TotalMilliseconds / ExCount):F2}ms | {(ExCount / (DateTime.Now - Start).TotalSeconds):F2}/s",
+                $"[Error] net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BlError:D8}");
         }
     }
 }

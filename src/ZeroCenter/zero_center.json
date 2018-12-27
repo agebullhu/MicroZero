@@ -4,7 +4,10 @@
     "use_ipc_protocol": "false",
     "worker_sound_ivl": 2000,
     "plan_exec_timeout": 300,
+    "pool_timeout": 500,
     "plan_cache_size": 1024,
+    "api_route_mode": 0,
+    "monitor_socket": 0,
     "service_key": "agebull"
   },
   "redis": {

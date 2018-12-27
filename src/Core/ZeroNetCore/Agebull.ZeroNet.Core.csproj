@@ -29,7 +29,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <Version>1.3.1</Version>
+    <Version>1.3.2.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Remove="Bridge\BridgeClient.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />
+    <Compile Remove="Connection\PollProxy.cs" />
+    <Compile Remove="Connection\ProxyPool.cs" />
     <Compile Remove="Discover\ApiActionInfo.cs" />
     <Compile Remove="Discover\ApiDocument.cs" />
     <Compile Remove="Discover\DocumentItem.cs" />
@@ -88,7 +90,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.70" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.3.2.71" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
   </ItemGroup>
 

@@ -217,8 +217,10 @@ namespace agebull
 
 				namespace head
 				{
-					constexpr auto tcp = "+";
+					constexpr auto tcp = '+';
 					constexpr auto inproc = '-';
+					constexpr auto plan = '*';
+					constexpr auto proxy = '#';
 					constexpr auto service = '<';
 					constexpr auto client = '>';
 				}

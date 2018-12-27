@@ -97,7 +97,7 @@ namespace agebull
 			}break;
 			default:
 				socket_ex::send_addr(socket, *list[worker]);
-				if (!send_response(list))
+				if (send_response(list) != zmq_socket_state::succeed)
 				{
 					send_request_status(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
 				}

@@ -10,6 +10,8 @@ namespace agebull
 {
 	namespace zero_net
 	{
+		class zero_station;
+		class zero_config;
 		/**
 		* \brief 工作对象
 		*/
@@ -18,7 +20,7 @@ namespace agebull
 			/**
 			* \brief 实名
 			*/
-			string real_name;
+			char identity[256];
 			/**
 			* \brief 上报的IP地址
 			*/
@@ -30,12 +32,12 @@ namespace agebull
 			time_t pre_time;
 
 			/**
-			* \brief 健康等级
+			* \brief 健康等级（5级 5.2 | 4.4 | 3.8 | 2.16 | 1.32 | 0.64 | -1.> 64）
 			*/
 			int level;
 
 			/**
-			* \brief 状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
+			* \brief 状态 0 准备 1 就绪 2 缓慢 3 失联 4 无法发送 5 退出
 			*/
 			int state;
 
@@ -47,7 +49,7 @@ namespace agebull
 				, level(5)
 				, state(0)
 			{
-
+				identity[0] = 0;
 			}
 			/**
 			* \brief 激活
@@ -57,13 +59,8 @@ namespace agebull
 				pre_time = time(nullptr);
 				level = 5;
 			}
-			/**
-			* \brief 检查
-			*/
-			int check();
 		};
 
-		class zero_station;
 		/**
 		* \brief ZMQ的网络站点配置
 		*/
@@ -82,6 +79,15 @@ namespace agebull
 			* \brief 当前站点状态
 			*/
 			station_state station_state_;
+			/**
+			* \brief 前一个工具者索引
+			*/
+			int worker_idx;
+			/**
+			* \brief 检查
+			*/
+			static int check_worker(worker& worker);
+
 		public:
 			/**
 			* \brief 实例队列访问锁
@@ -147,7 +153,7 @@ namespace agebull
 			*/
 			int64 worker_in, worker_out, worker_err;
 
-			map<string, worker> workers;
+			vector<worker> workers;
 
 			/**
 			* \brief 构造
@@ -156,6 +162,7 @@ namespace agebull
 				: ready_works_(0)
 				, type_name_("ERR")
 				, station_state_(station_state::none)
+				, worker_idx(-1)
 				, is_base(false)
 				, is_fidelity(false)
 				, station_type(0)
@@ -200,6 +207,10 @@ namespace agebull
 			*/
 			void worker_join(const char* real_name, const char* ip);
 
+			/**
+			* \brief 工作站点就绪
+			*/
+			void worker_Ok(const char* real_name);
 
 			/**
 			* \brief 工作站点就绪
@@ -238,6 +249,11 @@ namespace agebull
 			{
 				return station_type;
 			}
+
+			/**
+			* \brief 站点名称
+			*/
+			worker* get_worker();
 
 			/**
 			* \brief 当前站点状态
@@ -378,7 +394,7 @@ namespace agebull
 				case station_state::unknow:
 					log("state : unknow");
 					break;
-				default: ;
+				default:;
 				}
 			}
 			bool runtime_state(station_state state)

@@ -293,7 +293,7 @@ namespace Agebull.ZeroNet.ZeroApi
             ZeroFrameType.RequestId,
             ZeroFrameType.Context,
             ZeroFrameType.Argument,
-            ZeroFrameType.Content,
+            ZeroFrameType.TextContent,
             ZeroFrameType.Requester,
             ZeroFrameType.Responser,
             ZeroFrameType.GlobalId

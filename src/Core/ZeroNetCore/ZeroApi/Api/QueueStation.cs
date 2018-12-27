@@ -3,7 +3,6 @@ using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -75,9 +74,9 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         internal override bool OnExecuestEnd(ref ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (string.IsNullOrEmpty(item.StationCallId))
+            if (string.IsNullOrEmpty(item.LocalId))
                 return true;
-            return CacheProcess(long.Parse(item.StationCallId));
+            return CacheProcess(long.Parse(item.LocalId));
         }
 
         /// <summary>
@@ -88,9 +87,9 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         internal override void SendLayoutErrorResult(ref ZSocket socket, ApiCallItem item)
         {
-            if (string.IsNullOrEmpty(item.StationCallId))
+            if (string.IsNullOrEmpty(item.LocalId))
                 return;
-            CacheProcess(long.Parse(item.StationCallId));
+            CacheProcess(long.Parse(item.LocalId));
         }
 
         /// <summary>
@@ -105,23 +104,28 @@ namespace Agebull.ZeroNet.PubSub
 
         #region 已处理集合
 
-        long isProcess = 0;
+        long _isProcess;
 
         void SaveIds()
         {
-            if (Interlocked.Read(ref isProcess) == 0)
+            if (Interlocked.Read(ref _isProcess) == 0)
                 return;
-            try
+            lock (localObj)
             {
-                var fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
-                lock (processIds)
+                try
+                {
+                    var fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
+
                     File.WriteAllText(fileName, JsonConvert.SerializeObject(processIds));
-                Interlocked.Exchange(ref isProcess, 0);
-            }
-            catch
-            {
+                    Interlocked.Exchange(ref _isProcess, 0);
+                }
+                catch (Exception ex)
+                {
+                    LogRecorder.Exception(ex);
+                }
             }
         }
+        private readonly object localObj = new object();
 
         private List<long> processIds = new List<long>();
 
@@ -132,44 +136,49 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         private void Reload()
         {
-            Interlocked.Exchange(ref isProcess, 0);
-            try
+            long pre = 0;
+            lock (localObj)
             {
-                var fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
-                if (File.Exists(fileName))
+                Interlocked.Exchange(ref _isProcess, 0);
+                try
                 {
-                    var json = File.ReadAllText(fileName);
-                    if (!string.IsNullOrEmpty(json))
+                    var fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
+                    if (File.Exists(fileName))
                     {
-                        processIds = JsonConvert.DeserializeObject<List<long>>(json) ?? new List<long>();
+                        var json = File.ReadAllText(fileName);
+                        if (!string.IsNullOrEmpty(json))
+                        {
+                            processIds = JsonConvert.DeserializeObject<List<long>>(json) ?? new List<long>();
+                        }
+                        else
+                        {
+                            processIds = new List<long>();
+                        }
                     }
-                    else
+                }
+                catch //(Exception e)
+                {
+                    processIds = new List<long>();
+                }
+
+                if (processIds.Count > 0)
+                {
+                    pre = processIds[0];
+                    for (int i = 1; i < processIds.Count; i++)
                     {
-                        processIds = new List<long>();
+                        if (processIds[i] - pre > 1)
+                        {
+                            CallCommand(pre, processIds[i]);
+                        }
+
+                        pre = processIds[i];
                     }
                 }
             }
-            catch //(Exception e)
-            {
-                processIds = new List<long>();
-            }
-            if (processIds.Count == 0)
-            {
-                CallCommand(0, 0);
-                return;
-            }
-            var pre = processIds[0];
-            for (int i = 1; i < processIds.Count; i++)
-            {
-                if (processIds[i] - pre > 1)
-                {
-                    CallCommand(pre, processIds[i]);
-                }
-                pre = processIds[i];
-            }
+
             CallCommand(pre, 0);
         }
-        static byte[] description = new byte[]
+        static readonly byte[] description =
         {
             3,
             (byte)ZeroByteCommand.Restart,
@@ -178,21 +187,18 @@ namespace Agebull.ZeroNet.PubSub
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
+
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        private ZeroResultData CallCommand(long start, long end)
+        public ZeroResultData CallCommand(long start, long end)
         {
             try
             {
                 var socket = ZSocket.CreateDealerSocket(Config.RequestAddress);
-                var result = ZeroManageCommand.SendTo(socket, description, start.ToString(), end.ToString());
-                if (!result.InteractiveSuccess)
-                {
-                    return result;
-                }
-                return socket.ReceiveString();
+                var result = ZCommand.SendTo(socket, description, start.ToString(), end.ToString());
+                return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }
             catch (Exception e)
             {
@@ -210,17 +216,19 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected override bool PrepareExecute(ApiCallItem item)
         {
-            if (processIds.Count == 0)
-                return true;
-            var nowId = long.Parse(item.StationCallId);
-            lock (processIds)
+            lock (localObj)
+            {
+                if (processIds.Count == 0)
+                    return true;
+                var nowId = long.Parse(item.LocalId);
                 return processIds[0] < nowId && !processIds.Contains(nowId);
+            }
         }
 
 
         bool CacheProcess(long nowId)
         {
-            lock (processIds)
+            lock (localObj)
             {
                 if (processIds.Count == 0)
                     processIds.Add(nowId);
@@ -260,7 +268,7 @@ namespace Agebull.ZeroNet.PubSub
                     }
                 }
             }
-            Interlocked.Decrement(ref isProcess);
+            Interlocked.Decrement(ref _isProcess);
             return true;
         }
         #endregion

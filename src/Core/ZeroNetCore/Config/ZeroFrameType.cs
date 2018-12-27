@@ -16,11 +16,6 @@ namespace Agebull.ZeroNet.Core
         public const byte GlobalId = 1;
 
         /// <summary>
-        ///     站点ID
-        /// </summary>
-        public const byte StationId = 8;
-
-        /// <summary>
         ///     站点名称帧
         /// </summary>
         public const byte Station = 2;
@@ -136,7 +131,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     一般文本内容
         /// </summary>
-        public const byte Content = (byte)'T';
+        public const byte TextContent = (byte)'T';
 
         /// <summary>
         ///     JSON文本内容
@@ -188,7 +183,7 @@ namespace Agebull.ZeroNet.Core
                     return @"网络上下文信息";
                 case Command:// (byte)'$';
                     return @"请求命令";
-                case Content:// (byte)'T';
+                case TextContent:// (byte)'T';
                     return @"一般文本内容";
                 case JsonValue:// (byte)'J';
                     return @"JSON文本内容";

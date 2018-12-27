@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
@@ -59,21 +60,72 @@ namespace ZeroNet.Http.Gateway
             // 远程调用
             using (MonitorScope.CreateScope("CallZero"))
             {
-                var caller = new ApiClient
-                {
-                    Station = host.Station,
-                    Commmand = Data.ApiName,
-                    Argument = Data.HttpContext ?? Data.HttpForm,
-                    ExtendArgument = Data.HttpForm,
-                    ContextJson = Data.GlobalContextJson
-                };
-                caller.CallCommand();
-                Data.ResultMessage = caller.Result;
-                Data.Status = caller.State.ToOperatorStatus(true);
-
-                LogRecorder.MonitorTrace($"State : {caller.State}");
+                return CallApi(host);
             }
-            return Data.ResultMessage;
+        }
+
+        private string CallApi(ZeroHost zeroHost)
+        {
+            
+            var caller = new ApiClient
+            {
+                Station = zeroHost.Station,
+                Commmand = Data.ApiName,
+                Argument = Data.HttpContext ?? Data.HttpForm,
+                ExtendArgument = Data.HttpForm,
+                ContextJson = Data.GlobalContextJson
+            };
+            caller.CallCommand();
+            Data.Status = caller.State.ToOperatorStatus(true);
+            caller.CheckStateResult();
+            return Data.ResultMessage = caller.Result;
+        }
+        private string CallApi2(ZeroHost zeroHost)
+        {
+            var config = ZeroApplication.Config[zeroHost.Station];
+            if (config == null)
+            {
+                Data.Status = ZeroOperatorStatus.NotFind;
+                {
+                    return Data.ResultMessage = ApiResult.NoFindJson;
+                }
+            }
+
+            switch (config.StationType)
+            {
+                case ZeroStationType.Api:
+                case ZeroStationType.RouteApi:
+                    var caller = new ApiClient
+                    {
+                        Station = zeroHost.Station,
+                        Commmand = Data.ApiName,
+                        Argument = Data.HttpContext ?? Data.HttpForm,
+                        ExtendArgument = Data.HttpForm,
+                        ContextJson = Data.GlobalContextJson
+                    };
+                    caller.CallCommand();
+                    Data.ResultMessage = caller.Result;
+                    Data.Status = caller.State.ToOperatorStatus(true);
+
+                    Data.Status = ZeroOperatorStatus.NotFind;
+                    return Data.ResultMessage = ApiResult.NoFindJson;
+                case ZeroStationType.Notify:
+                case ZeroStationType.Queue:
+                    if (ZeroPublisher.Publish(zeroHost.Station, Data.ApiName, Data.ApiName, Data.HttpContext))
+                    {
+                        Data.Status = ZeroOperatorStatus.Success;
+                        return Data.ResultMessage = ApiResult.SucceesJson;
+                    }
+                    else
+                    {
+                        Data.Status = ZeroOperatorStatus.NetWorkError;
+                        return Data.ResultMessage = ApiResult.NetworkErrorJson;
+                    }
+                default:
+                    Data.Status = ZeroOperatorStatus.NotFind;
+                    return Data.ResultMessage = ApiResult.NoFindJson;
+            }
+            
         }
     }
 }

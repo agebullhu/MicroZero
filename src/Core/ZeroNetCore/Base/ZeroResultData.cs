@@ -15,7 +15,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
         /// </summary>
-        public bool InteractiveSuccess;
+        public bool InteractiveSuccess { get; set; }
 
         /// <summary>
         /// 逻辑操作状态

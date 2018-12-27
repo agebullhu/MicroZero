@@ -162,24 +162,34 @@ namespace Agebull.ZeroNet.Core
 
         private static string GetHostIps()
         {
-            var ips = new StringBuilder();
-            var first = true;
-            foreach (var address in Dns.GetHostAddresses(Dns.GetHostName()))
+            try
             {
-                if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
-                    address.IsIPv6SiteLocal || address.IsIPv6Teredo)
-                    continue;
-                var ip = address.ToString();
-                if (ip == "127.0.0.1" || ip == "127.0.1.1" || ip == "::1" || ip == "-1")
-                    continue;
-                if (first)
-                    first = false;
-                else
-                    ips.Append(" , ");
-                ips.Append(ip);
-            }
+                var ips = new StringBuilder();
+                var first = true;
+                string hostName = Dns.GetHostName();
+                ZeroTrace.SystemLog(hostName);
+                foreach (var address in Dns.GetHostAddresses(hostName))
+                {
+                    if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
+                        address.IsIPv6SiteLocal || address.IsIPv6Teredo)
+                        continue;
+                    var ip = address.ToString();
+                    if (ip == "127.0.0.1" || ip == "127.0.1.1" || ip == "::1" || ip == "-1")
+                        continue;
+                    if (first)
+                        first = false;
+                    else
+                        ips.Append(" , ");
+                    ips.Append(ip);
+                }
 
-            return ips.ToString();
+                return ips.ToString();
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+                return "";
+            }
         }
 
         /// <summary>

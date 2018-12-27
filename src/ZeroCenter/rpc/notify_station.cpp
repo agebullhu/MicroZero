@@ -57,7 +57,7 @@ namespace agebull
 		bool notify_station::publish(const shared_char& title, const shared_char& description, vector<shared_char>& datas)
 		{
 			datas.insert(datas.insert(datas.begin(), title), description);
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 
 		char notify_station::frames1[] = { zero_def::frame::publisher, zero_def::frame::content, zero_def::frame::global_id };
@@ -80,7 +80,7 @@ namespace agebull
 			global_id.set_int64x(station_warehouse::get_glogal_id());
 			datas.emplace_back(global_id);
 
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 		char notify_station::frames2[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content, zero_def::frame::global_id };
 		/**
@@ -105,7 +105,7 @@ namespace agebull
 
 			datas.emplace_back(global_id);
 
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 
 		char notify_station::frames3[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content,zero_def::frame::request_id, zero_def::frame::global_id,zero_def::frame::local_id };
@@ -135,7 +135,7 @@ namespace agebull
 			local_id.set_int64x(lid);
 			datas.emplace_back(local_id);
 
-			return send_response(datas);
+			return send_response(datas) == zmq_socket_state::succeed;
 		}
 		/**
 		*\brief 运行一个通知线程
