@@ -50,7 +50,7 @@ namespace Agebull.ZeroNet.Core
                 return socket;
             }
 
-            socket = ZSocket.CreateDealerSocket(Config.RequestAddress);
+            socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZeroIdentityHelper.CreateIdentity(false,Config.StationName));
             if (socket == null)
                 return null;
             socket.IsUsing = true;
@@ -71,24 +71,24 @@ namespace Agebull.ZeroNet.Core
             if (socket == null)
                 return;
             socket.IsUsing = false;
-            Close(ref socket);
-            //if (ZeroApplication.WorkModel == ZeroWorkModel.Client ||
-            //    _isDisposed || socket.IsDisposed || socket.LastError != null)
-            //{
-            //    Close(ref socket);
-            //}
-            ////Close(ref socket);
-            //lock (_pools)
-            //{
-            //    if (_pools.Count > 999)
-            //    {
-            //        Close(ref socket);
-            //    }
-            //    else
-            //    {
-            //        _pools.Enqueue(socket);
-            //    }
-            //}
+           //Close(ref socket);
+            if (ZeroApplication.WorkModel == ZeroWorkModel.Client ||
+                _isDisposed || socket.IsDisposed || socket.LastError != null)
+            {
+                Close(ref socket);
+            }
+            //Close(ref socket);
+            lock (_pools)
+            {
+                if (_pools.Count > 9999)
+                {
+                    Close(ref socket);
+                }
+                else
+                {
+                    _pools.Enqueue(socket);
+                }
+            }
         }
 
         /// <summary>

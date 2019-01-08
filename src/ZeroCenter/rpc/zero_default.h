@@ -188,6 +188,8 @@ namespace agebull
 				const int vote = 4;//投票即并发机制
 				const int route_api = 5;//2018.08.03:新增,定向路由API
 				const int queue = 6;//2018.11.10:新增,队列任务(发完请求后进队列处理)
+				const int extend_station = 0x80;//系统扩展站点分隔
+				const int trace = 0xFD;////2019.01.06:新增,网络跟踪
 				const int proxy = 0xFE;//反向代理
 				const int plan = 0xFF;//计划任务
 
@@ -195,13 +197,17 @@ namespace agebull
 				{
 					return type == dispatcher || type == notify || type == plan || type == queue;
 				}
-				inline bool  is_sys_station(int type)
+				inline bool is_api_station(int type)
 				{
-					return (type == dispatcher || type == plan || type == proxy);
+					return type == api || type == vote || type == route_api;
 				}
-				inline bool  is_general_station(int type)
+				inline bool is_sys_station(int type)
 				{
-					return (type == api || type == notify || type == queue || type == vote || type == route_api);
+					return (type == dispatcher || type > extend_station);
+				}
+				inline bool is_general_station(int type)
+				{
+					return (type > dispatcher && type < extend_station);
 				}
 			}
 
@@ -214,6 +220,7 @@ namespace agebull
 				constexpr auto system_manage = "SystemManage";
 				constexpr auto plan_dispatcher = "PlanDispatcher";
 				constexpr auto proxy_dispatcher = "ProxyDispatcher";
+				constexpr auto trace_dispatcher = "TraceDispatcher";
 
 				namespace head
 				{

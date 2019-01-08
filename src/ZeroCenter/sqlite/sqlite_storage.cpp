@@ -27,8 +27,8 @@ namespace agebull
 			}
 			log_msg2("[%s] : db > Open database(%s)", name_, db_file_);
 			sqlite3_exec(sqlite_db_, "PRAGMA synchronous = OFF; ", nullptr, nullptr, nullptr);
-			sqlite3_exec(sqlite_db_, "PRAGMA temp_store = MEMORY; ", nullptr, nullptr, nullptr);
-			sqlite3_exec(sqlite_db_, "PRAGMA cache_size = 20000; ", nullptr, nullptr, nullptr);
+			//sqlite3_exec(sqlite_db_, "PRAGMA temp_store = MEMORY; ", nullptr, nullptr, nullptr);
+			//sqlite3_exec(sqlite_db_, "PRAGMA cache_size = 20000; ", nullptr, nullptr, nullptr);
 			return true;
 		}
 		/**

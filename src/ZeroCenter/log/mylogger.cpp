@@ -50,6 +50,7 @@ namespace agebull
 		log.append("/logs/zero_center.log");
 		acl::acl_cpp_init();
 		logger_open(log, "zero_center", DEBUG_CONFIG);
+		
 		return log;
 	}
 
@@ -78,7 +79,7 @@ namespace agebull
 	void log_acl_error(const char* fname, int line, const char* func, const char* msg)
 	{
 		out_debug(boost::posix_time::microsec_clock::local_time(), msg);
-		acl::log::error4(fname, line, func, msg);
+		acl::log::error1(msg);
 	}
 	void log_acl_fatal(const char* fname, int line, const char* func, const char* msg)
 	{

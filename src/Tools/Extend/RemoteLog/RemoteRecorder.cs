@@ -89,7 +89,7 @@ namespace Agebull.ZeroNet.Log
                         }
                         buf = serializer.Close();
                     }
-                    if (_socket.SendTo(LogDescription, _logsByte, buf,GlobalContext.ServiceKey.ToZeroBytes()))
+                    if (_socket.SendTo(LogDescription, _logsByte, buf, GlobalContext.ServiceKey.ToZeroBytes()))
                         return;
                 }
             }
@@ -227,8 +227,8 @@ namespace Agebull.ZeroNet.Log
                 pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PULL));
                 using (pool)
                 {
-                    _socket = ZSocket.CreateClientSocket("inproc://RemoteLog.req", ZSocketType.PUSH);
-                    var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER);
+                    _socket = ZSocket.CreateClientSocketByInproc("inproc://RemoteLog.req", ZSocketType.PUSH);
+                    var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false, StationName));
                     while (CanRun)
                     {
                         if (!pool.Poll() || !pool.CheckIn(0, out var message))

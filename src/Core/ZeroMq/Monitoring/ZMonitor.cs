@@ -258,10 +258,7 @@ namespace ZeroMQ.Monitoring
 
 		private void InvokeEvent<T>(EventHandler<T> handler, Func<T> createEventArgs) where T : EventArgs
 		{
-			if (handler != null)
-			{
-				handler(this, createEventArgs());
-			}
-		}
+            handler?.Invoke(this, createEventArgs());
+        }
 	}
 }

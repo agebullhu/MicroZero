@@ -34,14 +34,18 @@ namespace agebull
 			}
 
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 析构
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			virtual  ~queue_station()
+			{
+				cout << "queue_station destory" << endl;
+			}
 
 			/**
-			 * \brief 析构
-			 */
-			virtual ~queue_station() = default;
+			* \brief 工作开始 : 处理请求数据
+			*/
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
+
 			/**
 			* \brief 运行一个通知线程
 			*/

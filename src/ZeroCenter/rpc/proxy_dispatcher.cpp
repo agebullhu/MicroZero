@@ -122,9 +122,9 @@ namespace agebull
 		}
 
 		/**
-		* \brief 工作开始（发送到工作者）
+		* \brief 工作开始 : 处理请求数据
 		*/
-		inline void proxy_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
+		inline void proxy_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
 		{
 			if (inner)
 			{
@@ -150,7 +150,7 @@ namespace agebull
 			}
 			vector<shared_char> frames;
 			shared_char plan_caller(128);
-			sprintf(plan_caller.get_buffer(), "#:proxy:%s", *name); //请求者(虚拟)
+			sprintf(plan_caller.c_str(), "#:proxy:%s", *name); //请求者(虚拟)
 			frames.emplace_back(plan_caller);
 
 			shared_char description(16);
@@ -200,6 +200,8 @@ namespace agebull
 		*/
 		void proxy_dispatcher::job_end(vector<shared_char>& list)
 		{
+			if (list.size() < 1)
+				return;//BUG
 			zmq_handler socket = nullptr;
 			int hase = 0;
 			for (size_t idx = 2; idx <= static_cast<size_t>(list[1][0] + 2); idx++)
@@ -228,7 +230,7 @@ namespace agebull
 			}
 			if (hase != 2)
 				return;
-			send_response(socket, list);
+			send_response(socket, list,true);
 		}
 
 		/**
@@ -241,7 +243,7 @@ namespace agebull
 			shared_char description(3);
 			description.state(state);
 			frames.emplace_back(description);
-			send_response(socket, frames);
+			send_response(socket, frames, true);
 		}
 
 	}

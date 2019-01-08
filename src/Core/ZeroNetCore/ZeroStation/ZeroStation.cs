@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 心跳器
         /// </summary>
-        protected HeartManager Hearter /*{ get; set; }*/=> SystemManager.Instance;
+        protected HeartManager Hearter { get; set; }
 
         /// <summary>
         /// 是否服务
@@ -154,7 +154,7 @@ namespace Agebull.ZeroNet.Core
                     return false;
                 }
                 //可执行
-                Hearter?.HeartJoin(Config.StationName, RealName);
+                //Hearter?.HeartJoin(Config.StationName, RealName);
                 //执行主任务
                 RunTaskCancel = new CancellationTokenSource();
                 Task.Factory.StartNew(Run);
@@ -237,7 +237,6 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         private void OnStop()
         {
-            State = StationState.Closing;
             OnRunStop();
             RunTaskCancel.Dispose();
             RunTaskCancel = null;
@@ -261,7 +260,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (Interlocked.CompareExchange(ref _state, StationState.Closing, StationState.Run) == StationState.Run)
             {
-                Hearter?.HeartLeft(StationName, RealName);
+                //Hearter?.HeartLeft(StationName, RealName);
                 ZeroTrace.SystemLog(StationName, "Closing....");
                 RunTaskCancel?.Cancel();
                 _waitToken.Wait();
@@ -293,8 +292,8 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public virtual void OnHeartbeat()
         {
-            if (CanLoop)
-                Hearter?.Heartbeat(Config.StationName, RealName);
+            //if (CanLoop)
+            //    Hearter?.Heartbeat(Config.StationName, RealName);
         }
 
         void IZeroObject.OnZeroInitialize()
@@ -305,6 +304,15 @@ namespace Agebull.ZeroNet.Core
 
         bool IZeroObject.OnZeroStart()
         {
+            if (IsRun)
+            {
+                return true;
+            }
+
+            while (State == StationState.Closing)
+            {
+                Thread.Sleep(50);
+            }
             return Start();
         }
 

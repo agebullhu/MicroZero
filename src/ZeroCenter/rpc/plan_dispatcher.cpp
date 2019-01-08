@@ -17,8 +17,8 @@ namespace agebull
 		*/
 		void plan_dispatcher::launch(shared_ptr<plan_dispatcher>& station)
 		{
-
 			zero_config& config = station->get_config();
+			config.is_base = true;
 			if (!station->initialize())
 			{
 				config.failed("initialize");
@@ -50,13 +50,14 @@ namespace agebull
 			set_command_thread_end(config.station_name.c_str());
 		}
 		/**
-		* \brief 工作开始（发送到工作者）
+		* \brief 工作开始 : 处理请求数据
 		*/
-		inline void plan_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
+		inline void plan_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
 		{
 			if (!inner)
 			{
 				//外部管理接口
+				trace(1, list, nullptr);
 				on_plan_manage(socket, list);
 			}
 			else
@@ -107,13 +108,12 @@ namespace agebull
 			}
 			if (cmd == nullptr)
 			{
-				send_request_status(socket, zero_def::status::arg_invalid, list, glid_index, rqid_index, rqer_index);
+				send_request_status_by_trace(socket, *list[0], zero_def::status::arg_invalid,list,glid_index, rqid_index, rqer_index, nullptr);
 				return;
 			}
 			string json;
 			const char code = exec_command(cmd, arg, json);
-			send_request_status(socket, code, list, glid_index, rqid_index, rqer_index, json.c_str());
-
+			send_request_status_by_trace(socket, *list[0], code, list, glid_index, rqid_index, rqer_index, json.c_str());
 		}
 
 		/**
@@ -341,23 +341,23 @@ namespace agebull
 			}
 			if (plan == 0 || message->station.empty() || message->command.empty())
 			{
-				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
+				send_request_status_by_trace(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer, nullptr);
 				return false;
 			}
 			const auto config = station_warehouse::get_config(message->station.c_str());
 			if (!config)
 			{
-				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
+				send_request_status_by_trace(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer, nullptr);
 				return false;
 			}
 			message->read_plan(*list[plan]);
 			if (message->plan_repet == 0 || (message->skip_set > 0 && message->plan_repet > 0 && message->plan_repet <= message->skip_set))
 			{
-				send_request_status(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer);
+				send_request_status_by_trace(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer, nullptr);
 				return false;
 			}
 
-			send_request_status(socket, *caller, zero_def::status::jion_plan, list, glid, rqid, reqer);
+			send_request_status_by_trace(socket, *caller, zero_def::status::jion_plan, list, glid, rqid, reqer, nullptr);
 
 			message->station_type = config->station_type;
 			if (message->plan_time <= 0)
@@ -371,7 +371,7 @@ namespace agebull
 			shared_char global_id;
 			if (glid == 0)
 			{
-				global_id.set_int64x(station_warehouse::get_glogal_id());
+				global_id.set_int64(station_warehouse::get_glogal_id());
 				description.append_frame(zero_def::frame::global_id);
 				message->frames.emplace_back(global_id);
 			}
@@ -383,7 +383,7 @@ namespace agebull
 			
 			if (pid == 0)
 			{
-				sprintf(frame_head.get_buffer(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
+				sprintf(frame_head.c_str(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
 			}
 
 			message->next();
@@ -452,11 +452,11 @@ namespace agebull
 		void plan_dispatcher::on_plan_result(vector<shared_char>& list)
 		{
 			list.erase(list.begin());
-			shared_ptr<plan_message> message = plan_message::load_message(list[0].get_buffer() + 2);
+			shared_ptr<plan_message> message = plan_message::load_message(list[0].c_str() + 2);
 
 			if (message == nullptr)
 			{
-				get_config().error("message is remove", list[0].get_buffer());
+				get_config().error("message is remove", list[0].c_str());
 				return;
 			}
 			on_plan_result(message, list[1][1], list);
@@ -526,12 +526,12 @@ namespace agebull
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
 			datas.emplace_back(description);
-			datas.emplace_back(shared_char().set_int64x(message->plan_id));
+			datas.emplace_back(shared_char().set_int64(message->plan_id));
 			if (message)
 			{
 				datas.emplace_back(event_type == zero_net_event::event_plan_add ? message->write_json() : message->write_state());
 			}
-			return send_response(datas) == zmq_socket_state::succeed;
+			return send_response(datas, true) == zmq_socket_state::succeed;
 		}
 		/**
 		*\brief 发布消息
@@ -544,17 +544,21 @@ namespace agebull
 			vector<shared_char> datas;
 			datas.emplace_back(*message->description);
 			datas.emplace_back(description);
-			datas.emplace_back(shared_char().set_int64x(message->plan_id));
+			datas.emplace_back(shared_char().set_int64(message->plan_id));
 			datas.emplace_back(message->write_state());
 			datas.emplace_back(result[0]);
 			for (size_t idx = 2; idx < result.size() && idx < result[0].size(); idx++)
 			{
-				if (result[0][idx] == zero_def::frame::end)
+				switch (result[0][idx])
+				{
+				case zero_def::frame::general_end:
+				case zero_def::frame::extend_end:
 					break;
+				}
 				description.append_frame(result[0][idx]);
 				datas.emplace_back(result[idx - 1]);
 			}
-			return send_response(datas) == zmq_socket_state::succeed;
+			return send_response(datas,true) == zmq_socket_state::succeed;
 		}
 	}
 }

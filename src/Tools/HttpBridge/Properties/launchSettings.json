@@ -18,7 +18,7 @@
         "server.urls": "http://*:8080"
       },
       "use64Bit": true,
-      "applicationUrl": "http://192.168.1.192"
+      "applicationUrl": "http://192.168.1.196"
     }
   }
 }

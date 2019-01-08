@@ -74,6 +74,11 @@ namespace agebull
 			//ZMQ_HANDLE request_socket_ipc_;
 
 			/**
+			* \brief 写入跟踪的调用句柄
+			*/
+			zmq_handler trace_socket_inproc_;
+
+			/**
 			* \brief 写入计划的调用句柄
 			*/
 			zmq_handler plan_socket_inproc_;
@@ -123,6 +128,7 @@ namespace agebull
 			*/
 			virtual ~zero_station()
 			{
+				cout << "zero_station destory" << endl;
 			}
 
 			/**
@@ -139,6 +145,12 @@ namespace agebull
 			* \brief 析构
 			*/
 			virtual bool destruct();
+
+
+			/**
+			* \brief 析构
+			*/
+			virtual void destruct_ext() {}
 
 			/**
 			* \brief 扩展初始化
@@ -161,23 +173,23 @@ namespace agebull
 			/**
 			*\brief 发送消息到工作站点
 			*/
-			inline zmq_socket_state send_response(zmq_handler socket, const  vector<shared_char>& datas, size_t first_index = 0);
+			inline zmq_socket_state send_response(zmq_handler socket, vector<shared_char>& datas, bool do_trace);
 			/**
 			*\brief 发送消息到工作站点
 			*/
-			inline zmq_socket_state send_response(const vector<shared_char>& datas, size_t first_index = 0);
+			inline zmq_socket_state send_response(vector<shared_char>& datas, bool do_trace);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline void send_request_status(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner, uchar state);
+			inline void send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline bool send_request_result(zmq_handler socket, vector<shared_char>& ls);
+			inline bool send_request_result(zmq_handler socket, vector<shared_char>& list, bool trace);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, const char* global_id = nullptr, const char* req_id = nullptr, const char* reqer = nullptr, const char* msg = nullptr);
+			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
@@ -185,7 +197,7 @@ namespace agebull
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline bool send_request_status(zmq_handler socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+			inline bool send_request_status_by_trace(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
 		private:
 
 			/**
@@ -195,7 +207,7 @@ namespace agebull
 			/**
 			* \brief 调用集合的响应
 			*/
-			virtual void on_request(zmq_pollitem_t& socket, bool inner);
+			void on_request(zmq_pollitem_t& socket, bool inner);
 
 			/**
 			* \brief 简单命令
@@ -216,19 +228,20 @@ namespace agebull
 			void global_id_req(zmq_handler socket, vector<shared_char>& list, shared_char& description);
 		protected:
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			virtual void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) = 0;//, shared_char& global_id
-			
+			virtual void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) = 0;
+
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
 			virtual void job_end(vector<shared_char>& list) {}
-		private:
+
 			/**
 			* \brief 工作进入计划
 			*/
 			void job_plan(zmq_handler socket, vector<shared_char>& list);
+
 			/**
 			* \brief 计划执行完成
 			*/
@@ -237,7 +250,22 @@ namespace agebull
 			/**
 			* \brief 反向代理执行完成
 			*/
-			void proxy_end(vector<shared_char>& list) const;
+			void proxy_end(vector<shared_char>& list);
+			/**
+			* \brief 收到PING
+			*/
+			virtual void ping(zmq_handler socket, vector<shared_char>& list) {}
+
+			/**
+			* 心跳的响应
+			* */
+			virtual bool heartbeat(zmq_handler socket, uchar cmd, vector<shared_char> list) { return false; }
+
+			/**
+			* \brief 网络数据跟踪
+			*/
+			virtual void trace(uchar io, vector<shared_char> list, const char* err_msg);
+
 		public:
 			/**
 			* \brief 取得配置内容
@@ -301,117 +329,179 @@ namespace agebull
 			{
 				return config_->is_run() && get_net_state() == zero_def::net_state::runing;
 			}
-
 		};
+
+		/**
+		*\brief 发送消息到工作站点
+		*/
+		inline zmq_socket_state zero_station::send_response(vector<shared_char>& datas, bool do_trace)
+		{
+			return send_response(worker_out_socket_tcp_, datas, do_trace);
+		}
+
+		/**
+		*\brief 发送消息到工作站点
+		*/
+		inline zmq_socket_state zero_station::send_response(zmq_handler socket, vector<shared_char>& datas, bool do_trace)
+		{
+			if (socket == nullptr)
+				return zmq_socket_state::unknow;
+			config_->worker_out++;
+			{
+				//boost::lock_guard<boost::mutex> guard(send_mutex_);
+				zmq_state_ = socket_ex::send(socket, datas, 0);
+			}
+			if (zmq_state_ == zmq_socket_state::succeed)
+			{
+				if (do_trace)
+					trace(2, datas, nullptr);
+				return zmq_state_;
+			}
+			config_->worker_err++;
+			const char* err_msg = socket_ex::state_str(zmq_state_);
+			config_->error("send_response", err_msg);
+			if (do_trace)
+				trace(2, datas, err_msg);
+			return zmq_state_;
+		}
+
+		/**
+		* \brief 发送请求结果到调用者
+		*/
+		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace)
+		{
+			vector<shared_char> ls;
+			ls.push_back(addr);
+			shared_char descirpt;
+			descirpt.alloc_desc(8, state);
+			ls.push_back(descirpt);
+			descirpt.tag(zero_def::frame::result_end);
+			return send_request_result(socket, ls, do_trace);
+		}
 
 		/**
 		* \brief 内部命令
 		*/
-		inline void zero_station::send_request_status(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner, uchar state)
+		inline void zero_station::send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state)
 		{
-			const auto caller = list[0];
-			if (inner)
-				list.erase(list.begin());
-			size_t reqid = 0, reqer = 0, glid_index = 0;
-			for (size_t i = 2; i <= description.desc_size() && i < list.size(); i++)
+			vector<shared_char> ls;
+			ls.push_back(list[0]);
+			shared_char descirpt;
+			descirpt.alloc_desc(8, state);
+			ls.push_back(descirpt);
+			for (size_t i = 2; i <= description.desc_size() && i <= description.alloc_size() && i < list.size(); i++)
 			{
 				switch (description[i])
 				{
 				case zero_def::frame::requester:
-					reqer = i;
+					descirpt.append_frame(zero_def::frame::requester);
+					ls.push_back(list[i]);
 					break;
 				case zero_def::frame::request_id:
-					reqid = i;
+					descirpt.append_frame(zero_def::frame::request_id);
+					ls.push_back(list[i]);
 					break;
 				case zero_def::frame::global_id:
-					glid_index = i;
+					descirpt.append_frame(zero_def::frame::global_id);
+					ls.push_back(list[i]);
 					break;
-				default: ;
 				}
 			}
-			send_request_status(socket, *caller, state, list, glid_index, reqid, reqer);
+			descirpt.tag(zero_def::frame::result_end);
+			send_request_result(socket, ls, true);
+		}
+		/**
+		* \brief 发送请求结果到调用者
+		*/
+		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& list,
+			size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		{
+			vector<shared_char> ls;
+			ls.push_back(addr);
+			shared_char descirpt;
+			descirpt.alloc_desc(8, state);
+			ls.push_back(descirpt);
+			if (reqid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::requester);
+				ls.push_back(vector_str(list, reqid_idx));
+			}
+			if (reqid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::request_id);
+				ls.push_back(vector_str(list, reqer_idx));
+			}
+			if (glbid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::global_id);
+				ls.push_back(vector_str(list, glbid_idx));
+			}
+			if (msg != nullptr)
+			{
+				descirpt.append_frame(zero_def::frame::status);
+				ls.push_back(msg);
+			}
+			descirpt.tag(zero_def::frame::result_end);
+			return send_request_result(socket, ls, false);
+		}
+		/**
+		* \brief 发送请求结果到调用者
+		*/
+		inline bool zero_station::send_request_status_by_trace(zmq_handler socket, const char* addr, uchar state,
+			vector<shared_char>& list, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
+		{
+			vector<shared_char> ls;
+			ls.push_back(addr);
+			shared_char descirpt;
+			descirpt.alloc_desc(8, state);
+			ls.push_back(descirpt);
+			if (reqid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::requester);
+				ls.push_back(vector_str(list, reqid_idx));
+			}
+			if (reqid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::request_id);
+				ls.push_back(vector_str(list, reqer_idx));
+			}
+			if (glbid_idx > 0)
+			{
+				descirpt.append_frame(zero_def::frame::global_id);
+				ls.push_back(vector_str(list, glbid_idx));
+			}
+			if (msg != nullptr)
+			{
+				descirpt.append_frame(zero_def::frame::status);
+				ls.push_back(msg);
+			}
+			descirpt.tag(zero_def::frame::result_end);
+			return send_request_result(socket, ls, true);
 		}
 
-		/**
-		*\brief 发送消息到工作站点
-		*/
-		inline zmq_socket_state zero_station::send_response(zmq_handler socket, const  vector<shared_char>& datas, const  size_t first_index)
-		{
-			if (socket == nullptr)
-				return zmq_socket_state::unknow;
-			zmq_state_ = socket_ex::send(socket, datas, first_index);
-			if (zmq_state_ == zmq_socket_state::succeed)
-				return zmq_state_;
-			config_->worker_err++;
-			const char* err_msg = socket_ex::state_str(zmq_state_);
-			log_error3("send_response error %d:%s(%s)", zmq_state_, err_msg, *datas[0]);
-			return zmq_state_;
-		}
-		/**
-		*\brief 发送消息到工作站点
-		*/
-		inline zmq_socket_state zero_station::send_response(const vector<shared_char>& datas, const  size_t first_index)
-		{
-			//if (!config_->hase_ready_works())
-			//{
-			//	return false;
-			//}
-			boost::lock_guard<boost::mutex> guard(send_mutex_);
-			config_->worker_out++;
-			return send_response(worker_out_socket_tcp_, datas, first_index);
-		}
 
 		/**
 		* \brief 发送请求结果到调用者
 		*/
-		inline bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls)
+		inline bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls, bool do_trace)
 		{
-			boost::lock_guard<boost::mutex> guard(send_mutex_);
+			{
+				//boost::lock_guard<boost::mutex> guard(send_mutex_);
+				zmq_state_ = socket_ex::send(socket, ls);
+			}
 			config_->request_out++;
-			zmq_state_ = socket_ex::send(socket, ls);
-
 			if (zmq_state_ == zmq_socket_state::succeed)
+			{
+				if (do_trace)
+					trace(3, ls, nullptr);
 				return true;
-			++config_->worker_err;
-			const char* err_msg = socket_ex::state_str(zmq_state_);
-			log_error2("send_request_result error %d:%s", zmq_state_, err_msg);
-			return false;
-		}
-		/**
-		* \brief 发送请求结果到调用者
-		*/
-		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, const char* global_id, const char* req_id, const char* reqer, const char* msg)
-		{
-			++config_->request_out;
-			zmq_state_ = socket_ex::send_status(socket, addr, state, global_id, req_id, reqer, msg);
-			if (zmq_state_ == zmq_socket_state::succeed)
-				return true;
+			}
 			++config_->request_err;
 			const char* err_msg = socket_ex::state_str(zmq_state_);
-			log_error2("send_request_status error %d:%s", zmq_state_, err_msg);
+			config_->error("send_request_result", err_msg, *ls[0]);
+			if (do_trace)
+				trace(3, ls, err_msg);
 			return false;
-		}
-		/**
-		* \brief 发送请求结果到调用者
-		*/
-		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
-		{
-			return send_request_status(socket, addr, state,
-				glbid_idx == 0 ? nullptr : *ls[glbid_idx],
-				reqid_idx == 0 ? nullptr : *ls[reqid_idx],
-				reqer_idx == 0 ? nullptr : *ls[reqer_idx],
-				msg);
-		}
-		/**
-		* \brief 发送请求结果到调用者
-		*/
-		inline bool zero_station::send_request_status(zmq_handler socket, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg)
-		{
-			return send_request_status(socket, *ls[0], state,
-				glbid_idx == 0 ? nullptr : *ls[glbid_idx],
-				reqid_idx == 0 ? nullptr : *ls[reqid_idx],
-				reqer_idx == 0 ? nullptr : *ls[reqer_idx],
-				msg);
 		}
 	}
 

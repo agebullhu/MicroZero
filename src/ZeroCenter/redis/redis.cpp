@@ -11,6 +11,7 @@ namespace agebull
 
 	redis_live_scope::redis_live_scope() : redis_live_scope(global_config::redis_defdb)
 	{
+
 	}
 
 	redis_live_scope::redis_live_scope(int db)

@@ -37,7 +37,10 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~station_dispatcher() final = default;
+			~station_dispatcher() override
+			{
+				cout << "station_dispatcher destory" << endl;
+			}
 
 			/**
 			* \brief 运行一个通知线程
@@ -67,9 +70,9 @@ namespace agebull
 			static void worker_monitor();
 
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
 		public:
 			/**
 			*\brief 通知内容
@@ -84,13 +87,24 @@ namespace agebull
 			/**
 			* \brief 执行命令
 			*/
+			void restart();
+
+		public:
+			/**
+			* \brief 执行命令
+			*/
 			char exec_command(const char* command, vector<shared_char>& arguments, string& json) const;
 
 		private:
 			/**
-			* \brief 内部命令
+			* \brief 收到PING
 			*/
-			bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
+			void ping(zmq_handler socket, vector<shared_char>& list) override;
+
+			/**
+			* 心跳的响应
+			* */
+			bool heartbeat(zmq_handler socket, uchar cmd, vector<shared_char> list) override;
 		};
 	}
 }

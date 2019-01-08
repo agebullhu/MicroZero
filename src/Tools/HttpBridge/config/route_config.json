@@ -12,7 +12,7 @@
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
     /*内容页地址*/
-    "ContextHost": "http://zero.yizuanbao.cn:8080/",
+    "ContextHost": "http://192.168.1.196:8080/",
     /*内容页地址*/
     "ContextAddr": "D:\\玢翔医疗\\研发部\\Git\\InternetHospital\\pub\\Cloud\\dist"
   },
@@ -20,7 +20,7 @@
   "route": {
     /*缺省地址* /
     "Default": {
-      "hosts": [ "Http://127.0.0.1:8080/" ]
+      "hosts": [ "Http://192.168.1.196/" ]
     },
     /*User对应的地址* /
     "GoodLin-User-External-Api": {
@@ -28,7 +28,7 @@
     },
     /*OAuth对应的地址* /
     "GoodLin-OAuth-Api": {
-      "hosts": [ "http://172.16.20.142/" /*,"http://192.168.1.192/GoodLin-OAuth-Api/"* /]
+      "hosts": [ "http://172.16.20.142/" /*,"http://192.168.1.196/GoodLin-OAuth-Api/"* /]
     }*/
   },
   /**/

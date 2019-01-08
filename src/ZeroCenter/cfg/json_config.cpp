@@ -10,6 +10,7 @@ namespace agebull
 	int global_config::pool_timeout = 1000;
 	bool global_config::monitor_socket = false;
 	bool global_config::api_route_mode = false;
+	bool global_config::trace_net = false;
 	//bool global_config::use_ipc_protocol = false;
 	char global_config::redis_addr[512] = "127.0.0.1:6379";
 	int global_config::redis_defdb = 0x10;
@@ -31,12 +32,12 @@ namespace agebull
 	int global_config::RECONNECT_IVL = 100;
 	int global_config::CONNECT_TIMEOUT = 3000;
 	int global_config::RECONNECT_IVL_MAX = 3000;
-	int global_config::TCP_KEEPALIVE = 1;
+	int global_config::TCP_KEEPALIVE = 0;
 	int global_config::TCP_KEEPALIVE_IDLE = 120;
 	int global_config::TCP_KEEPALIVE_INTVL = 3;
-	int global_config::HEARTBEAT_IVL = -1;
-	int global_config::HEARTBEAT_TIMEOUT = -1;
-	int global_config::HEARTBEAT_TTL = -1;
+	int global_config::HEARTBEAT_IVL = 1;
+	int global_config::HEARTBEAT_TIMEOUT = 1000;
+	int global_config::HEARTBEAT_TTL = 60000;
 	
 	/**
 	* \brief 系统根目录
@@ -66,15 +67,15 @@ namespace agebull
 			global_config::IO_THREADS = zmq.number("IO_THREADS", global_config::IO_THREADS);
 			global_config::MAX_MSGSZ = zmq.number("MAX_MSGSZ", global_config::MAX_MSGSZ);
 
-			global_config::MAX_SOCKETS = zmq.number("RECONNECT_IVL", global_config::RECONNECT_IVL);
-			global_config::IO_THREADS = zmq.number("CONNECT_TIMEOUT", global_config::CONNECT_TIMEOUT);
-			global_config::MAX_MSGSZ = zmq.number("RECONNECT_IVL_MAX", global_config::RECONNECT_IVL_MAX);
-			global_config::MAX_SOCKETS = zmq.number("TCP_KEEPALIVE", global_config::TCP_KEEPALIVE);
-			global_config::IO_THREADS = zmq.number("TCP_KEEPALIVE_IDLE", global_config::TCP_KEEPALIVE_IDLE);
-			global_config::MAX_MSGSZ = zmq.number("TCP_KEEPALIVE_INTVL", global_config::TCP_KEEPALIVE_INTVL);
-			global_config::MAX_SOCKETS = zmq.number("HEARTBEAT_IVL", global_config::HEARTBEAT_IVL);
-			global_config::IO_THREADS = zmq.number("HEARTBEAT_TIMEOUT", global_config::HEARTBEAT_TIMEOUT);
-			global_config::MAX_MSGSZ = zmq.number("HEARTBEAT_TTL", global_config::HEARTBEAT_TTL);
+			global_config::RECONNECT_IVL = zmq.number("RECONNECT_IVL", global_config::RECONNECT_IVL);
+			global_config::CONNECT_TIMEOUT = zmq.number("CONNECT_TIMEOUT", global_config::CONNECT_TIMEOUT);
+			global_config::RECONNECT_IVL_MAX = zmq.number("RECONNECT_IVL_MAX", global_config::RECONNECT_IVL_MAX);
+			global_config::TCP_KEEPALIVE = zmq.number("TCP_KEEPALIVE", global_config::TCP_KEEPALIVE);
+			global_config::TCP_KEEPALIVE_IDLE = zmq.number("TCP_KEEPALIVE_IDLE", global_config::TCP_KEEPALIVE_IDLE);
+			global_config::TCP_KEEPALIVE_INTVL = zmq.number("TCP_KEEPALIVE_INTVL", global_config::TCP_KEEPALIVE_INTVL);
+			global_config::HEARTBEAT_IVL = zmq.number("HEARTBEAT_IVL", global_config::HEARTBEAT_IVL);
+			global_config::HEARTBEAT_TIMEOUT = zmq.number("HEARTBEAT_TIMEOUT", global_config::HEARTBEAT_TIMEOUT);
+			global_config::HEARTBEAT_TTL = zmq.number("HEARTBEAT_TTL", global_config::HEARTBEAT_TTL);
 		}
 		auto& zero = global["zero"];
 		if (zero.value_map.size() > 0)
@@ -84,6 +85,7 @@ namespace agebull
 			global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
 			global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
 			global_config::monitor_socket = zero.boolean("monitor_socket", global_config::monitor_socket);
+			global_config::trace_net = zero.boolean("trace_net", global_config::trace_net);
 			global_config::api_route_mode = zero.boolean("api_route_mode", global_config::api_route_mode);
 			global_config::pool_timeout = zero.number("pool_timeout", global_config::pool_timeout);
 			
@@ -113,6 +115,7 @@ namespace agebull
 		log_msg1("config => pool_timeout : %d", global_config::pool_timeout);
 		log_msg1("config => worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
+		log_msg1("config => trace_net : %d", global_config::trace_net);
 		log_msg1("config => plan_exec_timeout : %d", global_config::plan_exec_timeout);
 		log_msg1("config => plan_cache_size : %d", global_config::plan_cache_size);
 

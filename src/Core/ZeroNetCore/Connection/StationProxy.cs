@@ -65,7 +65,7 @@ namespace Agebull.ZeroNet.Core
         private static readonly byte[] NetErrorDescription = {
             0,
             (byte)ZeroOperatorStateType.NetError,
-            ZeroFrameType.End
+            ZeroFrameType.ResultEnd
         };
 
         /// <summary>
@@ -77,7 +77,8 @@ namespace Agebull.ZeroNet.Core
             _inprocPollSocket =
                 ZSocket.CreateServiceSocket($"inproc://{Config.StationName}_Proxy", ZSocketType.ROUTER);
             _inprocPollSocket.Backlog = 4096;
-            _callPollSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER);
+            var realName = ZeroIdentityHelper.CreateRealName(false, Config.StationName);
+            _callPollSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, realName.ToZeroBytes());
 
             WaitCount = 0;
             ZeroTrace.SystemLog($"{Config.StationName}(proxy)", "Listen");

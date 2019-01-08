@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{422ed610-e8dc-4287-8b27-52f4c04c9758}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>Linux</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+    <ProjectName>zero_center</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>
+    </LibraryPath>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <OutDir>/root/zero/center/</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>
+    </LibraryPath>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <IncludePath>\usr\Include;\usr\local\include</IncludePath>
+    <OutDir>/root/zero/center/</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+    <Link>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <DebuggerSymbolInformation>true</DebuggerSymbolInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <Version>false</Version>
+    </Link>
+    <ClCompile>
+      <DebugInformationFormat>Minimal</DebugInformationFormat>
+      <UnrollLoops>true</UnrollLoops>
+      <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;conversion;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;%(CAdditionalWarning)</CAdditionalWarning>
+      <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;conversion;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;%(CppAdditionalWarning)</CppAdditionalWarning>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalOptions>-pthread -Bstatic -g %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="cfg\json_config.cpp" />
+    <ClCompile Include="log\mylogger.cpp" />
+    <ClCompile Include="redis\redis.cpp" />
+    <ClCompile Include="rpc\api_station.cpp" />
+    <ClCompile Include="rpc\net_crc.cpp" />
+    <ClCompile Include="rpc\proxy_dispatcher.cpp" />
+    <ClCompile Include="rpc\queue_station.cpp" />
+    <ClCompile Include="rpc\plan_dispatcher.cpp" />
+    <ClCompile Include="rpc\route_api_station.cpp" />
+    <ClCompile Include="rpc\station_dispatcher.cpp" />
+    <ClCompile Include="rpc\station_warehouse.cpp" />
+    <ClCompile Include="rpc\notify_station.cpp" />
+    <ClCompile Include="rpc\zero_config.cpp" />
+    <ClCompile Include="rpc\zero_plan.cpp" />
+    <ClCompile Include="rpc\zero_station.cpp" />
+    <ClCompile Include="rpc\zmq_extend.cpp" />
+    <ClCompile Include="main\service.cpp" />
+    <ClCompile Include="main\sig.cpp" />
+    <ClCompile Include="main\main.cpp" />
+    <ClCompile Include="sqlite\plan_storage.cpp" />
+    <ClCompile Include="sqlite\queue_storage.cpp" />
+    <ClCompile Include="sqlite\sqlite_storage.cpp" />
+    <ClCompile Include="test\sqlite_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="boostinc.h" />
+    <ClInclude Include="main\main.h" />
+    <ClInclude Include="rpc\proxy_dispatcher.h" />
+    <ClInclude Include="rpc\queue_station.h" />
+    <ClInclude Include="rpc\route_api_station.h" />
+    <ClInclude Include="rpc\zero_def_command.h" />
+    <ClInclude Include="rpc\zero_def_frame.h" />
+    <ClInclude Include="rpc\zero_def_status.h" />
+    <ClInclude Include="sqlite\plan_storage.h" />
+    <ClInclude Include="sqlite\queue_storage.h" />
+    <ClInclude Include="sqlite\sqlite_storage.h" />
+    <ClInclude Include="stdinc.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="cfg\json_config.h" />
+    <ClInclude Include="log\mylogger.h" />
+    <ClInclude Include="rpc\zmq_extend.h" />
+    <ClInclude Include="redis\redis.h" />
+    <ClInclude Include="main\service.h" />
+    <ClInclude Include="ext\shared_char.h" />
+    <ClInclude Include="ext\tm_extend.h" />
+    <ClInclude Include="rpc\api_station.h" />
+    <ClInclude Include="rpc\inner_socket.h" />
+    <ClInclude Include="rpc\plan_dispatcher.h" />
+    <ClInclude Include="rpc\station_dispatcher.h" />
+    <ClInclude Include="rpc\zero_default.h" />
+    <ClInclude Include="rpc\zero_net.h" />
+    <ClInclude Include="rpc\zero_station.h" />
+    <ClInclude Include="rpc\station_warehouse.h" />
+    <ClInclude Include="rpc\notify_station.h" />
+    <ClInclude Include="rpc\zero_config.h" />
+    <ClInclude Include="rpc\zero_plan.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="zero_center.json">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

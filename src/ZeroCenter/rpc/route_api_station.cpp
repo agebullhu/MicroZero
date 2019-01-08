@@ -41,10 +41,16 @@ namespace agebull
 		}
 
 		/**
-		* \brief 工作开始（发送到工作者）
+		* \brief 工作开始 : 处理请求数据
 		*/
-		inline void route_api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
+		inline void route_api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
 		{
+			trace(1, list, nullptr);
+			if (config_->get_state() == station_state::pause)
+			{
+				send_request_status(socket, *list[0], zero_def::status::pause, true);
+				return;
+			}
 			shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
@@ -59,7 +65,7 @@ namespace agebull
 					break;
 				case zero_def::frame::responser:
 					worker = idx;
-					break; 
+					break;
 				case zero_def::frame::request_id:
 					reqid = idx;
 					break;
@@ -68,44 +74,21 @@ namespace agebull
 					break;
 				}
 			}
-			if (glid_index == 0)
+			if (worker == 0)
 			{
-				send_request_status(socket, *caller, zero_def::status::frame_invalid, list, 0, reqid, reqer);
+				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, glid_index, reqid, reqer);
 				return;
 			}
-			switch (description.command())
+			shared_char router = list[worker];
+			list.erase(list.begin() + worker);
+			list.insert(list.begin(), router);
+			if (send_response(list, false) != zmq_socket_state::succeed)
 			{
-			case zero_def::command::find_result:
+				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker);
+			}
+			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				//boost::lock_guard<boost::mutex> guard(results_mutex_);
-				//auto iter = results.find(atoll(*list[glid_index]));
-				//if (iter != results.end())
-				//{
-				//	iter->second[0] = list[0];
-				//	send_request_result(iter->second);
-				//}
-				//else
-				send_request_status(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
-			}break;
-			case zero_def::command::close_request:
-			{
-				/*boost::lock_guard<boost::mutex> guard(results_mutex_);
-				const auto iter = results.find(atoll(*list[glid_index]));
-				if (iter != results.end())
-					results.erase(iter);*/
-				send_request_status(socket, *caller, zero_def::status::ok, list, glid_index, reqid, reqer);
-			}break;
-			default:
-				socket_ex::send_addr(socket, *list[worker]);
-				if (send_response(list) != zmq_socket_state::succeed)
-				{
-					send_request_status(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
-				}
-				else if (description.command() == zero_def::command::proxy)//必须返回信息到代理
-				{
-					send_request_status(socket, *caller, zero_def::status::runing, list, glid_index, reqid, reqer);
-				}
-				break;
+				send_request_status_by_trace(socket, list, description, zero_def::status::runing);
 			}
 		}
 		/**
@@ -113,6 +96,7 @@ namespace agebull
 		*/
 		void route_api_station::job_end(vector<shared_char>& list)
 		{
+
 			/*{
 				boost::lock_guard<boost::mutex> guard(results_mutex_);
 				results.insert(make_pair(atoll(*list[list.size() - 1]), list));
@@ -121,7 +105,31 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			send_request_result(list[0][0] == '-' ? request_socket_inproc_ : request_scoket_tcp_, list);
+			auto caller = list[0];
+			list.erase(list.begin());
+			if (list[0][0] == zero_def::name::head::plan && station_type_ != zero_def::station_type::plan)
+			{
+				plan_end(list);
+			}
+			else if (list[0][0] == zero_def::name::head::proxy && station_type_ != zero_def::station_type::proxy)
+			{
+				proxy_end(list);
+			}
+			else
+			{
+				list.push_back(caller);
+				uchar tag = list[1].tag();
+				list[1].append_frame(zero_def::frame::responser);
+				list[1].tag(tag);
+				if (list[0][0] == zero_def::name::head::inproc)
+				{
+					send_request_result(request_socket_inproc_, list, true);
+				}
+				else
+				{
+					send_request_result(request_scoket_tcp_, list, true);
+				}
+			}
 		}
 
 	}

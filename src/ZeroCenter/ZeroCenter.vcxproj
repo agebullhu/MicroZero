@@ -24,6 +24,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <UseOfStl>libstdc++_static</UseOfStl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -66,12 +67,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalOptions>-pthread -Bstatic -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_system;boost_filesystem;boost_thread;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;sqlite3;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
+      <AdditionalOptions>-DLINUX2 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -87,6 +89,7 @@
     <ClCompile Include="rpc\station_dispatcher.cpp" />
     <ClCompile Include="rpc\station_warehouse.cpp" />
     <ClCompile Include="rpc\notify_station.cpp" />
+    <ClCompile Include="rpc\trace_station.cpp" />
     <ClCompile Include="rpc\zero_config.cpp" />
     <ClCompile Include="rpc\zero_plan.cpp" />
     <ClCompile Include="rpc\zero_station.cpp" />
@@ -97,6 +100,7 @@
     <ClCompile Include="sqlite\plan_storage.cpp" />
     <ClCompile Include="sqlite\queue_storage.cpp" />
     <ClCompile Include="sqlite\sqlite_storage.cpp" />
+    <ClCompile Include="sqlite\trace_storage.cpp" />
     <ClCompile Include="test\sqlite_test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -105,12 +109,14 @@
     <ClInclude Include="rpc\proxy_dispatcher.h" />
     <ClInclude Include="rpc\queue_station.h" />
     <ClInclude Include="rpc\route_api_station.h" />
+    <ClInclude Include="rpc\trace_station.h" />
     <ClInclude Include="rpc\zero_def_command.h" />
     <ClInclude Include="rpc\zero_def_frame.h" />
     <ClInclude Include="rpc\zero_def_status.h" />
     <ClInclude Include="sqlite\plan_storage.h" />
     <ClInclude Include="sqlite\queue_storage.h" />
     <ClInclude Include="sqlite\sqlite_storage.h" />
+    <ClInclude Include="sqlite\trace_storage.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="cfg\json_config.h" />

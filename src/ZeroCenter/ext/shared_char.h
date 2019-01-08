@@ -17,7 +17,7 @@ namespace agebull
 		{
 		protected:
 			int* count_;
-			char* buffer_;
+			uchar* buffer_;
 			size_t size_;
 			size_t alloc_size_;
 			/**
@@ -51,6 +51,14 @@ namespace agebull
 			 * \bref 构造
 			 */
 			shared_char(char* buffer, size_t len) : shared_char()
+			{
+				copy_(len, buffer);
+			}
+
+			/**
+			 * \bref 构造
+			 */
+			shared_char(uchar* buffer, size_t len) : shared_char()
 			{
 				copy_(len, buffer);
 			}
@@ -204,7 +212,7 @@ namespace agebull
 				free();
 				size_ = len;
 				alloc_size_ = len;
-				buffer_ = fri;
+				buffer_ = reinterpret_cast<uchar*>(fri);
 				count_ = new int();
 				*count_ = 1;
 				return *this;
@@ -216,7 +224,7 @@ namespace agebull
 			shared_char& swap(shared_char& fri) noexcept
 			{
 				{
-					char* tmp = buffer_;
+					uchar* tmp = buffer_;
 					buffer_ = fri.buffer_;
 					fri.buffer_ = tmp;
 				}
@@ -243,10 +251,6 @@ namespace agebull
 				return *this;
 			}
 
-			char* get_buffer() const
-			{
-				return buffer_;
-			}
 
 			int user_count() const
 			{
@@ -267,9 +271,9 @@ namespace agebull
 				return buffer_ == nullptr || size_ == 0;
 			}
 
-			char operator[](size_t idx) const
+			uchar operator[](size_t idx) const
 			{
-				return buffer_ == nullptr || idx >= size_ ? '\0' : buffer_[idx];
+				return buffer_ == nullptr || idx >= size_ ? 0 : buffer_[idx];
 			}
 
 			shared_char& operator =(zmq_msg_t& msg)
@@ -295,7 +299,7 @@ namespace agebull
 
 			shared_char& operator =(const char* msg)
 			{
-				if (buffer_ == msg)
+				if (buffer_ == (uchar*)msg)
 					return *this;
 				free();
 				size_ = strlen(msg);
@@ -313,7 +317,7 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(buffer_, "%d", value);
+				sprintf(reinterpret_cast<char*>(buffer_), "%d", value);
 				return *this;
 			}
 
@@ -324,7 +328,7 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(buffer_, "%d", value);
+				sprintf(reinterpret_cast<char*>(buffer_), "%d", value);
 				return *this;
 			}
 			shared_char& set_intx(const int value)
@@ -334,7 +338,7 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(buffer_, "%x", value);
+				sprintf(reinterpret_cast<char*>(buffer_), "%x", value);
 				return *this;
 			}
 			shared_char& set_int64(const int64 value)
@@ -344,7 +348,7 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(buffer_, "%lld", value);
+				sprintf(reinterpret_cast<char*>(buffer_), "%lld", value);
 				return *this;
 			}
 
@@ -355,7 +359,7 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(buffer_, "%llx", value);
+				sprintf(reinterpret_cast<char*>(buffer_), "%llx", value);
 				return *this;
 			}
 
@@ -401,7 +405,17 @@ namespace agebull
 
 			const char* operator*() const
 			{
-				return buffer_ == nullptr ? "" : buffer_;
+				return buffer_ == nullptr ? "" : reinterpret_cast<char*>(buffer_);
+			}
+
+			uchar* get_buffer() const
+			{
+				return buffer_;
+			}
+
+			char* c_str() const
+			{
+				return reinterpret_cast<char*>(buffer_);
 			}
 
 			operator std::string() const
@@ -410,7 +424,7 @@ namespace agebull
 				{
 					return std::string();
 				}
-				return std::string(buffer_);
+				return std::string(reinterpret_cast<char*>(buffer_));
 			}
 
 			operator acl::string() const
@@ -420,16 +434,12 @@ namespace agebull
 					return acl::string();
 				}
 				if (is_binary_ == 1)
-					return acl::string(buffer_);
-				var val = acl::string(buffer_);
+					return acl::string(reinterpret_cast<char*>(buffer_));
+				var val = acl::string(reinterpret_cast<char*>(buffer_));
 				val.set_bin(true);
 				return val;
 			}
 
-			const char* c_str() const
-			{
-				return buffer_;
-			}
 
 			//对说明帧的支持
 			shared_char& alloc_desc(size_t size, uchar state = zero_def::command::none)
@@ -437,7 +447,6 @@ namespace agebull
 				free();
 				alloc_(size + 2);
 				is_binary_ = 2;
-				buffer_[0] = static_cast<char>(size);
 				buffer_[1] = state;
 				return *this;
 			}
@@ -550,18 +559,36 @@ namespace agebull
 				return size_ == 0 ? 0 : *reinterpret_cast<uchar*>(buffer_ + 1);
 			}
 
+			uchar tag() const
+			{
+				return size_ == 0 ? 0 : static_cast<uchar>(buffer_[size_ - 1]);
+			}
+			void tag(uchar t)
+			{
+				frame_type(buffer_[0], t);
+			}
+
 			char frame_type(size_t index) const
 			{
 				return alloc_size_ < index ? 0 : buffer_[index + 2];
 			}
 
-			void append_frame(char type)
+			void append_frame(uchar type)
 			{
 				frame_type(buffer_[0], type);
 				buffer_[0] = static_cast<char>(buffer_[0] + 1);
 			}
+			bool hase_frame(uchar type)const
+			{
+				for (size_t idx = 2; idx < static_cast<size_t>(buffer_[0] + 2); idx++)
+				{
+					if (buffer_[idx] == type)
+						return true;
+				}
+				return false;
+			}
 
-			void frame_type(size_t index, char type);
+			void frame_type(size_t index, uchar type);
 
 			size_t check_size()
 			{

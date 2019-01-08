@@ -29,10 +29,14 @@ namespace agebull
 				: zero_station(config, zero_def::station_type::api, ZMQ_ROUTER, global_config::api_route_mode ? ZMQ_ROUTER : ZMQ_PUSH)
 			{
 			}
+
 			/**
 			* \brief 析构
 			*/
-			virtual ~api_station() = default;
+			~api_station() override
+			{
+				cout << "api_station destory" << endl;
+			}
 
 			/**
 			*\brief 运行
@@ -51,6 +55,7 @@ namespace agebull
 					return;
 				boost::thread(boost::bind(launch, std::make_shared<api_station>(config)));
 			}
+			
 			/**
 			* \brief 执行
 			*/
@@ -61,9 +66,9 @@ namespace agebull
 			*/
 			//bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/
@@ -71,13 +76,13 @@ namespace agebull
 
 			/**
 			* 心跳的响应
-			bool heartbeat(uchar cmd, vector<shared_char> list);
+			* */
+			bool heartbeat(zmq_handler socket, uchar cmd, vector<shared_char> list) override;
 
-			*/
 			/**
-			* \brief 内部命令
+			* \brief 收到PING
 			*/
-			bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner);
+			void ping(zmq_handler socket, vector<shared_char>& list)override;
 		};
 
 	}

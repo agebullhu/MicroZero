@@ -23,9 +23,24 @@ namespace Agebull.ZeroNet.ZeroApi
         public string LocalId { get; set; }
 
         /// <summary>
-        /// 调用方的全局ID
+        /// 调用方的全局ID（上一个）
         /// </summary>
-        public string CallerGlobalId { get; set; }
+        public string CallId { get; set; }
+
+        /// <summary>
+        /// 本次调用全局ID
+        /// </summary>
+        public string GlobalId { get; set; }
+
+        /// <summary>
+        /// 发生站点
+        /// </summary>
+        public string StationName { get; set; }
+
+        /// <summary>
+        /// 调用方的站点类型
+        /// </summary>
+        public string StationType { get; set; }
 
         /// <summary>
         /// 请求者
@@ -62,9 +77,14 @@ namespace Agebull.ZeroNet.ZeroApi
         public string Requester { get; set; }
 
         /// <summary>
+        /// 命令
+        /// </summary>
+        public string Command { get; set; }
+
+        /// <summary>
         /// API名称
         /// </summary>
-        public string ApiName { get; set; }
+        public string ApiName => Command;
 
         /// <summary>
         ///  原始上下文的JSO内容
@@ -87,20 +107,25 @@ namespace Agebull.ZeroNet.ZeroApi
         public string Result { get; set; }
 
         /// <summary>
-        /// 原样帧
-        /// </summary>
-        public Dictionary<byte, byte[]> Originals { get; } = new Dictionary<byte, byte[]>();
-
-        /// <summary>
         /// 执行状态
         /// </summary>
         public ZeroOperatorStatus Status { get; set; }
+
+        /// <summary>
+        /// 消息消息
+        /// </summary>
+        public string StatusMessage { get; set; }
 
         /// <summary>
         /// 原样帧
         /// </summary>
         [JsonIgnore]
         public List<NameValue<byte, byte[]>> Frames { get; } = new List<NameValue<byte, byte[]>>();
+
+        /// <summary>
+        /// 原样帧
+        /// </summary>
+        public Dictionary<byte, byte[]> Originals { get; } = new Dictionary<byte, byte[]>();
 
     }
 }

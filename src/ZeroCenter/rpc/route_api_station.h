@@ -56,9 +56,9 @@ namespace agebull
 			static void launch(shared_ptr<route_api_station>& station);
 		private:
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/

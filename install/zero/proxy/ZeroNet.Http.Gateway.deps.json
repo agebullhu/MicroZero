@@ -6,7 +6,7 @@
   "compilationOptions": {
     "defines": [
       "TRACE",
-      "DEBUG",
+      "RELEASE",
       "NETCOREAPP",
       "NETCOREAPP2_1"
     ],
@@ -14,7 +14,7 @@
     "platform": "x64",
     "allowUnsafe": false,
     "warningsAsErrors": false,
-    "optimize": false,
+    "optimize": true,
     "keyFile": "",
     "emitEntryPoint": true,
     "xmlDoc": false,
@@ -24,7 +24,7 @@
     ".NETCoreApp,Version=v2.1": {
       "ZeroNet.Http.Gateway/1.0.0": {
         "dependencies": {
-          "Agebull.ZeroNet.Core": "1.3.2.1",
+          "Agebull.ZeroNet.Core": "1.3.2.5",
           "Microsoft.AspNetCore.All": "2.1.0",
           "Microsoft.NETCore.App": "2.1.6"
         },
@@ -3421,7 +3421,7 @@
           "lib/netstandard1.3/Microsoft.WindowsAzure.Storage.dll": {}
         }
       },
-      "Agebull.ZeroNet.ClrZMQ/1.3.2.1": {
+      "Agebull.ZeroNet.ClrZMQ/1.3.2.5": {
         "dependencies": {
           "Agebull.Rpc.Abstractions": "2.3.2.71",
           "Newtonsoft.Json": "12.0.1"
@@ -3430,10 +3430,10 @@
           "Agebull.ZeroNet.ClrZMQ.dll": {}
         }
       },
-      "Agebull.ZeroNet.Core/1.3.2.1": {
+      "Agebull.ZeroNet.Core/1.3.2.5": {
         "dependencies": {
           "Agebull.EntityModel.Core": "2.3.2.71",
-          "Agebull.ZeroNet.ClrZMQ": "1.3.2.1",
+          "Agebull.ZeroNet.ClrZMQ": "1.3.2.5",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "compile": {
@@ -3444,7 +3444,7 @@
     ".NETCoreApp,Version=v2.1/linux-x64": {
       "ZeroNet.Http.Gateway/1.0.0": {
         "dependencies": {
-          "Agebull.ZeroNet.Core": "1.3.2.1",
+          "Agebull.ZeroNet.Core": "1.3.2.5",
           "Microsoft.AspNetCore.All": "2.1.0",
           "Microsoft.NETCore.App": "2.1.6"
         },
@@ -3743,7 +3743,7 @@
           }
         }
       },
-      "Agebull.ZeroNet.ClrZMQ/1.3.2.1": {
+      "Agebull.ZeroNet.ClrZMQ/1.3.2.5": {
         "dependencies": {
           "Agebull.Rpc.Abstractions": "2.3.2.71",
           "Newtonsoft.Json": "12.0.1"
@@ -3752,10 +3752,10 @@
           "Agebull.ZeroNet.ClrZMQ.dll": {}
         }
       },
-      "Agebull.ZeroNet.Core/1.3.2.1": {
+      "Agebull.ZeroNet.Core/1.3.2.5": {
         "dependencies": {
           "Agebull.EntityModel.Core": "2.3.2.71",
-          "Agebull.ZeroNet.ClrZMQ": "1.3.2.1",
+          "Agebull.ZeroNet.ClrZMQ": "1.3.2.5",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "runtime": {
@@ -3994,12 +3994,12 @@
       "path": "system.runtime.compilerservices.unsafe/4.5.1",
       "hashPath": "system.runtime.compilerservices.unsafe.4.5.1.nupkg.sha512"
     },
-    "Agebull.ZeroNet.ClrZMQ/1.3.2.1": {
+    "Agebull.ZeroNet.ClrZMQ/1.3.2.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "Agebull.ZeroNet.Core/1.3.2.1": {
+    "Agebull.ZeroNet.Core/1.3.2.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

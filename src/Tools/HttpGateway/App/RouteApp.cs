@@ -285,6 +285,10 @@ namespace ZeroNet.Http.Gateway
                     if (!config.IsBaseStation)
                         StationJoin(config);
                 });
+                foreach (var host in Router.RouteMap.Where(p => p.Value.ByZero).ToArray())
+                {
+                    host.Value.Failed = false;
+                }
             }
         }
 
@@ -293,7 +297,6 @@ namespace ZeroNet.Http.Gateway
             foreach (var host in Router.RouteMap.Where(p => p.Value.ByZero).ToArray())
             {
                 host.Value.Failed = true;
-                host.Value.ByZero = true;
             }
         }
 
@@ -342,8 +345,8 @@ namespace ZeroNet.Http.Gateway
             }
 
             zeroHost.ByZero = true;
-            zeroHost.Station = station.StationName;
             zeroHost.Failed = false;
+            zeroHost.Station = station.StationName;
 
             UpdateApiItems(zeroHost);
             return zeroHost;

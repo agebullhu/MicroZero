@@ -61,6 +61,7 @@ namespace agebull
 		static char root_path[512];
 		static bool monitor_socket;
 		static bool api_route_mode;
+		static bool trace_net;
 		static int base_tcp_port;
 		static int plan_exec_timeout;
 		static int plan_cache_size;
@@ -203,11 +204,12 @@ namespace agebull
 	}
 
 #define json_add_str(node,key,text) if(!text.empty())  node.add_text(key, text.c_str())
+
 #define json_add_chr(node,key,text) if(text[0] !=0 )  node.add_text(key, text)
 
-#define json_add_num(node,key,num) if(num)  node.add_number(key, num)
+#define json_add_num(node,key,num) node.add_number(key, num)
 
-#define json_add_bool(node,key,num) if(num)  node.add_bool(key, true)
+#define json_add_bool(node,key,num) node.add_bool(key, num)
 
 #define json_add_array_str(node,text) if(!text.empty()) node.add_array_text(text.c_str())
 

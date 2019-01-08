@@ -344,17 +344,17 @@ namespace Agebull.ZeroNet.Core
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 SystemManager.Instance.Heartbeat();
-                foreach (var obj in ActiveObjects.ToArray())
-                {
-                    try
-                    {
-                        obj.OnHeartbeat();
-                    }
-                    catch (Exception e)
-                    {
-                        ZeroTrace.WriteException(obj.Name, e, "OnHeartbeat");
-                    }
-                };
+                //foreach (var obj in ActiveObjects.ToArray())
+                //{
+                //    try
+                //    {
+                //        obj.OnHeartbeat();
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        ZeroTrace.WriteException(obj.Name, e, "OnHeartbeat");
+                //    }
+                //};
             }
         }
 
@@ -365,11 +365,23 @@ namespace Agebull.ZeroNet.Core
         {
             if (WorkModel != ZeroWorkModel.Service)
                 return;
+            if (ApplicationState >= StationState.Closed)
+                return;
             ZeroTrace.SystemLog("Application", "[OnZeroEnd>>");
             RaiseEvent(ZeroNetEventType.AppStop);
+            SystemManager.Instance.HeartLeft();
+            CloseActiveObject();
+            GC.Collect();
+            ZeroTrace.SystemLog("Application", "<<OnZeroEnd]");
+        }
+
+        /// <summary>
+        ///     系统关闭时调用
+        /// </summary>
+        private static void CloseActiveObject()
+        {
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                SystemManager.Instance.HeartLeft();
                 ApplicationState = StationState.Closing;
                 if (HaseActiveObject)
                 {
@@ -387,12 +399,9 @@ namespace Agebull.ZeroNet.Core
                     });
                     WaitAllObjectSemaphore();
                 }
-                GC.Collect();
                 ApplicationState = StationState.Closed;
-                ZeroTrace.SystemLog("Application", "<<OnZeroEnd]");
             }
         }
-
         /// <summary>
         ///     注销时调用
         /// </summary>

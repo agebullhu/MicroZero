@@ -110,6 +110,7 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
             }
             return new ResponseMessageText();
         }
+
         /// <summary>
         /// 处理位置请求
         /// </summary>

@@ -4,6 +4,8 @@
 
 #include "../stdafx.h"
 #include "service.h"
+#include "../rpc/trace_station.h"
+#include "../rpc/route_api_station.h"
 
 
 namespace agebull
@@ -37,7 +39,6 @@ namespace agebull
 		bool rpc_service::initialize()
 		{
 			//start_time = boost::posix_time::microsec_clock::local_time();
-			cout << "*********************************************" << endl;
 			//系统信号发生回调绑定
 			for (int sig = SIGHUP; sig < SIGSYS; sig++)
 				signal(sig, on_sig);
@@ -131,9 +132,8 @@ namespace agebull
 		{
 			if (zero_thread_run + zero_thread_bad <= 3)
 				task_semaphore.post();
-			else
-				if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
-					task_semaphore.post();
+			else if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
+				task_semaphore.post();
 		}
 		//登记线程开始
 		void set_command_thread_run(const char* name)
@@ -186,6 +186,8 @@ namespace agebull
 		//启动网络命令环境
 		int start_system_manage()
 		{
+			station_warehouse::install(zero_def::name::system_manage, zero_def::station_type::dispatcher, "man", "ZeroNet system mamage station.", true);
+
 			log_msg("$start system dispatcher ...");
 			station_dispatcher::run();
 			task_semaphore.wait();
@@ -199,26 +201,44 @@ namespace agebull
 		//启动网络命令环境
 		int start_proxy_dispatcher()
 		{
+			station_warehouse::install(zero_def::name::proxy_dispatcher, zero_def::station_type::proxy, "proxy", "ZeroNet reverse proxy station.", true);
 			log_msg("$start proxy dispatcher ...");
 			proxy_dispatcher::run();
 			task_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$proxy dispatcher failed ...");
-				net_state = zero_def::net_state::failed;
+				//net_state = zero_def::net_state::failed;
 			}
 			return	net_state;
 		}
 		//启动网络命令环境
+		int start_trace_dispatcher()
+		{
+			log_msg("$start trace dispatcher ...");
+			station_warehouse::install(zero_def::name::trace_dispatcher, zero_def::station_type::trace, "trace", "ZeroNet net data trace station.", true);
+			trace_station::run();
+			task_semaphore.wait();
+			if (zero_thread_bad == 1)
+			{
+				log_msg("trace dispatcher failed ...");
+				//net_state = zero_def::net_state::failed;
+			}
+			return net_state;
+		}
+		//启动网络命令环境
 		int start_plan_dispatcher()
 		{
+			station_warehouse::install(zero_def::name::plan_dispatcher, zero_def::station_type::plan, "plan", "ZeroNet plan & task mamage station.", true);
+			//station_warehouse::install("RemoteLog", zero_def::station_type::notify, "log", "ZeroNet remote log station.", false);
+			//station_warehouse::install("HealthCenter", zero_def::station_type::notify, "hea", "ZeroNet health center log station.", false);
 			log_msg("$start plan dispatcher ...");
 			plan_dispatcher::run();
 			task_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$plan dispatcher failed ...");
-				net_state = zero_def::net_state::failed;
+				//net_state = zero_def::net_state::failed;
 			}
 			return net_state;
 		}
@@ -233,6 +253,8 @@ namespace agebull
 				return zero_def::net_state::failed;
 			//if (start_plan_dispatcher() == zero_def::net_state::failed)
 			//	return zero_def::net_state::failed;
+			if (start_trace_dispatcher() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
 			//if (start_proxy_dispatcher() == zero_def::net_state::failed)
 			//	return zero_def::net_state::failed;
 
@@ -244,7 +266,7 @@ namespace agebull
 			for (int i = 0; i < 10; i++)
 			{
 				system_event(zero_net_event::event_system_start, nullptr, ">>Wecome ZeroNet,luck every day!<<");
-				THREAD_SLEEP(50);
+				THREAD_SLEEP(200);
 			}
 			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
 			log_msg1("$success(%lldms)\n", sp.total_milliseconds());
@@ -275,18 +297,21 @@ namespace agebull
 			system_event(zero_net_event::event_system_stop, nullptr, ">>ZeroNet close,see you late!<<");
 			close_semaphore.post();
 			task_semaphore.wait();
+			//cout << endl << "***88888888888888888********" << endl;
+			//getchar();
 			net_state = zero_def::net_state::distory;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
 			log_msg("$zmq shutdown\n");
 			tm = boost::posix_time::microsec_clock::local_time();
-			zmq_ctx_shutdown(zmq_context);
+			//zmq_ctx_shutdown(zmq_context);
 			zmq_ctx_term(zmq_context);
 			zmq_context = nullptr;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$zmq success(%lldms)", sp.total_milliseconds());
-			cout << endl << "*********************************************" << endl;
 
+			//getchar();
+			//cout << endl << "***888888888*****************88888888********" << endl;
 		}
 	}
 }

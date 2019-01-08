@@ -22,10 +22,10 @@ namespace ZeroMQ
             error = null;
             Size = sockets.Length;
             Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_windows_t) * sockets.Length);
-            zmq_pollitem_windows_t* natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
-            for (int i = 0; i < Size; ++i)
+            var natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
+            for (var i = 0; i < Size; ++i)
             {
-                zmq_pollitem_windows_t* native = natives + i;
+                var native = natives + i;
                 native->SocketPtr = sockets[i].SocketPtr;
                 native->Events = (short)(events);
                 native->ReadyEvents = (short)ZPollEvent.None;
@@ -48,7 +48,7 @@ namespace ZeroMQ
         public bool Poll()
         {
             error = null;
-            zmq_pollitem_windows_t* natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
+            var natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
             var state = zmq.poll(natives, Size, TimeoutMs);
             return state > 0;
         }
@@ -60,15 +60,20 @@ namespace ZeroMQ
         /// <param name="message"></param>
         public bool CheckIn(int index, out ZMessage message)
         {
-            zmq_pollitem_windows_t* native = ((zmq_pollitem_windows_t*)Ptr.Ptr) + index;
+            if (index > Sockets.Length)
+            {
+                message = null;
+                return false;
+            }
+            var native = ((zmq_pollitem_windows_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;
                 return false;
             }
 
-            if (((ZPollEvent) native->ReadyEvents).HasFlag(ZPollEvent.In))
-                return Sockets[index].Recv(out message, 1);
+            if (((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In))
+                return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
             message = null;
             return false;
         }
@@ -81,15 +86,15 @@ namespace ZeroMQ
         /// <returns></returns>
         public bool CheckOut(int index, out ZMessage message)
         {
-            zmq_pollitem_windows_t* native = ((zmq_pollitem_windows_t*)Ptr.Ptr) + index;
+            var native = (zmq_pollitem_windows_t*)Ptr.Ptr + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;
                 return false;
             }
 
-            if (((ZPollEvent) native->ReadyEvents).HasFlag(ZPollEvent.Out))
-                return Sockets[index].Recv(out message, 1);
+            if (((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.Out))
+                return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
             message = null;
             return false;
         }
@@ -99,10 +104,10 @@ namespace ZeroMQ
         /// </summary>
         protected override void DoDispose()
         {
-            Ptr.Dispose();
+            Ptr?.Dispose();
+            if (Sockets == null) return;
             foreach (var socket in Sockets)
             {
-                socket.Close();
                 socket.Dispose();
             }
         }

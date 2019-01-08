@@ -75,3 +75,6 @@ packages
 /src/test/QueueTest/appsettings.json
 /src/Tools/HttpBridge/wwwroot
 /src/Tools/HttpGateway/wwwroot
+/src/Test/ApiTest/appsettings.json
+/install/zero/proxy/wwwroot
+/install/zero/Weixin

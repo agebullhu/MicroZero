@@ -5,6 +5,8 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
 using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
@@ -67,6 +69,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             using (IocScope.CreateScope())
             {
+                RestoryContext(args);
                 try
                 {
                     Handle(args);
@@ -75,9 +78,37 @@ namespace Agebull.ZeroNet.PubSub
                 {
                     ZeroTrace.WriteException(Name, e, args.Content);
                 }
+                //finally
+                //{
+                //    GlobalContext.Current.Dispose();
+                //    GlobalContext.SetUser(null);
+                //    GlobalContext.SetRequestContext(null);
+                //}
             }
         }
 
+        /// <summary>
+        /// 还原调用上下文
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private void RestoryContext(TPublishItem item)
+        {
+            try
+            {
+                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(item.ContextJson)
+                    ? JsonConvert.DeserializeObject<ApiContext>(item.ContextJson)
+                    : new GlobalContext());
+                GlobalContext.Current.Request.SetValue(item.GlobalId, item.Publisher, item.RequestId);
+                GlobalContext.Current.Request.CallGlobalId = item.CallId;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.MonitorTrace($"Restory context exception:{e.Message}");
+                ZeroTrace.WriteException(StationName, e, "restory context", item.ContextJson);
+                GlobalContext.SetContext(new GlobalContext());
+            }
+        }
 
         //private string inporcName;
 
@@ -91,8 +122,7 @@ namespace Agebull.ZeroNet.PubSub
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In,
-                    ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, Identity, Subscribe));
+                pool.Prepare(ZPollEvent.In,ZSocket.CreateSubSocket(Config.WorkerCallAddress,Identity, Subscribe));
                 State = StationState.Run;
                 while (CanLoop)
                 {
@@ -167,11 +197,20 @@ namespace Agebull.ZeroNet.PubSub
                         case ZeroFrameType.SubTitle:
                             item.SubTitle = Encoding.UTF8.GetString(bytes);
                             break;
+                        case ZeroFrameType.GlobalId:
+                            item.GlobalId = Encoding.UTF8.GetString(bytes);
+                            break;
+                        case ZeroFrameType.CallId:
+                            item.CallId = Encoding.UTF8.GetString(bytes);
+                            break;
                         case ZeroFrameType.Station:
                             item.Station = Encoding.UTF8.GetString(bytes);
-                            break;
+                            break; 
                         case ZeroFrameType.Publisher:
                             item.Publisher = Encoding.UTF8.GetString(bytes);
+                            break;
+                        case ZeroFrameType.Context:
+                            item.ContextJson = Encoding.UTF8.GetString(bytes);
                             break;
                         case ZeroFrameType.TextContent:
                             if (item.Content == null)
@@ -280,16 +319,11 @@ namespace Agebull.ZeroNet.PubSub
                     {
                         using (var scope = TsonObjectScope.CreateScope(serializer))
                         {
-                            if (scope.DataType != TsonDataType.Empty)
-                            {
-                                var item = new TData();
-                                TsonOperator.FromTson(serializer, item);
-                                list.Add(item);
-                            }
-                            else
-                            {
+                            if (scope.DataType == TsonDataType.Empty)
                                 continue;
-                            }
+                            var item = new TData();
+                            TsonOperator.FromTson(serializer, item);
+                            list.Add(item);
                         }
                     }
                 }
@@ -299,16 +333,14 @@ namespace Agebull.ZeroNet.PubSub
 
             if (args.Content != null)
                 return JsonConvert.DeserializeObject<List<TData>>(args.Content);
-            if (args.Buffer != null)
+            if (args.Buffer == null)
+                return new List<TData>();
+            using (MemoryStream ms = new MemoryStream(args.Buffer))
             {
-                using (MemoryStream ms = new MemoryStream(args.Buffer))
-                {
-                    DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(List<TData>));
-                    return (List<TData>)js.ReadObject(ms);
-                }
+                DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(List<TData>));
+                return (List<TData>)js.ReadObject(ms);
             }
 
-            return new List<TData>();
         }
 
         /// <summary>

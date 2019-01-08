@@ -19,6 +19,7 @@ namespace Agebull.ZeroNet.Core
         {
             return string.IsNullOrEmpty(word) ? EmptyBytes : Encoding.UTF8.GetBytes(word);
         }
+
         /// <summary>
         /// 转为UTF8字节
         /// </summary>

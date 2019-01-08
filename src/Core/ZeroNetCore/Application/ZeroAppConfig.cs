@@ -34,12 +34,19 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         Bridge
     }
+
     /// <summary>
     ///     本地站点配置
     /// </summary>
     [Serializable]
     public class ZeroStationOption
     {
+        /// <summary>
+        ///   API使用路由模式（而非默认的Push/Pull)
+        /// </summary>
+        [DataMember]
+        public bool ApiRouterModel { get; set; }
+
         /// <summary>
         ///     ApiClient与ApiStation限速模式
         /// </summary>
@@ -366,7 +373,7 @@ namespace Agebull.ZeroNet.Core
             {
                 var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
                 foreach (var config in configs) AddStation(config);
-                ZeroTrace.SystemLog("LoadAllConfig", json);
+                
                 return true;
             }
             catch (Exception e)
@@ -604,7 +611,12 @@ namespace Agebull.ZeroNet.Core
                 Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
                 Config.ZeroMonitorAddress =
                     ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
-
+                if (Config.SpeedLimitModel == SpeedLimitType.None)
+                {
+                    Config.SpeedLimitModel = global.SpeedLimitModel;
+                    Config.TaskCpuMultiple = global.TaskCpuMultiple;
+                    Config.MaxWait = global.MaxWait;
+                }
                 //模式选择
                 if (Config.SpeedLimitModel < SpeedLimitType.Single || Config.SpeedLimitModel > SpeedLimitType.WaitCount)
                     Config.SpeedLimitModel = SpeedLimitType.ThreadCount;

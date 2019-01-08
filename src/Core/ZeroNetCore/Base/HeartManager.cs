@@ -3,7 +3,7 @@ namespace Agebull.ZeroNet.Core
     /// <summary>
     /// 心跳
     /// </summary>
-    public class HeartManager : ZCommand
+    public class HeartManager : ZSimpleCommand
     {
         /// <summary>
         ///     连接到

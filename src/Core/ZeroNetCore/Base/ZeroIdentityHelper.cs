@@ -12,8 +12,8 @@ namespace Agebull.ZeroNet.Core
         /// 是否本机
         /// </summary>
         /// <returns></returns>
-        public static bool UseIpc {get ; set; }
-        
+        public static bool UseIpc { get; set; }
+
         /*string.IsNullOrWhiteSpace(ZeroApplication.Config.ZeroAddress) ||
                                           ZeroApplication.Config.ZeroAddress == "127.0.0.1" ||
                                           ZeroApplication.Config.ZeroAddress == "::1" ||
@@ -26,8 +26,8 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetRequestAddress(string station, int port)
         {
-            return !UseIpc 
-                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}" 
+            return !UseIpc
+                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}"
                 : $"ipc://{ZeroApplication.Config.RootPath}/ipc/{station}_req.ipc";
         }
         /// <summary>
@@ -38,8 +38,8 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetSubscriberAddress(string station, int port)
         {
-            return !UseIpc 
-                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}" 
+            return !UseIpc
+                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}"
                 : $"ipc://{ZeroApplication.Config.RootPath}/ipc/{station}_sub.ipc";
         }
         /// <summary>
@@ -76,6 +76,48 @@ namespace Agebull.ZeroNet.Core
             sb.Append("-");
             sb.Append(RandomOperate.Generate(4));
             return sb.ToString();
+        }
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService = false)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(UseIpc ? '-' : '+');
+            sb.Append(isService ? "<" : ">");
+            sb.Append(ZeroApplication.Config.ServiceName);
+            sb.Append("-");
+            sb.Append(ZeroApplication.Config.StationName);
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
+        }
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService, params string[] ranges)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(UseIpc ? '-' : '+');
+            sb.Append(isService ? "<" : ">");
+            sb.Append(ZeroApplication.Config.ServiceName);
+            sb.Append("-");
+            sb.Append(ZeroApplication.Config.StationName);
+            foreach (var range in ranges)
+            {
+                if (range == null)
+                    continue;
+                sb.Append("-");
+                sb.Append(range);
+            }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
         }
     }
 }

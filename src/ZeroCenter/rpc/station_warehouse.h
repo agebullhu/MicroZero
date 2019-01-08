@@ -34,28 +34,18 @@ namespace agebull
 			/**
 			* \brief 实例集合
 			*/
-			static map<string, zero_station*> examples_;
-		public:
+			static map<string, zero_station*> examples;
 
+		public:
 			/**
 			* \brief 取全局ID
 			*/
 			static int64 get_glogal_id()
 			{
-				if (reboot_num_ == 0)
-				{
-					redis_live_scope redis(global_config::redis_defdb);
-					redis->incr("sys:gid", &reboot_num_);
-					if (reboot_num_ > 0xFFF)
-					{
-						reboot_num_ = 1;
-						redis->set("sys:gid", "1");
-					}
-				}
 				boost::lock_guard<boost::mutex> grard(examples_mutex_);
-				if (glogal_id_ >= 0xFFFFFFFFFFFFF)
+				if (++glogal_id_ >= 0xFFFFFFFFFFFFF)
 					glogal_id_ = 0;
-				return (reboot_num_) | (++glogal_id_) << 12;
+				return (reboot_num_ << 48) | glogal_id_;
 			}
 			/**
 			* \brief 清除所有站点
@@ -163,7 +153,6 @@ namespace agebull
 			* \brief 站点更新
 			*/
 			static bool update(const char* json);
-		private:
 			/**
 			* \brief 安装站点
 			*/

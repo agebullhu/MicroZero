@@ -31,6 +31,7 @@ namespace agebull
 			 */
 			virtual  ~sqlite_storage()
 			{
+				cout << "sqlite_storage destory" << endl;
 				if (sqlite_db_ == nullptr)
 					return;
 				sqlite3_close(sqlite_db_);
@@ -46,6 +47,11 @@ namespace agebull
 			 */
 			bool try_create(const char* table, const char* create_sql, vector<const char *> ext_sql);
 		};
+#define bind_column_text(_stmt_,value,col) \
+		if (value == nullptr || strlen(value) == 0)\
+			sqlite3_bind_null(_stmt_, col);\
+		else\
+			sqlite3_bind_text(_stmt_, col, value, static_cast<int>(strlen(value)), nullptr)
 	}
 }
 #endif//!ZMQ_API_SQLITE_STORAGE_H

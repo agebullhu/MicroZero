@@ -36,10 +36,8 @@ namespace agebull
 			/**
 			 * \brief 构造
 			 */
-			virtual  ~queue_storage()
+			 ~queue_storage() override
 			{
-				if (sqlite_db_ == nullptr)
-					return;
 				sqlite3_finalize(insert_stmt_);
 				sqlite3_finalize(load_stmt_);
 			}

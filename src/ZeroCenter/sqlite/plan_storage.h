@@ -41,6 +41,7 @@ namespace agebull
 					sqlite3_finalize(insert_log_stmt_);
 				if (insert_frame_stmt_ != nullptr)
 					sqlite3_finalize(insert_frame_stmt_);
+				cout << "plan_storage destory" << endl;
 			}
 
 			/**

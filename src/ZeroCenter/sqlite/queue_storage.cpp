@@ -139,7 +139,7 @@ namespace agebull
 			zero_def::frame::global_id,
 			zero_def::frame::context,
 			zero_def::frame::content_text,
-			zero_def::frame::end
+			zero_def::frame::general_end
 		};
 		/**
 		*\brief 取数据
@@ -176,7 +176,7 @@ namespace agebull
 				row.emplace_back(sqlite3_column_text(load_stmt_, 5));
 				//global_id
 				shared_char global_id;
-				global_id.set_int64x(sqlite3_column_int64(load_stmt_, 6));
+				global_id.set_int64(sqlite3_column_int64(load_stmt_, 6));
 				row.emplace_back(global_id);
 				//ctx
 				row.emplace_back(sqlite3_column_text(load_stmt_, 7));

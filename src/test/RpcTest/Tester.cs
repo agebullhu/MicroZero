@@ -73,27 +73,27 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Test is start");
             Start = DateTime.Now;
             Cancel = new CancellationTokenSource();
-            //var option = ZeroApplication.GetClientOption(Station);
-            //switch (option.SpeedLimitModel)
-            //{
-            //    case SpeedLimitType.Single:
-            //        new Thread(Test).Start();
-            //        break;
-            //    case SpeedLimitType.ThreadCount:
-            //        int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
-            //        if (max < 1)
-            //            max = 1;
-            //        for (int idx = 0; idx < max; idx++)
-            //        {
-            //            new Thread(Test).Start();
-            //        }
-            //        break;
-            //    default:
-            //        Task.Factory.StartNew(TestSync, Cancel.Token);
-            //        break;
-            //}
+            var option = ZeroApplication.GetClientOption(Station);
+            switch (option.SpeedLimitModel)
+            {
+                case SpeedLimitType.Single:
+                    new Thread(Test).Start();
+                    break;
+                case SpeedLimitType.ThreadCount:
+                    int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
+                    if (max < 1)
+                        max = 1;
+                    for (int idx = 0; idx < max; idx++)
+                    {
+                        new Thread(Test).Start();
+                    }
+                    break;
+                default:
+                    Task.Factory.StartNew(TestSync, Cancel.Token);
+                    break;
+            }
 
-            new Thread(Test1).Start();
+            //new Thread(Test1).Start();
         }
 
         void Async()
@@ -114,7 +114,7 @@ namespace RpcTest
                 Min = sp.TotalMilliseconds;
             if (sp.TotalMilliseconds > 1000)
                 Interlocked.Increment(ref TmError);
-            if ((Interlocked.Increment(ref ExCount) % 100) == 0)
+            if ((Interlocked.Increment(ref ExCount) % 1000) == 0)
                 Count();
         }
         protected abstract void DoAsync();

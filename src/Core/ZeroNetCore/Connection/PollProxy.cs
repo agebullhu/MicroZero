@@ -73,7 +73,8 @@ namespace Agebull.ZeroNet.Core
             foreach (var config in configs)
             {
                 sockets[idx++] = ZSocket.CreateServiceSocket($"inproc://{config.StationName}_Proxy", ZSocketType.ROUTER);
-                sockets[idx++] = ZSocket.CreateClientSocket(config.RequestAddress, ZSocketType.DEALER);
+                sockets[idx++] = ZSocket.CreateClientSocket(config.RequestAddress, ZSocketType.DEALER, 
+                    ZeroIdentityHelper.CreateIdentity(false,config.StationName));
             }
 
             WaitCount = 0;

@@ -88,15 +88,15 @@ namespace agebull
 			if (message.request_id.empty())
 				sqlite3_bind_null(insert_plan_stmt_, 3);
 			else
-				sqlite3_bind_text(insert_plan_stmt_, 3, message.request_id.get_buffer(), static_cast<int>(message.request_id.size()), nullptr);
+				sqlite3_bind_text(insert_plan_stmt_, 3, *message.request_id, static_cast<int>(message.request_id.size()), nullptr);
 			if (message.station.empty())
 				sqlite3_bind_null(insert_plan_stmt_, 4);
 			else
-				sqlite3_bind_text(insert_plan_stmt_, 4, message.station.get_buffer(), static_cast<int>(message.station.size()), nullptr);
+				sqlite3_bind_text(insert_plan_stmt_, 4, *message.station, static_cast<int>(message.station.size()), nullptr);
 			if (message.command.empty())
 				sqlite3_bind_null(insert_plan_stmt_, 5);
 			else
-				sqlite3_bind_text(insert_plan_stmt_, 5, message.command.get_buffer(), static_cast<int>(message.command.size()), nullptr);
+				sqlite3_bind_text(insert_plan_stmt_, 5,*message.command, static_cast<int>(message.command.size()), nullptr);
 			var json = message.write_info();
 			sqlite3_bind_text(insert_plan_stmt_, 6, json.c_str(), static_cast<int>(json.size()), nullptr);
 			if (sqlite3_step(insert_plan_stmt_) != SQLITE_DONE)

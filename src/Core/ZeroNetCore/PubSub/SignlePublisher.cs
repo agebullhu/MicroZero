@@ -73,6 +73,7 @@ namespace Agebull.ZeroNet.PubSub
                             GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             buf,
+                            GlobalContext.Current.ToZeroBytes(),
                             GlobalContext.ServiceKey.ToZeroBytes());
                     }
                     else
@@ -82,12 +83,13 @@ namespace Agebull.ZeroNet.PubSub
                             GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                             ZeroApplication.Config.RealName.ToZeroBytes(),
                             data.ToZeroBytes(),
+                            GlobalContext.Current.ToZeroBytes(),
                             GlobalContext.ServiceKey.ToZeroBytes());
                     }
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException("Pub", e, socket.Connects.LinkToString(','),
+                    ZeroTrace.WriteException("Pub", e, socket.Endpoint,
                         $"Socket Ptr:{socket.SocketPtr}");
                     datas.Add(data);
                 }
@@ -181,7 +183,7 @@ namespace Agebull.ZeroNet.PubSub
                 poll.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket(_inporcName, ZSocketType.PULL));
                 for (int i = 0; i < 64; i++)
                 {
-                    sockets.Add(ZSocket.CreateClientSocket(_inporcName, ZSocketType.PUSH));
+                    sockets.Add(ZSocket.CreateClientSocketByInproc(_inporcName, ZSocketType.PUSH));
                 }
                 Hearter?.HeartReady(StationName, RealName);
                 State = StationState.Run;
@@ -198,7 +200,10 @@ namespace Agebull.ZeroNet.PubSub
                     while (CanLoop)
                     {
                         if (poll.Poll() && poll.CheckIn(0, out var message))
-                            Send(socket, message);
+                        {
+                            using (message)
+                                Send(socket, message);
+                        }
                     }
                 }
                 Hearter?.HeartLeft(StationName, RealName);
@@ -210,11 +215,11 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="message"></param>
-        protected virtual void Send(ZSocket socket,ZMessage message)
+        protected virtual void Send(ZSocket socket, ZMessage message)
         {
             if (!socket.SendTo(message))
             {
-                ZeroTrace.WriteError(StationName, "Pub", socket.LastError.Text, socket.Connects.LinkToString(','));
+                ZeroTrace.WriteError(StationName, "Pub", socket.LastError.Text, socket.Endpoint);
             }
         }
         #endregion

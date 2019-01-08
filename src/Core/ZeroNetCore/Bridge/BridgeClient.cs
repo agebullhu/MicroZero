@@ -47,8 +47,8 @@ namespace Agebull.ZeroNet.ZeroApi
         protected override bool RunInner(CancellationToken token)
         {
             ZeroTrace.SystemLog(StationName, "run", "Bridge");
-            var socket = ZSocket.CreateClientSocket(ZeroApplication.Config.BridgeCallAddress, ZSocketType.PULL);
-            _pushSocket = ZSocket.CreateClientSocket(ZeroApplication.Config.BridgeResultAddress, ZSocketType.PUSH);
+            var socket = ZSocket.CreateClientSocket(ZeroApplication.Config.BridgeCallAddress, ZSocketType.PULL, ZeroIdentityHelper.CreateIdentity(false, StationName));
+            _pushSocket = ZSocket.CreateClientSocket(ZeroApplication.Config.BridgeResultAddress, ZSocketType.PUSH, ZeroIdentityHelper.CreateIdentity(false, StationName));
             using (var pool = ZmqPool.CreateZmqPool())
             {
                 pool.Prepare(ZPollEvent.In, socket);

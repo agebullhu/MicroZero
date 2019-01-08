@@ -35,13 +35,23 @@ namespace Agebull.ZeroNet.PubSub
         /// 全局ID
         /// </summary>
         [JsonProperty]
-        public long GlobalId { get; set; }
-
+        public string GlobalId { get; set; }
+        /// <summary>
+        /// 全局ID
+        /// </summary>
+        [JsonProperty]
+        public string CallId { get; set; }
+        
         /// <summary>
         /// 请求ID
         /// </summary>
         [JsonProperty]
         public string RequestId { get; set; }
+
+        /// <summary>
+        ///  原始上下文的JSO内容
+        /// </summary>
+        public string ContextJson { get; set; }
 
         /// <summary>
         ///  发布者的Identity(可能已消失)

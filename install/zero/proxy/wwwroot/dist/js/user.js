@@ -1,1 +1,0 @@
-require(["jquery","common","template","fastclick","swiper"],function(t,n,o,c,r){function e(){var arguments=arguments.length?arguments[0]:arguments;this.constructor()}e.prototype.constructor=function(){},new e});

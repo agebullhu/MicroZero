@@ -44,8 +44,10 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~plan_dispatcher() final = default;
-
+			~plan_dispatcher() override
+			{
+				cout << "queue_station destory" << endl;
+			}
 			/**
 			* \brief 运行一个通知线程
 			*/
@@ -92,9 +94,9 @@ namespace agebull
 			bool zero_event(zero_net_event event_type, const plan_message* message);
 
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
 			/**
 			* \brief 工作结束(发送到请求者)
 			*/

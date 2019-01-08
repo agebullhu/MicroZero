@@ -52,7 +52,7 @@ namespace agebull
 				description.append_frame(zero_def::frame::content);
 				datas.emplace_back(content);
 			}
-			return instance->send_response(datas) == zmq_socket_state::succeed;
+			return instance->send_response(datas,false) == zmq_socket_state::succeed;
 		}
 		char frames[] = {
 			zero_def::frame::publisher,
@@ -76,31 +76,33 @@ namespace agebull
 			datas.emplace_back(arg.c_str());
 
 			shared_char global_id;
-			global_id.set_int64x(station_warehouse::get_glogal_id());
+			global_id.set_int64(station_warehouse::get_glogal_id());
 			datas.emplace_back(global_id);
-			return send_response(datas) == zmq_socket_state::succeed;
+			return send_response(datas, false) == zmq_socket_state::succeed;
 		}
 
 		/**
 		* \brief 内部命令
 		*/
-		bool station_dispatcher::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		bool station_dispatcher::heartbeat(zmq_handler socket, uchar cmd, vector<shared_char> list)
 		{
-			auto command = description.command();
-			switch (command)
-			{
-			case zero_def::command::heart_pitpat:
-			case zero_def::command::heart_join:
-			case zero_def::command::heart_ready:
-			case zero_def::command::heart_left:
-			{
-				bool success = list.size() > 2 && station_warehouse::heartbeat(command, list);
-				send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed);
-				return true;
-			}
-
-			}
-			return false;
+			bool success = list.size() > 2 && station_warehouse::heartbeat(cmd, list);
+			send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed, false);
+			return true;
+		}
+		/**
+		* \brief 收到PING
+		*/
+		void station_dispatcher::ping(zmq_handler socket, vector<shared_char>& list)
+		{
+			station_warehouse::heartbeat(zero_def::command::heart_pitpat, list);
+		}
+		/**
+		* \brief 执行命令
+		*/
+		void station_dispatcher::restart()
+		{
+			config_->runtime_state(station_state::closing);
 		}
 
 		const char* station_commands_1[] =
@@ -193,9 +195,9 @@ namespace agebull
 		}
 
 		/**
-		* \brief 工作开始（发送到工作者）
+		* \brief 工作开始 : 处理请求数据
 		*/
-		void station_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner)
+		void station_dispatcher::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
 		{
 			const char* cmd = nullptr;
 			size_t rqid_index = 0, glid_index = 0, reqer_index = 0;
@@ -205,6 +207,9 @@ namespace agebull
 			{
 				switch (desc[idx])
 				{
+				case zero_def::frame::general_end:
+				case zero_def::frame::extend_end:
+					break;
 				case zero_def::frame::command:
 					cmd = *list[idx];
 					break;
@@ -224,7 +229,7 @@ namespace agebull
 			}
 			if (cmd == nullptr)
 			{
-				send_request_status(socket, zero_def::status::arg_invalid, list, glid_index, rqid_index, reqer_index);
+				send_request_status(socket, *list[0], zero_def::status::arg_invalid, list, glid_index, rqid_index, reqer_index,nullptr);
 				return;
 			}
 			string json;
@@ -237,6 +242,7 @@ namespace agebull
 		void station_dispatcher::launch(shared_ptr<station_dispatcher>& station)
 		{
 			zero_config& config = station->get_config();
+			config.is_base = true;
 			if (!station->initialize())
 			{
 				instance = nullptr;
@@ -252,13 +258,14 @@ namespace agebull
 				return;
 			}
 			boost::thread(boost::bind(worker_monitor));
+			station->task_semaphore_.wait();
 			station->poll();
+			instance = nullptr;
 			//等待monitor_poll结束
 			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
 			if (get_net_state() == zero_def::net_state::runing)
 			{
-				instance = nullptr;
 				station->destruct();
 				config.restart();
 				run(station->get_config_ptr());
@@ -281,9 +288,10 @@ namespace agebull
 		*/
 		void station_dispatcher::worker_monitor()
 		{
-			zero_config& config = instance->get_config();
+			station_dispatcher* dispatcher = instance;
+			zero_config& config = dispatcher->get_config();
 			config.log("worker_monitor start");
-			instance->task_semaphore_.post();
+			dispatcher->task_semaphore_.post();
 			while (get_net_state() < zero_def::net_state::closing)
 			{
 				THREAD_SLEEP(global_config::worker_sound_ivl);
@@ -295,13 +303,14 @@ namespace agebull
 					names.emplace_back(cfg->station_name);
 					cfgs.emplace_back(cfg->to_status_json().c_str());
 				});
-				instance->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
+				dispatcher->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
 				for (size_t i = 0; i < names.size(); i++)
 				{
-					instance->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());
+					dispatcher->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());
 				}
 			}
-			instance->task_semaphore_.post();
+
+			dispatcher->task_semaphore_.post();
 			config.log("worker_monitor end");
 		}
 	}

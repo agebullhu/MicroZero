@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
   </ItemGroup>
 

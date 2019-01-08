@@ -70,8 +70,10 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			~proxy_dispatcher() final = default;
-
+			~proxy_dispatcher() override
+			{
+				cout << "queue_station destory" << endl;
+			}
 			/**
 			* \brief 运行一个通知线程
 			*/
@@ -114,9 +116,9 @@ namespace agebull
 			bool on_start(zmq_handler socket, shared_char name, vector<shared_char>& list);
 
 			/**
-			* \brief 工作开始（发送到工作者）
+			* \brief 工作开始 : 处理请求数据
 			*/
-			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner) final;
+			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
 
 			/**
 			* \brief 工作结束(发送到请求者)

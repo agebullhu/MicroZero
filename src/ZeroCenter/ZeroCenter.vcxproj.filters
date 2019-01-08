@@ -57,6 +57,9 @@
     <Filter Include="ext\shared_char">
       <UniqueIdentifier>{d20df558-29f8-44fd-8a57-926121571d2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rpc\trace">
+      <UniqueIdentifier>{6f70c924-7467-41e4-9deb-a61a2c7e86a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="log\mylogger.cpp">
@@ -127,6 +130,12 @@
     </ClCompile>
     <ClCompile Include="rpc\net_crc.cpp">
       <Filter>ext\shared_char</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\trace_station.cpp">
+      <Filter>rpc\trace</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite\trace_storage.cpp">
+      <Filter>sqlite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +231,12 @@
     </ClInclude>
     <ClInclude Include="ext\shared_char.h">
       <Filter>ext\shared_char</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\trace_station.h">
+      <Filter>rpc\trace</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\trace_storage.h">
+      <Filter>sqlite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

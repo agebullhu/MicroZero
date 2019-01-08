@@ -1,20 +1,4 @@
-﻿/*----------------------------------------------------------------
-    Copyright (C) 2018 Senparc
-
-    文件名：CustomMessageHandler.cs
-    文件功能描述：微信公众号自定义MessageHandler
-
-
-    创建标识：Senparc - 20150312
-
-    修改标识：Senparc - 20171027
-    修改描述：v14.8.3 添加OnUnknownTypeRequest()方法Demo
-
-----------------------------------------------------------------*/
-
-//PDBMARK_FILE MP
-
-using System;
+﻿using System;
 using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Entities;
 using Agebull.ZeroNet.ZeroApi;
@@ -23,36 +7,10 @@ using Senparc.NeuChar.Helpers;
 using Senparc.Weixin.MP.AdvancedAPIs;
 using Agebull.Common.Configuration;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Senparc.Weixin.MP.AdvancedAPIs.TemplateMessage;
 
 namespace ApiTest
 {
-    /// <summary>
-    ///     系统配置
-    /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
-    public class WeixinConfig
-    {
-        /// <summary>
-        /// 公众号Token
-        /// </summary>
-        public string Token { get; set; }
-        /// <summary>
-        /// 公众号消息加密Key
-        /// </summary>
-        // ReSharper disable once InconsistentNaming
-        public string EncodingAESKey { get; set; }
-        /// <summary>
-        /// 公众号AppId
-        /// </summary>
-        public string WeixinAppId { get; set; }
-        /// <summary>
-        /// 公众号AppSecret
-        /// </summary>
-        public string WeixinAppSecret { get; set; }
-
-    }
     /// <summary>
     /// Weixin服务
     /// </summary>
@@ -109,7 +67,11 @@ namespace ApiTest
             
             return defXml;
         }
-
+        /// <summary>
+        /// 收到视频
+        /// </summary>
+        /// <param name="requestMessage"></param>
+        /// <returns></returns>
         [Route("v1/msg/shortvedio")]
         public string OnShortVideoRequest(RequestMessageShortVideo requestMessage)
         {

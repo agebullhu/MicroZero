@@ -9,6 +9,14 @@ namespace Agebull.ZeroNet.Core
         ///     终止符号
         /// </summary>
         public const byte End = 0;
+        /// <summary>
+        ///     终止符号
+        /// </summary>
+        public const byte ExtendEnd = 0xFF;
+        /// <summary>
+        ///     终止符号
+        /// </summary>
+        public const byte ResultEnd = 0xFE;
 
         /// <summary>
         ///     全局标识
@@ -51,37 +59,51 @@ namespace Agebull.ZeroNet.Core
         public const byte LocalId = 8;
 
         /// <summary>
-        /// 原样参数
+        /// 调用方的站点类型
         /// </summary>
-        public const byte Original1 = 9;
+        public const byte   StationType = 9;
+
+        /// <summary>
+        /// 调用方的全局标识
+        /// </summary>
+        public const byte   CallId = 0xB;
+        /// <summary>
+        /// 数据方向
+        /// </summary>
+        public const byte   DataDirection = 0xC;
+
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original2 = 0xA;
+        public const byte Original1 = 0x10;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original3 = 0xB;
+        public const byte Original2 = 0x11;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original4 = 0xC;
+        public const byte Original3 = 0x12;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original5 = 0xD;
+        public const byte Original4 = 0x13;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original6 = 0xE;
+        public const byte Original5 = 0x14;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original7 = 0xF;
+        public const byte Original6 = 0x15;
         /// <summary>
         /// 原样参数
         /// </summary>
-        public const byte Original8 = 0x10;
+        public const byte Original7 = 0x16;
+        /// <summary>
+        /// 原样参数
+        /// </summary>
+        public const byte Original8 = 0x17;
         /// <summary>
         ///     参数
         /// </summary>
@@ -156,13 +178,21 @@ namespace Agebull.ZeroNet.Core
             switch (value)
             {
                 case End:// 0;
-                    return @"终止符号";
+                    return @"请求终止符号";
+                case ExtendEnd:// 0;
+                    return @"命令终止符号";
+                case ResultEnd:// 0;
+                    return @"返回终止符号";
                 case GlobalId:// 1;
                     return @"全局标识";
                 case Station:// 2;
                     return @"站点名称帧";
                 case Status:// 3;
                     return @"状态帧";
+                case CallId:// 3;
+                    return @"调用方的全局标识";
+                case StationType:// 3;
+                    return @"调用方的站点类型";
                 case RequestId:// 4;
                     return @"请求ID";
                 case Plan:// 5;

@@ -348,7 +348,7 @@ namespace Agebull.ZeroNet.Core
                     return;
                 case StationState.BeginRun:
                 case StationState.Run:
-                    OnZeroEnd();
+                    CloseActiveObject();
                     break;
                 case StationState.Failed:
                     if (WorkModel == ZeroWorkModel.Service)
@@ -356,6 +356,7 @@ namespace Agebull.ZeroNet.Core
                     break;
             }
             ZeroTrace.SystemLog("Begin shutdown...");
+            SystemManager.Instance.HeartLeft();
             ApplicationState = StationState.Destroy;
             if (WorkModel != ZeroWorkModel.Bridge)
             {

@@ -36,7 +36,7 @@
         /// <summary>
         /// 心跳间隔时长
         /// </summary>
-        public int HeartbeatIvl { get; set; } = 1000;
+        public int HeartbeatIvl { get; set; }
         /// <summary>
         /// 心跳超时时长
         /// </summary>

@@ -250,7 +250,7 @@ namespace Agebull.ZeroNet.ZeroApi
             //    return;
             //}
 
-            var socket = ZSocket.CreateClientSocket(_address, ZSocketType.DEALER);
+            var socket = ZSocket.CreateClientSocket(_address, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false,Station));
             if (socket == null)
             {
                 _result = "no ready";

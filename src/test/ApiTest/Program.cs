@@ -12,8 +12,11 @@ using Senparc.Weixin.RegisterServices;
 
 namespace ApiTest
 {
+
+
     partial class Program
     {
+
 
         static void Main(string[] args)
         {

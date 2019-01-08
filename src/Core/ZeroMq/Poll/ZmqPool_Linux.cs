@@ -84,7 +84,7 @@ namespace ZeroMQ
 
             zmq_pollitem_posix_t* natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
             var state = zmq.poll(natives, Size, TimeoutMs);
-            return state != -1;
+            return state > 0;
         }
 
         /// <summary>
@@ -94,6 +94,11 @@ namespace ZeroMQ
         /// <param name="message"></param>
         public bool CheckIn(int index, out ZMessage message)
         {
+            if (index > Sockets.Length)
+            {
+                message = null;
+                return false;
+            }
             zmq_pollitem_posix_t* native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
@@ -105,7 +110,7 @@ namespace ZeroMQ
                 message = null;
                 return false;
             }
-            return Sockets[index].Recv(out message, 1);
+            return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
         }
 
         /// <summary>
@@ -116,6 +121,11 @@ namespace ZeroMQ
         /// <returns></returns>
         public bool CheckOut(int index, out ZMessage message)
         {
+            if (index > Sockets.Length)
+            {
+                message = null;
+                return false;
+            }
             zmq_pollitem_posix_t* native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
@@ -127,7 +137,7 @@ namespace ZeroMQ
                 message = null;
                 return false;
             }
-            return Sockets[index].Recv(out message, 1);
+            return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
         }
 
 
@@ -136,10 +146,10 @@ namespace ZeroMQ
         /// </summary>
         protected override void DoDispose()
         {
-            Ptr.Dispose();
+            Ptr?.Dispose();
+            if (Sockets == null) return;
             foreach (var socket in Sockets)
             {
-                socket.Close();
                 socket.Dispose();
             }
         }

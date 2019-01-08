@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Text;
 using Agebull.Common.Logging;
 using ZeroMQ.lib;
@@ -20,6 +20,12 @@ namespace ZeroMQ
 		/// Note: Do not set the Encoding after ZContext.Create.
 		/// </summary>
 		public static Encoding Encoding => Encoding.UTF8;
+
+        /// <summary>
+        /// 当前活动的连接
+        /// </summary>
+        public static List<ZSocket> AliveSockets = new List<ZSocket>();
+
 
         /// <summary>
         /// 初始化
@@ -53,6 +59,9 @@ namespace ZeroMQ
         /// </summary>
         public static bool IsAlive => _current != null && _current._contextPtr != IntPtr.Zero;
 
+        /// <summary>
+        /// 当前默认实例
+        /// </summary>
         private static ZContext _current;
         /// <summary>
         /// 当前默认实例
@@ -150,7 +159,7 @@ namespace ZeroMQ
         {
             error = ZError.None;
 
-            while (-1 == zmq.proxy(frontend.SocketPtr, backend.SocketPtr, capture == null ? IntPtr.Zero : capture.SocketPtr))
+            while (-1 == zmq.proxy(frontend.SocketPtr, backend.SocketPtr, capture?.SocketPtr ?? IntPtr.Zero))
             {
                 error = ZError.GetLastErr();
 
@@ -213,7 +222,7 @@ namespace ZeroMQ
         {
             error = ZError.None;
 
-            while (-1 == zmq.proxy_steerable(frontend.SocketPtr, backend.SocketPtr, capture == null ? IntPtr.Zero : capture.SocketPtr, control == null ? IntPtr.Zero : control.SocketPtr))
+            while (-1 == zmq.proxy_steerable(frontend.SocketPtr, backend.SocketPtr, capture?.SocketPtr ?? IntPtr.Zero, control?.SocketPtr ?? IntPtr.Zero))
             {
                 error = ZError.GetLastErr();
 
@@ -286,7 +295,7 @@ namespace ZeroMQ
         }
 
         /// <summary>
-        /// Gets or sets the supported socket protocol(s) when using TCP transports. (Default = <see cref="ProtocolType.Ipv4"/>).
+        /// Gets or sets the supported socket protocol(s) when using TCP transports. (Default = ProtocolType.Ipv4).
         /// </summary>
         public bool IPv6Enabled
         {
@@ -320,8 +329,25 @@ namespace ZeroMQ
         /// <inheritdoc />
         protected override void DoDispose()
         {
-            if (_contextPtr != IntPtr.Zero)
-                Terminate(out var error);
+            Terminate(out _);
+        }
+
+        /// <summary>
+        /// Terminate the ZeroMQ context.
+        /// </summary>
+        public static void AddSocket(ZSocket socket)
+        {
+            lock (AliveSockets)
+                AliveSockets.Add(socket);
+        }
+
+        /// <summary>
+        /// Terminate the ZeroMQ context.
+        /// </summary>
+        public static void RemoveSocket(ZSocket socket)
+        {
+            lock (AliveSockets)
+                AliveSockets.Remove(socket);
         }
 
         /// <summary>
@@ -329,21 +355,21 @@ namespace ZeroMQ
         /// </summary>
         public bool Terminate(out ZError error)
         {
-            LogRecorder.SystemLog("Terminate the ZeroMQ context.");
             error = ZError.None;
             if (_contextPtr == IntPtr.Zero)
+            {
                 return true;
+            }
+            LogRecorder.SystemLog("Terminate the ZeroMQ context.");
+            
             IntPtr ptr = _contextPtr;
             _contextPtr = IntPtr.Zero;
             ZSocket[] array;
-            lock (ZSocket.AliveSockets)
-                array = ZSocket.AliveSockets.Where(p => p != null).ToArray();
+            lock (AliveSockets)
+                array = AliveSockets.Where(p => p != null && !p.IsDisposed).ToArray();
             foreach (var alive in array)
             {
-                if (alive.Connects.Count > 0)
-                    LogRecorder.SystemLog(alive.Connects.LinkToString("Connects",","));
-                if (alive.Binds.Count > 0)
-                    LogRecorder.SystemLog(alive.Binds.LinkToString("Binds", ","));
+                LogRecorder.SystemLog($"Endpoint : {alive.Endpoint}");
                 alive.Dispose();
             }
             if (zmq.ctx_shutdown(ptr) != -1)

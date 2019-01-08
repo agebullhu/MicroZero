@@ -27,7 +27,7 @@ namespace agebull
 				}
 			}
 		}
-		void shared_char::frame_type(size_t index, char type)
+		void shared_char::frame_type(size_t index, uchar type)
 		{
 			index += 2;
 			if (alloc_size_ > index)
@@ -37,13 +37,13 @@ namespace agebull
 			}
 			else
 			{
-				char* new_buf = static_cast<char*>(::malloc(index + 8));
+				uchar* new_buf = new uchar[index + 8];
 				memset(new_buf, 0, index + 8);
 				memcpy(buffer_, new_buf, alloc_size_);
 				free_();
 				count_ = new int();
 				*count_ = 1;
-				size_ = index + 4;
+				size_ = index + 8;
 				alloc_size_ = index + 8;
 
 				buffer_ = new_buf;
@@ -55,8 +55,8 @@ namespace agebull
 		void shared_char::alloc_(size_t size)
 		{
 			size_ = size;
-			alloc_size_ = size_ + 8 + (8 - (size_ % 8));
-			buffer_ = static_cast<char*>(::malloc(alloc_size_));
+			alloc_size_ = size_ + 32 + (8 - (size_ % 8));
+			buffer_ = new uchar[alloc_size_];
 			//buffer_ = new char[alloc_size_];
 			memset(buffer_, 0, alloc_size_);
 			count_ = new int();
@@ -69,7 +69,7 @@ namespace agebull
 		{
 			size_ = size;
 			alloc_size_ = size_ + 8 + (8 - (size_ % 8));
-			buffer_ = static_cast<char*>(::malloc(alloc_size_));
+			buffer_ = new uchar[alloc_size_];
 			//buffer_ = new char[alloc_size_];
 			memset(buffer_, 0, alloc_size_);
 			memcpy(buffer_, src, size);

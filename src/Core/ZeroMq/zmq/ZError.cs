@@ -85,6 +85,9 @@ namespace ZeroMQ
             public const int ETERM = HAUSNUMERO + 53;
             public const int EMTHREAD = HAUSNUMERO + 54;
 
+
+            // NOSUPPORT(AGEBULL)
+            public const int NOSUPPORT = HAUSNUMERO + 255;
             #endregion
 
             #region Windows && Linux
@@ -126,6 +129,7 @@ namespace ZeroMQ
 
             #endregion
 
+            #region Posix
             internal static class Posix
             {
                 // source: http://www.virtsync.com/c-error-codes-include-errno
@@ -149,9 +153,11 @@ namespace ZeroMQ
                     ETIMEDOUT = 110,
                     EHOSTUNREACH = 113,
                     ENETRESET = 102
-                ;
+                    ;
             }
+            #endregion
 
+            #region MacOSX
             internal static class MacOSX
             {
                 public const int
@@ -171,9 +177,9 @@ namespace ZeroMQ
                     ENOBUFS = 55,
                     ENOTCONN = 57,
                     ETIMEDOUT = 60,
-                    EHOSTUNREACH = 65
-                    ;
+                    EHOSTUNREACH = 65;
             }
+            #endregion
         }
         /// <summary>
         /// 取最后错误

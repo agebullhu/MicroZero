@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using ZeroMQ;
 
@@ -35,11 +34,9 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected override IZmqPool Prepare(byte[] identity, out ZSocket socket)
         {
-            socket = null;
+            socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
             var pool = ZmqPool.CreateZmqPool();
-            var socket1 = ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.SUB, identity, Encoding.ASCII.GetBytes(Subscribe ?? ""));
-            var socket2 = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.SUB, identity, identity);
-            pool.Prepare(ZPollEvent.In, socket1, socket2);
+            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
             Reload();
 
             return pool;
@@ -72,11 +69,9 @@ namespace Agebull.ZeroNet.PubSub
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal override bool OnExecuestEnd(ref ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal override bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (string.IsNullOrEmpty(item.LocalId))
-                return true;
-            return CacheProcess(long.Parse(item.LocalId));
+            return string.IsNullOrEmpty(item.LocalId) || CacheProcess(long.Parse(item.LocalId));
         }
 
         /// <summary>
@@ -85,7 +80,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal override void SendLayoutErrorResult(ref ZSocket socket, ApiCallItem item)
+        internal override void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
         {
             if (string.IsNullOrEmpty(item.LocalId))
                 return;
@@ -196,8 +191,8 @@ namespace Agebull.ZeroNet.PubSub
         {
             try
             {
-                var socket = ZSocket.CreateDealerSocket(Config.RequestAddress);
-                var result = ZCommand.SendTo(socket, description, start.ToString(), end.ToString());
+                var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZeroIdentityHelper.CreateIdentity(false, StationName));
+                var result = ZSimpleCommand.SendTo(socket, description, start.ToString(), end.ToString());
                 return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }
             catch (Exception e)

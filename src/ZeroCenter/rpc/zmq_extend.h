@@ -513,10 +513,11 @@ namespace agebull
 			*/
 			inline zmq_socket_state send(zmq_handler socket, const vector<shared_char>& ls, const size_t first_index = 0)
 			{
-				if (first_index >= ls.size())
+				size_t last = ls.size() - 1;
+				if (first_index > last)
 					return send_late(socket, "");
 				size_t idx = first_index;
-				for (; idx < ls.size() - 1; idx++)
+				for (; idx < last; idx++)
 				{
 					const int state = send_shared_char(socket, ls[idx], ZMQ_SNDMORE);
 					if (state < 0)
@@ -539,8 +540,9 @@ namespace agebull
 				if (first_index >= ls.size())
 					return send_late(socket, "");
 				size_t idx = first_index;
+				size_t last = ls.size() - 1;
 				int state;
-				for (; idx < ls.size() - 1; idx++)
+				for (; idx < last; idx++)
 				{
 					state = send_shared_char(socket, ls[idx], ZMQ_SNDMORE);
 					if (state < 0)
@@ -555,6 +557,7 @@ namespace agebull
 				}
 				return zmq_socket_state::succeed;
 			}
+
 			/**
 			* \brief 发送帧
 			*/
@@ -581,7 +584,7 @@ namespace agebull
 					descirpt[idx++] = zero_def::frame::global_id;
 				}
 				descirpt[0] = static_cast<char>(idx - 2);
-				descirpt[idx] = zero_def::frame::end;
+				descirpt[idx] = zero_def::frame::result_end;
 
 				int reqer_flags = ZMQ_SNDMORE;
 				int reqId_flags = ZMQ_SNDMORE;

@@ -28,7 +28,7 @@ namespace Agebull.ZeroNet.Core
                 if (!socket.Recv(out messages))
                 {
                     if (showError)
-                        ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text);
+                        ZeroTrace.WriteError("Receive", socket.Endpoint, socket.LastError.Text);
                     return new ZeroResultData
                     {
                         State = ZeroOperatorStateType.LocalRecvError,
@@ -38,7 +38,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','));
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint);
                 return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
@@ -69,7 +69,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), "Exception");
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint, "Exception");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
@@ -82,7 +82,7 @@ namespace Agebull.ZeroNet.Core
                 var description = messages[0].Read();
                 if (description.Length < 2)
                 {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), description.LinkToString(p => p.ToString("X2"), ""));
+                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Endpoint, description.LinkToString(p => p.ToString("X2"), ""));
                     return new ZeroResultData<byte[]>
                     {
                         State = ZeroOperatorStateType.FrameInvalid,
@@ -93,7 +93,7 @@ namespace Agebull.ZeroNet.Core
                 int end = description[0] + 1;
                 if (end != messages.Count)
                 {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','), $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""));
+                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Endpoint, $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""));
                     return new ZeroResultData<byte[]>
                     {
                         State = ZeroOperatorStateType.FrameInvalid,
@@ -115,7 +115,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint, $"FrameSize{messages.Count},Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
@@ -141,7 +141,7 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.Recv(out messages))
                 {
-                    ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','), socket.LastError.Text);
+                    ZeroTrace.WriteError("Receive", socket.Endpoint, socket.LastError.Text);
                     return new ZeroResultData<byte[]>
                     {
                         State = ZeroOperatorStateType.LocalRecvError,
@@ -151,7 +151,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','));
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint);
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.LocalRecvError,
@@ -175,7 +175,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','), $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint, $"FrameSize{messages.Count}, Socket Ptr:{ socket.SocketPtr}.");
                 return new ZeroResultData<byte[]>
                 {
                     State = ZeroOperatorStateType.LocalRecvError,

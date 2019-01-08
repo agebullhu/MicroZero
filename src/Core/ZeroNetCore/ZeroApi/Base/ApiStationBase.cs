@@ -91,7 +91,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal abstract bool OnExecuestEnd(ref ZSocket socket, ApiCallItem item, ZeroOperatorStateType state);
+        internal abstract bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state);
 
         /// <summary>
         /// 发送返回值 
@@ -99,7 +99,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal abstract void SendLayoutErrorResult(ref ZSocket socket, ApiCallItem item);
+        internal abstract void SendLayoutErrorResult(ZSocket socket, ApiCallItem item);
 
         #endregion
 
@@ -148,64 +148,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private void RunWait()
         {
-            using (var pool = Prepare(Identity, out var socket))
-            {
-                //var hearter = new HeartManager
-                //{
-                //    Socket = pool.Sockets[0],
-                //    IsInner = true
-                //};
-                //hearter.HeartJoin(StationName, RealName);
-                //hearter.HeartReady(StationName, RealName);
-                ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, RealName);
-                State = StationState.Run;
-                while (CanLoop)
-                {
-                    try
-                    {
-                        if (!pool.Poll())
-                        {
-                            //hearter.Heartbeat(StationName, RealName);
-                            Idle();
-                            continue;
-                        }
-                        if (!pool.CheckIn(0, out var message))
-                        {
-                            continue;
-                        }
-                        Interlocked.Increment(ref RecvCount);
-                        if (!Unpack(message, out var item))
-                        {
-                            SendLayoutErrorResult(ref socket, item);
-                            continue;
-                        }
-                        Interlocked.Increment(ref WaitCount);
-                        if (WaitCount > ZeroApplication.Config.MaxWait)
-                        {
-                            item.Result = ApiResult.UnavailableJson;
-                            OnExecuestEnd(ref socket, item, ZeroOperatorStateType.Unavailable);
-                        }
-                        else
-                        {
-                            Task.Factory.StartNew(() =>
-                            {
-                                var socketT = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER);
-                                Execute(new ApiExecuter
-                                {
-                                    Station = this
-                                }, ref socketT, item);
-                            });
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        LogRecorder.Exception(e);
-                    }
-                }
-                //hearter.HeartLeft(StationName, RealName);
-                socket?.Dispose();
-            }
-            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, RealName);
+            RunSignle(RealName, Identity, true);
         }
         private SemaphoreSlim _processSemaphore;
 
@@ -215,7 +158,7 @@ namespace Agebull.ZeroNet.ZeroApi
         private void RunThread()
         {
             var realName = ZeroIdentityHelper.CreateRealName(IsService, Config.StationName);
-            RunSignle(realName, realName.ToAsciiBytes());
+            RunSignle(realName, realName.ToAsciiBytes(), false);
         }
 
         /// <summary>
@@ -223,27 +166,41 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private void RunSignle()
         {
-            RunSignle(RealName, Identity);
+            RunSignle(RealName, Identity, false);
         }
 
         /// <summary>
         /// 具体执行
         /// </summary>
-        private void RunSignle(string realName,byte[] identity)
+        private void RunSignle(string realName, byte[] identity, bool checkWait)
         {
-            ApiExecuter executer = new ApiExecuter
-            {
-                Station = this
-            };
+            ApiExecuter executer = checkWait
+                ? null
+                : new ApiExecuter
+                {
+                    Station = this
+                };
             using (var pool = Prepare(identity, out var socket))
             {
-                //var hearter = new HeartManager
-                //{
-                //    Socket = pool.Sockets[0],
-                //    IsInner = true
-                //};
-                //hearter.HeartJoin(StationName, realName);
-                //hearter.HeartReady(StationName, realName);
+                HeartManager hearter;
+                if (pool.Sockets[0].SocketType == ZSocketType.DEALER)
+                {
+                    hearter = new HeartManager
+                    {
+                        Socket = pool.Sockets[0],
+                        IsInner = true
+                    };
+                }
+                else
+                {
+                    hearter = new HeartManager
+                    {
+                        Socket = socket,
+                        IsInner = true
+                    };
+                }
+                hearter.HeartJoin(StationName, realName);
+                hearter.HeartReady(StationName, realName);
                 ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
                 State = StationState.Run;
                 while (CanLoop)
@@ -252,30 +209,37 @@ namespace Agebull.ZeroNet.ZeroApi
                     {
                         if (!pool.Poll())
                         {
-                            //hearter.Heartbeat(StationName, realName);
                             Idle();
+                            hearter.Heartbeat(StationName, realName);
                             continue;
                         }
-                        if (!pool.CheckIn(0, out var message))
+                        if (pool.CheckIn(1, out var message))
+                        {
+                            message.Dispose();
+                        }
+                        if (!pool.CheckIn(0, out message))
                         {
                             continue;
                         }
                         Interlocked.Increment(ref RecvCount);
                         if (!Unpack(message, out var item))
                         {
-                            SendLayoutErrorResult(ref socket, item);
+                            SendLayoutErrorResult(socket, item);
                             continue;
                         }
                         Interlocked.Increment(ref WaitCount);
-                        Execute(executer, ref socket, item);
+                        //hearter.Heartbeat(StationName, realName);
+                        if (checkWait)
+                            Execute(socket, item);
+                        else
+                            Execute(executer, ref socket, item);
                     }
                     catch (Exception e)
                     {
                         LogRecorder.Exception(e);
                     }
                 }
-                //hearter.HeartLeft(StationName, realName);
-                socket?.Dispose();
+                hearter.HeartLeft(StationName, realName);
             }
             ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
             _processSemaphore?.Release();
@@ -337,7 +301,10 @@ namespace Agebull.ZeroNet.ZeroApi
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
-                            item.CallerGlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            item.GlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            break;
+                        case ZeroFrameType.CallId:
+                            item.CallId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.LocalId:
                             item.LocalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
@@ -352,13 +319,22 @@ namespace Agebull.ZeroNet.ZeroApi
                             item.ContextJson = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Command:
-                            item.ApiName = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            item.Command = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Argument:
                             item.Argument = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.TextContent:
                             item.Content = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            break;
+                        case ZeroFrameType.Station:
+                            item.StationName = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            break;
+                        case ZeroFrameType.StationType:
+                            item.StationType = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
+                            break;
+                        case ZeroFrameType.Status:
+                            item.StatusMessage = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.Original1:
                         case ZeroFrameType.Original2:
@@ -387,6 +363,25 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #region 方法
 
+        private void Execute(ZSocket socket, ApiCallItem item)
+        {
+            if (WaitCount > ZeroApplication.Config.MaxWait)
+            {
+                item.Result = ApiResult.UnavailableJson;
+                OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
+            }
+            else
+            {
+                Task.Factory.StartNew(() =>
+                {
+                    var socketT = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false, StationName));
+                    Execute(new ApiExecuter
+                    {
+                        Station = this
+                    }, ref socketT, item);
+                });
+            }
+        }
 
         private void Execute(ApiExecuter executer, ref ZSocket socket, ApiCallItem item)
         {

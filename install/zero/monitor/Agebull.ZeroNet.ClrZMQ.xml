@@ -15,6 +15,11 @@
             Note: Do not set the Encoding after ZContext.Create.
             </summary>
         </member>
+        <member name="F:ZeroMQ.ZContext.AliveSockets">
+            <summary>
+            当前活动的连接
+            </summary>
+        </member>
         <member name="M:ZeroMQ.ZContext.Initialize">
             <summary>
             初始化
@@ -28,6 +33,11 @@
         <member name="P:ZeroMQ.ZContext.IsAlive">
             <summary>
             是否存活
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZContext._current">
+            <summary>
+            当前默认实例
             </summary>
         </member>
         <member name="P:ZeroMQ.ZContext.Current">
@@ -147,7 +157,7 @@
         </member>
         <member name="P:ZeroMQ.ZContext.IPv6Enabled">
             <summary>
-            Gets or sets the supported socket protocol(s) when using TCP transports. (Default = <see cref="!:ProtocolType.Ipv4"/>).
+            Gets or sets the supported socket protocol(s) when using TCP transports. (Default = ProtocolType.Ipv4).
             </summary>
         </member>
         <member name="M:ZeroMQ.ZContext.Shutdown">
@@ -162,6 +172,16 @@
         </member>
         <member name="M:ZeroMQ.ZContext.DoDispose">
             <inheritdoc />
+        </member>
+        <member name="M:ZeroMQ.ZContext.AddSocket(ZeroMQ.ZSocket)">
+            <summary>
+            Terminate the ZeroMQ context.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZContext.RemoveSocket(ZeroMQ.ZSocket)">
+            <summary>
+            Terminate the ZeroMQ context.
+            </summary>
         </member>
         <member name="M:ZeroMQ.ZContext.Terminate(ZeroMQ.ZError@)">
             <summary>
@@ -1125,11 +1145,6 @@
                 Sends and receives messages, single frames and byte frames across ZeroMQ.
             </summary>
         </member>
-        <member name="F:ZeroMQ.ZSocket.Option">
-            <summary>
-            配置
-            </summary>
-        </member>
         <member name="P:ZeroMQ.ZSocket.StationName">
             <summary>
             关联的站点名称（仅用于ZeroNet）
@@ -1140,15 +1155,148 @@
             是否使用中（仅用于ZeroNet）
             </summary>
         </member>
-        <member name="F:ZeroMQ.ZSocket.Binds">
+        <member name="P:ZeroMQ.ZSocket.Endpoint">
             <summary>
                 已绑定地址
             </summary>
         </member>
-        <member name="F:ZeroMQ.ZSocket.Connects">
+        <member name="P:ZeroMQ.ZSocket.LastError">
             <summary>
-                已连接对象
+            最后错误
             </summary>
+        </member>
+        <member name="T:ZeroMQ.ZSocket.SocketState">
+            <summary>
+            状态
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.None">
+            <summary>
+            未确定
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Create">
+            <summary>
+            对象已生成
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Connection">
+            <summary>
+            连接
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Binding">
+            <summary>
+            绑定
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Open">
+            <summary>
+            连接方式开启
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Close">
+            <summary>
+            正常关闭
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Free">
+            <summary>
+            对象已释放
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Failed">
+            <summary>
+            损坏
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.State">
+            <summary>
+            状态 -1 连接失败
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.GetLastError">
+            <summary>
+            最后错误
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.IsEmpty">
+            <summary>
+                是否为空
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.SocketType">
+            <summary>
+                Gets the <see cref="T:ZeroMQ.ZSocketType" /> value for the current socket.
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.ReceiveMore">
+            <summary>
+                Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZSocketType)">
+            <summary>
+                构造
+                You are using ZContext.Current!
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZSocketType)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
+            <summary>
+                构造
+            </summary>
+            <returns>
+                实例
+            </returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.CreateServiceSocket(System.String,ZeroMQ.ZSocketType)">
             <summary>
@@ -1158,24 +1306,39 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocket(System.String,ZeroMQ.ZSocketType,System.Byte[],System.Byte[])">
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocketInner(System.String,ZeroMQ.ZSocketType,System.Byte[])">
             <summary>
             构建套接字
             </summary>
             <param name="address"></param>
             <param name="type"></param>
             <param name="identity"></param>
-            <param name="subscribe"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocket(System.String,ZeroMQ.ZSocketType,System.Byte[],System.String)">
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocketByHeartbeat(System.String,ZeroMQ.ZSocketType,System.Byte[])">
             <summary>
             构建套接字
             </summary>
             <param name="address"></param>
             <param name="type"></param>
             <param name="identity"></param>
-            <param name="subscribe"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocketByInproc(System.String,ZeroMQ.ZSocketType)">
+            <summary>
+            构建套接字
+            </summary>
+            <param name="address"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocket(System.String,ZeroMQ.ZSocketType,System.Byte[])">
+            <summary>
+            构建套接字
+            </summary>
+            <param name="address"></param>
+            <param name="type"></param>
+            <param name="identity"></param>
             <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.CreateDealerSocket(System.String,System.Byte[])">
@@ -1186,13 +1349,139 @@
             <param name="identity"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateSubscriberSocket(System.String,System.Byte[],System.String)">
+        <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[],System.String)">
             <summary>
             构建套接字
             </summary>
             <param name="address"></param>
-            <param name="identity"></param>
             <param name="subscribe"></param>
+            <param name="identity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Finalize">
+            <summary>
+                Finalizes an instance of the 实例 class.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Close">
+            <summary>
+                Close the current socket.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.TryClose">
+            <summary>
+                Close the current socket.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Close(ZeroMQ.ZError@)">
+            <summary>
+                Close the current socket.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Bind(System.String)">
+            <summary>
+                Bind the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Bind(System.String,ZeroMQ.ZError@)">
+            <summary>
+                Bind the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Unbind(System.String)">
+            <summary>
+                Unbind the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Unbind(System.String,ZeroMQ.ZError@)">
+            <summary>
+                Unbind the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Connect(System.String)">
+            <summary>
+                Connect the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Connect(System.String,ZeroMQ.ZError@)">
+            <summary>
+                Connect the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Disconnect(System.String)">
+            <summary>
+                Disconnect the specified endpoint.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Disconnect(System.String,ZeroMQ.ZError@)">
+            <summary>
+                Disconnect the specified endpoint.
+            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.ReceiveBytes(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+                Receives HARD bytes into a new byte[n]. Please don't use ReceiveBytes, use instead ReceiveFrame.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Send(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Send(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
+            <summary>
+                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.SendBytes(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.SendBytes(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
+            <summary>
+                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Forward(ZeroMQ.ZSocket,ZeroMQ.ZMessage@,ZeroMQ.ZError@)">
+            <summary>
+            转发
+            </summary>
+            <param name="socket"></param>
+            <param name="message"></param>
+            <param name="error"></param>
             <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.SendTo(ZeroMQ.ZMessage)">
@@ -1201,6 +1490,14 @@
             </summary>
             <param name="message">消息</param>
             <returns>1 发送成功 0 发送失败 -1部分发送</returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.SendTo(System.Byte[],System.String[])">
+            <summary>
+            发送
+            </summary>
+            <param name="des"></param>
+            <param name="array">消息</param>
+            <returns>是否发送成功</returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.SendTo(System.Byte[][])">
             <summary>
@@ -1222,6 +1519,89 @@
             </summary>
             <param name="message"></param>
             <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.SubscribeAll">
+            <summary>
+                Subscribe to all messages.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Subscribe(System.Byte[])">
+            <summary>
+                Subscribe to messages that begin with a specified prefix.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+            <param name="prefix">Prefix for subscribed messages.</param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Subscribe(System.String)">
+            <summary>
+                Subscribe to messages that begin with a specified prefix.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+            <param name="prefix">Prefix for subscribed messages.</param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.UnsubscribeAll">
+            <summary>
+                Unsubscribe from all messages.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Unsubscribe(System.Byte[])">
+            <summary>
+                Unsubscribe from messages that begin with a specified prefix.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+            <param name="prefix">Prefix for subscribed messages.</param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.Unsubscribe(System.String)">
+            <summary>
+                Unsubscribe from messages that begin with a specified prefix.
+            </summary>
+            <remarks>
+                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
+            </remarks>
+            <param name="prefix">Prefix for subscribed messages.</param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.AddTcpAcceptFilter(System.String)">
+            <summary>
+                Add a filter that will be applied for each new TCP transport connection on a listening socket.
+                Example: "127.0.0.1", "mail.ru/24", "::1", "::1/128", "3ffe:1::", "3ffe:1::/56"
+            </summary>
+            <seealso cref="M:ZeroMQ.ZSocket.ClearTcpAcceptFilter" />
+            <remarks>
+                If no filters are applied, then TCP transport allows connections from any IP.
+                If at least one filter is applied then new connection source IP should be matched.
+            </remarks>
+            <param name="filter">IPV6 or IPV4 CIDR filter.</param>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.ClearTcpAcceptFilter">
+            <summary>
+                Reset all TCP filters assigned by <see cref="M:ZeroMQ.ZSocket.AddTcpAcceptFilter(System.String)" />
+                and allow TCP transport to accept connections from any IP.
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.Option">
+            <summary>
+            配置
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.ConfigSocket(ZeroMQ.ZSocket,System.Boolean)">
+            <summary>
+            配置套接字
+            </summary>
+            <param name="socket"></param>
+            <param name="service"></param>
             <returns></returns>
         </member>
         <member name="P:ZeroMQ.ZSocket.Affinity">
@@ -1338,269 +1718,75 @@
                 default).
             </summary>
         </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZSocketType)">
+        <member name="M:ZeroMQ.ZSocket.SendBytesInner(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
             <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-                You are using ZContext.Current!
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.IsEmpty">
-            <summary>
-                是否为空
+                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
             </summary>
         </member>
-        <member name="P:ZeroMQ.ZSocket.SocketType">
+        <member name="M:ZeroMQ.ZSocket.RecvFrame(ZeroMQ.ZFrame@,System.Int32)">
             <summary>
-                Gets the <see cref="T:ZeroMQ.ZSocketType" /> value for the current socket.
+            接收数据
             </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.ReceiveMore">
-            <summary>
-                Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZSocketType)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
-            <summary>
-                Create a <see cref="T:ZeroMQ.ZSocket" /> instance.
-            </summary>
-            <returns>
-                <see cref="T:ZeroMQ.ZSocket" />
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Finalize">
-            <summary>
-                Finalizes an instance of the <see cref="T:ZeroMQ.ZSocket" /> class.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Close">
-            <summary>
-                Close the current socket.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.TryClose">
-            <summary>
-                Close the current socket.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Close(ZeroMQ.ZError@)">
-            <summary>
-                Close the current socket.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Bind(System.String)">
-            <summary>
-                Bind the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Bind(System.String,ZeroMQ.ZError@)">
-            <summary>
-                Bind the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-            <param name="error"></param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Unbind(System.String)">
-            <summary>
-                Unbind the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Unbind(System.String,ZeroMQ.ZError@)">
-            <summary>
-                Unbind the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-            <param name="error"></param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Connect(System.String)">
-            <summary>
-                Connect the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Connect(System.String,ZeroMQ.ZError@)">
-            <summary>
-                Connect the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-            <param name="error"></param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Disconnect(System.String)">
-            <summary>
-                Disconnect the specified endpoint.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Disconnect(System.String,ZeroMQ.ZError@)">
-            <summary>
-                Disconnect the specified endpoint.
-            </summary>
-            <param name="endpoint">
-                A string consisting of a transport and an address, formatted as
-                <c><em>transport</em>://<em>address</em></c>.
-            </param>
-            <param name="error"></param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.ReceiveBytes(System.Byte[],System.Int32,System.Int32)">
-            <summary>
-                Receives HARD bytes into a new byte[n]. Please don't use ReceiveBytes, use instead ReceiveFrame.
-            </summary>
+            <param name="frame"></param>
+            <param name="flags"></param>
+            <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.ReceiveBytes(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
             <summary>
                 Receives HARD bytes into a new byte[n]. Please don't use ReceiveBytes, use instead ReceiveFrame.
             </summary>
         </member>
-        <member name="M:ZeroMQ.ZSocket.SendBytes(System.Byte[],System.Int32,System.Int32)">
+        <member name="M:ZeroMQ.ZSocket.Initialize(ZeroMQ.ZError@)">
             <summary>
-                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+            初始化
+            </summary>
+            <param name="error"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CloseInner(ZeroMQ.ZError@)">
+            <summary>
+                Close the current socket.
             </summary>
         </member>
-        <member name="M:ZeroMQ.ZSocket.SendBytes(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
+        <member name="M:ZeroMQ.ZSocket.ConnectInner(System.String,ZeroMQ.ZError@)">
             <summary>
-                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+                Connect the specified endpoint.
             </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
         </member>
-        <member name="M:ZeroMQ.ZSocket.Send(System.Byte[],System.Int32,System.Int32)">
+        <member name="M:ZeroMQ.ZSocket.DisconnectInner(System.String,ZeroMQ.ZError@)">
             <summary>
-                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+                Disconnect the specified endpoint.
             </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
         </member>
-        <member name="M:ZeroMQ.ZSocket.Send(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
+        <member name="M:ZeroMQ.ZSocket.BindInner(System.String,ZeroMQ.ZError@)">
             <summary>
-                Sends HARD bytes from a byte[n]. Please don't use SendBytes, use instead SendFrame.
+                Bind the specified endpoint.
             </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
         </member>
-        <member name="M:ZeroMQ.ZSocket.SubscribeAll">
+        <member name="M:ZeroMQ.ZSocket.UnbindInner(System.String,ZeroMQ.ZError@)">
             <summary>
-                Subscribe to all messages.
+                Unbind the specified endpoint.
             </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Subscribe(System.Byte[])">
-            <summary>
-                Subscribe to messages that begin with a specified prefix.
-            </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-            <param name="prefix">Prefix for subscribed messages.</param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Subscribe(System.String)">
-            <summary>
-                Subscribe to messages that begin with a specified prefix.
-            </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-            <param name="prefix">Prefix for subscribed messages.</param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.UnsubscribeAll">
-            <summary>
-                Unsubscribe from all messages.
-            </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Unsubscribe(System.Byte[])">
-            <summary>
-                Unsubscribe from messages that begin with a specified prefix.
-            </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-            <param name="prefix">Prefix for subscribed messages.</param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Unsubscribe(System.String)">
-            <summary>
-                Unsubscribe from messages that begin with a specified prefix.
-            </summary>
-            <remarks>
-                Only applies to <see cref="F:ZeroMQ.ZSocketType.SUB" /> and <see cref="F:ZeroMQ.ZSocketType.XSUB" /> sockets.
-            </remarks>
-            <param name="prefix">Prefix for subscribed messages.</param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.AddTcpAcceptFilter(System.String)">
-            <summary>
-                Add a filter that will be applied for each new TCP transport connection on a listening socket.
-                Example: "127.0.0.1", "mail.ru/24", "::1", "::1/128", "3ffe:1::", "3ffe:1::/56"
-            </summary>
-            <seealso cref="M:ZeroMQ.ZSocket.ClearTcpAcceptFilter" />
-            <remarks>
-                If no filters are applied, then TCP transport allows connections from any IP.
-                If at least one filter is applied then new connection source IP should be matched.
-            </remarks>
-            <param name="filter">IPV6 or IPV4 CIDR filter.</param>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.ClearTcpAcceptFilter">
-            <summary>
-                Reset all TCP filters assigned by <see cref="M:ZeroMQ.ZSocket.AddTcpAcceptFilter(System.String)" />
-                and allow TCP transport to accept connections from any IP.
-            </summary>
+            <param name="endpoint">
+                A string consisting of a transport and an address, formatted as
+                <c><em>transport</em>://<em>address</em></c>.
+            </param>
+            <param name="error"></param>
         </member>
         <member name="F:ZeroMQ.ZSocketFlags.None">
             <summary>
@@ -1623,11 +1809,6 @@
              </summary>
              <seealso ref=""/>
             <see ref="http://api.zeromq.org/4-2:zmq-setsockopt"/>
-        </member>
-        <member name="F:ZeroMQ.ZSocketOption.CONNECT_TIMEOUT">
-            <summary>
-            TCP连接超时
-            </summary>
         </member>
         <member name="T:ZeroMQ.ZSocketSetup">
             <summary>

@@ -34,221 +34,6 @@
             执行自动注册
             </summary>
         </member>
-        <member name="T:Agebull.ZeroNet.ZeroApi.BridgeCaller">
-            <summary>
-                Api站点
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.BridgeCaller._result">
-            <summary>
-                返回的数据
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.Result">
-            <summary>
-                返回值
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.Station">
-            <summary>
-                请求站点
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.RequestId">
-            <summary>
-                请求站点
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.Commmand">
-            <summary>
-                调用命令
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.Argument">
-            <summary>
-                参数
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.ExtendArgument">
-            <summary>
-                扩展参数
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.BridgeCaller.GlobalId">
-            <summary>
-                请求时申请的全局标识(本地)
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.State">
-            <summary>
-                结果状态
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeCaller.Simple">
-            <summary>
-            简单调用
-            </summary>
-            <remarks>
-            1 不获取全局标识
-            2 无远程定向路由,
-            3 无上下文信息
-            </remarks>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallSync(System.String,System.String,System.String)">
-            <summary>
-                远程调用
-            </summary>
-            <param name="station"></param>
-            <param name="commmand"></param>
-            <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallTask(System.String,System.String,System.String)">
-            <summary>
-                远程调用
-            </summary>
-            <param name="station"></param>
-            <param name="commmand"></param>
-            <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.Call(System.String,System.String,System.String)">
-            <summary>
-                远程调用
-            </summary>
-            <param name="station"></param>
-            <param name="commmand"></param>
-            <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallCommand">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.GetStateJson">
-            <summary>
-                检查在非成功状态下的返回值
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.Call">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallDescription">
-            <summary>
-                请求格式说明
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.Send(ZeroMQ.ZSocket)">
-            <summary>
-                接收文本
-            </summary>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.Receive(ZeroMQ.ZSocket)">
-            <summary>
-                接收文本
-            </summary>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.Call``2(System.String,System.String,``0)">
-            <summary>
-            调用远程方法
-            </summary>
-            <typeparam name="TArgument">参数类型</typeparam>
-            <typeparam name="TResult">返回值类型</typeparam>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <param name="arg">参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallApi``1(System.String,System.String)">
-            <summary>
-            调用远程方法
-            </summary>
-            <typeparam name="TResult">返回值类型</typeparam>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallApi``2(System.String,System.String,``0)">
-            <summary>
-            调用远程方法
-            </summary>
-            <typeparam name="TArgument">参数类型</typeparam>
-            <typeparam name="TResult">返回值类型</typeparam>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <param name="arg">参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallApi``1(System.String,System.String,``0)">
-            <summary>
-            调用远程方法
-            </summary>
-            <typeparam name="TArgument">参数类型</typeparam>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <param name="arg">参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeCaller.CallApi(System.String,System.String)">
-            <summary>
-            调用远程方法
-            </summary>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <returns></returns>
-        </member>
-        <member name="T:Agebull.ZeroNet.ZeroApi.BridgeService">
-            <summary>
-                Api站点
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.BridgeService.Instance">
-            <summary>
-            实例
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeService.Check">
-            <summary>
-            具体执行
-            </summary>
-            <returns>返回False表明需要重启</returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeService.Run">
-            <summary>
-            具体执行
-            </summary>
-            <returns>返回False表明需要重启</returns>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.BridgeService._state">
-            <summary>
-                运行状态
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.BridgeService.State">
-            <summary>
-                状态
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeService.Close">
-            <summary>
-                执行直到连接成功
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.BridgeService.RunInner(System.Object)">
-            <summary>
-            具体执行
-            </summary>
-            <returns>返回False表明需要重启</returns>
-        </member>
         <member name="T:Agebull.ZeroNet.ZeroApi.ApiActionInfoEx">
             <summary>Api方法的信息</summary>
         </member>
@@ -534,7 +319,7 @@
                 配置校验
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.OnExecuestEnd(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -543,7 +328,7 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.SendLayoutErrorResult(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>
@@ -551,7 +336,7 @@
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.SendResult(ZeroMQ.ZSocket@,ZeroMQ.ZMessage)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStation.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
             <summary>
             发送返回值 
             </summary>
@@ -638,9 +423,24 @@
             站点请求ID
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.CallerGlobalId">
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.CallId">
             <summary>
-            调用方的全局ID
+            调用方的全局ID（上一个）
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.GlobalId">
+            <summary>
+            本次调用全局ID
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.StationName">
+            <summary>
+            发生站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.StationType">
+            <summary>
+            调用方的站点类型
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.First">
@@ -673,6 +473,11 @@
             请求者
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Command">
+            <summary>
+            命令
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.ApiName">
             <summary>
             API名称
@@ -698,17 +503,22 @@
             返回
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Originals">
-            <summary>
-            原样帧
-            </summary>
-        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Status">
             <summary>
             执行状态
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.StatusMessage">
+            <summary>
+            消息消息
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Frames">
+            <summary>
+            原样帧
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Originals">
             <summary>
             原样帧
             </summary>
@@ -768,7 +578,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -777,7 +587,7 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>
@@ -841,7 +651,7 @@
             具体执行
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle(System.String,System.Byte[])">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle(System.String,System.Byte[],System.Boolean)">
             <summary>
             具体执行
             </summary>
@@ -953,6 +763,11 @@
                 Api站点
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient._result">
+            <summary>
+                返回的数据
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiClient.Result">
             <summary>
                 返回值
@@ -1003,20 +818,20 @@
                 结果状态
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.ZeroApi.ApiClient.LastResult">
+            <summary>
+            最后一个返回值
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiClient.Simple">
             <summary>
             简单调用
             </summary>
             <remarks>
-            1 不获取全局标识
+            1 不获取全局标识(过时）
             2 无远程定向路由,
             3 无上下文信息
             </remarks>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient._json">
-            <summary>
-                返回的数据
-            </summary>
         </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallSync(System.String,System.String,System.String)">
             <summary>
@@ -1046,12 +861,6 @@
             <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallCommand">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallCenter">
             <summary>
                 远程调用
             </summary>
@@ -1099,11 +908,6 @@
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.#ctor">
             <summary>
                 注册处理器
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient.GetGlobalIdDescription">
-            <summary>
-                请求格式说明
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.ZeroApi.ApiClient.CallDescription">
@@ -1583,6 +1387,11 @@
                 系统关闭时调用
             </summary>
         </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.CloseActiveObject">
+            <summary>
+                系统关闭时调用
+            </summary>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnZeroDestory">
             <summary>
                 注销时调用
@@ -1754,6 +1563,11 @@
             限速模式（0 按线程数限制 1 按等待数限制）
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.Core.SpeedLimitType.None">
+            <summary>
+            未设置
+            </summary>
+        </member>
         <member name="F:Agebull.ZeroNet.Core.SpeedLimitType.Single">
             <summary>
             单线程数处理
@@ -1867,6 +1681,11 @@
                 进入系统侦听
             </summary>
         </member>
+        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.MonitorInner">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.SystemMonitor.OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
             <summary>
                 收到信息的处理
@@ -1907,6 +1726,11 @@
         <member name="T:Agebull.ZeroNet.Core.ZeroStationOption">
             <summary>
                 本地站点配置
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroStationOption.ApiRouterModel">
+            <summary>
+              API使用路由模式（而非默认的Push/Pull)
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroStationOption.SpeedLimitModel">
@@ -2214,85 +2038,6 @@
         <member name="M:Agebull.ZeroNet.Core.OnceScope.OnDispose">
             <inheritdoc />
         </member>
-        <member name="T:Agebull.ZeroNet.Core.ZCommand">
-            <summary>
-            管理命令
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZCommand.IsInner">
-            <summary>
-            是否内部
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.GetAddress">
-            <summary>
-            地址错误的情况
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZCommand.ManageAddress">
-            <summary>
-            管理站点地址
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommand(System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="args">请求参数,第一个必须为命令名称</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.ByteCommand(Agebull.ZeroNet.Core.ZeroByteCommand,System.String[])">
-            <summary>
-                执行管理命令(快捷命令，命令在说明符号的第二个字节中)
-            </summary>
-            <param name="commmand"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZCommand.Socket">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommand(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommandInner(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.CallCommandInner2(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZCommand.Destroy">
-            <summary>
-            关闭仅有的一个连接
-            </summary>
-        </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroCommandExtend">
             <summary>
                 Zmq帮助类
@@ -2364,6 +2109,21 @@
             <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateRealName(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateIdentity(System.Boolean)">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateIdentity(System.Boolean,System.String[])">
             <summary>
             格式化身份名称
             </summary>
@@ -2465,6 +2225,85 @@
             <param name="title"></param>
             <param name="messages"></param>
             <param name="exception"></param>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZSimpleCommand">
+            <summary>
+            管理命令
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZSimpleCommand.IsInner">
+            <summary>
+            是否内部
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.GetAddress">
+            <summary>
+            地址错误的情况
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZSimpleCommand.ManageAddress">
+            <summary>
+            管理站点地址
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.CallCommand(System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="args">请求参数,第一个必须为命令名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.ByteCommand(Agebull.ZeroNet.Core.ZeroByteCommand,System.String[])">
+            <summary>
+                执行管理命令(快捷命令，命令在说明符号的第二个字节中)
+            </summary>
+            <param name="commmand"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZSimpleCommand.Socket">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.CallCommand(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.CallCommandInner(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.CallCommandInner2(System.Byte[],System.String[])">
+            <summary>
+                发起一次请求
+            </summary>
+            <param name="description"></param>
+            <param name="args">请求参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
+            <summary>
+                一次请求
+            </summary>
+            <param name="socket"></param>
+            <param name="desicription"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.Destroy">
+            <summary>
+            关闭仅有的一个连接
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.StationState">
             <summary>
@@ -2678,6 +2517,16 @@
                 终止符号
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.ExtendEnd">
+            <summary>
+                终止符号
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.ResultEnd">
+            <summary>
+                终止符号
+            </summary>
+        </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.GlobalId">
             <summary>
                 全局标识
@@ -2716,6 +2565,21 @@
         <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.LocalId">
             <summary>
                 服务认证标识
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.StationType">
+            <summary>
+            调用方的站点类型
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.CallId">
+            <summary>
+            调用方的全局标识
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.DataDirection">
+            <summary>
+            数据方向
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.Original1">
@@ -4368,9 +4232,19 @@
             全局ID
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.PubSub.PublishItem.CallId">
+            <summary>
+            全局ID
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.PubSub.PublishItem.RequestId">
             <summary>
             请求ID
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.PubSub.PublishItem.ContextJson">
+            <summary>
+             原始上下文的JSO内容
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.PubSub.PublishItem.Publisher">
@@ -4516,6 +4390,13 @@
             <param name="args"></param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.RestoryContext(`0)">
+            <summary>
+            还原调用上下文
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.RunInner(System.Threading.CancellationToken)">
             <summary>
             具体执行
@@ -4648,7 +4529,7 @@
         <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnRunStop">
             <inheritdoc />
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
+        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -4657,7 +4538,7 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.SendLayoutErrorResult(ZeroMQ.ZSocket@,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
+        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>

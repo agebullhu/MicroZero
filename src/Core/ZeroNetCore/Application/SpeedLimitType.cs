@@ -6,6 +6,10 @@
     public enum SpeedLimitType
     {
         /// <summary>
+        /// 未设置
+        /// </summary>
+        None,
+        /// <summary>
         /// 单线程数处理
         /// </summary>
         Single,

@@ -12,7 +12,7 @@ namespace agebull
 		/**
 		 * \brief 活动实例集合
 		 */
-		map<string, zero_station*> station_warehouse::examples_;
+		map<string, zero_station*> station_warehouse::examples;
 		/**
 		* \brief 配置集合
 		*/
@@ -41,6 +41,13 @@ namespace agebull
 		bool station_warehouse::initialize()
 		{
 			redis_live_scope redis(global_config::redis_defdb);
+			redis->incr("sys:gid", &reboot_num_);
+			if (reboot_num_ > 0xFFF)
+			{
+				reboot_num_ = 1;
+				redis->set("sys:gid", "1");
+			}
+
 			acl::string val;
 			if (redis->get(zero_def::redis_key::next_port, val) && atol(val.c_str()) >= global_config::base_tcp_port)
 			{
@@ -66,11 +73,6 @@ namespace agebull
 				acl::string port;
 				port.format_append("%d", global_config::base_tcp_port);
 				redis->set(zero_def::redis_key::next_port, port);
-				install(zero_def::name::system_manage, zero_def::station_type::dispatcher, "man", "ZeroNet system mamage station.", true);
-				install(zero_def::name::proxy_dispatcher, zero_def::station_type::proxy, "proxy", "ZeroNet reverse proxy station.", true);
-				install(zero_def::name::plan_dispatcher, zero_def::station_type::plan, "plan", "ZeroNet plan & task mamage station.", true);
-				install("RemoteLog", zero_def::station_type::notify, "log", "ZeroNet remote log station.", true);
-				install("HealthCenter", zero_def::station_type::notify, "hea", "ZeroNet health center log station.", true);
 			}
 			return true;
 		}
@@ -447,10 +449,10 @@ namespace agebull
 			station->config_->log("join");
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				if (examples_.find(station->config_->station_name) != examples_.end())
+				if (examples.find(station->config_->station_name) != examples.end())
 					return false;
 				station->config_->runtime_state(station_state::run);
-				examples_.insert(make_pair(station->config_->station_name, station));
+				examples.insert(make_pair(station->config_->station_name, station));
 			}
 			acl::string json = station->config_->to_full_json();
 			zero_event(zero_net_event::event_station_join, "station", station->config_->station_name.c_str(), json.c_str());
@@ -465,11 +467,11 @@ namespace agebull
 			station->config_->log("left");
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				const auto iter = examples_.find(station->config_->station_name);
-				if (iter == examples_.end() || iter->second != station)
+				const auto iter = examples.find(station->config_->station_name);
+				if (iter == examples.end() || iter->second != station)
 					return false;
 				station->config_->runtime_state(station_state::closed);
-				examples_.erase(iter);
+				examples.erase(iter);
 			}
 			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name.c_str(), "");
 			return true;
@@ -529,7 +531,7 @@ namespace agebull
 			if (arg == "*")
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				for (map<string, zero_station*>::value_type& station : examples_)
+				for (map<string, zero_station*>::value_type& station : examples)
 				{
 					station.second->resume();
 				}
@@ -565,8 +567,8 @@ namespace agebull
 		zero_station* station_warehouse::instance(const string& name)
 		{
 			boost::lock_guard<boost::mutex> guard(examples_mutex_);
-			const auto iter = examples_.find(name);
-			if (iter == examples_.end())
+			const auto iter = examples.find(name);
+			if (iter == examples.end())
 				return nullptr;
 			return iter->second;
 		}
@@ -577,6 +579,16 @@ namespace agebull
 		*/
 		bool station_warehouse::heartbeat(uchar cmd, vector<shared_char>& list)
 		{
+			if(list.size() <= 2)
+			{
+				return true;
+			}
+			//cout << "********************heartbeat*******************" << endl;
+			//for(auto frame : list)
+			//{
+			//	cout << *frame << endl;
+			//}
+			//cout << "********************heart*beat******************" << endl;
 			auto config = get_config(*list[2], false);
 			if (config == nullptr)
 				return false;
@@ -623,7 +635,7 @@ namespace agebull
 			zero_event(zero_net_event::event_station_doc, "doc", station_name, *doc);
 			acl::string path;
 			path.format("%s/doc/%s.json", global_config::root_path, station_name);
-			std::cout << path.c_str() << endl;
+			//std::cout << path.c_str() << endl;
 			int fid = open(path, O_RDWR | O_CREAT, 00777);
 			int re;
 			if (fid < 0)
@@ -665,7 +677,7 @@ namespace agebull
 		{
 			acl::string path;
 			path.format("%s/doc/%s.json", global_config::root_path, station_name);
-			std::cout << path.c_str() << endl;
+			//std::cout << path.c_str() << endl;
 			ACL_VSTREAM *fp = acl_vstream_fopen(path.c_str(), O_RDONLY, 0700, 8192);
 			if (fp == nullptr)
 			{

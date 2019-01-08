@@ -226,7 +226,7 @@ namespace agebull
 			void set_monitor(const char* station, zmq_handler* socket, const char* type)
 			{
 				shared_char addr(256);
-				sprintf(addr.get_buffer(), "inproc://%s_%s_monitor.inp", station, type);
+				sprintf(addr.c_str(), "inproc://%s_%s_monitor.inp", station, type);
 				zmq_socket_monitor(*socket, *addr, ZMQ_EVENT_ALL);
 				boost::thread thread_xxx(boost::bind(&do_monitor, station, addr, socket));
 			}
@@ -344,17 +344,16 @@ namespace agebull
 			/**
 			  * \brief 说明帧解析
 			  */
-			acl::string desc_str(bool in, char* desc, size_t len)
+			acl::string desc_str(bool in, uchar* desc, size_t len)
 			{
 				if (desc == nullptr || len == 0)
 					return "[EMPTY]";
 				acl::string str;
 				str.format_append("{\"size\":%d", desc[0]);
-				uchar state = *reinterpret_cast<uchar*>(desc + 1);
 				if (in)
 				{
 					str.append(R"(,"command":")");
-					switch (state)
+					switch (desc[1])
 					{
 					case zero_def::command::none: //!\1 无特殊说明
 						str.append("none");
@@ -394,7 +393,7 @@ namespace agebull
 				else
 				{
 					str.append(R"(,"state":")");
-					switch (state)
+					switch (desc[1])
 					{
 					case zero_def::status::ok: //!(0x1)
 						str.append(zero_def::status_text::OK);
@@ -471,8 +470,11 @@ namespace agebull
 				{
 					switch (desc[idx])
 					{
-					case zero_def::frame::end:
+					case zero_def::frame::general_end:
 						str.append(",\"End\"");
+						break;
+					case zero_def::frame::extend_end:
+						str.append(",\"extend_end\"");
 						break;
 						//全局标识
 					case zero_def::frame::global_id:
