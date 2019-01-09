@@ -325,7 +325,7 @@ namespace agebull
 			/**
 			* \brief 能否继续工作
 			*/
-			bool can_do() const
+		  	virtual bool can_do() const
 			{
 				return config_->is_run() && get_net_state() == zero_def::net_state::runing;
 			}

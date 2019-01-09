@@ -52,7 +52,7 @@ namespace agebull
 				description.append_frame(zero_def::frame::content);
 				datas.emplace_back(content);
 			}
-			return instance->send_response(datas,false) == zmq_socket_state::succeed;
+			return instance->send_response(datas, false) == zmq_socket_state::succeed;
 		}
 		char frames[] = {
 			zero_def::frame::publisher,
@@ -229,7 +229,7 @@ namespace agebull
 			}
 			if (cmd == nullptr)
 			{
-				send_request_status(socket, *list[0], zero_def::status::arg_invalid, list, glid_index, rqid_index, reqer_index,nullptr);
+				send_request_status(socket, *list[0], zero_def::status::arg_invalid, list, glid_index, rqid_index, reqer_index, nullptr);
 				return;
 			}
 			string json;
@@ -260,12 +260,12 @@ namespace agebull
 			boost::thread(boost::bind(worker_monitor));
 			station->task_semaphore_.wait();
 			station->poll();
-			instance = nullptr;
 			//等待monitor_poll结束
 			station->task_semaphore_.wait();
-			station_warehouse::left(station.get());
 			if (get_net_state() == zero_def::net_state::runing)
 			{
+				instance = nullptr;
+				station_warehouse::left(station.get());
 				station->destruct();
 				config.restart();
 				run(station->get_config_ptr());
@@ -274,9 +274,9 @@ namespace agebull
 			{
 				config.log("waiting closed");
 				wait_close();
-				THREAD_SLEEP(global_config::SNDTIMEO < 0 ? 1000 : global_config::SNDTIMEO + 10);//让未发送数据完成发送
-
+				//THREAD_SLEEP(global_config::SNDTIMEO < 0 ? 1000 : global_config::SNDTIMEO + 10);//让未发送数据完成发送
 				instance = nullptr;
+				station_warehouse::left(station.get());
 				station->destruct();
 				config.closed();
 			}
@@ -292,7 +292,7 @@ namespace agebull
 			zero_config& config = dispatcher->get_config();
 			config.log("worker_monitor start");
 			dispatcher->task_semaphore_.post();
-			while (get_net_state() < zero_def::net_state::closing)
+			while (instance != nullptr && instance->config_->is_run() && get_net_state() <= zero_def::net_state::runing)
 			{
 				THREAD_SLEEP(global_config::worker_sound_ivl);
 				vector<string> cfgs;//复制避免锁定时间过长
@@ -303,9 +303,12 @@ namespace agebull
 					names.emplace_back(cfg->station_name);
 					cfgs.emplace_back(cfg->to_status_json().c_str());
 				});
-				dispatcher->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
+				if (get_net_state() == zero_def::net_state::runing)
+					dispatcher->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
 				for (size_t i = 0; i < names.size(); i++)
 				{
+					if (get_net_state() != zero_def::net_state::runing)
+						break;
 					dispatcher->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());
 				}
 			}

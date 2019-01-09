@@ -33,6 +33,16 @@ namespace Agebull.ZeroNet.Core
         [JsonProperty("is_base")]
         public bool IsBaseStation { get; set; }
 
+
+        /// <summary>
+        ///     是否接口站点
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public bool IsApi => StationType == ZeroStationType.Api || 
+                             StationType == ZeroStationType.RouteApi || 
+                             StationType == ZeroStationType.Vote || 
+                             StationType == ZeroStationType.Queue;
+
         /// <summary>
         ///     是否基础站点
         /// </summary>

@@ -63,7 +63,13 @@ namespace agebull
 			*/
 			static void launch(shared_ptr<station_dispatcher>& station);
 		private:
-
+			/**
+			* \brief 能否继续工作
+			*/
+			bool can_do() const final
+			{
+				return config_->is_run() && get_net_state() <= zero_def::net_state::closing;
+			}
 			/**
 			* \brief 监控轮询
 			*/

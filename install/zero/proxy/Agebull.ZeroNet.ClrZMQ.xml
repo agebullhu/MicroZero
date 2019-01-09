@@ -173,6 +173,16 @@
         <member name="M:ZeroMQ.ZContext.DoDispose">
             <inheritdoc />
         </member>
+        <member name="M:ZeroMQ.ZContext.AddSocket(ZeroMQ.ZSocket)">
+            <summary>
+            Terminate the ZeroMQ context.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZContext.RemoveSocket(ZeroMQ.ZSocket)">
+            <summary>
+            Terminate the ZeroMQ context.
+            </summary>
+        </member>
         <member name="M:ZeroMQ.ZContext.Terminate(ZeroMQ.ZError@)">
             <summary>
             Terminate the ZeroMQ context.

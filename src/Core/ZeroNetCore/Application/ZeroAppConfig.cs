@@ -372,8 +372,9 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
-                foreach (var config in configs) AddStation(config);
-                
+                foreach (var config in configs)
+                    AddStation(config);
+                ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
                 return true;
             }
             catch (Exception e)
@@ -436,6 +437,7 @@ namespace Agebull.ZeroNet.Core
             {
                 config = JsonConvert.DeserializeObject<StationConfig>(json);
                 AddStation(config);
+                ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
                 return true;
             }
             catch (Exception e)

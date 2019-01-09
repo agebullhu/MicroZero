@@ -97,7 +97,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
+        private static SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
 
         /// <summary>
         ///     对象活动状态记录器锁定
@@ -140,6 +140,17 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
+        ///     对象状态重置
+        /// </summary>
+        public static void OnObjectStateReset(IZeroObject obj)
+        {
+            ActiveSemaphore.Dispose();
+            ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
+            ActiveObjects.Clear();
+            FailedObjects.Clear();
+        }
+
+        /// <summary>
         ///     对象活动时登记
         /// </summary>
         public static void OnObjectActive(IZeroObject obj)
@@ -162,7 +173,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ActiveObjects.Remove(obj);
                 ZeroTrace.SystemLog(obj.Name, "Closed");
-                if (ActiveObjects.Count == 0)
+                if (ActiveObjects.Count + FailedObjects.Count == 0)
                     ActiveSemaphore.Release(); //发出完成信号
             }
         }

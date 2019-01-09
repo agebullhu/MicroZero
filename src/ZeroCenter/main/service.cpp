@@ -20,6 +20,8 @@ namespace agebull
 		volatile int zero_thread_run = 0;
 		//当前多少线程未正常启动
 		volatile int zero_thread_bad = 0;
+		//当前运行标识
+		char zero_run_identity[16];
 		/**
 		* \brief 任务信号量
 		*/
@@ -38,6 +40,9 @@ namespace agebull
 		*/
 		bool rpc_service::initialize()
 		{
+			memset(zero_run_identity, 0, sizeof(zero_run_identity));
+			sprintf(zero_run_identity,"%ld", time(nullptr));
+
 			//start_time = boost::posix_time::microsec_clock::local_time();
 			//系统信号发生回调绑定
 			for (int sig = SIGHUP; sig < SIGSYS; sig++)
@@ -265,7 +270,7 @@ namespace agebull
 			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
 			for (int i = 0; i < 10; i++)
 			{
-				system_event(zero_net_event::event_system_start, nullptr, ">>Wecome ZeroNet,luck every day!<<");
+				system_event(zero_net_event::event_system_start, zero_run_identity, ">>Wecome ZeroNet,luck every day!<<");
 				THREAD_SLEEP(200);
 			}
 			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
@@ -288,13 +293,17 @@ namespace agebull
 			log_msg("$closing...");
 			for (int i = 0; i < 5; i++)
 			{
-				system_event(zero_net_event::event_system_closing);
+				system_event(zero_net_event::event_system_closing, zero_run_identity, ">>ZeroNet will be closing. <<");
 				THREAD_SLEEP(40);
 			}
 			net_state = zero_def::net_state::closing;
 			task_semaphore.wait();
+			for (int i = 0; i < 5; i++)
+			{
+				system_event(zero_net_event::event_system_stop, zero_run_identity, ">>ZeroNet is closed,see you late!<<");
+				THREAD_SLEEP(40);
+			}
 			net_state = zero_def::net_state::closed;
-			system_event(zero_net_event::event_system_stop, nullptr, ">>ZeroNet close,see you late!<<");
 			close_semaphore.post();
 			task_semaphore.wait();
 			//cout << endl << "***88888888888888888********" << endl;

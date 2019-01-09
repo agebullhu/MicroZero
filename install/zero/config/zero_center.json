@@ -5,11 +5,12 @@
     "worker_sound_ivl": 2000,
     "plan_exec_timeout": 300,
     "plan_cache_size": 1024,
+    "trace_net": "true",
     "service_key": "agebull"
   },
   "redis": {
     "addr": "127.0.0.1:6379",
-    "defdb": "20"
+    "defdb": "16"
   },
   "ZMQ": {
     "MAX_SOCKETS": -1,
@@ -30,14 +31,8 @@
     "TCP_KEEPALIVE": 1,
     "TCP_KEEPALIVE_IDLE": 120,
     "TCP_KEEPALIVE_INTVL": 3,
-    "HEARTBEAT_IVL": -1,
-    "HEARTBEAT_TIMEOUT": -1,
-    "HEARTBEAT_TTL": 1
-  },
-  "proxy": {
-    "weixin": {
-      "req": "tcp://192.168.1.31:10000",
-      "res": "tcp://192.168.1.31:10001"
-    }
+    "HEARTBEAT_IVL": 1,
+    "HEARTBEAT_TIMEOUT": 1000,
+    "HEARTBEAT_TTL": 60000
   }
 }

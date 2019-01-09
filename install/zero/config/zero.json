@@ -9,12 +9,12 @@
       "ZeroMonitorPort": 8001,
       /*ZeroCenter管理端口号*/
       "ZeroManagePort": 8000,
-      "ServiceKey": "route"
+      "ServiceKey": "agebull"
     },
     "socketOption": {
       "Backlog": 50000, //连接队列数量
       "ConnectTimeout": 500, // 连接失败时长
-      "HeartbeatIvl": 1000, //心跳间隔时长
+      "HeartbeatIvl": 0, //心跳间隔时长
       "HeartbeatTimeout": 200, //心跳超时时长
       "HeartbeatTtl": 200, //心跳TTL
       "Linger": 200, //自动关闭时长
@@ -30,7 +30,28 @@
   "LogRecorder": {
     /*是否记录跟踪日志*/
     "monitor": true,
-    "level": "Trace",
+    "level": "Debug",
 	"console":true
+  },
+  //CO2NET 设置
+  "SenparcSetting": {
+    //以下为 CO2NET 的 SenparcSetting 全局配置，请勿修改 key，勿删除任何项
+
+    "IsDebug": true,
+    "DefaultCacheNamespace": "DefaultCache",
+    //分布式缓存
+    "Cache_Redis_Configuration": "Redis配置",
+    //"Cache_Redis_Configuration": "localhost:6379",
+    "Cache_Memcached_Configuration": "Memcached配置",
+    "SenparcUnionAgentKey": "SenparcUnionAgentKey"
+  },
+  //Senparc.Weixin SDK 设置
+  "SenparcWeixinSetting": {
+    //微信全局
+    "IsDebug": true,
+    "Token": "wenrong",
+    "EncodingAESKey": "c0E0INDjQDGDSliKPmQd3VykisXiapMmb2elw7zOodX",
+    "WeixinAppId": "wxf44faae689fe2d27",
+    "WeixinAppSecret": "0f88ff0d00dc4d13ed092992a3468970"
   }
 }

@@ -20,6 +20,7 @@ int zero_center_main()
 		zero_net::rpc_service::start();
 		//wait_commane();
 		//等待
+		//getchar();
 		zero_net::rpc_service::wait_zero();
 		//关闭
 		zero_net::rpc_service::stop();

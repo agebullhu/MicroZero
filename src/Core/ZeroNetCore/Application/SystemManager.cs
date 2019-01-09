@@ -173,7 +173,7 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 doc = JsonConvert.DeserializeObject<StationDocument>(json);
-                ZeroTrace.SystemLog("LoadDocument", name,"success");
+                //ZeroTrace.SystemLog("LoadDocument", name,"success");
                 return true;
             }
             catch (Exception e)
@@ -201,7 +201,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
-            ZeroTrace.SystemLog("LoadAllConfig", json);
+            //ZeroTrace.SystemLog("LoadAllConfig", json);
             return ZeroApplication.Config.FlushConfigs(json);
         }
 
@@ -231,11 +231,7 @@ namespace Agebull.ZeroNet.Core
                 return null;
             }
 
-            if (ZeroApplication.Config.UpdateConfig(stationName, json, out var config))
-            {
-                return config;
-            }
-            return null;
+            return !ZeroApplication.Config.UpdateConfig(stationName, json, out var config) ? null : config;
         }
 
 

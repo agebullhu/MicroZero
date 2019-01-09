@@ -229,20 +229,19 @@ namespace ZeroNet.Http.Gateway
 
         #region OnZeroNetEvent
 
-        private static DateTime _preUpdate;
-
         private static void OnZeroNetEvent(object sender, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
+                case ZeroNetEventType.ConfigUpdate:
                     OnZeroNetRuning();
-                    return;
+                    return; 
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
                     return;
                 case ZeroNetEventType.CenterStationDocument:
-                    if (e.EventConfig.IsBaseStation)
+                    if (!e.EventConfig.IsApi)
                         return;
                     if (Router.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
@@ -252,7 +251,7 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.CenterStationJoin:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
-                    if (e.EventConfig.IsBaseStation)
+                    if (!e.EventConfig.IsApi)
                         return;
                     StationJoin(e.EventConfig);
                     break;
@@ -261,35 +260,25 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
                     //case ZeroNetEventType.CenterClientLeft:
-                    if (e.EventConfig.IsBaseStation)
+                    if (!e.EventConfig.IsApi)
                         return;
                     StationLeft(e.EventConfig);
                     break;
             }
 
-            if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
-                return;
-            LogRecorder.SystemLog($"Reload Document by {e.Event}.");
-            OnZeroNetRuning();
+            //if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
+            //    return;
+            //LogRecorder.SystemLog($"Reload Document by {e.Event}.");
+            //OnZeroNetRuning();
         }
-
-        private static readonly object lock_obj = new object();
 
         private static void OnZeroNetRuning()
         {
-            lock (lock_obj)
+            ZeroApplication.Config.Foreach(config =>
             {
-                _preUpdate = DateTime.Now;
-                ZeroApplication.Config.Foreach(config =>
-                {
-                    if (!config.IsBaseStation)
-                        StationJoin(config);
-                });
-                foreach (var host in Router.RouteMap.Where(p => p.Value.ByZero).ToArray())
-                {
-                    host.Value.Failed = false;
-                }
-            }
+                if (config.IsApi)
+                    StationJoin(config);
+            });
         }
 
         private static void OnZeroNetClose()
@@ -312,7 +301,7 @@ namespace ZeroNet.Http.Gateway
 
         private static void StationJoin(StationConfig station)
         {
-            if (station.IsBaseStation || station.StationType == ZeroStationType.Notify || string.IsNullOrWhiteSpace(station.StationName))
+            if (string.IsNullOrWhiteSpace(station.StationName))
                 return;
             var host = SetZeroHost(station);
             if (Router.RouteMap.ContainsKey(station.ShortName))

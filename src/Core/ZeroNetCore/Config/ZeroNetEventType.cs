@@ -118,6 +118,11 @@ namespace Agebull.ZeroNet.Core
         /// 
         /// </summary>
         AppRun = 0xA0,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        ConfigUpdate,
         /// <summary>
         /// 
         /// </summary>
@@ -125,6 +130,14 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 
         /// </summary>
-        AppEnd
+        AppEnd,
+        /// <summary>
+        /// 
+        /// </summary>
+        StationRun,
+        /// <summary>
+        /// 
+        /// </summary>
+        StationEnd
     }
 }

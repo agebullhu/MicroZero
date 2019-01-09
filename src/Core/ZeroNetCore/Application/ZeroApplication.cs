@@ -67,6 +67,33 @@ namespace Agebull.ZeroNet.Core
         #region State
 
         /// <summary>
+        ///     应用中心状态
+        /// </summary>
+        public static ZeroCenterState ZerCenterStatus { get; internal set; }
+
+        /// <summary>
+        ///     运行状态
+        /// </summary>
+        internal static int AppState;
+
+        /// <summary>
+        ///     状态
+        /// </summary>
+        public static int ApplicationState
+        {
+            get => AppState;
+            internal set => Interlocked.Exchange(ref AppState, value);
+        }
+
+        /// <summary>
+        /// 设置ZeroCenter与Application状态都为Failed
+        /// </summary>
+        public static void SetFailed()
+        {
+            ApplicationState = StationState.Failed;
+            ZerCenterStatus = ZeroCenterState.Failed;
+        }
+        /// <summary>
         ///     应用中心是否正在运行
         /// </summary>
         public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZerCenterStatus == ZeroCenterState.Run;
@@ -76,10 +103,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool ApplicationIsRun => ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run;
 
-        /// <summary>
-        ///     应用中心状态
-        /// </summary>
-        public static ZeroCenterState ZerCenterStatus { get; internal set; }
 
         /// <summary>
         ///     运行状态（本地与服务器均正常）
@@ -106,19 +129,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool InRun => ApplicationState == StationState.Run;
 
-        /// <summary>
-        ///     运行状态
-        /// </summary>
-        internal static int AppState;
-
-        /// <summary>
-        ///     状态
-        /// </summary>
-        public static int ApplicationState
-        {
-            get => AppState;
-            internal set => Interlocked.Exchange(ref AppState, value);
-        }
 
         #endregion
 
@@ -294,28 +304,24 @@ namespace Agebull.ZeroNet.Core
         internal static bool JoinCenter()
         {
             ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
+            ApplicationState = StationState.BeginRun;
             if (!SystemManager.Instance.PingCenter())
             {
-                ApplicationState = StationState.Failed;
-                ZerCenterStatus = ZeroCenterState.Failed;
+                SetFailed();
                 ZeroTrace.WriteError("JoinCenter", "zero center can`t connection.");
                 return false;
             }
-
             ZerCenterStatus = ZeroCenterState.Run;
-            ApplicationState = StationState.BeginRun;
             if (WorkModel == ZeroWorkModel.Service && !SystemManager.Instance.HeartJoin())
             {
-                ApplicationState = StationState.Failed;
-                ZerCenterStatus = ZeroCenterState.Failed;
+                SetFailed();
                 ZeroTrace.WriteError("JoinCenter", "zero center can`t join.");
                 return false;
             }
 
             if (!SystemManager.Instance.LoadAllConfig())
             {
-                ApplicationState = StationState.Failed;
-                ZerCenterStatus = ZeroCenterState.Failed;
+                SetFailed();
                 ZeroTrace.WriteError("JoinCenter", "station configs can`t loaded.");
                 return false;
             }
