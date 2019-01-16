@@ -121,12 +121,12 @@ namespace Agebull.ZeroNet.ZeroApi
 
             item = new ApiCallItem
             {
-                First = messages[0].Read(),
+                First = messages[0].ReadAll(),
             };
             try
             {
                 station = messages[1].ReadString(Encoding.ASCII);
-                var description = messages[2].Read();
+                var description = messages[2].ReadAll();
                 if (description.Length < 2)
                 {
                     ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress, description.LinkToString(p => p.ToString("X2"), ""));
@@ -135,14 +135,14 @@ namespace Agebull.ZeroNet.ZeroApi
                 }
                 for (int idx = 3; idx < messages.Count; idx++)
                 {
-                    var bytes = messages[idx].Read();
+                    var bytes = messages[idx].ReadAll();
                     frames.Add(bytes);
                     if (bytes.Length == 0)
                         continue;
                     switch (description[idx])
                     {
                         case ZeroFrameType.GlobalId:
-                            item.CallerGlobalId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+                            item.CallId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
                             break;
                         case ZeroFrameType.RequestId:
                             item.RequestId = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
@@ -189,7 +189,7 @@ namespace Agebull.ZeroNet.ZeroApi
                         2, (byte) state, ZeroFrameType.RequestId, ZeroFrameType.GlobalId
                     }),
                     new ZFrame(item.RequestId.ToZeroBytes()),
-                    new ZFrame((item.CallerGlobalId).ToZeroBytes())
+                    new ZFrame((item.CallId).ToZeroBytes())
                 };
                 using (message4)
                 {
@@ -228,7 +228,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     {
                         message4.Append(new ZFrame(caller));
                         foreach (var line in messages)
-                            message4.Append(new ZFrame(line.Read()));
+                            message4.Append(new ZFrame(line.ReadAll()));
                         if (_pushSocket.Send(message4, out error))
                             return true;
                     }

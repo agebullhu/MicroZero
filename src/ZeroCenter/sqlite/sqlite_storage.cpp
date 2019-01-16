@@ -29,6 +29,42 @@ namespace agebull
 			sqlite3_exec(sqlite_db_, "PRAGMA synchronous = OFF; ", nullptr, nullptr, nullptr);
 			//sqlite3_exec(sqlite_db_, "PRAGMA temp_store = MEMORY; ", nullptr, nullptr, nullptr);
 			//sqlite3_exec(sqlite_db_, "PRAGMA cache_size = 20000; ", nullptr, nullptr, nullptr);
+
+			sqlite3_prepare_v2(sqlite_db_, "BEGIN", 5, &begin_trans_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, "COMMIT", 6, &end_trans_stmt_, nullptr);
+			return true;
+		}
+		/**
+		 * \brief 开始事务
+		 */
+		bool sqlite_storage::begin_trans()
+		{
+			if (in_trans_)
+				return false;
+			auto state = sqlite3_step(begin_trans_stmt_);
+			if (state != SQLITE_DONE)
+			{
+				log_error2("[%s] : db > Can't begin transaction:%s", name_, sqlite3_errmsg(sqlite_db_));
+				return false;
+			}
+			in_trans_ = true;
+			return true;
+		}
+
+		/**
+		 * \brief 提交事务
+		 */
+		bool sqlite_storage::commit_trans()
+		{
+			if (!in_trans_)
+				return false;
+			auto state = sqlite3_step(end_trans_stmt_);
+			if (state != SQLITE_DONE)
+			{
+				log_error2("[%s] : db > Can't commit transaction:%s", name_, sqlite3_errmsg(sqlite_db_));
+				return false;
+			}
+			in_trans_ = false;
 			return true;
 		}
 		/**

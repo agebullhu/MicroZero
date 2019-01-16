@@ -14,7 +14,8 @@ namespace agebull
 			namespace frame
 			{
 #define vector_str(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? nullptr : *ls[_idx_])
-#define vector_int(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? -1 : atoi(*ls[_idx_]))
+#define vector_int(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? 0 : atoi(*ls[_idx_]))
+#define vector_int64(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? 0 : atoll(*ls[_idx_]))
 #define vector_ptr(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? shared_char() : ls[_idx_])
 				
 				typedef unsigned char uchar;

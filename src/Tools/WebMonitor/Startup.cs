@@ -34,7 +34,7 @@ namespace WebMonitor
             });
             services.AddMvc();
             IocHelper.AddSingleton<PlanManage>();
-            ZeroApplication.RegistZeroObject<ApiCounter>();
+            ZeroApplication.RegistZeroObject<FlowTracer>();//ApiCounter
             ZeroApplication.RegistZeroObject<PlanSubscribe>();
             ZeroApplication.Initialize(); 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

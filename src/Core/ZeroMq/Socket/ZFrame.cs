@@ -320,6 +320,20 @@ namespace ZeroMQ
             return pos;
         }
 
+        public byte[] ReadAll()
+        {
+            _position = 0;
+            var len = Length;
+            if (len <= 0)
+            {
+                return new byte[0];
+            }
+            var bytes = new byte[len];
+            /* int bytesLength = */
+            Read(bytes, 0, (int)len);
+            return bytes;
+        }
+
         public byte[] Read()
         {
             int remaining = Math.Max(0, (int)(Length - _position));

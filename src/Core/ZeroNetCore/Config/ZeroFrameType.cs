@@ -34,6 +34,11 @@ namespace Agebull.ZeroNet.Core
         public const byte Status = 3;
 
         /// <summary>
+        ///     内部命令
+        /// </summary>
+        public const byte InnerCommand = Status;
+
+        /// <summary>
         ///     请求ID
         /// </summary>
         public const byte RequestId = 4;
@@ -61,16 +66,16 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 调用方的站点类型
         /// </summary>
-        public const byte   StationType = 9;
+        public const byte StationType = 9;
 
         /// <summary>
         /// 调用方的全局标识
         /// </summary>
-        public const byte   CallId = 0xB;
+        public const byte CallId = 0xB;
         /// <summary>
         /// 数据方向
         /// </summary>
-        public const byte   DataDirection = 0xC;
+        public const byte DataDirection = 0xC;
 
         /// <summary>
         /// 原样参数
@@ -177,51 +182,74 @@ namespace Agebull.ZeroNet.Core
         {
             switch (value)
             {
-                case End:// 0;
-                    return @"请求终止符号";
-                case ExtendEnd:// 0;
-                    return @"命令终止符号";
-                case ResultEnd:// 0;
-                    return @"返回终止符号";
-                case GlobalId:// 1;
-                    return @"全局标识";
-                case Station:// 2;
-                    return @"站点名称帧";
-                case Status:// 3;
-                    return @"状态帧";
-                case CallId:// 3;
-                    return @"调用方的全局标识";
-                case StationType:// 3;
-                    return @"调用方的站点类型";
-                case RequestId:// 4;
-                    return @"请求ID";
-                case Plan:// 5;
-                    return @"执行计划";
-                case SerivceKey:// 5;
-                    return @"服务认证标识"; 
-                case PlanTime:// 5;
-                    return @"计划时间"; 
-                case Argument:// (byte)'%';
-                    return @"参数";
-                case Requester:// (byte)'>';
-                    return @"请求者/发布者/生产者";
-                case Responser:// (byte)'<';
-                    return @"回复者/订阅者/浪费者";
-                case PubTitle:// (byte)'*';
-                    return @"广播主题";
-                case Context:// (byte)'#';
-                    return @"网络上下文信息";
-                case Command:// (byte)'$';
-                    return @"请求命令";
-                case TextContent:// (byte)'T';
-                    return @"一般文本内容";
-                case JsonValue:// (byte)'J';
-                    return @"JSON文本内容";
-                case BinaryValue:// (byte)'B';
-                    return @"二进制内容";
-                default:
-                    return "Error";
+                //终止符号
+                case End: return nameof(End); 
+                //终止符号
+                case ExtendEnd: return nameof(ExtendEnd); 
+                //终止符号
+                case ResultEnd: return nameof(ResultEnd); 
+                //全局标识
+                case GlobalId: return nameof(GlobalId); 
+                //站点名称帧
+                case Station: return nameof(Station); 
+                //状态帧
+                case Status: return nameof(Status) + "/" + nameof(InnerCommand); 
+                //请求ID
+                case RequestId: return nameof(RequestId); 
+                //执行计划
+                case Plan: return nameof(Plan); 
+                //计划时间
+                case PlanTime: return nameof(PlanTime); 
+                //服务认证标识
+                case SerivceKey: return nameof(SerivceKey); 
+                //服务认证标识
+                case LocalId: return nameof(LocalId); 
+                //调用方的站点类型
+                case StationType: return nameof(StationType); 
+                //调用方的全局标识
+                case CallId: return nameof(CallId); 
+                //数据方向
+                case DataDirection: return nameof(DataDirection); 
+                //原样参数
+                case Original1: return nameof(Original1); 
+                //原样参数
+                case Original2: return nameof(Original2); 
+                //原样参数
+                case Original3: return nameof(Original3); 
+                //原样参数
+                case Original4: return nameof(Original4); 
+                //原样参数
+                case Original5: return nameof(Original5); 
+                //原样参数
+                case Original6: return nameof(Original6); 
+                //原样参数
+                case Original7: return nameof(Original7); 
+                //原样参数
+                case Original8: return nameof(Original8); 
+                //参数
+                case Argument: return nameof(Argument); 
+                //请求者
+                case Requester: return nameof(Requester) + "/" + nameof(Publisher); 
+                //回复者
+                case Responser: return nameof(Responser) + "/" + nameof(Subscriber);
+                //网络上下文信息
+                case Context: return nameof(Context);
+                //请求命令
+                case Command: return nameof(Command) + "/" + nameof(SubTitle);
+                //广播主题
+                case PubTitle: return nameof(PubTitle);
+                //一般文本内容
+                case TextContent: return nameof(TextContent);
+                //JSON文本内容
+                case JsonValue: return nameof(JsonValue);
+                //二进制内容
+                case BinaryValue: return nameof(BinaryValue);
+                //二进制内容
+                case TsonValue: return nameof(TsonValue);
+                default: return "Error";
             }
         }
+
     }
+
 }

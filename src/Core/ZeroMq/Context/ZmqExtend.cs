@@ -8,7 +8,7 @@ namespace Agebull.ZeroNet.Core
     /// </summary>
     public static class ZmqExtend
     {
-        private static readonly byte[] EmptyBytes = Encoding.UTF8.GetBytes("");
+        private static readonly byte[] EmptyBytes = new byte[]{0};
 
         /// <summary>
         /// 转为UTF8字节

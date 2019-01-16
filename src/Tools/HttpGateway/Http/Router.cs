@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.Core;
 
 namespace ZeroNet.Http.Gateway
 {
@@ -48,7 +49,8 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace($"Url:{caller.RemoteUrl} | Token:{Data.Token}");
 
                 Data.ResultMessage = await caller.Call();
-                Data.Status = caller.Status;
+                Data.UserState = caller.UserState;
+                Data.ZeroState = caller.ZeroState;
                 LogRecorder.MonitorTrace(Data.ResultMessage);
             }
             return Data.ResultMessage;

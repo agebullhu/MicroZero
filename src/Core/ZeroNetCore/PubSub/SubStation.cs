@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
@@ -122,7 +123,7 @@ namespace Agebull.ZeroNet.PubSub
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In,ZSocket.CreateSubSocket(Config.WorkerCallAddress,Identity, Subscribe));
+                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribe));
                 State = StationState.Run;
                 while (CanLoop)
                 {
@@ -149,99 +150,12 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     广播消息解包
         /// </summary>
-        /// <param name="messages"></param>
+        /// <param name="msgs"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        protected virtual bool Unpack(ZMessage messages, out TPublishItem item)
+        protected virtual bool Unpack(ZMessage msgs, out TPublishItem item)
         {
-            if (messages == null)
-            {
-                item = null;
-                return false;
-            }
-            try
-            {
-                if (messages.Count < 3)
-                {
-                    item = null;
-                    return false;
-                }
-                var description = messages[1].Read();
-                if (description.Length < 2)
-                {
-                    item = null;
-                    return false;
-                }
-
-                int end = description[0] + 2;
-                if (end != messages.Count)
-                {
-                    item = null;
-                    return false;
-                }
-
-                item = new TPublishItem
-                {
-                    Title = messages[0].ReadString(),
-                    State = (ZeroOperatorStateType)description[1],
-                    ZeroEvent = (ZeroNetEventType)description[1]
-                };
-
-                for (int idx = 2; idx < end; idx++)
-                {
-                    var bytes = messages[idx].Read();
-                    if (bytes.Length == 0)
-                        continue;
-                    switch (description[idx])
-                    {
-                        case ZeroFrameType.SubTitle:
-                            item.SubTitle = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.GlobalId:
-                            item.GlobalId = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.CallId:
-                            item.CallId = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.Station:
-                            item.Station = Encoding.UTF8.GetString(bytes);
-                            break; 
-                        case ZeroFrameType.Publisher:
-                            item.Publisher = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.Context:
-                            item.ContextJson = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.TextContent:
-                            if (item.Content == null)
-                                item.Content = Encoding.UTF8.GetString(bytes);
-                            else
-                                item.Values.Add(Encoding.UTF8.GetString(bytes));
-                            break;
-                        case ZeroFrameType.BinaryValue:
-                            item.Buffer = bytes;
-                            break;
-                        case ZeroFrameType.TsonValue:
-                            item.Tson = bytes;
-                            break;
-                        default:
-                            item.Values.Add(Encoding.UTF8.GetString(bytes));
-                            break;
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Unpack", e);
-                item = null;
-                return false;
-            }
-            finally
-            {
-                messages.Dispose();
-            }
+            return PublishItem.Unpack(msgs, out item);
         }
 
         /// <summary>

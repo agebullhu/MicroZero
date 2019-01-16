@@ -222,7 +222,7 @@ namespace Agebull.ZeroNet.ZeroApi
                             continue;
                         }
                         Interlocked.Increment(ref RecvCount);
-                        if (!Unpack(message, out var item))
+                        if (!ApiCallItem.Unpack(message, out var item))
                         {
                             SendLayoutErrorResult(socket, item);
                             continue;
@@ -244,121 +244,6 @@ namespace Agebull.ZeroNet.ZeroApi
             ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
             _processSemaphore?.Release();
         }
-        #endregion
-
-        #region Unpack
-
-        /// <summary>
-        /// 解析数据
-        /// </summary>
-        /// <param name="messages"></param>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        private bool Unpack(ZMessage messages, out ApiCallItem item)
-        {
-            if (messages.Count == 0)
-            {
-                item = null;
-                return false;
-            }
-            byte[][] buffers;
-            using (messages)
-                buffers = messages.Select(p => p.Read()).ToArray();
-            item = new ApiCallItem
-            {
-                First = buffers[0]
-            };
-            try
-            {
-                var description = buffers[1];
-                if (description.Length < 2)
-                {
-                    ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
-                        description.LinkToString(p => p.ToString("X2"), ""));
-                    item = null;
-                    return false;
-                }
-
-                int end = description[0] + 2;
-                if (end != buffers.Length)
-                {
-                    ZeroTrace.WriteError("Receive", "LaoutError", Config.WorkerResultAddress,
-                        $"FrameSize{buffers.Length}", description.LinkToString(p => p.ToString("X2"), ""));
-                    item = null;
-                    return false;
-                }
-
-                for (int idx = 2; idx < end; idx++)
-                {
-                    var bytes = buffers[idx];
-                    item.Frames.Add(new NameValue<byte, byte[]>
-                    {
-                        name = description[idx],
-                        value = bytes
-                    });
-                    if (bytes.Length == 0)
-                        continue;
-                    switch (description[idx])
-                    {
-                        case ZeroFrameType.GlobalId:
-                            item.GlobalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.CallId:
-                            item.CallId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.LocalId:
-                            item.LocalId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.RequestId:
-                            item.RequestId = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Requester:
-                            item.Requester = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Context:
-                            item.ContextJson = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Command:
-                            item.Command = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Argument:
-                            item.Argument = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.TextContent:
-                            item.Content = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Station:
-                            item.StationName = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.StationType:
-                            item.StationType = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Status:
-                            item.StatusMessage = Encoding.UTF8.GetString(bytes).TrimEnd('\0');
-                            break;
-                        case ZeroFrameType.Original1:
-                        case ZeroFrameType.Original2:
-                        case ZeroFrameType.Original3:
-                        case ZeroFrameType.Original4:
-                        case ZeroFrameType.Original5:
-                        case ZeroFrameType.Original6:
-                        case ZeroFrameType.Original7:
-                        case ZeroFrameType.Original8:
-                            if (!item.Originals.ContainsKey(description[idx]))
-                                item.Originals.Add(description[idx], bytes);
-                            break;
-                    }
-                }
-                return item.ApiName != null;// && item.GlobalId != null;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Receive", e,
-                    Config.WorkerResultAddress, $"FrameSize{buffers.Length}");
-                return false;
-            }
-        }
-
         #endregion
 
         #region 方法

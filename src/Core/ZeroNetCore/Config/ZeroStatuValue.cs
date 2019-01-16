@@ -217,25 +217,25 @@ namespace Agebull.ZeroNet.Core
         /// <param name="state"></param>
         /// <param name="remote">是否远程状态</param>
         /// <returns></returns>
-        public static ZeroOperatorStatus ToOperatorStatus(this ZeroOperatorStateType state,bool remote)
+        public static UserOperatorStateType ToOperatorStatus(this ZeroOperatorStateType state,bool remote)
         {
             if (state < ZeroOperatorStateType.Failed)
-                return ZeroOperatorStatus.Success;
+                return UserOperatorStateType.Success;
             if (state < ZeroOperatorStateType.Bug)
-                return ZeroOperatorStatus.LogicalError;
+                return UserOperatorStateType.LogicalError;
             if (state < ZeroOperatorStateType.Error)
-                return ZeroOperatorStatus.FormalError;
+                return UserOperatorStateType.FormalError;
             if (state <= ZeroOperatorStateType.NotSupport)
-                return ZeroOperatorStatus.NotFind;
+                return UserOperatorStateType.NotFind;
             if (state == ZeroOperatorStateType.DenyAccess)
-                return ZeroOperatorStatus.DenyAccess;
+                return UserOperatorStateType.DenyAccess;
             if (state == ZeroOperatorStateType.Unavailable)
-                return ZeroOperatorStatus.Unavailable;
+                return UserOperatorStateType.Unavailable;
             if (state == ZeroOperatorStateType.LocalException)
-                return remote ? ZeroOperatorStatus.RemoteException : ZeroOperatorStatus.LocalException;
+                return remote ? UserOperatorStateType.RemoteException : UserOperatorStateType.LocalException;
             if (state >= ZeroOperatorStateType.LocalNoReady || state == ZeroOperatorStateType.TimeOut)
-                return remote ? ZeroOperatorStatus.RemoteError : ZeroOperatorStatus.LocalError;
-            return ZeroOperatorStatus.RemoteError;
+                return remote ? UserOperatorStateType.RemoteError : UserOperatorStateType.LocalError;
+            return UserOperatorStateType.RemoteError;
         }
     }
 

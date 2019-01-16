@@ -191,6 +191,7 @@ namespace RpcTest
             Count();
             OnTestEnd();
         }
+
         public void TestSync()
         {
             Thread.Sleep(100);
@@ -210,12 +211,13 @@ namespace RpcTest
             OnTestEnd();
         }
 
+
         public void Count()
         {
             TimeSpan ts = TimeSpan.FromTicks(RunTime);
             GC.Collect();
             ZeroTrace.SystemLog(
-                $"[Count] {ExCount} Last:{Last:F2}ms | {Max:F2}ms - {Min:F2}ms | {(ts.TotalMilliseconds / ExCount):F2}ms | {(ExCount / (DateTime.Now - Start).TotalSeconds):F2}/s",
+                $"[Count] {ExCount} Last:{Last:F3}ms | {Max:F3}ms - {Min:F3}ms | {(ts.TotalMilliseconds / ExCount):F3}ms | {(ExCount / (DateTime.Now - Start).TotalSeconds):F3}/s",
                 $"[Error] net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BlError:D8}");
         }
     }

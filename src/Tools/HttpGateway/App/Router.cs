@@ -100,7 +100,8 @@ namespace ZeroNet.Http.Gateway
             IoHandler.OnBegin(Data);
             if (SecurityChecker.PreCheck())
                 return true;
-            Data.Status = ZeroOperatorStatus.DenyAccess;
+            Data.UserState = UserOperatorStateType.DenyAccess;
+            Data.ZeroState = ZeroOperatorStateType.DenyAccess;
             Data.ResultMessage = ApiResult.DenyAccessJson;
             return false;
         }
@@ -122,7 +123,8 @@ namespace ZeroNet.Http.Gateway
             // 1 初始化路由信息
             if (!FindHost() || Data.RouteHost.Failed)
             {
-                Data.Status = ZeroOperatorStatus.FormalError;
+                Data.UserState = UserOperatorStateType.NotFind;
+                Data.ZeroState = ZeroOperatorStateType.NotFind;
                 Data.ResultMessage = ApiResult.NoFindJson;
                 return;
             }
@@ -130,7 +132,8 @@ namespace ZeroNet.Http.Gateway
             // 2 安全检查
             if (!TokenCheck())
             {
-                Data.Status = ZeroOperatorStatus.DenyAccess;
+                Data.UserState = UserOperatorStateType.DenyAccess;
+                Data.ZeroState = ZeroOperatorStateType.DenyAccess;
                 if (Data.ResultMessage == null)
                     Data.ResultMessage = ApiResult.DenyAccessJson;
                 return;
@@ -139,7 +142,8 @@ namespace ZeroNet.Http.Gateway
             if (RouteCache.LoadCache(Data.Uri, Data.Token, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
             {
                 //找到并返回缓存
-                Data.Status = ZeroOperatorStatus.Success;
+                Data.UserState = UserOperatorStateType.Success;
+                Data.ZeroState = ZeroOperatorStateType.Ok;
                 return;
             }
 
@@ -150,7 +154,8 @@ namespace ZeroNet.Http.Gateway
                 Data.ResultMessage = CallZero();
             else
             {
-                Data.Status = ZeroOperatorStatus.LocalError;
+                Data.UserState = UserOperatorStateType.LocalError;
+                Data.ZeroState = ZeroOperatorStateType.NotFind;
                 Data.ResultMessage = ApiResult.NoReadyJson;
                 return;
             }
@@ -169,8 +174,8 @@ namespace ZeroNet.Http.Gateway
                 var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
                 if (words.Length <= 1)
                 {
-
-                    Data.Status = ZeroOperatorStatus.FormalError;
+                    Data.UserState = UserOperatorStateType.FormalError;
+                    Data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                     Data.ResultMessage = ApiResult.ArgumentErrorJson;
                     return false;
                 }
@@ -186,7 +191,8 @@ namespace ZeroNet.Http.Gateway
                 var words = Data.Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
                 if (words.Length <= 1)
                 {
-                    Data.Status = ZeroOperatorStatus.FormalError;
+                    Data.UserState = UserOperatorStateType.FormalError;
+                    Data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                     Data.ResultMessage = ApiResult.ArgumentErrorJson;
                     return false;
                 }
@@ -223,7 +229,6 @@ namespace ZeroNet.Http.Gateway
             //    return;
             //// 缓存
             //RouteCache.CacheResult(Data);
-            LogRecorder.MonitorTrace($"Status : {Data.Status} ResultMessage : {Data.ResultMessage}");
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
             Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResult.RemoteEmptyErrorJson), Encoding.UTF8);
         }
@@ -246,7 +251,8 @@ namespace ZeroNet.Http.Gateway
             try
             {
                 LogRecorder.MonitorTrace(e.Message);
-                Data.Status = ZeroOperatorStatus.LocalException;
+                Data.UserState = UserOperatorStateType.LocalException;
+                Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
                 IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(ApiResult.LocalErrorJson, Encoding.UTF8);

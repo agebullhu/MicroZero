@@ -195,7 +195,7 @@ namespace agebull
 
 				inline bool is_pub_station(int type)
 				{
-					return type == dispatcher || type == notify || type == plan || type == queue;
+					return type == dispatcher || type == trace || type == notify || type == plan || type == queue;
 				}
 				inline bool is_api_station(int type)
 				{

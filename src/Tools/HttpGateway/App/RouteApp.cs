@@ -112,12 +112,17 @@ namespace ZeroNet.Http.Gateway
                         // 正常调用
                         router.Call();
                     }
+
                     // 写入返回
                     router.WriteResult();
                 }
                 catch (Exception e)
                 {
                     router.OnError(e, context);
+                }
+                finally
+                {
+                    router.End();
                 }
             }
         }

@@ -80,6 +80,12 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
+        ///     是否存在活动对象
+        /// </summary>
+        public static bool HaseActiveObject => ActiveObjects.Count > 0;
+
+
+        /// <summary>
         /// 活动对象(执行中)
         /// </summary>
         private static readonly List<IZeroObject> ActiveObjects = new List<IZeroObject>();
@@ -97,7 +103,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     对象活动状态记录器锁定
         /// </summary>
-        private static SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
+        private static readonly SemaphoreSlim ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
 
         /// <summary>
         ///     对象活动状态记录器锁定
@@ -140,17 +146,6 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        ///     对象状态重置
-        /// </summary>
-        public static void OnObjectStateReset(IZeroObject obj)
-        {
-            ActiveSemaphore.Dispose();
-            ActiveSemaphore = new SemaphoreSlim(0, short.MaxValue);
-            ActiveObjects.Clear();
-            FailedObjects.Clear();
-        }
-
-        /// <summary>
         ///     对象活动时登记
         /// </summary>
         public static void OnObjectActive(IZeroObject obj)
@@ -173,7 +168,7 @@ namespace Agebull.ZeroNet.Core
             {
                 ActiveObjects.Remove(obj);
                 ZeroTrace.SystemLog(obj.Name, "Closed");
-                if (ActiveObjects.Count + FailedObjects.Count == 0)
+                if (ActiveObjects.Count == 0)
                     ActiveSemaphore.Release(); //发出完成信号
             }
         }
@@ -191,18 +186,13 @@ namespace Agebull.ZeroNet.Core
                     ActiveSemaphore.Release(); //发出完成信号
             }
         }
-
-        /// <summary>
-        ///     是否存在活动对象
-        /// </summary>
-        public static bool HaseActiveObject => ActiveObjects.Count > 0;
-
         /// <summary>
         ///     等待所有对象信号(全开或全关)
         /// </summary>
         public static void WaitAllObjectSemaphore()
         {
-            ActiveSemaphore.Wait();
+            lock (ActiveObjects)
+                ActiveSemaphore.Wait();
         }
 
         /// <summary>

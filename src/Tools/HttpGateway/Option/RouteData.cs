@@ -105,9 +105,14 @@ namespace ZeroNet.Http.Gateway
         public RouteHost RouteHost;
 
         /// <summary>
+        ///     结果状态
+        /// </summary>
+        public ZeroOperatorStateType ZeroState { get; set; }
+
+        /// <summary>
         ///     执行状态
         /// </summary>
-        [DataMember] [JsonProperty("status")] public ZeroOperatorStatus Status;
+        [DataMember] [JsonProperty("status")] public UserOperatorStateType UserState;
 
         /// <summary>
         ///     请求地址
@@ -136,7 +141,7 @@ namespace ZeroNet.Http.Gateway
         ///     是否正常
         /// </summary>
         [DataMember]
-        [JsonProperty("succeed")] public bool IsSucceed => Status == ZeroOperatorStatus.Success;
+        [JsonProperty("succeed")] public bool IsSucceed => UserState == UserOperatorStateType.Success;
 
         /// <summary>
         ///     准备
@@ -175,7 +180,7 @@ namespace ZeroNet.Http.Gateway
             }
             GlobalContext.SetRequestContext(new RequestInfo
             {
-                RequestId = context.Connection.Id,
+                RequestId = $"{ZeroApplication.AppName}-{context.Connection.Id}-{RandomOperate.Generate(6)}",
                 UserAgent = userAgent,
                 Token = Token,
                 RequestType = RequestType.Http,
@@ -183,6 +188,7 @@ namespace ZeroNet.Http.Gateway
                 Ip = context.Connection.RemoteIpAddress?.ToString(),
                 Port = context.Connection.RemotePort.ToString(),
             });
+            Console.WriteLine(GlobalContext.Current.Request.RequestId);
         }
     }
 }

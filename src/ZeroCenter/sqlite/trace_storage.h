@@ -41,20 +41,25 @@ namespace agebull
 			 */
 			virtual  ~trace_storage()
 			{
-				sqlite3_finalize(frame_insert_stmt_);
-				sqlite3_finalize(trace_last_stmt_);
-				sqlite3_finalize(trace_insert_stmt_); 
+				if (frame_insert_stmt_)
+					sqlite3_finalize(frame_insert_stmt_);
+				if (trace_last_stmt_)
+					sqlite3_finalize(trace_last_stmt_);
+				if (trace_insert_stmt_)
+					sqlite3_finalize(trace_insert_stmt_);
 			}
 
 			/**
 			 * \brief 准备存储
 			 */
 			bool prepare_storage();
+			bool save_trace(int in_out, const char* reqid, int64 par_id, int64 my_id, const char* station_name,
+				const char* station_type, const char* state_str, vector<shared_char>& frames);
 
 			/**
 			*\brief 将数据写入数据库中
 			*/
-			void save(int in_out, const char* reqid, const int64 par_id, const int64 my_id,const char* station_name, const char*  station_type, const char*  state, vector<shared_char>& frames);
+			void save(int in_out, const char* reqid, const int64 par_id, const int64 my_id, const char* station_name, const char*  station_type, const char*  state, vector<shared_char>& frames);
 		};
 	}
 }

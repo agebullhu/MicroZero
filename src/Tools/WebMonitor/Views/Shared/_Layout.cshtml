@@ -6,10 +6,10 @@
         icon = "el-icon-service";
         title = "站点监控";
     }
-    if (ViewData["page"]?.ToString() == "trace")
+    if (ViewData["page"]?.ToString() == "flow")
     {
         icon = "el-icon-service";
-        title = "调用跟踪";
+        title = "流程跟踪";
     }
     if (ViewData["page"]?.ToString() == "plan")
     {
@@ -28,7 +28,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebMonitor - @ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://unpkg.com/element-ui@2.3.9/lib/theme-chalk/index.css">
     <script src="~/lib/jquery/dist/jquery.js"></script>
     <script src="~/lib/highcharts/highcharts.js"></script>
@@ -43,159 +42,14 @@
     <script src="~/js/ws.js"></script>
     <script src="~/js/chart.js"></script>
     <script src="~/js/site.js"></script>
-    <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.42857143;
-            overflow: hidden;
-            background-color: #545c64;
-            color: white;
-        }
-
-        .tiled {
-            background-color: #545c64;
-            color: white;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .tiled_scroll {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: auto;
-        }
-
-        .tiled_full {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: visible;
-            background-color: #F5F5F5;
-        }
-
-        .message_boards {
-            overflow: hidden;
-            text-align: left;
-            height: 100%;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-            width: auto;
-            border-top: solid 1px whitesmoke;
-            border-bottom: solid 1px whitesmoke;
-        }
-
-        .el-tabs {
-            background-color: #545c64;
-        }
-
-        .el-tabs--border-card {
-            background-color: #545c64;
-        }
-
-        .el-tabs__header {
-            background-color: #545c64;
-        }
-
-        .el-tabs--border-card > .el-tabs__item {
-            background-color: #545c64;
-        }
-
-        .el-tabs--border-card > .el-tabs__header .el-tabs__item.is-active {
-            background-color: #545c64;
-        }
-
-        a:link, a:visited {
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: none;
-        }
-
-        ul, ol {
-            margin: 0;
-        }
-
-        .el-header {
-            background-color: #545c64;
-            color: white;
-            text-align: left;
-            line-height: 60px;
-        }
-
-        .el-footer {
-            background-color: #545c64;
-            color: white;
-            text-align: center;
-            line-height: 30px;
-            padding: 5px
-        }
-
-            .el-footer a {
-                color: whitesmoke;
-            }
-
-                .el-footer a:hover {
-                    color: lawngreen;
-                }
-
-        .el-aside {
-            background-color: #545c64;
-            color: whitesmoke;
-            text-align: left;
-            line-height: 30px;
-        }
-
-        .el-main {
-            color: #333;
-            text-align: left;
-        }
-
-        .my_menu {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: auto;
-            width: auto;
-        }
-
-        .item {
-            margin-top: 10px;
-            margin-right: 40px;
-        }
-
-        .my_label {
-            width: 80px;
-            display: inline-block;
-            text-align: right
-        }
-
-        .el-tree {
-            background-color: #545c64;
-            color: black;
-        }
-        [v-cloak] {
-            display: none
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/site.css" />
     @RenderSection("Styles", false)
     <script>
         var vue_option = {
             el: '#work_space',
             data: {
-                ws_active: false
+                ws_active: false,
+                isCollapse: false
             },
             filters: {
                 formatDate(time) {
@@ -252,7 +106,7 @@
                     location.href = "/Monitor";
                 },
                 go_trace() {
-                    location.href = "/Trace";
+                    location.href = "/Flow";
                 },
                 go_plan() {
                     location.href = "/Plan";
@@ -262,6 +116,9 @@
                 },
                 go_event() {
                     location.href = "/MachineEvent";
+                },
+                go_github() {
+                    location.href = "https://github.com/agebullhu/ZeroNet";
                 }
             }
         };
@@ -275,9 +132,10 @@
             vue_option.methods = $.extend(vue_option.methods, methods);
         }
 
-        ws_state = function(active) {
+        ws_state = function (active) {
             vue_option.data.ws_active = active;
         };
+
     </script>
 
     @RenderSection("InitScript", required: false)
@@ -286,7 +144,7 @@
     <div id="work_space" class="tiled" v-cloak>
         <el-container class="tiled">
             <el-header>
-                <div style="float:left;padding:0;color:white;font-size:20px">
+                <div style="float:left;padding:0;color:white;font-size:20px" onclick="close_open();">
                     <i v-bind:style="{color:(ws_active ? 'rgb(255, 208, 75)' : 'white')}" class="@icon"></i><span style="color: rgb(255, 208, 75);padding-left:8px">@title</span>
                 </div>
                 <div style="float:right">
@@ -299,9 +157,9 @@
                         {
                             <el-button type="info" icon="el-icon-service" @@click="go_monitor">站点监控</el-button>
                         }
-                        @if (ViewData["page"]?.ToString() != "trace")
+                        @if (ViewData["page"]?.ToString() != "flow")
                         {
-                            <el-button type="info" icon="el-icon-service" @@click="go_trace">调用跟踪</el-button>
+                            <el-button type="info" icon="el-icon-service" @@click="go_trace">流程跟踪</el-button>
                         }
                         @if (ViewData["page"]?.ToString() != "plan")
                         {
@@ -311,35 +169,50 @@
                         {
                             <el-button type="info" icon="el-icon-document" @@click="go_doc">接口文档</el-button>
                         }
+                            <el-tooltip content="加入开源贡献者行列" placement="bottom-start">
+                                <el-button type="info" @@click="go_github">
+                                    <svg height="12" viewBox="0 0 16 16" version="1.1" width="12" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                                    </svg>
+                                </el-button>
+                            </el-tooltip>
                     </el-button-group>
                 </div>
             </el-header>
             <el-container class="tiled">
-                @RenderSection("Menus", required: false)
+                <el-aside id="main_menu" class="message_boards">
+                    <div style="width: 100%; height: 100%; overflow: auto">
+                        <div style="width: 100%; overflow: visible">
+                            @RenderSection("Menus", required: false)
+                        </div>
+                    </div>
+                </el-aside>
                 <el-main class="tiled_scroll">
                     <div class="tiled_full">
                         @RenderBody()
                     </div>
                 </el-main>
             </el-container>
-            <el-footer height="auto">
-                <label>
-                    <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
-                    </svg>
-                    <a href="https://github.com/agebullhu/ZeroNet">https://github.com/agebullhu/ZeroNet</a>
-                </label>
-
-
-            </el-footer>
         </el-container>
     </div>
 
     @RenderSection("VUE", required: false)
     <script>
         var vm = new Vue(vue_option);
+        $('#main_menu').width('auto');
     </script>
     @RenderSection("Scripts", required: false)
     @RenderSection("Charts", required: false)
+
+    <script>
+        $('#main_menu').width('300px');
+        function close_open() {
+            vue_option.data.isCollapse = !vue_option.data.isCollapse;
+            if (vue_option.data.isCollapse)
+                $('#main_menu').width('auto');
+            else
+                $('#main_menu').width('300px');
+        }
+    </script>
 </body>
 </html>

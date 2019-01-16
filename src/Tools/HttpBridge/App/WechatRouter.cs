@@ -153,7 +153,7 @@ namespace ZeroNet.Http.Gateway
         {
             try
             {
-                Data.Status = ZeroOperatorStatus.LocalException;
+                Data.Status = UserOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
                 IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
             }

@@ -27,6 +27,7 @@ namespace ZeroNet.Http.Route
             IsRealModel = true;
             TsonOperator = new CountDataTsonOperator();
         }
+
         /// <summary>
         /// 初始化
         /// </summary>

@@ -48,7 +48,7 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     执行状态
         /// </summary>
-        public ZeroOperatorStatus Status;
+        public UserOperatorStateType Status;
 
         /// <summary>
         ///     请求地址
@@ -68,7 +68,7 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     是否正常
         /// </summary>
-        public bool IsSucceed => Status == ZeroOperatorStatus.Success;
+        public bool IsSucceed => Status == UserOperatorStateType.Success;
 
         /// <summary>
         ///     取参数值

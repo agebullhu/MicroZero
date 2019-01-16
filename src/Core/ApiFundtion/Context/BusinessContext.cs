@@ -10,6 +10,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using Agebull.Common.AppManage;
 using Agebull.Common.DataModel.Redis;
 using Agebull.Common.Ioc;
@@ -26,6 +28,9 @@ namespace Agebull.Common.WebApi
     /// <summary>
     ///     为业务处理上下文对象
     /// </summary>
+    [DataContract]
+    [Category("业务上下文")]
+    [JsonObject(MemberSerialization.OptIn)]
     public class BusinessContext : ApiContext
     {
 

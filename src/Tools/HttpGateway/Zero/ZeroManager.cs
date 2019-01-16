@@ -26,7 +26,8 @@ namespace ZeroNet.Http.Gateway
             _words = data.ApiName.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
             if (_words.Length == 0)
             {
-                data.Status = ZeroOperatorStatus.FormalError;
+                data.UserState = UserOperatorStateType.FormalError;
+                data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                 data.ResultMessage = ApiResult.ArgumentErrorJson;
                 return;
             }
@@ -44,7 +45,8 @@ namespace ZeroNet.Http.Gateway
             }
             if (_words.Length < 2)
             {
-                _data.Status = ZeroOperatorStatus.FormalError;
+                _data.UserState = UserOperatorStateType.FormalError;
+                _data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                 _data.ResultMessage = ApiResult.ArgumentErrorJson;
                 return;
             }            
@@ -63,7 +65,7 @@ namespace ZeroNet.Http.Gateway
                     _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
                     return;
                 default:
-                    _result = ApiResult.Error(ErrorCode.LogicalError, value.Message,value.ToString());
+                    _result = ApiResult.Error(ErrorCode.LogicalError, value.ErrorMessage,value.ToString());
                     return;
             }
         }

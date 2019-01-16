@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Agebull.Common.DataModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.ZeroApi
 {
@@ -10,7 +12,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// Api调用节点
     /// </summary>
     [JsonObject(MemberSerialization.OptOut)]
-    public class ApiCallItem
+    public class ApiCallItem : ZeroNetMessage
     {
         /// <summary>
         /// 全局ID
@@ -18,24 +20,9 @@ namespace Agebull.ZeroNet.ZeroApi
         internal List<IApiHandler> Handlers { get; set; }
 
         /// <summary>
-        /// 站点请求ID
+        /// 站点请求ID(队列使用)
         /// </summary>
         public string LocalId { get; set; }
-
-        /// <summary>
-        /// 调用方的全局ID（上一个）
-        /// </summary>
-        public string CallId { get; set; }
-
-        /// <summary>
-        /// 本次调用全局ID
-        /// </summary>
-        public string GlobalId { get; set; }
-
-        /// <summary>
-        /// 发生站点
-        /// </summary>
-        public string StationName { get; set; }
 
         /// <summary>
         /// 调用方的站点类型
@@ -46,50 +33,29 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 请求者
         /// </summary>
         [JsonIgnore]
-        public byte[] First { get; set; }
-
-        /// <summary>
-        /// 请求者
-        /// </summary>
-        [JsonIgnore]
-        public byte[] Caller => First;
+        public byte[] Caller => Head;
 
         /// <summary>
         /// 请求者
         /// </summary>
         [JsonProperty("Caller")]
-        public string CallerName => First == null || First.Length == 0 ? "" : Encoding.ASCII.GetString(First).Trim('\0');
+        public string CallerName => Head == null || Head.Length == 0 ? "" : GetString(Head);
 
         /// <summary>
         /// 广播标题
         /// </summary>
         [JsonProperty("Title")]
-        public string Title => First == null || First.Length == 0 ? "" : Encoding.ASCII.GetString(First).Trim('\0');
-
-        /// <summary>
-        /// 请求标识
-        /// </summary>
-        public string RequestId { get; set; }
-
-        /// <summary>
-        /// 请求者
-        /// </summary>
-        public string Requester { get; set; }
+        public string Title => Head == null || Head.Length == 0 ? "" : GetString(Head);
 
         /// <summary>
         /// 命令
         /// </summary>
-        public string Command { get; set; }
+        public string Command => CommandOrSubTitle;
 
         /// <summary>
         /// API名称
         /// </summary>
         public string ApiName => Command;
-
-        /// <summary>
-        ///  原始上下文的JSO内容
-        /// </summary>
-        public string ContextJson { get; set; }
 
         /// <summary>
         /// 请求参数
@@ -109,23 +75,74 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 执行状态
         /// </summary>
-        public ZeroOperatorStatus Status { get; set; }
-
-        /// <summary>
-        /// 消息消息
-        /// </summary>
-        public string StatusMessage { get; set; }
-
-        /// <summary>
-        /// 原样帧
-        /// </summary>
-        [JsonIgnore]
-        public List<NameValue<byte, byte[]>> Frames { get; } = new List<NameValue<byte, byte[]>>();
+        public UserOperatorStateType Status { get; set; }
 
         /// <summary>
         /// 原样帧
         /// </summary>
         public Dictionary<byte, byte[]> Originals { get; } = new Dictionary<byte, byte[]>();
 
+
+        /// <summary>
+        /// 解析数据
+        /// </summary>
+        /// <param name="messages"></param>
+        /// <param name="callItem"></param>
+        /// <returns></returns>
+        public static bool Unpack(ZMessage messages, out ApiCallItem callItem)
+        {
+            if (messages.Count == 0)
+            {
+                callItem = null;
+                return false;
+            }
+
+            byte[][] buffers;
+            using (messages)
+                buffers = messages.Select(p => p.ReadAll()).ToArray();
+            try
+            {
+                if (!Unpack(false, buffers, out callItem, (item, type, bytes) =>
+                {
+                    switch (type)
+                    {
+                        case ZeroFrameType.LocalId:
+                            item.LocalId = GetString(bytes);
+                            break;
+                        case ZeroFrameType.Argument:
+                            item.Argument = GetString(bytes);
+                            break;
+                        case ZeroFrameType.TextContent:
+                            item.Content = GetString(bytes);
+                            break;
+                        case ZeroFrameType.StationType:
+                            item.StationType = GetString(bytes);
+                            break;
+                        case ZeroFrameType.Original1:
+                        case ZeroFrameType.Original2:
+                        case ZeroFrameType.Original3:
+                        case ZeroFrameType.Original4:
+                        case ZeroFrameType.Original5:
+                        case ZeroFrameType.Original6:
+                        case ZeroFrameType.Original7:
+                        case ZeroFrameType.Original8:
+                            if (!item.Originals.ContainsKey(type))
+                                item.Originals.Add(type, bytes);
+                            break;
+                    }
+                }))
+                    return false;
+                return callItem.ApiName != null;// && item.GlobalId != null;
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Receive", e, $"FrameSize{buffers.Length}");
+                callItem = new ApiCallItem
+                {
+                    State = ZeroOperatorStateType.FrameInvalid
+                };
+                return false;
+            }
+        }
     }
 }

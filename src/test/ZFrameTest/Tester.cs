@@ -1,10 +1,5 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Agebull.Common.Configuration;
-using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
 using ZeroMQ;
 
 namespace RpcTest
@@ -44,12 +39,12 @@ namespace RpcTest
         {
             Console.Error.Write(title);
             Console.ForegroundColor = ConsoleColor.Red;
-            TestFrameInner(title, state, frames);
+            TestFrameInner(state, frames);
             Console.Error.WriteLine();
             Console.Error.WriteLine("**----**");
             Console.ResetColor();
         }
-        static void TestFrameInner(string title, ZeroOperatorStateType state, byte[][] frames)
+        static void TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
         {
             using (var socket = ZSocket.CreateClientSocket(address, ZSocketType.DEALER,ZeroIdentityHelper.CreateIdentity()))
             {
@@ -59,7 +54,7 @@ namespace RpcTest
                     Console.Error.Write(" : Send Error");
                     return;
                 }
-                var result = socket.Receive();
+                var result = socket.Receive<ZeroResult>();
                 if (!result.InteractiveSuccess)
                     Console.Error.WriteLine(" : Receive Error");
                 if (result.State == state)

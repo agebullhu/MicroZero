@@ -3,7 +3,7 @@ namespace Agebull.ZeroNet.ZeroApi
     /// <summary>
     /// 一次路由执行状态
     /// </summary>
-    public enum ZeroOperatorStatus
+    public enum UserOperatorStateType
     {
         /// <summary>
         /// 正常

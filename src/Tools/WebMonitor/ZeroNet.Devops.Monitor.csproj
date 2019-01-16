@@ -31,6 +31,7 @@
     <PackageReference Include="Vue.Js.Element.UI" Version="2.4.8.1" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Pages\" />
     <Folder Include="WS\" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +58,9 @@
     </Content>
     <Content Update="Views\Plan\Form.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="wwwroot\favicon.ico">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 </Project>

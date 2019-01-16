@@ -13,7 +13,7 @@ namespace agebull
 		/**
 		* \brief 内部命令
 		*/
-		bool queue_station::simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
+		bool queue_station::simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
 		{
 			if (description.command() == zero_def::command::restart && list.size() >= 4)
 			{
@@ -27,7 +27,7 @@ namespace agebull
 				});
 				return true;
 			}
-			return false;
+			return zero_station::simple_command( socket,list, description,inner);
 		}
 
 		/**
@@ -88,10 +88,10 @@ namespace agebull
 			{
 				config_->error("job_start", "title can`t empty");
 				config_->request_deny++;
-				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, requester, request_id);
+				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id, requester);
 				return;
 			}
-			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, requester, request_id);
+			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, request_id,requester );
 
 			const int64 id = storage_.save(
 				global_id > 0 ? atoll(*list[global_id]) : 0,

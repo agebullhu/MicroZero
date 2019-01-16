@@ -147,7 +147,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public bool LoadDocument(string name, out StationDocument doc)
         {
-            ZeroResultData result;
+            ZeroResult result;
             try
             {
                 result = CallCommand("doc", name);

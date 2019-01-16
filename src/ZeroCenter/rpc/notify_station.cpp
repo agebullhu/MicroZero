@@ -28,32 +28,32 @@ namespace agebull
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
-			size_t pid = 0, gid = 0, tid = 0, rid = 0;
+			size_t request_id = 0, global_id = 0, pub_title = 0, requester = 0;
 			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
 				{
 				case zero_def::frame::request_id:
-					pid = idx;
+					request_id = idx;
 					break;
 				case zero_def::frame::requester:
-					rid = idx;
+					requester = idx;
 					break;
 				case zero_def::frame::global_id:
-					gid = idx;
+					global_id = idx;
 					break;
 				case zero_def::frame::pub_title:
-					tid = idx;
+					pub_title = idx;
 					break;
 				}
 			}
-			if (tid == 0)
+			if (pub_title == 0)
 			{
-				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, gid, rid, pid);
+				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id,requester );
 				return;
 			}
-			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, gid, rid, pid);
-			list[0] = list[tid];
+			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id,request_id , requester);
+			list[0] = list[pub_title];
 			send_response(list, true);
 		}
 

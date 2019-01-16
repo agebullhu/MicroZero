@@ -110,7 +110,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     using (ZMessage clone = new ZMessage())
                     {
-                        byte[] des = message[0].Read();
+                        byte[] des = message[0].ReadAll();
                         int size = des[0] + 2;
                         for (var index = 2; index < size && index < des.Length; index++)
                         {

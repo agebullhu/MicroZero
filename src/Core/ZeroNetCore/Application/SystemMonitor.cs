@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using Agebull.Common.ApiDocuments;
 using Agebull.Common.Logging;
+using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -71,13 +74,14 @@ namespace Agebull.ZeroNet.Core
                         continue;
                     }
                     failed = DateTime.MinValue;
-                    if (!message.Unpack(out var item))
+                    if (!PublishItem.Unpack(message, out var item))
                         continue;
                     OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
                 }
             }
             return true;
         }
+
         #endregion
 
         #region 事件处理

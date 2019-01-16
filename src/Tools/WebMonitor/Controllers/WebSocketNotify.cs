@@ -164,6 +164,7 @@ namespace WebMonitor
             Binding(app, "api");
             Binding(app, "plan_notify");
             Binding(app, "event");
+            Binding(app, "trace"); 
             StationCounter.Start();
         }
 

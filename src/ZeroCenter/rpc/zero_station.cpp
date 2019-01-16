@@ -103,6 +103,10 @@ namespace agebull
 				config_->error("initialize request inproc", zmq_strerror(zmq_errno()));
 				return false;
 			}
+			if (req_zmq_type_ == ZMQ_ROUTER)
+			{
+				socket_ex::setsockopt(request_socket_inproc_, ZMQ_ROUTER_MANDATORY, 1);
+			}
 			poll_items_[poll_count_++] = { request_socket_inproc_, 0, ZMQ_POLLIN, 0 };
 
 
@@ -421,11 +425,11 @@ namespace agebull
 				ping(socket.socket, list);
 				return;
 			}
-			if (simple_command(socket.socket, list, list[1], inner))
+			shared_char& description = list[inner ? 2 : 1];
+			if (simple_command(socket.socket, list, description, inner))
 			{
 				return;
 			}
-			shared_char& description = list[inner ? 2 : 1];
 			if (description.command() < zero_def::command::none)
 			{
 				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false);
@@ -496,7 +500,7 @@ namespace agebull
 			case zero_def::command::heart_left:
 				return heartbeat(socket, cmd, list);
 			default:
-				return simple_command_ex(socket, list, description, inner);
+				return false;
 			}
 		}
 
@@ -563,6 +567,9 @@ namespace agebull
 
 		/**
 		* \brief 网络数据跟踪
+		* \param io 1 请求数据(from client) 2 请求数据(to worker) 3 返回数据(worker to client) 4 返回数据(worker to proxy)
+		* \param list 帧数据
+		* \param err_msg 发生的错误描述
 		*/
 		void zero_station::trace(uchar io, vector<shared_char> list, const char* err_msg)
 		{
@@ -582,7 +589,7 @@ namespace agebull
 			list[1] = description;
 			zmq_socket_state state;
 			{
-				//boost::lock_guard<boost::mutex> guard(send_mutex_);
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				state = socket_ex::send(trace_socket_inproc_, list);
 			}
 			if (state != zmq_socket_state::succeed)
@@ -599,11 +606,11 @@ namespace agebull
 			if (socket_ex::send(proxy_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
 				config_->error("send to proxy dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
-				trace(3, list, "send to proxy dispatcher failed");
+				trace(4, list, "send to proxy dispatcher failed");
 			}
 			else
 			{
-				trace(3, list, nullptr);
+				trace(4, list, nullptr);
 			}
 		}
 		/**
@@ -618,11 +625,11 @@ namespace agebull
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
 				config_->error("send to plan dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
-				trace(3, list, "send to plan dispatcher failed");
+				trace(4, list, "send to plan dispatcher failed");
 			}
 			else
 			{
-				trace(3, list, nullptr);
+				trace(4, list, nullptr);
 			}
 		}
 		/**

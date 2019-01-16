@@ -196,20 +196,14 @@
     </script>
 }
 @section Menus{
-    <el-aside class="message_boards">
-        <div style="width:100%;height:100%;overflow:auto">
-            <div style="width:100%;overflow:visible">
-                <el-tree :data="hosts"
-                         default-expand-all
-                         node-key="id"
-                         ref="tree"
-                         @@current-change="tree_select"
-                         :expand-on-click-node="false"
-                         highlight-current>
-                </el-tree>
-            </div>
-        </div>
-    </el-aside>
+    <el-tree :data="hosts"
+             default-expand-all
+             node-key="id"
+             ref="tree"
+             @@current-change="tree_select"
+             :expand-on-click-node="false"
+             highlight-current>
+    </el-tree>
 }
 <el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">
     <el-main style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">

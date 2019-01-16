@@ -1,9 +1,10 @@
 using System;
 using System.Threading;
+using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
+using Agebull.Common.Rpc;
 using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 
 namespace RpcTest
 {
@@ -16,14 +17,20 @@ namespace RpcTest
 
         protected override void DoAsync()
         {
-            try
+            using (IocScope.CreateScope())
             {
-                ZeroPublisher.Publish("WechatCallBack", "test", "test", "{}");
-                Interlocked.Increment(ref ExCount);
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
+                GlobalContext.Current.Request.RequestId = RandomOperate.Generate(8);
+                try
+                {
+                    bool re = ZeroPublisher.Publish("WeixinMessage", "test", "test", "{}");
+                    Interlocked.Increment(ref ExCount);
+                    if (!re)
+                        Interlocked.Increment(ref NetError);
+                }
+                catch (Exception e)
+                {
+                    LogRecorder.Exception(e);
+                }
             }
         }
     }

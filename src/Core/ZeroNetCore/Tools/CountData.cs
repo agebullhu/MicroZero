@@ -65,7 +65,7 @@ namespace Agebull.ZeroNet.ZeroApi
         ///     执行状态
         /// </summary>
         [DataMember]
-        [JsonProperty("status")] public ZeroOperatorStatus Status { get; set; }
+        [JsonProperty("status")] public UserOperatorStateType Status { get; set; }
 
         /// <summary>
         ///     标题

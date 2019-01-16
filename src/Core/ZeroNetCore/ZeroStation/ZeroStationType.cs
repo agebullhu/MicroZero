@@ -30,6 +30,10 @@
         /// </summary>
         Queue = 6,
         /// <summary>
+        /// 流程跟踪
+        /// </summary>
+        Trace = 0xFE,
+        /// <summary>
         /// 计划任务
         /// </summary>
         Plan = 0xFF

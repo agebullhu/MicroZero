@@ -76,7 +76,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 最后一个返回值
         /// </summary>
-        public ZeroResultData LastResult { get; set; }
+        public ZeroResult LastResult { get; set; }
         /// <summary>
         /// 简单调用
         /// </summary>
@@ -525,97 +525,26 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        private ZeroResultData Receive(ZSocket socket)
+        private ZeroResult Receive(ZSocket socket)
         {
-            if (!ZeroApplication.ZerCenterIsRun)
-                return new ZeroResultData
-                {
-                    State = ZeroOperatorStateType.LocalNoReady,
-                    InteractiveSuccess = false
-                };
-            List<Byte[]> messages = new List<byte[]>();
-            bool success = false;
+            if (!socket.Recv(out var frames))
             {
-                ZMessage frames = null;
-                int cnt = 0;
-                while (++cnt < 3)
-                {
-                    success = socket.Recv(out frames);
-                    if (success)
-                        break;
-                    //if (socket.LastError.IsError(ZError.Code.EAGAIN))
-                    //    continue;
-
-                    WriteError("Receive", socket.Endpoint, socket.LastError.Text,
-                        $"Socket Ptr:{socket.SocketPtr}");
-                    return new ZeroResultData
-                    {
-                        State = ZeroOperatorStateType.LocalRecvError
-                    };
-                }
-                using (frames)
-                {
-                    frames.Foreach(p => messages.Add(p.Read()));
-                }
-            }
-            if (!success)
-            {
-                WriteError("Receive", socket.Endpoint, "Time Out",
+                WriteError("Receive", socket.Endpoint, socket.LastError.Text,
                     $"Socket Ptr:{socket.SocketPtr}");
-                return new ZeroResultData
+                return new ZeroResult
                 {
-                    State = ZeroOperatorStateType.TimeOut
+                    State = ZeroOperatorStateType.LocalRecvError
                 };
             }
             try
             {
-                var description = messages[0];
-                if (description.Length == 0)
-                {
-                    WriteError("Receive", "LaoutError", socket.Endpoint,
-                        description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{socket.SocketPtr}.");
-                    return new ZeroResultData
-                    {
-                        State = ZeroOperatorStateType.FrameInvalid,
-                        Message = "网络格式错误"
-                    };
-                }
-
-                var end = description[0] + 1;
-                //if (end != messages.Count)
-                //{
-                //    WriteError("Receive", "LaoutError", socket.Endpoint,
-                //        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
-                //        $"Socket Ptr:{socket.SocketPtr}.");
-                //    return new ZeroResultData
-                //    {
-                //        State = ZeroOperatorStateType.FrameInvalid,
-                //        Message = "网络格式错误"
-                //    };
-                //}
-                //Console.Write(description[0]);
-                //Console.Write((ZeroCenterState)description[0]);
-                //for (int i = 2; i < description.Length; i++)
-                //{
-                //    Console.WriteLine($"{i-1}:{ZeroFrameType.FrameName(description[i])}");
-                //}
-                //for (var idx = 1; idx < messages.Count; idx++)
-                //    Console.WriteLine(Encoding.UTF8.GetString(messages[idx]));
-                var result = new ZeroResultData
-                {
-                    InteractiveSuccess = true,
-                    State = (ZeroOperatorStateType)description[1]
-                };
-                for (var idx = 1; idx < end; idx++)
-                    result.Add(description[idx + 1], Encoding.UTF8.GetString(messages[idx]));
-
-                return result;
+                return ZeroResultData.Unpack<ZeroResult>(frames, true);
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("Receive", e, socket.Endpoint,
                     $"Socket Ptr:{socket.SocketPtr}.");
-                return new ZeroResultData
+                return new ZeroResult
                 {
                     State = ZeroOperatorStateType.LocalException,
                     Exception = e
@@ -630,7 +559,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="desicription"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        static ZeroResultData Send(ZSocket socket, byte[] desicription, params string[] args)
+        static ZeroResult Send(ZSocket socket, byte[] desicription, params string[] args)
         {
             var message = new ZMessage();
             var frame = new ZFrame(desicription);
@@ -645,13 +574,13 @@ namespace Agebull.ZeroNet.ZeroApi
             using (message)
                 if (!socket.SendTo(message))
                 {
-                    return new ZeroResultData
+                    return new ZeroResult
                     {
                         State = ZeroOperatorStateType.LocalSendError,
                         ZmqError = socket.LastError
                     };
                 }
-            return new ZeroResultData
+            return new ZeroResult
             {
                 State = ZeroOperatorStateType.Ok,
                 InteractiveSuccess = true

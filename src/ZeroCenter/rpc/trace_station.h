@@ -41,6 +41,13 @@ namespace agebull
 			*\brief 运行一个通知线程
 			*/
 			static void launch(shared_ptr<trace_station> station);
+			/**
+			* \brief 内部命令
+			*/
+			bool simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) final
+			{
+				return false;
+			}
 		public:
 			/**
 			 * \brief 构造

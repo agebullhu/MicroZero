@@ -1,6 +1,9 @@
-using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Text;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
+using ZeroMQ;
 
 namespace Agebull.ZeroNet.PubSub
 {
@@ -8,7 +11,7 @@ namespace Agebull.ZeroNet.PubSub
     ///     广播节点
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class PublishItem
+    public class PublishItem : ZeroNetMessage
     {
 
         /// <summary>
@@ -22,49 +25,13 @@ namespace Agebull.ZeroNet.PubSub
         /// 带外事件
         /// </summary>
         [JsonIgnore]
-        public ZeroNetEventType ZeroEvent { get; set; }
-
-
-        /// <summary>
-        /// 带外事件
-        /// </summary>
-        [JsonIgnore]
-        public ZeroOperatorStateType State { get; set; }
-
-        /// <summary>
-        /// 全局ID
-        /// </summary>
-        [JsonProperty]
-        public string GlobalId { get; set; }
-        /// <summary>
-        /// 全局ID
-        /// </summary>
-        [JsonProperty]
-        public string CallId { get; set; }
-        
-        /// <summary>
-        /// 请求ID
-        /// </summary>
-        [JsonProperty]
-        public string RequestId { get; set; }
-
-        /// <summary>
-        ///  原始上下文的JSO内容
-        /// </summary>
-        public string ContextJson { get; set; }
+        public ZeroNetEventType ZeroEvent => (ZeroNetEventType)InnerCommand;
 
         /// <summary>
         ///  发布者的Identity(可能已消失)
         /// </summary>
         [JsonProperty]
-        public string Publisher { get; set; }
-
-
-        /// <summary>
-        ///  站点
-        /// </summary>
-        [JsonProperty]
-        public string Station { get; set; }
+        public string Publisher => Requester;
 
         /// <summary>
         ///     主标题
@@ -95,7 +62,7 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         [JsonProperty]
         public byte[] Status { get; set; }
-        
+
         /// <summary>
         ///     内容
         /// </summary>
@@ -103,14 +70,78 @@ namespace Agebull.ZeroNet.PubSub
         public byte[] Tson { get; set; }
 
         /// <summary>
-        ///     内容
+        ///     广播消息解包
         /// </summary>
-        [JsonProperty("Values")] internal List<string> _values;
+        /// <param name="msg"></param>
+        /// <param name="publishItem"></param>
+        /// <returns></returns>
+        public static bool Unpack(ZMessage msg, out PublishItem publishItem)
+        {
+            return Unpack(msg, out publishItem, UnpackAction);
+        }
 
         /// <summary>
-        ///     内容
+        ///     广播消息解包
         /// </summary>
-        [JsonIgnore]
-        public List<string> Values => _values ?? (_values = new List<string>());
+        /// <param name="msg"></param>
+        /// <param name="publishItem"></param>
+        /// <returns></returns>
+        public static bool Unpack<TPublishItem>(ZMessage msg, out TPublishItem publishItem)
+            where TPublishItem : PublishItem, new()
+        {
+            return Unpack(msg, out publishItem, UnpackAction);
+        }
+
+        /// <summary>
+        ///     广播消息解包
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="publishItem"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        protected static bool Unpack<TPublishItem>(ZMessage msg, out TPublishItem publishItem, Action<TPublishItem, byte, byte[]> action)
+            where TPublishItem : PublishItem, new()
+        {
+            if (msg == null)
+            {
+                publishItem = null;
+                return false;
+            }
+
+            byte[][] msgs;
+            using (msg)
+            {
+                msgs = msg.Select(p => p.ReadAll()).ToArray();
+            }
+            try
+            {
+                return Unpack(false, msgs, out publishItem, action);
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Unpack", e);
+                publishItem = null;
+                return false;
+            }
+        }
+
+        static void UnpackAction(PublishItem item, byte type, byte[] bytes)
+        {
+            switch (type)
+            {
+                case ZeroFrameType.SubTitle:
+                    item.SubTitle =GetString(bytes);
+                    break;
+                case ZeroFrameType.TextContent:
+                    item.Content = GetString(bytes);
+                    break;
+                case ZeroFrameType.BinaryValue:
+                    item.Buffer = bytes;
+                    break;
+                case ZeroFrameType.TsonValue:
+                    item.Tson = bytes;
+                    break;
+            }
+        }
     }
 }

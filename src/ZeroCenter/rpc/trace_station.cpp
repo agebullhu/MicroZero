@@ -22,17 +22,21 @@ namespace agebull
 			{
 				return;
 			}
+			shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
-			size_t request_id = 0, global_id = 0, station = 0, call_id = 0, station_type = 0, status=0;
+			size_t request_id = 0, requester = 0, global_id = 0, pub_title = 0, station = 0, call_id = 0, station_type = 0, status = 0;
 			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
 				{
 				case zero_def::frame::request_id:
 					request_id = idx;
-					break; 
+					break;
+				case zero_def::frame::requester:
+					requester = idx;
+					break;
 				case zero_def::frame::station_id:
 					station = idx;
 					break;
@@ -50,17 +54,26 @@ namespace agebull
 					break;
 				}
 			}
+			if (!inner)
+			{
+				if (request_id == 0)
+				{
+					send_request_status(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id, requester);
+					return;
+				}
+				send_request_status(socket, *caller, zero_def::status::ok, list, global_id, request_id, requester);
+			}
+
 			storage_->save(description.tag()
 				, vector_str(list, request_id)
-				, vector_int(list, call_id)
-				, vector_int(list, global_id)
+				, vector_int64(list, call_id)
+				, vector_int64(list, global_id)
 				, vector_str(list, station)
 				, vector_str(list, station_type)
 				, vector_str(list, status)
 				, list);
-
-			//list[0] = list[request_id];
-			//send_response(list, 0);
+			list[0] = list[request_id];
+			send_response(list, false);
 		}
 
 		/**

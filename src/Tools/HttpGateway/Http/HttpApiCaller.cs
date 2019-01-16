@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
+using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Http;
@@ -51,7 +52,12 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         /// 执行状态
         /// </summary>
-        public ZeroOperatorStatus Status { get; set; }
+        public UserOperatorStateType UserState { get; set; }
+
+        /// <summary>
+        /// 执行状态
+        /// </summary>
+        public ZeroOperatorStateType ZeroState { get; set; }
 
         #endregion
 
@@ -134,7 +140,8 @@ namespace ZeroNet.Http.Gateway
         public async Task<string> Call()
         {
             string jsonResult;
-            Status = ZeroOperatorStatus.Success;
+            UserState = UserOperatorStateType.Success;
+            ZeroState = ZeroOperatorStateType.Ok; 
             try
             {
                 var resp = await RemoteRequest.GetResponseAsync();
@@ -147,7 +154,8 @@ namespace ZeroNet.Http.Gateway
             }
             catch (Exception e)
             {
-                Status = ZeroOperatorStatus.LocalException;
+                UserState = UserOperatorStateType.LocalException;
+                ZeroState = ZeroOperatorStateType.LocalException;
                 LogRecorder.Exception(e);
                 jsonResult = ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
@@ -169,10 +177,12 @@ namespace ZeroNet.Http.Gateway
                         switch (s)
                         {
                             case 404:
-                                Status = ZeroOperatorStatus.NotFind;
+                                UserState = UserOperatorStateType.NotFind;
+                                ZeroState = ZeroOperatorStateType.NotFind;
                                 return ToErrorString(ErrorCode.NetworkError, "页面不存在", "页面不存在");
                             case 503:
-                                Status = ZeroOperatorStatus.Unavailable;
+                                UserState = UserOperatorStateType.Unavailable;
+                                ZeroState = ZeroOperatorStateType.Unavailable;
                                 return ToErrorString(ErrorCode.NetworkError, "拒绝访问", "页面不存在");
                         }
 
@@ -182,7 +192,8 @@ namespace ZeroNet.Http.Gateway
             }
             catch (Exception e)
             {
-                Status = ZeroOperatorStatus.LocalException;
+                UserState = UserOperatorStateType.LocalException;
+                ZeroState = ZeroOperatorStateType.LocalException;
                 LogRecorder.Exception(e);
                 return ToErrorString(ErrorCode.NetworkError, "未知错误", e.Message);
             }
@@ -198,61 +209,80 @@ namespace ZeroNet.Http.Gateway
             switch (e.Status)
             {
                 case WebExceptionStatus.CacheEntryNotFound:
-                    Status = ZeroOperatorStatus.NotFind;
+                    UserState = UserOperatorStateType.NotFind;
+                    ZeroState = ZeroOperatorStateType.NotFind;
                     return ToErrorString(ErrorCode.NetworkError, "找不到指定的缓存项");
                 case WebExceptionStatus.ConnectFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "在传输级别无法联系远程服务点");
                 case WebExceptionStatus.ConnectionClosed:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "过早关闭连接");
                 case WebExceptionStatus.KeepAliveFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "指定保持活动状态的标头的请求的连接意外关闭");
                 case WebExceptionStatus.MessageLengthLimitExceeded:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "已收到一条消息的发送请求时超出指定的限制或从服务器接收响应");
                 case WebExceptionStatus.NameResolutionFailure:
-                    Status = ZeroOperatorStatus.NotFind;
+                    UserState = UserOperatorStateType.NotFind;
+                    ZeroState = ZeroOperatorStateType.NotFind;
                     return ToErrorString(ErrorCode.NetworkError, "名称解析程序服务或无法解析主机名");
                 case WebExceptionStatus.Pending:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "内部异步请求处于挂起状态");
                 case WebExceptionStatus.PipelineFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "该请求是管线请求和连接被关闭之前收到响应");
                 case WebExceptionStatus.ProxyNameResolutionFailure:
-                    Status = ZeroOperatorStatus.NotFind;
+                    UserState = UserOperatorStateType.NotFind;
+                    ZeroState = ZeroOperatorStateType.NotFind;
                     return ToErrorString(ErrorCode.NetworkError, "名称解析程序服务无法解析代理服务器主机名");
                 case WebExceptionStatus.ReceiveFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "从远程服务器未收到完整的响应");
                 case WebExceptionStatus.RequestCanceled:
-                    Status = ZeroOperatorStatus.Unavailable;
+                    UserState = UserOperatorStateType.Unavailable;
+                    ZeroState = ZeroOperatorStateType.Unavailable;
                     return ToErrorString(ErrorCode.NetworkError, "请求已取消");
                 case WebExceptionStatus.RequestProhibitedByCachePolicy:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "缓存策略不允许该请求");
                 case WebExceptionStatus.RequestProhibitedByProxy:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "由该代理不允许此请求");
                 case WebExceptionStatus.SecureChannelFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "使用 SSL 建立连接时出错");
                 case WebExceptionStatus.SendFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "无法与远程服务器发送一个完整的请求");
                 case WebExceptionStatus.ServerProtocolViolation:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "服务器响应不是有效的 HTTP 响应");
                 case WebExceptionStatus.Timeout:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "请求的超时期限内未不收到任何响应");
                 case WebExceptionStatus.TrustFailure:
-                    Status = ZeroOperatorStatus.NetWorkError;
+                    UserState = UserOperatorStateType.NetWorkError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "无法验证服务器证书");
                 default:
-                    Status = ZeroOperatorStatus.RemoteError;
+                    UserState = UserOperatorStateType.RemoteError;
+                    ZeroState = ZeroOperatorStateType.NetError;
                     return ToErrorString(ErrorCode.NetworkError, "内部服务器异常(未知错误)");
             }
         }

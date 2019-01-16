@@ -76,7 +76,8 @@ namespace ZeroNet.Http.Gateway
                 ContextJson = Data.GlobalContextJson
             };
             caller.CallCommand();
-            Data.Status = caller.State.ToOperatorStatus(true);
+            Data.ZeroState = caller.State;
+            Data.UserState = caller.State.ToOperatorStatus(true);
             caller.CheckStateResult();
             return Data.ResultMessage = caller.Result;
         }
@@ -85,7 +86,8 @@ namespace ZeroNet.Http.Gateway
             var config = ZeroApplication.Config[zeroHost.Station];
             if (config == null)
             {
-                Data.Status = ZeroOperatorStatus.NotFind;
+                Data.UserState = UserOperatorStateType.NotFind;
+                Data.ZeroState = ZeroOperatorStateType.NotFind;
                 {
                     return Data.ResultMessage = ApiResult.NoFindJson;
                 }
@@ -105,24 +107,26 @@ namespace ZeroNet.Http.Gateway
                     };
                     caller.CallCommand();
                     Data.ResultMessage = caller.Result;
-                    Data.Status = caller.State.ToOperatorStatus(true);
-
-                    Data.Status = ZeroOperatorStatus.NotFind;
+                    Data.ZeroState = caller.State;
+                    Data.UserState = UserOperatorStateType.NotFind;
                     return Data.ResultMessage = ApiResult.NoFindJson;
                 case ZeroStationType.Notify:
                 case ZeroStationType.Queue:
                     if (ZeroPublisher.Publish(zeroHost.Station, Data.ApiName, Data.ApiName, Data.HttpContext))
                     {
-                        Data.Status = ZeroOperatorStatus.Success;
+                        Data.UserState = UserOperatorStateType.Success;
+                        Data.ZeroState = ZeroOperatorStateType.Ok;
                         return Data.ResultMessage = ApiResult.SucceesJson;
                     }
                     else
                     {
-                        Data.Status = ZeroOperatorStatus.NetWorkError;
+                        Data.UserState = UserOperatorStateType.NetWorkError;
+                        Data.ZeroState = ZeroOperatorStateType.NetError;
                         return Data.ResultMessage = ApiResult.NetworkErrorJson;
                     }
                 default:
-                    Data.Status = ZeroOperatorStatus.NotFind;
+                    Data.UserState = UserOperatorStateType.NotFind;
+                    Data.ZeroState = ZeroOperatorStateType.NotFind;
                     return Data.ResultMessage = ApiResult.NoFindJson;
             }
             

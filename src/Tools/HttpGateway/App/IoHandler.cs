@@ -3,8 +3,12 @@ using System.Text;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
+using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
+using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
+using ZeroMQ;
 
 namespace ZeroNet.Http.Gateway
 {
@@ -20,6 +24,7 @@ namespace ZeroNet.Http.Gateway
         public static void OnBegin(RouteData data)
         {
             data.Start = DateTime.Now;
+            BeginZeroTrace(data);
             BeginMonitor(data);
         }
 
@@ -29,8 +34,11 @@ namespace ZeroNet.Http.Gateway
         public static void OnEnd(RouteData data)
         {
             EndMonitor(data);
-            CountApi(data);
+            //CountApi(data);
+            EndZeroTrace(data);
         }
+
+        #region LogMonitor
 
         /// <summary>
         ///     开始日志监测
@@ -49,6 +57,7 @@ namespace ZeroNet.Http.Gateway
                 args.Append(JsonConvert.SerializeObject(data.Headers));
                 LogRecorder.MonitorTrace(args.ToString());
                 LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
+                LogRecorder.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
             }
             catch (Exception e)
             {
@@ -77,7 +86,8 @@ namespace ZeroNet.Http.Gateway
                     LogRecorder.MonitorTrace($"Form：{data.HttpForm}");
                 if (!string.IsNullOrWhiteSpace(data.HttpContext))
                     LogRecorder.MonitorTrace("Context:" + data.HttpContext);
-                LogRecorder.MonitorTrace($"Status : {data.Status}");
+                LogRecorder.MonitorTrace($"UserState : {data.UserState}");
+                LogRecorder.MonitorTrace($"ZeroState : {data.ZeroState}");
                 LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
             }
             catch (Exception e)
@@ -90,6 +100,100 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.EndMonitor();
             }
         }
+
+        #endregion
+
+        #region ZeroTrace
+
+
+        /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        private static readonly byte[] Description =
+        {
+            6,
+            (byte)ZeroByteCommand.General,
+            ZeroFrameType.Command,
+            ZeroFrameType.TextContent,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Station,
+            ZeroFrameType.Requester,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.End,
+            1
+        };
+
+        private static readonly byte[] begin = "Call".ToZeroBytes();
+        private static readonly byte[] web = "WebClient".ToZeroBytes();
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <returns></returns>
+        static void BeginZeroTrace(RouteData data)
+        {
+            var socket = ZeroConnectionPool.GetSocket("TraceDispatcher", RandomOperate.Generate(8));
+            if (socket?.Socket == null)
+            {
+                return;
+            }
+            using (socket)
+            {
+                var result = ZeroPublishExtend.Publish(socket.Socket, "Http", Description,
+                    begin,
+                    data.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    ZeroApplication.AppName.ToZeroBytes(),
+                    web,
+                    GlobalContext.ServiceKey.ToZeroBytes());
+                if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
+                {
+                    GlobalContext.Current.Request.LocalGlobalId = result.GlobalId;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <returns></returns>
+        static void EndZeroTrace(RouteData data)
+        {
+            var socket = ZeroConnectionPool.GetSocket("TraceDispatcher", RandomOperate.Generate(8));
+            if (socket?.Socket == null)
+            {
+                return;
+            }
+
+            var desc = new byte[]
+            {
+                9,
+                (byte)data.ZeroState,
+                ZeroFrameType.Command,
+                ZeroFrameType.TextContent,
+                ZeroFrameType.TextContent,
+                ZeroFrameType.RequestId,
+                ZeroFrameType.Station,
+                ZeroFrameType.Requester,
+                ZeroFrameType.GlobalId,
+                ZeroFrameType.CallId,
+                ZeroFrameType.SerivceKey,
+                3
+            };
+            using (socket)
+            {
+                ZeroPublishExtend.Publish(socket.Socket, "Http", desc,
+                    begin,
+                    data.ResultMessage.ToZeroBytes(),
+                    data.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    ZeroApplication.AppName.ToZeroBytes(),
+                    web,
+                    GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                    GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
+            }
+        }
+        #endregion
 
         //private static int count, error, success;
         /// <summary>
@@ -107,7 +211,7 @@ namespace ZeroNet.Http.Gateway
                 End = DateTime.Now.Ticks,
                 HostName = data.HostName,
                 ApiName = data.ApiName,
-                Status = data.Status,
+                Status = data.UserState,
                 Requester = $"http_route={GlobalContext.RequestInfo.Ip}:{GlobalContext.RequestInfo.Port}"
             });
             //ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");

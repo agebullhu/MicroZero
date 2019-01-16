@@ -250,7 +250,7 @@ namespace Agebull.ZeroNet.ZeroApi
             //    return;
             //}
 
-            var socket = ZSocket.CreateClientSocket(_address, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false,Station));
+            var socket = ZSocket.CreateClientSocket(_address, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false, Station));
             if (socket == null)
             {
                 _result = "no ready";
@@ -296,7 +296,8 @@ namespace Agebull.ZeroNet.ZeroApi
             ZeroFrameType.TextContent,
             ZeroFrameType.Requester,
             ZeroFrameType.Responser,
-            ZeroFrameType.GlobalId
+            ZeroFrameType.GlobalId,
+            ZeroFrameType.End
         };
 
         /// <summary>
@@ -335,81 +336,31 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         private static ZeroResultData Receive(ZSocket socket)
         {
-            int cnt = 0;
-            ZMessage messages;
-            while (!socket.Recv(out messages))
+            ZMessage frames;
+            if (!socket.Recv(out frames))
             {
-                if (socket.LastError.IsError(ZError.Code.EAGAIN))
-                    break;
-                if (++cnt <= 3)
-                    continue;
-                ZeroTrace.WriteError("Receive", socket.Connects.LinkToString(','),
+                ZeroTrace.WriteError("Receive",
                     socket.LastError.Text,
+                    socket.Endpoint,
                     $"Socket Ptr:{socket.SocketPtr}");
                 return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalRecvError
                 };
             }
-
-            if (messages.Count == 0)
-            {
-                return new ZeroResultData
-                {
-                    State = ZeroOperatorStateType.FrameInvalid,
-                    Message = "网络格式错误"
-                };
-            }
             try
             {
-                var description = messages[0].Read();
-                if (description.Length == 0)
-                {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','),
-                        description.LinkToString(p => p.ToString("X2"), ""), $"Socket Ptr:{socket.SocketPtr}.");
-                    return new ZeroResultData
-                    {
-                        State = ZeroOperatorStateType.FrameInvalid,
-                        Message = "网络格式错误"
-                    };
-                }
-
-                var end = description[0] + 1;
-                if (end != messages.Count)
-                {
-                    ZeroTrace.WriteError("Receive", "LaoutError", socket.Connects.LinkToString(','),
-                        $"FrameSize{messages.Count}", description.LinkToString(p => p.ToString("X2"), ""),
-                        $"Socket Ptr:{socket.SocketPtr}.");
-                    return new ZeroResultData
-                    {
-                        State = ZeroOperatorStateType.FrameInvalid,
-                        Message = "网络格式错误"
-                    };
-                }
-
-                var result = new ZeroResultData
-                {
-                    InteractiveSuccess = true,
-                    State = (ZeroOperatorStateType)description[1]
-                };
-                for (var idx = 1; idx < end; idx++)
-                    result.Add(description[idx + 1], Encoding.UTF8.GetString(messages[idx].Read()));
-
-                return result;
+                return ZeroResultData.Unpack<ZeroResultData>(frames,true);
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, socket.Connects.LinkToString(','),
+                ZeroTrace.WriteException("Receive", e, socket.Endpoint,
                     $"Socket Ptr:{socket.SocketPtr}.");
                 return new ZeroResultData
                 {
                     State = ZeroOperatorStateType.LocalException,
                     Exception = e
                 };
-            }
-            finally
-            {
-                messages.Dispose();
             }
         }
 

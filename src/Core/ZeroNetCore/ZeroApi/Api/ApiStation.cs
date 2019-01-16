@@ -63,12 +63,13 @@ namespace Agebull.ZeroNet.ZeroApi
 
             int i = 0;
             var des = new byte[10 + item.Originals.Count];
-            des[i++] = (byte)(5 + item.Originals.Count);
+            des[i++] = (byte)(6 + item.Originals.Count);
             des[i++] = (byte)state;
             des[i++] = ZeroFrameType.Requester;
             des[i++] = ZeroFrameType.RequestId;
             des[i++] = ZeroFrameType.CallId;
             des[i++] = ZeroFrameType.GlobalId;
+            des[i++] = ZeroFrameType.JsonValue;
             var msg = new List<byte[]>
             {
                 item.Caller,
@@ -76,14 +77,9 @@ namespace Agebull.ZeroNet.ZeroApi
                 item.Requester.ToZeroBytes(),
                 item.RequestId.ToZeroBytes(),
                 item.CallId.ToZeroBytes(),
-                item.GlobalId.ToZeroBytes()
+                item.GlobalId.ToZeroBytes(),
+                item.Result.ToZeroBytes()
             };
-            if (item.Result != null)
-            {
-                des[i++] = ZeroFrameType.JsonValue;
-                msg.Add(item.Result.ToZeroBytes());
-            }
-
             foreach (var org in item.Originals)
             {
                 des[i++] = org.Key;

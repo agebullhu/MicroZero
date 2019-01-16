@@ -312,12 +312,14 @@ namespace agebull
 
 			shared_char& set_time(const time_t value)
 			{
-				if (size_ < 16)
+				if (size_ < 32)
 				{
-					alloc(16);
+					alloc(32);
 				}
 				is_binary_ = 1;
-				sprintf(reinterpret_cast<char*>(buffer_), "%d", value);
+				var cht = reinterpret_cast<char*>(buffer_);
+				sprintf(cht, "%d", value);
+				size_ = strlen(cht);
 				return *this;
 			}
 
@@ -328,7 +330,9 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(reinterpret_cast<char*>(buffer_), "%d", value);
+				var cht = reinterpret_cast<char*>(buffer_);
+				sprintf(cht, "%d", value);
+				size_ = strlen(cht);
 				return *this;
 			}
 			shared_char& set_intx(const int value)
@@ -338,28 +342,34 @@ namespace agebull
 					alloc(16);
 				}
 				is_binary_ = 1;
-				sprintf(reinterpret_cast<char*>(buffer_), "%x", value);
+				var cht = reinterpret_cast<char*>(buffer_);
+				sprintf(cht, "%x", value);
+				size_ = strlen(cht);
 				return *this;
 			}
 			shared_char& set_int64(const int64 value)
 			{
-				if (size_ < 16)
+				if (size_ < 32)
 				{
-					alloc(16);
+					alloc(32);
 				}
 				is_binary_ = 1;
-				sprintf(reinterpret_cast<char*>(buffer_), "%lld", value);
+				var cht = reinterpret_cast<char*>(buffer_);
+				sprintf(cht, "%lld", value);
+				size_ = strlen(cht);
 				return *this;
 			}
 
 			shared_char& set_int64x(const int64 value)
 			{
-				if (size_ < 16)
+				if (size_ < 32)
 				{
-					alloc(16);
+					alloc(32);
 				}
 				is_binary_ = 1;
-				sprintf(reinterpret_cast<char*>(buffer_), "%llx", value);
+				var cht = reinterpret_cast<char*>(buffer_);
+				sprintf(cht, "%llx", value);
+				size_ = strlen(cht);
 				return *this;
 			}
 

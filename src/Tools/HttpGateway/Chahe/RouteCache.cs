@@ -74,7 +74,7 @@ namespace ZeroNet.Http.Gateway
                 return;
             CacheData cacheData;
             if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) &&
-                data.Status == ZeroOperatorStatus.RemoteError)
+                data.UserState == UserOperatorStateType.RemoteError)
                 cacheData = new CacheData
                 {
                     Content = data.ResultMessage,

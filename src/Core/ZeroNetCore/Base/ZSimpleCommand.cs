@@ -30,7 +30,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         /// <param name="args">请求参数,第一个必须为命令名称</param>
         /// <returns></returns>
-        public ZeroResultData CallCommand(params string[] args)
+        public ZeroResult CallCommand(params string[] args)
         {
             byte[] description = new byte[5 + args.Length];
             description[0] = (byte)(args.Length + 1);
@@ -71,7 +71,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public ZSocket Socket { private get; set; }
 
-        private readonly object LockObj = new object();
+        private readonly object _lockObj = new object();
 
         /// <summary>
         ///     发起一次请求
@@ -79,7 +79,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        protected ZeroResultData CallCommand(byte[] description, params string[] args)
+        protected ZeroResult CallCommand(byte[] description, params string[] args)
         {
             return IsInner ? CallCommandInner2(description, args) : CallCommandInner(description, args);
         }
@@ -90,19 +90,19 @@ namespace Agebull.ZeroNet.Core
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        protected ZeroResultData CallCommandInner(byte[] description, params string[] args)
+        protected ZeroResult CallCommandInner(byte[] description, params string[] args)
         {
-            lock (LockObj)
+            lock (_lockObj)
             {
                 if (Socket == null)
                 {
                     if (ManageAddress == null)
                         ManageAddress = GetAddress();
                     if (ManageAddress == null)
-                        return new ZeroResultData
+                        return new ZeroResult
                         {
                             InteractiveSuccess = false,
-                            Message = "地址无效"
+                            ErrorMessage = "地址无效"
                         };
 
                     Socket = ZSocket.CreateDealerSocket(ManageAddress,ZeroIdentityHelper.CreateIdentity());
@@ -128,7 +128,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     Socket?.TryClose();
                     Socket = null;
-                    return new ZeroResultData
+                    return new ZeroResult
                     {
                         InteractiveSuccess = false,
                         Exception = e
@@ -143,7 +143,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        protected ZeroResultData CallCommandInner2(byte[] description, params string[] args)
+        protected ZeroResult CallCommandInner2(byte[] description, params string[] args)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace Agebull.ZeroNet.Core
             }
             catch (Exception e)
             {
-                return new ZeroResultData
+                return new ZeroResult
                 {
                     InteractiveSuccess = false,
                     Exception = e
@@ -172,7 +172,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="desicription"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static ZeroResultData SendTo(ZSocket socket, byte[] desicription, params string[] args)
+        public static ZeroResult SendTo(ZSocket socket, byte[] desicription, params string[] args)
         {
             var message = new ZMessage
             {
@@ -188,12 +188,12 @@ namespace Agebull.ZeroNet.Core
             }
             using (message)
                 if (socket.SendTo(message))
-                    return new ZeroResultData
+                    return new ZeroResult
                     {
                         State = ZeroOperatorStateType.Ok,
                         InteractiveSuccess = true
                     };
-            return new ZeroResultData
+            return new ZeroResult
             {
                 State = ZeroOperatorStateType.LocalRecvError,
                 ZmqError = socket.LastError

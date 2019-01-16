@@ -187,7 +187,7 @@ namespace Agebull.ZeroNet.PubSub
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        public ZeroResultData CallCommand(long start, long end)
+        public ZeroResult CallCommand(long start, long end)
         {
             try
             {
@@ -198,7 +198,7 @@ namespace Agebull.ZeroNet.PubSub
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                return new ZeroResultData
+                return new ZeroResult
                 {
                     InteractiveSuccess = false,
                     Exception = e

@@ -260,13 +260,17 @@
 }
 
 @section Menus{
-    <el-aside class="message_boards" style="width:160px">
-        <el-menu @@select="menu_select"
-                 default-active="type-@Model.Name"
-                 class="el-menu-vertical-demo"
-                 background-color="#545c64"
-                 text-color="#fff" unique-opened
-                 active-text-color="#ffd04b">
+    <el-menu :collapse="isCollapse" @@select="menu_select"
+             default-active="type-@filter"
+             background-color="#545c64"
+             text-color="#fff" unique-opened
+             active-text-color="#ffd04b">
+        
+        <el-submenu index="root">
+            <template slot="title">
+                <i class="el-icon-star-off"></i>
+                <span>站点分类</span>
+            </template>
             <el-menu-item index="type-api">
                 <template slot="title">
                     <i class="el-icon-star-off"></i>
@@ -297,8 +301,8 @@
                     <span>系统站点</span>
                 </template>
             </el-menu-item>
-        </el-menu>
-    </el-aside>
+        </el-submenu>
+    </el-menu>
 }
 <template v-for="config in configs">
     <el-card shadow="hover" style="margin:8px;padding :2px;width:280px; height: 320px;display:inline-block">

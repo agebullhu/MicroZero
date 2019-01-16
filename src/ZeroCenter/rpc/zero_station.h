@@ -208,19 +208,12 @@ namespace agebull
 			* \brief 调用集合的响应
 			*/
 			void on_request(zmq_pollitem_t& socket, bool inner);
+		protected:
 
 			/**
 			* \brief 简单命令
 			*/
-			bool simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner);
-		protected:
-			/**
-			* \brief 内部扩展命令
-			*/
-			virtual bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner)
-			{
-				return false;
-			}
+			virtual bool simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner);
 		private:
 			/**
 			* \brief 请求取得全局标识
@@ -263,6 +256,9 @@ namespace agebull
 
 			/**
 			* \brief 网络数据跟踪
+			* \param io [in] 1 请求数据(from client) 2 下发数据(to worker) 3 返回数据(worker to client)
+			* \param list 帧数据
+			* \param err_msg 发生的错误描述
 			*/
 			virtual void trace(uchar io, vector<shared_char> list, const char* err_msg);
 
@@ -347,22 +343,24 @@ namespace agebull
 			if (socket == nullptr)
 				return zmq_socket_state::unknow;
 			config_->worker_out++;
+
+			zmq_socket_state state;
 			{
-				//boost::lock_guard<boost::mutex> guard(send_mutex_);
-				zmq_state_ = socket_ex::send(socket, datas, 0);
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
+				state = socket_ex::send(socket, datas, 0);
 			}
-			if (zmq_state_ == zmq_socket_state::succeed)
+			if (state == zmq_socket_state::succeed)
 			{
 				if (do_trace)
 					trace(2, datas, nullptr);
-				return zmq_state_;
+				return state;
 			}
 			config_->worker_err++;
-			const char* err_msg = socket_ex::state_str(zmq_state_);
+			const char* err_msg = socket_ex::state_str(state);
 			config_->error("send_response", err_msg);
 			if (do_trace)
 				trace(2, datas, err_msg);
-			return zmq_state_;
+			return state;
 		}
 
 		/**
@@ -426,7 +424,7 @@ namespace agebull
 				descirpt.append_frame(zero_def::frame::requester);
 				ls.push_back(vector_str(list, reqid_idx));
 			}
-			if (reqid_idx > 0)
+			if (reqer_idx > 0)
 			{
 				descirpt.append_frame(zero_def::frame::request_id);
 				ls.push_back(vector_str(list, reqer_idx));
@@ -460,7 +458,7 @@ namespace agebull
 				descirpt.append_frame(zero_def::frame::requester);
 				ls.push_back(vector_str(list, reqid_idx));
 			}
-			if (reqid_idx > 0)
+			if (reqer_idx > 0)
 			{
 				descirpt.append_frame(zero_def::frame::request_id);
 				ls.push_back(vector_str(list, reqer_idx));
@@ -485,19 +483,20 @@ namespace agebull
 		*/
 		inline bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls, bool do_trace)
 		{
+			zmq_socket_state state;
 			{
-				//boost::lock_guard<boost::mutex> guard(send_mutex_);
-				zmq_state_ = socket_ex::send(socket, ls);
+				boost::lock_guard<boost::mutex> guard(send_mutex_);
+				state = socket_ex::send(socket, ls);
 			}
 			config_->request_out++;
-			if (zmq_state_ == zmq_socket_state::succeed)
+			if (state == zmq_socket_state::succeed)
 			{
 				if (do_trace)
 					trace(3, ls, nullptr);
 				return true;
 			}
 			++config_->request_err;
-			const char* err_msg = socket_ex::state_str(zmq_state_);
+			const char* err_msg = socket_ex::state_str(state);
 			config_->error("send_request_result", err_msg, *ls[0]);
 			if (do_trace)
 				trace(3, ls, err_msg);

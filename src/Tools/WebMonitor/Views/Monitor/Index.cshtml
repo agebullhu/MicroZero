@@ -2,6 +2,42 @@
 @using Newtonsoft.Json
 @using ZeroNet.Http.Route
 @model StationConfig
+
+@functions {
+    private string GetIcon(ZeroStationType type)
+    {
+        switch (type)
+        {
+            case ZeroStationType.Api:
+            case ZeroStationType.RouteApi:
+            {
+                return "el-icon-star-on";
+                break;
+            }
+            case ZeroStationType.Vote:
+            {
+                return "el-icon-star-off";
+                break;
+            }
+            case ZeroStationType.Notify:
+            case ZeroStationType.Queue:
+            {
+                return "el-icon-share";
+                break;
+            }
+            case ZeroStationType.Plan:
+            {
+                return "el-icon-time";
+                break;
+            }
+            default:
+            {
+                return "el-icon-setting";
+                break;
+            }
+        }
+    }
+}
 @{
     var item = StationCounter.StationCountItems.ContainsKey(Model.Name) ? StationCounter.StationCountItems[Model.Name] : new StationCountItem();
     var klines = StationCounter.KLines.ContainsKey(Model.Name) ? StationCounter.KLines[Model.Name] : new List<KLine>();
@@ -62,6 +98,7 @@
             margin: 0 auto;
             max-width: 248px;
         }
+
         .menu_boards {
             overflow: auto;
             text-align: left;
@@ -426,55 +463,32 @@
 }
 
 @section Menus{
-    <div class="menu_boards">
+    <el-menu :collapse="isCollapse" 
+             default-active="@Model.Name"
+             @@select="menu_select"
+             background-color="#545c64"
+             text-color="#fff" unique-opened
+             active-text-color="#ffd04b">
 
-        <el-aside class="menu_panel">
-            <el-menu default-active="@Model.Name"
-                     @@select="menu_select"
-                     background-color="#545c64"
-                     text-color="#fff" unique-opened
-                     active-text-color="#ffd04b">
-                @foreach (var station in stations)
+        @foreach (var groups in stations.GroupBy(p => p.StationType))
+        {
+            <el-submenu index="@groups.Key">
+                <template slot="title">
+                    <i class="@(GetIcon(groups.Key))"></i>
+                    <span>@groups.Key</span>
+                </template>
+                @foreach (var station in groups)
                 {
                     <el-menu-item index="@station.Name">
                         <template slot="title">
-                            @switch (station.StationType)
-                            {
-                                case ZeroStationType.Api:
-                                case ZeroStationType.RouteApi:
-                                    {
-                                        <i class="el-icon-star-on"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Vote:
-                                    {
-                                        <i class="el-icon-star-off"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Notify:
-                                case ZeroStationType.Queue:
-                                    {
-                                        <i class="el-icon-share"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Plan:
-                                    {
-                                        <i class="el-icon-time"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Dispatcher:
-                                    {
-                                        <i class="el-icon-setting"></i>
-                                        break;
-                                    }
-                            }
+                            <i class="@(GetIcon(groups.Key))"></i>
                             <span>@station.Name</span>
                         </template>
                     </el-menu-item>
                 }
-            </el-menu>
-        </el-aside>
-    </div>
+            </el-submenu>
+        }
+    </el-menu>
 }
 
 <el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">

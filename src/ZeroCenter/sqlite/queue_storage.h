@@ -36,10 +36,12 @@ namespace agebull
 			/**
 			 * \brief 构造
 			 */
-			 ~queue_storage() override
+			~queue_storage() override
 			{
-				sqlite3_finalize(insert_stmt_);
-				sqlite3_finalize(load_stmt_);
+				if (insert_stmt_)
+					sqlite3_finalize(insert_stmt_);
+				if (load_stmt_)
+					sqlite3_finalize(load_stmt_);
 			}
 
 			/**

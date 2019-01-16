@@ -81,7 +81,7 @@ namespace Agebull.Common.Tson
                         data.ApiName = serializer.ReadString();
                         break;
                     case Index_Status:
-                        data.Status = (ZeroOperatorStatus)serializer.ReadInt();
+                        data.Status = (UserOperatorStateType)serializer.ReadInt();
                         break;
                     case Index_Machine:
                         data.Machine = serializer.ReadString();

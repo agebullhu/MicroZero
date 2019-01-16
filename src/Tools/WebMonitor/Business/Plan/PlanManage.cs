@@ -353,11 +353,9 @@ namespace ZeroNet.Http.Route
                     return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
                 }
 
-                using (message)
-                {
-                    var value = message.Unpack();
-                    return value.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, value.State.Text());
-                }
+                PlanItem.Unpack(message, out var item);
+                return item.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, item.State.Text());
+
             }
 
         }

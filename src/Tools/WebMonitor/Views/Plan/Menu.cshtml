@@ -2,104 +2,57 @@
 @using ZeroNet.Http.Route
 @using Agebull.Common.Ioc
 @using Agebull.ZeroNet.Core
+
+@functions {
+private string GetIcon(ZeroStationType type)
+{
+    switch (type)
+    {
+        case ZeroStationType.Api:
+        case ZeroStationType.RouteApi:
+            {
+                return "el-icon-star-on";
+                break;
+            }
+        case ZeroStationType.Vote:
+            {
+                return "el-icon-star-off";
+                break;
+            }
+        case ZeroStationType.Notify:
+        case ZeroStationType.Queue:
+            {
+                return "el-icon-share";
+                break;
+            }
+        case ZeroStationType.Plan:
+            {
+                return "el-icon-time";
+                break;
+            }
+        default:
+            {
+                return "el-icon-setting";
+                break;
+            }
+    }
+}
+}
 @{
     var options = ZeroApplication.Config.GetConfigs().Where(p => !p.IsBaseStation).OrderBy(p => p.RequestPort).ToArray();
 }
-<el-aside class="message_boards" style="width:240px">
-    <el-menu default-active="type"
-             @@select="menu_select"
-             class="el-menu-vertical-demo"
-             background-color="#545c64"
-             text-color="#fff" unique-opened
-             active-text-color="#ffd04b">
 
-        <el-menu-item index="type-active">
-            <template slot="title">
-                <i class="el-icon-time"></i>
-                <span>活动数据</span>
-            </template>
-        </el-menu-item>
-        <el-menu-item index="type-history">
-            <template slot="title">
-                <i class="el-icon-time"></i>
-                <span>历史数据</span>
-            </template>
-        </el-menu-item>
-        <el-submenu index="type">
-            <template slot="title">
-                <i class="el-icon-time"></i>
-                <span>计划类型</span>
-            </template>
-            <el-menu-item-group>
-                <el-menu-item index="type-once">
-                    <template slot="title">
-                        <i class="el-icon-time"></i>
-                        <span>单次</span>
-                    </template>
-                </el-menu-item>
-                <el-menu-item index="type-time">
-                    <template slot="title">
-                        <i class="el-icon-time"></i>
-                        <span>定时</span>
-                    </template>
-                </el-menu-item>
-                <el-menu-item index="type-delay">
-                    <template slot="title">
-                        <i class="el-icon-bell"></i>
-                        <span>延时</span>
-                    </template>
-                </el-menu-item>
-                <el-menu-item index="type-week">
-                    <template slot="title">
-                        <i class="el-icon-date"></i>
-                        <span>每周</span>
-                    </template>
-                </el-menu-item>
-                <el-menu-item index="type-month">
-                    <template slot="title">
-                        <i class="el-icon-date"></i>
-                        <span>每月</span>
-                    </template>
-                </el-menu-item>
-            </el-menu-item-group>
-        </el-submenu>
-        <el-submenu index="station">
-            <template slot="title">
-                <i class="el-icon-menu"></i>
-                <span>站点</span>
-            </template>
-            <el-menu-item-group>
-                @foreach (var station in options)
-                {
-                    <el-menu-item index="station-@station.Name">
-                        <template slot="title">
-                            @switch (station.StationType)
-                            {
-                                case ZeroStationType.Api:
-                                case ZeroStationType.RouteApi:
-                                    {
-                                        <i class="el-icon-star-on"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Vote:
-                                    {
-                                        <i class="el-icon-star-off"></i>
-                                        break;
-                                    }
-                                case ZeroStationType.Notify:
-                                case ZeroStationType.Queue:
-                                    {
-                                        <i class="el-icon-share"></i>
-                                        break;
-                                    }
-                            }
-                            <span>@station.Name</span>
-                        </template>
-                    </el-menu-item>
-                }
-            </el-menu-item-group>
-        </el-submenu>
+<el-menu :collapse="isCollapse" default-active="type-active"
+         @@select="menu_select"
+         background-color="#545c64"
+         text-color="#fff" unique-opened
+         active-text-color="#ffd04b">
 
+    <el-submenu index="operator">
+        <template slot="title">
+            <i class="el-icon-edit"></i>
+            <span>操作</span>
+        </template>
         <el-menu-item index="operator-add">
             <template slot="title">
                 <i class="el-icon-circle-plus-outline"></i>
@@ -112,5 +65,81 @@
                 <span>刷新</span>
             </template>
         </el-menu-item>
-    </el-menu>
-</el-aside>
+    </el-submenu>
+    <el-submenu index="plan-data">
+        <template slot="title">
+            <i class="el-icon-date"></i>
+            <span>数据类型</span>
+        </template>
+        <el-menu-item index="type-active">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>活动数据</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-history">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>历史数据</span>
+            </template>
+        </el-menu-item>
+    </el-submenu>
+    <el-submenu index="plan-type">
+        <template slot="title">
+            <i class="el-icon-time"></i>
+            <span>计划类型</span>
+        </template>
+        <el-menu-item index="type-once">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>单次</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-time">
+            <template slot="title">
+                <i class="el-icon-time"></i>
+                <span>定时</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-delay">
+            <template slot="title">
+                <i class="el-icon-bell"></i>
+                <span>延时</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-week">
+            <template slot="title">
+                <i class="el-icon-date"></i>
+                <span>每周</span>
+            </template>
+        </el-menu-item>
+        <el-menu-item index="type-month">
+            <template slot="title">
+                <i class="el-icon-date"></i>
+                <span>每月</span>
+            </template>
+        </el-menu-item>
+    </el-submenu>
+    <el-submenu index="station">
+        <template slot="title">
+            <i class="el-icon-menu"></i>
+            <span>站点</span>
+        </template>
+        @foreach (var group in options.GroupBy(p => p.StationType))
+        {
+            <el-menu-item-group title="@group.Key">
+                @foreach (var station in group)
+                {
+                    <el-menu-item index="station-@station.Name">
+                        <template slot="title">
+                            <i class="@GetIcon(station.StationType)"></i>
+                            <span>@station.Name</span>
+                        </template>
+                    </el-menu-item>
+                }
+
+            </el-menu-item-group>
+        }
+    </el-submenu>
+
+</el-menu>

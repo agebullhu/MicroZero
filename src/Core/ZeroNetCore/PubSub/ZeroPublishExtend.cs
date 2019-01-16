@@ -1,8 +1,4 @@
 using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Json;
-using System.Text;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.PubSub;
 using ZeroMQ;
@@ -19,13 +15,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionTson =
         {
-            6,
+            7,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.TsonValue,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -35,13 +32,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionJson =
         {
-            6,
+            7,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.TextContent,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -50,13 +48,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionData =
         {
-            6,
+            7,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.BinaryValue,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -66,7 +65,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionTson2 =
         {
-            7,
+            8,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
@@ -74,6 +73,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.Publisher,
             ZeroFrameType.TsonValue,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -83,7 +83,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionJson2 =
         {
-            7,
+            8,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
@@ -91,6 +91,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.Publisher,
             ZeroFrameType.TextContent,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -99,7 +100,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static byte[] PubDescriptionData2 =
         {
-            7,
+            8,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
@@ -107,6 +108,7 @@ namespace Agebull.ZeroNet.Core
             ZeroFrameType.Publisher,
             ZeroFrameType.BinaryValue,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -116,28 +118,16 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static readonly byte[] PubDescriptionEmpty =
         {
-            5,
+            6,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
             ZeroFrameType.RequestId,
             ZeroFrameType.Publisher,
             ZeroFrameType.Context,
+            ZeroFrameType.CallId,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
-
-
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Publish<T>(this ZSocket socket, T content)
-            where T : class, IPublishData
-        {
-            return content != null && Publish(socket, PubDescriptionJson, content.Title, content.ToZeroBytes());
-        }
 
         /// <summary>
         ///     发送广播
@@ -164,18 +154,9 @@ namespace Agebull.ZeroNet.Core
         public static bool Publish<T>(this ZSocket socket, string title, string subTitle, T content)
             where T : class
         {
-            DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(T));
-            byte[] buffer;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                js.WriteObject(ms, content);
-                ms.Flush();
-                ms.Seek(0, SeekOrigin.Begin);
-                buffer = ms.ToArray();
-            }
             return subTitle == null
-                ? Publish(socket, PubDescriptionData, title, buffer)
-                : Publish(socket, PubDescriptionData2, title, subTitle, buffer);
+                ? Publish(socket, PubDescriptionData, title, content.ToZeroBytes())
+                : Publish(socket, PubDescriptionData2, title, subTitle, content.ToZeroBytes());
         }
 
         /// <summary>
@@ -207,58 +188,20 @@ namespace Agebull.ZeroNet.Core
         ///     发送广播
         /// </summary>
         /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Publish(this ZSocket socket, string title, string subTitle, string content)
-        {
-            return Publish(socket, PubDescriptionJson2, title, subTitle, content.ToZeroBytes());
-        }
-
-
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
         /// <param name="socket"></param>
         /// <returns></returns>
         public static bool Publish(this ZSocket socket, string title)
         {
             if (socket == null)
                 return false;
-            try
-            {
-                if (!socket.SendTo(PubDescriptionEmpty,
-                    title.ToZeroBytes(),
-                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    ZeroApplication.Config.RealName.ToZeroBytes(),
-                    GlobalContext.Current.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes()))
-                {
-                    ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint, title);
-                    return false;
-                }
-                var result = socket.ReceiveString();
-                return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Pub", e, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}");
-                return false;
-            }
-        }
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Publish(this ZSocket socket, string title, string subTitle, byte[] content)
-        {
-            return Publish(socket, PubDescriptionJson2, title, subTitle, content);
+            var result = Publish(socket, title, PubDescriptionEmpty,
+                title.ToZeroBytes(),
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                ZeroApplication.Config.RealName.ToZeroBytes(),
+                GlobalContext.Current.ToZeroBytes(),
+                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                GlobalContext.ServiceKey.ToZeroBytes());
+            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
         /// <summary>
@@ -274,28 +217,16 @@ namespace Agebull.ZeroNet.Core
         {
             if (socket == null)
                 return false;
-            try
-            {
-                if (!socket.SendTo(description,
-                    title.ToZeroBytes(),
-                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    subTitle.ToZeroBytes(),
-                    ZeroApplication.Config.RealName.ToZeroBytes(),
-                    content,
-                    GlobalContext.Current.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes()))
-                {
-                    ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint, title, subTitle);
-                    return false;
-                }
-                var result = socket.ReceiveString();
-                return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Pub", e, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}");
-                return false;
-            }
+            var result = Publish(socket, title, description,
+                title.ToZeroBytes(),
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                subTitle.ToZeroBytes(),
+                ZeroApplication.Config.RealName.ToZeroBytes(),
+                content,
+                GlobalContext.Current.ToZeroBytes(),
+                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                GlobalContext.ServiceKey.ToZeroBytes());
+            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
 
@@ -307,130 +238,180 @@ namespace Agebull.ZeroNet.Core
         /// <param name="content"></param>
         /// <param name="socket"></param>
         /// <returns></returns>
-        public static bool Publish(this ZSocket socket, byte[] description, string title, byte[] content)
+        private static bool Publish(ZSocket socket, byte[] description, string title, byte[] content)
         {
             if (socket == null)
                 return false;
+            var result = Publish(socket, title, description,
+                title.ToZeroBytes(),
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                ZeroApplication.Config.RealName.ToZeroBytes(),
+                content,
+                GlobalContext.Current.ToZeroBytes(),
+                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                GlobalContext.ServiceKey.ToZeroBytes());
+            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="title"></param>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static ZeroResult Publish(ZSocket socket, string title, params byte[][] frames)
+        {
             try
             {
-                if (!socket.SendTo(description,
+                if (socket.SendTo(frames))
+                    return socket.ReceiveString();
+                ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
+                return new ZeroResult
+                {
+                    State = ZeroOperatorStateType.NetError,
+                    ErrorMessage = socket.LastError.Text
+                };
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Pub", e, title, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}");
+                return new ZeroResult
+                {
+                    State = ZeroOperatorStateType.LocalException,
+                    Exception = e,
+                    ErrorMessage = e.Message
+                };
+            }
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static ZeroResult PublishByOrg(this ZSocket socket, string title, string subTitle, string content)
+        {
+            return PublishByOrg(socket, title, subTitle, content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static ZeroResult PublishByOrg<T>(this ZSocket socket, string title, string subTitle, T content)
+            where T : class
+        {
+            return PublishByOrg(socket, title, subTitle, content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        private static ZeroResult PublishByOrg(this ZSocket socket, string title, string subTitle, byte[] content)
+        {
+            if (socket == null)
+                return new ZeroResult
+                {
+                    State = ZeroOperatorStateType.ArgumentInvalid,
+                    ErrorMessage = "参数错误"
+                };
+            return subTitle == null
+                ? Publish(socket, title, PubDescriptionJson,
                     title.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     ZeroApplication.Config.RealName.ToZeroBytes(),
                     content,
                     GlobalContext.Current.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes()))
-                {
-                    ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint, title);
-                    return false;
-                }
-                var result = socket.ReceiveString();
-                return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Pub", e, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}");
-                return false;
-            }
+                    GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes())
+                : Publish(socket, title, PubDescriptionJson2,
+                    title.ToZeroBytes(),
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    subTitle.ToZeroBytes(),
+                    ZeroApplication.Config.RealName.ToZeroBytes(),
+                    content,
+                    GlobalContext.Current.ToZeroBytes(),
+                    GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
         }
 
         /// <summary>
-        ///     广播消息解包
+        ///     发送广播
         /// </summary>
-        /// <param name="msg"></param>
-        /// <param name="item"></param>
-        /// <param name="showError"></param>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
         /// <returns></returns>
-        public static bool Unpack(this ZMessage msg, out PublishItem item, bool showError = true)
+        public static ZeroResult PublishNoGlobalId(this ZSocket socket, string title, string subTitle, string content)
         {
-            if (msg == null)
-            {
-                item = null;
-                return false;
-            }
+            return PublishByOrg(socket, title, subTitle, content.ToZeroBytes());
+        }
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static ZeroResult PublishNoGlobalId<T>(this ZSocket socket, string title, string subTitle, T content)
+            where T : class
+        {
+            return PublishNoGlobalId(socket, title, subTitle, content.ToZeroBytes());
+        }
 
-            byte[][] msgs;
-            using (msg)
-                msgs = msg.Select(p => p.Read()).ToArray();
-            try
-            {
-                if (msgs.Length < 3)
+        /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        private static readonly byte[] DescriptionNoGlobalId =
+        {
+            6,
+            (byte)ZeroByteCommand.General,
+            ZeroFrameType.SubTitle,
+            ZeroFrameType.TextContent,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.Station,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.End
+        };
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        private static ZeroResult PublishNoGlobalId(this ZSocket socket, string title, string subTitle, byte[] content)
+        {
+            if (socket == null)
+                return new ZeroResult
                 {
-                    item = null;
-                    return false;
-                }
-                var description = msgs[1];
-                if (description.Length < 2)
-                {
-                    item = null;
-                    return false;
-                }
-
-                int end = description[0] + 2;
-                if (end != msgs.Length)
-                {
-                    item = null;
-                    return false;
-                }
-
-                item = new PublishItem
-                {
-                    Title = Encoding.UTF8.GetString(msgs[0]),
-                    State = (ZeroOperatorStateType)description[1],
-                    ZeroEvent = (ZeroNetEventType)description[1]
+                    State = ZeroOperatorStateType.ArgumentInvalid,
+                    ErrorMessage = "参数错误"
                 };
-
-                for (int idx = 2; idx < end; idx++)
-                {
-                    var bytes = msgs[idx];
-                    if (bytes.Length == 0)
-                        continue;
-                    switch (description[idx])
-                    {
-                        case ZeroFrameType.SubTitle:
-                            item.SubTitle = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.Context:
-                            item.ContextJson = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.GlobalId:
-                            item.GlobalId = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.CallId:
-                            item.CallId = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.Station:
-                            item.Station = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.Publisher:
-                            item.Publisher = Encoding.UTF8.GetString(bytes);
-                            break;
-                        case ZeroFrameType.TextContent:
-                            if (item.Content == null)
-                                item.Content = Encoding.UTF8.GetString(bytes);
-                            else
-                                item.Values.Add(Encoding.UTF8.GetString(bytes));
-                            break;
-                        case ZeroFrameType.BinaryValue:
-                            item.Buffer = bytes;
-                            break;
-                        case ZeroFrameType.TsonValue:
-                            item.Tson = bytes;
-                            break;
-                        default:
-                            item.Values.Add(Encoding.UTF8.GetString(bytes));
-                            break;
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Unpack", e);
-                item = null;
-                return false;
-            }
+            return Publish(socket, title, DescriptionNoGlobalId,
+                    subTitle.ToZeroBytes(),
+                    content,
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                    ZeroApplication.AppName.ToZeroBytes(),
+                    ZeroApplication.AppName.ToZeroBytes(),
+                    GlobalContext.ServiceKey.ToZeroBytes());
         }
     }
 }

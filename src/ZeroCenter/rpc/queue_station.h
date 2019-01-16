@@ -70,7 +70,7 @@ namespace agebull
 			/**
 			* \brief 内部命令
 			*/
-			bool simple_command_ex(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) override;
+			bool simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) final;
 		};
 	}
 }
