@@ -256,8 +256,8 @@ namespace agebull
 			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
 			if (start_system_manage() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
-			//if (start_plan_dispatcher() == zero_def::net_state::failed)
-			//	return zero_def::net_state::failed;
+			if (start_plan_dispatcher() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
 			if (start_trace_dispatcher() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
 			//if (start_proxy_dispatcher() == zero_def::net_state::failed)
@@ -270,10 +270,10 @@ namespace agebull
 			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
 			for (int i = 0; i < 10; i++)
 			{
-				system_event(zero_net_event::event_system_start, zero_run_identity, ">>Wecome ZeroNet,luck every day!<<");
 				THREAD_SLEEP(200);
+				system_event(zero_net_event::event_system_start, zero_run_identity, ">>Wecome ZeroNet,luck every day!<<");
 			}
-			boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
+			sp = boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
 			log_msg1("$success(%lldms)\n", sp.total_milliseconds());
 			return net_state;
 		}
@@ -306,8 +306,6 @@ namespace agebull
 			net_state = zero_def::net_state::closed;
 			close_semaphore.post();
 			task_semaphore.wait();
-			//cout << endl << "***88888888888888888********" << endl;
-			//getchar();
 			net_state = zero_def::net_state::distory;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
@@ -318,9 +316,6 @@ namespace agebull
 			zmq_context = nullptr;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$zmq success(%lldms)", sp.total_milliseconds());
-
-			//getchar();
-			//cout << endl << "***888888888*****************88888888********" << endl;
 		}
 	}
 }

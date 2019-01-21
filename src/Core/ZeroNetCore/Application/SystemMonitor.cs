@@ -104,7 +104,7 @@ namespace Agebull.ZeroNet.Core
                     return;
             }
 
-            if (!ZeroApplication.InRun)
+            if (ZeroApplication.ZerCenterStatus >= ZeroCenterState.Failed)
             {
                 switch (zeroNetEvent)
                 {
@@ -115,10 +115,7 @@ namespace Agebull.ZeroNet.Core
                         return;
                 }
                 ZeroTrace.SystemLog(zeroNetEvent.ToString(), content);
-                if (ZeroApplication.ApplicationState == StationState.Failed)
-                {
-                    ZeroApplication.JoinCenter();
-                }
+                ZeroApplication.JoinCenter();
                 return;
             }
             switch (zeroNetEvent)
@@ -186,12 +183,12 @@ namespace Agebull.ZeroNet.Core
             if (identity == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = identity;
-            ZeroTrace.SystemLog("center_start", content);
-            if (Interlocked.CompareExchange(ref ZeroApplication.AppState, StationState.Initialized, StationState.Failed) == StationState.Failed)
+            ZeroTrace.SystemLog("center_start", $"{identity}:{ZeroApplication.ZerCenterStatus}:{ZeroCenterIdentity}");
+            if (ZeroApplication.ZerCenterStatus >= ZeroCenterState.Failed)
             {
                 ZeroApplication.JoinCenter();
             }
-            else if (ZeroApplication.AppState == StationState.Run)
+            else
             {
                 SystemManager.Instance.LoadAllConfig();
             }
@@ -203,11 +200,11 @@ namespace Agebull.ZeroNet.Core
             if (id == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = id;
-            ZeroTrace.SystemLog("center_closing", content);
-            if (Interlocked.CompareExchange(ref ZeroApplication.AppState, StationState.Closing, StationState.Run) == StationState.Run)
+            ZeroTrace.SystemLog("center_closing", $"{identity}:{ZeroApplication.ZerCenterStatus}:{ZeroCenterIdentity}");
+            if (ZeroApplication.ZerCenterStatus < ZeroCenterState.Closing)
             {
-                ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
                 ZeroApplication.ZerCenterStatus = ZeroCenterState.Closing;
+                ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
             }
@@ -219,7 +216,7 @@ namespace Agebull.ZeroNet.Core
             if (id == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = id;
-            ZeroTrace.SystemLog("center_stop ", content);
+            ZeroTrace.SystemLog("center_stop", $"{identity}:{ZeroApplication.ZerCenterStatus}:{ZeroCenterIdentity}");
             ZeroApplication.ZerCenterStatus = ZeroCenterState.Closed;
         }
 

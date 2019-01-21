@@ -71,6 +71,11 @@ namespace agebull
 			* \brief 内部命令
 			*/
 			bool simple_command(zmq_handler socket, vector<shared_char>& list, shared_char& description, bool inner) final;
+
+			/**
+			* \brief 内部命令
+			*/
+			static void async_replay(queue_station* queue, int64 min, int64 max);
 		};
 	}
 }

@@ -90,31 +90,22 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!Pools.TryGetValue(config.StationName, out pool))
                 {
+                    Pools.Add(config.StationName, new StationSocketPool
+                    {
+                        Config = config
+                    });
+                    return;
+                }
+                if (pool == null)
+                {
+                    Pools[config.StationName] = new StationSocketPool
+                    {
+                        Config = config
+                    };
                     return;
                 }
             }
-            switch (config.State)
-            {
-                case ZeroCenterState.Run when pool != null:
-                    pool.Resume();
-                    break;
-                case ZeroCenterState.Run:
-                    lock (Pools)
-                    {
-                        if (!Pools.ContainsKey(config.StationName))
-                        {
-                            Pools.Add(config.StationName, new StationSocketPool
-                            {
-                                Config = config
-                            });
-                        }
-                    }
-
-                    break;
-                default:
-                    pool?.Dispose();
-                    break;
-            }
+            pool.Resume();
         }
 
         /// <summary>

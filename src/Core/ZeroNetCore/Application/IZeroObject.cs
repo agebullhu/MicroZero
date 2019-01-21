@@ -366,9 +366,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (WorkModel != ZeroWorkModel.Service)
                 return;
-            if (ApplicationState >= StationState.Closed)
-                return;
-            ZeroTrace.SystemLog("Application", "[OnZeroEnd>>");
+            ZeroTrace.SystemLog("Application", $"[OnZeroEnd>>{ApplicationState}");
             RaiseEvent(ZeroNetEventType.AppStop);
             SystemManager.Instance.HeartLeft();
             CloseActiveObject();

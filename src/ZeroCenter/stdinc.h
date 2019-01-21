@@ -35,7 +35,7 @@
 #include <uuid/uuid.h>  
 #include "acl/acl_cpp/lib_acl.hpp"
 #include "acl/lib_acl.h"
-#include "zeromq/zmq.h"
+#include "zmq.h"
 #include "boostinc.h"
 #include <netdb.h>
 #include <sys/types.h>

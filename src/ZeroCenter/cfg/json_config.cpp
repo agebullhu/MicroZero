@@ -16,7 +16,8 @@ namespace agebull
 	int global_config::redis_defdb = 0x10;
 	int global_config::worker_sound_ivl = 2000;
 	char global_config::service_key[512] = "agebull";
-	
+
+
 	int global_config::IMMEDIATE = 1;
 	int global_config::LINGER = -1;
 	int global_config::SNDHWM = -1;

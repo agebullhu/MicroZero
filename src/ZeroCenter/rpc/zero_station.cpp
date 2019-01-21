@@ -112,7 +112,7 @@ namespace agebull
 
 			if (zero_def::station_type::is_general_station(station_type_))
 			{
-				proxy_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::proxy_dispatcher, station_name);
+				//proxy_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::proxy_dispatcher, station_name);
 				plan_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::plan_dispatcher, station_name);
 				trace_socket_inproc_ = socket_ex::create_req_socket_inproc(zero_def::name::trace_dispatcher, station_name);
 			}

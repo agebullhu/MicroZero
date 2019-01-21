@@ -74,26 +74,30 @@
         {
             switch (state)
             {
-                case None:
-                    return "None";
-                case ConfigError:
-                    return "ConfigError";
-                case Failed:
-                    return "Failed";
+                case None://0
+                    return nameof(None);
+                case ConfigError://1
+                    return nameof(ConfigError);
+                case Failed://2
+                    return nameof(Failed);
+                case Initialized: //3
+                    return nameof(Failed);
                 case Start: // 4;
-                    return "Start";
+                    return nameof(Start);
                 case BeginRun: // 5;
-                    return "BeginRun";
-                case Run: // 5;
-                    return "Run";
-                case Pause: // 6;
-                    return "Pause";
-                case Closing: // 7;
-                    return "Closing";
-                case Closed: // 8;
-                    return "Closed";
-                case Destroy: // 9;
-                    return "Destroy";
+                    return nameof(BeginRun);
+                case Run: // 6;
+                    return nameof(Run);
+                case Pause: // 7;
+                    return nameof(Pause);
+                case Closing: // 8;
+                    return nameof(Closing);
+                case Closed: // 9;
+                    return nameof(Closed);
+                case Destroy: // 10;
+                    return nameof(Destroy);
+                case Disposed: // 11;
+                    return nameof(Disposed);
                 default:
                     return "Undefine";
             }

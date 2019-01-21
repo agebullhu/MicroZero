@@ -53,10 +53,11 @@
     <Link>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
       <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>OmitDebuggerSymbolInformation</DebuggerSymbolInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <Version>false</Version>
+      <Version>true</Version>
+      <OptimizeforMemory>true</OptimizeforMemory>
     </Link>
     <ClCompile>
       <DebugInformationFormat>Minimal</DebugInformationFormat>
@@ -70,8 +71,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalOptions>-pthread -Bstatic -g %(AdditionalOptions)</AdditionalOptions>
-      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq-static;sqlite3;%(LibraryDependencies)</LibraryDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib;/usr/local/lib/boost;</AdditionalLibraryDirectories>
+      <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ClCompile>

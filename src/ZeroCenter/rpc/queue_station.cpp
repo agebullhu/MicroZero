@@ -20,16 +20,22 @@ namespace agebull
 				send_request_status(socket, *list[0], zero_def::status::ok, false);
 				int64 min = atoll(*list[2]);
 				int64 max = atoll(*list[3]);
-
-				storage_.load(min, max, [this](vector<shared_char>& data)
-				{
-					send_response(data, true);
-				});
+				boost::thread(async_replay, this, min,max);
 				return true;
 			}
 			return zero_station::simple_command( socket,list, description,inner);
 		}
 
+		/**
+		* \brief 内部命令
+		*/
+		void queue_station::async_replay(queue_station* queue,int64 min, int64 max)
+		{
+			queue->storage_.load(min, max, [queue](vector<shared_char>& data)
+			{
+				queue->send_response(data, true);
+			});
+		}
 		/**
 		* \brief 处理请求
 		*/

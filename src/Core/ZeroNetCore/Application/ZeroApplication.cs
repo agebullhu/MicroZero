@@ -82,7 +82,11 @@ namespace Agebull.ZeroNet.Core
         public static int ApplicationState
         {
             get => AppState;
-            internal set => Interlocked.Exchange(ref AppState, value);
+            internal set
+            {
+                Interlocked.Exchange(ref AppState, value);
+                ZeroTrace.SystemLog("ZeroApplication", StationState.Text(value));
+            }
         }
 
         /// <summary>
@@ -276,7 +280,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void WaitTask()
         {
-            Console.WriteLine("Zeronet application runing. Press Ctrl+C to shutdown.");
+            ZeroTrace.SystemLog("Zeronet application runing. Press Ctrl+C to shutdown.");
             WaitToken.Wait();
         }
 
@@ -289,10 +293,11 @@ namespace Agebull.ZeroNet.Core
             bool success;
             using (OnceScope.CreateScope(Config))
             {
+                ZerCenterStatus = ZeroCenterState.None;
                 ApplicationState = StationState.Start;
+                success = JoinCenter();
                 if (WorkModel == ZeroWorkModel.Service)
                     Task.Factory.StartNew(SystemMonitor.Monitor);
-                success = JoinCenter();
             }
             SystemMonitor.WaitMe();
             return success;
@@ -305,6 +310,7 @@ namespace Agebull.ZeroNet.Core
         {
             ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
             ApplicationState = StationState.BeginRun;
+            ZerCenterStatus = ZeroCenterState.Start;
             if (!SystemManager.Instance.PingCenter())
             {
                 SetFailed();
@@ -328,8 +334,8 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.SystemLog("be connected successfully,start local stations.");
             if (WorkModel == ZeroWorkModel.Service)
             {
-                OnZeroStart();
                 SystemManager.Instance.UploadDocument();
+                OnZeroStart();
             }
             else if (WorkModel == ZeroWorkModel.Client)
             {
@@ -362,7 +368,6 @@ namespace Agebull.ZeroNet.Core
                     break;
             }
             ZeroTrace.SystemLog("Begin shutdown...");
-            SystemManager.Instance.HeartLeft();
             ApplicationState = StationState.Destroy;
             if (WorkModel != ZeroWorkModel.Bridge)
             {
