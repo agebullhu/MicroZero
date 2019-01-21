@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="WebSocket\**" />
+    <Compile Remove="WS\**" />
+    <EmbeddedResource Remove="WebSocket\**" />
+    <EmbeddedResource Remove="WS\**" />
+    <None Remove="WebSocket\**" />
+    <None Remove="WS\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="WS\WebSocketClient.cs" />
+    <Compile Include="WS\WebSocketConfig.cs" />
+    <Compile Include="WS\WebSocketNotify.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
+  </ItemGroup>
+</Project>

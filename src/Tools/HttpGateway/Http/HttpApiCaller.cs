@@ -76,7 +76,7 @@ namespace ZeroNet.Http.Gateway
             ApiName = apiName;
             var url = new StringBuilder();
             url.Append($"{Host?.TrimEnd('/') + "/"}{apiName?.TrimStart('/')}");
-            
+
             if (localRequest.QueryString.HasValue)
             {
                 url.Append('?');
@@ -86,7 +86,7 @@ namespace ZeroNet.Http.Gateway
 
 
 
-            RemoteRequest = (HttpWebRequest) WebRequest.Create(RemoteUrl);
+            RemoteRequest = (HttpWebRequest)WebRequest.Create(RemoteUrl);
             RemoteRequest.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {data.Token}");
             RemoteRequest.Timeout = RouteOption.Option.SystemConfig.HttpTimeOut;
             RemoteRequest.Method = method;
@@ -96,28 +96,22 @@ namespace ZeroNet.Http.Gateway
                 RemoteRequest.ContentType = "application/x-www-form-urlencoded";
                 var builder = new StringBuilder();
                 builder.Append($"_api_context_={HttpUtility.UrlEncode(JsonConvert.SerializeObject(GlobalContext.Current), Encoding.UTF8)}");
-                foreach (var kvp in localRequest.Form)
+                foreach (var kvp in data.Arguments)
                 {
-                        builder.Append('&');
+                    builder.Append('&');
                     builder.Append($"{kvp.Key}=");
                     if (!string.IsNullOrEmpty(kvp.Value))
                         builder.Append($"{HttpUtility.UrlEncode(kvp.Value, Encoding.UTF8)}");
                 }
-                
-                data.HttpForm = builder.ToString();
+
                 using (var rs = RemoteRequest.GetRequestStream())
                 {
-                    var formData = Encoding.UTF8.GetBytes(data.HttpForm);
+                    var formData = Encoding.UTF8.GetBytes(builder.ToString());
                     rs.Write(formData, 0, formData.Length);
                 }
             }
             else if (localRequest.ContentLength != null)
             {
-                using (var texter = new StreamReader(localRequest.Body))
-                {
-                    data.HttpContext = texter.ReadToEnd();
-                    texter.Close();
-                }
                 if (string.IsNullOrWhiteSpace(data.HttpContext))
                     return;
                 RemoteRequest.ContentType = "application/json;charset=utf-8";
@@ -141,11 +135,11 @@ namespace ZeroNet.Http.Gateway
         {
             string jsonResult;
             UserState = UserOperatorStateType.Success;
-            ZeroState = ZeroOperatorStateType.Ok; 
+            ZeroState = ZeroOperatorStateType.Ok;
             try
             {
                 var resp = await RemoteRequest.GetResponseAsync();
-                jsonResult= ReadResponse(resp);
+                jsonResult = ReadResponse(resp);
             }
             catch (WebException e)
             {
@@ -171,7 +165,7 @@ namespace ZeroNet.Http.Gateway
         {
             try
             {
-                var codes = exception.Message.Split(new[] {'(', ')'}, StringSplitOptions.RemoveEmptyEntries);
+                var codes = exception.Message.Split(new[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
                 if (codes.Length == 3)
                     if (int.TryParse(codes[1], out var s))
                         switch (s)

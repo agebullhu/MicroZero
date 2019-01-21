@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.Log
             3,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
-            ZeroFrameType.TsonValue,
+            ZeroFrameType.TsonContent,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };

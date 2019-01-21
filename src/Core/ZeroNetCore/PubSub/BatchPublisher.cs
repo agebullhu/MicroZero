@@ -147,7 +147,7 @@ namespace Agebull.ZeroNet.Log
                         }
                         buf = serializer.Close();
                     }
-                    while (!_socket.Publish(ZeroPublishExtend.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanLoop)
+                    while (!_socket.Publish(ZeroPublisher.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanLoop)
                         Thread.Sleep(10);
                 }
             }

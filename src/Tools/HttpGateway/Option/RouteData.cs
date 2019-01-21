@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
+using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
@@ -21,54 +21,34 @@ namespace ZeroNet.Http.Gateway
     [DataContract]
     public class RouteData
     {
+        /// <summary>
+        ///     请求地址
+        /// </summary>
+        [DataMember] [JsonProperty("uri")] public Uri Uri { get; private set; }
+        /// <summary>
+        ///     当前请求调用的主机名称
+        /// </summary>
+        [DataMember] [JsonProperty("host")] public string HostName { get; private set; }
 
         /// <summary>
         ///     当前请求调用的API名称
         /// </summary>
-        [DataMember] [JsonProperty("apiName")] public string ApiName;
+        [DataMember] [JsonProperty("apiName")] public string ApiName { get; private set; }
 
-        /// <summary>
-        ///     当前请求调用的API配置
-        /// </summary>
-        public ApiItem ApiItem;
-        
         /// <summary>
         ///     Http Header中的Authorization信息
         /// </summary>
-        [DataMember] [JsonProperty("token")] public string Token { get; set; }
+        [DataMember] [JsonProperty("token")] public string Token { get; private set; }
 
         /// <summary>
-        ///     缓存键
+        ///     HTTP method
         /// </summary>
-        public string CacheKey;
-
-        /// <summary>
-        ///     当前适用的缓存设置对象
-        /// </summary>
-        public CacheOption CacheSetting;
-
-        /// <summary>
-        ///     上下文的JSON内容(透传)
-        /// </summary>
-        public string GlobalContextJson;
+        [DataMember] [JsonProperty("method")] public string HttpMethod { get; private set; }
 
         /// <summary>
         ///     请求的内容
         /// </summary>
-        [DataMember] [JsonProperty("context")] public string HttpContext;
-
-        /// <summary>
-        ///     请求的表单
-        /// </summary>
-        [DataMember] [JsonProperty("form")] public string HttpForm;
-
-        /*
-        /// <summary>
-        ///     请求的参数
-        /// </summary>
-        [DataMember]
-        [JsonProperty("queryString")] public string QueryString;
-        */
+        [DataMember] [JsonProperty("context")] public string HttpContext { get; private set; }
 
         /// <summary>
         ///     请求的表单
@@ -78,15 +58,12 @@ namespace ZeroNet.Http.Gateway
         public Dictionary<string, List<string>> Headers = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        ///     当前请求调用的主机名称
+        ///     请求的表单
         /// </summary>
-        [DataMember] [JsonProperty("host")] public string HostName;
-
-        /// <summary>
-        ///     HTTP method
-        /// </summary>
-        [DataMember] [JsonProperty("method")] public string HttpMethod;
-
+        [DataMember]
+        [JsonProperty("arguments")]
+        public Dictionary<string, string> Arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
         /// <summary>
         ///     执行HTTP重写向吗
         /// </summary>
@@ -98,32 +75,6 @@ namespace ZeroNet.Http.Gateway
         ///     返回值
         /// </summary>
         [DataMember] [JsonProperty("result")] public string ResultMessage;
-
-        /// <summary>
-        ///     路由主机信息
-        /// </summary>
-        public RouteHost RouteHost;
-
-        /// <summary>
-        ///     结果状态
-        /// </summary>
-        public ZeroOperatorStateType ZeroState { get; set; }
-
-        /// <summary>
-        ///     执行状态
-        /// </summary>
-        [DataMember] [JsonProperty("status")] public UserOperatorStateType UserState;
-
-        /// <summary>
-        ///     请求地址
-        /// </summary>
-        [DataMember] [JsonProperty("uri")] public Uri Uri;
-
-        /// <summary>
-        ///     开始时间
-        /// </summary>
-        [IgnoreDataMember]
-        [JsonIgnore] public string Title { get; set; }
 
         /// <summary>
         ///     开始时间
@@ -144,23 +95,77 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty("succeed")] public bool IsSucceed => UserState == UserOperatorStateType.Success;
 
         /// <summary>
+        ///     执行状态
+        /// </summary>
+        [DataMember] [JsonProperty("status")] public UserOperatorStateType UserState;
+
+        /// <summary>
+        ///     当前请求调用的API配置
+        /// </summary>
+        public ApiItem ApiItem;
+
+        /// <summary>
+        ///     缓存键
+        /// </summary>
+        public string CacheKey;
+
+        /// <summary>
+        ///     当前适用的缓存设置对象
+        /// </summary>
+        public CacheOption CacheSetting;
+
+        /// <summary>
+        ///     上下文的JSON内容(透传)
+        /// </summary>
+        public string GlobalContextJson;
+
+        /// <summary>
+        ///     路由主机信息
+        /// </summary>
+        public RouteHost RouteHost;
+
+        /// <summary>
+        ///     结果状态
+        /// </summary>
+        public ZeroOperatorStateType ZeroState { get; set; }
+
+
+        /// <summary>
         ///     准备
         /// </summary>
         /// <param name="context"></param>
-        public void Prepare(HttpContext context)
+        public bool Prepare(HttpContext context)
         {
             var request = context.Request;
+            Uri = request.GetUri();
+            HttpMethod = request.Method.ToUpper();
+
+            var userAgent = CheckHeaders(context, request);
+            var ok = CheckCall();
+            GlobalContext.SetRequestContext(new RequestInfo
+            {
+                RequestId = $"{Token}-{RandomOperate.Generate(6)}",
+                UserAgent = userAgent,
+                Token = Token,
+                RequestType = RequestType.Http,
+                ArgumentType = ArgumentType.Json,
+                Ip = context.Connection.RemoteIpAddress?.ToString(),
+                Port = context.Connection.RemotePort.ToString(),
+            });
+            return ok && Read(context);
+        }
+
+        private string CheckHeaders(HttpContext context, HttpRequest request)
+        {
             string userAgent = null;
             foreach (var head in request.Headers)
             {
                 var key = head.Key.ToUpper();
-                var vl = head.Value.ToList();
-                Headers.Add(key, vl);
                 switch (key)
                 {
                     case "AUTHORIZATION":
-                        Token = vl.LinkToString();
-                        var words = Token.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        var token = head.Value.LinkToString();
+                        var words = token.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
                         if (words.Length != 2 ||
                             !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
                             words[1].Equals("null") ||
@@ -172,23 +177,89 @@ namespace ZeroNet.Http.Gateway
                     case "USER-AGENT":
                         userAgent = head.Value.LinkToString("|");
                         break;
+                    default:
+                        Headers.Add(key, head.Value.ToList());
+                        break;
                 }
             }
             if (string.IsNullOrWhiteSpace(Token))
             {
                 Token = context.Request.Query["token"];
             }
-            GlobalContext.SetRequestContext(new RequestInfo
+            return userAgent;
+        }
+
+        /// <summary>
+        ///     检查调用内容
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckCall()
+        {
+            if (string.IsNullOrWhiteSpace(RouteOption.Option.SystemConfig.SiteFolder))
             {
-                RequestId = $"{ZeroApplication.AppName}-{context.Connection.Id}-{RandomOperate.Generate(6)}",
-                UserAgent = userAgent,
-                Token = Token,
-                RequestType = RequestType.Http,
-                ArgumentType = ArgumentType.Json,
-                Ip = context.Connection.RemoteIpAddress?.ToString(),
-                Port = context.Connection.RemotePort.ToString(),
-            });
-            Console.WriteLine(GlobalContext.Current.Request.RequestId);
+                var words = Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length <= 1)
+                {
+                    UserState = UserOperatorStateType.FormalError;
+                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                    ResultMessage = ApiResult.ArgumentErrorJson;
+                    return false;
+                }
+
+                HostName = words[0];
+                ApiName = words[1];
+            }
+            else
+            {
+                var words = Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length <= 1)
+                {
+                    UserState = UserOperatorStateType.FormalError;
+                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                    ResultMessage = ApiResult.ArgumentErrorJson;
+                    return false;
+                }
+
+                HostName = words[1];
+                ApiName = words[2];
+            }
+            return true;
+        }
+
+        private bool Read(HttpContext context)
+        {
+            var request = context.Request;
+            try
+            {
+                if (request.QueryString.HasValue)
+                {
+                    foreach (var key in request.Query.Keys)
+                        Arguments.TryAdd(key, request.Query[key]);
+                }
+                if (request.HasFormContentType)
+                {
+                    foreach (var key in request.Form.Keys)
+                        Arguments.TryAdd(key, request.Form[key]);
+                }
+                if (request.ContentLength == null)
+                    return true;
+                using (var texter = new StreamReader(request.Body))
+                {
+                    HttpContext = texter.ReadToEnd();
+                    if (string.IsNullOrEmpty(HttpContext))
+                        HttpContext = null;
+                    texter.Close();
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e, "读取远程参数");
+                UserState = UserOperatorStateType.FormalError;
+                ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                ResultMessage = ApiResult.ArgumentErrorJson;
+                return false;
+            }
         }
     }
 }

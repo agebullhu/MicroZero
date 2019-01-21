@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Json;
-using System.Text;
 using System.Threading;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
@@ -70,7 +68,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             using (IocScope.CreateScope())
             {
-                RestoryContext(args);
+                args.RestoryContext(StationName);
                 try
                 {
                     Handle(args);
@@ -88,28 +86,6 @@ namespace Agebull.ZeroNet.PubSub
             }
         }
 
-        /// <summary>
-        /// 还原调用上下文
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        private void RestoryContext(TPublishItem item)
-        {
-            try
-            {
-                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(item.ContextJson)
-                    ? JsonConvert.DeserializeObject<ApiContext>(item.ContextJson)
-                    : new GlobalContext());
-                GlobalContext.Current.Request.SetValue(item.GlobalId, item.Publisher, item.RequestId);
-                GlobalContext.Current.Request.CallGlobalId = item.CallId;
-            }
-            catch (Exception e)
-            {
-                LogRecorder.MonitorTrace($"Restory context exception:{e.Message}");
-                ZeroTrace.WriteException(StationName, e, "restory context", item.ContextJson);
-                GlobalContext.SetContext(new GlobalContext());
-            }
-        }
 
         //private string inporcName;
 

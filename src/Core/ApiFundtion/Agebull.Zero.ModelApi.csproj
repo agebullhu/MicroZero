@@ -35,7 +35,7 @@
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
     <Copyright />
     <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
-    <Version>1.3.2.13</Version>
+    <Version>1.3.2.14</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

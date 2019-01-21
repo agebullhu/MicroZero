@@ -6,7 +6,7 @@
 }
 @section Styles
     {
-<style type="text/css">
+    <style type="text/css">
         .frameValue {
             color: blue;
             background-color: silver;
@@ -217,29 +217,44 @@
             border-color: green;
             padding: 0;
         }
-</style>
+    </style>
 }
-@section VUE{
+@section InitScript{
     <script>
         var steps = [];
         var tips = [];
-        function showTip(step) {
-            var tip = '';
+        var tip = '';
+        var hei = 0;
+        var empty = '';
+        var flowHtml = '';
+        var lines = [];
+        var names = [];
+        function showInfo() {
+            $('#infoSide').width(vue_option.data.infoshow ? '600px' : '1px');
+            $('#stepPanel').html(tip);
+            $('#flowPanel').html(flowHtml);
+            $('#flowPanel').width((lines.length * 172 + 21) + "px");
+        }
+        function showTip(step, type) {
+            tip = '';
             for (var idx = 0; idx < steps.length; idx++) {
                 if (steps[idx] === step) {
-                    tip = tips[idx];
+                    tip = tips[idx][type];
                     break;
                 }
             }
             $('#stepPanel').html(tip);
         }
-        var hei = 0;
-        var empty = '';
-        var lines = [];
-        var names = [];
         function showFlow(rid) {
             try {
-                $('#stepPanel').html('');
+                hei = 0;
+                steps = [];
+                tips = [];
+                empty = '';
+                lines = [];
+                names = [];
+                tip = '';
+                flowHtml = '';
                 var idx;
                 var root = null;
                 for (idx = 0; idx < vue_option.data.flows.length; idx++) {
@@ -248,28 +263,20 @@
                         break;
                     }
                 }
-                if (!root)
-                    return;
-                hei = 0;
-                steps = [];
-                tips = [];
-                empty = '';
-                lines = [];
-                names = [];
-                showFlowItem(root.start, null, -1);
+                if (root) {
+                    showFlowItem(root.start, null, -1);
 
-                var all = '';
-                hei = hei * 85 + 80;
-                for (idx = 0; idx < lines.length; idx++) {
-                    if (lines[idx]) {
-                        if (idx === 0)
-                            all += "<div class='station1' style='height:" + hei + "px'>" + lines[idx] + "</div>";
-                        else
-                            all += "<div class='station' style='height:" + hei + "px'>" + lines[idx] + "</div>";
+                    hei = hei * 85 + 80;
+                    for (idx = 0; idx < lines.length; idx++) {
+                        if (lines[idx]) {
+                            if (idx === 0)
+                                flowHtml += "<div class='station1' style='height:" + hei + "px'>" + lines[idx] + "</div>";
+                            else
+                                flowHtml += "<div class='station' style='height:" + hei + "px'>" + lines[idx] + "</div>";
+                        }
                     }
                 }
-                $('#flowPanel').html(all);
-                $('#flowPanel').width((lines.length * 172 + 21) + "px");
+                showInfo();
             } catch (e) {
                 alert(e);
             }
@@ -336,14 +343,14 @@
                 row = lines.length - 1;
             }
             if (step != null) {
-                var tip = `<div>\
-                                                                               <i class='step'> ${step}</i><br/>${flow.station}/${flow.cmd}<br/>\
-                                                                               <div>${flow.info}</div>\
-                                                                            </div>`;
                 steps.push(step);
-                tips.push(tip);
+                tips.push([
+                    `<div><i class='step'> ${step}</i><br/>${flow.station}/${flow.cmd}<br/><div>${flow.steps["Request"]}</div></div>`,
+                    `<div><i class='step'> ${step}</i><br/>${flow.station}/${flow.cmd}<br/><div>${flow.steps["Result"]}</div></div>`,
+                    `<div><i class='step'> ${step}</i><br/>${flow.station}/${flow.cmd}<br/><div>${flow.info}</div></div>`
+                ]);
 
-                showLine(row, pre, false, false, `<div class='point join' onclick='showTip(\"${step}\")'><i class='step'>${step}</i><br/>${flow.cmd}</div>`);
+                showLine(row, pre, false, false, `<div class='point join' onclick='showTip(\"${step}\",0)'><i class='step'>${step}</i><br/>${flow.cmd}</div>`);
             } else {
                 showLine(row, pre, false, true, `<div class='point call'><br><i class='step'>Begin</i></div>`);
             }
@@ -372,85 +379,153 @@
             if (step == null) {
                 lines[pre] += `<div class='point ${cls}'><i class='step'>End</i><br/>${flow.state}</div>`;//<br/>${flow.station}<br/>${flow.cmd}
             } else {
-                showLine(pre, row, true, false, `<div class='point ${cls}' onclick='showTip(\"${step}\")'><i class='step'>${step}</i><br/>${flow.state}</div>`);
+                showLine(pre, row, true, false, `<div class='point ${cls}' onclick='showTip(\"${step}\",1)'><i class='step'>${step}</i><br/>${flow.state}</div>`);
             }
         }
+        var ws_api;
+
+        function modify_sub(title, callback) {
+            vue_obj.$prompt(title, '流程跟踪', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消'
+            }).then(({ value }) => {
+                if (callback)
+                    callback(value);
+                else
+                    ws_api.change_sub(value);
+                if (!value)
+                    value = '<i>[空]<i>';
+                vue_obj.$message({
+                    type: 'info',
+                    message: '订阅标签已修改为' + value
+                });
+            }).catch(() => {
+                if (callback)
+                    callback('');
+            });
+        }
         extend_data({
+            infoshow: false,
+            menu_wid: "360px",
             flows: []
         });
         extend_methods({
             menu_select: function (index, indexPath) {
                 if (!index)
                     return;
-                if (index == 'hide')
+                if (index == 'menu-hide') {
                     $('#infoSide').width('1px');
-                else if (index == 'show')
+                    vue_option.data.infoshow = false;
+                    return;
+                }
+                else if (index == 'menu-show') {
+                    vue_option.data.infoshow = true;
                     $('#infoSide').width('600px');
+                    return;
+                }
+                else if (index == 'menu-msg-clear') {
+                    vue_option.data.flows = [];
+                    return;
+                }
+                else if (index == 'menu-msg-search') {
+                    modify_sub('请输入查询标签', function (val) {
+                        if (!val)
+                            return;
+                        ws_api.change_sub('~#' + val);
+                        vue_option.data.flows = [];
+                        do_sync_get('/Flow/Query/' + encodeURI(val), '查询', function (data) {
+                            vue_obj.$message({
+                                type: 'info',
+                                message: data
+                            });
+                            //#AE951C2E354444E9AD3F95C64BB47969
+                        });
+                    });
+                    return;
+                }
+                else if (index == 'menu-msg-sub') {
+                    modify_sub('请输入订阅标签');
+                    return;
+                }
                 showFlow(index);
             }
         });
-        var ws_api = new ws({
-            address: `ws://${location.host}/trace`,
-            sub: "flow",
-            onmessage: function (flow) {
-                for (var idx = 0; idx < vue_option.data.flows.length; idx++) {
-                    if (vue_option.data.flows[idx].rid == flow.rid) {
-                        vue_option.data.flows[idx].start = flow.start;
+    </script>
+}
+@section Scripts{
+    <script>
+        modify_sub('请输入订阅标签', function (val) {
+            ws_api = new ws({
+                address: `ws://${location.host}/trace_flow`,
+                sub: val,
+                onmessage: function (flow) {
+                    if (vue_option.data.flows.length > 300)
                         return;
-                    }
+                    vue_update_array(vue_option.data.flows, flow, 'rid');
+                    showInfo();
                 }
-                if (vue_option.data.flows.length >= 100) {
-                    return;
-                    vue_option.data.flows.pop();
-                }
-                vue_option.data.flows.push(flow);
-            }
+            });
+            ws_api.open();
         });
-        ws_api.open();
     </script>
 }
 @section Menus{
     <el-menu :collapse="isCollapse"
              @@select="menu_select"
-             default-active="title"
+             default-active="menu-msg"
              background-color="#545c64"
              text-color="#fff"
+             :default-openeds='["menu-type","menu-msg"]'
              active-text-color="#ffd04b">
-        <el-submenu index="type">
+        <el-submenu index="menu-type">
             <template slot="title">
                 <i class="el-icon-view"></i>
-                <span>详情</span>
+                <span>操作</span>
             </template>
-            <el-menu-item-group>
-                <el-menu-item index="show">
-                    <template slot="title">
-                        <i class="el-icon-arrow-right"></i>
-                        <span>展开</span>
-                    </template>
-                </el-menu-item>
-                <el-menu-item index="hide">
-                    <template slot="title">
-                        <i class="el-icon-arrow-left"></i>
-                        <span>收起</span>
-                    </template>
-                </el-menu-item>
-            </el-menu-item-group>
+            <el-menu-item index="menu-show">
+                <template slot="title">
+                    <i class="el-icon-arrow-right"></i>
+                    <span>展开</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="menu-hide">
+                <template slot="title">
+                    <i class="el-icon-arrow-left"></i>
+                    <span>收起</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="menu-msg-sub">
+                <template slot="title">
+                    <i class="el-icon-service"></i>
+                    <span>修改订阅标签</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="menu-msg-search">
+                <template slot="title">
+                    <i class="el-icon-search"></i>
+                    <span>历史查询</span>
+                </template>
+            </el-menu-item>
+            <el-menu-item index="menu-msg-clear">
+                <template slot="title">
+                    <i class="el-icon-delete"></i>
+                    <span>清除实时消息</span>
+                </template>
+            </el-menu-item>
         </el-submenu>
-        <el-submenu index="msg">
+        <el-submenu index="menu-msg">
             <template slot="title">
                 <i class="el-icon-message"></i>
-                <span>动态消息</span>
+                <span>实时消息(仅显示最早300条)</span>
             </template>
-            <el-menu-item-group>
-                <template v-for="item in flows">
-                    <el-menu-item v-bind:index="item.rid">
-                        <template slot="title">
-                            <i class="el-icon-bell"></i>
-                            <span>{{item.rid}}</span>
-                        </template>
-                    </el-menu-item>
-                </template>
-            </el-menu-item-group>
+            <template v-for="item in flows">
+                <el-menu-item v-bind:index="item.rid">
+                    <template slot="title">
+                        <i class="el-icon-bell"></i>
+                        <span>{{item.start.state}}|{{item.start.cmd}}</span>
+                    </template>
+                </el-menu-item>
+            </template>
         </el-submenu>
     </el-menu>
 }

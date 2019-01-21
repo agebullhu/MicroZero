@@ -110,6 +110,14 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public const byte Original8 = 0x17;
         /// <summary>
+        /// 开始时间
+        /// </summary>
+        public const byte BeginTime = 0x18;
+        /// <summary>
+        /// 结束时间
+        /// </summary>
+        public const byte EndTime = 0x19;
+        /// <summary>
         ///     参数
         /// </summary>
         public const byte Argument = (byte)'%';
@@ -154,6 +162,11 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public const byte SubTitle = Command;
 
+        /// <summary>
+        ///     返回文本内容
+        /// </summary>
+        public const byte ResultText = (byte)'J';
+
 
         /// <summary>
         ///     一般文本内容
@@ -161,19 +174,14 @@ namespace Agebull.ZeroNet.Core
         public const byte TextContent = (byte)'T';
 
         /// <summary>
-        ///     JSON文本内容
+        ///     二进制内容
         /// </summary>
-        public const byte JsonValue = (byte)'J';
+        public const byte BinaryContent = (byte)'B';
 
         /// <summary>
         ///     二进制内容
         /// </summary>
-        public const byte BinaryValue = (byte)'B';
-
-        /// <summary>
-        ///     二进制内容
-        /// </summary>
-        public const byte TsonValue = (byte)'V';
+        public const byte TsonContent = (byte)'V';
 
         /// <summary>
         ///     说明帧解析
@@ -241,11 +249,11 @@ namespace Agebull.ZeroNet.Core
                 //一般文本内容
                 case TextContent: return nameof(TextContent);
                 //JSON文本内容
-                case JsonValue: return nameof(JsonValue);
+                case ResultText: return nameof(ResultText);
                 //二进制内容
-                case BinaryValue: return nameof(BinaryValue);
+                case BinaryContent: return nameof(BinaryContent);
                 //二进制内容
-                case TsonValue: return nameof(TsonValue);
+                case TsonContent: return nameof(TsonContent);
                 default: return "Error";
             }
         }

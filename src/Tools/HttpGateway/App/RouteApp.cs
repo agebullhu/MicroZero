@@ -112,7 +112,6 @@ namespace ZeroNet.Http.Gateway
                         // 正常调用
                         router.Call();
                     }
-
                     // 写入返回
                     router.WriteResult();
                 }
@@ -216,7 +215,7 @@ namespace ZeroNet.Http.Gateway
                     return true;
                 case "/publish":
                     HttpProtocol.FormatResponse(response);
-                    var suc = ZeroPublisher.Publish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], (string)request.Form["Arg"]);
+                    var suc = ZeroPublisher.DoPublish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], (string)request.Form["Arg"]);
                     response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson, Encoding.UTF8);
                     return true;
                     //case "/_1_warings_1_":

@@ -11,8 +11,11 @@ namespace WebMonitor
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
+            WebSocketNotify.Close();
             ZeroApplication.Shutdown();
         }
+
+
 
         public static IWebHost BuildWebHost(string[] args)
         {

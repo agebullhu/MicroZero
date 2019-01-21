@@ -7,14 +7,29 @@ var ws = function (option) {
     that.state = "+open";
     that.addr = option.address;
     that.process = option.onmessage;
-    that.open = function () {
+    that.open = function() {
         console.log("try open " + that.addr);
         that.socket = new WebSocket(that.addr);
         that.socket.onopen = that.onopen;
         that.socket.onclose = that.onclose;
         that.socket.onmessage = that.onmessage;
         that.socket.onerror = that.onerror;
-    }
+    };
+    that.change_sub = function (title) {
+        try {
+            if (that.state === "+ok" && that.sub) {
+                that.socket.send("-" + that.sub);
+                console.log("-sub " + that.sub);
+            }
+            that.sub = title;
+            if (that.state === "+ok" && that.sub) {
+                that.socket.send("+" + that.sub);
+                console.log("+sub " + that.sub);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     that.onopen = function (e) {
         that.state = "+ok";

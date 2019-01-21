@@ -6,36 +6,38 @@
     <Compile Remove="datas\**" />
     <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
+    <Compile Remove="Pages\**" />
     <Compile Remove="WebSocket\**" />
     <Content Remove="datas\**" />
     <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
+    <Content Remove="Pages\**" />
     <Content Remove="WebSocket\**" />
     <EmbeddedResource Remove="datas\**" />
     <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="WebSocket\**" />
     <None Remove="datas\**" />
     <None Remove="Debug\**" />
     <None Remove="logs\**" />
+    <None Remove="Pages\**" />
     <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="WS\LogSubscribe.cs" />
-    <Compile Remove="WS\WebNotify.cs" />
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
-    <PackageReference Include="vue" Version="2.5.17" />
-    <PackageReference Include="Vue.Js.Element.UI" Version="2.4.8.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Pages\" />
-    <Folder Include="WS\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\Tracer\ZeroNet.Devops.Tracer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Plan\FormJs.cshtml">
@@ -62,5 +64,16 @@
     <Content Update="wwwroot\favicon.ico">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

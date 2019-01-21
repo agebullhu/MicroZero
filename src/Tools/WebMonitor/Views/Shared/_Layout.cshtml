@@ -28,116 +28,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WebMonitor - @ViewData["Title"]</title>
-    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.3.9/lib/theme-chalk/index.css">
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/highcharts/highcharts.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" src="https://lib.baomitu.com/jquery/3.3.1/jquery.min.js"></script>
+
+    <link crossorigin="anonymous" integrity="sha384-FowZ2W5nCMdOKuD0YsLMRuiRSIMxtmrbt2RUpY3nuqLbv+hjF8IQLyLBfFfFQc62" href="https://lib.baomitu.com/highcharts/6.2.0/css/highcharts.css" rel="stylesheet">
+    @*<link crossorigin="anonymous" integrity="sha384-rRPVHQMMfLS+7ZyuPEhN8OZXL/bWjLLwasdr2ADgLgwTV4aLUXzWo+Q/vr+Lysxg" href="https://lib.baomitu.com/highcharts/6.2.0/css/themes/grid-light.css" rel="stylesheet">*@
+    <script crossorigin="anonymous" integrity="sha384-L/qvaokn4xEwlvt1Q2++zJkEDT3xA/SlFBNCLPsZIJ27lYdSI7wF4ExWr2NVuz4b" src="https://lib.baomitu.com/highcharts/6.2.0/highcharts.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-sUfjCX7aECbUftu8qYOTsSbA8F0eIapMftOQC7vgFK1N3p7SVj7rebsdufiZ1oZr" src="https://lib.baomitu.com/highcharts/6.2.0/highcharts-3d.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-jKM0+6IuISleSZcgx5cDrSiYU7ADB/dulTDsH2c/4eAQhPS+6zW91R0upW11CtZ2" src="https://lib.baomitu.com/highcharts/6.2.0/highcharts-more.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-o40lVEkLUvm/rVCkt+1DKD3bbE8XTreJlvAFMBBDtB83umK2s+mN7Img4lj81XiY" src="https://lib.baomitu.com/highcharts/6.2.0/modules/solid-gauge.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-7aW4Fo2QVo/pIrV3BQuCFOzIkJHAiGP9iNSKTvSMcOHZwWGdy+7MNS8feFLMVaKH" src="https://lib.baomitu.com/highcharts/6.2.0/modules/exporting.js"></script>
+    @*<script crossorigin="anonymous" integrity="sha384-hgtt3iwojiZG/cpWIsc/ndP3Jc4rKQydjkU2OEEPywVxg33/xuGFfShCFPSEuKJ8" src="https://lib.baomitu.com/highcharts/6.2.0/themes/grid-light.js"></script>*@
+    <script crossorigin="anonymous" integrity="sha384-RJDG8clA4KNqVWJVSylP5IJvkOGlezKCJ2HqHDrT/592mSPqHDzHNNJgGNvgiCgF" src="https://lib.baomitu.com/highcharts/6.2.0/themes/sunset.js"></script>
     <script src="~/lib/highcharts/highcharts-zh_CN.js"></script>
-    <script src="~/lib/highcharts/highcharts-more.js"></script>
-    <script src="~/lib/highcharts/modules/solid-gauge.js"></script>
-    <script src="~/lib/highcharts/themes/grid-light.js"></script>
-    <script src="~/lib/highcharts/modules/exporting.js"></script>
-    <script src="~/lib/vue/vue.js"></script>
-    <script src="~/lib/vue/element-ui.js"></script>
+
+    <link crossorigin="anonymous" integrity="sha384-PjBdpcgRlWZu3Li8EicSANMDC//hryLcAdSi0nimFm6wZrh8PspinYJFKIDbJMEX" href="https://lib.baomitu.com/element-ui/2.4.11/theme-chalk/index.css" rel="stylesheet">
+    <script crossorigin="anonymous" integrity="sha384-L4Dg5hpsyIngyyjq70hnw34icISF2c8EqAA9qaTGNvTAOnXAq5eSak96vTmC3SD3" src="https://lib.baomitu.com/vue/2.5.22/vue.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-NSUWFiLl3xpcDPFHQAhVkdkTkB9P1JXlLWNu0HLx3qtmPFViWN6+RdGg6txkxfK0" src="https://lib.baomitu.com/element-ui/2.4.11/index.js"></script>
+    <script crossorigin="anonymous" integrity="sha384-TTxcDVQXBONqv8fVYK4S3SlaFOuc2lhHOzpd8qL+IrdIV25c8IJcRWkRvM5Ok4no" src="https://lib.baomitu.com/element-ui/2.4.11/locale/zh-CN.min.js"></script>
+
+
+    <link rel="stylesheet" href="~/css/site.css" />
     <script src="~/js/zero.js"></script>
     <script src="~/js/ws.js"></script>
     <script src="~/js/chart.js"></script>
     <script src="~/js/site.js"></script>
-    <link rel="stylesheet" href="~/css/site.css" />
     @RenderSection("Styles", false)
-    <script>
-        var vue_option = {
-            el: '#work_space',
-            data: {
-                ws_active: false,
-                isCollapse: false
-            },
-            filters: {
-                formatDate(time) {
-                    var date = new Date(time);
-                    return formatDate(date, 'MM-dd hh:mm:ss');
-                },
-                formatUnixDate(unix) {
-                    if (unix === 0)
-                        return "*";
-                    var date = new Date(unix * 1000);
-                    return formatDate(date, 'MM-dd hh:mm:ss');
-                },
-                formatNumber(number) {
-                    if (number) {
-                        return number.toFixed(4);
-                    } else {
-                        return "0.0";
-                    }
-                },
-                thousandsNumber(number) {
-                    if (number) {
-                        return toThousandsInt(number);
-                    } else {
-                        return "0";
-                    }
-                },
-                formatNumber1(number) {
-                    if (number) {
-                        return number.toFixed(4);
-                    } else {
-                        return "0.0";
-                    }
-                },
-                formatNumber0(number) {
-                    if (number) {
-                        return number.toFixed(0);
-                    } else {
-                        return "0";
-                    }
-                },
-                formatHex(number) {
-                    if (number) {
-                        return number.toString(16).toUpperCase();
-                    } else {
-                        return "-";
-                    }
-                }
-            },
-            methods: {
-                go_home() {
-                    location.href = "/Home";
-                },
-                go_monitor() {
-                    location.href = "/Monitor";
-                },
-                go_trace() {
-                    location.href = "/Flow";
-                },
-                go_plan() {
-                    location.href = "/Plan";
-                },
-                go_doc() {
-                    location.href = "/Doc";
-                },
-                go_event() {
-                    location.href = "/MachineEvent";
-                },
-                go_github() {
-                    location.href = "https://github.com/agebullhu/ZeroNet";
-                }
-            }
-        };
-        function extend_data(data) {
-            vue_option.data = $.extend(vue_option.data, data);
-        }
-        function extend_filter(filters) {
-            vue_option.filters = $.extend(vue_option.filters, filters);
-        }
-        function extend_methods(methods) {
-            vue_option.methods = $.extend(vue_option.methods, methods);
-        }
-
-        ws_state = function (active) {
-            vue_option.data.ws_active = active;
-        };
-
-    </script>
-
     @RenderSection("InitScript", required: false)
 </head>
 <body>
@@ -169,13 +84,13 @@
                         {
                             <el-button type="info" icon="el-icon-document" @@click="go_doc">接口文档</el-button>
                         }
-                            <el-tooltip content="加入开源贡献者行列" placement="bottom-start">
-                                <el-button type="info" @@click="go_github">
-                                    <svg height="12" viewBox="0 0 16 16" version="1.1" width="12" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
-                                    </svg>
-                                </el-button>
-                            </el-tooltip>
+                        <el-tooltip content="加入开源贡献者行列" placement="bottom-start">
+                            <el-button type="info" @@click="go_github">
+                                <svg height="12" viewBox="0 0 16 16" version="1.1" width="12" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                                </svg>
+                            </el-button>
+                        </el-tooltip>
                     </el-button-group>
                 </div>
             </el-header>
@@ -198,21 +113,19 @@
 
     @RenderSection("VUE", required: false)
     <script>
-        var vm = new Vue(vue_option);
-        $('#main_menu').width('auto');
-    </script>
-    @RenderSection("Scripts", required: false)
-    @RenderSection("Charts", required: false)
-
-    <script>
-        $('#main_menu').width('300px');
+        if (!vue_option.data.menu_wid)
+            vue_option.data.menu_wid = '300px';
+        vue_obj = new Vue(vue_option);
+        $('#main_menu').width(vue_option.data.menu_wid);
         function close_open() {
             vue_option.data.isCollapse = !vue_option.data.isCollapse;
             if (vue_option.data.isCollapse)
                 $('#main_menu').width('auto');
             else
-                $('#main_menu').width('300px');
+                $('#main_menu').width(vue_option.data.menu_wid);
         }
     </script>
+    @RenderSection("Scripts", required: false)
+    @RenderSection("Charts", required: false)
 </body>
 </html>

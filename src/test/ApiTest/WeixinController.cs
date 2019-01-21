@@ -9,6 +9,7 @@ using Agebull.Common.Configuration;
 using Microsoft.Extensions.Configuration;
 using Senparc.Weixin.MP.AdvancedAPIs.TemplateMessage;
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 namespace ApiTest
 {
     /// <summary>
@@ -369,3 +370,4 @@ namespace ApiTest
     }
 }
 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释

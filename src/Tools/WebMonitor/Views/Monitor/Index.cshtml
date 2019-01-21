@@ -4,6 +4,7 @@
 @model StationConfig
 
 @functions {
+
     private string GetIcon(ZeroStationType type)
     {
         switch (type)
@@ -12,32 +13,29 @@
             case ZeroStationType.RouteApi:
             {
                 return "el-icon-star-on";
-                break;
             }
             case ZeroStationType.Vote:
             {
                 return "el-icon-star-off";
-                break;
             }
             case ZeroStationType.Notify:
             case ZeroStationType.Queue:
             {
                 return "el-icon-share";
-                break;
             }
             case ZeroStationType.Plan:
             {
                 return "el-icon-time";
-                break;
             }
             default:
             {
                 return "el-icon-setting";
-                break;
             }
         }
     }
+
 }
+
 @{
     var item = StationCounter.StationCountItems.ContainsKey(Model.Name) ? StationCounter.StationCountItems[Model.Name] : new StationCountItem();
     var klines = StationCounter.KLines.ContainsKey(Model.Name) ? StationCounter.KLines[Model.Name] : new List<KLine>();
@@ -73,8 +71,8 @@
     }
     if (max == 0)
     {
-        max = (long)(item.MaxQps * 1.5);
-        if (item.AvgQps > 0 && (max / item.AvgQps) > 4)
+        max = (long) (item.MaxQps * 1.5);
+        if (item.AvgQps > 0 && max / item.AvgQps > 4)
         {
             max = item.AvgQps * 4;
         }
@@ -85,67 +83,81 @@
         max = 1000;
     }
 }
-@section Styles    {
+
+@section Styles {
     <style>
         .chart_parent {
             display: inline-block;
-            width: 248px
+            width: 24.5%;
+            border: 0;
+            padding: 0;
+            margin: 0;
         }
-
-        .chart_panel {
-            height: 248px;
-            min-width: 248px;
-            margin: 0 auto;
-            max-width: 248px;
+        .chart_parent2 {
+            display: inline-block;
+            width: 49%;
+            border: 0;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .chart_block {
+            height: 220px;
+            margin: 0;
+            max-width: 100%;
+            min-width: 100%;
         }
 
         .menu_boards {
-            overflow: auto;
-            text-align: left;
+            border-bottom: solid 1px whitesmoke;
+            border-top: solid 1px whitesmoke;
             height: 100%;
             margin: 0;
-            padding: 0;
-            width: auto;
             min-width: 200px;
-            border-top: solid 1px whitesmoke;
-            border-bottom: solid 1px whitesmoke;
+            overflow: auto;
+            padding: 0;
+            text-align: left;
+            width: auto;
         }
 
         .menu_panel {
-            overflow: visible;
-            text-align: left;
             margin: 0;
+            overflow: visible;
             padding: 0;
+            text-align: left;
             width: auto;
         }
     </style>
 }
+
 @section InitScript{
     <script>
-    var config=@Html.Raw(configJson);
-    config.status=@Html.Raw(status);
+        var config = @Html.Raw(configJson);
+        config.status = @Html.Raw(status);
+
         extend_data({
             config: config,
             activePanel: "real"
         });
 
         extend_methods({
-            menu_select: function (index, indexPath) {
-                location.href = "/Monitor/Index/" + index + "?min=@min&max=@max";
+            menu_select: function(index, indexPath) {
+                location.href = `/Monitor/Index/${index}?min=@min&max=@max`;
             }
         });
     </script>
 }
+
 @section Charts{
     <script>
         var ws_status = new ws({
-            address: "ws://" + location.host + "/status",
+            address: `ws://${location.host}/status`,
             sub: "@Model.Name",
             onmessage: on_status
         });
         ws_status.open();
         var ws_kline = new ws({
-            address: "ws://" + location.host + "/kline",
+            address: `ws://${location.host}/kline`,
             sub: "@Model.Name",
             onmessage: on_kline
         });
@@ -218,9 +230,9 @@
                                     }
                                 }
                             ]
-                }));
+                        }));
 
-        var chart_t_max = Highcharts.chart('t_max',
+                var chart_t_max = Highcharts.chart('t_max',
                     gauge_chart_option(@(max / 2),
                         {
                             title: {
@@ -285,21 +297,21 @@
                             text: 'TPS'
                         },
                         @if (min >= 0)
-                {
-                    <text>
-                        yAxis: {
-                            min: 0
-                        },
-                    </text>
-                }
+                        {
+                            <text>
+                                yAxis: {
+                                    min: 0
+                                },
+                            </text>
+                        }
                         series: [
                             {
                                 name: 'TPS',
                                 data: (function() {
                                     // 生成随机值
-                                    var data = [],
-                                        time = (new Date()).getTime();
-                                    for (var i = -36; i <= 0; i += 1) {
+                                    const data = [];
+                                    const time = (new Date()).getTime();
+                                    for (let i = -36; i <= 0; i += 1) {
                                         data.push({
                                             x: time + i * 1000,
                                             y: @item.LastTps
@@ -332,9 +344,9 @@
                         name: 'TPS',
                         data: (function() {
                             // 生成随机值
-                            var data = [],
-                                time = (new Date()).getTime();
-                            for (var i = -36; i <= 0; i += 1) {
+                            const data = [];
+                            const time = (new Date()).getTime();
+                            for (let i = -36; i <= 0; i += 1) {
                                 data.push({
                                     x: time + i * 1000,
                                     y: @item.LastQps
@@ -352,13 +364,13 @@
 
         function check_k_avg(item) {
             if (item == null)
-                return;
+                return {};
             count++;
             //item.x = new Date(item.x);
             item.color = pre > item.q3 ? "blue" : "red";
             item.fillColor = pre > item.q3 ? "white" : "red";
             pre = item.q3;
-            var avg = {
+            const avg = {
                 x: item.x,
                 y: item.Avg,
                 marker: { fillColor: pre_avg < item.Avg ? "red" : "blue" }
@@ -411,33 +423,33 @@
                 },
                 series: [
                     {
-                    name: 'K线',
+                        name: 'K线',
                         type: 'boxplot',
                         color: "blue",
                         data: klines,
                         tooltip: {
-                        pointFormat:
-                        '<span style="color:{point.color}">\u25CF</span> <b> {series.name}</b><br/>' + // eslint-disable-line no-dupe-keys
-                            '最大: {point.high}<br/>' +
-                            '开始\t: {point.q3}<br/>' +
-                            '结束\t: {point.q1}<br/>' +
-                            '最小: {point.low}<br/>'
+                            pointFormat:
+                                '<span style="color:{point.color}">\u25CF</span> <b> {series.name}</b><br/>' + // eslint-disable-line no-dupe-keys
+                                    '最大: {point.high}<br/>' +
+                                    '开始\t: {point.q3}<br/>' +
+                                    '结束\t: {point.q1}<br/>' +
+                                    '最小: {point.low}<br/>'
                         }
-                }, {
-                    name: '均线',
+                    }, {
+                        name: '均线',
                         type: 'spline',
                         lineColor: "green",
                         data: kavgs,
                         tooltip: {
-                        pointFormat: '平均值 : {point.y}'
+                            pointFormat: '平均值 : {point.y}'
                         }
-                }
+                    }
                 ]
             });
 
         function on_status(item) {
             Vue.set(vue_option.data.config, "status", item);
-            var time = (new Date()).getTime();
+            const time = (new Date()).getTime();
             update_chart(chart_q_late, item.LastQps);
             update_chart(chart_q_avg, item.AvgQps);
             update_chart(chart_q_max, item.MaxQps);
@@ -445,9 +457,9 @@
             @if (config.Type == "API")
             {
                 <text>
-            update_chart(chart_t_late, item.LastTps);
-            update_chart(chart_t_avg, item.AvgTps);
-            update_chart(chart_t_max, item.MaxTps);
+                    update_chart(chart_t_late, item.LastTps);
+                    update_chart(chart_t_avg, item.AvgTps);
+                    update_chart(chart_t_max, item.MaxTps);
                     update_chart(chart_q_hungry, item.request_in - item.request_out);
                     update_chart(chart_t_hungry, item.worker_out - item.worker_in);
                     chart_t_container.series[0].addPoint([time, item.LastTps], true, true);
@@ -463,7 +475,7 @@
 }
 
 @section Menus{
-    <el-menu :collapse="isCollapse" 
+    <el-menu :collapse="isCollapse"
              default-active="@Model.Name"
              @@select="menu_select"
              background-color="#545c64"
@@ -491,63 +503,54 @@
     </el-menu>
 }
 
-<el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">
-    <el-main style="width:100%;height:100%;margin:0;padding:0;overflow:auto">
-        <div style="width:100%;margin:0;padding:0;overflow:visible">
+<el-container style="height: 100%; margin: 0; overflow: hidden; padding: 0; width: 100%;">
+    <el-main style="height: 100%; margin: 0; overflow: auto; padding: 0; width: 100%;">
+        <div style="margin: 0; overflow: visible; padding: 0; width: 100%;">
             <div style="display: inline-block; width: 100%">
                 <div id="container" style="height: 300px; min-width: 280px;"></div>
             </div>
             <div>
                 <div class="chart_parent">
-                    <div id="q_late" class="chart_panel"></div>
+                    <div id="q_late" class="chart_block"></div>
                 </div>
                 <div class="chart_parent">
-                    <div id="q_avg" class="chart_panel"></div>
+                    <div id="q_avg" class="chart_block"></div>
                 </div>
-                <div style="color: white; display: inline-block; width: 49%;">
-                    <div id="q_container" style="height: 240px; min-width: 400px;"></div>
+                <div class="chart_parent2">
+                    <div id="q_container" class="chart_block"></div>
                 </div>
             </div>
-            @if (config.Type == "API")
-            {
-                <div>
-                    <div class="chart_parent">
-                        <div id="t_late" class="chart_panel"></div>
-                    </div>
-                    <div class="chart_parent">
-                        <div id="t_avg" class="chart_panel"></div>
-                    </div>
-                    <div style="display: inline-block; width: 49%">
-                        <div id="t_container" style="height: 240px; min-width: 400px;"></div>
-                    </div>
+            <div v-if="config.type == 'API'">
+                <div class="chart_parent">
+                    <div id="t_late" class="chart_block"></div>
                 </div>
-            }
+                <div class="chart_parent">
+                    <div id="t_avg" class="chart_block"></div>
+                </div>
+                <div class="chart_parent2">
+                    <div id="t_container" class="chart_block"></div>
+                </div>
+            </div>
             <div>
                 <div class="chart_parent">
-                    <div id="q_hungry" class="chart_panel"></div>
+                    <div id="q_max" class="chart_block"></div>
                 </div>
-                @if (config.Type == "API")
-                {
-                    <div class="chart_parent">
-                        <div id="t_hungry" class="chart_panel"></div>
-                    </div>
-                }
+                <div class="chart_parent" v-if="config.type == 'API'">
+                    <div id="t_max" class="chart_block"></div>
+                </div>
                 <div class="chart_parent">
-                    <div id="q_max" class="chart_panel"></div>
+                    <div id="q_hungry" class="chart_block"></div>
                 </div>
-                @if (config.Type == "API")
-                {
-                    <div class="chart_parent">
-                        <div id="t_max" class="chart_panel"></div>
-                    </div>
-                }
+                <div class="chart_parent" v-if="config.type == 'API'">
+                    <div id="t_hungry" class="chart_block"></div>
+                </div>
             </div>
         </div>
     </el-main>
 
-    <el-aside class="message_boards" style="height:100%;line-height:30px;padding:10px;text-align:left;width:300px;border:solid 1px whitesmoke">
-        <div style="height:100%;width:100%;overflow: hidden;">
-            <div style="height:100%;overflow: hidden; width:260px;margin:0 20px  0 20px;">
+    <el-aside class="message_boards" style="border: solid 1px whitesmoke; height: 100%; line-height: 30px; padding: 10px; text-align: left; width: 300px;">
+        <div style="height: 100%; overflow: hidden; width: 100%;">
+            <div style="height: 100%; margin: 0 20px 0 20px; overflow: hidden; width: 260px;">
                 <el-tabs v-model="activePanel" class="tiled">
                     <el-tab-pane label="实时信息" name="real">
 
@@ -598,4 +601,3 @@
         </div>
     </el-aside>
 </el-container>
-

@@ -8,7 +8,6 @@ using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
 using Newtonsoft.Json;
-using ZeroMQ;
 
 namespace ZeroNet.Http.Gateway
 {
@@ -33,6 +32,7 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         public static void OnEnd(RouteData data)
         {
+            data.End = DateTime.Now;
             EndMonitor(data);
             //CountApi(data);
             EndZeroTrace(data);
@@ -58,6 +58,11 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace(args.ToString());
                 LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
                 LogRecorder.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
+                LogRecorder.MonitorTrace($"Command:{data.HostName}/{data.ApiName}");
+                if (data.Arguments.Count > 0)
+                    LogRecorder.MonitorTrace($"Arguments：{JsonConvert.SerializeObject(data.Arguments)}");
+                if (!string.IsNullOrWhiteSpace(data.HttpContext))
+                    LogRecorder.MonitorTrace("Context:" + data.HttpContext);
             }
             catch (Exception e)
             {
@@ -80,12 +85,6 @@ namespace ZeroNet.Http.Gateway
                 return;
             try
             {
-                if (!string.IsNullOrWhiteSpace(data.Uri.Query))
-                    LogRecorder.MonitorTrace($"Query：{data.Uri.Query}");
-                if (!string.IsNullOrWhiteSpace(data.HttpForm))
-                    LogRecorder.MonitorTrace($"Form：{data.HttpForm}");
-                if (!string.IsNullOrWhiteSpace(data.HttpContext))
-                    LogRecorder.MonitorTrace("Context:" + data.HttpContext);
                 LogRecorder.MonitorTrace($"UserState : {data.UserState}");
                 LogRecorder.MonitorTrace($"ZeroState : {data.ZeroState}");
                 LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
@@ -123,8 +122,8 @@ namespace ZeroNet.Http.Gateway
             1
         };
 
-        private static readonly byte[] begin = "Call".ToZeroBytes();
-        private static readonly byte[] web = "WebClient".ToZeroBytes();
+        private static readonly byte[] WebNameBytes = "WebClient".ToZeroBytes();
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -138,12 +137,12 @@ namespace ZeroNet.Http.Gateway
             }
             using (socket)
             {
-                var result = ZeroPublishExtend.Publish(socket.Socket, "Http", Description,
-                    begin,
+                var result = socket.Socket.Publish("Http", Description,
+                    $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
                     data.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     ZeroApplication.AppName.ToZeroBytes(),
-                    web,
+                    WebNameBytes,
                     GlobalContext.ServiceKey.ToZeroBytes());
                 if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
                 {
@@ -171,23 +170,26 @@ namespace ZeroNet.Http.Gateway
                 ZeroFrameType.Command,
                 ZeroFrameType.TextContent,
                 ZeroFrameType.TextContent,
-                ZeroFrameType.RequestId,
                 ZeroFrameType.Station,
                 ZeroFrameType.Requester,
+                ZeroFrameType.RequestId,
                 ZeroFrameType.GlobalId,
                 ZeroFrameType.CallId,
                 ZeroFrameType.SerivceKey,
                 3
             };
+            var result = data.ResultMessage;
+            data.ResultMessage = null;//拒绝重复传输
+            data.Headers = null;//拒绝重复传输
             using (socket)
             {
-                ZeroPublishExtend.Publish(socket.Socket, "Http", desc,
-                    begin,
-                    data.ResultMessage.ToZeroBytes(),
+                socket.Socket.Publish("Http", desc,
+                    $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
+                    result.ToZeroBytes(),
                     data.ToZeroBytes(),
-                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     ZeroApplication.AppName.ToZeroBytes(),
-                    web,
+                    WebNameBytes,
+                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
                     GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
                     GlobalContext.ServiceKey.ToZeroBytes());

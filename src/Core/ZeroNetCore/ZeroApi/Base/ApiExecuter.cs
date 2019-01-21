@@ -152,9 +152,9 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(item.ContextJson))
+                if (!string.IsNullOrWhiteSpace(item.Context))
                 {
-                    GlobalContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.ContextJson));
+                    GlobalContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.Context));
                 }
                 GlobalContext.Current.DependencyObjects.Annex(item);
                 if (!string.IsNullOrWhiteSpace(item.Content))
@@ -168,7 +168,7 @@ namespace Agebull.ZeroNet.ZeroApi
             catch (Exception e)
             {
                 LogRecorder.MonitorTrace($"Restory context exception:{e.Message}");
-                ZeroTrace.WriteException(Station.StationName, e, item.ApiName, "restory context", item.ContextJson);
+                ZeroTrace.WriteException(Station.StationName, e, item.ApiName, "restory context", item.Context);
                 item.Result = ApiResult.ArgumentErrorJson;
                 item.Status = UserOperatorStateType.FormalError;
                 return ZeroOperatorStateType.LocalException;

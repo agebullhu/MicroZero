@@ -1,4 +1,97 @@
-﻿// Write your Javascript code.
+﻿
+var vue_obj;
+
+var vue_option = {
+    el: '#work_space',
+    data: {
+        ws_active: false,
+        isCollapse: false
+    },
+    filters: {
+        formatDate(time) {
+            var date = new Date(time);
+            return formatDate(date, 'MM-dd hh:mm:ss');
+        },
+        formatUnixDate(unix) {
+            if (unix === 0)
+                return "*";
+            var date = new Date(unix * 1000);
+            return formatDate(date, 'MM-dd hh:mm:ss');
+        },
+        formatNumber(number) {
+            if (number) {
+                return number.toFixed(4);
+            } else {
+                return "0.0";
+            }
+        },
+        thousandsNumber(number) {
+            if (number) {
+                return toThousandsInt(number);
+            } else {
+                return "0";
+            }
+        },
+        formatNumber1(number) {
+            if (number) {
+                return number.toFixed(4);
+            } else {
+                return "0.0";
+            }
+        },
+        formatNumber0(number) {
+            if (number) {
+                return number.toFixed(0);
+            } else {
+                return "0";
+            }
+        },
+        formatHex(number) {
+            if (number) {
+                return number.toString(16).toUpperCase();
+            } else {
+                return "-";
+            }
+        }
+    },
+    methods: {
+        go_home() {
+            location.href = "/Home";
+        },
+        go_monitor() {
+            location.href = "/Monitor";
+        },
+        go_trace() {
+            location.href = "/Flow";
+        },
+        go_plan() {
+            location.href = "/Plan";
+        },
+        go_doc() {
+            location.href = "/Doc";
+        },
+        go_event() {
+            location.href = "/MachineEvent";
+        },
+        go_github() {
+            location.href = "https://github.com/agebullhu/ZeroNet";
+        }
+    }
+};
+function extend_data(data) {
+    vue_option.data = $.extend(vue_option.data, data);
+}
+function extend_filter(filters) {
+    vue_option.filters = $.extend(vue_option.filters, filters);
+}
+function extend_methods(methods) {
+    vue_option.methods = $.extend(vue_option.methods, methods);
+}
+
+function ws_state(active) {
+    vue_option.data.ws_active = active;
+};
+
 /**
  * 更新到vue数组
  * @param {any} array 数组
@@ -15,12 +108,15 @@ function vue_update_array(array, item, key) {
     }
     array.push(item);
 }
+
 /**
  * ajax get 操作
  * @param {any} url 地址
- * @param {any} vue_obj vue快捷对象
+ * @param {any} job 标题
+ * @param {any} callback 回调
  */
-function do_sync_get(url, vue_obj, job, callback) {
+function do_sync_get(url, job, callback) {
+    console.log(url);
     $.get(url, function (data) {
         console.log(data);
         if (data.success) {
@@ -53,6 +149,7 @@ function do_sync_get(url, vue_obj, job, callback) {
     });
 }
 
+
 function formatDate(date, fmt) {
     if (!date || isNaN(date.getMonth()))
         return '-';
@@ -78,6 +175,7 @@ function formatDate(date, fmt) {
     }
     return fmt;
 }
+
 function padLeftZero(str) {
     return ('00' + str).substr(str.length);
 }
@@ -85,18 +183,19 @@ function padLeftZero(str) {
 
 
 /**
- * /千分符数字表示法
+ * /千分符小数表示法
+ * @param {any} num 数字
+ * @return {string} 格式化好的文本
  */
 function toThousands(num) {
-    if (!num || num == "")
+    if (!num)
         return "0.00";
     num = num.toString();
-    if (num == "")
+    if (!num)
         return "0.00";
 
     var result;
 
-    var ls;
     var p = num.indexOf(".");
     if (p >= 0) {
         result = num.substr(p, num.length - p);
@@ -115,18 +214,20 @@ function toThousands(num) {
 }
 
 /**
- * /千分符数字表示法
+ * /千分符整数表示法
+ * @param {any} num 数字
+ * @return {string} 格式化好的文本
  */
+
 function toThousandsInt(num) {
-    if (!num || num == "")
+    if (!num)
         return "0";
     num = num.toString();
-    if (num == "")
+    if (!num)
         return "0";
 
     var result;
 
-    var ls;
     var p = num.indexOf(".");
     if (p >= 0) {
         result = num.substr(p, num.length - p);

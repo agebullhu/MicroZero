@@ -4,13 +4,9 @@ using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
 using Microsoft.Extensions.DependencyInjection;
 using ZeroNet.Http.Route;
 using Agebull.Common.Configuration;
-using Gboxt.Common.DataModel.ExtendEvents;
-using Microsoft.Extensions.Configuration.Json;
-using System.Linq;
 
 namespace Agebull.ZeroNet.Log
 {

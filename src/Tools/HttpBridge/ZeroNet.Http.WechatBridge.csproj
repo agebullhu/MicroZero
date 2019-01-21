@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.All"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.4.0" />

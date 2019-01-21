@@ -69,7 +69,7 @@ namespace Agebull.ZeroNet.ZeroApi
             des[i++] = ZeroFrameType.RequestId;
             des[i++] = ZeroFrameType.CallId;
             des[i++] = ZeroFrameType.GlobalId;
-            des[i++] = ZeroFrameType.JsonValue;
+            des[i++] = ZeroFrameType.ResultText;
             var msg = new List<byte[]>
             {
                 item.Caller,

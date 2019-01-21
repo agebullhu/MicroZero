@@ -6,40 +6,40 @@
                     new_plan();
                     return;
                 case "operator-flush":
-                    do_sync_get("/Plan/Flush", this, "刷新数据");
+                    do_sync_get("/Plan/Flush", "刷新数据");
                     return;
                 case "type-once":
-                    do_sync_get("/Plan/Filter/none", this, "单次任务", res => {
+                    do_sync_get("/Plan/Filter/none", "单次任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-time":
-                    do_sync_get("/Plan/Filter/time", this, "定时任务", res => {
+                    do_sync_get("/Plan/Filter/time", "定时任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-delay":
-                    do_sync_get("/Plan/Filter/delay", this, "延时任务", res => {
+                    do_sync_get("/Plan/Filter/delay", "延时任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-week":
-                    do_sync_get("/Plan/Filter/week", this, "每周任务", res => {
+                    do_sync_get("/Plan/Filter/week", "每周任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-month":
-                    do_sync_get("/Plan/Filter/month", this, "每月任务", res => {
+                    do_sync_get("/Plan/Filter/month", "每月任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-active":
-                    do_sync_get("/Plan/Active", this, "活动任务", res => {
+                    do_sync_get("/Plan/Active", "活动任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
                 case "type-history":
-                    do_sync_get("/Plan/History", this, "历史任务", res => {
+                    do_sync_get("/Plan/History", "历史任务", res => {
                         vue_option.data.plans = plans = res.data;
                     });
                     return;

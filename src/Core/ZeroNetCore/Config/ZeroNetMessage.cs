@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
 using Newtonsoft.Json;
 
 namespace Agebull.ZeroNet.Core
@@ -60,7 +62,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///  原始上下文的JSO内容
         /// </summary>
-        public string ContextJson { get; set; }
+        public string Context { get; set; }
+
+        /// <summary>
+        /// 内容
+        /// </summary>
+        public string Content { get; set; }
 
         /// <summary>
         ///  调用的命令或广播子标题
@@ -80,6 +87,12 @@ namespace Agebull.ZeroNet.Core
         [JsonProperty]
         public string Station { get; set; }
 
+        /// <summary>
+        /// 调用方的站点类型
+        /// </summary>
+        [JsonProperty]
+        public string StationType { get; set; }
+
         private byte[][] messages;
 
         /// <summary>
@@ -93,6 +106,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         [JsonIgnore]
         public IEnumerable<string> Values => _frames?.Values.Select(p => Encoding.UTF8.GetString(p.Data));
+
 
         /// <summary>
         ///     内容
@@ -110,89 +124,26 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        /// 加入数据
+        /// 还原调用上下文
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="value"></param>
-        public void Add(byte type, byte[] value)
+        /// <returns></returns>
+        public void RestoryContext(string station)
         {
-            if (Frames.Count == 0)
+            try
             {
-                Frames.Add(2, new ZeroFrameItem
-                {
-                    Type = type,
-                    Data = value
-                });
+                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Content)
+                    ? JsonConvert.DeserializeObject<ApiContext>(Content)
+                    : new GlobalContext());
             }
-            Frames.Add(Frames.Keys.Max() + 3, new ZeroFrameItem
+            catch (Exception e)
             {
-                Type = type,
-                Data = value
-            });
-        }
-
-        /// <summary>
-        /// 取值
-        /// </summary>
-        /// <param name="name">名称</param>
-        /// <param name="value">返回值</param>
-        /// <returns>是否存在</returns>
-        public bool TryGetValue(byte name, out byte[] value)
-        {
-            if (_frames?.Count == 0)
-            {
-                value = null;
-                return false;
+                LogRecorder.MonitorTrace($"Restory context exception:{e.Message}");
+                ZeroTrace.WriteException(station, e, "restory context", Content);
+                GlobalContext.SetContext(new GlobalContext());
             }
-            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            value = vl.Data;
-            return vl != null;
-        }
-
-        /// <summary>
-        /// 取值
-        /// </summary>
-        /// <param name="type">名称</param>
-        /// <returns>存在返回值，不存在返回空对象</returns>
-        public byte[] GetValue<TValue>(byte type)
-        {
-            if (_frames == null || _frames.Count == 0)
-                return null;
-            var vl = _frames.Values.FirstOrDefault(p => p.Type == type);
-            return vl == null ? null : vl.Data;
-        }
-
-        /// <summary>
-        /// 取值
-        /// </summary>
-        /// <param name="name">名称</param>
-        /// <param name="value">返回值</param>
-        /// <param name="parse"></param>
-        /// <returns>是否存在</returns>
-        public bool TryGetValue<TValue>(byte name, out TValue value, Func<byte[], TValue> parse)
-        {
-            if (_frames?.Count == 0)
-            {
-                value = default(TValue);
-                return false;
-            }
-            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            value = vl == null ? default(TValue) : parse(vl.Data);
-            return vl != null;
-        }
-
-        /// <summary>
-        /// 取值
-        /// </summary>
-        /// <param name="name">名称</param>
-        /// <param name="parse"></param>
-        /// <returns>存在返回值，不存在返回空对象</returns>
-        public TValue GetValue<TValue>(byte name, Func<byte[], TValue> parse)
-        {
-            if (_frames == null || _frames.Count == 0)
-                return default(TValue);
-            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            return vl == null ? default(TValue) : parse(vl.Data);
+            GlobalContext.Current.Request.CallGlobalId = CallId;
+            GlobalContext.Current.Request.LocalGlobalId = GlobalId;
+            GlobalContext.Current.Request.RequestId = RequestId;
         }
 
         /// <summary>
@@ -270,26 +221,32 @@ namespace Agebull.ZeroNet.Core
                     continue;
                 switch (description[idx])
                 {
-                    case ZeroFrameType.GlobalId:
-                        message.GlobalId = GetString(bytes);
-                        break;
-                    case ZeroFrameType.CallId:
-                        message.CallId = GetString(bytes);
+                    case ZeroFrameType.Requester:
+                        message.Requester = GetString(bytes);
                         break;
                     case ZeroFrameType.RequestId:
                         message.RequestId = GetString(bytes);
                         break;
-                    case ZeroFrameType.Requester:
-                        message.Requester = GetString(bytes);
+                    case ZeroFrameType.CallId:
+                        message.CallId = GetString(bytes);
+                        break;
+                    case ZeroFrameType.GlobalId:
+                        message.GlobalId = GetString(bytes);
+                        break;
+                    case ZeroFrameType.Command:
+                        message.CommandOrSubTitle = GetString(bytes);
                         break;
                     case ZeroFrameType.Context:
-                        message.ContextJson = GetString(bytes);
+                        message.Context = GetString(bytes);
+                        break;
+                    case ZeroFrameType.TextContent:
+                        message.Content = GetString(bytes);
                         break;
                     case ZeroFrameType.Station:
                         message.Station = GetString(bytes);
                         break;
-                    case ZeroFrameType.Command:
-                        message.CommandOrSubTitle = GetString(bytes);
+                    case ZeroFrameType.StationType:
+                        message.StationType = GetString(bytes);
                         break;
                 }
                 action?.Invoke(message, description[idx], messages[idx]);
@@ -304,7 +261,7 @@ namespace Agebull.ZeroNet.Core
         /// <returns></returns>
         public static string GetString(byte[] bytes)
         {
-            return bytes==null || bytes.Length == 0 ? null : Encoding.UTF8.GetString(bytes).Trim('\0');
+            return bytes == null || bytes.Length == 0 ? null : Encoding.UTF8.GetString(bytes).Trim('\0');
         }
         /// <summary>
         /// 取文本
@@ -316,6 +273,93 @@ namespace Agebull.ZeroNet.Core
             if (bytes == null || bytes.Length == 0 || !long.TryParse(Encoding.ASCII.GetString(bytes).Trim('\0'), out var l))
                 return 0;
             return l;
+        }
+
+        /// <summary>
+        /// 加入数据
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="value"></param>
+        public void Add(byte type, byte[] value)
+        {
+            if (Frames.Count == 0)
+            {
+                Frames.Add(2, new ZeroFrameItem
+                {
+                    Type = type,
+                    Data = value
+                });
+            }
+            Frames.Add(Frames.Keys.Max() + 3, new ZeroFrameItem
+            {
+                Type = type,
+                Data = value
+            });
+        }
+
+        /// <summary>
+        /// 取值
+        /// </summary>
+        /// <param name="name">名称</param>
+        /// <param name="value">返回值</param>
+        /// <returns>是否存在</returns>
+        public bool TryGetValue(byte name, out byte[] value)
+        {
+            if (_frames == null || _frames.Count == 0)
+            {
+                value = null;
+                return false;
+            }
+
+            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
+            value = vl?.Data;
+            return vl != null;
+        }
+
+        /// <summary>
+        /// 取值
+        /// </summary>
+        /// <param name="type">名称</param>
+        /// <returns>存在返回值，不存在返回空对象</returns>
+        public byte[] GetValue<TValue>(byte type)
+        {
+            if (_frames == null || _frames.Count == 0)
+                return null;
+            var vl = _frames.Values.FirstOrDefault(p => p.Type == type);
+            return vl?.Data;
+        }
+
+        /// <summary>
+        /// 取值
+        /// </summary>
+        /// <param name="name">名称</param>
+        /// <param name="value">返回值</param>
+        /// <param name="parse"></param>
+        /// <returns>是否存在</returns>
+        public bool TryGetValue<TValue>(byte name, out TValue value, Func<byte[], TValue> parse)
+        {
+            if (_frames == null || _frames.Count == 0)
+            {
+                value = default(TValue);
+                return false;
+            }
+            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
+            value = vl == null ? default(TValue) : parse(vl.Data);
+            return vl != null;
+        }
+
+        /// <summary>
+        /// 取值
+        /// </summary>
+        /// <param name="name">名称</param>
+        /// <param name="parse"></param>
+        /// <returns>存在返回值，不存在返回空对象</returns>
+        public TValue GetValue<TValue>(byte name, Func<byte[], TValue> parse)
+        {
+            if (_frames == null || _frames.Count == 0)
+                return default(TValue);
+            var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
+            return vl == null ? default(TValue) : parse(vl.Data);
         }
     }
 

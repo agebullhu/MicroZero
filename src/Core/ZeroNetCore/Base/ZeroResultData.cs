@@ -5,10 +5,11 @@ using ZeroMQ;
 
 namespace Agebull.ZeroNet.Core
 {
+
     /// <summary>
     /// 返回值
     /// </summary>
-    public class ZeroResultData : ZeroNetMessage
+    public class ZeroResultData : ZeroNetMessage, IZeroState
     {
         /// <summary>
         /// 与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
@@ -18,17 +19,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// ZMQ错误码
         /// </summary>
-        public ZError ZmqError;
+        public ZError ZmqError { get; set; }
 
         /// <summary>
         /// 异常
         /// </summary>
-        public Exception Exception;
+        public Exception Exception { get; set; }
 
         /// <summary>
         /// 消息
         /// </summary>
-        public string ErrorMessage;
+        public string ErrorMessage { get; set; }
 
         /// <summary>
         /// 显示到文本

@@ -19,35 +19,6 @@ namespace ZeroNet.Http.Gateway
     /// </summary>
     internal partial class Router : IRouter
     {
-        #region 路由
-
-        /// <summary>
-        ///     查找站点
-        /// </summary>
-        private bool FindHost()
-        {
-            if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
-            {
-                LogRecorder.MonitorTrace($"{Data.HostName} no find");
-                return false; //Data.RouteHost = HttpHost.DefaultHost;
-            }
-            if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
-                return true;
-            if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
-            {
-                LogRecorder.MonitorTrace($"{Data.ApiName} no find");
-                return false; //Data.RouteHost = HttpHost.DefaultHost;
-            }
-            return Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public);
-        }
-
-        /// <summary>
-        ///     缓存图
-        /// </summary>
-        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
-
-        #endregion
-
         #region 变量
 
         /// <summary>
@@ -71,6 +42,11 @@ namespace ZeroNet.Http.Gateway
         public RouteData Data { get; set; }
 
         /// <summary>
+        ///     缓存图
+        /// </summary>
+        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
+
+        /// <summary>
         ///     安全检查器
         /// </summary>
         public SecurityChecker SecurityChecker { get; set; }
@@ -89,21 +65,13 @@ namespace ZeroNet.Http.Gateway
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
-            Data = new RouteData
-            {
-                Uri = Request.GetUri(),
-                HttpMethod = Request.Method.ToUpper()
-            };
-            SecurityChecker = new SecurityChecker { Data = Data };
-            Data.Prepare(HttpContext);
-
+            Data = new RouteData();
+            var success = Data.Prepare(HttpContext);
             IoHandler.OnBegin(Data);
-            if (SecurityChecker.PreCheck())
-                return true;
-            Data.UserState = UserOperatorStateType.DenyAccess;
-            Data.ZeroState = ZeroOperatorStateType.DenyAccess;
-            Data.ResultMessage = ApiResult.DenyAccessJson;
-            return false;
+            if (!success)
+                return false;
+            SecurityChecker = new SecurityChecker { Data = Data };
+            return SecurityChecker.PreCheck();
         }
 
         /// <summary>
@@ -111,8 +79,6 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         async void IRouter.Call()
         {
-            if (!CheckCall())
-                return;
             if (Data.HostName.Equals("Zero", StringComparison.OrdinalIgnoreCase))
             {
                 var manager = new ZeroManager();
@@ -163,45 +129,25 @@ namespace ZeroNet.Http.Gateway
             SecurityChecker.CheckResult(Data);
         }
 
+
         /// <summary>
-        ///     检查调用内容
+        ///     查找站点
         /// </summary>
-        /// <returns></returns>
-        private bool CheckCall()
+        private bool FindHost()
         {
-            if (string.IsNullOrWhiteSpace(RouteOption.Option.SystemConfig.SiteFolder))
+            if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
             {
-                var words = Data.Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length <= 1)
-                {
-                    Data.UserState = UserOperatorStateType.FormalError;
-                    Data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    Data.ResultMessage = ApiResult.ArgumentErrorJson;
-                    return false;
-                }
-
-                Data.HostName = words[0];
-                Data.ApiName = words[1];
+                LogRecorder.MonitorTrace($"{Data.HostName} no find");
+                return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
-            else
+            if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
+                return true;
+            if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
             {
-                //var path = Data.Uri.LocalPath.Replace(RouteOption.Option.SystemConfig.SiteFolder, "",StringComparison.OrdinalIgnoreCase);
-
-                //LogRecorder.MonitorTrace($"{RouteOption.Option.SystemConfig.SiteFolder}:{Data.Uri.LocalPath}");
-                var words = Data.Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length <= 1)
-                {
-                    Data.UserState = UserOperatorStateType.FormalError;
-                    Data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    Data.ResultMessage = ApiResult.ArgumentErrorJson;
-                    return false;
-                }
-
-                Data.HostName = words[1];
-                Data.ApiName = words[2];
+                LogRecorder.MonitorTrace($"{Data.ApiName} no find");
+                return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
-            LogRecorder.MonitorTrace($"{Data.HostName}:{Data.ApiName}");
-            return true;
+            return Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public);
         }
 
         /// <summary>
@@ -209,7 +155,7 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         private bool TokenCheck()
         {
-            
+
             SecurityChecker.Data = Data;
             //if (SecurityChecker.CheckToken())
             //    return true;

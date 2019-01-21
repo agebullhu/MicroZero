@@ -39,21 +39,27 @@ namespace ZeroNet.Http.Gateway
         #region 预检
 
         /// <summary>
+        ///     预检
+        /// </summary>
+        /// <returns></returns>
+        public bool PreCheck()
+        {
+            if( CheckSign() && KillDenyHttpHeaders())
+                return true;
+            Data.UserState = UserOperatorStateType.DenyAccess;
+            Data.ZeroState = ZeroOperatorStateType.DenyAccess;
+            Data.ResultMessage = ApiResult.DenyAccessJson;
+            return false;
+
+        }
+
+        /// <summary>
         ///     验签
         /// </summary>
         /// <returns></returns>
         internal bool CheckSign()
         {
             return true;
-        }
-
-        /// <summary>
-        ///     预检
-        /// </summary>
-        /// <returns></returns>
-        public bool PreCheck()
-        {
-            return CheckSign() && KillDenyHttpHeaders();
         }
 
         /// <summary>

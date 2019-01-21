@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Model\Business\**" />
+    <EmbeddedResource Remove="Model\Business\**" />
+    <None Remove="Model\Business\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Agebull.EntityModel.MySql" Version="2.3.2.71" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ManagerBase\ZeroNet.Devops.ManagerBase.csproj" />
+  </ItemGroup>
+
+</Project>

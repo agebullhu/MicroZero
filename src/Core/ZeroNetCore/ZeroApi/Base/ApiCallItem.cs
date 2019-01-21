@@ -25,11 +25,6 @@ namespace Agebull.ZeroNet.ZeroApi
         public string LocalId { get; set; }
 
         /// <summary>
-        /// 调用方的站点类型
-        /// </summary>
-        public string StationType { get; set; }
-
-        /// <summary>
         /// 请求者
         /// </summary>
         [JsonIgnore]
@@ -61,11 +56,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 请求参数
         /// </summary>
         public string Argument { get; set; }
-
-        /// <summary>
-        /// 请求参数字典
-        /// </summary>
-        public string Content { get; set; }
 
         /// <summary>
         /// 返回
@@ -111,12 +101,6 @@ namespace Agebull.ZeroNet.ZeroApi
                             break;
                         case ZeroFrameType.Argument:
                             item.Argument = GetString(bytes);
-                            break;
-                        case ZeroFrameType.TextContent:
-                            item.Content = GetString(bytes);
-                            break;
-                        case ZeroFrameType.StationType:
-                            item.StationType = GetString(bytes);
                             break;
                         case ZeroFrameType.Original1:
                         case ZeroFrameType.Original2:

@@ -1037,6 +1037,32 @@ namespace ZeroMQ
                 return SendFrame(f, FlagsDontwait);
         }
 
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="array">消息</param>
+        /// <param name="extend"></param>
+        /// <returns>是否发送成功</returns>
+        public bool SendByExtend(byte[][] array, params byte[][] extend)
+        {
+            _error = null;
+            int i;
+            for (i = 0; i < array.Length; ++i)
+            {
+                using (var f = new ZFrame(array[i]))
+                    if (!SendFrame(f, FlagsSndmore))
+                        return false;
+            }
+            for (i = 0; i < extend.Length - 1; ++i)
+            {
+                using (var f = new ZFrame(extend[i]))
+                    if (!SendFrame(f, FlagsSndmore))
+                        return false;
+            }
+            using (var f = new ZFrame(extend[i]))
+                return SendFrame(f, FlagsDontwait);
+        }
         /// <summary>
         /// 发送
         /// </summary>
@@ -1055,8 +1081,6 @@ namespace ZeroMQ
             }
             return SendFrame(array[i], FlagsDontwait);
         }
-
-
 
         /// <summary>
         /// 接收数据

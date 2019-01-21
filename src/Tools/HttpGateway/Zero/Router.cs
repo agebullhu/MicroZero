@@ -26,37 +26,7 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace("Host Type Failed");
                 return Data.ResultMessage;
             }
-            try
-            {
-                var arguments = new Dictionary<string, string>();
-                if (Request.QueryString.HasValue)
-                {
-                    foreach (var key in Request.Query.Keys)
-                        arguments.TryAdd(key, Request.Query[key]);
-                }
-                if (Request.HasFormContentType)
-                {
-                    foreach (var key in Request.Form.Keys)
-                        arguments.TryAdd(key, Request.Form[key]);
-                }
-                if (arguments.Count > 0)
-                    Data.HttpForm = JsonConvert.SerializeObject(arguments);
-                if (Request.ContentLength != null)
-                {
-                    using (var texter = new StreamReader(Request.Body))
-                    {
-                        Data.HttpContext = texter.ReadToEnd();
-                        if (string.IsNullOrEmpty(Data.HttpContext))
-                            Data.HttpContext = null;
-                        texter.Close();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e, "读取远程参数");
-                return Data.ResultMessage = ApiResult.ArgumentErrorJson;
-            }
+
             // 远程调用
             using (MonitorScope.CreateScope("CallZero"))
             {
@@ -66,13 +36,13 @@ namespace ZeroNet.Http.Gateway
 
         private string CallApi(ZeroHost zeroHost)
         {
-            
+            var form = JsonConvert.SerializeObject(Data.Arguments);
             var caller = new ApiClient
             {
                 Station = zeroHost.Station,
                 Commmand = Data.ApiName,
-                Argument = Data.HttpContext ?? Data.HttpForm,
-                ExtendArgument = Data.HttpForm,
+                Argument = Data.HttpContext ?? form,
+                ExtendArgument = form,
                 ContextJson = Data.GlobalContextJson
             };
             caller.CallCommand();
@@ -93,6 +63,7 @@ namespace ZeroNet.Http.Gateway
                 }
             }
 
+            var form = JsonConvert.SerializeObject(Data.Arguments);
             switch (config.StationType)
             {
                 case ZeroStationType.Api:
@@ -101,8 +72,8 @@ namespace ZeroNet.Http.Gateway
                     {
                         Station = zeroHost.Station,
                         Commmand = Data.ApiName,
-                        Argument = Data.HttpContext ?? Data.HttpForm,
-                        ExtendArgument = Data.HttpForm,
+                        Argument = Data.HttpContext ?? form,
+                        ExtendArgument = form,
                         ContextJson = Data.GlobalContextJson
                     };
                     caller.CallCommand();
@@ -112,7 +83,7 @@ namespace ZeroNet.Http.Gateway
                     return Data.ResultMessage = ApiResult.NoFindJson;
                 case ZeroStationType.Notify:
                 case ZeroStationType.Queue:
-                    if (ZeroPublisher.Publish(zeroHost.Station, Data.ApiName, Data.ApiName, Data.HttpContext))
+                    if (ZeroPublisher.DoPublish(zeroHost.Station, Data.ApiName, Data.ApiName, Data.HttpContext))
                     {
                         Data.UserState = UserOperatorStateType.Success;
                         Data.ZeroState = ZeroOperatorStateType.Ok;

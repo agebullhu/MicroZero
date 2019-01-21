@@ -49,12 +49,6 @@ namespace Agebull.ZeroNet.PubSub
         ///     内容
         /// </summary>
         [JsonProperty]
-        public string Content { get; set; }
-
-        /// <summary>
-        ///     内容
-        /// </summary>
-        [JsonProperty]
         public byte[] Buffer { get; set; }
 
         /// <summary>
@@ -135,10 +129,10 @@ namespace Agebull.ZeroNet.PubSub
                 case ZeroFrameType.TextContent:
                     item.Content = GetString(bytes);
                     break;
-                case ZeroFrameType.BinaryValue:
+                case ZeroFrameType.BinaryContent:
                     item.Buffer = bytes;
                     break;
-                case ZeroFrameType.TsonValue:
+                case ZeroFrameType.TsonContent:
                     item.Tson = bytes;
                     break;
             }

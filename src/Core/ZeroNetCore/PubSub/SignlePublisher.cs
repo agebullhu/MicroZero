@@ -67,24 +67,11 @@ namespace Agebull.ZeroNet.PubSub
                             TsonOperator.ToTson(serializer, data);
                             buf = serializer.Close();
                         }
-
-                        socket.SendTo(ZeroPublishExtend.PubDescriptionTson,
-                            data.Title.ToZeroBytes(),
-                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                            ZeroApplication.Config.RealName.ToZeroBytes(),
-                            buf,
-                            GlobalContext.Current.ToZeroBytes(),
-                            GlobalContext.ServiceKey.ToZeroBytes());
+                        socket.SendPublish(ZeroPublisher.PubDescriptionTson,data.Title.ToZeroBytes(), buf);
                     }
                     else
                     {
-                        socket.SendTo(ZeroPublishExtend.PubDescriptionJson,
-                            data.Title.ToZeroBytes(),
-                            GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                            ZeroApplication.Config.RealName.ToZeroBytes(),
-                            data.ToZeroBytes(),
-                            GlobalContext.Current.ToZeroBytes(),
-                            GlobalContext.ServiceKey.ToZeroBytes());
+                        socket.SendPublish(ZeroPublisher.PubDescriptionJson, data.Title.ToZeroBytes(), data.ToZeroBytes());
                     }
                 }
                 catch (Exception e)
