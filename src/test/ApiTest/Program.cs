@@ -21,9 +21,9 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.Discove(typeof(WeixinController).Assembly);
+            ZeroApplication.RegistZeroObject<DataEventSubscribe>();
             ZeroApplication.Initialize();
-            Weixin();
+            //Weixin();
             ZeroApplication.RunAwaite();
         }
 

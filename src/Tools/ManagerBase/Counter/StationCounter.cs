@@ -160,13 +160,17 @@ namespace ZeroNet.Http.Route
             var now = DateTime.Now;
             BaseLine = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
         }
+
         /// <summary>
         ///     执行命令
         /// </summary>
         /// <returns></returns>
         private void Collect(StationConfig station, string json)
         {
-            using (OnceScope.CreateScope(minuteLine))
+            var scope = OnceScope.TryCreateScope(minuteLine, 100);
+            if (scope == null)
+                return;//系统太忙，跳过处理
+            using (scope)
             {
                 var now = JsonConvert.DeserializeObject<StationCountItem>(json);
                 if (!StationCountItems.TryGetValue(station.StationName, out var item))

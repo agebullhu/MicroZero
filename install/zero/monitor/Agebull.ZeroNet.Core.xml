@@ -1282,17 +1282,22 @@
                 对象活动时登记
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectClose(Agebull.ZeroNet.Core.IZeroObject)">
-            <summary>
-                对象关闭时登记
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectFailed(Agebull.ZeroNet.Core.IZeroObject)">
             <summary>
                 对象关闭时登记
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSemaphore">
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectClose(Agebull.ZeroNet.Core.IZeroObject)">
+            <summary>
+                对象关闭时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSafeOpen">
+            <summary>
+                等待所有对象信号(全开或全关)
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSafeClose">
             <summary>
                 等待所有对象信号(全开或全关)
             </summary>
@@ -1322,17 +1327,7 @@
                 系统启动时调用
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnHeartbeat">
-            <summary>
-                心跳
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnZeroEnd">
-            <summary>
-                系统关闭时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.CloseActiveObject">
             <summary>
                 系统关闭时调用
             </summary>
@@ -1507,6 +1502,12 @@
             发出事件
             </summary>
             <param name="centerEvent"></param>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.InvokeEvent(System.Object)">
+            <summary>
+            发出事件
+            </summary>
+            <param name="args"></param>
         </member>
         <member name="T:Agebull.ZeroNet.Core.SpeedLimitType">
             <summary>
@@ -1984,6 +1985,16 @@
             <param name="open">进入时执行的动作</param>
             <param name="close">离开时必须执行的动作</param>
             <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.OnceScope.TryCreateScope(System.Object,System.Int32,System.Action,System.Action)">
+            <summary>
+            构造范围
+            </summary>
+            <param name="lockObj">锁定对象</param>
+            <param name="timeOut">超时时长</param>
+            <param name="open">进入时执行的动作</param>
+            <param name="close">离开时必须执行的动作</param>
+            <returns>如果超时，则返回空。正常进入返回对象</returns>
         </member>
         <member name="M:Agebull.ZeroNet.Core.OnceScope.OnDispose">
             <inheritdoc />
@@ -3871,6 +3882,12 @@
                 是否基础站点
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsSystem">
+            <summary>
+                是否接口站点
+            </summary>
+            <remarks></remarks>
+        </member>
         <member name="P:Agebull.ZeroNet.Core.StationConfig.IsApi">
             <summary>
                 是否接口站点
@@ -3880,6 +3897,7 @@
             <summary>
                 是否基础站点
             </summary>
+            <remarks></remarks>
         </member>
         <member name="P:Agebull.ZeroNet.Core.StationConfig.ShortName">
             <summary>
@@ -4074,15 +4092,15 @@
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnRun">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncRun">
             <summary>
-            命令轮询
+            同步运行状态
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnStop">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncStop">
             <summary>
-            关闭
+            同步关闭状态
             </summary>
             <returns></returns>
         </member>
@@ -4156,6 +4174,11 @@
         <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Trace">
             <summary>
             流程跟踪
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Proxy">
+            <summary>
+            代理
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Plan">

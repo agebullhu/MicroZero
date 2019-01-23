@@ -172,8 +172,8 @@ namespace Agebull.ZeroNet.Log
                 RunTaskCancel = new CancellationTokenSource();
                 //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
                 Task.Factory.StartNew(RunWaite);
+                return true;
             }
-            return true;
         }
         /// <summary>
         /// 应用程序等待结果的信号量对象
@@ -280,21 +280,34 @@ namespace Agebull.ZeroNet.Log
         }
 
         /// <summary>
+        /// 是否为运行状态
+        /// </summary>
+        public bool IsRun => State > StationState.Start && State < StationState.Closing;
+
+        /// <summary>
+        /// 名称
+        /// </summary>
+        public string Name = "RemoteLog";
+        /// <summary>
         /// 站点状态变更时调用
         /// </summary>
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
-            if (State == StationState.Run && (config.State == ZeroCenterState.Run || config.State == ZeroCenterState.Pause))
-                return;
-            if (config.State == ZeroCenterState.Run && ZeroApplication.CanDo)
+            if (!IsRun)
             {
-                ZeroTrace.SystemLog("RemoteLog", "Start by config state changed");
-                Start();
+                if (config.State < ZeroCenterState.Run && ZeroApplication.CanDo)
+                {
+                    ZeroTrace.SystemLog(Name, "Start by config state changed");
+                    Start();
+                }
             }
             else
             {
-                ZeroTrace.SystemLog("RemoteLog", "Close by config state changed");
-                Close();
+                if (config.State >= ZeroCenterState.Failed || !ZeroApplication.CanDo)
+                {
+                    ZeroTrace.SystemLog(Name, "Close by config state changed");
+                    Close();
+                }
             }
         }
 

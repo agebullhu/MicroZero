@@ -57,12 +57,15 @@ namespace WebMonitor
                     string title = value.Length == 0 ? "" : value.Substring(1);
                     if (value[0] == '+')
                     {
-                        if (!Subscriber.Contains(title))
+                        if (!string.IsNullOrWhiteSpace(title) && !Subscriber.Contains(title))
                             Subscriber.Add(title);
                     }
                     else if (value[0] == '-')
                     {
-                        Subscriber.Remove(title);
+                        if (string.IsNullOrWhiteSpace(title))
+                            Subscriber.Clear();
+                        else
+                            Subscriber.Remove(title);
                     }
                 }
                 catch (WebSocketException)

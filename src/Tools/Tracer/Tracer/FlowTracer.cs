@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 using WebMonitor;
 using ZeroNet.Devops.ZeroTracer;
 using ZeroNet.Devops.ZeroTracer.DataAccess;
-
+using Timer=System.Timers.Timer;
 namespace ZeroNet.Http.Route
 {
     /// <summary>
@@ -29,7 +29,7 @@ namespace ZeroNet.Http.Route
             StationName = "TraceDispatcher";
             Subscribe = "";
             IsRealModel = true;
-            _timer = new System.Timers.Timer(1000) { AutoReset = true };
+            _timer = new Timer(1000) { AutoReset = true };
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
         }
@@ -176,6 +176,17 @@ namespace ZeroNet.Http.Route
 
         #region 限流发送
 
+        void SendToWebSocket(FlowRoot root)
+        {
+            lock (waiting)
+            {
+                if (!waiting.ContainsKey(root.RequestId))
+                    waiting.Add(root.RequestId, root);
+            }
+        }
+
+        private readonly Timer _timer;
+
         private readonly Dictionary<string, FlowRoot> waiting = new Dictionary<string, FlowRoot>();
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -186,6 +197,7 @@ namespace ZeroNet.Http.Route
                 if (waiting.Count == 0)
                     return;
                 datas = waiting.Values.ToList();
+                waiting.Clear();
             }
 
             int cnt = 0;
@@ -219,17 +231,6 @@ namespace ZeroNet.Http.Route
             _timer.Dispose();
             base.DoDispose();
         }
-        private readonly System.Timers.Timer _timer;
-
-        void SendToWebSocket(FlowRoot root)
-        {
-            lock (waiting)
-            {
-                if (!waiting.ContainsKey(root.RequestId))
-                    waiting.Add(root.RequestId, root);
-            }
-        }
-
         #endregion
 
         #region 查询
@@ -237,19 +238,24 @@ namespace ZeroNet.Http.Route
         public static ApiResult Query(string key)
         {
             if (string.IsNullOrWhiteSpace(key))
-                return ApiValueResult.Succees("查询条件为空");
-            var access = new FlowLogDataAccess();
-            var datas = access.PageData(0, 300, p => p.Id, true, p => p.RequestId.Contains(key));
-            if (datas.Count == 0)
-                return ApiValueResult.Succees("未查找到历史数据");
+                return ApiResult.Succees("查询条件为空");
             Task.Factory.StartNew(() =>
             {
+                var access = new FlowLogDataAccess();
+                var datas = access.PageData(0, 300, p => p.Id, true, p => p.RequestId.Contains(key));
                 foreach (var root in datas)
                 {
-                    WebSocketNotify.Publish("trace_flow", "~" + root.RequestId, root.FlowJson);
+                    WebSocketNotify.Publish("trace_flow", "~" + key, root.FlowJson);
                 }
             });
-            return ApiValueResult.Succees($"查找到{datas.Count}条数据");
+            return new ApiResult
+            {
+                Success = true,
+                Status = new OperatorStatus
+                {
+                    ClientMessage = "正在查询中...您将陆续收到查询结果"
+                }
+            };
         }
 
         #endregion

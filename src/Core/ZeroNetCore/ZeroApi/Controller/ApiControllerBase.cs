@@ -15,7 +15,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <summary>
         /// 调用者（机器名）
         /// </summary>
-        public string Caller => GlobalContext.RequestInfo.ServiceKey;
+        public string Caller => GlobalContext.ServiceName;
         /// <summary>
         /// 调用标识
         /// </summary>

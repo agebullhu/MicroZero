@@ -423,11 +423,6 @@
             站点请求ID(队列使用)
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.StationType">
-            <summary>
-            调用方的站点类型
-            </summary>
-        </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Caller">
             <summary>
             请求者
@@ -456,11 +451,6 @@
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Argument">
             <summary>
             请求参数
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Content">
-            <summary>
-            请求参数字典
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.ZeroApi.ApiCallItem.Result">
@@ -1292,17 +1282,22 @@
                 对象活动时登记
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectClose(Agebull.ZeroNet.Core.IZeroObject)">
-            <summary>
-                对象关闭时登记
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectFailed(Agebull.ZeroNet.Core.IZeroObject)">
             <summary>
                 对象关闭时登记
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSemaphore">
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnObjectClose(Agebull.ZeroNet.Core.IZeroObject)">
+            <summary>
+                对象关闭时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSafeOpen">
+            <summary>
+                等待所有对象信号(全开或全关)
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.WaitAllObjectSafeClose">
             <summary>
                 等待所有对象信号(全开或全关)
             </summary>
@@ -1332,17 +1327,7 @@
                 系统启动时调用
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnHeartbeat">
-            <summary>
-                心跳
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.OnZeroEnd">
-            <summary>
-                系统关闭时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.CloseActiveObject">
             <summary>
                 系统关闭时调用
             </summary>
@@ -1517,6 +1502,12 @@
             发出事件
             </summary>
             <param name="centerEvent"></param>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.InvokeEvent(System.Object)">
+            <summary>
+            发出事件
+            </summary>
+            <param name="args"></param>
         </member>
         <member name="T:Agebull.ZeroNet.Core.SpeedLimitType">
             <summary>
@@ -1995,6 +1986,16 @@
             <param name="close">离开时必须执行的动作</param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.Core.OnceScope.TryCreateScope(System.Object,System.Int32,System.Action,System.Action)">
+            <summary>
+            构造范围
+            </summary>
+            <param name="lockObj">锁定对象</param>
+            <param name="timeOut">超时时长</param>
+            <param name="open">进入时执行的动作</param>
+            <param name="close">离开时必须执行的动作</param>
+            <returns>如果超时，则返回空。正常进入返回对象</returns>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.OnceScope.OnDispose">
             <inheritdoc />
         </member>
@@ -2086,17 +2087,17 @@
             与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroResultData.ZmqError">
+        <member name="P:Agebull.ZeroNet.Core.ZeroResultData.ZmqError">
             <summary>
             ZMQ错误码
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroResultData.Exception">
+        <member name="P:Agebull.ZeroNet.Core.ZeroResultData.Exception">
             <summary>
             异常
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroResultData.ErrorMessage">
+        <member name="P:Agebull.ZeroNet.Core.ZeroResultData.ErrorMessage">
             <summary>
             消息
             </summary>
@@ -2239,6 +2240,36 @@
         <member name="M:Agebull.ZeroNet.Core.ZSimpleCommand.Destroy">
             <summary>
             关闭仅有的一个连接
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.IZeroState">
+            <summary>
+            返回值
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroState.State">
+            <summary>
+            逻辑操作状态
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroState.InteractiveSuccess">
+            <summary>
+            与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroState.ZmqError">
+            <summary>
+            ZMQ错误码
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroState.Exception">
+            <summary>
+            异常
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroState.ErrorMessage">
+            <summary>
+            消息
             </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.StationState">
@@ -2618,22 +2649,22 @@
                 广播副题
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.ResultText">
+            <summary>
+                返回文本内容
+            </summary>
+        </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.TextContent">
             <summary>
                 一般文本内容
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.JsonValue">
-            <summary>
-                JSON文本内容
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.BinaryValue">
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.BinaryContent">
             <summary>
                 二进制内容
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.TsonValue">
+        <member name="F:Agebull.ZeroNet.Core.ZeroFrameType.TsonContent">
             <summary>
                 二进制内容
             </summary>
@@ -2853,9 +2884,14 @@
             请求ID
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.ContextJson">
+        <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.Context">
             <summary>
              原始上下文的JSO内容
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.Content">
+            <summary>
+            内容
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.CommandOrSubTitle">
@@ -2871,6 +2907,11 @@
         <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.Station">
             <summary>
              站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.StationType">
+            <summary>
+            调用方的站点类型
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroNetMessage.Messages">
@@ -2892,6 +2933,42 @@
             <summary>
             帧内容
             </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.RestoryContext(System.String)">
+            <summary>
+            还原调用上下文
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.ToString">
+            <summary>
+            显示到文本
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.Unpack``1(System.Boolean,System.Byte[][],``0@,System.Action{``0,System.Byte,System.Byte[]})">
+            <summary>
+            解包
+            </summary>
+            <param name="isResult"></param>
+            <param name="messages"></param>
+            <param name="message"></param>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.GetString(System.Byte[])">
+            <summary>
+            取文本
+            </summary>
+            <param name="bytes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.GetLong(System.Byte[])">
+            <summary>
+            取文本
+            </summary>
+            <param name="bytes"></param>
+            <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.Add(System.Byte,System.Byte[])">
             <summary>
@@ -2931,36 +3008,6 @@
             <param name="name">名称</param>
             <param name="parse"></param>
             <returns>存在返回值，不存在返回空对象</returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.ToString">
-            <summary>
-            显示到文本
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.Unpack``1(System.Boolean,System.Byte[][],``0@,System.Action{``0,System.Byte,System.Byte[]})">
-            <summary>
-            解包
-            </summary>
-            <param name="isResult"></param>
-            <param name="messages"></param>
-            <param name="message"></param>
-            <param name="action"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.GetString(System.Byte[])">
-            <summary>
-            取文本
-            </summary>
-            <param name="bytes"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroNetMessage.GetLong(System.Byte[])">
-            <summary>
-            取文本
-            </summary>
-            <param name="bytes"></param>
-            <returns></returns>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroFrameItem">
             <summary>
@@ -3820,176 +3867,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.ZeroPublishExtend">
-            <summary>
-                广播扩展
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionTson">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionJson">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionData">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionTson2">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionJson2">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionData2">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.PubDescriptionEmpty">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish``1(ZeroMQ.ZSocket,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish(ZeroMQ.ZSocket,Agebull.ZeroNet.PubSub.PublishItem)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="item"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish(ZeroMQ.ZSocket,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish(ZeroMQ.ZSocket,System.Byte[],System.String,System.String,System.Byte[])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="description"></param>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish(ZeroMQ.ZSocket,System.Byte[],System.String,System.Byte[])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="description"></param>
-            <param name="title"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.Publish(ZeroMQ.ZSocket,System.String,System.Byte[][])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="socket"></param>
-            <param name="title"></param>
-            <param name="frames"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishByOrg(ZeroMQ.ZSocket,System.String,System.String,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishByOrg``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishByOrg(ZeroMQ.ZSocket,System.String,System.String,System.Byte[])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishNoGlobalId(ZeroMQ.ZSocket,System.String,System.String,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishNoGlobalId``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroPublishExtend.DescriptionNoGlobalId">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroPublishExtend.PublishNoGlobalId(ZeroMQ.ZSocket,System.String,System.String,System.Byte[])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
         <member name="T:Agebull.ZeroNet.Core.StationConfig">
             <summary>
                 站点配置
@@ -4005,6 +3882,12 @@
                 是否基础站点
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsSystem">
+            <summary>
+                是否接口站点
+            </summary>
+            <remarks></remarks>
+        </member>
         <member name="P:Agebull.ZeroNet.Core.StationConfig.IsApi">
             <summary>
                 是否接口站点
@@ -4014,6 +3897,7 @@
             <summary>
                 是否基础站点
             </summary>
+            <remarks></remarks>
         </member>
         <member name="P:Agebull.ZeroNet.Core.StationConfig.ShortName">
             <summary>
@@ -4208,15 +4092,15 @@
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnRun">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncRun">
             <summary>
-            命令轮询
+            同步运行状态
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnStop">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncStop">
             <summary>
-            关闭
+            同步关闭状态
             </summary>
             <returns></returns>
         </member>
@@ -4290,6 +4174,11 @@
         <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Trace">
             <summary>
             流程跟踪
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Proxy">
+            <summary>
+            代理
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Plan">
@@ -4417,11 +4306,6 @@
         <member name="P:Agebull.ZeroNet.PubSub.PublishItem.SubTitle">
             <summary>
                 副标题
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.PubSub.PublishItem.Content">
-            <summary>
-                内容
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.PubSub.PublishItem.Buffer">
@@ -4557,13 +4441,6 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.RestoryContext(`0)">
-            <summary>
-            还原调用上下文
-            </summary>
-            <param name="item"></param>
-            <returns></returns>
-        </member>
         <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.RunInner(System.Threading.CancellationToken)">
             <summary>
             具体执行
@@ -4617,35 +4494,10 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.PubSub.ZPublisher">
-            <summary>
-                消息发布
-            </summary>
-        </member>
         <member name="T:Agebull.ZeroNet.PubSub.ZeroPublisher">
             <summary>
                 消息发布
             </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(System.String,System.String,System.String,System.String)">
-            <summary>
-            发送广播
-            </summary>
-            <param name="station"></param>
-            <param name="title"></param>
-            <param name="sub"></param>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(System.String,System.String,System.String,``0)">
-            <summary>
-            发送广播
-            </summary>
-            <param name="station"></param>
-            <param name="title"></param>
-            <param name="sub"></param>
-            <param name="value"></param>
-            <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublish(System.String,System.String,System.String,System.String)">
             <summary>
@@ -4657,7 +4509,7 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishByOrg``1(System.String,System.String,System.String,``0)">
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublish``1(System.String,System.String,System.String,``0)">
             <summary>
             发送广播
             </summary>
@@ -4667,7 +4519,7 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishByOrg(System.String,System.String,System.String,System.String)">
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublishInner(System.String,System.String,System.String,System.String)">
             <summary>
             发送广播
             </summary>
@@ -4676,6 +4528,163 @@
             <param name="sub"></param>
             <param name="value"></param>
             <returns></returns>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionTson">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionJson">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionData">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionTson2">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionJson2">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionData2">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionEmpty">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(ZeroMQ.ZSocket,System.String,``0)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,Agebull.ZeroNet.PubSub.PublishItem)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="item"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,System.String)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,System.Byte[],System.String,System.String,System.Byte[])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="description"></param>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,System.Byte[],System.String,System.Byte[])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="description"></param>
+            <param name="title"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishInner(ZeroMQ.ZSocket,System.String,System.Byte[][])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="socket"></param>
+            <param name="title"></param>
+            <param name="frames"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.SendPublish(ZeroMQ.ZSocket,System.Byte[][])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="socket"></param>
+            <param name="frames"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,System.String,System.Byte[][])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="socket"></param>
+            <param name="title"></param>
+            <param name="frames"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishNoGlobalId(ZeroMQ.ZSocket,System.String,System.String,System.String)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishNoGlobalId``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.DescriptionNoGlobalId">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.PublishNoGlobalId(ZeroMQ.ZSocket,System.String,System.String,System.Byte[])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.ZeroNet.PubSub.ZPublisher">
+            <summary>
+                消息发布
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.PubSub.IPublishData">
             <summary>

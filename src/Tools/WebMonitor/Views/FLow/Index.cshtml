@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Http
+﻿@using System
+@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Mvc.RazorPages
 @{
     ViewData["Title"] = "Flow";
@@ -230,7 +231,6 @@
         var lines = [];
         var names = [];
         function showInfo() {
-            $('#infoSide').width(vue_option.data.infoshow ? '600px' : '1px');
             $('#stepPanel').html(tip);
             $('#flowPanel').html(flowHtml);
             $('#flowPanel').width((lines.length * 172 + 21) + "px");
@@ -391,55 +391,94 @@
             }).then(({ value }) => {
                 if (callback)
                     callback(value);
-                else
+                else {
                     ws_api.change_sub(value);
-                if (!value)
-                    value = '<i>[空]<i>';
-                vue_obj.$message({
-                    type: 'info',
-                    message: '订阅标签已修改为' + value
-                });
+                    if (!value)
+                        value = '没有任何订阅，您将收不到任何数据';
+                    else
+                        value = '订阅标签已修改为' + value;
+                    vue_obj.$message({
+                        type: 'info',
+                        message: value
+                    });
+                }
             }).catch(() => {
                 if (callback)
                     callback('');
             });
         }
         extend_data({
-            infoshow: false,
             menu_wid: "360px",
+            ws_action: '关闭',
+            ws_icon: 'el-icon-circle-close',
+            info: {
+                show: false,
+                title: '显示信息栏',
+                width: '1px',
+                icon: 'el-icon-arrow-left'
+            },
             flows: []
         });
         extend_methods({
             menu_select: function (index, indexPath) {
                 if (!index)
                     return;
-                if (index == 'menu-hide') {
-                    $('#infoSide').width('1px');
-                    vue_option.data.infoshow = false;
-                    return;
-                }
-                else if (index == 'menu-show') {
-                    vue_option.data.infoshow = true;
-                    $('#infoSide').width('600px');
+                if (index == 'menu-show') {
+                    var info = vue_option.data.info;
+                    info.show = !info.show;
+                    if (!info.show) {
+                        info.title = '显示信息栏';
+                        info.width = '1px';
+                        info.icon = 'el-icon-arrow-left';
+                    }
+                    else {
+                        info.title = '收起信息栏';
+                        info.width = '600px';
+                        info.icon = 'el-icon-arrow-right';
+                    }
                     return;
                 }
                 else if (index == 'menu-msg-clear') {
                     vue_option.data.flows = [];
                     return;
                 }
+                else if (index == 'menu-msg-close') {
+                    if (vue_option.data.ws_action === '关闭') {
+                        vue_option.data.ws_action = '打开';
+                        vue_option.data.ws_icon = 'el-icon-circle-check';
+                        ws_api.close();
+                    } else {
+                        vue_option.data.ws_action = '关闭';
+                        vue_option.data.ws_icon = 'el-icon-circle-close';
+                        ws_api.open();
+                    }
+                    return;
+                }
                 else if (index == 'menu-msg-search') {
                     modify_sub('请输入查询标签', function (val) {
-                        if (!val)
-                            return;
-                        ws_api.change_sub('~#' + val);
-                        vue_option.data.flows = [];
-                        do_sync_get('/Flow/Query/' + encodeURI(val), '查询', function (data) {
+                        if (!val) {
                             vue_obj.$message({
                                 type: 'info',
-                                message: data
+                                message: '查询标签为空,未做改变'
                             });
-                            //#AE951C2E354444E9AD3F95C64BB47969
+                            return;
+                        }
+                        if (val[0] === '#')
+                            val = val.substring(1);
+                        if (!val) {
+                            vue_obj.$message({
+                                type: 'info',
+                                message: '查询标签为空,未做改变'
+                            });
+                            return;
+                        }
+                        vue_obj.$message({
+                            type: 'info',
+                            message: '正在查询...'
                         });
+                        ws_api.change_sub('~' + val);
+                        vue_option.data.flows = [];
+                        do_sync_get('/Flow/Query/' + encodeURI(val), '查询');
                     });
                     return;
                 }
@@ -452,7 +491,8 @@
         });
     </script>
 }
-@section Scripts{
+@section Scripts
+    {
     <script>
         modify_sub('请输入订阅标签', function (val) {
             ws_api = new ws({
@@ -462,14 +502,20 @@
                     if (vue_option.data.flows.length > 300)
                         return;
                     vue_update_array(vue_option.data.flows, flow, 'rid');
-                    showInfo();
                 }
             });
+            if (!val)
+                vue_obj.$message({
+                    type: 'info',
+                    message: '没有任何订阅，您将收不到任何数据'
+                });
             ws_api.open();
         });
     </script>
 }
-@section Menus{
+
+@section Menus
+    {
     <el-menu :collapse="isCollapse"
              @@select="menu_select"
              default-active="menu-msg"
@@ -484,14 +530,8 @@
             </template>
             <el-menu-item index="menu-show">
                 <template slot="title">
-                    <i class="el-icon-arrow-right"></i>
-                    <span>展开</span>
-                </template>
-            </el-menu-item>
-            <el-menu-item index="menu-hide">
-                <template slot="title">
-                    <i class="el-icon-arrow-left"></i>
-                    <span>收起</span>
+                    <i :class="info.icon"></i>
+                    <span>{{info.title}}</span>
                 </template>
             </el-menu-item>
             <el-menu-item index="menu-msg-sub">
@@ -512,6 +552,14 @@
                     <span>清除实时消息</span>
                 </template>
             </el-menu-item>
+            <el-menu-item index="menu-msg-close">
+                <template slot="title">
+                    <i :class="ws_icon"></i>
+                    <span>
+                        {{ws_action}}订阅
+                    </span>
+                </template>
+            </el-menu-item>
         </el-submenu>
         <el-submenu index="menu-msg">
             <template slot="title">
@@ -522,7 +570,7 @@
                 <el-menu-item v-bind:index="item.rid">
                     <template slot="title">
                         <i class="el-icon-bell"></i>
-                        <span>{{item.start.state}}|{{item.start.cmd}}</span>
+                        <span>{{item.start.cmd}}</span>
                     </template>
                 </el-menu-item>
             </template>
@@ -535,7 +583,7 @@
         </div>
     </el-main>
 
-    <el-aside id="infoSide" style="padding: 10px;text-align:left;width:1px;border-left:solid 2px slategray; overflow: auto; background-color: white;color:black">
+    <el-aside id="infoSide" :style="{width:info.width, padding: '10px','text-align':'left','border-left':'solid 2px slategray', overflow: 'auto', 'background-color': 'white',color:'black'}">
         <div id="stepPanel" style="padding: 10px;margin: 0; overflow: visible;">
         </div>
     </el-aside>

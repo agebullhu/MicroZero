@@ -268,8 +268,8 @@ namespace ZeroNet.Http.Route
             var config = ZeroApplication.Config[clientPlan.station];
             if (config == null)
                 return ApiResult.Error(ErrorCode.LogicalError, "站点名称错误");
-            if (config.StationType != ZeroStationType.Dispatcher && config.IsBaseStation)
-                return ApiResult.Error(ErrorCode.LogicalError, "不允许对基础站点设置计划(SystemManage除外)");
+            if (config.IsSystem)
+                return ApiResult.Error(ErrorCode.LogicalError, "不允许对基础站点设置计划");
 
             clientPlan.station = config.StationName;
 
@@ -331,8 +331,10 @@ namespace ZeroNet.Http.Route
                         if (clientPlan.command != "pause" && clientPlan.command != "close" && clientPlan.command != "resume")
                             return ApiResult.Error(ErrorCode.LogicalError, "系统命令仅支持暂停(pause)关闭(close)和恢复(resume) 非系统站点");
                         config = ZeroApplication.Config[clientPlan.station];
-                        if (config == null || config.State == ZeroCenterState.Stop || config.IsBaseStation)
-                            return ApiResult.Error(ErrorCode.LogicalError, "命令参数为有效的非系统站点名称");
+                        if (config == null)
+                            return ApiResult.Error(ErrorCode.LogicalError, "站点名称无效");
+                        if (config.IsSystem)
+                            return ApiResult.Error(ErrorCode.LogicalError, "不允许对内置站点设置计划");
 
                         success = socket.Socket.SendTo(commandDescription,
                             plan.ToZeroBytes(),

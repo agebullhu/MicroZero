@@ -73,13 +73,13 @@ namespace Agebull.ZeroNet.Core
             foreach (var config in configs)
             {
                 sockets[idx++] = ZSocket.CreateServiceSocket($"inproc://{config.StationName}_Proxy", ZSocketType.ROUTER);
-                sockets[idx++] = ZSocket.CreateClientSocket(config.RequestAddress, ZSocketType.DEALER, 
-                    ZeroIdentityHelper.CreateIdentity(false,config.StationName));
+                sockets[idx++] = ZSocket.CreateClientSocket(config.RequestAddress, ZSocketType.DEALER,
+                    ZeroIdentityHelper.CreateIdentity(false, config.StationName));
             }
 
             WaitCount = 0;
             ZeroTrace.SystemLog("ConnectionProxy", "Listen");
-            
+
             using (var pool = ZmqPool.CreateZmqPool())
             {
                 pool.Prepare(sockets, ZPollEvent.In);
@@ -89,11 +89,11 @@ namespace Agebull.ZeroNet.Core
                 {
                     if (!pool.Poll())
                         continue;
-                    Parallel.For(0, configs.Length, index =>
+                    for (int index = 0; index < configs.Length; index++)
                     {
                         CheckCall(pool, index * 2);
                         CheckResult(pool, index * 2 + 1);
-                    });
+                    };
 
                 }
 

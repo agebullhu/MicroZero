@@ -1,4 +1,5 @@
-﻿using ZeroMQ.lib;
+﻿using System;
+using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
@@ -97,20 +98,24 @@ namespace ZeroMQ
             if (index > Sockets.Length)
             {
                 message = null;
+                Console.WriteLine("index > Sockets.Length");
                 return false;
             }
-            zmq_pollitem_posix_t* native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
+            var native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;
+                Console.WriteLine("native->ReadyEvents == 0");
                 return false;
             }
             if (!((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In))
             {
+                Console.WriteLine("!((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In)");
                 message = null;
                 return false;
             }
-            return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
+            return Sockets[index].Recv(out message,ZSocket.FlagsDontwait);
+
         }
 
         /// <summary>
@@ -147,7 +152,8 @@ namespace ZeroMQ
         protected override void DoDispose()
         {
             Ptr?.Dispose();
-            if (Sockets == null) return;
+            if (Sockets == null)
+                return;
             foreach (var socket in Sockets)
             {
                 socket.Dispose();

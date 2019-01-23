@@ -4,8 +4,6 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Threading;
 using Agebull.Common.Ioc;
-using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
@@ -75,7 +73,7 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException(Name, e, args.Content);
+                    ZeroTrace.WriteException(StationName, e, args.Content);
                 }
                 //finally
                 //{
@@ -95,6 +93,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns>返回False表明需要重启</returns>
         protected override bool RunInner(CancellationToken token)
         {
+            ZeroTrace.SystemLog(StationName, RealName);
             Hearter?.HeartReady(StationName, RealName);
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
@@ -118,8 +117,8 @@ namespace Agebull.ZeroNet.PubSub
                     }
                 }
             }
-
             Hearter?.HeartLeft(StationName, RealName);
+            ZeroTrace.SystemLog(StationName, RealName);
             return true;
         }
 
@@ -131,7 +130,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <returns></returns>
         protected virtual bool Unpack(ZMessage msgs, out TPublishItem item)
         {
-            return PublishItem.Unpack(msgs, out item);
+            return PublishItem.Unpack2(msgs, out item);
         }
 
         /// <summary>

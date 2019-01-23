@@ -308,9 +308,11 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static bool JoinCenter()
         {
-            ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
+            if (InRun)
+                return false;
             ApplicationState = StationState.BeginRun;
             ZerCenterStatus = ZeroCenterState.Start;
+            ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
                 SetFailed();
@@ -335,7 +337,7 @@ namespace Agebull.ZeroNet.Core
             if (WorkModel == ZeroWorkModel.Service)
             {
                 SystemManager.Instance.UploadDocument();
-                OnZeroStart();
+                Task.Factory.StartNew(OnZeroStart);
             }
             else if (WorkModel == ZeroWorkModel.Client)
             {
@@ -354,20 +356,20 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void Shutdown()
         {
+            ZeroTrace.SystemLog("Begin shutdown...");
             switch (ApplicationState)
             {
                 case StationState.Destroy:
                     return;
                 case StationState.BeginRun:
                 case StationState.Run:
-                    CloseActiveObject();
+                    OnZeroEnd();
                     break;
                 case StationState.Failed:
                     if (WorkModel == ZeroWorkModel.Service)
                         SystemManager.Instance.HeartLeft();
                     break;
             }
-            ZeroTrace.SystemLog("Begin shutdown...");
             ApplicationState = StationState.Destroy;
             if (WorkModel != ZeroWorkModel.Bridge)
             {
@@ -381,11 +383,11 @@ namespace Agebull.ZeroNet.Core
             {
                 Thread.Sleep(1000);
             }
+            ZeroTrace.SystemLog("Application shutdown ,see you late.");
             GC.Collect();
             ZContext.Destroy();
             ApplicationState = StationState.Disposed;
             WaitToken?.Release();
-            ZeroTrace.SystemLog("Application shutdown ,see you late.");
             LogRecorder.Shutdown();
         }
 
@@ -405,14 +407,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void InvokeEvent(ZeroNetEventType centerEvent, string context, StationConfig config)
         {
-            try
-            {
-                ZeroNetEvent?.Invoke(Config, new ZeroNetEventArgument(centerEvent, context, config));
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("ZeroNetEvent", e, centerEvent, context, config);
-            }
+            Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, context, config));
         }
 
         /// <summary>
@@ -421,13 +416,22 @@ namespace Agebull.ZeroNet.Core
         /// <param name="centerEvent"></param>
         internal static void RaiseEvent(ZeroNetEventType centerEvent)
         {
+            Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, null, null));
+        }
+        /// <summary>
+        /// 发出事件
+        /// </summary>
+        /// <param name="args"></param>
+        private static void InvokeEvent(object args)
+        {
+            var arg = (ZeroNetEventArgument) args;
             try
             {
-                ZeroNetEvent?.Invoke(Config, new ZeroNetEventArgument(centerEvent, null, null));
+                ZeroNetEvent?.Invoke(Config, arg);
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("ZeroNetEvent", e, centerEvent);
+                ZeroTrace.WriteException("ZeroNetEvent", e, arg.Event);
             }
         }
         #endregion

@@ -99,7 +99,7 @@ namespace RpcTest
         void Async()
         {
             Interlocked.Increment(ref WaitCount);
-            GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceName, Guid.NewGuid().ToString("N"));
+            GlobalContext.Reset();
             DateTime s = DateTime.Now;
 
             DoAsync();

@@ -1,13 +1,17 @@
 function ws_state(active) {
 
 }
-var ws = function (option) {
+
+var ws = function(option) {
     var that = this;
     that.sub = option.sub;
+    that.user_close = false;
     that.state = "+open";
     that.addr = option.address;
     that.process = option.onmessage;
-    that.open = function() {
+    that.open = function () {
+        that.state = "+open";
+        that.user_close = false;
         console.log("try open " + that.addr);
         that.socket = new WebSocket(that.addr);
         that.socket.onopen = that.onopen;
@@ -15,14 +19,23 @@ var ws = function (option) {
         that.socket.onmessage = that.onmessage;
         that.socket.onerror = that.onerror;
     };
-    that.change_sub = function (title) {
+    that.close = function () {
+        that.state = "-closing";
+        that.user_close = true;
+        that.socket.close();
+        that.socket = null;
+        console.log("close " + that.addr);
+    };
+    that.change_sub = function(title) {
         try {
             if (that.state === "+ok" && that.sub) {
                 that.socket.send("-" + that.sub);
                 console.log("-sub " + that.sub);
             }
             that.sub = title;
-            if (that.state === "+ok" && that.sub) {
+            if (!that.socket)
+                that.open();
+            else if (that.state === "+ok" && that.sub) {
                 that.socket.send("+" + that.sub);
                 console.log("+sub " + that.sub);
             }
@@ -45,12 +58,15 @@ var ws = function (option) {
             return;
         }
     };
-    that.onclose = function (e) {
+    that.onclose = function(e) {
         ws_state(false);
         console.log(e);
-        window.setTimeout(that.open, 500);
+        if (!that.user_close)
+            window.setTimeout(that.open, 500);
+        else
+            that.state = "-close";
     };
-    that.onmessage = function (e) {
+    that.onmessage = function(e) {
         var data = null;
         try {
             if (typeof(e.data) != "string")
@@ -63,11 +79,11 @@ var ws = function (option) {
             return;
         }
     };
-    that.onerror = function (err) {
+    that.onerror = function(err) {
         ws_state(false);
         console.log(err);
-        that.state = "+error";
+        that.state = "-error";
     };
     return that;
-}
+};
 

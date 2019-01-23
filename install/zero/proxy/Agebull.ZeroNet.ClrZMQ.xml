@@ -1506,6 +1506,14 @@
             <param name="array">消息</param>
             <returns>是否发送成功</returns>
         </member>
+        <member name="M:ZeroMQ.ZSocket.SendByExtend(System.Byte[][],System.Byte[][])">
+            <summary>
+            发送
+            </summary>
+            <param name="array">消息</param>
+            <param name="extend"></param>
+            <returns>是否发送成功</returns>
+        </member>
         <member name="M:ZeroMQ.ZSocket.SendTo(ZeroMQ.ZFrame[])">
             <summary>
             发送

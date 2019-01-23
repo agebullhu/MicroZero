@@ -1,4 +1,5 @@
-﻿@using Agebull.ZeroNet.Core
+﻿@using System.Linq
+@using Agebull.ZeroNet.Core
 @using Newtonsoft.Json
 @model Agebull.Common.ApiDocuments.AnnotationsConfig
 @{
@@ -10,20 +11,20 @@
     switch (filter)
     {
         case "base":
-            options = ZeroApplication.Config.GetConfigs(p => p.IsBaseStation).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => p.IsSystem).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         case "pub":
-            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Notify).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsSystem && p.StationType == ZeroStationType.Notify).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         case "queue":
-            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Queue).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsSystem && p.StationType == ZeroStationType.Queue).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         case "rapi":
-            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.RouteApi).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsSystem && p.StationType == ZeroStationType.RouteApi).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
         default:
             filter = "api";
-            options = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation && p.StationType == ZeroStationType.Api).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
+            options = ZeroApplication.Config.GetConfigs(p => !p.IsSystem && p.StationType == ZeroStationType.Api).OrderBy(p => p.RequestPort).Select(p => new StationInfo(p)).ToArray();
             break;
     }
 
@@ -196,19 +197,19 @@
             @if(filter == "base")
             {
                 <text>
-                return station.is_base;
+                return station.is_sys;
                 </text>
             }
             @if(filter == "pub" || filter == "queue")
             {
                 <text>
-                    return !station.is_base && station.type == "Pub";
+                    return !station.is_sys && station.type == "Pub";
                 </text>
             }
             @if(filter == "api" || filter == "rapi")
             {
                 <text>
-                    return !station.is_base && station.type == "API";
+                    return !station.is_sys && station.type == "API";
                 </text>
             }
         }

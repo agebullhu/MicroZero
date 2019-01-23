@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.Core
@@ -82,7 +80,16 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     是否存在活动对象
         /// </summary>
-        public static bool HaseActiveObject => ActiveObjects.Count > 0;
+        public static bool HaseActiveObject
+        {
+            get
+            {
+                lock (ActiveObjects)
+                {
+                    return ActiveObjects.Count > 0;
+                }
+            }
+        }
 
 
         /// <summary>
@@ -115,8 +122,13 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void ResetObjectActive()
         {
-            ActiveObjects.Clear();
-            FailedObjects.Clear();
+            lock (ActiveObjects)
+            {
+                ActiveObjects.Clear();
+                FailedObjects.Clear();
+            }
+            while (ActiveSemaphore.CurrentCount > 0)
+                ActiveSemaphore.Wait();
         }
 
         /// <summary>
@@ -127,7 +139,7 @@ namespace Agebull.ZeroNet.Core
             lock (GlobalObjects)
             {
                 GlobalObjects.Add(obj);
-                ZeroTrace.SystemLog(obj.Name, "GlobalStart");
+                ZeroTrace.SystemLog(obj.StationName, "GlobalStart");
             }
         }
 
@@ -136,13 +148,15 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void OnGlobalEnd(IZeroObject obj)
         {
+            bool can;
             lock (GlobalObjects)
             {
                 GlobalObjects.Remove(obj);
-                ZeroTrace.SystemLog(obj.Name, "GlobalEnd");
-                if (GlobalObjects.Count == 0)
-                    GlobalSemaphore.Release();
+                ZeroTrace.SystemLog(obj.StationName, "GlobalEnd");
+                can = GlobalObjects.Count == 0;
             }
+            if (can)
+                GlobalSemaphore.Release();
         }
 
         /// <summary>
@@ -150,27 +164,15 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void OnObjectActive(IZeroObject obj)
         {
+            bool can;
             lock (ActiveObjects)
             {
                 ActiveObjects.Add(obj);
-                ZeroTrace.SystemLog(obj.Name, "Run");
-                if (ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count)
-                    ActiveSemaphore.Release(); //发出完成信号
+                ZeroTrace.SystemLog(obj.StationName, "OnObjectActive");
+                can = ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count;
             }
-        }
-
-        /// <summary>
-        ///     对象关闭时登记
-        /// </summary>
-        public static void OnObjectClose(IZeroObject obj)
-        {
-            lock (ActiveObjects)
-            {
-                ActiveObjects.Remove(obj);
-                ZeroTrace.SystemLog(obj.Name, "Closed");
-                if (ActiveObjects.Count == 0)
-                    ActiveSemaphore.Release(); //发出完成信号
-            }
+            if (can)
+                ActiveSemaphore.Release(); //发出完成信号
         }
 
         /// <summary>
@@ -178,21 +180,49 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void OnObjectFailed(IZeroObject obj)
         {
+            bool can;
             lock (ActiveObjects)
             {
                 FailedObjects.Add(obj);
-                ZeroTrace.WriteError(obj.Name, "Failed");
-                if (ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count)
-                    ActiveSemaphore.Release(); //发出完成信号
+                ZeroTrace.WriteError(obj.StationName, "OnObjectFailed");
+                can = ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count;
             }
+            if (can)
+                ActiveSemaphore.Release(); //发出完成信号
+        }
+
+        /// <summary>
+        ///     对象关闭时登记
+        /// </summary>
+        public static void OnObjectClose(IZeroObject obj)
+        {
+            bool can;
+            lock (ActiveObjects)
+            {
+                ActiveObjects.Remove(obj);
+                ZeroTrace.SystemLog(obj.StationName, "OnObjectClose");
+                can = ActiveObjects.Count == 0;
+            }
+            if (can)
+                ActiveSemaphore.Release(); //发出完成信号
         }
         /// <summary>
         ///     等待所有对象信号(全开或全关)
         /// </summary>
-        public static void WaitAllObjectSemaphore()
+        public static void WaitAllObjectSafeOpen()
+        {
+            ActiveSemaphore.Wait();
+        }
+
+        /// <summary>
+        ///     等待所有对象信号(全开或全关)
+        /// </summary>
+        public static void WaitAllObjectSafeClose()
         {
             lock (ActiveObjects)
-                ActiveSemaphore.Wait();
+                if (ActiveSemaphore.CurrentCount == 0 && ActiveObjects.Count == 0)
+                    return;
+            ActiveSemaphore.Wait();
         }
 
         /// <summary>
@@ -200,9 +230,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static IZeroObject TryGetZeroObject(string name)
         {
-            if (ZeroObjects.TryGetValue(name, out var zeroObject))
-                return zeroObject;
-            return null;
+            return ZeroObjects.TryGetValue(name, out var zeroObject) ? zeroObject : null;
         }
 
         /// <summary>
@@ -212,20 +240,20 @@ namespace Agebull.ZeroNet.Core
         {
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                if (ZeroObjects.ContainsKey(obj.Name))
+                if (ZeroObjects.ContainsKey(obj.StationName))
                     return false;
-                ZeroTrace.SystemLog("RegistZeroObject", obj.Name);
-                ZeroObjects.Add(obj.Name, obj);
+                ZeroTrace.SystemLog(obj.StationName, "RegistZeroObject");
+                ZeroObjects.Add(obj.StationName, obj);
                 if (ApplicationState >= StationState.Initialized)
                 {
                     try
                     {
                         obj.OnZeroInitialize();
-                        ZeroTrace.SystemLog(obj.Name, "Initialize");
+                        ZeroTrace.SystemLog(obj.StationName, "Initialize");
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name, e, "Initialize");
+                        ZeroTrace.WriteException(obj.StationName, e, "Initialize");
                     }
                 }
 
@@ -236,16 +264,16 @@ namespace Agebull.ZeroNet.Core
                     //ZeroDiscover.DiscoverApiDocument(obj.GetType());
                 }
 
-                if (!CanDo)
+                if (!InRun || !ZerCenterIsRun)
                     return true;
                 try
                 {
-                    ZeroTrace.SystemLog(obj.Name, "Start");
+                    ZeroTrace.SystemLog(obj.StationName, "Start");
                     obj.OnZeroStart();
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException(obj.Name, e, "Start");
+                    ZeroTrace.WriteException(obj.StationName, e, "Start");
                 }
             }
 
@@ -260,18 +288,18 @@ namespace Agebull.ZeroNet.Core
             ZeroTrace.SystemLog("Application", "[OnZeroInitialize>>");
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                Parallel.ForEach(ZeroObjects.Values.ToArray(), obj =>
+                foreach (var obj in ZeroObjects.Values.ToArray())
                 {
                     try
                     {
                         obj.OnZeroInitialize();
-                        ZeroTrace.SystemLog(obj.Name, "Initialize");
+                        ZeroTrace.SystemLog(obj.StationName, "Initialize");
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name, e, "*Initialize");
+                        ZeroTrace.WriteException(obj.StationName, e, "*Initialize");
                     }
-                });
+                }
                 ZeroTrace.SystemLog("Application", "<<OnZeroInitialize]");
             }
         }
@@ -283,7 +311,7 @@ namespace Agebull.ZeroNet.Core
         {
             if (WorkModel != ZeroWorkModel.Service)
                 return;
-            Debug.Assert(!HaseActiveObject);
+            //Debug.Assert(!HaseActiveObject);
             ZeroTrace.SystemLog("Application", "[OnZeroStart>>");
             using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
             {
@@ -291,15 +319,15 @@ namespace Agebull.ZeroNet.Core
                 {
                     try
                     {
-                        ZeroTrace.SystemLog(obj.Name, "*Start");
+                        ZeroTrace.SystemLog(obj.StationName, $"Try start by {StationState.Text(obj.State)}");
                         obj.OnZeroStart();
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name, e, "*Start");
+                        ZeroTrace.WriteException(obj.StationName, e, "*Start");
                     }
                 }
-                WaitAllObjectSemaphore();
+                WaitAllObjectSafeOpen();
             }
             SystemManager.Instance.HeartReady();
             ApplicationState = StationState.Run;
@@ -313,49 +341,24 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static void OnStationStateChanged(StationConfig config)
         {
-            using (OnceScope.CreateScope(ZeroObjects))
+            var scope = OnceScope.TryCreateScope(ZeroObjects, 500);
+            if (scope == null)
+                return;//系统太忙，跳过处理
+            using (scope)
             {
-                var stations = ActiveObjects.Where(p =>
-                    string.Equals(config.StationName, p.StationName, StringComparison.OrdinalIgnoreCase)).ToArray();
-                if (stations.Length == 0)
-                    return;
                 ZeroTrace.SystemLog(config.StationName, "[OnStationStateChanged>>");
-                Parallel.ForEach(stations, obj =>
-                     {
-                         try
-                         {
-                             obj.OnStationStateChanged(config);
-                         }
-                         catch (Exception e)
-                         {
-                             ZeroTrace.WriteException(obj.Name, e, "OnStationStateChanged");
-                         }
-                     });
+                foreach (var obj in ZeroObjects.Values.ToArray())
+                {
+                    try
+                    {
+                        obj.OnStationStateChanged(config);
+                    }
+                    catch (Exception e)
+                    {
+                        ZeroTrace.WriteException(obj.StationName, e, "OnStationStateChanged");
+                    }
+                }
                 ZeroTrace.SystemLog(config.StationName, "<<OnStationStateChanged]");
-            }
-        }
-
-        /// <summary>
-        ///     心跳
-        /// </summary>
-        internal static void OnHeartbeat()
-        {
-            if (!CanDo)
-                return;
-            using (OnceScope.CreateScope(ZeroObjects))
-            {
-                SystemManager.Instance.Heartbeat();
-                //foreach (var obj in ActiveObjects.ToArray())
-                //{
-                //    try
-                //    {
-                //        obj.OnHeartbeat();
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        ZeroTrace.WriteException(obj.Name, e, "OnHeartbeat");
-                //    }
-                //};
             }
         }
 
@@ -366,41 +369,34 @@ namespace Agebull.ZeroNet.Core
         {
             if (WorkModel != ZeroWorkModel.Service)
                 return;
-            ZeroTrace.SystemLog("Application", $"[OnZeroEnd>>{ApplicationState}");
+            ZeroTrace.SystemLog(StationState.Text(ApplicationState), "[OnZeroEnd>>");
             RaiseEvent(ZeroNetEventType.AppStop);
             SystemManager.Instance.HeartLeft();
-            CloseActiveObject();
-            GC.Collect();
-            ZeroTrace.SystemLog("Application", "<<OnZeroEnd]");
-        }
-
-        /// <summary>
-        ///     系统关闭时调用
-        /// </summary>
-        private static void CloseActiveObject()
-        {
             using (OnceScope.CreateScope(ZeroObjects))
             {
                 ApplicationState = StationState.Closing;
-                if (HaseActiveObject)
+                IZeroObject[] array;
+                lock (ActiveObjects)
+                    array = ActiveObjects.ToArray();
+                foreach (var obj in array)
                 {
-                    Parallel.ForEach(ActiveObjects.ToArray(), obj =>
+                    try
                     {
-                        try
-                        {
-                            ZeroTrace.SystemLog(obj.Name, "*Close");
-                            obj.OnZeroEnd();
-                        }
-                        catch (Exception e)
-                        {
-                            ZeroTrace.WriteException(obj.Name, e, "*Close");
-                        }
-                    });
-                    WaitAllObjectSemaphore();
+                        ZeroTrace.SystemLog("OnZeroEnd", obj.StationName);
+                        obj.OnZeroEnd();
+                    }
+                    catch (Exception e)
+                    {
+                        ZeroTrace.WriteException("OnZeroEnd", e, obj.StationName);
+                    }
                 }
+                WaitAllObjectSafeClose();
                 ApplicationState = StationState.Closed;
             }
+            GC.Collect();
+            ZeroTrace.SystemLog(StationState.Text(ApplicationState), "<<OnZeroEnd]");
         }
+
         /// <summary>
         ///     注销时调用
         /// </summary>
@@ -412,35 +408,35 @@ namespace Agebull.ZeroNet.Core
                 RaiseEvent(ZeroNetEventType.AppEnd);
                 var array = ZeroObjects.Values.ToArray();
                 ZeroObjects.Clear();
-                Parallel.ForEach(array, obj =>
+                foreach (var obj in array)
                 {
                     try
                     {
-                        ZeroTrace.SystemLog(obj.Name, "*Destory");
+                        ZeroTrace.SystemLog("OnZeroDestory", obj.StationName);
                         obj.OnZeroDestory();
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name, e, "*Destory");
+                        ZeroTrace.WriteException("OnZeroDestory", e, obj.StationName);
                     }
-                });
-
-                GC.Collect();
+                }
                 ZeroTrace.SystemLog("Application", "<<OnZeroDestory]");
 
+                GC.Collect();
+
                 ZeroTrace.SystemLog("Application", "[OnZeroDispose>>");
-                Parallel.ForEach(array, obj =>
+                foreach (var obj in array)
                 {
                     try
                     {
-                        ZeroTrace.SystemLog(obj.Name, "*Dispose");
+                        ZeroTrace.SystemLog("OnZeroDispose", obj.StationName);
                         obj.Dispose();
                     }
                     catch (Exception e)
                     {
-                        ZeroTrace.WriteException(obj.Name, e, "*Dispose");
+                        ZeroTrace.WriteException("OnZeroDispose", e, obj.StationName);
                     }
-                });
+                }
             }
             ZeroTrace.SystemLog("Application", "<<OnZeroDispose]");
         }

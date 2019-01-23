@@ -71,7 +71,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static IZmqPool CreateZmqPool()
         {
-#if NETSTANDARD
+#if NETCOREAPP
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return new WinZPoll();

@@ -154,14 +154,15 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 if (!string.IsNullOrWhiteSpace(item.Context))
                 {
-                    GlobalContext.SetContext(JsonConvert.DeserializeObject<ApiContext>(item.Context));
+                    GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(item.Context));
                 }
                 GlobalContext.Current.DependencyObjects.Annex(item);
                 if (!string.IsNullOrWhiteSpace(item.Content))
                 {
                     GlobalContext.Current.DependencyObjects.Annex(JsonConvert.DeserializeObject<Dictionary<string, string>>(item.Content));
                 }
-                GlobalContext.Current.Request.SetValue(item.CallId, item.Requester, item.RequestId);
+                GlobalContext.Current.Request.RequestId = item.RequestId;
+                GlobalContext.Current.Request.CallGlobalId = item.CallId;
                 GlobalContext.Current.Request.LocalGlobalId = item.GlobalId;
                 return ZeroOperatorStateType.Ok;
             }

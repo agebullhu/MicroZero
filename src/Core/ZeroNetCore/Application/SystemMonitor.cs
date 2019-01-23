@@ -1,13 +1,11 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using Agebull.Common.ApiDocuments;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.PubSub;
 using Newtonsoft.Json;
 using ZeroMQ;
-
+using Timer = System.Timers.Timer;
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
@@ -39,9 +37,9 @@ namespace Agebull.ZeroNet.Core
             {
             }
             TaskEndSem.Release();
+            ZeroTrace.SystemLog("Zero center in monitor...");
             while (ZeroApplication.IsAlive)
             {
-                ZeroTrace.SystemLog("Zero center in monitor...");
                 if (MonitorInner())
                     continue;
                 ZeroTrace.WriteError("Zero center monitor failed", "There was no message for a long time");
@@ -62,15 +60,19 @@ namespace Agebull.ZeroNet.Core
             DateTime failed = DateTime.MinValue;
             using (var poll = ZmqPool.CreateZmqPool())
             {
-                poll.Prepare(new[] { ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZeroIdentityHelper.CreateIdentity()) }, ZPollEvent.In);
+                poll.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZeroIdentityHelper.CreateIdentity()));
                 while (ZeroApplication.IsAlive)
                 {
-                    if (!poll.Poll() || !poll.CheckIn(0, out var message))
+                    if (!poll.Poll())
                     {
                         if (failed == DateTime.MinValue)
                             failed = DateTime.Now;
                         else if ((DateTime.Now - failed).TotalMinutes > 1)
                             return false;
+                        continue;
+                    }
+                    if (!poll.CheckIn(0, out var message))
+                    {
                         continue;
                     }
                     failed = DateTime.MinValue;
@@ -113,11 +115,22 @@ namespace Agebull.ZeroNet.Core
                     case ZeroNetEventType.CenterStationStop:
                     case ZeroNetEventType.CenterClientLeft:
                         return;
+                    case ZeroNetEventType.CenterWorkerSoundOff:
+                        if (_time != null)
+                            return;
+                        _time = new Timer(1000)
+                        {
+                            AutoReset = false
+                        };
+                        _time.Elapsed += Time_Elapsed;
+                        return;
+                    default:
+                        return;
                 }
-                ZeroTrace.SystemLog(zeroNetEvent.ToString(), content);
-                ZeroApplication.JoinCenter();
-                return;
             }
+            if (ZeroApplication.ApplicationState != StationState.Run)
+                return;
+
             switch (zeroNetEvent)
             {
                 case ZeroNetEventType.CenterWorkerSoundOff:
@@ -165,13 +178,25 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
+        private static void Time_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            _time.Dispose();
+            _time = null;
+            if (ZeroApplication.ApplicationIsRun)
+                return;
+            ZeroTrace.SystemLog("Restart");
+            ZeroApplication.JoinCenter();
+        }
+
+        private static Timer _time;
         /// <summary>
         /// 站点心跳
         /// </summary>
         private static void worker_sound_off()
         {
-            if (ZeroApplication.CanDo)
-                ZeroApplication.OnHeartbeat();
+            if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZerCenterStatus != ZeroCenterState.Run)
+                return;
+            SystemManager.Instance.Heartbeat();
         }
 
         #region CenterEvent
@@ -265,10 +290,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.SystemLog("station_closing", name);
-            if (config.State < ZeroCenterState.Closing)
-                config.State = ZeroCenterState.Closing;
             if (!ZeroApplication.InRun)
                 return;
+            config.State = ZeroCenterState.Closing;
             ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationClosing, null, config);
         }
@@ -278,9 +302,10 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.SystemLog("station_resume", name);
+            if (!ZeroApplication.InRun)
+                return;
             config.State = ZeroCenterState.Run;
-            if (ZeroApplication.InRun)
-                ZeroApplication.OnStationStateChanged(config);
+            ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationResume, null, config);
         }
 
@@ -289,9 +314,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.SystemLog("station_pause", name);
-            config.State = ZeroCenterState.Pause;
             if (!ZeroApplication.InRun)
                 return;
+            config.State = ZeroCenterState.Pause;
             ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationPause, null, config);
         }
@@ -301,10 +326,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.SystemLog("station_left", name);
-            if (config.State < ZeroCenterState.Closed)
-                config.State = ZeroCenterState.Closed;
             if (!ZeroApplication.InRun)
                 return;
+            config.State = ZeroCenterState.Closed;
             ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
         }
@@ -314,10 +338,9 @@ namespace Agebull.ZeroNet.Core
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
             ZeroTrace.SystemLog("station_stop", name);
-            if (config.State < ZeroCenterState.Stop)
-                config.State = ZeroCenterState.Stop;
             if (!ZeroApplication.InRun)
                 return;
+            config.State = ZeroCenterState.Stop;
             ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
         }
@@ -326,10 +349,10 @@ namespace Agebull.ZeroNet.Core
         {
             if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
                 return;
-            ZeroTrace.SystemLog("station_join", content);
-            config.State = ZeroCenterState.Run;
             if (!ZeroApplication.InRun)
                 return;
+            ZeroTrace.SystemLog("station_join", content);
+            config.State = ZeroCenterState.Run;
             ZeroApplication.OnStationStateChanged(config);
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, content, config);
         }

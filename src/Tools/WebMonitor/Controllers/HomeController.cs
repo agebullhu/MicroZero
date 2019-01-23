@@ -71,7 +71,7 @@ namespace WebMonitor.Controler
                 Name = info.Name.Trim(),
                 Description = info.Description,
                 StationType = type,
-                ShortName = info.short_name?.Trim() ?? info.Name.Trim(),
+                ShortName = info.ShortName?.Trim() ?? info.Name.Trim(),
                 StationAlias = string.IsNullOrWhiteSpace(info.Alias)
                     ? new List<string>()
                     : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()

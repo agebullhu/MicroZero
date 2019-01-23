@@ -53,7 +53,6 @@
     <script src="~/js/chart.js"></script>
     <script src="~/js/site.js"></script>
     @RenderSection("Styles", false)
-    @RenderSection("InitScript", required: false)
 </head>
 <body>
     <div id="work_space" class="tiled" v-cloak>
@@ -110,7 +109,8 @@
             </el-container>
         </el-container>
     </div>
-
+    
+    @RenderSection("InitScript", required: false)
     @RenderSection("VUE", required: false)
     <script>
         if (!vue_option.data.menu_wid)

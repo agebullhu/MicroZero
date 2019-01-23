@@ -32,7 +32,11 @@
         /// <summary>
         /// 流程跟踪
         /// </summary>
-        Trace = 0xFE,
+        Trace = 0xFD,
+        /// <summary>
+        /// 代理
+        /// </summary>
+        Proxy = 0xFE,
         /// <summary>
         /// 计划任务
         /// </summary>

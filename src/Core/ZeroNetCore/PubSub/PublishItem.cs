@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Agebull.ZeroNet.Core;
@@ -80,6 +81,45 @@ namespace Agebull.ZeroNet.PubSub
         /// <param name="msg"></param>
         /// <param name="publishItem"></param>
         /// <returns></returns>
+        public static bool Unpack2<TPublishItem>(ZMessage msg, out TPublishItem publishItem)
+            where TPublishItem : PublishItem, new()
+        {
+            if (msg == null)
+            {
+                publishItem = null;
+                return false;
+            }
+
+            byte[][] msgs;
+            using (msg)
+            {
+                msgs = msg.Select(p => p.ReadAll()).ToArray();
+            }
+
+            for (var index = 2; index < msgs.Length; index++)
+            {
+                var b = msgs[1][index];
+                Debug.WriteLine($"{index}:{(int)b}|{ZeroFrameType.FrameName(b)}\r\n{GetString(msgs[index])}");
+            }
+
+            try
+            {
+                return Unpack(false, msgs, out publishItem, UnpackAction);
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Unpack", e);
+                publishItem = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     广播消息解包
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="publishItem"></param>
+        /// <returns></returns>
         public static bool Unpack<TPublishItem>(ZMessage msg, out TPublishItem publishItem)
             where TPublishItem : PublishItem, new()
         {
@@ -123,9 +163,12 @@ namespace Agebull.ZeroNet.PubSub
         {
             switch (type)
             {
-                case ZeroFrameType.SubTitle:
-                    item.SubTitle =GetString(bytes);
+                case ZeroFrameType.PubTitle:
+                    item.Title = GetString(bytes);
                     break;
+                case ZeroFrameType.SubTitle:
+                    item.SubTitle = GetString(bytes);
+                    break; 
                 case ZeroFrameType.TextContent:
                     item.Content = GetString(bytes);
                     break;

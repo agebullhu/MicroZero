@@ -119,31 +119,27 @@ function do_sync_get(url, job, callback) {
     console.log(url);
     $.get(url, function (data) {
         console.log(data);
-        if (data.success) {
-            vue_obj.$notify({
-                title: job,
-                message: '操作成功',
-                type: 'success',
-                position: 'bottom-left',
-                duration: 2000
-            });
-            if (callback)
-                callback(data);
-        }
-        else {
-            vue_obj.$notify({
-                title: job,
-                message: data.status.msg,
-                type: 'warning',
-                position: 'bottom-left',
-                duration: 2000
-            });
+        var msg = null;
+        if (data.status)
+            msg = data.status.msg;
+        if (!msg)
+            msg = data.success ? '操作成功' : '操作异常';
+        var type = data.success ? 'success' : 'warning';
+        vue_obj.$notify({
+            title: job,
+            message: msg,
+            type: type,
+            position: 'bottom-right',
+            duration: 2000
+        });
+        if (data.success && callback) {
+            callback(data);
         }
     }).error(function (e) {
         vue_obj.$notify.error({
             title: job,
-            message: '操作异常',
-            position: 'bottom-left',
+            message: '网络异常',
+            position: 'bottom-right',
             duration: 2000
         });
     });

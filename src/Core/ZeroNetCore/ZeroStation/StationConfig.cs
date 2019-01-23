@@ -37,6 +37,17 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     是否接口站点
         /// </summary>
+        /// <remarks></remarks>
+        [IgnoreDataMember, JsonIgnore]
+        public bool IsSystem => StationType == ZeroStationType.Dispatcher ||
+                                StationType == ZeroStationType.Trace ||
+                                StationType == ZeroStationType.Proxy ||
+                                StationType == ZeroStationType.Plan;
+
+
+        /// <summary>
+        ///     是否接口站点
+        /// </summary>
         [IgnoreDataMember, JsonIgnore]
         public bool IsApi => StationType == ZeroStationType.Api || 
                              StationType == ZeroStationType.RouteApi || 
@@ -46,9 +57,9 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     是否基础站点
         /// </summary>
-        [DataMember]
-        [JsonProperty("is_general")]
-        public bool IsGeneralStation => StationType == ZeroStationType.Api || StationType == ZeroStationType.Notify || StationType == ZeroStationType.Vote;
+        /// <remarks></remarks>
+        [IgnoreDataMember, JsonIgnore]
+        public bool IsGeneralStation => IsApi || StationType == ZeroStationType.Notify;
 
         /// <summary>
         ///     站点简称

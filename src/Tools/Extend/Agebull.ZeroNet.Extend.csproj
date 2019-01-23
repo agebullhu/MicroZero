@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <Version>1.0.4</Version>
     <AssemblyVersion>1.0.4.0</AssemblyVersion>
     <Description>Agebull.ZeroNet.Extend</Description>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Agebull.Common.Logging;
@@ -132,7 +133,7 @@ namespace Agebull.ZeroNet.Core
             try
             {
                 GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Content)
-                    ? JsonConvert.DeserializeObject<ApiContext>(Content)
+                    ? JsonConvert.DeserializeObject<GlobalContext>(Content)
                     : new GlobalContext());
             }
             catch (Exception e)

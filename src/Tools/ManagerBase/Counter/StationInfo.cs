@@ -30,7 +30,7 @@ namespace WebMonitor.Models
         ///     站点名称
         /// </summary>
         [DataMember, JsonProperty("short_name")]
-        public string short_name { get; set; }
+        public string ShortName { get; set; }
 
         /// <summary>
         ///     站点别名
@@ -73,6 +73,14 @@ namespace WebMonitor.Models
         ///     是否基础站点
         /// </summary>
         [DataMember]
+        [JsonProperty("is_sys")]
+        public bool IsSystem { get; set; }
+
+
+        /// <summary>
+        ///     是否基础站点
+        /// </summary>
+        [DataMember]
         [JsonProperty("is_base")]
         public bool IsBaseStation { get; set; }
 
@@ -105,25 +113,28 @@ namespace WebMonitor.Models
         {
             Name = src.StationName;
             Description = src.Description;
-            short_name = src.ShortName;
+            ShortName = src.ShortName;
             Alias = src.StationAlias.LinkToString(',');
 
             switch (src.StationType)
             {
-                case ZeroStationType.RouteApi:
                 case ZeroStationType.Vote:
                 case ZeroStationType.Api:
-                    Type = "API"; break;
-                case ZeroStationType.Dispatcher:
-                case ZeroStationType.Plan:
                 case ZeroStationType.Queue:
+                case ZeroStationType.RouteApi:
+                    Type = "API"; break;
+                case ZeroStationType.Trace:
+                case ZeroStationType.Proxy:
+                case ZeroStationType.Plan:
+                case ZeroStationType.Dispatcher:
                 case ZeroStationType.Notify:
                     Type = "Pub"; break;
             }
             RequestAddress = src.RequestAddress;
             WorkerCallAddress = src.WorkerCallAddress;
             IsGeneralStation = src.IsGeneralStation;
-            IsBaseStation  = src.IsBaseStation;
+            IsSystem = src.IsSystem;
+            IsBaseStation = src.IsBaseStation;
             WorkerResultAddress = src.WorkerResultAddress;
             State = src.State.ToString();
         }

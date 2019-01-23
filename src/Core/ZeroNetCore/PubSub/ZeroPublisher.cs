@@ -12,6 +12,29 @@ namespace Agebull.ZeroNet.PubSub
     /// </summary>
     public static class ZeroPublisher
     {
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool DoPublish(string station, string title,string value)
+        {
+            return DoPublishInner(station, title, null, value);
+        }
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool DoPublish<T>(string station, string title, T value)
+            where T : class
+        {
+            return DoPublishInner(station, title, null , value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
+        }
 
         /// <summary>
         /// 发送广播
@@ -38,6 +61,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             return DoPublishInner(station, title, sub, value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
         }
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -95,7 +119,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     订阅时的标准网络数据说明
         /// </summary>
-        public static byte[] PubDescriptionData =
+        public static byte[] PubDescriptionBin =
         {
             7,
             (byte)ZeroByteCommand.General,
@@ -147,7 +171,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         ///     订阅时的标准网络数据说明
         /// </summary>
-        public static byte[] PubDescriptionData2 =
+        public static byte[] PubDescriptionBin2 =
         {
             8,
             (byte)ZeroByteCommand.General,
@@ -182,6 +206,21 @@ namespace Agebull.ZeroNet.PubSub
         ///     发送广播
         /// </summary>
         /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="socket"></param>
+        /// <returns></returns>
+        public static bool Publish(this ZSocket socket, string title, string subTitle, string content)
+        {
+            return subTitle == null
+                ? Publish(socket, PubDescriptionJson, title, content.ToZeroBytes())
+                : Publish(socket, PubDescriptionJson2, title, subTitle, content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="socket"></param>
         /// <returns></returns>
@@ -190,22 +229,6 @@ namespace Agebull.ZeroNet.PubSub
             return content == null
                 ? Publish(socket, title)
                 : Publish(socket, PubDescriptionJson, title, content.ToZeroBytes());
-        }
-
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Publish<T>(this ZSocket socket, string title, string subTitle, T content)
-            where T : class
-        {
-            return subTitle == null
-                ? Publish(socket, PubDescriptionData, title, content.ToZeroBytes())
-                : Publish(socket, PubDescriptionData2, title, subTitle, content.ToZeroBytes());
         }
 
         /// <summary>
@@ -225,8 +248,8 @@ namespace Agebull.ZeroNet.PubSub
             if (item.Buffer != null)
             {
                 return item.SubTitle == null
-                    ? Publish(socket, PubDescriptionData, item.Title, item.Buffer)
-                    : Publish(socket, PubDescriptionData2, item.Title, item.SubTitle, item.Buffer);
+                    ? Publish(socket, PubDescriptionBin, item.Title, item.Buffer)
+                    : Publish(socket, PubDescriptionBin2, item.Title, item.SubTitle, item.Buffer);
             }
             return item.SubTitle == null
                 ? Publish(socket, PubDescriptionJson, item.Title, item.Content.ToZeroBytes())
@@ -295,8 +318,8 @@ namespace Agebull.ZeroNet.PubSub
                 if (socket.SendByExtend(frames,
                     GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
                     ZeroApplication.Config.RealName.ToZeroBytes(),
-                    GlobalContext.CurrentNoLazy.ToZeroBytes(),
                     GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
+                    GlobalContext.CurrentNoLazy.ToZeroBytes(),
                     GlobalContext.ServiceKey.ToZeroBytes()))
                     return socket.ReceiveString();
                 ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
@@ -329,8 +352,8 @@ namespace Agebull.ZeroNet.PubSub
             return socket.SendByExtend(frames,
                 GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
                 ZeroApplication.Config.RealName.ToZeroBytes(),
-                GlobalContext.CurrentNoLazy.ToZeroBytes(),
                 GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
+                GlobalContext.CurrentNoLazy.ToZeroBytes(),
                 GlobalContext.ServiceKey.ToZeroBytes());
         }
 

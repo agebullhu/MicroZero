@@ -12,7 +12,7 @@ namespace ZeroMQ.Monitoring
 		internal ZMonitorFileDescriptorEventArgs(ZMonitor monitor, ZMonitorEventData data)
 			: base(monitor, data)
 		{
-#if NETSTANDARD
+#if NETCOREAPP
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{
 				FileDescriptor_Posix = data.EventValue;

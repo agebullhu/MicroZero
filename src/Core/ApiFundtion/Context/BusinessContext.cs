@@ -17,6 +17,7 @@ using Agebull.Common.DataModel.Redis;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.Common.Redis;
+using Agebull.Common.Rpc;
 using Agebull.Common.WebApi.Auth;
 using Gboxt.Common.DataModel.MySql;
 using Newtonsoft.Json;
@@ -31,7 +32,7 @@ namespace Agebull.Common.WebApi
     [DataContract]
     [Category("业务上下文")]
     [JsonObject(MemberSerialization.OptIn)]
-    public class BusinessContext : ApiContext
+    public class BusinessContext : GlobalContext
     {
 
         #region 线程单例

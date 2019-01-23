@@ -3,6 +3,7 @@
 @using ZeroNet.Http.Route
 @using Agebull.ZeroNet.ZeroApi
 @using System
+@using System.Linq
 @using System.Text
 @using Agebull.Common.ApiDocuments
 @using Agebull.Common.Rpc
@@ -380,7 +381,7 @@ void outputJson(TypeDocument par, StringBuilder sb)
 
     ViewData["Title"] = "Document";
     ViewData["page"] = "doc";
-    var stations = ZeroApplication.Config.GetConfigs(p => !p.IsBaseStation).OrderBy(p => p.RequestPort).ToArray();
+    var stations = ZeroApplication.Config.GetConfigs(p => !p.IsSystem).OrderBy(p => p.RequestPort).ToArray();
 
 }
 @section Styles{

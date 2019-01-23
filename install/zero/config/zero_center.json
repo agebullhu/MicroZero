@@ -4,13 +4,16 @@
     "use_ipc_protocol": "false",
     "worker_sound_ivl": 2000,
     "plan_exec_timeout": 300,
+    "pool_timeout": 500,
     "plan_cache_size": 1024,
+    "api_route_mode": 0,
+    "monitor_socket": 0,
     "trace_net": "true",
     "service_key": "agebull"
   },
   "redis": {
     "addr": "127.0.0.1:6379",
-    "defdb": "16"
+    "defdb": "20"
   },
   "ZMQ": {
     "MAX_SOCKETS": -1,
@@ -33,6 +36,6 @@
     "TCP_KEEPALIVE_INTVL": 3,
     "HEARTBEAT_IVL": 1,
     "HEARTBEAT_TIMEOUT": 1000,
-    "HEARTBEAT_TTL": 60000
+    "HEARTBEAT_TTL": 10000
   }
 }

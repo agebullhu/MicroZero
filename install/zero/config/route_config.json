@@ -12,9 +12,11 @@
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
     /*内容页地址*/
+    "SiteFolder": "",
+    /*内容页地址*/
     "ContextHost": "http://zero.yizuanbao.cn:8080/",
     /*内容页地址*/
-    "ContextAddr": "D:\\玢翔医疗\\研发部\\Git\\InternetHospital\\pub\\Cloud\\dist"
+    "ContextAddr": "D:\\Demo\\wwwroot"
   },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {
