@@ -264,7 +264,6 @@ namespace agebull
 			config_->runing();
 			//登记线程开始
 			set_command_thread_run(get_station_name());
-
 			while (true)
 			{
 				if (!can_do())
@@ -272,7 +271,7 @@ namespace agebull
 					zmq_state_ = zmq_socket_state::intr;
 					break;
 				}
-				const int state = zmq_poll(poll_items_, poll_count_, global_config::pool_timeout);
+				int state = zmq_poll(poll_items_, poll_count_, global_config::pool_timeout);
 				if (state == 0)//超时或需要关闭
 				{
 					continue;
@@ -294,21 +293,35 @@ namespace agebull
 						poll_items_[idx].revents = 0;
 						if (poll_items_[idx].socket == request_scoket_tcp_)
 						{
-							config_->request_in++;
-							on_request(poll_items_[idx], false);
+							state = on_request(poll_items_[idx], false);
+							if (state == 0)
+								config_->request_in++;
+							if (state < 0)
+								config_->request_err++;
 						}
 						else if (poll_items_[idx].socket == request_socket_inproc_)
 						{
-							config_->request_in++;
-							on_request(poll_items_[idx], true);
-						}
-						else if (poll_items_[idx].socket == worker_in_socket_tcp_)
-						{
-							on_response(poll_items_[idx]);
+							state = on_request(poll_items_[idx], true);
+							if (state == 0)
+								config_->request_in++;
+							else if (state < 0)
+								config_->request_err++;
 						}
 						else if (global_config::api_route_mode && poll_items_[idx].socket == worker_out_socket_tcp_)
 						{
-							on_request(poll_items_[idx], false);
+							state = on_request(poll_items_[idx], false);
+							if (state == 0)
+								config_->request_in++;
+							if (state < 0)
+								config_->request_err++;
+						}
+						else if (poll_items_[idx].socket == worker_in_socket_tcp_)
+						{
+							state = on_response(poll_items_[idx]);
+							if (state == 0)
+								config_->worker_in++;
+							if (state < 0)
+								config_->worker_err++;
 						}
 						else
 						{
@@ -349,116 +362,104 @@ namespace agebull
 		}
 
 		/**
-		* \brief 调用集合的响应
+		* \brief 网络请求的响应(Worker返回)
+		* \param  socket 接收到请求的连接对象
+		* \return -1 无法正常接收数据 -2 接收的数据不正确 0 正常处理 1 内部命令
 		*/
-		void zero_station::on_response(zmq_pollitem_t& socket)
+		int zero_station::on_response(zmq_pollitem_t& socket)
 		{
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(socket.socket, list);
 			if (zmq_state_ == zmq_socket_state::timed_out)
 			{
 				config_->error("on_response", "timed_out");
-				config_->worker_in++;
-				config_->worker_err++;
-				return;
+				return -1;
 			}
 			if (zmq_state_ != zmq_socket_state::succeed)
 			{
-				config_->worker_in++;
-				config_->worker_err++;
 				config_->error("read work result", socket_ex::state_str(zmq_state_));
-				return;
+				return -1;
 			}
 			if (list.size() == 2 && strcmp(*list[1], "\004PING") == 0)
 			{
 				ping(socket.socket, list);
-				return;
+				return 1;
 			}
-			config_->worker_in++;
 			if (list.size() < 3)
 			{
-				config_->worker_err++;
-				config_->error("work result layout error", "size < 2");
-				return;
+				return -2;
 			}
 			if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 			{
-				config_->worker_err++;
 				config_->error("on_response", "service key error");
 				send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
-				return;
+				return -3;
 			}
 			if (list[1].tag() == zero_def::frame::extend_end)
 			{
-				config_->worker_in--;
 				heartbeat(socket.socket, list[1][1], list);
-				return;
+				return 1;
 			}
 			ping(socket.socket, list);
 			job_end(list);
+			return 0;
 		}
 
 		/**
-		* \brief 调用集合的响应
+		* \brief 调用集合的响应（Client请求）
+		* \param  socket 接收到请求的连接对象
+		* \param  local 是否进程内连接
+		* \return -1 无法正常接收数据 -2 接收的数据不正确  -3 非法数据 0 正常处理 1 内部命令
 		*/
-		void zero_station::on_request(zmq_pollitem_t& socket, bool inner)
+		int zero_station::on_request(zmq_pollitem_t& socket, bool local)
 		{
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(socket.socket, list);
 
 			if (zmq_state_ != zmq_socket_state::succeed)
 			{
-				config_->request_err++;
 				config_->error("on_request", socket_ex::state_str(zmq_state_));
-				return;
+				return -1;
 			}
-			const size_t list_size = int(inner ? list.size() - 1 : list.size());
+			const size_t list_size = int(local ? list.size() - 1 : list.size());
 			if (list_size < 2)
 			{
-				config_->request_err++;
 				config_->debug("on_request", "frame_invalid");
-				return;
+				return -2;
 			}
 			if (strcmp(*list[1], "\004PING") == 0)
 			{
-				config_->request_in--;
 				ping(socket.socket, list);
-				return;
+				return 1;
 			}
-			shared_char& description = list[inner ? 2 : 1];
-			if (simple_command(socket.socket, list, description, inner))
+			shared_char& description = list[local ? 2 : 1];
+			if (simple_command(socket.socket, list, description, local))
 			{
-				return;
+				return 1;
 			}
 			if (description.command() < zero_def::command::none)
 			{
 				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false);
-				return;
+				return -2;
 			}
 			var frame_size = description.frame_size();
 			var descr_size = description.size();
 			if ((frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
-				config_->request_err++;
-				config_->error("on_request", "frame_invalid");
 				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false);
-				return;
+				return -2;
 			}
-			if (!inner)
+			if (!local)
 			{
 				if (description[description.frame_size() + 1] != zero_def::frame::service_key)
 				{
-					config_->request_err++;
-					config_->error("on_request", "service key error");
 					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
-					return;
+					return -3;
 				}
 				if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 				{
-					config_->request_err++;
-					config_->error("on_request", "service key error");
 					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
-					return;
+					return -3;
 				}
 			}
 			if (!description.hase_frame(zero_def::frame::global_id))
@@ -467,12 +468,13 @@ namespace agebull
 				shared_char global_id;
 				global_id.set_int64(station_warehouse::get_glogal_id());
 				list.push_back(global_id);
-				job_start(socket.socket, list, inner, false);
+				job_start(socket.socket, list, local, false);
 			}
 			else
 			{
-				job_start(socket.socket, list, inner, true);
+				job_start(socket.socket, list, local, true);
 			}
+			return 0;
 		}
 
 		/**

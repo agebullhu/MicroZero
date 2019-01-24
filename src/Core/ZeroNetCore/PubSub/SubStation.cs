@@ -91,7 +91,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected override bool RunInner(CancellationToken token)
+        protected override bool RunInner(/*CancellationToken token*/)
         {
             ZeroTrace.SystemLog(StationName, RealName);
             Hearter?.HeartReady(StationName, RealName);
@@ -99,7 +99,7 @@ namespace Agebull.ZeroNet.PubSub
             using (var pool = ZmqPool.CreateZmqPool())
             {
                 pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribe));
-                State = StationState.Run;
+                RealState = StationState.Run;
                 while (CanLoop)
                 {
                     if (!pool.Poll())

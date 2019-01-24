@@ -116,7 +116,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(CancellationToken token)
+        protected sealed override bool RunInner(/*CancellationToken token*/)
         {
             WaitCount = 0;
             var option = GetApiOption();
@@ -202,7 +202,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 hearter.HeartJoin(StationName, realName);
                 hearter.HeartReady(StationName, realName);
                 ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
-                State = StationState.Run;
+                RealState = StationState.Run;
                 while (CanLoop)
                 {
                     try

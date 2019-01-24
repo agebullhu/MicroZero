@@ -52,7 +52,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         ///     订阅时的标准网络数据说明
         /// </summary>
-        static readonly byte[] LogDescription =
+        private static readonly byte[] LogDescription =
         {
             3,
             (byte)ZeroByteCommand.General,
@@ -122,6 +122,11 @@ namespace Agebull.ZeroNet.Log
         #region Field
 
         /// <summary>
+        ///     配置状态
+        /// </summary>
+        public ZeroCenterState ConfigState => ZeroCenterState.Run;
+
+        /// <summary>
         /// 配置
         /// </summary>
         private StationConfig Config;
@@ -149,21 +154,21 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         ///     运行状态
         /// </summary>
-        public int State
+        public int RealState
         {
             get => _state;
             set => Interlocked.Exchange(ref _state, value);
         }
         private CancellationTokenSource RunTaskCancel;
 
-        bool Start()
+        private bool Start()
         {
             using (OnceScope.CreateScope(this))
             {
                 if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
                 {
                     ZeroTrace.WriteError("RemoteLogRecorder", "No config");
-                    State = StationState.ConfigError;
+                    RealState = StationState.ConfigError;
                     ZeroApplication.OnObjectFailed(this);
                     return false;
                 }
@@ -199,7 +204,7 @@ namespace Agebull.ZeroNet.Log
         private void OnRun()
         {
             ZeroTrace.SystemLog("RemoteLogRecorder", "Run", $"{RealName} : {Config.RequestAddress}");
-            State = StationState.Run;
+            RealState = StationState.Run;
             ZeroApplication.OnObjectActive(this);
         }
 
@@ -208,12 +213,12 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private void OnStop()
         {
-            State = StationState.Closed;
+            RealState = StationState.Closed;
             ZeroApplication.OnObjectClose(this);
             _waitToken.Release();
         }
         private bool CanRun => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested &&
-                               ZeroApplication.CanDo && State == StationState.Run;
+                               ZeroApplication.CanDo && RealState == StationState.Run;
 
         private ZSocket _socket;
         /// <summary>
@@ -265,13 +270,13 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IZeroObject.OnHeartbeat()
         {
-            if (State == StationState.Run)
+            if (RealState == StationState.Run)
                 SystemManager.Instance.Heartbeat("RemoteLogRecorder", RealName);
         }
 
         void IZeroObject.OnZeroInitialize()
         {
-            State = StationState.Initialized;
+            RealState = StationState.Initialized;
         }
 
         bool IZeroObject.OnZeroStart()
@@ -282,7 +287,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 是否为运行状态
         /// </summary>
-        public bool IsRun => State > StationState.Start && State < StationState.Closing;
+        public bool IsRun => RealState > StationState.Start && RealState < StationState.Closing;
 
         /// <summary>
         /// 名称

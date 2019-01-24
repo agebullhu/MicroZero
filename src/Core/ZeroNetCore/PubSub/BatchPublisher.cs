@@ -85,18 +85,18 @@ namespace Agebull.ZeroNet.Log
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(CancellationToken token)
+        protected sealed override bool RunInner(/*CancellationToken token*/)
         {
             _socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity);
             Hearter?.HeartReady(StationName, RealName);
-            State = StationState.Run;
+            RealState = StationState.Run;
             int cnt = 0;
 
             while (CanLoop)
             {
                 Thread.Sleep(10);
-                if (token.IsCancellationRequested)
-                    break;
+                //if (token.IsCancellationRequested)
+                //    break;
                 if (++cnt == 36)
                 {
                     GC.Collect();

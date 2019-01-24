@@ -23,7 +23,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     运行状态
         /// </summary>
-        int State { get; }
+        int RealState { get; }
+
+        /// <summary>
+        ///     配置状态
+        /// </summary>
+        ZeroCenterState ConfigState { get; }
 
         /// <summary>
         /// 系统初始化时调用
@@ -319,7 +324,7 @@ namespace Agebull.ZeroNet.Core
                 {
                     try
                     {
-                        ZeroTrace.SystemLog(obj.StationName, $"Try start by {StationState.Text(obj.State)}");
+                        ZeroTrace.SystemLog(obj.StationName, $"Try start by {StationState.Text(obj.RealState)}");
                         obj.OnZeroStart();
                     }
                     catch (Exception e)
@@ -370,11 +375,11 @@ namespace Agebull.ZeroNet.Core
             if (WorkModel != ZeroWorkModel.Service)
                 return;
             ZeroTrace.SystemLog(StationState.Text(ApplicationState), "[OnZeroEnd>>");
+            ApplicationState = StationState.Closing;
             RaiseEvent(ZeroNetEventType.AppStop);
             SystemManager.Instance.HeartLeft();
             using (OnceScope.CreateScope(ZeroObjects))
             {
-                ApplicationState = StationState.Closing;
                 IZeroObject[] array;
                 lock (ActiveObjects)
                     array = ActiveObjects.ToArray();
@@ -391,8 +396,8 @@ namespace Agebull.ZeroNet.Core
                     }
                 }
                 WaitAllObjectSafeClose();
-                ApplicationState = StationState.Closed;
             }
+            ApplicationState = StationState.Closed;
             GC.Collect();
             ZeroTrace.SystemLog(StationState.Text(ApplicationState), "<<OnZeroEnd]");
         }

@@ -1,3 +1,0 @@
-namespace Agebull.ZeroNet.Core
-{
-}

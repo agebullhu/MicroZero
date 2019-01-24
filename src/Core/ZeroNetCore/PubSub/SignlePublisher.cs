@@ -162,7 +162,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 具体执行
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(CancellationToken token)
+        protected sealed override bool RunInner(/*CancellationToken token*/)
         {
             using (var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity))
             {
@@ -173,7 +173,7 @@ namespace Agebull.ZeroNet.PubSub
                     sockets.Add(ZSocket.CreateClientSocketByInproc(_inporcName, ZSocketType.PUSH));
                 }
                 Hearter?.HeartReady(StationName, RealName);
-                State = StationState.Run;
+                RealState = StationState.Run;
                 Thread.Sleep(5);
                 //历史数据重新入列
                 foreach (var data in datas)

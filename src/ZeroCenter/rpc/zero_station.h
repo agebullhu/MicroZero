@@ -201,13 +201,18 @@ namespace agebull
 		private:
 
 			/**
-			* \brief 调用集合的响应
+			* \brief 网络请求的响应(Worker返回)
+			* \param  socket 接收到请求的连接对象
+			* \return -1 无法正常接收数据 -2 接收的数据不正确  -3 非法数据 0 正常处理 1 内部命令
 			*/
-			void on_response(zmq_pollitem_t& socket);
+			int on_response(zmq_pollitem_t& socket);
 			/**
-			* \brief 调用集合的响应
+			* \brief 网络请求的响应(Client请求）
+			* \param  socket 接收到请求的连接对象
+			* \param  local 是否进程内连接
+			* \return -1 无法正常接收数据 -2 接收的数据不正确  -3 非法数据 0 正常处理 1 内部命令
 			*/
-			void on_request(zmq_pollitem_t& socket, bool inner);
+			int on_request(zmq_pollitem_t& socket, bool local);
 		protected:
 
 			/**
@@ -342,7 +347,6 @@ namespace agebull
 		{
 			if (socket == nullptr)
 				return zmq_socket_state::unknow;
-			config_->worker_out++;
 
 			zmq_socket_state state;
 			{
@@ -351,11 +355,12 @@ namespace agebull
 			}
 			if (state == zmq_socket_state::succeed)
 			{
+				config_->worker_out++;
 				if (do_trace)
 					trace(2, datas, nullptr);
 				return state;
 			}
-			config_->worker_err++;
+			config_->worker_deny++;
 			const char* err_msg = socket_ex::state_str(state);
 			config_->error("send_response", err_msg);
 			if (do_trace)
@@ -488,14 +493,14 @@ namespace agebull
 				boost::lock_guard<boost::mutex> guard(send_mutex_);
 				state = socket_ex::send(socket, ls);
 			}
-			config_->request_out++;
 			if (state == zmq_socket_state::succeed)
 			{
+				config_->request_out++;
 				if (do_trace)
 					trace(3, ls, nullptr);
 				return true;
 			}
-			++config_->request_err;
+			++config_->request_deny;
 			const char* err_msg = socket_ex::state_str(state);
 			config_->error("send_request_result", err_msg, *ls[0]);
 			if (do_trace)

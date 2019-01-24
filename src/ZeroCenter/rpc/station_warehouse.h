@@ -78,6 +78,8 @@ namespace agebull
 				int cnt = 0;
 				for (auto& kv : configs_)
 				{
+					if (zero_def::station_type::is_sys_station(kv.second->station_type))
+						continue;
 					if (kv.second->is_state(station_state::stop))
 						continue;
 					cnt++;

@@ -307,26 +307,10 @@ namespace ZeroNet.Http.Gateway
         {
             if (string.IsNullOrWhiteSpace(station.StationName))
                 return;
-            var host = SetZeroHost(station);
-            if (Router.RouteMap.ContainsKey(station.ShortName))
-                Router.RouteMap[station.ShortName] = host;
-            else
-                Router.RouteMap.Add(station.ShortName, host);
-            if (station.StationAlias == null)
-                return;
-            foreach (var alia in station.StationAlias)
-                if (Router.RouteMap.ContainsKey(alia))
-                    Router.RouteMap[alia] = host;
-                else
-                    Router.RouteMap.Add(alia, host);
-        }
-
-        private static ZeroHost SetZeroHost(StationConfig station)
-        {
             ZeroHost zeroHost;
-            if (Router.RouteMap.TryGetValue(station.StationName, out var host))
+            if (Router.RouteMap.TryGetValue(station.StationName, out var h))
             {
-                zeroHost = host as ZeroHost;
+                zeroHost = h as ZeroHost;
                 if (zeroHost == null) Router.RouteMap[station.StationName] = zeroHost = new ZeroHost();
             }
             else
@@ -342,7 +326,21 @@ namespace ZeroNet.Http.Gateway
             zeroHost.Station = station.StationName;
 
             UpdateApiItems(zeroHost);
-            return zeroHost;
+
+            if (!string.IsNullOrWhiteSpace(station.ShortName))
+            {
+                if (Router.RouteMap.ContainsKey(station.ShortName))
+                    Router.RouteMap[station.ShortName] = zeroHost;
+                else
+                    Router.RouteMap.Add(station.ShortName, zeroHost);
+            }
+            if (station.StationAlias == null)
+                return;
+            foreach (var alia in station.StationAlias)
+                if (Router.RouteMap.ContainsKey(alia))
+                    Router.RouteMap[alia] = zeroHost;
+                else
+                    Router.RouteMap.Add(alia, zeroHost);
         }
 
         private static void UpdateApiItems(ZeroHost zeroHost)

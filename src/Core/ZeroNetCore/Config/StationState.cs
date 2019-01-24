@@ -11,7 +11,7 @@
         public const int None = 0;
 
         /// <summary>
-        /// 需要重启
+        /// 配置错误
         /// </summary>
         public const int ConfigError = 1;
 
@@ -31,7 +31,7 @@
         public const int Start = 4;
 
         /// <summary>
-        /// 正在运行
+        /// 开始运行
         /// </summary>
         public const int BeginRun = 5;
 

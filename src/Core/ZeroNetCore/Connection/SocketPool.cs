@@ -11,6 +11,11 @@ namespace Agebull.ZeroNet.Core
         #region IZeroObject
 
         /// <summary>
+        ///     配置状态
+        /// </summary>
+        public ZeroCenterState ConfigState => ZeroCenterState.Run;
+
+        /// <summary>
         /// 名称
         /// </summary>
         string IZeroObject.StationName => "___";
@@ -24,7 +29,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     运行状态
         /// </summary>
-        int IZeroObject.State => CanDo ? StationState.Run : StationState.None;
+        int IZeroObject.RealState => CanDo ? StationState.Run : StationState.None;
 
 
         /// <summary>

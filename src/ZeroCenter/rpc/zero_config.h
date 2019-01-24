@@ -12,6 +12,7 @@ namespace agebull
 	{
 		class zero_station;
 		class zero_config;
+
 		/**
 		* \brief 工作对象
 		*/
@@ -46,11 +47,12 @@ namespace agebull
 			 */
 			worker()
 				: pre_time(time(nullptr))
-				, level(5)
-				, state(0)
+				  , level(5)
+				  , state(0)
 			{
 				identity[0] = 0;
 			}
+
 			/**
 			* \brief 激活
 			*/
@@ -150,13 +152,37 @@ namespace agebull
 			int worker_in_port;
 
 			/**
-			* \brief 总请求次数
+			* \brief 请求业务次数
 			*/
-			int64 request_in, request_out, request_err, request_deny;
+			int64 request_in;
 			/**
-			* \brief 总返回次数
+			* \brief 请求返回次数
 			*/
-			int64 worker_in, worker_out, worker_err, worker_deny;
+			int64 request_out;
+			/**
+			* \brief 请求错误次数
+			*/
+			int64 request_err;
+			/**
+			* \brief 请求返回失败次数
+			*/
+			int64 request_deny;
+			/**
+			* \brief 工作返回次数
+			*/
+			int64 worker_in;
+			/**
+			* \brief 工作发出次数
+			*/
+			int64 worker_out;
+			/**
+			* \brief 工作错误次数
+			*/
+			int64 worker_err;
+			/**
+			* \brief 工作错误次数
+			*/
+			int64 worker_deny;
 
 			vector<worker> workers;
 
@@ -191,20 +217,22 @@ namespace agebull
 			*/
 			zero_config(const string& name, int type)
 				: ready_works_(0)
-				, station_state_(station_state::none)
-				, config_state_(station_state::run)
-				, station_name(std::move(name))
-				, is_base(false)
-				, station_type(type)
-				, request_port(0)
-				, worker_out_port(0)
-				, worker_in_port(0)
-				, request_in(0)
-				, request_out(0)
-				, request_err(0)
-				, request_deny(0), worker_in(0)
-				, worker_out(0)
-				, worker_err(0), worker_deny(0)
+				  , station_state_(station_state::none)
+				  , config_state_(station_state::run)
+				  , station_name(std::move(name))
+				  , is_base(false)
+				  , station_type(type)
+				  , request_port(0)
+				  , worker_out_port(0)
+				  , worker_in_port(0)
+				  , request_in(0)
+				  , request_out(0)
+				  , request_err(0)
+				  , request_deny(0)
+				  , worker_in(0)
+				  , worker_out(0)
+				  , worker_err(0)
+				  , worker_deny(0)
 			{
 				check_type_name();
 			}
@@ -212,24 +240,25 @@ namespace agebull
 			/**
 			* \brief 工作站点加入
 			*/
-			void worker_join(const char* real_name, const char* ip);
+			void worker_join(const char* identity, const char* ip);
 
 			/**
 			* \brief 工作站点就绪
 			*/
-			void worker_ready(const char* real_name);
+			void worker_ready(const char* identity);
 
 			/**
 			* \brief 心跳
 			*/
-			void worker_heartbeat(const char* real_name)
+			void worker_heartbeat(const char* identity)
 			{
-				worker_ready(real_name);
+				worker_ready(identity);
 			}
+
 			/**
 			* \brief 心跳
 			*/
-			void worker_left(const char* real_name);
+			void worker_left(const char* identity);
 
 			/**
 			* \brief 检查工作对象
@@ -302,6 +331,7 @@ namespace agebull
 				addr += std::to_string(worker_in_port);
 				return addr;
 			}
+
 			/**
 			* \brief 从JSON中读取
 			*/
@@ -326,19 +356,19 @@ namespace agebull
 				case zero_def::station_type::notify:
 					type_name_ = "PUB";
 					break;
-				case  zero_def::station_type::dispatcher:
+				case zero_def::station_type::dispatcher:
 					type_name_ = "DISP";
 					break;
-				case  zero_def::station_type::plan:
+				case zero_def::station_type::plan:
 					type_name_ = "PLAN";
 					break;
-				case  zero_def::station_type::proxy:
+				case zero_def::station_type::proxy:
 					type_name_ = "PROXY";
 					break;
-				case  zero_def::station_type::queue:
+				case zero_def::station_type::queue:
 					type_name_ = "QUEUE";
 					break;
-				case  zero_def::station_type::trace:
+				case zero_def::station_type::trace:
 					type_name_ = "TRACE";
 					break;
 				default:
@@ -356,22 +386,27 @@ namespace agebull
 			{
 				return station_state_ == state;
 			}
+
 			bool is_run() const
 			{
 				return station_state_ >= station_state::start && station_state_ <= station_state::pause;
 			}
+
 			station_state get_state() const
 			{
 				return station_state_;
 			}
+
 			station_state config_state() const
 			{
 				return config_state_;
 			}
+
 			void config_state(station_state state)
 			{
 				config_state_ = state;
 			}
+
 			void set_state(station_state state)
 			{
 				switch (station_state_)
@@ -417,10 +452,11 @@ namespace agebull
 				case station_state::unknow:
 					log("state : unknow");
 					break;
-				default:;
+				default: ;
 				}
 				station_state_ = state;
 			}
+
 			bool runtime_state(station_state state)
 			{
 				if (station_state_ >= station_state::destroy)
@@ -428,12 +464,15 @@ namespace agebull
 				set_state(state);
 				return true;
 			}
+
 			/**
 			* \brief 开机日志
 			*/
 			void start()
 			{
-				start_log(station_state_ == station_state::re_start || station_state_ == station_state::failed ? "restart" : "start");
+				start_log(station_state_ == station_state::re_start || station_state_ == station_state::failed
+					          ? "restart"
+					          : "start");
 				runtime_state(station_state::start);
 			}
 
@@ -496,9 +535,9 @@ namespace agebull
 			void log(const char* msg, bool works = false) const
 			{
 				if (works)
-					log_msg3("[%s] > %s (ready_works:%d)", station_name.c_str(), msg, ready_works_)
+				log_msg3("[%s] > %s (ready_works:%d)", station_name.c_str(), msg, ready_works_)
 				else
-					log_msg2("[%s] > %s", station_name.c_str(), msg)
+				log_msg2("[%s] > %s", station_name.c_str(), msg)
 			}
 
 			/**
@@ -507,9 +546,9 @@ namespace agebull
 			void log(const char* title, const char* msg, bool works = false) const
 			{
 				if (works)
-					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
+				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
 				else
-					log_msg3("[%s] > %s > %s", station_name.c_str(), title, msg)
+				log_msg3("[%s] > %s > %s", station_name.c_str(), title, msg)
 			}
 
 			/**
@@ -518,19 +557,20 @@ namespace agebull
 			void flow_log(int step, const char* title, const char* msg = nullptr) const
 			{
 				if (msg != nullptr)
-					log_msg4("[%s] step %d. > %s  > %s", station_name.c_str(), step, title, msg)
+				log_msg4("[%s] step %d. > %s  > %s", station_name.c_str(), step, title, msg)
 				else
-					log_msg3("[%s] step %d. > %s", station_name.c_str(), step, title)
+				log_msg3("[%s] step %d. > %s", station_name.c_str(), step, title)
 			}
+
 			/**
 			* \brief 日志
 			*/
 			void error(const char* title, const char* msg, bool works = false) const
 			{
 				if (works)
-					log_error4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
+				log_error4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
 				else
-					log_error3("[%s] > %s > %s", station_name.c_str(), title, msg)
+				log_error3("[%s] > %s > %s", station_name.c_str(), title, msg)
 			}
 
 			/**
@@ -540,16 +580,18 @@ namespace agebull
 			{
 				log_error4("[%s] > %s > %s  > %s", station_name.c_str(), title, msg, msg2)
 			}
+
 			/**
 			* \brief 日志
 			*/
 			void debug(const char* title, const char* msg, bool works = false) const
 			{
 				if (works)
-					log_msg4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
+				log_msg4("[%s] > %s > %s (ready_works:%d)", station_name.c_str(), title, msg, ready_works_)
 				else
-					log_msg3("[%s] > %s > %s", station_name.c_str(), title, msg)
+				log_msg3("[%s] > %s > %s", station_name.c_str(), title, msg)
 			}
+
 			/**
 			* \brief 日志
 			*/
@@ -557,6 +599,7 @@ namespace agebull
 			{
 				log_error3("[%s] > %s > %lld", station_name.c_str(), title, id);
 			}
+
 			/**
 			* \brief 写入基本信息JSON
 			*/
@@ -580,6 +623,7 @@ namespace agebull
 			{
 				return to_json(0);
 			}
+
 		private:
 			/**
 			* \brief 写入JSON

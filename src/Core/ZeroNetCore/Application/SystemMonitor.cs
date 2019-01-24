@@ -1,3 +1,4 @@
+#if !UseStateMachine
 using System;
 using System.Threading;
 using Agebull.Common.ApiDocuments;
@@ -123,6 +124,7 @@ namespace Agebull.ZeroNet.Core
                             AutoReset = false
                         };
                         _time.Elapsed += Time_Elapsed;
+                        _time.Start();
                         return;
                     default:
                         return;
@@ -249,19 +251,24 @@ namespace Agebull.ZeroNet.Core
 
         #region StationEvent
 
-        private static void station_uninstall(string name)
+        private static void ChangeStationState(string name, ZeroCenterState state, ZeroNetEventType eventType)
         {
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
-            ZeroTrace.SystemLog("station_uninstall", name);
-            config.State = ZeroCenterState.Remove;
-            ZeroApplication.Config.Remove(config);
+            config.State = state;
             if (!ZeroApplication.InRun)
                 return;
             ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationRemove, null, config);
+            ZeroApplication.InvokeEvent(eventType, null, config);
         }
 
+        private static void station_update(string name, string content)
+        {
+            ZeroTrace.SystemLog("station_update", name, content);
+            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
+                return;
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, content, config);
+        }
         private static void station_install(string name, string content)
         {
             if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
@@ -274,87 +281,48 @@ namespace Agebull.ZeroNet.Core
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, content, config);
         }
 
-        private static void station_update(string name, string content)
+        private static void station_uninstall(string name)
         {
-            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
-                return;
-            ZeroTrace.SystemLog("station_update", name, content);
-            if (!ZeroApplication.InRun)
-                return;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, content, config);
+            ZeroTrace.SystemLog("station_uninstall", name);
+            ChangeStationState(name, ZeroCenterState.Remove, ZeroNetEventType.CenterStationRemove);
         }
+
 
         private static void station_closing(string name)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             ZeroTrace.SystemLog("station_closing", name);
-            if (!ZeroApplication.InRun)
-                return;
-            config.State = ZeroCenterState.Closing;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationClosing, null, config);
+            ChangeStationState(name, ZeroCenterState.Closing, ZeroNetEventType.CenterStationClosing);
         }
+
 
         private static void station_resume(string name)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             ZeroTrace.SystemLog("station_resume", name);
-            if (!ZeroApplication.InRun)
-                return;
-            config.State = ZeroCenterState.Run;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationResume, null, config);
+            ChangeStationState(name, ZeroCenterState.Run, ZeroNetEventType.CenterStationResume);
         }
 
         private static void station_pause(string name)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             ZeroTrace.SystemLog("station_pause", name);
-            if (!ZeroApplication.InRun)
-                return;
-            config.State = ZeroCenterState.Pause;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationPause, null, config);
+            ChangeStationState(name, ZeroCenterState.Pause, ZeroNetEventType.CenterStationPause);
         }
 
         private static void station_left(string name)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             ZeroTrace.SystemLog("station_left", name);
-            if (!ZeroApplication.InRun)
-                return;
-            config.State = ZeroCenterState.Closed;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
+            ChangeStationState(name, ZeroCenterState.Closed, ZeroNetEventType.CenterStationLeft);
         }
 
         private static void station_stop(string name)
         {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             ZeroTrace.SystemLog("station_stop", name);
-            if (!ZeroApplication.InRun)
-                return;
-            config.State = ZeroCenterState.Stop;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationLeft, null, config);
+            ChangeStationState(name, ZeroCenterState.Stop, ZeroNetEventType.CenterStationLeft);
         }
 
         private static void station_join(string name, string content)
         {
-            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
-                return;
-            if (!ZeroApplication.InRun)
-                return;
             ZeroTrace.SystemLog("station_join", content);
-            config.State = ZeroCenterState.Run;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, content, config);
+            ChangeStationState(name, ZeroCenterState.Run, ZeroNetEventType.CenterStationJoin);
         }
 
         /// <summary>
@@ -381,6 +349,8 @@ namespace Agebull.ZeroNet.Core
 
         private static void station_document(string station, string content)
         {
+            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
+                return;
             var doc = JsonConvert.DeserializeObject<StationDocument>(content);
             if (ZeroApplication.Config.Documents.ContainsKey(station))
             {
@@ -391,8 +361,6 @@ namespace Agebull.ZeroNet.Core
             {
                 ZeroApplication.Config.Documents.Add(station, doc);
             }
-            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
-                return;
             ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationDocument, station, config);
         }
 
@@ -423,3 +391,4 @@ namespace Agebull.ZeroNet.Core
     }
 
 }
+#endif

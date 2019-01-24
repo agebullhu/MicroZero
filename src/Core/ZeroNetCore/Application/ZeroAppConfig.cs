@@ -308,7 +308,8 @@ namespace Agebull.ZeroNet.Core
                     _configMap.Add(station.Name, config);
                 else
                     _configMap[station.Name] = config;
-
+                if (string.IsNullOrWhiteSpace(station.ShortName) || station.ShortName == station.Name)
+                    return;
                 if (!_configMap.ContainsKey(station.ShortName))
                     _configMap.Add(station.ShortName, config);
                 else

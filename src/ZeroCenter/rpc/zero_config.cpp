@@ -47,7 +47,7 @@ namespace agebull
 		{
 			{
 				boost::lock_guard<boost::mutex> guard(mutex);
-				bool hase=false;
+				bool hase = false;
 				for (worker& iter : workers)
 				{
 					if (strcmp(iter.identity, identity) == 0)
@@ -60,7 +60,7 @@ namespace agebull
 						break;
 					}
 				}
-				if(!hase)
+				if (!hase)
 				{
 					worker wk;
 					memset(wk.identity, 0, sizeof(wk.identity));
@@ -143,7 +143,7 @@ namespace agebull
 
 			boost::lock_guard<boost::mutex> guard(mutex);
 			vector<worker> array = workers;
-			for (int i = static_cast<int>(array.size())-1; i >= 0; --i)
+			for (int i = static_cast<int>(array.size()) - 1; i >= 0; --i)
 			{
 				if (strcmp(array[i].identity, identity) == 0)
 				{
@@ -208,9 +208,11 @@ namespace agebull
 			, request_in
 			, request_out
 			, request_err
+			, request_deny
 			, worker_in
 			, worker_out
 			, worker_err
+			, worker_deny
 			, short_name
 			, is_base
 		};
@@ -285,6 +287,9 @@ namespace agebull
 				case config_fields::request_err:
 					request_err = json_read_num(iter);
 					break;
+				case config_fields::request_deny:
+					request_deny = json_read_num(iter);
+					break;
 				case config_fields::worker_err:
 					worker_err = json_read_num(iter);
 					break;
@@ -293,6 +298,9 @@ namespace agebull
 					break;
 				case config_fields::worker_out:
 					worker_out = json_read_num(iter);
+					break;
+				case config_fields::worker_deny:
+					worker_deny = json_read_num(iter);
 					break;
 				default: break;
 				}
@@ -323,7 +331,7 @@ namespace agebull
 			//站点基础信息,不包含在状态中
 			if (type != 2)
 			{
-				json_add_str(node, "short_name", short_name);
+				node.add_text("short_name", short_name.empty() ? station_name.c_str() : short_name.c_str());
 				json_add_str(node, "description", station_description);
 				if (alias.size() > 0)
 				{

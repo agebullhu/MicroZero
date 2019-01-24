@@ -253,7 +253,7 @@ namespace agebull
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
 			net_state = zero_def::net_state::runing;
-			reset_command_thread(static_cast<int>(station_warehouse::get_station_count()));
+			reset_command_thread(static_cast<int>(3 + station_warehouse::get_station_count()));
 			if (start_system_manage() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
 			if (start_plan_dispatcher() == zero_def::net_state::failed)

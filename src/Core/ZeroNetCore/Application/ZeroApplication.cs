@@ -65,11 +65,16 @@ namespace Agebull.ZeroNet.Core
 
 
         #region State
-
+#if UseStateMachine
+        /// <summary>
+        /// 中心事件监控对象
+        /// </summary>
+        static readonly ZeroEventMonitor SystemMonitor = new ZeroEventMonitor();
+#endif 
         /// <summary>
         ///     应用中心状态
         /// </summary>
-        public static ZeroCenterState ZerCenterStatus { get; internal set; }
+        public static ZeroCenterState ZeroCenterStatus { get; internal set; }
 
         /// <summary>
         ///     运行状态
@@ -85,6 +90,7 @@ namespace Agebull.ZeroNet.Core
             internal set
             {
                 Interlocked.Exchange(ref AppState, value);
+                SystemMonitor.OnApplicationStateChanged();
                 ZeroTrace.SystemLog("ZeroApplication", StationState.Text(value));
             }
         }
@@ -95,12 +101,12 @@ namespace Agebull.ZeroNet.Core
         public static void SetFailed()
         {
             ApplicationState = StationState.Failed;
-            ZerCenterStatus = ZeroCenterState.Failed;
+            ZeroCenterStatus = ZeroCenterState.Failed;
         }
         /// <summary>
         ///     应用中心是否正在运行
         /// </summary>
-        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZerCenterStatus == ZeroCenterState.Run;
+        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZeroCenterStatus == ZeroCenterState.Run;
 
         /// <summary>
         ///     本地应用是否正在运行
@@ -250,7 +256,6 @@ namespace Agebull.ZeroNet.Core
         {
             if (WorkModel != ZeroWorkModel.Bridge)
                 return Start();
-
             ApplicationState = StationState.Run;
             return true;
         }
@@ -293,7 +298,7 @@ namespace Agebull.ZeroNet.Core
             bool success;
             using (OnceScope.CreateScope(Config))
             {
-                ZerCenterStatus = ZeroCenterState.None;
+                ZeroCenterStatus = ZeroCenterState.None;
                 ApplicationState = StationState.Start;
                 success = JoinCenter();
                 if (WorkModel == ZeroWorkModel.Service)
@@ -311,7 +316,7 @@ namespace Agebull.ZeroNet.Core
             if (InRun)
                 return false;
             ApplicationState = StationState.BeginRun;
-            ZerCenterStatus = ZeroCenterState.Start;
+            ZeroCenterStatus = ZeroCenterState.Start;
             ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
@@ -319,7 +324,7 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteError("JoinCenter", "zero center can`t connection.");
                 return false;
             }
-            ZerCenterStatus = ZeroCenterState.Run;
+            ZeroCenterStatus = ZeroCenterState.Run;
             if (WorkModel == ZeroWorkModel.Service && !SystemManager.Instance.HeartJoin())
             {
                 SetFailed();
@@ -424,7 +429,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="args"></param>
         private static void InvokeEvent(object args)
         {
-            var arg = (ZeroNetEventArgument) args;
+            var arg = (ZeroNetEventArgument)args;
             try
             {
                 ZeroNetEvent?.Invoke(Config, arg);
