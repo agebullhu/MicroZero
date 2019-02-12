@@ -25,6 +25,28 @@ namespace agebull
 		}
 
 		/**
+		*\brief 事件通知
+		*/
+		bool monitor_event(zero_net_event event_type, const char* sub, const char* content)
+		{
+			return station_dispatcher::publish_event(event_type, "monitor", sub, content);
+		}
+
+		/**
+		*\brief 事件通知
+		*/
+		bool station_event(zero_net_event event_type, const char* sub, const char* content)
+		{
+			return station_dispatcher::publish_event(event_type, "station", sub, content);
+		}
+		/**
+		*\brief 事件通知
+		*/
+		bool worker_event(zero_net_event event_type, const char* sub, const char* content)
+		{
+			return station_dispatcher::publish_event(event_type, "worker", sub, content);
+		}
+		/**
 		*\brief 系统事件通知
 		*/
 		bool system_event(zero_net_event event_type, const char* sub, const char* content)
@@ -87,7 +109,7 @@ namespace agebull
 		bool station_dispatcher::heartbeat(zmq_handler socket, uchar cmd, vector<shared_char> list)
 		{
 			bool success = list.size() > 2 && station_warehouse::heartbeat(cmd, list);
-			send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed, false);
+			send_request_status(socket, *list[0], success ? zero_def::status::ok : zero_def::status::failed, false, false);
 			return true;
 		}
 		/**
@@ -136,16 +158,27 @@ namespace agebull
 			}
 			case station_commands_2::install:
 			{
+				int state;
 				switch (arguments.size())
 				{
-				case 4:
-					return station_warehouse::install(*arguments[1], *arguments[0], *arguments[2], *arguments[3])
-						? zero_def::status::ok
-						: zero_def::status::failed;
 				case 1:
-					return station_warehouse::install(*arguments[0]) ? zero_def::status::ok : zero_def::status::failed;
+					state = station_warehouse::install(*arguments[0]);
+					break;
+				case 4:
+					state = station_warehouse::install(arguments[1].c_str(), *arguments[0], *arguments[2], *arguments[3]);
+					break;
+				default:
+					return zero_def::status::arg_invalid;
 				}
-				return zero_def::status::arg_invalid;
+				switch (state)
+				{
+				case 0:
+					return zero_def::status::ok;
+				case 1:
+					return zero_def::status::failed;
+				default:
+					return zero_def::status::arg_invalid;
+				}
 			}
 			case station_commands_2::stop:
 			{
@@ -292,25 +325,40 @@ namespace agebull
 			zero_config& config = dispatcher->get_config();
 			config.log("worker_monitor start");
 			dispatcher->task_semaphore_.post();
-			while (instance != nullptr && instance->config_->is_run() && get_net_state() <= zero_def::net_state::runing)
+			int cnt = 0;
+			int sleep = global_config::worker_sound_ivl / 4;
+			//var tm = boost::posix_time::microsec_clock::local_time();
+			while (config.is_run() && get_net_state() <= zero_def::net_state::runing)
 			{
-				THREAD_SLEEP(global_config::worker_sound_ivl);
-				vector<string> cfgs;//复制避免锁定时间过长
-				vector<string> names;//复制避免锁定时间过长
+				THREAD_SLEEP(sleep);
+				if (++cnt < 4)
+					continue;
+				//var sp = boost::posix_time::microsec_clock::local_time() - tm;
+				//log_msg1("worker_monitor(%lldms)", sp.total_milliseconds());
+				cnt = 0;
+				vector<string> cfgs;
+				vector<string> names;
+				//复制避免锁定时间过长
 				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<zero_config>& cfg)
 				{
+					//非活跃站点不发出实时状态
+					auto state = cfg->get_state();
+					if (state > station_state::failed || state < station_state::start)
+						return true;
 					cfg->check_works();
 					names.emplace_back(cfg->station_name);
 					cfgs.emplace_back(cfg->to_status_json().c_str());
+					return true;
 				});
 				if (get_net_state() == zero_def::net_state::runing)
-					dispatcher->publish_event(zero_net_event::event_worker_sound_off, "worker", nullptr, nullptr);
+					system_event(zero_net_event::event_worker_sound_off, nullptr, nullptr);
 				for (size_t i = 0; i < names.size(); i++)
 				{
 					if (get_net_state() != zero_def::net_state::runing)
 						break;
-					dispatcher->publish_event(zero_net_event::event_station_state, "station", names[i].c_str(), cfgs[i].c_str());
+					worker_event(zero_net_event::event_station_trends, names[i].c_str(), cfgs[i].c_str());
 				}
+				//tm = boost::posix_time::microsec_clock::local_time();
 			}
 
 			dispatcher->task_semaphore_.post();

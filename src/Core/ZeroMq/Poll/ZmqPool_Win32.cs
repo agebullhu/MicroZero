@@ -2,15 +2,11 @@
 
 namespace ZeroMQ
 {
-    public unsafe class WinZPoll : MemoryCheck, IZmqPool
+    /// <summary>
+    /// pool对象
+    /// </summary>
+    public unsafe class WinZPoll : ZPollBase, IZmqPool
     {
-        public ZSocket[] Sockets { get; set; }
-
-        public int Size { get; set; }
-        public int TimeoutMs { get; set; } = 1000;
-        private ZError error;
-        public ZError ZError => error ?? (error = ZError.GetLastErr());
-        public DispoIntPtr Ptr { get; set; }
         /// <summary>
         /// 准备
         /// </summary>
@@ -99,17 +95,5 @@ namespace ZeroMQ
             return false;
         }
 
-        /// <summary>
-        /// 析构
-        /// </summary>
-        protected override void DoDispose()
-        {
-            Ptr?.Dispose();
-            if (Sockets == null) return;
-            foreach (var socket in Sockets)
-            {
-                socket.Dispose();
-            }
-        }
     }
 }

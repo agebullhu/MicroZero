@@ -154,7 +154,7 @@ namespace Agebull.ZeroNet.Core
             if (messages.Length == 0)
                 LogRecorder.SystemLog(title);
             else
-                LogRecorder.SystemLog("{0} : {1}", title, messages.LinkToString(" > "));
+                LogRecorder.SystemLog("{0} : {1}", title, messages.LinkToString(" $ "));
         }
         /// <summary>
         /// 
@@ -163,7 +163,8 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" > "));
+            SystemLog(title, messages);
+            LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" * "));
         }
         /// <summary>
         /// 
@@ -173,7 +174,8 @@ namespace Agebull.ZeroNet.Core
         /// <param name="exception"></param>
         public static void WriteException(string title, Exception exception, params object[] messages)
         {
-            LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" > "));
+            SystemLog(title, "Exception", exception.Message, messages);
+            LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" * "));
         }
     }
 }

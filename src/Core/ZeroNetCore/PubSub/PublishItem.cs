@@ -149,7 +149,10 @@ namespace Agebull.ZeroNet.PubSub
             }
             try
             {
-                return Unpack(false, msgs, out publishItem, action);
+                if (!Unpack(false, msgs, out publishItem, action))
+                    return false;
+                publishItem.Title = GetString(publishItem.Head);
+                return true;
             }
             catch (Exception e)
             {

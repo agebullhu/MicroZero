@@ -77,7 +77,7 @@ namespace Agebull.ZeroNet.Core
             _inprocPollSocket =
                 ZSocket.CreateServiceSocket($"inproc://{Config.StationName}_Proxy", ZSocketType.ROUTER);
             _inprocPollSocket.Backlog = 4096;
-            var realName = ZeroIdentityHelper.CreateRealName(false, Config.StationName);
+            var realName = ZSocket.CreateRealName(false, Config.StationName);
             _callPollSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, realName.ToZeroBytes());
 
             WaitCount = 0;

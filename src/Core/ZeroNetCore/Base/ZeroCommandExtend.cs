@@ -34,7 +34,6 @@ namespace Agebull.ZeroNet.Core
             {
                 if (!socket.Recv(out messages))
                 {
-                    ZeroTrace.WriteError("Receive", socket.Endpoint, socket.LastError.Text);
                     return new TZeroResultData
                     {
                         State = ZeroOperatorStateType.LocalRecvError,

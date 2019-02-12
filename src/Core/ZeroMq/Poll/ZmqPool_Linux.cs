@@ -6,34 +6,8 @@ namespace ZeroMQ
     /// <summary>
     /// Linux平台使用
     /// </summary>
-    public unsafe class LinuxZPoll : MemoryCheck, IZmqPool
+    public unsafe class LinuxZPoll : ZPollBase, IZmqPool
     {
-        /// <summary>
-        /// 对应的Socket集合
-        /// </summary>
-        public ZSocket[] Sockets { get; set; }
-
-        /// <summary>
-        /// Sockt数量
-        /// </summary>
-        public int Size { get; set; }
-
-        /// <summary>
-        /// 超时
-        /// </summary>
-        public int TimeoutMs { get; set; } = 1000;
-        private ZError error;
-
-        /// <summary>
-        /// 错误对象
-        /// </summary>
-        public ZError ZError => error ?? (error = ZError.GetLastErr());
-
-        /// <summary>
-        /// 非托管句柄
-        /// </summary>
-        public DispoIntPtr Ptr { get; set; }
-
         /// <summary>
         /// 准备
         /// </summary>
@@ -114,7 +88,7 @@ namespace ZeroMQ
                 message = null;
                 return false;
             }
-            return Sockets[index].Recv(out message,ZSocket.FlagsDontwait);
+            return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
 
         }
 
@@ -145,19 +119,5 @@ namespace ZeroMQ
             return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
         }
 
-
-        /// <summary>
-        /// 析构
-        /// </summary>
-        protected override void DoDispose()
-        {
-            Ptr?.Dispose();
-            if (Sockets == null)
-                return;
-            foreach (var socket in Sockets)
-            {
-                socket.Dispose();
-            }
-        }
     }
 }

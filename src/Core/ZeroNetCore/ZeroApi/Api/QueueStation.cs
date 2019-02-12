@@ -57,7 +57,7 @@ namespace Agebull.ZeroNet.PubSub
         }
 
         /// <inheritdoc />
-        protected override void OnRunStop()
+        protected override void OnLoopComplete()
         {
             SaveIds();
         }
@@ -91,7 +91,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 空转
         /// </summary>
         /// <returns></returns>
-        public override void Idle()
+        protected override void OnLoopIdle()
         {
             SaveIds();
         }
@@ -191,7 +191,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             try
             {
-                var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZeroIdentityHelper.CreateIdentity(false, StationName));
+                var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZSocket.CreateIdentity(false, StationName));
                 var result = ZSimpleCommand.SendTo(socket, description, start.ToString(), end.ToString());
                 return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }

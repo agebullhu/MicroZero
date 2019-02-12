@@ -50,7 +50,7 @@ namespace Agebull.ZeroNet.Core
                 return socket;
             }
 
-            socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZeroIdentityHelper.CreateIdentity(false,Config.StationName));
+            socket = ZSocket.CreateDealerSocket(Config.RequestAddress, ZSocket.CreateIdentity(false,Config.StationName));
             if (socket == null)
                 return null;
             socket.IsUsing = true;
@@ -80,7 +80,7 @@ namespace Agebull.ZeroNet.Core
             //Close(ref socket);
             lock (_pools)
             {
-                if (_pools.Count > 9999)
+                if (_pools.Count > 999)
                 {
                     Close(ref socket);
                 }

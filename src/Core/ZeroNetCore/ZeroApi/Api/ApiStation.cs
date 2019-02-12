@@ -29,7 +29,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
             var pSocket = ZeroApplication.Config.ApiRouterModel
-                    ? ZSocket.CreateClientSocketByHeartbeat(Config.WorkerCallAddress, ZSocketType.DEALER, identity)
+                    ? ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.DEALER, identity)
                     : ZSocket.CreateClientSocket(Config.WorkerCallAddress, ZSocketType.PULL, identity);
 
             var pool = ZmqPool.CreateZmqPool();
@@ -55,12 +55,6 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         internal override bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (!CanLoop)
-            {
-                ZeroTrace.WriteError("SendResult", "is closed", StationName);
-                return false;
-            }
-
             int i = 0;
             var des = new byte[10 + item.Originals.Count];
             des[i++] = (byte)(6 + item.Originals.Count);
@@ -106,6 +100,11 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         internal override void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
         {
+            if (!CanLoop)
+            {
+                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+                return;
+            }
             if (item == null)
                 return;
             try
@@ -131,6 +130,12 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <returns></returns>
         bool SendResult(ZSocket socket, ZMessage message)
         {
+            if (!CanLoop)
+            {
+                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+                return false;
+            }
+
             try
             {
                 ZError error;

@@ -58,9 +58,9 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         CenterStationRemove,
         /// <summary>
-        /// 
+        /// 站点动态
         /// </summary>
-        CenterStationState,
+        CenterStationTrends,
         /// <summary>
         /// 
         /// </summary>

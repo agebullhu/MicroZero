@@ -17,9 +17,11 @@ namespace Agebull.ZeroNet.ZeroApi
             TsonOperator = new CountDataTsonOperator();
         }
 
-        protected override void Initialize()
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        protected override void OnInitialize()
         {
-            base.Initialize();
             HookApi();
         }
 
@@ -39,7 +41,7 @@ namespace Agebull.ZeroNet.ZeroApi
             }
         }
 
-        protected override bool OnStart()
+        protected override bool Prepare()
         {
             return _isEnable;
         }

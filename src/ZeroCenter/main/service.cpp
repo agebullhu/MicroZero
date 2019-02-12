@@ -128,6 +128,7 @@ namespace agebull
 		//线程计数清零
 		void reset_command_thread(int count)
 		{
+			log_msg1("zero thread count(%d)", count);
 			boost::lock_guard<boost::mutex> guard(task_mutex);
 			zero_thread_bad = 0;
 			zero_thread_run = 0;
@@ -264,8 +265,11 @@ namespace agebull
 			//	return zero_def::net_state::failed;
 
 			log_msg("$start business stations...");
-			station_warehouse::restore();
-			task_semaphore.wait();
+			if(zero_thread_count > 3)
+			{
+				station_warehouse::restore();
+				task_semaphore.wait();
+			}
 			var sp = boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
 			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
 			for (int i = 0; i < 10; i++)

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.ZeroNet.Core;
@@ -10,10 +11,10 @@ using Senparc.Weixin.Entities;
 using Senparc.Weixin.MP.Containers;
 using Senparc.Weixin.RegisterServices;
 
+
+
 namespace ApiTest
 {
-
-
     partial class Program
     {
 
@@ -21,9 +22,9 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.RegistZeroObject<DataEventSubscribe>();
+            ZeroApplication.Discove(Assembly.GetExecutingAssembly());
             ZeroApplication.Initialize();
-            //Weixin();
+
             ZeroApplication.RunAwaite();
         }
 

@@ -25,7 +25,14 @@
     <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Controllers\FLowController - 复制.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="appsettings.json" />
+    <Content Remove="Controllers\科室.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\DELL\Desktop\电子健康卡接口规范\数据字典.json" Link="数据字典.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">

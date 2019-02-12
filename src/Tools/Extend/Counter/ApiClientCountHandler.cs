@@ -16,7 +16,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Start = DateTime.Now.Ticks,
                 FromId = GlobalContext.RequestInfo.CallGlobalId,
-                Requester = ZeroApplication.Config.RealName,
+                Requester = GlobalContext.ServiceRealName,
                 HostName = item.Station,
                 ApiName = item.Commmand
             };

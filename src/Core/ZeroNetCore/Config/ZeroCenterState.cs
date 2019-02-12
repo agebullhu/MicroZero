@@ -10,9 +10,9 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         None,
         /// <summary>
-        ///  重新启动
+        ///  初始化
         /// </summary>
-        ReStart,
+        Initialize,
         /// <summary>
         ///  正在启动
         /// </summary>
@@ -48,6 +48,10 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///  删除
         /// </summary>
-        Remove
+        Remove,
+        /// <summary>
+        ///  找不到
+        /// </summary>
+        NoFind
     };
 }

@@ -44,6 +44,15 @@ namespace agebull
 		*/
 		void wait_close();
 
+		/**
+		*\brief 事件通知
+		*/
+		bool worker_event(zero_net_event event_type, const char* sub, const char* content);
+
+		/**
+		*\brief 事件通知
+		*/
+		bool station_event(zero_net_event event_type, const char* sub, const char* content);
 
 		/**
 		*\brief 系统事件通知
@@ -55,7 +64,10 @@ namespace agebull
 		*/
 		bool zero_event(zero_net_event event_type, const char* title, const char* sub, const char* content);
 
-		
+		/**
+		*\brief 事件通知
+		*/
+		bool monitor_event(zero_net_event event_type, const char* sub, const char* content);
 	}
 }
 #endif

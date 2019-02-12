@@ -67,7 +67,7 @@ namespace Agebull.ZeroNet.PubSub
                             TsonOperator.ToTson(serializer, data);
                             buf = serializer.Close();
                         }
-                        socket.SendPublish(ZeroPublisher.PubDescriptionTson,data.Title.ToZeroBytes(), buf);
+                        socket.SendPublish(ZeroPublisher.PubDescriptionTson, data.Title.ToZeroBytes(), buf);
                     }
                     else
                     {
@@ -84,11 +84,10 @@ namespace Agebull.ZeroNet.PubSub
         }
 
         /// <inheritdoc />
-        protected override bool OnStart()
+        protected override bool Prepare()
         {
             _inporcName = $"inproc://{StationName}_{RandomOperate.Generate(8)}.pub";
-            return base.OnStart();
-
+            return base.Prepare();
         }
         /// <summary>
         /// TSON序列化操作器
@@ -96,12 +95,12 @@ namespace Agebull.ZeroNet.PubSub
         protected ITsonOperator<TData> TsonOperator { get; set; }
 
         /// <inheritdoc />
-        protected override void OnRunStop()
+        protected override void OnLoopComplete()
         {
             foreach (var socket in sockets)
                 socket.TryClose();
             sockets.Clear();
-            base.OnRunStop();
+            base.OnLoopComplete();
         }
 
         /// <inheritdoc />
@@ -135,7 +134,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override void Initialize()
+        protected sealed override void OnInitialize()
         {
             var file = CacheFileName;
             if (File.Exists(file))
@@ -159,10 +158,10 @@ namespace Agebull.ZeroNet.PubSub
 
 
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(/*CancellationToken token*/)
+        protected sealed override bool Loop(/*CancellationToken token*/)
         {
             using (var socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity))
             {
@@ -172,8 +171,7 @@ namespace Agebull.ZeroNet.PubSub
                 {
                     sockets.Add(ZSocket.CreateClientSocketByInproc(_inporcName, ZSocketType.PUSH));
                 }
-                Hearter?.HeartReady(StationName, RealName);
-                RealState = StationState.Run;
+                Hearter.HeartReady(StationName, RealName);
                 Thread.Sleep(5);
                 //历史数据重新入列
                 foreach (var data in datas)
@@ -182,18 +180,19 @@ namespace Agebull.ZeroNet.PubSub
                 }
                 datas.Clear();
                 File.Delete(CacheFileName);
+                RealState = StationState.Run;
                 using (poll)
                 {
                     while (CanLoop)
                     {
-                        if (poll.Poll() && poll.CheckIn(0, out var message))
-                        {
-                            using (message)
-                                Send(socket, message);
-                        }
+                        if (!poll.Poll())
+                            continue;
+                        if (!CanLoop || !poll.CheckIn(0, out var message))
+                            continue;
+                        using (message)
+                            Send(socket, message);
                     }
                 }
-                Hearter?.HeartLeft(StationName, RealName);
             }
             return true;
         }

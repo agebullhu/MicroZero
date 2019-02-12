@@ -6,6 +6,7 @@ using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using Agebull.ZeroNet.ZeroApi;
 using ZeroMQ;
 
@@ -124,7 +125,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         ///     配置状态
         /// </summary>
-        public ZeroCenterState ConfigState => ZeroCenterState.Run;
+        public StationStateType ConfigState => StationStateType.Run;
 
         /// <summary>
         /// 配置
@@ -161,7 +162,7 @@ namespace Agebull.ZeroNet.Log
         }
         private CancellationTokenSource RunTaskCancel;
 
-        private bool Start()
+        public bool Start()
         {
             using (OnceScope.CreateScope(this))
             {
@@ -172,7 +173,7 @@ namespace Agebull.ZeroNet.Log
                     ZeroApplication.OnObjectFailed(this);
                     return false;
                 }
-                RealName = ZeroIdentityHelper.CreateRealName(false, Config.ShortName ?? Config.StationName);
+                RealName = ZSocket.CreateRealName(false,Config.StationName);
                 Identity = RealName.ToAsciiBytes();
                 RunTaskCancel = new CancellationTokenSource();
                 //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
@@ -185,7 +186,7 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         private readonly SemaphoreSlim _waitToken = new SemaphoreSlim(0, 1);
 
-        private bool Close()
+        public bool Close()
         {
             if (Interlocked.CompareExchange(ref _state, StationState.Closing, StationState.Run) != StationState.Run)
                 return true;
@@ -222,7 +223,7 @@ namespace Agebull.ZeroNet.Log
 
         private ZSocket _socket;
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
         private void RunWaite()
         {
@@ -233,7 +234,7 @@ namespace Agebull.ZeroNet.Log
                 using (pool)
                 {
                     _socket = ZSocket.CreateClientSocketByInproc("inproc://RemoteLog.req", ZSocketType.PUSH);
-                    var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false, StationName));
+                    var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName));
                     while (CanRun)
                     {
                         if (!pool.Poll() || !pool.CheckIn(0, out var message))

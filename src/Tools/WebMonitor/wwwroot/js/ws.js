@@ -1,6 +1,6 @@
-function ws_state(active) {
+ws_state = function(active) {
 
-}
+};
 
 var ws = function(option) {
     var that = this;

@@ -22,10 +22,6 @@ namespace Agebull.ZeroNet.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
-
-            var sec = ConfigurationManager.Get("AppSettings");
-            foreach (var k in sec.Configuration.GetChildren())
-                Console.WriteLine(k.Key );
             if (ConfigurationManager.AppSettings.GetBool("RemoteLog"))
                 IocHelper.ServiceCollection.AddSingleton<ILogRecorder>(provider => RemoteLogRecorder.Instance);
             if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))

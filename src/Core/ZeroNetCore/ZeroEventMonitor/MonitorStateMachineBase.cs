@@ -2,7 +2,9 @@
 using Agebull.Common.ApiDocuments;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
-namespace Agebull.ZeroNet.Core
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
+namespace Agebull.ZeroNet.Core.ZeroManagemant.StateMachine
 {
     /// <summary>
     /// 系统侦听器
@@ -11,15 +13,15 @@ namespace Agebull.ZeroNet.Core
     {
         #region CenterEvent
 
-        protected string ZeroCenterIdentity;
+        internal static string ZeroCenterIdentity;
 
-        protected void center_start(string identity, string content)
+        internal static void center_start(string identity, string content)
         {
             if (identity == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = identity;
-            ZeroTrace.SystemLog("center_start", $"{identity}:{ZeroApplication.ZeroCenterStatus}:{ZeroCenterIdentity}");
-            if (ZeroApplication.ZeroCenterStatus >= ZeroCenterState.Failed)
+            ZeroTrace.SystemLog("ZeroCenter", "center_start", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            if (ZeroApplication.ZeroCenterState >= ZeroCenterState.Failed)
             {
                 ZeroApplication.JoinCenter();
             }
@@ -29,32 +31,32 @@ namespace Agebull.ZeroNet.Core
             }
         }
 
-        protected void center_closing(string identity, string content)
+        internal static void center_closing(string identity, string content)
         {
             var id = $"*{identity}";
             if (id == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = id;
-            ZeroTrace.SystemLog("center_closing", $"{identity}:{ZeroApplication.ZeroCenterStatus}:{ZeroCenterIdentity}");
-            if (ZeroApplication.ZeroCenterStatus < ZeroCenterState.Closing)
+            ZeroTrace.SystemLog("ZeroCenter", "center_closing", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
-                ZeroApplication.ZeroCenterStatus = ZeroCenterState.Closing;
+                ZeroApplication.ZeroCenterState = ZeroCenterState.Closing;
                 ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
             }
         }
 
-        protected void center_stop(string identity, string content)
+        internal static void center_stop(string identity, string content)
         {
             var id = $"#{identity}";
             if (id == ZeroCenterIdentity)
                 return;
             ZeroCenterIdentity = id;
-            ZeroTrace.SystemLog("center_stop", $"{identity}:{ZeroApplication.ZeroCenterStatus}:{ZeroCenterIdentity}");
-            if (ZeroApplication.ZeroCenterStatus < ZeroCenterState.Closing)
+            ZeroTrace.SystemLog("ZeroCenter", "center_stop", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
-                ZeroApplication.ZeroCenterStatus = ZeroCenterState.Closed;
+                ZeroApplication.ZeroCenterState = ZeroCenterState.Closed;
                 ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemStop);
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
@@ -68,124 +70,126 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 站点心跳
         /// </summary>
-        protected void worker_sound_off()
+        internal static void worker_sound_off()
         {
-            if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterStatus != ZeroCenterState.Run)
+            if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
                 return;
             SystemManager.Instance.Heartbeat();
         }
 
-        protected void ChangeStationState(string name, ZeroCenterState state, ZeroNetEventType eventType)
-        {
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
-            config.State = state;
-            if (!ZeroApplication.InRun)
-                return;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(eventType, null, config);
-        }
-
-        protected void station_update(string name, string content)
-        {
-            ZeroTrace.SystemLog("station_update", name, content);
-            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
-                return;
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, content, config);
-        }
-        protected void station_install(string name, string content)
-        {
-            if (!ZeroApplication.Config.UpdateConfig(name, content, out var config))
-                return;
-            ZeroTrace.SystemLog("station_install", name, content);
-            config.State = ZeroCenterState.None;
-            if (!ZeroApplication.InRun)
-                return;
-            ZeroApplication.OnStationStateChanged(config);
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, content, config);
-        }
-
-        protected void station_uninstall(string name)
-        {
-            ZeroTrace.SystemLog("station_uninstall", name);
-            ChangeStationState(name, ZeroCenterState.Remove, ZeroNetEventType.CenterStationRemove);
-        }
-
-
-        protected void station_closing(string name)
-        {
-            ZeroTrace.SystemLog("station_closing", name);
-            ChangeStationState(name, ZeroCenterState.Closing, ZeroNetEventType.CenterStationClosing);
-        }
-
-
-        protected void station_resume(string name)
-        {
-            ZeroTrace.SystemLog("station_resume", name);
-            ChangeStationState(name, ZeroCenterState.Run, ZeroNetEventType.CenterStationResume);
-        }
-
-        protected void station_pause(string name)
-        {
-            ZeroTrace.SystemLog("station_pause", name);
-            ChangeStationState(name, ZeroCenterState.Pause, ZeroNetEventType.CenterStationPause);
-        }
-
-        protected void station_left(string name)
-        {
-            ZeroTrace.SystemLog("station_left", name);
-            ChangeStationState(name, ZeroCenterState.Closed, ZeroNetEventType.CenterStationLeft);
-        }
-
-        protected void station_stop(string name)
-        {
-            ZeroTrace.SystemLog("station_stop", name);
-            ChangeStationState(name, ZeroCenterState.Stop, ZeroNetEventType.CenterStationLeft);
-        }
-
-        protected void station_join(string name, string content)
-        {
-            ZeroTrace.SystemLog("station_join", content);
-            ChangeStationState(name, ZeroCenterState.Run, ZeroNetEventType.CenterStationJoin);
-        }
-
         /// <summary>
-        /// 站点心跳
+        /// 站点动态
         /// </summary>
         /// <param name="name"></param>
         /// <param name="content"></param>
-        protected void station_state(string name, string content)
+        internal static void station_trends(string name, string content)
         {
-            //ZeroTrace.WriteInfo("station_state",name);
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
             try
             {
-                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationState, content, config);
+                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationTrends, name, content, null);
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
-                ZeroTrace.WriteException("station_state", e, name, content);
+                ZeroTrace.WriteException(name, e, "station_state", content);
+            }
+        }
+        internal static void station_update(string name, string content)
+        {
+            ZeroTrace.SystemLog(name, "station_update", content);
+            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            {
+                ZeroApplication.OnStationStateChanged(config);
+                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, name, content, config);
+            }
+        }
+        internal static void station_install(string name, string content)
+        {
+            ZeroTrace.SystemLog(name, "station_install", content);
+            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            {
+                ZeroApplication.OnStationStateChanged(config);
+                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, name, content, config);
             }
         }
 
 
-        protected void station_document(string station, string content)
+        internal static void station_join(string name, string content)
         {
-            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
-                return;
-            var doc = JsonConvert.DeserializeObject<StationDocument>(content);
-            if (ZeroApplication.Config.Documents.ContainsKey(station))
+            ZeroTrace.SystemLog(name, "station_join", content);
+            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
             {
-                if (!ZeroApplication.Config.Documents[station].IsLocal)
-                    ZeroApplication.Config.Documents[station] = doc;
+                ZeroApplication.OnStationStateChanged(config);
+                ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, name, content, config);
+            }
+        }
+        internal static void ChangeStationState(string name, ZeroCenterState state, ZeroNetEventType eventType)
+        {
+            if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
+                return;
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config) || !config.ChangedState(state))
+                return;
+            ZeroApplication.OnStationStateChanged(config);
+            ZeroApplication.InvokeEvent(eventType, name, null, config);
+        }
+
+
+        internal static void station_uninstall(string name)
+        {
+            ZeroTrace.SystemLog(name, "station_uninstall");
+            ChangeStationState(name, ZeroCenterState.Remove, ZeroNetEventType.CenterStationRemove);
+        }
+
+
+        internal static void station_closing(string name)
+        {
+            ZeroTrace.SystemLog(name, "station_closing");
+            ChangeStationState(name, ZeroCenterState.Closed, ZeroNetEventType.CenterStationClosing);
+        }
+
+
+        internal static void station_resume(string name)
+        {
+            ZeroTrace.SystemLog(name, "station_resume");
+            ChangeStationState(name, ZeroCenterState.Run, ZeroNetEventType.CenterStationResume);
+        }
+
+        internal static void station_pause(string name)
+        {
+            ZeroTrace.SystemLog(name, "station_pause");
+            ChangeStationState(name, ZeroCenterState.Pause, ZeroNetEventType.CenterStationPause);
+        }
+
+        internal static void station_left(string name)
+        {
+            ZeroTrace.SystemLog(name,"station_left");
+            ChangeStationState(name, ZeroCenterState.Closed, ZeroNetEventType.CenterStationLeft);
+        }
+
+        internal static void station_stop(string name)
+        {
+            ZeroTrace.SystemLog(name,"station_stop");
+            ChangeStationState(name, ZeroCenterState.Stop, ZeroNetEventType.CenterStationStop);
+        }
+
+
+
+        internal static void station_document(string name, string content)
+        {
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
+            ZeroTrace.SystemLog(name, "station_document");
+            var doc = JsonConvert.DeserializeObject<StationDocument>(content);
+            if (ZeroApplication.Config.Documents.ContainsKey(name))
+            {
+                if (!ZeroApplication.Config.Documents[name].IsLocal)
+                    ZeroApplication.Config.Documents[name] = doc;
             }
             else
             {
-                ZeroApplication.Config.Documents.Add(station, doc);
+                ZeroApplication.Config.Documents.Add(name, doc);
             }
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationDocument, station, config);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationDocument, name, content, config);
         }
 
 
@@ -196,18 +200,20 @@ namespace Agebull.ZeroNet.Core
 
 
 
-        protected void client_join(string name, string content)
+        internal static void client_join(string name, string content)
         {
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientJoin, name, config);
+            ZeroTrace.SystemLog(name, "client_join", content);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientJoin, name, content,  config);
         }
 
-        protected void client_left(string name, string content)
+        internal static void client_left(string name, string content)
         {
             if (!ZeroApplication.Config.TryGetConfig(name, out var config))
                 return;
-            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientLeft, name, config);
+            ZeroTrace.SystemLog(name, "client_left", content);
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterClientLeft, name, content, config);
         }
 
         #endregion
@@ -217,7 +223,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 是否已析构
         /// </summary>
-        public bool IsDisposed { get; protected set; }
+        public bool IsDisposed { get; internal set; }
 
         void IDisposable.Dispose()
         {
@@ -227,3 +233,4 @@ namespace Agebull.ZeroNet.Core
         #endregion
     }
 }
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释

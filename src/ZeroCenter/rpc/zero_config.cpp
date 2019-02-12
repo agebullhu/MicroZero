@@ -11,98 +11,113 @@ namespace agebull
 		{
 			if (worker.state == 5)
 				return -1;
-			const int64 tm = time(nullptr) - worker.pre_time;
+			var ms = boost::posix_time::microsec_clock::local_time() - worker.pre_time;
+			var tm = ms.total_milliseconds() / global_config::worker_sound_ivl;
+			
 
-			if (tm <= 2)
+			if (tm <= 1)
 			{
 				worker.state = 1;
 				return worker.level = 5;
 			}
-			if (tm <= 4)
+			if (tm <= 2)
 			{
 				worker.state = 2;
 				return worker.level = 4;
 			}
-			if (tm <= 8)
+			if (tm <= 4)
 			{
+				worker.state = 2;
 				return worker.level = 3;
 			}
 			worker.state = 3;
-			if (tm <= 16)
+			if (tm <= 8)
 			{
 				return worker.level = 2;
 			}
-			if (tm <= 32)
+			if (tm <= 16)
 			{
 				return worker.level = 1;
 			}
-			if (tm <= 60)
+			if (tm <= 32)
 			{
 				return worker.level = 0;
 			}
 			return worker.level = -1;
 		}
 
+
 		void zero_config::worker_join(const char* identity, const char* ip)
 		{
+			boost::lock_guard<boost::mutex> guard(mutex);
+			bool hase = false;
+			for (worker& iter : workers)
 			{
-				boost::lock_guard<boost::mutex> guard(mutex);
-				bool hase = false;
-				for (worker& iter : workers)
+				if (strcmp(iter.identity, identity) == 0)
 				{
-					if (strcmp(iter.identity, identity) == 0)
-					{
-						if (iter.state > 2)//曾经失联
-							log("worker_join*reincarnation ", identity);
-						iter.active();
-						iter.state = 1;
-						hase = true;
-						break;
-					}
-				}
-				if (!hase)
-				{
-					worker wk;
-					memset(wk.identity, 0, sizeof(wk.identity));
-					strcpy(wk.identity, identity);
-					wk.state = 1;
-					wk.level = 5;
-					wk.active();
-					workers.push_back(wk);
-					++ready_works_;
-					log("worker_join", identity);
+					if (iter.state > 2)//曾经失联
+						log("worker_join*reincarnation ", identity);
+					iter.active();
+					hase = true;
+					break;
 				}
 			}
-			check_works();
+			if (!hase)
+			{
+				worker wk;
+				memset(wk.identity, 0, sizeof(wk.identity));
+				strcpy(wk.identity, identity);
+				wk.state = 1;
+				wk.level = 5;
+				wk.active();
+				workers.push_back(wk);
+				++ready_works_;
+				log("worker_join", identity);
+			}
 		}
 
-		void zero_config::worker_ready(const char* identity)
+
+		void zero_config::worker_heartbeat(const char* identity)
 		{
+			boost::lock_guard<boost::mutex> guard(mutex);
+			for (worker& iter : workers)
 			{
-				boost::lock_guard<boost::mutex> guard(mutex);
-				bool hase = false;
-				for (worker& iter : workers)
+				if (strstr(iter.identity, identity) != nullptr)
 				{
-					if (strcmp(iter.identity, identity) == 0)
-					{
-						if (iter.state > 2)//曾经失联
-							log("worker_ready*reincarnation ", identity);
-						iter.active();
-						hase = true;
-						break;
-					}
+					//if (iter.state > 2)//曾经失联
+					//	log("worker_ready*reincarnation ", iter.identity);
+					iter.active();
 				}
-				if (!hase)
+				else
 				{
-					worker wk;
-					memset(&wk, 0, sizeof(wk));
-					strcpy(wk.identity, identity);
-					wk.active();
-					workers.push_back(wk);
-					log("worker_ready", identity);
+					check_worker(iter);
 				}
 			}
-			check_works();
+		}
+		void zero_config::worker_ready(const char* identity)
+		{
+			boost::lock_guard<boost::mutex> guard(mutex);
+			bool hase = false;
+			for (worker& iter : workers)
+			{
+				if (strcmp(iter.identity, identity) == 0)
+				{
+					if (iter.state > 2)//曾经失联
+						log("worker_ready*reincarnation ", identity);
+					iter.active();
+					hase = true;
+					break;
+				}
+			}
+			if (!hase)
+			{
+				worker wk;
+				memset(&wk, 0, sizeof(wk));
+				strcpy(wk.identity, identity);
+				wk.active();
+				workers.push_back(wk);
+				log("worker_ready", identity);
+			}
 		}
 
 		/**
@@ -145,10 +160,10 @@ namespace agebull
 			vector<worker> array = workers;
 			for (int i = static_cast<int>(array.size()) - 1; i >= 0; --i)
 			{
-				if (strcmp(array[i].identity, identity) == 0)
+				if (strstr(array[i].identity, identity) != nullptr)
 				{
 					workers.erase(workers.begin() + i);
-					log("worker_left", identity);
+					log("worker_left", array[i].identity);
 				}
 			}
 		}
@@ -250,7 +265,7 @@ namespace agebull
 					station_caption = iter->get_string();
 					break;
 				case config_fields::is_base:
-					is_base = false;// json_read_bool(iter);
+					// is_base = false;json_read_bool(iter);
 					break;
 				case config_fields::station_alias:
 					alias.clear();
@@ -367,7 +382,7 @@ namespace agebull
 					json_add_chr(work, "real_name", worker.identity);
 					json_add_num(work, "level", worker.level);
 					json_add_num(work, "state", worker.state);
-					json_add_num(work, "pre_time", worker.pre_time);
+					json_add_num(work, "pre_time", to_time_t(worker.pre_time));
 					json_add_str(work, "ip_address", worker.ip_address);
 					array.add_child(work);
 				}

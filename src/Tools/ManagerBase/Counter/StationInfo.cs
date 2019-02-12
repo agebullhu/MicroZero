@@ -132,7 +132,7 @@ namespace WebMonitor.Models
             }
             RequestAddress = src.RequestAddress;
             WorkerCallAddress = src.WorkerCallAddress;
-            IsGeneralStation = src.IsGeneralStation;
+            IsGeneralStation = src.IsGeneral;
             IsSystem = src.IsSystem;
             IsBaseStation = src.IsBaseStation;
             WorkerResultAddress = src.WorkerResultAddress;

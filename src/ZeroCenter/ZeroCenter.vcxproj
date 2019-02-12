@@ -25,10 +25,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfStl>libstdc++_static</UseOfStl>
+    <RemoteRootDir>/root/zero/projects</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <UseOfStl>libstdc++_static</UseOfStl>
+    <UseOfStl>libstdc++_shared</UseOfStl>
+    <RemoteRootDir>/root/zero/projects/</RemoteRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -40,6 +42,7 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <OutDir>/root/zero/center/</OutDir>
+    <RemoteProjectDir>$(RemoteRootDir)/$(ProjectName)</RemoteProjectDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>
@@ -51,12 +54,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -Bstatic -g %(AdditionalOptions)</AdditionalOptions>
       <LibraryDependencies>boost_thread;boost_system;boost_filesystem;boost_date_time;rt;m;pthread;acl_cpp;protocol;acl;zmq;sqlite3;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/local/lib;/usr/lib</AdditionalLibraryDirectories>
       <DebuggerSymbolInformation>OmitDebuggerSymbolInformation</DebuggerSymbolInformation>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <Version>true</Version>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <Version>false</Version>
       <OptimizeforMemory>true</OptimizeforMemory>
     </Link>
     <ClCompile>

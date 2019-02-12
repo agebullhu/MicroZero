@@ -7,7 +7,12 @@ int main(int argc, char *argv[])
 void wait_commane();
 int zero_center_main()
 {
-	cout << "*********************************************" << endl;
+#ifdef _DEBUG_
+	cout << "***********************D**********************" << endl;
+#else
+	cout << "***********************R**********************" << endl;
+#endif
+
 	//加入内存检测
 	//valgrind --tool=memcheck --leak-check=full mtrace ./zero_center.out output
 	//setenv("MALLOC_TRACE", "output", 1);

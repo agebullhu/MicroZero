@@ -71,18 +71,19 @@ namespace ZeroNet.Http.Route
                                 line -= 60000;
                                 ++cnt;
                             }
-                            if(cnt > 240)
-                            {
-                                if (items.Count > 240)
-                                    items.RemoveRange(0, items.Count - 240);
-                                break;
-                            }
+
+                            if (cnt <= 240)
+                                continue;
+                            if (items.Count > 240)
+                                items.RemoveRange(0, items.Count - 240);
+                            break;
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteError("Restore Station KLine Data", e, file);
+                    File.Delete(file);
+                    ZeroTrace.WriteError("Restore station k_line data to be exception,delete it.", e, file);
                 }
             }
             ZeroApplication.ZeroNetEvent += new StationCounter().SystemMonitor_StationEvent;
@@ -100,8 +101,7 @@ namespace ZeroNet.Http.Route
             if (StationCountItems.TryGetValue(config.Name, out var status))
                 info.Status = status;
             var json = JsonConvert.SerializeObject(info);
-
-            WebSocketNotify.Publish("config", config.StationName, json);
+            WebSocketNotify.Publish("config", config.Name, json);
         }
         private void StationEvent(ZeroNetEventArgument e)
         {
@@ -112,9 +112,10 @@ namespace ZeroNet.Http.Route
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationClosing:
+                case ZeroNetEventType.CenterStationStop:
                 case ZeroNetEventType.CenterStationInstall:
-                case ZeroNetEventType.CenterStationUpdate:
                 case ZeroNetEventType.CenterStationRemove:
+                case ZeroNetEventType.CenterStationUpdate:
                     PublishConfig(e.EventConfig);
                     return;
                 case ZeroNetEventType.AppStop:
@@ -139,10 +140,10 @@ namespace ZeroNet.Http.Route
                     File.WriteAllText(Path.Combine(ZeroApplication.Config.DataFolder, "kline_station.json"),
                         JsonConvert.SerializeObject(KLines));
                     return;
-                case ZeroNetEventType.CenterStationState:
-                    if (e.EventConfig == null || e.Context == null)
+                case ZeroNetEventType.CenterStationTrends:
+                    if (e.Context == null)
                         return;
-                    Collect(e.EventConfig, e.Context);
+                    Collect(e.Name, e.Context);
                     return;
             }
         }
@@ -165,29 +166,32 @@ namespace ZeroNet.Http.Route
         ///     执行命令
         /// </summary>
         /// <returns></returns>
-        private void Collect(StationConfig station, string json)
+        private void Collect(string name, string json)
         {
             var scope = OnceScope.TryCreateScope(minuteLine, 100);
             if (scope == null)
                 return;//系统太忙，跳过处理
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
             using (scope)
             {
                 var now = JsonConvert.DeserializeObject<StationCountItem>(json);
-                if (!StationCountItems.TryGetValue(station.StationName, out var item))
+                now.Station = name;
+                if (!StationCountItems.TryGetValue(now.Station, out var item))
                 {
                     now.Count = 1;
-                    StationCountItems.Add(station.StationName, now);
+                    StationCountItems.Add(now.Station, now);
                     return;
                 }
+                item.State = config.State;
+                item.CheckValue(now);
 
-                item.CheckValue(station, now);
-
-                WebSocketNotify.Publish("status", station.StationName, JsonConvert.SerializeObject(item));
-                long value = station.StationType == ZeroStationType.Api ||
-                             station.StationType == ZeroStationType.Vote
+                WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
+                long value = config.StationType == ZeroStationType.Api ||
+                             config.StationType == ZeroStationType.Vote
                     ? item.LastTps
                     : item.LastQps;
-                if (minuteLine.TryGetValue(station.StationName, out var kLine))
+                if (minuteLine.TryGetValue(now.Station, out var kLine))
                 {
                     if (kLine.Count == 0)
                     {
@@ -211,7 +215,7 @@ namespace ZeroNet.Http.Route
                 }
                 else
                 {
-                    minuteLine.Add(station.StationName, kLine = new KLine
+                    minuteLine.Add(now.Station, kLine = new KLine
                     {
                         Time = GetTime(BaseLine),
                         Count = 1,
@@ -222,7 +226,7 @@ namespace ZeroNet.Http.Route
                         Min = value,
                         Avg = value
                     });
-                    KLines.Add(station.StationName, new List<KLine> { kLine });
+                    KLines.Add(now.Station, new List<KLine> { kLine });
                 }
             }
 

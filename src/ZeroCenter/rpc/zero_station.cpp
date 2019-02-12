@@ -392,7 +392,7 @@ namespace agebull
 			if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 			{
 				config_->error("on_response", "service key error");
-				send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
+				send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false, true);
 				return -3;
 			}
 			if (list[1].tag() == zero_def::frame::extend_end)
@@ -439,26 +439,26 @@ namespace agebull
 			}
 			if (description.command() < zero_def::command::none)
 			{
-				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false,true);
 				return -2;
 			}
 			var frame_size = description.frame_size();
 			var descr_size = description.size();
 			if ((frame_size + 1) > descr_size || (frame_size + 2) != list_size)
 			{
-				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false, true);
 				return -2;
 			}
 			if (!local)
 			{
 				if (description[description.frame_size() + 1] != zero_def::frame::service_key)
 				{
-					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
+					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false, true);
 					return -3;
 				}
 				if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 				{
-					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false);
+					send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false, true);
 					return -3;
 				}
 			}
@@ -486,7 +486,7 @@ namespace agebull
 			switch (cmd)
 			{
 			case zero_def::command::ping:
-				send_request_status(socket, *list[0], zero_def::status::ok, false);
+				send_request_status(socket, *list[0], zero_def::status::ok, false, false);
 				return true;
 			case zero_def::command::plan:
 				if (station_type_ == zero_def::station_type::plan)
@@ -538,7 +538,7 @@ namespace agebull
 				}
 			}
 			descirpt.tag(zero_def::frame::result_end);
-			send_request_result(socket, ls, false);
+			send_request_result(socket, ls, false, false);
 		}
 
 		/**
@@ -551,7 +551,7 @@ namespace agebull
 			list[1].append_frame(zero_def::frame::station_id);
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
-				send_request_status(socket, *list[0], zero_def::status::send_error, true);
+				send_request_status(socket, *list[0], zero_def::status::send_error, true, true);
 				return;
 			}
 
@@ -559,11 +559,11 @@ namespace agebull
 			if (socket_ex::recv(plan_socket_inproc_, result) == zmq_socket_state::succeed)
 			{
 				result.insert(result.begin(), list[0]);
-				send_request_result(socket, result, true);
+				send_request_result(socket, result, true, true);
 			}
 			else
 			{
-				send_request_status(socket, *list[0], zero_def::status::recv_error, true);
+				send_request_status(socket, *list[0], zero_def::status::recv_error, true, true);
 			}
 		}
 
@@ -605,6 +605,7 @@ namespace agebull
 		*/
 		void zero_station::proxy_end(vector<shared_char>& list)
 		{
+			config_->request_out++;
 			if (socket_ex::send(proxy_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
 				config_->error("send to proxy dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
@@ -620,6 +621,7 @@ namespace agebull
 		*/
 		void zero_station::plan_end(vector<shared_char>& list)
 		{
+			config_->request_out++;
 			shared_char& description = list[1];
 			list.emplace_back(station_name_);
 			description.append_frame(zero_def::frame::station_id);
@@ -642,7 +644,7 @@ namespace agebull
 			if (zero_def::station_type::is_sys_station(config_->station_type) || !config_->is_state(station_state::run))
 				return false;
 			config_->set_state(station_state::pause);
-			zero_event(zero_net_event::event_station_pause, "station", config_->station_name.c_str(), nullptr);
+			station_event(zero_net_event::event_station_pause,config_->station_name.c_str(), nullptr);
 			return true;
 		}
 
@@ -654,7 +656,7 @@ namespace agebull
 			if (zero_def::station_type::is_sys_station(config_->station_type) || !config_->is_state(station_state::pause))
 				return false;
 			config_->set_state(station_state::run);
-			zero_event(zero_net_event::event_station_resume, "station", config_->station_name.c_str(), nullptr);
+			station_event(zero_net_event::event_station_resume, config_->station_name.c_str(), nullptr);
 			return true;
 		}
 
@@ -677,7 +679,7 @@ namespace agebull
 			}
 			config_->log("close");
 			config_->runtime_state(station_state::closing);
-			zero_event(zero_net_event::event_station_closing, "station", config_->station_name.c_str(), nullptr);
+			station_event(zero_net_event::event_station_closing, config_->station_name.c_str(), nullptr);
 			while (waiting && config_->is_state(station_state::closing))
 				THREAD_SLEEP(50);
 			return true;

@@ -18,7 +18,6 @@ namespace ZFrameTest
             Name = "HisSummary";
             StationName = "HisSummary";
             IsRealModel = true;
-            Subscribe = "";
         }
 
         /// <inheritdoc />

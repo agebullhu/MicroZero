@@ -1,6 +1,3 @@
-using System.Text;
-using Gboxt.Common.DataModel;
-
 namespace Agebull.ZeroNet.Core
 {
     /// <summary>
@@ -51,73 +48,6 @@ namespace Agebull.ZeroNet.Core
         public static string GetWorkerAddress(string station, int port)
         {
             return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-        }
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public static string CreateRealName(bool isService, params string[] ranges)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(UseIpc ? '-' : '+');
-            sb.Append(isService ? "<" : ">");
-            sb.Append(ZeroApplication.Config.ServiceName);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.StationName);
-            foreach (var range in ranges)
-            {
-                if (range == null)
-                    continue;
-                sb.Append("-");
-                sb.Append(range);
-            }
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString();
-        }
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <returns></returns>
-        public static byte[] CreateIdentity(bool isService = false)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(UseIpc ? '-' : '+');
-            sb.Append(isService ? "<" : ">");
-            sb.Append(ZeroApplication.Config.ServiceName);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.StationName);
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString().ToZeroBytes();
-        }
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public static byte[] CreateIdentity(bool isService, params string[] ranges)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(UseIpc ? '-' : '+');
-            sb.Append(isService ? "<" : ">");
-            sb.Append(ZeroApplication.Config.ServiceName);
-            sb.Append("-");
-            sb.Append(ZeroApplication.Config.StationName);
-            foreach (var range in ranges)
-            {
-                if (range == null)
-                    continue;
-                sb.Append("-");
-                sb.Append(range);
-            }
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString().ToZeroBytes();
         }
     }
 }

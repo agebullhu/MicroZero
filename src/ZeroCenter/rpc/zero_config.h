@@ -30,7 +30,7 @@ namespace agebull
 			/**
 			* \brief 上次心跳的时间
 			*/
-			time_t pre_time;
+			boost::posix_time::ptime pre_time;
 
 			/**
 			* \brief 健康等级（5级 5.2 | 4.4 | 3.8 | 2.16 | 1.32 | 0.64 | -1.> 64）
@@ -46,9 +46,9 @@ namespace agebull
 			 * \brief 构造
 			 */
 			worker()
-				: pre_time(time(nullptr))
-				  , level(5)
-				  , state(0)
+				: pre_time(boost::posix_time::microsec_clock::local_time())
+				, level(5)
+				, state(0)
 			{
 				identity[0] = 0;
 			}
@@ -58,7 +58,7 @@ namespace agebull
 			*/
 			void active()
 			{
-				pre_time = time(nullptr);
+				pre_time = boost::posix_time::microsec_clock::local_time();
 				level = 5;
 				state = 1;
 			}
@@ -250,10 +250,7 @@ namespace agebull
 			/**
 			* \brief 心跳
 			*/
-			void worker_heartbeat(const char* identity)
-			{
-				worker_ready(identity);
-			}
+			void worker_heartbeat(const char* identity);
 
 			/**
 			* \brief 心跳

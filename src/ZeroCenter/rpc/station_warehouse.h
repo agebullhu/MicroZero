@@ -1,5 +1,5 @@
 #pragma once
-#ifndef  _AGEBULL_STATION_WAREHOUSE_H_
+#ifndef _AGEBULL_STATION_WAREHOUSE_H_
 #define _AGEBULL_STATION_WAREHOUSE_H_
 #include "zero_config.h"
 namespace agebull
@@ -34,7 +34,7 @@ namespace agebull
 			/**
 			* \brief 实例集合
 			*/
-			static map<string, zero_station*> examples;
+			static map<string, zero_station*> examples_;
 
 		public:
 			/**
@@ -59,7 +59,7 @@ namespace agebull
 			/**
 			* \brief 恢复站点
 			*/
-			static bool restore(shared_ptr<zero_config>& value);
+			static bool restore(shared_ptr<zero_config>& config);
 
 			/**
 			* \brief 保存配置
@@ -95,11 +95,11 @@ namespace agebull
 			/**
 			* \brief 加入站点
 			*/
-			static bool join(zero_station* station_name);
+			static bool join(zero_station* station);
 			/**
 			* \brief 加入站点
 			*/
-			static bool left(zero_station* station_name);
+			static bool left(zero_station* station);
 			/**
 			* \brief 设置关闭
 			*/
@@ -108,7 +108,7 @@ namespace agebull
 			/**
 			* \brief 遍历配置
 			*/
-			static void foreach_configs(std::function<void(shared_ptr<zero_config>&)> look);
+			static void foreach_configs(std::function<bool(shared_ptr<zero_config>&)> look);
 
 			/**
 			* \brief 取机器信息
@@ -128,12 +128,12 @@ namespace agebull
 			/**
 			* \brief 安装一个站点
 			*/
-			static bool install(const char* json_str);
+			static int install(const char* json_str);
 
 			/**
 			* \brief 安装站点
 			*/
-			static bool install(const char* station_name, const char* type_name, const char* short_name, const char* desc);
+			static int install(char* station_name, const char* type_name, const char* short_name, const char* desc);
 			/**
 			* \brief 初始化
 			*/
@@ -158,7 +158,7 @@ namespace agebull
 			/**
 			* \brief 安装站点
 			*/
-			static bool install(const char* station_name, int type, const char* short_name, const char* desc, bool is_base)
+			static int install(const char* station_name, int type, const char* short_name, const char* desc, bool is_base)
 			{
 				shared_ptr<zero_config> config = make_shared<zero_config>();
 				config->station_type = type;
@@ -166,21 +166,20 @@ namespace agebull
 				config->short_name = short_name;
 				config->station_description = desc;
 				config->is_base = is_base;
-				return install(config);
+				int state = check_station_name(config);
+				if (state == 0)
+					install_station(config);
+				return state;
 			}
-			/**
-			* \brief 安装一个站点
-			*/
-			static bool install(shared_ptr<zero_config>& config);
 			/**
 			* \brief 保存站点
 			*/
 			static acl::string save(shared_ptr<zero_config>& config);
-		public:
+
 			/**
 			* \brief 查找已运行站点
 			*/
-			static zero_station* instance(const string& name);
+			static zero_station* get_instance(const string& station_name);
 			/**
 			*  \brief 启动站点
 			*/
@@ -201,6 +200,15 @@ namespace agebull
 			* 心跳的响应
 			*/
 			static bool heartbeat(uchar cmd, vector<shared_char>& lines);
+		private:
+			/**
+			* \brief 检查站点名称
+			*/
+			static int check_station_name(shared_ptr<zero_config>& config);
+			/**
+			* \brief 安装一个站点
+			*/
+			static void install_station(shared_ptr<zero_config>& config);
 		};
 	}
 }

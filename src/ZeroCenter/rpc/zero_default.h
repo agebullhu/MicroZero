@@ -70,12 +70,12 @@ namespace agebull
 			*/
 			event_station_remove,
 			/**
-			*\brief
+			*\brief 站点动态信息
 			*/
-			event_station_state,
+			event_station_trends,
 
 			/**
-			*\brief
+			*\brief 站点信息更新
 			*/
 			event_station_update,
 

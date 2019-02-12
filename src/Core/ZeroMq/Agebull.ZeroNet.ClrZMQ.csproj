@@ -21,7 +21,7 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>ClrZmq的ZeroNet专用版本</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <Version>1.3.3.6</Version>
+    <Version>1.3.4.3</Version>
     <!--<Version>1.3.0-alpha</Version>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

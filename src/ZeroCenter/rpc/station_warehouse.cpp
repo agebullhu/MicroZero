@@ -12,7 +12,7 @@ namespace agebull
 		/**
 		 * \brief 活动实例集合
 		 */
-		map<string, zero_station*> station_warehouse::examples;
+		map<string, zero_station*> station_warehouse::examples_;
 		/**
 		* \brief 配置集合
 		*/
@@ -143,12 +143,13 @@ namespace agebull
 		/**
 		* \brief 遍历配置
 		*/
-		void station_warehouse::foreach_configs(std::function<void(shared_ptr<zero_config>&)> look)
+		void station_warehouse::foreach_configs(std::function<bool(shared_ptr<zero_config>&)> look)
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto & config : configs_)
 			{
-				look(config.second);
+				if (!look(config.second))
+					break;
 			}
 		}
 
@@ -262,16 +263,19 @@ namespace agebull
 		/**
 		* \brief 安装站点
 		*/
-		bool station_warehouse::install(const char* json_str)
+		int station_warehouse::install(const char* json_str)
 		{
 			if (json_str == nullptr || json_str[0] != '{')
-				return false;
+				return -1;
 			shared_ptr<zero_config> config = make_shared<zero_config>();
 			config->read_json(json_str);
-			if (config->station_name.empty() || !config->is_general())
-				return false;
+			if (!config->is_general())
+				return -1;
 			config->is_base = false;
-			return install(config);
+			int state = check_station_name(config);
+			if (state == 0)
+				install_station(config);
+			return state;
 		}
 
 		const char* station_types_1[] = { "api", "pub", "vote", "rapi", "queue" };
@@ -283,7 +287,7 @@ namespace agebull
 		/**
 		* \brief 安装站点
 		*/
-		bool station_warehouse::install(const char* station_name, const char* type_name, const char* short_name, const char* desc)
+		int station_warehouse::install(char* station_name, const char* type_name, const char* short_name, const char* desc)
 		{
 			int type;
 			int idx = strmatchi(type_name, station_types_1);
@@ -305,44 +309,57 @@ namespace agebull
 				type = zero_def::station_type::queue;
 				break;
 			default:
-				return false;
+				return -1;
 			}
 			return install(station_name, type, short_name, desc, false);
 		}
 
 		/**
-		* \brief 安装站点
+		* \brief 检查站点名称
 		*/
-		bool station_warehouse::install(shared_ptr<zero_config>& config)
+		int station_warehouse::check_station_name(shared_ptr<zero_config>& config)
 		{
-			if (!config || config->station_name.empty())
-				return false;
-			var old = get_config(config->station_name.c_str());
-			if (old)
-				return false;
+			if (config->station_name.empty())
+				return -1;
+			acl::string station_name = config->station_name.c_str();
+			station_name.trim_space();
+			if (station_name.length() == 0)
+				return -1;
+
+			acl::string short_name = config->short_name.c_str();
+
 			bool failed = false;
-			foreach_configs([&config, &failed](shared_ptr<zero_config>& cfg)
+			foreach_configs([&short_name, &station_name, &failed](shared_ptr<zero_config>& cfg)
 			{
-				if (!failed)
+				if (station_name.compare(cfg->station_name.c_str(), false) == 0 ||
+					station_name.compare(cfg->short_name.c_str(), false) == 0 ||
+					short_name.compare(cfg->station_name.c_str(), false) == 0 ||
+					short_name.compare(cfg->short_name.c_str(), false) == 0)
 				{
-					acl::string name = config->short_name.c_str();
-					if (name.compare(cfg->station_name.c_str(), false) == 0 ||
-						name.compare(cfg->short_name.c_str(), false) == 0)
+					failed = true;
+					return false;
+				}
+				for (auto alia : cfg->alias)
+				{
+					if (station_name.compare(alia.c_str(), false) == 0 ||
+						short_name.compare(alia.c_str(), false) == 0)
 					{
 						failed = true;
-					}
-					for (auto alia : cfg->alias)
-					{
-						if (name.compare(alia.c_str(), false) == 0)
-						{
-							failed = true;
-							break;
-						}
+						return false;
 					}
 				}
+				return true;
 			});
-			if (failed)
-				return false;
+			if (!failed)
+				config->station_name = station_name.c_str();
+			return failed ? 1 : 0;
+		}
+
+		/**
+		* \brief 安装站点
+		*/
+		void station_warehouse::install_station(shared_ptr<zero_config>& config)
+		{
 			redis_live_scope redis(global_config::redis_defdb);
 			int64 port;
 			redis->incr(zero_def::redis_key::next_port, &port);
@@ -362,16 +379,15 @@ namespace agebull
 			acl::string json = save(config);
 			insert_config(config);
 			config->log("install");
-			zero_event(zero_net_event::event_station_install, "station", config->station_name.c_str(), json.c_str());
-			return true;
+			station_event(zero_net_event::event_station_install, config->station_name.c_str(), json.c_str());
 		}
 		/**
 		* \brief 站点更新
 		*/
-		bool station_warehouse::update(const char* str)
+		bool station_warehouse::update(const char* json)
 		{
 			shared_ptr<zero_config> new_cfg = make_shared<zero_config>();
-			new_cfg->read_json(str);
+			new_cfg->read_json(json);
 			var config = get_config(new_cfg->station_name.c_str());
 			if (!config || config->is_base)
 				return false;
@@ -383,8 +399,8 @@ namespace agebull
 			{
 				config->alias = new_cfg->alias;
 			}
-			acl::string json = save(config);
-			zero_event(zero_net_event::event_station_update, "station", config->station_name.c_str(), json.c_str());
+			acl::string json_new = save(config);
+			station_event(zero_net_event::event_station_update, config->station_name.c_str(), json_new.c_str());
 			config->log("update");
 			return true;
 		}
@@ -400,7 +416,7 @@ namespace agebull
 			config->log("recover");
 			config->set_state(station_state::none);
 			acl::string json = save(config);
-			zero_event(zero_net_event::event_station_install, "station", config->station_name.c_str(), json.c_str());
+			station_event(zero_net_event::event_station_install, config->station_name.c_str(), json.c_str());
 			return true;
 		}
 		/**
@@ -418,7 +434,7 @@ namespace agebull
 			redis->del(fmt.str().c_str());
 			config->log("remove");
 			var json = config->to_full_json();
-			zero_event(zero_net_event::event_station_remove, "station", config->station_name.c_str(), json.c_str());
+			station_event(zero_net_event::event_station_remove, config->station_name.c_str(), json.c_str());
 			configs_.erase(station_name);
 			return true;
 		}
@@ -432,12 +448,12 @@ namespace agebull
 				return false;
 			config->set_state(station_state::stop);
 			save(config);
-			auto station = instance(station_name);
+			auto station = get_instance(station_name);
 			if (station != nullptr)
 			{
 				station->close(true);
 			}
-			zero_event(zero_net_event::event_station_stop, "station", config->station_name.c_str(), nullptr);
+			station_event(zero_net_event::event_station_stop, config->station_name.c_str(), nullptr);
 			return true;
 		}
 
@@ -449,13 +465,13 @@ namespace agebull
 			station->config_->log("join");
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				if (examples.find(station->config_->station_name) != examples.end())
+				if (examples_.find(station->config_->station_name) != examples_.end())
 					return false;
 				station->config_->runtime_state(station_state::run);
-				examples.insert(make_pair(station->config_->station_name, station));
+				examples_.insert(make_pair(station->config_->station_name, station));
 			}
 			acl::string json = station->config_->to_full_json();
-			zero_event(zero_net_event::event_station_join, "station", station->config_->station_name.c_str(), json.c_str());
+			station_event(zero_net_event::event_station_join, station->config_->station_name.c_str(), json.c_str());
 			return true;
 		}
 
@@ -467,13 +483,13 @@ namespace agebull
 			station->config_->log("left");
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				const auto iter = examples.find(station->config_->station_name);
-				if (iter == examples.end() || iter->second != station)
+				const auto iter = examples_.find(station->config_->station_name);
+				if (iter == examples_.end() || iter->second != station)
 					return false;
 				station->config_->runtime_state(station_state::closed);
-				examples.erase(iter);
+				examples_.erase(iter);
 			}
-			zero_event(zero_net_event::event_station_left, "station", station->config_->station_name.c_str(), "");
+			station_event(zero_net_event::event_station_left, station->config_->station_name.c_str(), "");
 			return true;
 		}
 
@@ -492,7 +508,7 @@ namespace agebull
 			//	}
 			//	return zero_def::status::OK_ID;
 			//}
-			zero_station* station = instance(station_name);
+			zero_station* station = get_instance(station_name);
 			if (station == nullptr || !station->get_config().is_general())
 			{
 				return zero_def::status::not_support;
@@ -503,7 +519,7 @@ namespace agebull
 		/**
 		* 当远程调用进入时的处理
 		*/
-		char station_warehouse::pause_station(const string& arg)
+		char station_warehouse::pause_station(const string& station_name)
 		{
 			//if (arg == "*")
 			//{
@@ -515,7 +531,7 @@ namespace agebull
 			//	}
 			//	return zero_def::status::OK_ID;
 			//}
-			zero_station* station = instance(arg);
+			zero_station* station = get_instance(station_name);
 			if (station == nullptr || !station->get_config().is_general())
 			{
 				return zero_def::status::not_support;
@@ -526,21 +542,21 @@ namespace agebull
 		/**
 		* \brief 继续站点
 		*/
-		char station_warehouse::resume_station(const string& arg)
+		char station_warehouse::resume_station(const string& station_name)
 		{
-			if (arg == "*")
+			if (station_name == "*")
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
-				for (map<string, zero_station*>::value_type& station : examples)
+				for (map<string, zero_station*>::value_type& station : examples_)
 				{
 					station.second->resume();
 				}
 				return zero_def::status::ok;
 			}
-			zero_station* station = instance(arg);
+			zero_station* station = get_instance(station_name);
 			if (station != nullptr)
 				return station->resume() ? zero_def::status::ok : zero_def::status::failed;
-			shared_ptr<zero_config> config = get_config(arg.c_str());
+			shared_ptr<zero_config> config = get_config(station_name.c_str());
 			if (!config || config->is_state(station_state::stop))
 				return zero_def::status::not_find;
 			return restore(config) ? zero_def::status::ok : zero_def::status::failed;
@@ -551,7 +567,7 @@ namespace agebull
 		*/
 		char station_warehouse::start_station(string station_name)
 		{
-			zero_station* station = instance(station_name);
+			zero_station* station = get_instance(station_name);
 			if (station != nullptr)
 			{
 				return zero_def::status::runing;
@@ -564,11 +580,11 @@ namespace agebull
 		/**
 		* \brief 查找已运行站点
 		*/
-		zero_station* station_warehouse::instance(const string& name)
+		zero_station* station_warehouse::get_instance(const string& station_name)
 		{
 			boost::lock_guard<boost::mutex> guard(examples_mutex_);
-			const auto iter = examples.find(name);
-			if (iter == examples.end())
+			const auto iter = examples_.find(station_name);
+			if (iter == examples_.end())
 				return nullptr;
 			return iter->second;
 		}
@@ -579,7 +595,7 @@ namespace agebull
 		*/
 		bool station_warehouse::heartbeat(uchar cmd, vector<shared_char>& list)
 		{
-			if(list.size() <= 2)
+			if (list.size() <= 2)
 			{
 				return true;
 			}
@@ -596,16 +612,25 @@ namespace agebull
 			{
 			case zero_def::command::heart_join:
 				config->worker_join(*list[3], *list[4]);
+				worker_event(zero_net_event::event_client_join, *list[2], *list[3]);
 				return true;
 			case zero_def::command::heart_ready:
-				zero_event(zero_net_event::event_client_join, "station", *list[2], *list[3]);
 				config->worker_ready(*list[3]);
+				worker_event(zero_net_event::event_client_join, *list[2], *list[3]);
 				return true;
 			case zero_def::command::heart_pitpat:
-				config->worker_heartbeat(*list[3]);
-				return true;
+			{
+				const char* id = *list[3];
+				config->worker_ready(id);
+				foreach_configs([&id](shared_ptr<zero_config>& cfg)
+				{
+					cfg->worker_heartbeat(id);
+					return true;
+				});
+			}
+			return true;
 			case zero_def::command::heart_left:
-				zero_event(zero_net_event::event_client_left, "station", *list[2], *list[3]);
+				worker_event(zero_net_event::event_client_left, *list[2], *list[3]);
 				config->worker_left(*list[3]);
 				return true;
 			default:
@@ -622,6 +647,7 @@ namespace agebull
 			{
 				boost::lock_guard<boost::mutex> guard(config->mutex);
 				config->runtime_state(station_state::destroy);
+				return true;
 			});
 			save_configs();
 		}

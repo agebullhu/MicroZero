@@ -13,12 +13,12 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     配置状态
         /// </summary>
-        public ZeroCenterState ConfigState => ZeroCenterState.Run;
+        public StationStateType ConfigState => StationStateType.Run;
 
         /// <summary>
         /// 名称
         /// </summary>
-        string IZeroObject.StationName => "___";
+        string IZeroObject.StationName => "_SocketPool_";
 
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 系统启动时调用
         /// </summary>
-        public bool OnZeroStart()
+        public bool Start()
         {
             foreach (var pool in Pools.Values)
             {
@@ -76,13 +76,29 @@ namespace Agebull.ZeroNet.Core
         }
 
         /// <summary>
-        /// 系统关闭时调用
+        /// 系统启动时调用
         /// </summary>
-        public bool OnZeroEnd()
+        public bool Close()
         {
             Dispose();
             ZeroApplication.OnObjectClose(this);
             return true;
+        }
+
+        /// <summary>
+        /// 系统启动时调用
+        /// </summary>
+        bool IZeroObject.OnZeroStart()
+        {
+            return Start();
+        }
+
+        /// <summary>
+        /// 系统关闭时调用
+        /// </summary>
+        bool IZeroObject.OnZeroEnd()
+        {
+            return Close();
         }
 
         /// <summary>

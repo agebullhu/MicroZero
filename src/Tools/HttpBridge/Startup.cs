@@ -18,7 +18,7 @@ namespace ZeroNet.Http.Gateway
             Configuration = configuration;
             ZeroApplication.CheckOption();
             RouteOption.ConfigFileName = Path.Combine(ZeroApplication.Config.ConfigFolder, "route_config.json");
-            Console.WriteLine(RouteOption.ConfigFileName);
+            ZeroTrace.SystemLog("HttpGateway", RouteOption.ConfigFileName);
             RouteOption.CheckOption();
         }
 

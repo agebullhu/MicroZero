@@ -48,7 +48,7 @@ namespace agebull
 			trace(1, list, nullptr);
 			if (config_->get_state() == station_state::pause)
 			{
-				send_request_status(socket, *list[0], zero_def::status::pause, true);
+				send_request_status(socket, *list[0], zero_def::status::pause, true, true);
 				return;
 			}
 			shared_char caller = list[0];
@@ -84,11 +84,11 @@ namespace agebull
 			list.insert(list.begin(), router);
 			if (send_response(list, false) != zmq_socket_state::succeed)
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker);
+				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);
 			}
 			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::runing);
+				send_request_status_by_trace(socket, list, description, zero_def::status::runing, false);
 			}
 		}
 		/**
@@ -123,11 +123,11 @@ namespace agebull
 				list[1].tag(tag);
 				if (list[0][0] == zero_def::name::head::inproc)
 				{
-					send_request_result(request_socket_inproc_, list, true);
+					send_request_result(request_socket_inproc_, list, true, true);
 				}
 				else
 				{
-					send_request_result(request_scoket_tcp_, list, true);
+					send_request_result(request_scoket_tcp_, list, true, true);
 				}
 			}
 		}

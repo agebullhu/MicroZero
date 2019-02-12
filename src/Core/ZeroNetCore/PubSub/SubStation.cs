@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Threading;
 using Agebull.Common.Ioc;
@@ -24,11 +25,29 @@ namespace Agebull.ZeroNet.PubSub
         {
             //Hearter = SystemManager.Instance;
         }
+        /// <summary>
+        /// 订阅主题
+        /// </summary>
+        public string Subscribe
+        {
+            get => Subscribes.FirstOrDefault();
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    return;
+                if (Subscribes.Count == 0)
+                    Subscribes.Add(value);
+                else
+                    Subscribes[0] = value;
+            }
+        }
+
 
         /// <summary>
         /// 订阅主题
         /// </summary>
-        public string Subscribe { get; set; } = "";
+        public readonly List<string> Subscribes = new List<string>();
+
 
         /// <summary>
         /// 是否实时数据(如为真,则不保存未处理数据)
@@ -88,25 +107,24 @@ namespace Agebull.ZeroNet.PubSub
         //private string inporcName;
 
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected override bool RunInner(/*CancellationToken token*/)
+        protected override bool Loop(/*CancellationToken token*/)
         {
-            ZeroTrace.SystemLog(StationName, RealName);
-            Hearter?.HeartReady(StationName, RealName);
+            Hearter.HeartReady(StationName, RealName);
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribe));
+                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribes));
                 RealState = StationState.Run;
                 while (CanLoop)
                 {
                     if (!pool.Poll())
                     {
-                        Idle();
+                        OnLoopIdle();
                     }
-                    else if (pool.CheckIn(0, out var message))
+                    else if (CanLoop && pool.CheckIn(0, out var message))
                     {
                         if (Unpack(message, out var item))
                         {
@@ -117,8 +135,6 @@ namespace Agebull.ZeroNet.PubSub
                     }
                 }
             }
-            Hearter?.HeartLeft(StationName, RealName);
-            ZeroTrace.SystemLog(StationName, RealName);
             return true;
         }
 
@@ -162,7 +178,7 @@ namespace Agebull.ZeroNet.PubSub
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
             //inporcName = $"inproc://{StationName}_{RandomOperate.Generate(8)}.pub";
             //Task.Factory.StartNew(HandleTask);

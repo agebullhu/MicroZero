@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.ApiDocuments;
-using Agebull.Common.DataModel;
 using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using Gboxt.Common.DataModel;
 using ZeroMQ;
 
@@ -27,50 +25,22 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         protected ApiStationBase(ZeroStationType type, bool isService) : base(type, isService)
         {
-            switch (type)
-            {
-                case ZeroStationType.Api:
-                    _typeName = "api";
-                    break;
-                case ZeroStationType.Vote:
-                    _typeName = "vote";
-                    break;
-                case ZeroStationType.RouteApi:
-                    _typeName = "rapi";
-                    break;
-                case ZeroStationType.Queue:
-                    _typeName = "queue";
-                    break;
-                default:
-                    _typeName = "err";
-                    break;
-            }
+            _typeName = StationConfig.TypeName(type);
         }
 
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Initialize()
-        {
-            if (Name == null)
-                Name = StationName;
-        }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        protected sealed override bool OnNofindConfig()
+        protected sealed override StationConfig OnNofindConfig()
         {
             if (!SystemManager.Instance.TryInstall(StationName, _typeName))
-                return false;
-            Config = SystemManager.Instance.LoadConfig(StationName);
-            if (Config == null)
-            {
-                return false;
-            }
-            Config.State = ZeroCenterState.Run;
+                return null;
+            var config = SystemManager.Instance.LoadConfig(StationName);
+            if (config == null)
+                return null;
+            config.State = ZeroCenterState.Run;
             ZeroTrace.SystemLog(StationName, "successfully");
-            return true;
+            return config;
         }
 
         /// <summary>
@@ -113,66 +83,88 @@ namespace Agebull.ZeroNet.ZeroApi
 
 
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(/*CancellationToken token*/)
+        protected sealed override bool Loop(/*CancellationToken token*/)
         {
             WaitCount = 0;
             var option = GetApiOption();
+            int max = 1;
             switch (option.SpeedLimitModel)
             {
                 case SpeedLimitType.ThreadCount:
-                    int max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
+                    max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
                     if (max < 1)
                         max = 1;
                     _processSemaphore = new SemaphoreSlim(0, max);
-                    for (int idx = 0; idx < max; idx++)
-                        Task.Factory.StartNew(RunThread);
-
-                    for (int idx = 0; idx < max; idx++)
-                        _processSemaphore.Wait();
+                    ZeroTrace.SystemLog(StationName, "ThreadCount", max);
+                    for (int idx = 1; idx <= max; idx++)
+                        new Thread(RunThread)
+                        {
+                            IsBackground = true,
+                            Priority=ThreadPriority.Highest
+                        }.Start(idx);
                     break;
                 case SpeedLimitType.WaitCount:
-                    RunWait();
+                    _processSemaphore = new SemaphoreSlim(0, max);
+                    ZeroTrace.SystemLog(StationName, "WaitCount", ZeroApplication.Config.MaxWait);
+                    new Thread(RunWaitCount)
+                    {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Highest
+                    }.Start();
                     break;
                 default:
-                    RunSignle();
+                    _processSemaphore = new SemaphoreSlim(0, max);
+                    ZeroTrace.SystemLog(StationName, "Single");
+                    new Thread(RunSingle)
+                    {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Highest
+                    }.Start();
                     break;
             }
+            //第一次全部运行
+            for (int idx = 0; idx < max; idx++)
+                _processSemaphore.Wait();
+            RealState = StationState.Run;
+            //第二次全部关闭
+            for (int idx = 0; idx < max; idx++)
+                _processSemaphore.Wait();
             return true;
         }
 
-        /// <summary>
-        /// 具体执行
-        /// </summary>
-        private void RunWait()
-        {
-            RunSignle(RealName, Identity, true);
-        }
         private SemaphoreSlim _processSemaphore;
 
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
-        private void RunThread()
+        private void RunSingle(object arg)
         {
-            var realName = ZeroIdentityHelper.CreateRealName(IsService, Config.StationName);
-            RunSignle(realName, realName.ToAsciiBytes(), false);
+            DoPoll(RealName, Identity, false);
+        }
+        /// <summary>
+        /// 轮询
+        /// </summary>
+        private void RunWaitCount(object arg)
+        {
+            DoPoll(RealName, Identity, true);
+        }
+        /// <summary>
+        /// 轮询
+        /// </summary>
+        private void RunThread(object arg)
+        {
+            var idx = (int) arg;
+            var realName = $"{RealName}-{idx:D2}";
+            DoPoll(realName, realName.ToAsciiBytes(), false);
         }
 
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
-        private void RunSignle()
-        {
-            RunSignle(RealName, Identity, false);
-        }
-
-        /// <summary>
-        /// 具体执行
-        /// </summary>
-        private void RunSignle(string realName, byte[] identity, bool checkWait)
+        private void DoPoll(string realName, byte[] identity, bool checkWait)
         {
             ApiExecuter executer = checkWait
                 ? null
@@ -180,39 +172,30 @@ namespace Agebull.ZeroNet.ZeroApi
                 {
                     Station = this
                 };
+            ZeroTrace.SystemLog(StationName, "Task", "start", realName);
             using (var pool = Prepare(identity, out var socket))
             {
-                HeartManager hearter;
-                if (pool.Sockets[0].SocketType == ZSocketType.DEALER)
-                {
-                    hearter = new HeartManager
-                    {
-                        Socket = pool.Sockets[0],
-                        IsInner = true
-                    };
-                }
-                else
-                {
-                    hearter = new HeartManager
-                    {
-                        Socket = socket,
-                        IsInner = true
-                    };
-                }
-                hearter.HeartJoin(StationName, realName);
-                hearter.HeartReady(StationName, realName);
-                ZeroTrace.SystemLog(StationName, "run", Config.WorkerCallAddress, Name, realName);
-                RealState = StationState.Run;
+                Hearter.HeartReady(StationName, realName);
+                _processSemaphore?.Release();
+                //int cnt = 0;
                 while (CanLoop)
                 {
                     try
                     {
                         if (!pool.Poll())
                         {
-                            Idle();
-                            hearter.Heartbeat(StationName, realName);
+                            //cnt += pool.TimeoutMs;
+                            OnLoopIdle();
+                            //if (CanLoop && cnt >= 2000)
+                            //{
+                            //    hearter.Heartbeat(StationName, realName);
+                            //    cnt = 0;
+                            //}
                             continue;
                         }
+
+                        if (!CanLoop)
+                            break;
                         if (pool.CheckIn(1, out var message))
                         {
                             message.Dispose();
@@ -228,7 +211,6 @@ namespace Agebull.ZeroNet.ZeroApi
                             continue;
                         }
                         Interlocked.Increment(ref WaitCount);
-                        //hearter.Heartbeat(StationName, realName);
                         if (checkWait)
                             Execute(socket, item);
                         else
@@ -239,9 +221,9 @@ namespace Agebull.ZeroNet.ZeroApi
                         LogRecorder.Exception(e);
                     }
                 }
-                hearter.HeartLeft(StationName, realName);
+                Hearter.HeartLeft(StationName, realName);
             }
-            ZeroTrace.SystemLog(StationName, "end", Config.WorkerCallAddress, Name, realName);
+            ZeroTrace.SystemLog(StationName, "Task", "end", realName);
             _processSemaphore?.Release();
         }
         #endregion
@@ -259,7 +241,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Task.Factory.StartNew(() =>
                 {
-                    var socketT = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZeroIdentityHelper.CreateIdentity(false, StationName));
+                    var socketT = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName));
                     Execute(new ApiExecuter
                     {
                         Station = this
@@ -307,9 +289,11 @@ namespace Agebull.ZeroNet.ZeroApi
             }
 
             ZeroTrace.SystemLog(StationName,
-                info != null
-                    ? $"{name}({info.Controller}.{info.Name}) is registed."
-                    : $"{name} is registed");
+                info == null
+                    ? name
+                    : info.Controller == null
+                    ? $"{name}({info.Name})"
+                    : $"{name}({info.Controller}.{info.Name})");
         }
 
         /// <summary>

@@ -1,6 +1,8 @@
 ﻿namespace ZeroMQ.Devices
 {
     using lib;
+    using System;
+
     // using lib.sys;
 
 
@@ -95,11 +97,11 @@
 			// address = IPAddress.None;
 			address = string.Empty;
 
-			// STREAM: read frames: identity, body
+            // STREAM: read frames: identity, body
 
-			// read the ip4 address from (ZFrame)frame.GetOption("Peer-Address")
+            // read the ip4 address from (ZFrame)frame.GetOption("Peer-Address")
 
-			int receiveCount = 2;
+            int receiveCount = 2;
 			do
 			{
 				var frame = ZFrame.CreateEmpty();

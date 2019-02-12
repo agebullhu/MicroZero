@@ -3,8 +3,9 @@ using System.Runtime.InteropServices;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
-{/// <summary>
-    /// 更原始封装的Pool对象
+{
+    /// <summary>
+    /// 原始封装的Pool对象
     /// </summary>
     public interface IZmqPool : IDisposable
     {
@@ -19,7 +20,7 @@ namespace ZeroMQ
         /// <summary>
         /// 超时
         /// </summary>
-        int TimeoutMs { get; set; }
+        int TimeoutMs { get; }
         /// <summary>
         /// 错误对象
         /// </summary>
@@ -60,6 +61,7 @@ namespace ZeroMQ
         /// <returns></returns>
         bool CheckOut(int index, out ZMessage message);
     }
+
     /// <summary>
     /// pool对象
     /// </summary>

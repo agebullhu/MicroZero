@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Web;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.Common.Rpc;
 using Agebull.ZeroNet.Core;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using ZeroNet.Http.Route;
 
@@ -40,11 +38,6 @@ namespace ZeroNet.Http.Gateway
         ///     Http返回
         /// </summary>
         public RouteData Data { get; set; }
-
-        /// <summary>
-        ///     缓存图
-        /// </summary>
-        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
 
         /// <summary>
         ///     安全检查器
@@ -87,11 +80,12 @@ namespace ZeroNet.Http.Gateway
             }
 
             // 1 初始化路由信息
-            if (!FindHost() || Data.RouteHost.Failed)
+            if (!FindHost())
             {
                 Data.UserState = UserOperatorStateType.NotFind;
                 Data.ZeroState = ZeroOperatorStateType.NotFind;
                 Data.ResultMessage = ApiResult.NoFindJson;
+
                 return;
             }
 
@@ -135,11 +129,16 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         private bool FindHost()
         {
-            if (!RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
+            if (!RouteOption.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
             {
                 LogRecorder.MonitorTrace($"{Data.HostName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
+            //if(Data.RouteHost.Failed)
+            //{
+            //    LogRecorder.MonitorTrace($"{Data.HostName} is failed({Data.RouteHost.Description})");
+            //    return false; //Data.RouteHost = HttpHost.DefaultHost;
+            //}
             if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
@@ -147,7 +146,10 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.MonitorTrace($"{Data.ApiName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
-            return Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public);
+            if (Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public))
+                return true; 
+            LogRecorder.MonitorTrace($"{Data.ApiName} deny access.");
+            return false;
         }
 
         /// <summary>

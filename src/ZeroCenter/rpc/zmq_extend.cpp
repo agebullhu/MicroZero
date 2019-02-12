@@ -44,7 +44,7 @@ namespace agebull
 
 				if (global_config::HEARTBEAT_IVL > 0)
 				{
-					setsockopt(socket, ZMQ_HEARTBEAT_IVL, 1);
+					setsockopt(socket, ZMQ_HEARTBEAT_IVL, global_config::HEARTBEAT_IVL);
 					setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, global_config::HEARTBEAT_TIMEOUT);
 					setsockopt(socket, ZMQ_HEARTBEAT_TTL, global_config::HEARTBEAT_TTL);
 				}
@@ -62,11 +62,11 @@ namespace agebull
 					if (identity != nullptr)
 						zmq_setsockopt(socket, ZMQ_IDENTITY, identity, strlen(identity));
 
-					if (global_config::CONNECT_TIMEOUT > 0)
+					if (global_config::CONNECT_TIMEOUT >= 0)
 						setsockopt(socket, ZMQ_CONNECT_TIMEOUT, global_config::CONNECT_TIMEOUT);
-					if (global_config::RECONNECT_IVL > 0)
+					if (global_config::RECONNECT_IVL >= 0)
 						setsockopt(socket, ZMQ_RECONNECT_IVL, global_config::RECONNECT_IVL);
-					if (global_config::RECONNECT_IVL_MAX > 0)
+					if (global_config::RECONNECT_IVL_MAX >= 0)
 						setsockopt(socket, ZMQ_RECONNECT_IVL_MAX, global_config::RECONNECT_IVL_MAX);
 				}
 				else
@@ -257,7 +257,7 @@ namespace agebull
 					case ZMQ_EVENT_CLOSED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > closed > %s", station.c_str(), str.c_str());
-						zero_event(zero_net_event::event_monitor_net_close, "monitor", *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_close,  *station, str.c_str());
 						//zmq_close(inproc);
 						//*socket = nullptr;
 						break;
@@ -278,28 +278,28 @@ namespace agebull
 					case ZMQ_EVENT_ACCEPTED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > join > %s", station.c_str(), str.c_str());
-						zero_event(zero_net_event::event_monitor_net_connected, "monitor", *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_connected,  *station, str.c_str());
 						break;
 					case ZMQ_EVENT_DISCONNECTED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > left > %s", station.c_str(), str.c_str());
-						zero_event(zero_net_event::event_monitor_net_close, "monitor", *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_close,  *station, str.c_str());
 						break;
 					case ZMQ_EVENT_ACCEPT_FAILED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > join failed > %s", station.c_str(), str.c_str());
-						zero_event(zero_net_event::event_monitor_net_failed, "monitor", *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_failed,  *station, str.c_str());
 						break;
 					case ZMQ_EVENT_CONNECTED:
 						log_msg2("[%s] : monitor > connected > %s", station.c_str(), event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_DELAYED:
 						log_msg2("[%s] : monitor > connect delayed > %s", station.c_str(), event.address);
-						zero_event(zero_net_event::event_monitor_net_failed, "monitor", *station, event.address);
+						monitor_event(zero_net_event::event_monitor_net_failed,  *station, event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_RETRIED:
 						log_msg2("[%s] : monitor > retried > %s", station.c_str(), event.address);
-						zero_event(zero_net_event::event_monitor_net_try, "monitor", *station, event.address);
+						monitor_event(zero_net_event::event_monitor_net_try,  *station, event.address);
 						break;
 					default: break;
 					}

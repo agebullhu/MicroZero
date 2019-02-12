@@ -510,11 +510,6 @@
             构造
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.Initialize">
-            <summary>
-            初始化
-            </summary>
-        </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.OnNofindConfig">
             <summary>
             初始化
@@ -583,30 +578,30 @@
             调用计数
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunInner(System.Threading.CancellationToken)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.Loop">
             <summary>
-            具体执行
+            轮询
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunWait">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSingle(System.Object)">
             <summary>
-            具体执行
+            轮询
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunThread">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunWaitCount(System.Object)">
             <summary>
-            具体执行
+            轮询
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunThread(System.Object)">
             <summary>
-            具体执行
+            轮询
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.RunSignle(System.String,System.Byte[],System.Boolean)">
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.DoPoll(System.String,System.Byte[],System.Boolean)">
             <summary>
-            具体执行
+            轮询
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiStationBase.PrepareExecute(Agebull.ZeroNet.ZeroApi.ApiCallItem)">
@@ -1176,9 +1171,14 @@
             名称
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.IZeroObject.State">
+        <member name="P:Agebull.ZeroNet.Core.IZeroObject.RealState">
             <summary>
                 运行状态
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.IZeroObject.ConfigState">
+            <summary>
+                配置状态
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.IZeroObject.OnZeroInitialize">
@@ -1204,6 +1204,16 @@
         <member name="M:Agebull.ZeroNet.Core.IZeroObject.OnZeroDestory">
             <summary>
             注销时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.IZeroObject.Start">
+            <summary>
+            开启
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.IZeroObject.Close">
+            <summary>
+            关闭
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.IZeroObject.OnStationStateChanged(Agebull.ZeroNet.Core.StationConfig)">
@@ -1377,12 +1387,17 @@
                 命令行方式管理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroApplication.ZerCenterStatus">
+        <member name="F:Agebull.ZeroNet.Core.ZeroApplication.SystemMonitor">
+            <summary>
+            中心事件监控对象
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroApplication.ZeroCenterState">
             <summary>
                 应用中心状态
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroApplication.AppState">
+        <member name="F:Agebull.ZeroNet.Core.ZeroApplication._appState">
             <summary>
                 运行状态
             </summary>
@@ -1425,11 +1440,6 @@
         <member name="P:Agebull.ZeroNet.Core.ZeroApplication.IsClosed">
             <summary>
                 已关闭
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroApplication.InRun">
-            <summary>
-                是否正在运行
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroApplication.CheckOption">
@@ -1492,7 +1502,7 @@
             站点事件发生
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.InvokeEvent(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,Agebull.ZeroNet.Core.StationConfig)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroApplication.InvokeEvent(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String,Agebull.ZeroNet.Core.StationConfig)">
             <summary>
             发出事件
             </summary>
@@ -1534,58 +1544,58 @@
             按等待数限制
             </summary>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.SystemManager">
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager">
             <summary>
             系统侦听器
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.CreateInstance">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.CreateInstance">
             <summary>
             构造
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.#ctor">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.#ctor">
             <summary>
             构造
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.GetAddress">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.GetAddress">
             <summary>
             地址错误的情况
             </summary>
             <returns></returns>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.SystemManager.Instance">
+        <member name="P:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.Instance">
             <summary>
             单例
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.PingCenter">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.PingCenter">
             <summary>
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartLeft">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.HeartLeft">
             <summary>
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartReady">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.HeartReady">
             <summary>
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.HeartJoin">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.HeartJoin">
             <summary>
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.Heartbeat">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.Heartbeat">
             <summary>
                 连接到
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.TryInstall(System.String,System.String)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.TryInstall(System.String,System.String)">
             <summary>
             尝试安装站点
             </summary>
@@ -1593,66 +1603,133 @@
             <param name="type"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.UploadDocument">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.TryStart(System.String)">
+            <summary>
+            尝试安装站点
+            </summary>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.UploadDocument">
             <summary>
                 上传文档
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.LoadDocument(System.String,Agebull.Common.ApiDocuments.StationDocument@)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.LoadDocument(System.String,Agebull.Common.ApiDocuments.StationDocument@)">
             <summary>
                 下载文档
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.LoadAllConfig">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.LoadAllConfig">
             <summary>
                 读取配置
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemManager.LoadConfig(System.String)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.SystemManager.LoadConfig(System.String)">
             <summary>
                 读取配置
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.SystemMonitor">
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.EmptyStateMachine">
             <summary>
-            系统侦听器
+            监控状态机
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.WaitMe">
-            <summary>
-            等待正常结束
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.Monitor">
-            <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.MonitorInner">
-            <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.EmptyStateMachine.Agebull#ZeroNet#Core#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
             <summary>
                 收到信息的处理
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.worker_sound_off">
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.FailedStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.FailedStateMachine.Agebull#ZeroNet#Core#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.IMonitorStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.IMonitorStateMachine.IsDisposed">
+            <summary>
+            是否已析构
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.IMonitorStateMachine.OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.MonitorStateMachineBase">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.MonitorStateMachineBase.worker_sound_off">
             <summary>
             站点心跳
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SystemMonitor.station_state(System.String,System.String)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.MonitorStateMachineBase.station_trends(System.String,System.String)">
             <summary>
-            站点心跳
+            站点动态
             </summary>
             <param name="name"></param>
             <param name="content"></param>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.MonitorStateMachineBase.IsDisposed">
+            <summary>
+            是否已析构
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.RuningStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.StateMachine.RuningStateMachine.Agebull#ZeroNet#Core#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor.WaitMe">
+            <summary>
+            等待正常结束
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor.Monitor">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor.StateMachine">
+            <summary>
+            状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor.OnApplicationStateChanged">
+            <summary>
+            状态变更同步状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroManagemant.ZeroEventMonitor.MonitorInner">
+            <summary>
+                进入系统侦听
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroWorkModel">
             <summary>
@@ -1712,9 +1789,9 @@
                 本地站点配置
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroAppConfig.Documents">
+        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.CanRaiseEvent">
             <summary>
-                发现的文档集合
+              是否需要发出事件
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.StationIsolate">
@@ -1752,21 +1829,6 @@
                 ZeroCenter监测端口号
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.BridgeResultAddress">
-            <summary>
-                ZeroCenter桥接地址
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.BridgeCallAddress">
-            <summary>
-                ZeroCenter桥接地址
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.BridgeLocalAddress">
-            <summary>
-                ZeroCenter桥接地址
-            </summary>
-        </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.ZeroManagePort">
             <summary>
                 ZeroCenter管理端口号
@@ -1787,11 +1849,6 @@
                 本地配置文件夹
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.BinPath">
-            <summary>
-                程序所在地址
-            </summary>
-        </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.RootPath">
             <summary>
                 应用所在的顶级目录
@@ -1802,19 +1859,14 @@
                 插件地址,如为空则与运行目录相同
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.BinPath">
+            <summary>
+                程序所在地址
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.LocalIpAddress">
             <summary>
                 本机IP地址
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.RealName">
-            <summary>
-                实例名称
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.Identity">
-            <summary>
-                Zmq标识
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.ZeroMonitorAddress">
@@ -1830,6 +1882,11 @@
         <member name="P:Agebull.ZeroNet.Core.ZeroAppConfig.IsLinux">
             <summary>
                 是否在Linux黑环境下
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroAppConfig.Documents">
+            <summary>
+                发现的文档集合
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroAppConfig.Check(Agebull.ZeroNet.Core.StationConfig,Agebull.ZeroNet.Core.StationConfig)">
@@ -1892,6 +1949,12 @@
             <param name="stationConfig"></param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroAppConfig.ClearConfig">
+            <summary>
+                清除配置
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroAppConfig.UpdateConfig(System.String,System.String,Agebull.ZeroNet.Core.StationConfig@)">
             <summary>
                 试着取配置
@@ -1906,17 +1969,23 @@
             站点事件参数
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroNetEventArgument.#ctor(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,Agebull.ZeroNet.Core.StationConfig)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroNetEventArgument.#ctor(Agebull.ZeroNet.Core.ZeroNetEventType,System.String,System.String,Agebull.ZeroNet.Core.StationConfig)">
             <summary>
             构造
             </summary>
             <param name="centerEvent"></param>
+            <param name="name"></param>
             <param name="context"></param>
             <param name="config"></param>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroNetEventArgument.Event">
             <summary>
             站点名称
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroNetEventArgument.Name">
+            <summary>
+            内容
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroNetEventArgument.Context">
@@ -2052,29 +2121,6 @@
             </summary>
             <param name="station"></param>
             <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateRealName(System.Boolean,System.String[])">
-            <summary>
-            格式化身份名称
-            </summary>
-            <param name="isService"></param>
-            <param name="ranges"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateIdentity(System.Boolean)">
-            <summary>
-            格式化身份名称
-            </summary>
-            <param name="isService"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroIdentityHelper.CreateIdentity(System.Boolean,System.String[])">
-            <summary>
-            格式化身份名称
-            </summary>
-            <param name="isService"></param>
-            <param name="ranges"></param>
             <returns></returns>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroResultData">
@@ -2272,6 +2318,119 @@
             消息
             </summary>
         </member>
+        <member name="T:Agebull.ZeroNet.Core.StationConfig">
+            <summary>
+                站点配置
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationName">
+            <summary>
+                站点名称
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsBaseStation">
+            <summary>
+                是否基础站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationType">
+            <summary>
+                站点类型
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsSystem">
+            <summary>
+                是否系统支撑站点
+            </summary>
+            <remarks></remarks>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsApi">
+            <summary>
+                是否接口站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsNotify">
+            <summary>
+                是否广播站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsGeneral">
+            <summary>
+                是否普通站点（区别于基础站点）
+            </summary>
+            <remarks></remarks>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.ShortName">
+            <summary>
+                站点简称
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationAlias">
+            <summary>
+                站点别名
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.Type">
+            <summary>
+                站点类型
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.RequestPort">
+            <summary>
+                入站端口
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.RequestAddress">
+            <summary>
+                入站地址
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerCallPort">
+            <summary>
+                入站端口
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerResultPort">
+            <summary>
+                入站端口
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerResultAddress">
+            <summary>
+                出站地址
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerCallAddress">
+            <summary>
+                出站地址
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.SubAddress">
+            <summary>
+                出站地址
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.StationConfig.State">
+            <summary>
+                运行状态
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.StationConfig.ChangedState(Agebull.ZeroNet.Core.ZeroCenterState)">
+            <summary>
+                运行状态
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.StationConfig.Copy(Agebull.ZeroNet.Core.StationConfig)">
+            <summary>
+                复制
+            </summary>
+            <param name="src"></param>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.StationConfig.TypeName(Agebull.ZeroNet.Core.ZeroStationType)">
+            <summary>
+            构造
+            </summary>
+        </member>
         <member name="T:Agebull.ZeroNet.Core.StationState">
             <summary>
             站点状态
@@ -2284,7 +2443,7 @@
         </member>
         <member name="F:Agebull.ZeroNet.Core.StationState.ConfigError">
             <summary>
-            需要重启
+            配置错误
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.StationState.Failed">
@@ -2304,7 +2463,7 @@
         </member>
         <member name="F:Agebull.ZeroNet.Core.StationState.BeginRun">
             <summary>
-            正在运行
+            开始运行
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.StationState.Run">
@@ -2337,12 +2496,67 @@
             已销毁，析构已调用
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.Core.StationState.Stop">
+            <summary>
+            已被关停
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationState.Remove">
+            <summary>
+            已被移除
+            </summary>
+        </member>
         <member name="M:Agebull.ZeroNet.Core.StationState.Text(System.Int32)">
             <summary>
             返回状态文本
             </summary>
             <param name="state"></param>
             <returns></returns>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.StationStateType">
+            <summary>
+            站点状态
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.None">
+            <summary>
+            无，刚构造
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.ConfigError">
+            <summary>
+            配置错误
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Failed">
+            <summary>
+            错误状态
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Initialized">
+            <summary>
+            已初始化
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Run">
+            <summary>
+            正在运行
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Closed">
+            <summary>
+            已关闭
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Stop">
+            <summary>
+            已被关停
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.StationStateType.Remove">
+            <summary>
+            已被移除
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroByteCommand">
             <summary>
@@ -2424,9 +2638,9 @@
              无，刚构造
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroCenterState.ReStart">
+        <member name="F:Agebull.ZeroNet.Core.ZeroCenterState.Initialize">
             <summary>
-             重新启动
+             初始化
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroCenterState.Start">
@@ -2472,6 +2686,11 @@
         <member name="F:Agebull.ZeroNet.Core.ZeroCenterState.Remove">
             <summary>
              删除
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroCenterState.NoFind">
+            <summary>
+             找不到
             </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroFrameType">
@@ -2744,9 +2963,9 @@
             
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroNetEventType.CenterStationState">
+        <member name="F:Agebull.ZeroNet.Core.ZeroNetEventType.CenterStationTrends">
             <summary>
-            
+            站点动态
             </summary>
         </member>
         <member name="F:Agebull.ZeroNet.Core.ZeroNetEventType.CenterStationUpdate">
@@ -3435,6 +3654,56 @@
             调用的参数
             </summary>
         </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroStationType">
+            <summary>
+            站点类型
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Dispatcher">
+            <summary>
+            调度器
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Notify">
+            <summary>
+            广播
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Api">
+            <summary>
+            API
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Vote">
+            <summary>
+            投票器
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.RouteApi">
+            <summary>
+            定向路由API
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Queue">
+            <summary>
+            队列任务
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Trace">
+            <summary>
+            流程跟踪
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Proxy">
+            <summary>
+            代理
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Plan">
+            <summary>
+            计划任务
+            </summary>
+        </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroStatuValue">
             <summary>
             ZeroNet状态值
@@ -3603,6 +3872,11 @@
             站点连接池
             </summary>
         </member>
+        <member name="P:Agebull.ZeroNet.Core.SocketPool.ConfigState">
+            <summary>
+                配置状态
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.Core.SocketPool.Agebull#ZeroNet#Core#IZeroObject#StationName">
             <summary>
             名称
@@ -3613,7 +3887,7 @@
             名称
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.SocketPool.Agebull#ZeroNet#Core#IZeroObject#State">
+        <member name="P:Agebull.ZeroNet.Core.SocketPool.Agebull#ZeroNet#Core#IZeroObject#RealState">
             <summary>
                 运行状态
             </summary>
@@ -3628,12 +3902,22 @@
                 要求心跳
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SocketPool.OnZeroStart">
+        <member name="M:Agebull.ZeroNet.Core.SocketPool.Start">
             <summary>
             系统启动时调用
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.SocketPool.OnZeroEnd">
+        <member name="M:Agebull.ZeroNet.Core.SocketPool.Close">
+            <summary>
+            系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.SocketPool.Agebull#ZeroNet#Core#IZeroObject#OnZeroStart">
+            <summary>
+            系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.SocketPool.Agebull#ZeroNet#Core#IZeroObject#OnZeroEnd">
             <summary>
             系统关闭时调用
             </summary>
@@ -3867,103 +4151,150 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Agebull.ZeroNet.Core.StationConfig">
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.EmptyStateMachine">
             <summary>
-                站点配置
+            监控状态机
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationName">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.EmptyStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Start">
             <summary>
-                站点名称
+                开始的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsBaseStation">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.EmptyStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#End">
             <summary>
-                是否基础站点
+                结束的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsSystem">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.EmptyStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Close">
             <summary>
-                是否接口站点
-            </summary>
-            <remarks></remarks>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsApi">
-            <summary>
-                是否接口站点
+                关闭的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.IsGeneralStation">
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.CloseStateMachine">
             <summary>
-                是否基础站点
-            </summary>
-            <remarks></remarks>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.ShortName">
-            <summary>
-                站点简称
+            监控状态机
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationAlias">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.CloseStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Start">
             <summary>
-                站点别名
+                开始的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.StationType">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.CloseStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Close">
             <summary>
-                站点类型
+                关闭的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.Type">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.CloseStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#End">
             <summary>
-                站点类型
+                结束的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.RequestPort">
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.FailedStateMachine">
             <summary>
-                入站端口
+            监控状态机
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.RequestAddress">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.FailedStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Start">
             <summary>
-                入站地址
+                开始的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerCallPort">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.FailedStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Close">
             <summary>
-                入站端口
+                关闭的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerResultPort">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.FailedStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#End">
             <summary>
-                入站端口
+                结束的处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerResultAddress">
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine">
             <summary>
-                出站地址
+            站点状态机
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.WorkerCallAddress">
+        <member name="P:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine.Station">
             <summary>
-                出站地址
+            站点
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.SubAddress">
+        <member name="P:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine.IsDisposed">
             <summary>
-                出站地址
+            是否已析构
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.StationConfig.State">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine.Start">
             <summary>
-                运行状态
+                开始的处理
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.StationConfig.Copy(Agebull.ZeroNet.Core.StationConfig)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine.Close">
             <summary>
-                复制
+                关闭的处理
             </summary>
-            <param name="src"></param>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.IStationStateMachine.End">
+            <summary>
+                结束的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.RunStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.RunStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Start">
+            <summary>
+                开始的处理
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.RunStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Close">
+            <summary>
+                结束的处理
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.RunStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#End">
+            <summary>
+                结束的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StartStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StartStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Start">
+            <summary>
+                开始的处理
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StartStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#Close">
+            <summary>
+                关闭的处理
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StartStateMachine.Agebull#ZeroNet#Core#ZeroServices#StateMachine#IStationStateMachine#End">
+            <summary>
+                结束的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StationStateMachineBase">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StationStateMachineBase.Station">
+            <summary>
+            站点
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroServices.StateMachine.StationStateMachineBase.IsDisposed">
+            <summary>
+            是否已析构
+            </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroStation">
             <summary>
@@ -4017,17 +4348,38 @@
             站点配置
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStation._state">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.CheckConfig">
+            <summary>
+            配置检查
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnNofindConfig">
+            <summary>
+            初始化
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.Core.ZeroStation._realState">
             <summary>
                 运行状态
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroStation.State">
+        <member name="P:Agebull.ZeroNet.Core.ZeroStation.RealState">
             <summary>
                 运行状态
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStation.RunTaskCancel">
+        <member name="P:Agebull.ZeroNet.Core.ZeroStation.StateMachine">
+            <summary>
+            状态机
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroStation.ConfigState">
+            <summary>
+                配置状态
+            </summary>
+        </member>
+        <member name="P:Agebull.ZeroNet.Core.ZeroStation.RunTaskCancel">
             <summary>
             取消标记
             </summary>
@@ -4037,9 +4389,9 @@
             能不能循环处理
             </summary>
         </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroStation.IsRun">
+        <member name="F:Agebull.ZeroNet.Core.ZeroStation._waitToken">
             <summary>
-            是否为运行状态
+            应用程序等待结果的信号量对象
             </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroStation.Initialize">
@@ -4047,32 +4399,11 @@
             初始化
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnNofindConfig">
-            <summary>
-            初始化
-            </summary>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.CheckConfig">
-            <summary>
-            配置检查
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroStation.Start">
             <summary>
             开始
             </summary>
             <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnStart">
-            <summary>
-            将要开始
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStation._waitToken">
-            <summary>
-            应用程序等待结果的信号量对象
-            </summary>
         </member>
         <member name="M:Agebull.ZeroNet.Core.ZeroStation.Run">
             <summary>
@@ -4080,39 +4411,55 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Idle">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Close">
             <summary>
-            空转
+            关闭
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.RunInner(System.Threading.CancellationToken)">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnInitialize">
             <summary>
-            具体执行
+            初始化
             </summary>
-            <returns>返回False表明需要重启</returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncRun">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Prepare">
+            <summary>
+            将要开始
+            </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.LoopBegin">
             <summary>
             同步运行状态
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.SyncStop">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Loop">
+            <summary>
+            轮询
+            </summary>
+            <returns>返回False表明需要重启</returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.LoopComplete">
             <summary>
             同步关闭状态
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnRunStop">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnLoopIdle">
             <summary>
-            关闭时的处理
+            空转
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.Core.ZeroStation.Close">
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnLoopBegin">
             <summary>
-            关闭
+            开始执行的处理
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroStation.OnLoopComplete">
+            <summary>
+            关闭时的处理
             </summary>
             <returns></returns>
         </member>
@@ -4134,91 +4481,6 @@
         <member name="M:Agebull.ZeroNet.Core.ZeroStation.Agebull#ZeroNet#Core#IZeroObject#OnStationStateChanged(Agebull.ZeroNet.Core.StationConfig)">
             <summary>
             站点状态变更时调用
-            </summary>
-        </member>
-        <member name="T:Agebull.ZeroNet.Core.ZeroStationType">
-            <summary>
-            站点类型
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Dispatcher">
-            <summary>
-            调度器
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Notify">
-            <summary>
-            广播
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Api">
-            <summary>
-            API
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Vote">
-            <summary>
-            投票器
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.RouteApi">
-            <summary>
-            定向路由API
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Queue">
-            <summary>
-            队列任务
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Trace">
-            <summary>
-            流程跟踪
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Proxy">
-            <summary>
-            代理
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroStationType.Plan">
-            <summary>
-            计划任务
-            </summary>
-        </member>
-        <member name="T:Agebull.ZeroNet.Core.ZeroWorker">
-            <summary>
-            工作对象
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroWorker.RealName">
-            <summary>
-             实名
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroWorker.IpAddress">
-            <summary>
-             上报的IP地址
-            </summary>
-        </member>
-        <member name="F:Agebull.ZeroNet.Core.ZeroWorker.pre_time">
-            <summary>
-             上次心跳的时间
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroWorker.Level">
-            <summary>
-             健康等级
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroWorker.State">
-            <summary>
-             状态 -1 已失联 0 正在准备中 1 已就绪 3 已退出
-            </summary>
-        </member>
-        <member name="P:Agebull.ZeroNet.Core.ZeroWorker.StateText">
-            <summary>
-             状态
             </summary>
         </member>
         <member name="T:Agebull.ZeroNet.Log.BatchPublisher`1">
@@ -4257,7 +4519,7 @@
             缓存文件名称
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Log.BatchPublisher`1.Initialize">
+        <member name="M:Agebull.ZeroNet.Log.BatchPublisher`1.OnInitialize">
             <summary>
             初始化
             </summary>
@@ -4272,9 +4534,9 @@
             数据进入的处理
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.Log.BatchPublisher`1.RunInner(System.Threading.CancellationToken)">
+        <member name="M:Agebull.ZeroNet.Log.BatchPublisher`1.Loop">
             <summary>
-            具体执行
+            轮询
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
@@ -4331,6 +4593,14 @@
             <param name="publishItem"></param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.PubSub.PublishItem.Unpack2``1(ZeroMQ.ZMessage,``0@)">
+            <summary>
+                广播消息解包
+            </summary>
+            <param name="msg"></param>
+            <param name="publishItem"></param>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.ZeroNet.PubSub.PublishItem.Unpack``1(ZeroMQ.ZMessage,``0@)">
             <summary>
                 广播消息解包
@@ -4370,7 +4640,7 @@
             </summary>
             <param name="data"></param>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.OnStart">
+        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.Prepare">
             <inheritdoc />
         </member>
         <member name="P:Agebull.ZeroNet.PubSub.SignlePublisher`1.TsonOperator">
@@ -4378,7 +4648,7 @@
             TSON序列化操作器
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.OnRunStop">
+        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.OnLoopComplete">
             <inheritdoc />
         </member>
         <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.DoDestory">
@@ -4389,14 +4659,14 @@
             缓存文件名称
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.Initialize">
+        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.OnInitialize">
             <summary>
             初始化
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.RunInner(System.Threading.CancellationToken)">
+        <member name="M:Agebull.ZeroNet.PubSub.SignlePublisher`1.Loop">
             <summary>
-            具体执行
+            轮询
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
@@ -4422,6 +4692,11 @@
             订阅主题
             </summary>
         </member>
+        <member name="F:Agebull.ZeroNet.PubSub.SubStation`1.Subscribes">
+            <summary>
+            订阅主题
+            </summary>
+        </member>
         <member name="P:Agebull.ZeroNet.PubSub.SubStation`1.IsRealModel">
             <summary>
             是否实时数据(如为真,则不保存未处理数据)
@@ -4441,9 +4716,9 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.RunInner(System.Threading.CancellationToken)">
+        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.Loop">
             <summary>
-            具体执行
+            轮询
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
@@ -4460,7 +4735,7 @@
             命令处理任务
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.Initialize">
+        <member name="M:Agebull.ZeroNet.PubSub.SubStation`1.OnInitialize">
             <summary>
             初始化
             </summary>
@@ -4498,6 +4773,24 @@
             <summary>
                 消息发布
             </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublish(System.String,System.String,System.String)">
+            <summary>
+            发送广播
+            </summary>
+            <param name="station"></param>
+            <param name="title"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublish``1(System.String,System.String,``0)">
+            <summary>
+            发送广播
+            </summary>
+            <param name="station"></param>
+            <param name="title"></param>
+            <param name="value"></param>
+            <returns></returns>
         </member>
         <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.DoPublish(System.String,System.String,System.String,System.String)">
             <summary>
@@ -4539,7 +4832,7 @@
                 订阅时的标准网络数据说明
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionData">
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionBin">
             <summary>
                 订阅时的标准网络数据说明
             </summary>
@@ -4554,7 +4847,7 @@
                 订阅时的标准网络数据说明
             </summary>
         </member>
-        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionData2">
+        <member name="F:Agebull.ZeroNet.PubSub.ZeroPublisher.PubDescriptionBin2">
             <summary>
                 订阅时的标准网络数据说明
             </summary>
@@ -4564,21 +4857,21 @@
                 订阅时的标准网络数据说明
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(ZeroMQ.ZSocket,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="content"></param>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(ZeroMQ.ZSocket,System.String,System.String,``0)">
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish(ZeroMQ.ZSocket,System.String,System.String,System.String)">
             <summary>
                 发送广播
             </summary>
             <param name="title"></param>
             <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.PubSub.ZeroPublisher.Publish``1(ZeroMQ.ZSocket,System.String,``0)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
             <param name="content"></param>
             <param name="socket"></param>
             <returns></returns>
@@ -4722,7 +5015,7 @@
                 配置校验
             </summary>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnRunStop">
+        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnLoopComplete">
             <inheritdoc />
         </member>
         <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.ZeroNet.ZeroApi.ApiCallItem,Agebull.ZeroNet.Core.ZeroOperatorStateType)">
@@ -4742,7 +5035,7 @@
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.Idle">
+        <member name="M:Agebull.ZeroNet.PubSub.QueueStation.OnLoopIdle">
             <summary>
             空转
             </summary>

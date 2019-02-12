@@ -46,7 +46,7 @@ namespace RpcTest
         }
         static void TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
         {
-            using (var socket = ZSocket.CreateClientSocket(address, ZSocketType.DEALER,ZeroIdentityHelper.CreateIdentity()))
+            using (var socket = ZSocket.CreateClientSocket(address, ZSocketType.DEALER,ZSocket.CreateIdentity()))
             {
                 socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
                 if (!socket.SendTo(frames))

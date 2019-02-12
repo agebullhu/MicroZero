@@ -149,11 +149,10 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     设置计数值
         /// </summary>
-        public void CheckValue(StationConfig station, StationCountItem src)
+        public void CheckValue(StationCountItem src)
         {
             Workers = src.Workers;
-            station.State = src.State;
-            Station = station.StationName;
+            Station = src.Station;
             if (Count == 0)
             {
                 TotalQps = 0;

@@ -17,19 +17,19 @@ namespace agebull
 		{
 			if (description.command() == zero_def::command::restart && list.size() >= 4)
 			{
-				send_request_status(socket, *list[0], zero_def::status::ok, false);
+				send_request_status(socket, *list[0], zero_def::status::ok, false, false);
 				int64 min = atoll(*list[2]);
 				int64 max = atoll(*list[3]);
-				boost::thread(async_replay, this, min,max);
+				boost::thread(async_replay, this, min, max);
 				return true;
 			}
-			return zero_station::simple_command( socket,list, description,inner);
+			return zero_station::simple_command(socket, list, description, inner);
 		}
 
 		/**
 		* \brief 内部命令
 		*/
-		void queue_station::async_replay(queue_station* queue,int64 min, int64 max)
+		void queue_station::async_replay(queue_station* queue, int64 min, int64 max)
 		{
 			queue->storage_.load(min, max, [queue](vector<shared_char>& data)
 			{
@@ -52,7 +52,7 @@ namespace agebull
 			if (config_->get_state() == station_state::pause)
 			{
 				config_->request_err++;
-				send_request_status_by_trace(socket, list, description, zero_def::status::pause);
+				send_request_status_by_trace(socket, list, description, zero_def::status::pause, true);
 				return;
 			}
 			size_t request_id = 0, global_id = 0, argument = 0, text = 0, context = 0, pub_title = 0, sub_title = 0, requester = 0;
@@ -97,7 +97,7 @@ namespace agebull
 				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id, requester);
 				return;
 			}
-			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, request_id,requester );
+			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, request_id, requester);
 
 			const int64 id = storage_.save(
 				global_id > 0 ? atoll(*list[global_id]) : 0,

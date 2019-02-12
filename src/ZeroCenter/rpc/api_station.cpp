@@ -52,7 +52,7 @@ namespace agebull
 			var description = list[1];
 			if (config_->get_state() == station_state::pause)
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::pause);
+				send_request_status_by_trace(socket, list, description, zero_def::status::pause,true);
 				return;
 			}
 			zmq_socket_state state;
@@ -63,7 +63,7 @@ namespace agebull
 					worker * wk = config_->get_worker();
 					if (wk == nullptr)
 					{
-						send_request_status_by_trace(socket, list, description, zero_def::status::not_worker);
+						send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);
 						return;
 					}
 					list.insert(list.begin(), wk->identity);
@@ -82,11 +82,11 @@ namespace agebull
 			}
 			if (state != zmq_socket_state::succeed)
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker);
+				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);
 			}
 			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::runing);
+				send_request_status_by_trace(socket, list, description, zero_def::status::runing, false);
 			}
 		}
 
@@ -109,17 +109,17 @@ namespace agebull
 				break;
 			case zero_def::command::heart_ready:
 				config_->worker_ready(*list[0]);
-				zero_event(zero_net_event::event_client_join, "station", *list[2], *list[0]);
+				worker_event(zero_net_event::event_client_join,*list[2], *list[0]);
 				break;
 			case zero_def::command::heart_left:
 				config_->worker_left(*list[0]);
-				zero_event(zero_net_event::event_client_left, "station", *list[2], *list[0]);
+				worker_event(zero_net_event::event_client_left,*list[2], *list[0]);
 				break;
 			default:
-				config_->worker_heartbeat(*list[0]);
+				config_->worker_ready(*list[0]);
 				break;
 			}
-			send_request_status(socket, *list[0], zero_def::status::ok, false);
+			send_request_status(socket, *list[0], zero_def::status::ok, false, false);
 			return true;
 		}
 
@@ -188,11 +188,11 @@ namespace agebull
 				list[1].tag(tag);
 				if (list[0][0] == zero_def::name::head::inproc)
 				{
-					send_request_result(request_socket_inproc_, list, true);
+					send_request_result(request_socket_inproc_, list, true, true);
 				}
 				else
 				{
-					send_request_result(request_scoket_tcp_, list, true);
+					send_request_result(request_scoket_tcp_, list, true, true);
 				}
 			}
 		}

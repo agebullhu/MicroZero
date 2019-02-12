@@ -181,15 +181,15 @@ namespace agebull
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline void send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state);
+			inline void send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state, bool is_request);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline bool send_request_result(zmq_handler socket, vector<shared_char>& list, bool trace);
+			inline bool send_request_result(zmq_handler socket, vector<shared_char>& list, bool trace, bool is_request);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace);
+			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace, bool is_request);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
@@ -326,7 +326,7 @@ namespace agebull
 			/**
 			* \brief 能否继续工作
 			*/
-		  	virtual bool can_do() const
+			virtual bool can_do() const
 			{
 				return config_->is_run() && get_net_state() == zero_def::net_state::runing;
 			}
@@ -371,7 +371,7 @@ namespace agebull
 		/**
 		* \brief 发送请求结果到调用者
 		*/
-		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace)
+		inline bool zero_station::send_request_status(zmq_handler socket, const char* addr, uchar state, bool do_trace, bool is_request)
 		{
 			vector<shared_char> ls;
 			ls.push_back(addr);
@@ -379,13 +379,13 @@ namespace agebull
 			descirpt.alloc_desc(8, state);
 			ls.push_back(descirpt);
 			descirpt.tag(zero_def::frame::result_end);
-			return send_request_result(socket, ls, do_trace);
+			return send_request_result(socket, ls, do_trace, is_request);
 		}
 
 		/**
 		* \brief 内部命令
 		*/
-		inline void zero_station::send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state)
+		inline void zero_station::send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state, bool is_request)
 		{
 			vector<shared_char> ls;
 			ls.push_back(list[0]);
@@ -411,7 +411,7 @@ namespace agebull
 				}
 			}
 			descirpt.tag(zero_def::frame::result_end);
-			send_request_result(socket, ls, true);
+			send_request_result(socket, ls, true, is_request);
 		}
 		/**
 		* \brief 发送请求结果到调用者
@@ -445,7 +445,7 @@ namespace agebull
 				ls.push_back(msg);
 			}
 			descirpt.tag(zero_def::frame::result_end);
-			return send_request_result(socket, ls, false);
+			return send_request_result(socket, ls, false, true);
 		}
 		/**
 		* \brief 发送请求结果到调用者
@@ -479,14 +479,14 @@ namespace agebull
 				ls.push_back(msg);
 			}
 			descirpt.tag(zero_def::frame::result_end);
-			return send_request_result(socket, ls, true);
+			return send_request_result(socket, ls, true, true);
 		}
 
 
 		/**
 		* \brief 发送请求结果到调用者
 		*/
-		inline bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls, bool do_trace)
+		inline bool zero_station::send_request_result(zmq_handler socket, vector<shared_char>& ls, bool do_trace, bool is_request)
 		{
 			zmq_socket_state state;
 			{
@@ -495,14 +495,15 @@ namespace agebull
 			}
 			if (state == zmq_socket_state::succeed)
 			{
-				config_->request_out++;
+				if (is_request)
+					config_->request_out++;
 				if (do_trace)
 					trace(3, ls, nullptr);
 				return true;
 			}
-			++config_->request_deny;
 			const char* err_msg = socket_ex::state_str(state);
 			config_->error("send_request_result", err_msg, *ls[0]);
+			++config_->request_deny;
 			if (do_trace)
 				trace(3, ls, err_msg);
 			return false;

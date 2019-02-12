@@ -22,7 +22,7 @@ namespace ZeroNet.Http.Route
         {
             Name = "ApiCounter";
             StationName = "HealthCenter";
-            Subscribe = "ApiCounter";
+            Subscribes.Add("ApiCounter");
             IsRealModel = true;
             TsonOperator = new CountDataTsonOperator();
         }
@@ -30,10 +30,9 @@ namespace ZeroNet.Http.Route
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
             Load();
-            base.Initialize();
         }
         protected override void DoDestory()
         {
@@ -45,7 +44,7 @@ namespace ZeroNet.Http.Route
         /// 空转
         /// </summary>
         /// <returns></returns>
-        public override void Idle()
+        protected override void OnLoopIdle()
         {
             //DoPublish();
         }

@@ -715,7 +715,7 @@
         </member>
         <member name="T:ZeroMQ.IZmqPool">
             <summary>
-            更原始封装的Pool对象
+            原始封装的Pool对象
             </summary>
         </member>
         <member name="P:ZeroMQ.IZmqPool.Size">
@@ -794,31 +794,6 @@
             Linux平台使用
             </summary>
         </member>
-        <member name="P:ZeroMQ.LinuxZPoll.Sockets">
-            <summary>
-            对应的Socket集合
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.LinuxZPoll.Size">
-            <summary>
-            Sockt数量
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.LinuxZPoll.TimeoutMs">
-            <summary>
-            超时
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.LinuxZPoll.ZError">
-            <summary>
-            错误对象
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.LinuxZPoll.Ptr">
-            <summary>
-            非托管句柄
-            </summary>
-        </member>
         <member name="M:ZeroMQ.LinuxZPoll.Prepare(ZeroMQ.ZSocket[],ZeroMQ.ZPollEvent)">
             <summary>
             准备
@@ -854,9 +829,9 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.LinuxZPoll.DoDispose">
+        <member name="T:ZeroMQ.WinZPoll">
             <summary>
-            析构
+            pool对象
             </summary>
         </member>
         <member name="M:ZeroMQ.WinZPoll.Prepare(ZeroMQ.ZSocket[],ZeroMQ.ZPollEvent)">
@@ -894,11 +869,6 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.WinZPoll.DoDispose">
-            <summary>
-            析构
-            </summary>
-        </member>
         <member name="T:ZeroMQ.lib.DispoIntPtr">
             <summary>
             非托管内存的管理类
@@ -914,6 +884,46 @@
         </member>
         <member name="M:ZeroMQ.lib.DispoIntPtr.DoDispose">
             <inheritdoc />
+        </member>
+        <member name="T:ZeroMQ.ZPollBase">
+            <summary>
+            Linux平台使用
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.Sockets">
+            <summary>
+            对应的Socket集合
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.Size">
+            <summary>
+            Sockt数量
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.TimeoutMs">
+            <summary>
+            超时
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZPollBase.error">
+            <summary>
+            错误对象
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.ZError">
+            <summary>
+            错误对象
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.Ptr">
+            <summary>
+            非托管句柄
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZPollBase.DoDispose">
+            <summary>
+            析构
+            </summary>
         </member>
         <member name="T:ZeroMQ.ZPollEvent">
             <summary>
@@ -975,6 +985,11 @@
         <member name="T:ZeroMQ.SocketOption">
             <summary>
             Socket默认配置
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.SocketOption.PoolTimeOut">
+            <summary>
+            使用EPool的超时时间
             </summary>
         </member>
         <member name="P:ZeroMQ.SocketOption.ReconnectIvl">
@@ -1298,6 +1313,29 @@
                 实例
             </returns>
         </member>
+        <member name="M:ZeroMQ.ZSocket.CreateRealName(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean)">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
         <member name="M:ZeroMQ.ZSocket.CreateServiceSocket(System.String,ZeroMQ.ZSocketType)">
             <summary>
             构建套接字
@@ -1349,12 +1387,29 @@
             <param name="identity"></param>
             <returns></returns>
         </member>
+        <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[])">
+            <summary>
+            构建套接字
+            </summary>
+            <param name="address"></param>
+            <param name="identity"></param>
+            <returns></returns>
+        </member>
         <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[],System.String)">
             <summary>
             构建套接字
             </summary>
             <param name="address"></param>
             <param name="subscribe"></param>
+            <param name="identity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[],System.Collections.Generic.ICollection{System.String})">
+            <summary>
+            构建套接字
+            </summary>
+            <param name="address"></param>
+            <param name="subscribes"></param>
             <param name="identity"></param>
             <returns></returns>
         </member>

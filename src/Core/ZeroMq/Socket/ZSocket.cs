@@ -4,7 +4,11 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 using Agebull.Common.Logging;
+using Agebull.Common.Rpc;
+using Agebull.ZeroNet.Core;
+using Gboxt.Common.DataModel;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -240,6 +244,65 @@ namespace ZeroMQ
         {
             return new ZSocket(ZContext.Current, socketType, out error);
         }
+
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public static string CreateRealName(bool isService, params string[] ranges)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            foreach (var range in ranges)
+            {
+                if (range == null)
+                    continue;
+                sb.Append("-");
+                sb.Append(range);
+            }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString();
+        }
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService = false)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
+        }
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService, params string[] ranges)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            foreach (var range in ranges)
+            {
+                if (range == null)
+                    continue;
+                sb.Append("-");
+                sb.Append(range);
+            }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
+        }
         /// <summary>
         /// 构建套接字
         /// </summary>
@@ -313,12 +376,12 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.IDENTITY, identity);
             ConfigSocket(socket, false);
 
-            if (Option.HeartbeatIvl > 0)
-            {
-                socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
-                socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
-                socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
-            }
+            //if (Option.HeartbeatIvl > 0)
+            //{
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
+            //}
 
             if (socket.Connect(address, out error))
                 return socket;
@@ -365,13 +428,46 @@ namespace ZeroMQ
         /// 构建套接字
         /// </summary>
         /// <param name="address"></param>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static ZSocket CreateSubSocket(string address, byte[] identity)
+        {
+            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
+            socket.SubscribeAll();
+            return socket;
+        }
+        /// <summary>
+        /// 构建套接字
+        /// </summary>
+        /// <param name="address"></param>
         /// <param name="subscribe"></param>
         /// <param name="identity"></param>
         /// <returns></returns>
-        public static ZSocket CreateSubSocket(string address, byte[] identity, string subscribe = "")
+        public static ZSocket CreateSubSocket(string address, byte[] identity, string subscribe)
         {
             var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
-            socket.Subscribe(subscribe);
+            if (string.IsNullOrEmpty(subscribe))
+                socket.SubscribeAll();
+            else
+                socket.Subscribe(subscribe);
+            return socket;
+        }
+
+        /// <summary>
+        /// 构建套接字
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="subscribes"></param>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static ZSocket CreateSubSocket(string address, byte[] identity, ICollection<string> subscribes)
+        {
+            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
+            if (subscribes == null || subscribes.Count == 0)
+                socket.SubscribeAll();
+            else
+                foreach (var subscribe in subscribes)
+                    socket.Subscribe(subscribe);
             return socket;
         }
         #endregion
@@ -1211,7 +1307,7 @@ namespace ZeroMQ
         /// <summary>
         /// 配置
         /// </summary>
-        public static SocketOption Option = new SocketOption();
+        public static SocketOption Option;
 
         /// <summary>
         /// 配置套接字
@@ -1236,7 +1332,7 @@ namespace ZeroMQ
 
             if (Option.TcpKeepalive > 0)
             {
-                socket.SetOption(ZSocketOption.TCP_KEEPALIVE, Option.TcpKeepalive);
+                socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 1);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
             }
@@ -1833,7 +1929,7 @@ namespace ZeroMQ
                 return true;
             _error = ZError.GetLastErr();
             frame.Dispose();
-            LogRecorder.Error($"Recv Error: {_error.Text} | {Endpoint} | Socket Ptr:{SocketPtr}");
+            LogRecorder.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
             return false;
         }
 

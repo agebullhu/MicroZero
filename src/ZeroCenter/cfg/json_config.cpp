@@ -33,10 +33,10 @@ namespace agebull
 	int global_config::RECONNECT_IVL = 100;
 	int global_config::CONNECT_TIMEOUT = 3000;
 	int global_config::RECONNECT_IVL_MAX = 3000;
-	int global_config::TCP_KEEPALIVE = 0;
-	int global_config::TCP_KEEPALIVE_IDLE = 120;
-	int global_config::TCP_KEEPALIVE_INTVL = 3;
-	int global_config::HEARTBEAT_IVL = 1;
+	int global_config::TCP_KEEPALIVE = 1;
+	int global_config::TCP_KEEPALIVE_IDLE = 4096;
+	int global_config::TCP_KEEPALIVE_INTVL = 4096;
+	int global_config::HEARTBEAT_IVL = 60000;
 	int global_config::HEARTBEAT_TIMEOUT = 1000;
 	int global_config::HEARTBEAT_TTL = 60000;
 	

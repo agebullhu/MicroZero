@@ -1,7 +1,5 @@
 using System;
-using System.Net;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Ioc;
@@ -10,7 +8,9 @@ using Agebull.Common.Rpc;
 using Agebull.ZeroNet.PubSub;
 using Agebull.ZeroNet.ZeroApi;
 using Gboxt.Common.DataModel;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using ZeroMQ;
+using ZeroMQ.lib;
 
 namespace Agebull.ZeroNet.Core
 {
@@ -65,33 +65,33 @@ namespace Agebull.ZeroNet.Core
 
 
         #region State
-#if UseStateMachine
+//#if UseStateMachine
         /// <summary>
         /// 中心事件监控对象
         /// </summary>
         static readonly ZeroEventMonitor SystemMonitor = new ZeroEventMonitor();
-#endif 
+//#endif 
         /// <summary>
         ///     应用中心状态
         /// </summary>
-        public static ZeroCenterState ZeroCenterStatus { get; internal set; }
+        public static ZeroCenterState ZeroCenterState { get; internal set; }
 
         /// <summary>
         ///     运行状态
         /// </summary>
-        internal static int AppState;
+        private static int _appState;
 
         /// <summary>
         ///     状态
         /// </summary>
         public static int ApplicationState
         {
-            get => AppState;
+            get => _appState;
             internal set
             {
-                Interlocked.Exchange(ref AppState, value);
+                Interlocked.Exchange(ref _appState, value);
                 SystemMonitor.OnApplicationStateChanged();
-                ZeroTrace.SystemLog("ZeroApplication", StationState.Text(value));
+                ZeroTrace.SystemLog("ZeroApplication", StationState.Text(value), SystemMonitor.StateMachine.GetTypeName());
             }
         }
 
@@ -101,12 +101,12 @@ namespace Agebull.ZeroNet.Core
         public static void SetFailed()
         {
             ApplicationState = StationState.Failed;
-            ZeroCenterStatus = ZeroCenterState.Failed;
+            ZeroCenterState = ZeroCenterState.Failed;
         }
         /// <summary>
         ///     应用中心是否正在运行
         /// </summary>
-        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZeroCenterStatus == ZeroCenterState.Run;
+        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZeroCenterState == ZeroCenterState.Run;
 
         /// <summary>
         ///     本地应用是否正在运行
@@ -134,12 +134,6 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static bool IsClosed => ApplicationState >= StationState.Closed;
 
-        /// <summary>
-        ///     是否正在运行
-        /// </summary>
-        public static bool InRun => ApplicationState == StationState.Run;
-
-
         #endregion
 
 
@@ -154,12 +148,14 @@ namespace Agebull.ZeroNet.Core
         {
             ZeroTrace.SystemLog("Weconme ZeroNet");
             ZContext.Initialize();
-            ZeroTrace.Initialize();
+            ZeroTrace.SystemLog("ZMQ", zmq.LibraryVersion);
+            //ZeroTrace.Initialize();
             var testContext = IocHelper.Create<GlobalContext>();
             if (testContext == null)
                 IocHelper.AddScoped<GlobalContext, GlobalContext>();
             CheckConfig();
             InitializeDependency();
+            ShowOptionInfo();
         }
 
 
@@ -168,10 +164,10 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void InitializeDependency()
         {
-            GlobalContext.ServiceRealName = Config.RealName;
             GlobalContext.ServiceKey = Config.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
-            LogRecorder.GetMachineNameFunc = () => Config.RealName;
+            GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}"; 
+            LogRecorder.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
             LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
             LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
             IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
@@ -180,37 +176,6 @@ namespace Agebull.ZeroNet.Core
             LogRecorder.Initialize();
         }
 
-        private static string GetHostIps()
-        {
-            try
-            {
-                var ips = new StringBuilder();
-                var first = true;
-                string hostName = Dns.GetHostName();
-                ZeroTrace.SystemLog(hostName);
-                foreach (var address in Dns.GetHostAddresses(hostName))
-                {
-                    if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
-                        address.IsIPv6SiteLocal || address.IsIPv6Teredo)
-                        continue;
-                    var ip = address.ToString();
-                    if (ip == "127.0.0.1" || ip == "127.0.1.1" || ip == "::1" || ip == "-1")
-                        continue;
-                    if (first)
-                        first = false;
-                    else
-                        ips.Append(" , ");
-                    ips.Append(ip);
-                }
-
-                return ips.ToString();
-            }
-            catch (Exception e)
-            {
-                LogRecorder.Exception(e);
-                return "";
-            }
-        }
 
         /// <summary>
         ///     发现
@@ -269,7 +234,6 @@ namespace Agebull.ZeroNet.Core
             {
                 Shutdown();
             };
-            Console.WriteLine("Zeronet application start...");
             WaitToken = new SemaphoreSlim(0, 1);
             Start();
             Task.Factory.StartNew(WaitTask).Wait();
@@ -285,7 +249,9 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private static void WaitTask()
         {
-            ZeroTrace.SystemLog("Zeronet application runing. Press Ctrl+C to shutdown.");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("Zeronet application runing. Press Ctrl+C to shutdown.");
+            Console.ForegroundColor = ConsoleColor.White;
             WaitToken.Wait();
         }
 
@@ -298,11 +264,15 @@ namespace Agebull.ZeroNet.Core
             bool success;
             using (OnceScope.CreateScope(Config))
             {
-                ZeroCenterStatus = ZeroCenterState.None;
+                ZeroCenterState = ZeroCenterState.None;
                 ApplicationState = StationState.Start;
                 success = JoinCenter();
                 if (WorkModel == ZeroWorkModel.Service)
-                    Task.Factory.StartNew(SystemMonitor.Monitor);
+                    new Thread(SystemMonitor.Monitor)
+                    {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Lowest
+                    }.Start();
             }
             SystemMonitor.WaitMe();
             return success;
@@ -313,32 +283,33 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         internal static bool JoinCenter()
         {
-            if (InRun)
+            if (ApplicationIsRun)
                 return false;
             ApplicationState = StationState.BeginRun;
-            ZeroCenterStatus = ZeroCenterState.Start;
-            ZeroTrace.SystemLog($"try connect zero center ({Config.ZeroManageAddress})...");
+            ZeroCenterState = ZeroCenterState.Start;
+            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
                 SetFailed();
-                ZeroTrace.WriteError("JoinCenter", "zero center can`t connection.");
+                ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "zero center can`t connection.");
                 return false;
             }
-            ZeroCenterStatus = ZeroCenterState.Run;
+            ZeroCenterState = ZeroCenterState.Run;
             if (WorkModel == ZeroWorkModel.Service && !SystemManager.Instance.HeartJoin())
             {
                 SetFailed();
-                ZeroTrace.WriteError("JoinCenter", "zero center can`t join.");
+                ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "zero center can`t join.");
                 return false;
             }
 
+            Config.ClearConfig();
             if (!SystemManager.Instance.LoadAllConfig())
             {
                 SetFailed();
-                ZeroTrace.WriteError("JoinCenter", "station configs can`t loaded.");
+                ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "station configs can`t loaded.");
                 return false;
             }
-            ZeroTrace.SystemLog("be connected successfully,start local stations.");
+            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", "be connected successfully,start local stations.");
             if (WorkModel == ZeroWorkModel.Service)
             {
                 SystemManager.Instance.UploadDocument();
@@ -410,9 +381,10 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 发出事件
         /// </summary>
-        public static void InvokeEvent(ZeroNetEventType centerEvent, string context, StationConfig config)
+        public static void InvokeEvent(ZeroNetEventType centerEvent, string name, string context, StationConfig config)
         {
-            Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, context, config));
+            if (Config.CanRaiseEvent==true)
+                Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, name, context, config));
         }
 
         /// <summary>
@@ -421,7 +393,8 @@ namespace Agebull.ZeroNet.Core
         /// <param name="centerEvent"></param>
         internal static void RaiseEvent(ZeroNetEventType centerEvent)
         {
-            Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, null, null));
+            if (Config.CanRaiseEvent == true)
+                Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, null, null, null));
         }
         /// <summary>
         /// 发出事件

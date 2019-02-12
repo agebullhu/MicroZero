@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using Agebull.ZeroNet.Core.ZeroManagemant.StateMachine;
 using Agebull.ZeroNet.PubSub;
 using ZeroMQ;
-namespace Agebull.ZeroNet.Core
+
+namespace Agebull.ZeroNet.Core.ZeroManagemant
 {
     /// <summary>
     /// 系统侦听器
@@ -39,7 +42,7 @@ namespace Agebull.ZeroNet.Core
                 if (MonitorInner())
                     continue;
                 ZeroTrace.WriteError("Zero center monitor failed", "There was no message for a long time");
-                ZeroApplication.ZeroCenterStatus = ZeroCenterState.Failed;
+                ZeroApplication.ZeroCenterState = ZeroCenterState.Failed;
                 ZeroApplication.OnZeroEnd();
                 ZeroApplication.ApplicationState = StationState.Failed;
                 Thread.Sleep(1000);
@@ -82,19 +85,14 @@ namespace Agebull.ZeroNet.Core
                     case StationState.Closed: // 已关闭
                     case StationState.Destroy: // 已销毁，析构已调用
                     case StationState.Disposed: // 已销毁，析构已调用
-                        if (_stateMachine != null && !_stateMachine.IsDisposed && _stateMachine is EmptyStateMachine)
+                        if (/*_stateMachine != null && !_stateMachine.IsDisposed && */_stateMachine is EmptyStateMachine)
                             return;
                         StateMachine = new EmptyStateMachine();
                         return;
                     case StationState.Failed: // 错误状态
-                        if (_stateMachine != null && !_stateMachine.IsDisposed && _stateMachine is FailedStateMachine)
-                            return;
                         StateMachine = new FailedStateMachine();
                         return;
                     case StationState.Run: // 正在运行
-                    case StationState.Pause: // 已暂停
-                        if (_stateMachine != null && !_stateMachine.IsDisposed && _stateMachine is RuningStateMachine)
-                            return;
                         StateMachine = new RuningStateMachine();
                         return;
                 }
@@ -106,10 +104,19 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         private bool MonitorInner()
         {
+            List<string> subs = new List<string>();
+            long cnt = 0;
             DateTime failed = DateTime.MinValue;
             using (var poll = ZmqPool.CreateZmqPool())
             {
-                poll.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZeroIdentityHelper.CreateIdentity()));
+                if (ZeroApplication.Config.CanRaiseEvent != true)
+                {
+                    subs.Add("system");
+                    subs.Add("station");
+                }
+                var socket = ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZSocket.CreateIdentity(false, "Monitor"), subs);
+                
+                poll.Prepare(ZPollEvent.In, socket);
                 while (ZeroApplication.IsAlive)
                 {
                     if (!poll.Poll())
@@ -125,11 +132,11 @@ namespace Agebull.ZeroNet.Core
                         continue;
                     }
                     failed = DateTime.MinValue;
-                    if (!PublishItem.Unpack(message, out var item))
-                        continue;
-                    if (item.ZeroEvent != ZeroNetEventType.CenterWorkerSoundOff && item.ZeroEvent != ZeroNetEventType.CenterStationState)
-                        Console.WriteLine(item.ZeroEvent);
-                    StateMachine?.OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
+                    if (PublishItem.Unpack(message, out var item))
+                    {
+                        StateMachine?.OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
+                    }
+                    cnt++;
                 }
             }
             return true;

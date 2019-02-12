@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using Agebull.ZeroNet.PubSub;
 using Gboxt.Common.DataModel;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
@@ -240,19 +241,20 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.AppRun:
                 case ZeroNetEventType.ConfigUpdate:
                     OnZeroNetRuning();
-                    return; 
+                    return;
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
                     return;
                 case ZeroNetEventType.CenterStationDocument:
                     if (!e.EventConfig.IsApi)
                         return;
-                    if (Router.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
+                    if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
                         UpdateApiItems(host as ZeroHost);
                     }
                     break;
                 case ZeroNetEventType.CenterStationJoin:
+                case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
                     if (!e.EventConfig.IsApi)
@@ -263,7 +265,7 @@ namespace ZeroNet.Http.Gateway
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
-                    //case ZeroNetEventType.CenterClientLeft:
+                case ZeroNetEventType.CenterStationStop:
                     if (!e.EventConfig.IsApi)
                         return;
                     StationLeft(e.EventConfig);
@@ -287,18 +289,19 @@ namespace ZeroNet.Http.Gateway
 
         private static void OnZeroNetClose()
         {
-            foreach (var host in Router.RouteMap.Where(p => p.Value.ByZero).ToArray())
+            foreach (var host in RouteOption.RouteMap.Where(p => p.Value.ByZero).ToArray())
             {
                 host.Value.Failed = true;
+                host.Value.Description = "OnZeroNetClose";
             }
         }
 
         private static void StationLeft(StationConfig station)
         {
-            if (Router.RouteMap.TryGetValue(station.StationName, out var host))
+            if (RouteOption.RouteMap.TryGetValue(station.StationName, out var host))
             {
                 host.Failed = true;
-                host.ByZero = true;
+                host.Description = "StationLeft";
             }
         }
 
@@ -308,19 +311,19 @@ namespace ZeroNet.Http.Gateway
             if (string.IsNullOrWhiteSpace(station.StationName))
                 return;
             ZeroHost zeroHost;
-            if (Router.RouteMap.TryGetValue(station.StationName, out var h))
+            if (RouteOption.RouteMap.TryGetValue(station.StationName, out var h))
             {
                 zeroHost = h as ZeroHost;
-                if (zeroHost == null) Router.RouteMap[station.StationName] = zeroHost = new ZeroHost();
+                if (zeroHost == null) RouteOption.RouteMap[station.StationName] = zeroHost = new ZeroHost();
             }
             else
             {
-                lock (Router.RouteMap)
+                lock (RouteOption.RouteMap)
                 {
-                    Router.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
+                    RouteOption.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
                 }
             }
-
+            zeroHost.Description =null;
             zeroHost.ByZero = true;
             zeroHost.Failed = false;
             zeroHost.Station = station.StationName;
@@ -329,18 +332,18 @@ namespace ZeroNet.Http.Gateway
 
             if (!string.IsNullOrWhiteSpace(station.ShortName))
             {
-                if (Router.RouteMap.ContainsKey(station.ShortName))
-                    Router.RouteMap[station.ShortName] = zeroHost;
+                if (RouteOption.RouteMap.ContainsKey(station.ShortName))
+                    RouteOption.RouteMap[station.ShortName] = zeroHost;
                 else
-                    Router.RouteMap.Add(station.ShortName, zeroHost);
+                    RouteOption.RouteMap.Add(station.ShortName, zeroHost);
             }
             if (station.StationAlias == null)
                 return;
             foreach (var alia in station.StationAlias)
-                if (Router.RouteMap.ContainsKey(alia))
-                    Router.RouteMap[alia] = zeroHost;
+                if (RouteOption.RouteMap.ContainsKey(alia))
+                    RouteOption.RouteMap[alia] = zeroHost;
                 else
-                    Router.RouteMap.Add(alia, zeroHost);
+                    RouteOption.RouteMap.Add(alia, zeroHost);
         }
 
         private static void UpdateApiItems(ZeroHost zeroHost)

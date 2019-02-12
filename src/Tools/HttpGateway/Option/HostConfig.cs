@@ -21,6 +21,12 @@ namespace ZeroNet.Http.Gateway
         [IgnoreDataMember]
         [JsonIgnore] public bool Failed { get; set; }
 
+        /// <summary>
+        ///     说明
+        /// </summary>
+        [IgnoreDataMember]
+        [JsonIgnore] public string Description { get; set; }
+
 
         /// <summary>
         ///     别名

@@ -21,7 +21,7 @@ namespace agebull
 			trace(1, list, nullptr);
 			if (config_->get_state() == station_state::pause)
 			{
-				send_request_status(socket, *list[0], zero_def::status::pause, true);
+				send_request_status(socket, *list[0], zero_def::status::pause, true, true);
 				return;
 			}
 			shared_char caller = list[0];
@@ -67,7 +67,7 @@ namespace agebull
 		}
 
 		char notify_station::frames1[] = { zero_def::frame::publisher, zero_def::frame::content, zero_def::frame::global_id };
-		/**
+		/* *
 		*\brief 发布消息
 		* /
 		bool notify_station::publish(const string& publiher, const string& title, const string& arg)
@@ -89,7 +89,7 @@ namespace agebull
 			return send_response(datas) == zmq_socket_state::succeed;
 		}
 		char notify_station::frames2[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content, zero_def::frame::global_id , zero_def::frame::global_id };
-		/**
+		/* *
 		*\brief 发布消息
 		* /
 		bool notify_station::publish(const string& publiher, const string& title, const string& sub, const string& arg)
@@ -115,7 +115,7 @@ namespace agebull
 		}
 
 		char notify_station::frames3[] = { zero_def::frame::publisher,zero_def::frame::sub_title, zero_def::frame::content,zero_def::frame::request_id, zero_def::frame::global_id,zero_def::frame::call_id };
-		/**
+		/* *
 		*\brief 发布消息
 		* /
 		bool notify_station::publish(const string& publiher, const string& title, const string& sub, const string& arg, const string& rid, const int64 gid, const int64 lid)

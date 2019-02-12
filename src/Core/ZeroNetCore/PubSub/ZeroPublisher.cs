@@ -317,7 +317,7 @@ namespace Agebull.ZeroNet.PubSub
             {
                 if (socket.SendByExtend(frames,
                     GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
-                    ZeroApplication.Config.RealName.ToZeroBytes(),
+                    GlobalContext.ServiceRealName.ToZeroBytes(),
                     GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
                     GlobalContext.CurrentNoLazy.ToZeroBytes(),
                     GlobalContext.ServiceKey.ToZeroBytes()))
@@ -351,7 +351,7 @@ namespace Agebull.ZeroNet.PubSub
         {
             return socket.SendByExtend(frames,
                 GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
-                ZeroApplication.Config.RealName.ToZeroBytes(),
+                GlobalContext.ServiceRealName.ToZeroBytes(),
                 GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
                 GlobalContext.CurrentNoLazy.ToZeroBytes(),
                 GlobalContext.ServiceKey.ToZeroBytes());

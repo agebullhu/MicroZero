@@ -27,7 +27,6 @@ namespace ZeroNet.Http.Route
         {
             Name = "FlowTracer";
             StationName = "TraceDispatcher";
-            Subscribe = "";
             IsRealModel = true;
             _timer = new Timer(1000) { AutoReset = true };
             _timer.Elapsed += Timer_Elapsed;
@@ -53,7 +52,7 @@ namespace ZeroNet.Http.Route
                     return;
                 if (string.IsNullOrWhiteSpace(args.CallId))
                     args.CallId = "0";
-                Console.WriteLine($"{args.RequestId}({args.CallId}>{args.GlobalId}) : {args.Tag}/{args.State} : {args.Station}/{args.CommandOrSubTitle}");
+                //Console.WriteLine($"{args.RequestId}({args.CallId}>{args.GlobalId}) : {args.Tag}/{args.State} : {args.Station}/{args.CommandOrSubTitle}");
                 if (!_flows.TryGetValue(args.RequestId, out var root))
                 {
                     _flows.Add(args.RequestId, root = new FlowRoot

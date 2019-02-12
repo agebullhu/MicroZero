@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
 namespace ZeroNet.Http.Gateway
@@ -39,7 +40,8 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     系统配置
         /// </summary>
-        [DataMember] [JsonProperty("sysConfig")]
+        [DataMember]
+        [JsonProperty("sysConfig")]
         private SystemConfig _systemConfig;
 
         /// <summary>
@@ -71,13 +73,29 @@ namespace ZeroNet.Http.Gateway
         {
             if (!File.Exists(ConfigFileName))
                 return false;
-            Option = JsonConvert.DeserializeObject<RouteOption>(File.ReadAllText(ConfigFileName));
-            if (Option == null)
-                throw new Exception($"路由配置文件{ConfigFileName}不存在");
+            try
+            {
+                Option = JsonConvert.DeserializeObject<RouteOption>(File.ReadAllText(ConfigFileName));
+                if (Option == null)
+                    throw new Exception($"路由配置文件{ConfigFileName}不存在");
 
-            Option.CheckRouteMap();
-            Option.CheckSecurity();
-            IsInitialized = true;
+                Option.CheckRouteMap();
+                Option.CheckSecurity();
+                IsInitialized = true;
+            }
+            catch (Exception e)
+            {
+                LogRecorder.Exception(e);
+            }
+            if (RouteMap == null)
+                RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
+            if (Option.Security == null)
+                Option.Security = new SecurityConfig
+                {
+                    DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                };
+            else if (Option.Security.DenyTokens == null)
+                Option.Security.DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             return true;
         }
 
@@ -94,12 +112,17 @@ namespace ZeroNet.Http.Gateway
         }
 
         /// <summary>
+        ///     缓存图
+        /// </summary>
+        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
+
+        /// <summary>
         ///     初始化路由
         /// </summary>
         /// <returns></returns>
         private void CheckRouteMap()
         {
-            Router.RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
+            RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
             if (_routeConfig == null)
                 return;
 
@@ -115,18 +138,18 @@ namespace ZeroNet.Http.Gateway
                 if (!kv.Value.ByZero && (kv.Value.Hosts == null || kv.Value.Hosts.Length == 0))
                     continue;
                 //Http负载
-                if (!Router.RouteMap.ContainsKey(kv.Key))
-                    Router.RouteMap.Add(kv.Key, host);
+                if (!RouteMap.ContainsKey(kv.Key))
+                    RouteMap.Add(kv.Key, host);
                 else
-                    Router.RouteMap[kv.Key] = host;
+                    RouteMap[kv.Key] = host;
                 //别名
                 if (kv.Value.Alias == null)
                     continue;
                 foreach (var name in kv.Value.Alias)
-                    if (!Router.RouteMap.ContainsKey(name))
-                        Router.RouteMap.Add(name, host);
+                    if (!RouteMap.ContainsKey(name))
+                        RouteMap.Add(name, host);
                     else
-                        Router.RouteMap[name] = host;
+                        RouteMap[name] = host;
             }
         }
 

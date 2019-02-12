@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using Agebull.ZeroNet.ZeroApi;
 
 namespace Agebull.ZeroNet.Core
@@ -28,7 +29,7 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         ///     配置状态
         /// </summary>
-        ZeroCenterState ConfigState { get; }
+        StationStateType ConfigState { get;}
 
         /// <summary>
         /// 系统初始化时调用
@@ -54,6 +55,16 @@ namespace Agebull.ZeroNet.Core
         /// 注销时调用
         /// </summary>
         void OnZeroDestory();
+
+        /// <summary>
+        /// 开启
+        /// </summary>
+        bool Start();
+
+        /// <summary>
+        /// 关闭
+        /// </summary>
+        bool Close();
 
         /// <summary>
         /// 站点状态变更时调用
@@ -269,7 +280,7 @@ namespace Agebull.ZeroNet.Core
                     //ZeroDiscover.DiscoverApiDocument(obj.GetType());
                 }
 
-                if (!InRun || !ZerCenterIsRun)
+                if (ApplicationState != StationState.Run || !ZerCenterIsRun)
                     return true;
                 try
                 {
@@ -351,19 +362,19 @@ namespace Agebull.ZeroNet.Core
                 return;//系统太忙，跳过处理
             using (scope)
             {
-                ZeroTrace.SystemLog(config.StationName, "[OnStationStateChanged>>");
-                foreach (var obj in ZeroObjects.Values.ToArray())
+                foreach (var obj in ZeroObjects.Values.Where(p=>p.StationName == config.StationName).ToArray())
                 {
                     try
                     {
+                        ZeroTrace.SystemLog(obj.Name, "[OnStationStateChanged>>", config.State);
                         obj.OnStationStateChanged(config);
+                        ZeroTrace.SystemLog(obj.Name, "<<OnStationStateChanged]");
                     }
                     catch (Exception e)
                     {
                         ZeroTrace.WriteException(obj.StationName, e, "OnStationStateChanged");
                     }
                 }
-                ZeroTrace.SystemLog(config.StationName, "<<OnStationStateChanged]");
             }
         }
 

@@ -1,8 +1,9 @@
 using Agebull.Common.ApiDocuments;
 using Newtonsoft.Json;
 using System;
+using Agebull.Common.Rpc;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.ZeroNet.Core.ZeroManagemant
 {
     /// <summary>
     /// 系统侦听器
@@ -57,7 +58,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public bool HeartLeft()
         {
-            return HeartLeft("SystemManage", ZeroApplication.Config.RealName);
+            return HeartLeft("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public bool HeartReady()
         {
-            return HeartReady("SystemManage", ZeroApplication.Config.RealName);
+            return HeartReady("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public bool HeartJoin()
         {
-            return HeartJoin("SystemManage", ZeroApplication.Config.RealName);
+            return HeartJoin("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public bool Heartbeat()
         {
-            return Heartbeat("SystemManage", ZeroApplication.Config.RealName);
+            return Heartbeat("SystemManage", GlobalContext.ServiceRealName);
         }
         /// <summary>
         /// 尝试安装站点
@@ -97,33 +98,55 @@ namespace Agebull.ZeroNet.Core
             var r = CallCommand("install", type, station, station, station);
             if (!r.InteractiveSuccess)
             {
-                ZeroTrace.WriteError(station, "Test install failed");
+                ZeroTrace.WriteError(station, "Install failed.");
                 return false;
             }
 
-            if (r.State != ZeroOperatorStateType.Ok && r.TryGetValue(ZeroFrameType.Status, out var json))
+            if (r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Failed)
             {
-                ZeroApplication.Config.UpdateConfig(station, json, out _);
+                ZeroTrace.WriteError(station, "Install failed.please check name or type.");
+                return false;
             }
-            ZeroTrace.SystemLog(station, "Is install ,try start it ...");
+            ZeroTrace.SystemLog(station, "Install successfully,try start it ...");
             r = CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
                 ZeroTrace.WriteError(station, "Can't start station");
                 return false;
             }
-            LoadConfig(station);
             ZeroTrace.SystemLog(station, "Station runing");
             return true;
         }
-        bool DocumentIsUpload; 
+
+        /// <summary>
+        /// 尝试安装站点
+        /// </summary>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public bool TryStart(string station)
+        {
+            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
+                return false;
+            ZeroTrace.SystemLog(station, "Try start it ...");
+            var r = CallCommand("start", station);
+            if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
+            {
+                ZeroTrace.WriteError(station, "Can't start station");
+                return false;
+            }
+            ZeroTrace.SystemLog(station, "Station runing");
+            return true;
+        }
+
+        //上传文档是否已执行过
+        private bool _documentIsUpload;
         /// <summary>
         ///     上传文档
         /// </summary>
         /// <returns></returns>
         public bool UploadDocument()
         {
-            if (DocumentIsUpload)
+            if (_documentIsUpload)
                 return true;
             bool success = true;
             foreach (var doc in ZeroApplication.Config.Documents.Values)
@@ -137,7 +160,7 @@ namespace Agebull.ZeroNet.Core
                     success = false;
                 }
             }
-            DocumentIsUpload = success;
+            _documentIsUpload = success;
             return success;
         }
 

@@ -26,7 +26,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.ZeroNet</Product>
-    <Version>1.3.3.6</Version>
+    <Version>1.3.4.4</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -40,7 +40,8 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
     <Optimize>true</Optimize>
-    <DefineConstants>RELEASE;</DefineConstants>
+    <DefineConstants>UseStateMachine</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -82,6 +83,7 @@
     <Compile Remove="PubSub\LogQueue.cs" />
     <Compile Remove="ZeroApi\ApiStationItem.cs" />
     <Compile Remove="Application\ZeroHelper.cs" />
+    <Compile Remove="ZeroEventMonitor\SystemMonitor.cs" />
   </ItemGroup>
 
   <ItemGroup>

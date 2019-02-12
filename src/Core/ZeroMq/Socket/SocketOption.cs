@@ -6,6 +6,11 @@
     public class SocketOption
     {
         /// <summary>
+        /// 使用EPool的超时时间
+        /// </summary>
+        public int PoolTimeOut { get; set; } = 500;
+
+        /// <summary>
         /// 重新连接时间间隔(最小)
         /// </summary>
         public int ReconnectIvl { get; set; } = 200;
@@ -36,7 +41,7 @@
         /// <summary>
         /// 心跳间隔时长
         /// </summary>
-        public int HeartbeatIvl { get; set; }
+        public int HeartbeatIvl { get; set; } = -1;
         /// <summary>
         /// 心跳超时时长
         /// </summary>
@@ -45,6 +50,7 @@
         /// 心跳TTL
         /// </summary>
         public int HeartbeatTtl { get; set; } = 200;
+
         /// <summary>
         /// 启用Keeplive
         /// </summary>
@@ -52,10 +58,10 @@
         /// <summary>
         /// TCP发送keepalive消息的频度,单位秒
         /// </summary>
-        public int TcpKeepaliveIdle { get; set; } = 4096;
+        public int TcpKeepaliveIdle { get; set; } = 7200;
         /// <summary>
         ///当探测没有确认时，重新发送探测的频度,单位秒
         /// </summary>
-        public int TcpKeepaliveIntvl { get; set; } = 4096;
+        public int TcpKeepaliveIntvl { get; set; } = 72;
     }
 }

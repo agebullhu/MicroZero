@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Agebull.Common.ApiDocuments;
 using Agebull.ZeroNet.Core;
+using Agebull.ZeroNet.Core.ZeroManagemant;
 using Gboxt.Common.DataModel;
 using Microsoft.AspNetCore.Mvc;
 using WebMonitor.Models;
@@ -15,6 +16,7 @@ namespace WebMonitor.Controler
         {
             if (id == null)
                 id = "api";
+            SystemManager.Instance.LoadAllConfig();
             return View(new AnnotationsConfig { Name = id });
         }
 

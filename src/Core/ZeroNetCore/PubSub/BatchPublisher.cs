@@ -62,7 +62,7 @@ namespace Agebull.ZeroNet.Log
         /// <summary>
         /// 初始化
         /// </summary>
-        protected override void Initialize()
+        protected override void OnInitialize()
         {
             Items.Load(CacheFileName);
         }
@@ -82,13 +82,13 @@ namespace Agebull.ZeroNet.Log
         {
         }
         /// <summary>
-        /// 具体执行
+        /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool RunInner(/*CancellationToken token*/)
+        protected sealed override bool Loop(/*CancellationToken token*/)
         {
             _socket = ZSocket.CreateDealerSocket(Config.RequestAddress, Identity);
-            Hearter?.HeartReady(StationName, RealName);
+            Hearter.HeartReady(StationName, RealName);
             RealState = StationState.Run;
             int cnt = 0;
 
@@ -117,12 +117,12 @@ namespace Agebull.ZeroNet.Log
                             Thread.Sleep(10);
                         if (array.Count > 300)
                             array.RemoveRange(0, 255);
-                    } while (array.Count > 300);
+                    } while (CanLoop && array.Count > 300);
                     continue;
                 }
 
                 int idx = 0;
-                while (idx < array.Count)
+                while (CanLoop && idx < array.Count)
                 {
                     byte[] buf;
                     using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
@@ -147,11 +147,10 @@ namespace Agebull.ZeroNet.Log
                         }
                         buf = serializer.Close();
                     }
-                    while (!_socket.Publish(ZeroPublisher.PubDescriptionTson2, Name, array.Count.ToString(), buf) && CanLoop)
+                    while (CanLoop && !_socket.Publish(ZeroPublisher.PubDescriptionTson2, Name, array.Count.ToString(), buf))
                         Thread.Sleep(10);
                 }
             }
-            Hearter?.HeartLeft(StationName, RealName);
             _socket.TryClose();
             return true;
         }

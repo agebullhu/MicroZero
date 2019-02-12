@@ -1,18 +1,10 @@
-namespace Agebull.ZeroNet.Core
+namespace Agebull.ZeroNet.Core.ZeroManagemant.StateMachine
 {
     /// <summary>
     /// 监控状态机
     /// </summary>
     public class RuningStateMachine : MonitorStateMachineBase, IMonitorStateMachine
     {
-        /// <summary>
-        /// 构造
-        /// </summary>
-        public RuningStateMachine()
-        {
-            ZeroTrace.WriteError(nameof(RuningStateMachine));
-        }
-
         /// <summary>
         ///     收到信息的处理
         /// </summary>
@@ -35,8 +27,8 @@ namespace Agebull.ZeroNet.Core
                 case ZeroNetEventType.CenterWorkerSoundOff:
                     worker_sound_off();
                     return;
-                case ZeroNetEventType.CenterStationState:
-                    station_state(station, content);
+                case ZeroNetEventType.CenterStationTrends:
+                    station_trends(station, content);
                     return;
                 case ZeroNetEventType.CenterStationInstall:
                     station_install(station, content);

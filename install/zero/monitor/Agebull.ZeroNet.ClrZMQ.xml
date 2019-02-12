@@ -1298,6 +1298,29 @@
                 实例
             </returns>
         </member>
+        <member name="M:ZeroMQ.ZSocket.CreateRealName(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean)">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
         <member name="M:ZeroMQ.ZSocket.CreateServiceSocket(System.String,ZeroMQ.ZSocketType)">
             <summary>
             构建套接字

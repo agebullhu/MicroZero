@@ -62,18 +62,24 @@
 @section VUE{
     <script>
         function do_get(url, that) {
-            $.get(url, function (data) {
-                if (data.success) {
-                    that.$message({
-                        message: '操作成功',
-                        type: 'success'
-                    });
+            $.get(url).then(data=> {
+                try {
+                    if (data.success) {
+                        that.$message({
+                            message: '操作成功',
+                            type: 'success'
+                        });
+                    }
+                    else {
+                        that.$message.error(`操作失败:${data.status.msg}`);
+                    }
+                } catch (e) {
+                    that.$message.error(`操作失败${e}`);
                 }
-                else {
-                    that.$message.error('操作失败:' + data.status.msg);
-                }
-            }).error(function (e) {
-                that.$message.error('操作失败'+e);
+            }, e => {
+                that.$message.error(`操作失败${e}`);
+            }).catch(e=> {
+                that.$message.error(`操作失败${e}`);
             });
 
         }
@@ -123,25 +129,25 @@
                 }
             },
             go_station_info(station) {
-                location.href = '/Monitor/Index/' + station;
+                location.href = `/Monitor/Index/${station}`;
             },
             pause_station(station) {
-                do_get('/Home/Pause/' + station, this);
+                do_get(`/Home/Pause/${station}`, this);
             },
             resume_station(station) {
-                do_get('/Home/Resume/' + station, this);
+                do_get(`/Home/Resume/${station}`, this);
             },
             recover_station(station) {
-                do_get('/Home/Recover/' + station, this);
+                do_get(`/Home/Recover/${station}`, this);
             },
             stop_station(station) {
-                do_get('/Home/Stop/' + station, this);
+                do_get(`/Home/Stop/${station}`, this);
             },
             remove_station(station) {
-                do_get('/Home/Remove/' + station, this);
+                do_get(`/Home/Remove/${station}`, this);
             },
             go_doc(station) {
-                location.href = '/Doc/Index/' + station;
+                location.href = `/Doc/Index/${station}`;
             },
             add_station() {
                 vue_option.data.nowStation = {
@@ -176,14 +182,19 @@
                             });
                             vue_option.data.editDialogFormVisible = false;
                         }
-                        else {
-                            that.$message.error('操作失败:' + data.status.msg);
+                        else if(data.status){
+                            that.$message.error(`操作失败:${data.status.msg}`);
                         }
+                        else {
+                        that.$message.error('操作失败');
+                    }
                     }).error(function () {
                         vue_option.data.loading = false;
                         vue_option.data.editDialogFormVisible = false;
                         that.$message.error('更新失败');
-                    });
+                        });
+
+                    return true;
                 });
 
             },
@@ -224,7 +235,7 @@
                 var cfg = stations[idx];
                 if (cfg.name === station.name) {
                     if (station.state == "Remove") {
-                        stations.splice(idx,1);
+                        stations.splice(idx, 1);
                     }
                     else {
                         var status = station.status;
@@ -246,13 +257,13 @@
             }
         }
         var socket_config = new ws({
-            address: "ws://" + location.host + "/config",
+            address: `ws://${location.host}/config`,
             sub: "",
             onmessage: on_config_push
         });
         socket_config.open();
         var socket_status = new ws({
-            address: "ws://" + location.host + "/status",
+            address: `ws://${location.host}/status`,
             sub: "",
             onmessage: on_status_push
         });
@@ -266,7 +277,7 @@
              background-color="#545c64"
              text-color="#fff" unique-opened
              active-text-color="#ffd04b">
-        
+
         <el-submenu index="root">
             <template slot="title">
                 <i class="el-icon-star-off"></i>

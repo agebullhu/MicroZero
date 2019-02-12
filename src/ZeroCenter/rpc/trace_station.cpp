@@ -26,7 +26,7 @@ namespace agebull
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
-			size_t request_id = 0, requester = 0, global_id = 0, pub_title = 0, station = 0, call_id = 0, station_type = 0, status = 0;
+			size_t request_id = 0, requester = 0, global_id = 0, station = 0, call_id = 0, station_type = 0, status = 0;
 			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
@@ -82,7 +82,7 @@ namespace agebull
 		void trace_station::launch(shared_ptr<trace_station> station)
 		{
 			zero_config& config = station->get_config();
-			config.is_base = false;
+			config.is_base = true;
 			if (!station->initialize())
 			{
 				config.failed("initialize");

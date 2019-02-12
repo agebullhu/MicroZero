@@ -32,7 +32,7 @@ namespace ZeroNet.Http.Route
             Name = "RuntimeWaringService";
             Instance = this;
             StationName = "HealthCenter";
-            Subscribe = "RuntimeWaring";
+            Subscribes.Add("RuntimeWaring");
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace ZeroNet.Http.Route
         /// <summary>
         ///     将要开始
         /// </summary>
-        protected override bool OnStart()
+        protected override bool Prepare()
         {
             try
             {
@@ -177,7 +177,7 @@ namespace ZeroNet.Http.Route
             if (message.Length >= 20)
                 message = message.Substring(20);
             //发送短信
-            Console.WriteLine($"服务器{host}的{api}发生${message}错误{item.LastCount}次，请立即处理");
+            LogRecorder.Warning($"服务器{host}的{api}发生${message}错误{item.LastCount}次，请立即处理");
             if (SmsConfig?.Phones == null)
                 return;
             foreach (var phone in SmsConfig.Phones)

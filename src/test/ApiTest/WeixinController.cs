@@ -1,13 +1,10 @@
-﻿using System;
-using Senparc.Weixin.Exceptions;
+﻿using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Entities;
 using Agebull.ZeroNet.ZeroApi;
 using Senparc.NeuChar.Entities;
 using Senparc.NeuChar.Helpers;
-using Senparc.Weixin.MP.AdvancedAPIs;
 using Agebull.Common.Configuration;
 using Microsoft.Extensions.Configuration;
-using Senparc.Weixin.MP.AdvancedAPIs.TemplateMessage;
 
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 namespace ApiTest
@@ -32,29 +29,7 @@ namespace ApiTest
         [Route("v1/msg/text")]
         public string OnTextRequest(RequestMessageText requestMessage)
         {
-            var msg = ResponseMessageBase.CreateFromRequestMessage<ResponseMessageText>(requestMessage);
-            msg.Content = requestMessage.Content;
-            try
-            {
-
-                TemplateApi.SendTemplateMessage(Option.WeixinAppId, requestMessage.FromUserName, new AppointmentTemplateData
-                {
-                    first = new TemplateDataItem(msg.Content),
-                    patientName = new TemplateDataItem(msg.Content),
-                    patientSex = new TemplateDataItem(msg.Content),
-                    hospitalName = new TemplateDataItem("文荣医院"),
-                    department = new TemplateDataItem(msg.Content),
-                    doctor = new TemplateDataItem(msg.Content),
-                    seq = new TemplateDataItem(msg.FromUserName),
-                    remark = new TemplateDataItem(msg.ToUserName),
-                });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-
-            return "success"; //msg.ConvertEntityToXmlString();
+            return defXml;
         }
 
         /// <summary>

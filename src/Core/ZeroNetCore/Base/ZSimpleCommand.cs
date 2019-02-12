@@ -105,7 +105,7 @@ namespace Agebull.ZeroNet.Core
                             ErrorMessage = "地址无效"
                         };
 
-                    Socket = ZSocket.CreateDealerSocket(ManageAddress,ZeroIdentityHelper.CreateIdentity());
+                    Socket = ZSocket.CreateDealerSocket(ManageAddress,ZSocket.CreateIdentity(false,"Dispatcher"));
                 }
                 try
                 {

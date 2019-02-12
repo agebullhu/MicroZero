@@ -17,7 +17,6 @@ namespace ZeroNet.Http.Route
         {
             Name = "PlanSubscribe";
             StationName = "PlanDispatcher";
-            Subscribe = "";
             IsRealModel = true;
         }
 
@@ -25,7 +24,7 @@ namespace ZeroNet.Http.Route
         /// 空转
         /// </summary>
         /// <returns></returns>
-        public override void Idle()
+        protected override void OnLoopIdle()
         {
             //DoPublish();
         }
