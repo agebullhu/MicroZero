@@ -5,7 +5,7 @@
 sudo apt-get update
 
 ## 2 Net Core
-> https://www.microsoft.com/net/learn/get-started/linux/ubuntu16-04
+> https://dotnet.microsoft.com/learn/dotnet/hello-world-tutorial/install
 
 wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
 
