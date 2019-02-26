@@ -224,7 +224,7 @@ namespace Agebull.ZeroNet.Core.ZeroManagemant
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
-            //ZeroTrace.SystemLog("LoadAllConfig", json);
+            ZeroTrace.SystemLog("LoadAllConfig", json);
             return ZeroApplication.Config.FlushConfigs(json);
         }
 

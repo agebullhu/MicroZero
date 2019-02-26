@@ -878,17 +878,6 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Call``2(System.String,System.String,``0)">
-            <summary>
-            调用远程方法
-            </summary>
-            <typeparam name="TArgument">参数类型</typeparam>
-            <typeparam name="TResult">返回值类型</typeparam>
-            <param name="station">站点</param>
-            <param name="api">api名称</param>
-            <param name="arg">参数</param>
-            <returns></returns>
-        </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallApi``2(System.String,System.String,``0)">
             <summary>
             调用远程方法
@@ -910,10 +899,39 @@
             <param name="arg">参数</param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallApi``1(System.String,System.String)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TResult">参数类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.CallApi(System.String,System.String)">
             <summary>
             调用远程方法
             </summary>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Call``2(System.String,System.String,``0)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.ZeroNet.ZeroApi.ApiClient.Call``1(System.String,System.String)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TResult">参数类型</typeparam>
             <param name="station">站点</param>
             <param name="api">api名称</param>
             <returns></returns>
@@ -1783,6 +1801,12 @@
             <summary>
                 最大Task与Cpu核心数的倍数关系(0-128)
             </summary>
+        </member>
+        <member name="M:Agebull.ZeroNet.Core.ZeroStationOption.Copy(Agebull.ZeroNet.Core.ZeroStationOption)">
+            <summary>
+            复制
+            </summary>
+            <param name="option"></param>
         </member>
         <member name="T:Agebull.ZeroNet.Core.ZeroAppConfig">
             <summary>
@@ -4688,6 +4712,11 @@
             </summary>
         </member>
         <member name="P:Agebull.ZeroNet.PubSub.SubStation`1.Subscribe">
+            <summary>
+            订阅主题
+            </summary>
+        </member>
+        <member name="F:Agebull.ZeroNet.PubSub.SubStation`1.Subscribes">
             <summary>
             订阅主题
             </summary>

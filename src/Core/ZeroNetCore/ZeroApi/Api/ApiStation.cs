@@ -43,7 +43,10 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         protected override ZeroStationOption GetApiOption()
         {
-            return ZeroApplication.GetApiOption(StationName);
+            var option = ZeroApplication.GetApiOption(StationName);
+            if (option.SpeedLimitModel == SpeedLimitType.None)
+                option.SpeedLimitModel = SpeedLimitType.ThreadCount;
+            return option;
         }
 
         /// <summary>

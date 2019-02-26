@@ -1320,21 +1320,21 @@ namespace ZeroMQ
             socket.SetOption(ZSocketOption.LINGER, Option.Linger);
             socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
             socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
-
-            if (service)
-            {
-                socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
-                return;
-            }
-            socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
-            socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
-
             if (Option.TcpKeepalive > 0)
             {
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 1);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
+            }
+            if (service)
+            {
+                socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
+            }
+            else
+            {
+                socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
+                socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
+                socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
             }
         }
 

@@ -50,10 +50,10 @@ namespace Agebull.ZeroNet.PubSub
         /// </summary>
         protected override ZeroStationOption GetApiOption()
         {
-            return new ZeroStationOption
-            {
-                SpeedLimitModel = SpeedLimitType.Single
-            };
+            var option = ZeroApplication.GetApiOption(StationName);
+            if (option.SpeedLimitModel == SpeedLimitType.None)
+                option.SpeedLimitModel = SpeedLimitType.Single;
+            return option;
         }
 
         /// <inheritdoc />
