@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public class HttpProtocol
     {

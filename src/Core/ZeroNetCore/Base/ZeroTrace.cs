@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Agebull.Common.Logging;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     ///   控制台扩展
@@ -163,7 +163,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            SystemLog(title, messages);
+            //SystemLog(title, messages);
             LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" * "));
         }
         /// <summary>
@@ -174,7 +174,7 @@ namespace Agebull.ZeroNet.Core
         /// <param name="exception"></param>
         public static void WriteException(string title, Exception exception, params object[] messages)
         {
-            SystemLog(title, "Exception", exception.Message, messages);
+            //SystemLog(title, "Exception", exception.Message, messages);
             LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" * "));
         }
     }

@@ -1,5 +1,4 @@
-using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 
 namespace RpcTest
 {

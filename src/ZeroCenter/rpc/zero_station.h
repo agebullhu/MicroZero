@@ -59,7 +59,7 @@ namespace agebull
 			/**
 			* \brief 站点配置
 			*/
-			shared_ptr<zero_config> config_;
+			shared_ptr<station_config> config_;
 			/**
 			* \brief 远程调用句柄
 			*/
@@ -121,15 +121,12 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			zero_station(shared_ptr<zero_config>& config, int type, int request_zmq_type, int res_zmq_type);
+			zero_station(shared_ptr<station_config>& config, int type, int request_zmq_type, int res_zmq_type);
 
 			/**
 			* \brief 析构
 			*/
-			virtual ~zero_station()
-			{
-				cout << "zero_station destory" << endl;
-			}
+			virtual ~zero_station() {}
 
 			/**
 			* \brief 初始化
@@ -271,7 +268,7 @@ namespace agebull
 			/**
 			* \brief 取得配置内容
 			*/
-			zero_config& get_config() const
+			station_config& get_config() const
 			{
 				return *config_;
 			}
@@ -279,7 +276,7 @@ namespace agebull
 			/**
 			* \brief 取得配置内容
 			*/
-			shared_ptr<zero_config>& get_config_ptr()
+			shared_ptr<station_config>& get_config_ptr()
 			{
 				return config_;
 			}
@@ -332,6 +329,48 @@ namespace agebull
 			}
 		};
 
+		inline zero_station::zero_station(const string name, int type, int req_zmq_type, int res_zmq_type)
+			: req_zmq_type_(req_zmq_type)
+			, res_zmq_type_(res_zmq_type)
+			, station_type_(type)
+			, poll_items_(nullptr)
+			, poll_count_(0)
+			, task_semaphore_(0)
+			, station_name_(name)
+			, config_(station_warehouse::get_config(name.c_str()))
+			, request_scoket_tcp_(nullptr)
+			, request_socket_inproc_(nullptr)
+			, trace_socket_inproc_(nullptr)
+			, plan_socket_inproc_(nullptr)
+			, proxy_socket_inproc_(nullptr)
+			, worker_in_socket_tcp_(nullptr)
+			, worker_out_socket_tcp_(nullptr)
+			//, worker_out_socket_ipc_(nullptr)
+			, zmq_state_(zmq_socket_state::succeed)
+		{
+			assert(req_zmq_type_ != ZMQ_PUB);
+		}
+
+		inline zero_station::zero_station(shared_ptr<station_config>& config, int type, int req_zmq_type, int res_zmq_type)
+			: req_zmq_type_(req_zmq_type)
+			, res_zmq_type_(res_zmq_type)
+			, station_type_(type)
+			, poll_items_(nullptr)
+			, poll_count_(0)
+			, task_semaphore_(0)
+			, station_name_(config->station_name)
+			, config_(config)
+			, request_scoket_tcp_(nullptr)
+			, request_socket_inproc_(nullptr)
+			, trace_socket_inproc_(nullptr)
+			, plan_socket_inproc_(nullptr)
+			, proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
+			, worker_out_socket_tcp_(nullptr)
+			//, worker_out_socket_ipc_(nullptr)
+			, zmq_state_(zmq_socket_state::succeed)
+		{
+			assert(req_zmq_type_ != ZMQ_PUB);
+		}
 		/**
 		*\brief 发送消息到工作站点
 		*/

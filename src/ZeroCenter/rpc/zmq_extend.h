@@ -137,7 +137,7 @@ namespace agebull
 			fsm,
 
 			/**
-			* \brief 重启
+			* \brief 重试
 			*/
 			again,
 			/**

@@ -1,8 +1,8 @@
 using System;
-using Agebull.Common.Rpc;
+using Agebull.Common.Context;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 管理命令
@@ -105,8 +105,14 @@ namespace Agebull.ZeroNet.Core
                             ErrorMessage = "地址无效"
                         };
 
-                    Socket = ZSocket.CreateDealerSocket(ManageAddress,ZSocket.CreateIdentity(false,"Dispatcher"));
+                    Socket = ZSocket.CreateDealerSocket(ManageAddress, ZSocket.CreateIdentity(false, "Dispatcher"));
                 }
+                if (Socket == null)
+                    return new ZeroResult
+                    {
+                        InteractiveSuccess = false,
+                        State = ZeroOperatorStateType.NetError
+                    };
                 try
                 {
                     var result = SendTo(Socket, description, args);

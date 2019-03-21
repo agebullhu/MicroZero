@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     ///     ‘ÀŒ¨∂Ã–≈≈‰÷√

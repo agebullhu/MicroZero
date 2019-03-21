@@ -1,4 +1,4 @@
-﻿namespace Agebull.ZeroNet.Core
+﻿namespace Agebull.MicroZero
 {
     /// <summary>
     /// 限速模式（0 按线程数限制 1 按等待数限制）

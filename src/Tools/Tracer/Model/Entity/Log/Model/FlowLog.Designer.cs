@@ -15,15 +15,15 @@ using System.IO;
 using Newtonsoft.Json;
 
 using Agebull.Common;
-using Agebull.Common.DataModel;
-using Gboxt.Common.DataModel;
-using Gboxt.Common.DataModel.Extends;
+using Agebull.EntityModel.Common;
+using Agebull.EntityModel.Common;
+using Agebull.EntityModel.Common.Extends;
 using Agebull.Common.WebApi;
 
 
 #endregion
 
-namespace ZeroNet.Devops.ZeroTracer
+namespace MicroZero.Devops.ZeroTracer
 {
     /// <summary>
     /// 以流程方式记录日志

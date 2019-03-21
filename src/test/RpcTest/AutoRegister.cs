@@ -1,11 +1,8 @@
 using System.ComponentModel.Composition;
 using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Microsoft.Extensions.DependencyInjection;
 using RpcTest;
 
-namespace Agebull.ZeroNet.Log
+namespace Agebull.MicroZero.Log
 {
     /// <summary>
     ///   远程记录器

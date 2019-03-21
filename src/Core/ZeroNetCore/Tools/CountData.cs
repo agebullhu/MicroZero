@@ -1,9 +1,9 @@
 using System.Runtime.Serialization;
-using Agebull.ZeroNet.PubSub;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero.PubSub;
+using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     ///     统计数据

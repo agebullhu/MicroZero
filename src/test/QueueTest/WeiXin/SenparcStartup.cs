@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using Agebull.Common.Configuration;
-using Agebull.Common.Ioc;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Senparc.CO2NET;
@@ -10,12 +7,11 @@ using Senparc.CO2NET.Cache;
 using Senparc.CO2NET.RegisterServices;
 using Senparc.Weixin;
 using Senparc.Weixin.Cache;
-using Senparc.Weixin.Cache.Redis;
 using Senparc.Weixin.Entities;
 using Senparc.Weixin.MP;
 using Senparc.Weixin.RegisterServices;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public class SenparcStartup 
     {

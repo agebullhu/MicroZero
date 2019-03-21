@@ -5,10 +5,11 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+
+using Agebull.MicroZero;
+using Agebull.EntityModel.Common;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -34,7 +35,7 @@ namespace ZeroMQ
         protected override string TypeName => nameof(ZMessage);
 #endif
         /// <summary>
-        /// 关联的站点名称（仅用于ZeroNet）
+        /// 关联的站点名称（仅用于MicroZero）
         /// </summary>
         public string StationName
         {
@@ -42,7 +43,7 @@ namespace ZeroMQ
             set;
         }
         /// <summary>
-        /// 是否使用中（仅用于ZeroNet）
+        /// 是否使用中（仅用于MicroZero）
         /// </summary>
         public bool IsUsing
         {

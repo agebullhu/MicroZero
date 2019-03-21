@@ -1,7 +1,7 @@
 using System.Reflection;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Senparc.CO2NET;

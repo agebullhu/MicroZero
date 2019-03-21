@@ -4,6 +4,8 @@
 #include "notify_station.h"
 #include "queue_station.h"
 
+#define SQLITE
+
 namespace agebull
 {
 	namespace zero_net
@@ -14,9 +16,13 @@ namespace agebull
 		 */
 		map<string, zero_station*> station_warehouse::examples_;
 		/**
+		* \brief sqlite存储类
+		*/
+		system_storage station_warehouse::storage_;
+		/**
 		* \brief 配置集合
 		*/
-		map<string, shared_ptr<zero_config>> station_warehouse::configs_;
+		map<string, shared_ptr<station_config>> station_warehouse::configs_;
 		/**
 		* \brief 实例队列访问锁
 		*/
@@ -40,6 +46,11 @@ namespace agebull
 		*/
 		bool station_warehouse::initialize()
 		{
+#ifdef SQLITE
+			storage_.prepare_storage();
+			storage_.load_station([](shared_ptr<station_config>& config) {insert_config(config); });
+			reboot_num_ = storage_.update_reboot_num();
+#else
 			redis_live_scope redis(global_config::redis_defdb);
 			redis->incr("sys:gid", &reboot_num_);
 			if (reboot_num_ > 0xFFF)
@@ -74,6 +85,7 @@ namespace agebull
 				port.format_append("%d", global_config::base_tcp_port);
 				redis->set(zero_def::redis_key::next_port, port);
 			}
+#endif
 			return true;
 		}
 
@@ -98,7 +110,7 @@ namespace agebull
 		/**
 		* \brief 还原站点
 		*/
-		bool station_warehouse::restore(shared_ptr<zero_config>& config)
+		bool station_warehouse::restore(shared_ptr<station_config>& config)
 		{
 			if (config->is_state(station_state::stop))
 				return false;
@@ -125,25 +137,9 @@ namespace agebull
 		}
 
 		/**
-		* \brief 清除所有站点
-		*/
-		void station_warehouse::clear()
-		{
-			glogal_id_ = 0LL;
-			{
-				redis_live_scope redis(global_config::redis_defdb);
-				redis->flushdb();
-			}
-			{
-				boost::lock_guard<boost::mutex> guard(config_mutex_);
-				configs_.clear();
-			}
-			initialize();
-		}
-		/**
 		* \brief 遍历配置
 		*/
-		void station_warehouse::foreach_configs(std::function<bool(shared_ptr<zero_config>&)> look)
+		void station_warehouse::foreach_configs(std::function<bool(shared_ptr<station_config>&)> look)
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			for (auto & config : configs_)
@@ -193,7 +189,7 @@ namespace agebull
 		/**
 		* \brief 保存配置
 		*/
-		void station_warehouse::insert_config(shared_ptr<zero_config> config)
+		void station_warehouse::insert_config(shared_ptr<station_config> config)
 		{
 			host_json.clear();
 			config->check_type_name();
@@ -210,6 +206,12 @@ namespace agebull
 		void station_warehouse::save_configs()
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
+#ifdef SQLITE
+			for (auto& iter : configs_)
+			{
+				storage_.save_station(iter.second);
+			}
+#else
 			redis_live_scope redis(global_config::redis_defdb);
 			for (auto& iter : configs_)
 			{
@@ -217,12 +219,13 @@ namespace agebull
 				fmt % iter.first;
 				redis->set(fmt.str().c_str(), iter.second->to_full_json());
 			}
+#endif
 		}
-		shared_ptr<zero_config> empty_config;
+		shared_ptr<station_config> empty_config;
 		/**
 		* \brief 取得配置
 		*/
-		shared_ptr<zero_config>& station_warehouse::get_config(const char* station_name, bool find_redis)
+		shared_ptr<station_config>& station_warehouse::get_config(const char* station_name, bool find)
 		{
 			boost::lock_guard<boost::mutex> guard(config_mutex_);
 			const auto iter = configs_.find(station_name);
@@ -230,8 +233,13 @@ namespace agebull
 			{
 				return iter->second;
 			}
-			if (!find_redis)
+			if (!find)
 				return empty_config;
+#ifdef SQLITE
+			shared_ptr<station_config> config = storage_.load_station(station_name);
+			configs_.insert(make_pair(station_name, config));
+			return config;
+#else
 			boost::format fmt("net:host:%1%");
 			fmt % station_name;
 			auto key = fmt.str();
@@ -246,19 +254,25 @@ namespace agebull
 				return configs_[station_name];
 			}
 			return empty_config;
+#endif
 		}
 		/**
 		* \brief 保存站点
 		*/
-		acl::string station_warehouse::save(shared_ptr<zero_config>& config)
+		acl::string station_warehouse::save(shared_ptr<station_config>& config)
 		{
 			host_json.clear();
+#ifdef SQLITE
+			storage_.save_station(config);
+			return config->to_full_json();
+#else
 			var json = config->to_full_json();
 			boost::format fmt("net:host:%1%");
 			fmt % config->station_name;
 			redis_live_scope redis(global_config::redis_defdb);
 			redis->set(fmt.str().c_str(), json);
 			return json;
+#endif
 		}
 		/**
 		* \brief 安装站点
@@ -267,7 +281,7 @@ namespace agebull
 		{
 			if (json_str == nullptr || json_str[0] != '{')
 				return -1;
-			shared_ptr<zero_config> config = make_shared<zero_config>();
+			shared_ptr<station_config> config = make_shared<station_config>();
 			config->read_json(json_str);
 			if (!config->is_general())
 				return -1;
@@ -317,7 +331,7 @@ namespace agebull
 		/**
 		* \brief 检查站点名称
 		*/
-		int station_warehouse::check_station_name(shared_ptr<zero_config>& config)
+		int station_warehouse::check_station_name(shared_ptr<station_config>& config)
 		{
 			if (config->station_name.empty())
 				return -1;
@@ -329,7 +343,7 @@ namespace agebull
 			acl::string short_name = config->short_name.c_str();
 
 			bool failed = false;
-			foreach_configs([&short_name, &station_name, &failed](shared_ptr<zero_config>& cfg)
+			foreach_configs([&short_name, &station_name, &failed](shared_ptr<station_config>& cfg)
 			{
 				if (station_name.compare(cfg->station_name.c_str(), false) == 0 ||
 					station_name.compare(cfg->short_name.c_str(), false) == 0 ||
@@ -358,8 +372,22 @@ namespace agebull
 		/**
 		* \brief 安装站点
 		*/
-		void station_warehouse::install_station(shared_ptr<zero_config>& config)
+		void station_warehouse::install_station(shared_ptr<station_config>& config)
 		{
+#ifdef SQLITE
+			config->request_port = ++storage_.next_port;
+			config->worker_out_port = ++storage_.next_port;
+			switch (config->station_type)
+			{
+			case zero_def::station_type::api:
+			case zero_def::station_type::vote:
+			case zero_def::station_type::queue:
+			case zero_def::station_type::route_api:
+			case zero_def::station_type::proxy:
+				config->worker_in_port = ++storage_.next_port;
+			}
+			storage_.update_next_port();
+#else
 			redis_live_scope redis(global_config::redis_defdb);
 			int64 port;
 			redis->incr(zero_def::redis_key::next_port, &port);
@@ -376,6 +404,9 @@ namespace agebull
 				redis->incr(zero_def::redis_key::next_port, &port);
 				config->worker_in_port = static_cast<int>(port);
 			}
+#endif
+			
+
 			acl::string json = save(config);
 			insert_config(config);
 			config->log("install");
@@ -386,7 +417,7 @@ namespace agebull
 		*/
 		bool station_warehouse::update(const char* json)
 		{
-			shared_ptr<zero_config> new_cfg = make_shared<zero_config>();
+			shared_ptr<station_config> new_cfg = make_shared<station_config>();
 			new_cfg->read_json(json);
 			var config = get_config(new_cfg->station_name.c_str());
 			if (!config || config->is_base)
@@ -410,7 +441,7 @@ namespace agebull
 		*/
 		bool station_warehouse::recover(const char* station_name)
 		{
-			shared_ptr<zero_config> config = get_config(station_name);
+			shared_ptr<station_config> config = get_config(station_name);
 			if (!config || !config->is_state(station_state::stop) || config->is_base)
 				return false;
 			config->log("recover");
@@ -424,14 +455,18 @@ namespace agebull
 		*/
 		bool station_warehouse::remove(const char* station_name)
 		{
-			shared_ptr<zero_config> config = get_config(station_name);
+			shared_ptr<station_config> config = get_config(station_name);
 			if (!config || !config->is_state(station_state::stop) || config->is_base)
 				return false;
 			host_json.clear();
+#ifdef SQLITE
+			storage_.delete_station(config->station_name.c_str());
+#else
 			boost::format fmt("net:host:%1%");
 			fmt % config->station_name;
 			redis_live_scope redis(global_config::redis_defdb);
 			redis->del(fmt.str().c_str());
+#endif
 			config->log("remove");
 			var json = config->to_full_json();
 			station_event(zero_net_event::event_station_remove, config->station_name.c_str(), json.c_str());
@@ -443,7 +478,7 @@ namespace agebull
 		*/
 		bool station_warehouse::stop(const string& station_name)
 		{
-			shared_ptr<zero_config> config = get_config(station_name.c_str());
+			shared_ptr<station_config> config = get_config(station_name.c_str());
 			if (!config || config->is_state(station_state::stop) || config->is_base)
 				return false;
 			config->set_state(station_state::stop);
@@ -480,7 +515,7 @@ namespace agebull
 		*/
 		bool station_warehouse::left(zero_station* station)
 		{
-			station->config_->log("left");
+			station->config_->closing();
 			{
 				boost::lock_guard<boost::mutex> guard(examples_mutex_);
 				const auto iter = examples_.find(station->config_->station_name);
@@ -556,7 +591,7 @@ namespace agebull
 			zero_station* station = get_instance(station_name);
 			if (station != nullptr)
 				return station->resume() ? zero_def::status::ok : zero_def::status::failed;
-			shared_ptr<zero_config> config = get_config(station_name.c_str());
+			shared_ptr<station_config> config = get_config(station_name.c_str());
 			if (!config || config->is_state(station_state::stop))
 				return zero_def::status::not_find;
 			return restore(config) ? zero_def::status::ok : zero_def::status::failed;
@@ -572,7 +607,7 @@ namespace agebull
 			{
 				return zero_def::status::runing;
 			}
-			shared_ptr<zero_config> config = get_config(station_name.c_str());
+			shared_ptr<station_config> config = get_config(station_name.c_str());
 			if (config == nullptr)
 				return zero_def::status::not_find;
 			return restore(config) ? zero_def::status::ok : zero_def::status::failed;
@@ -622,7 +657,7 @@ namespace agebull
 			{
 				const char* id = *list[3];
 				config->worker_ready(id);
-				foreach_configs([&id](shared_ptr<zero_config>& cfg)
+				foreach_configs([&id](shared_ptr<station_config>& cfg)
 				{
 					cfg->worker_heartbeat(id);
 					return true;
@@ -643,7 +678,7 @@ namespace agebull
 		*/
 		void station_warehouse::set_all_destroy()
 		{
-			foreach_configs([](shared_ptr<zero_config>& config)
+			foreach_configs([](shared_ptr<station_config>& config)
 			{
 				boost::lock_guard<boost::mutex> guard(config->mutex);
 				config->runtime_state(station_state::destroy);

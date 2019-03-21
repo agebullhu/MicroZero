@@ -1,7 +1,8 @@
-﻿using Agebull.Common.OAuth;
-using Agebull.Common.Rpc;
+﻿using Agebull.Common.Context;
+using Agebull.Common.OAuth;
 
-namespace Agebull.ZeroNet.ZeroApi
+
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// ZeroApi控制器基类

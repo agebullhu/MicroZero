@@ -1,6 +1,8 @@
 #pragma once
 #ifndef _PLAN_DISPATCHER_H_
 #define _PLAN_DISPATCHER_H_
+#ifdef PLAN
+
 #include "../stdinc.h"
 #include "zero_plan.h"
 #include "zero_station.h"
@@ -134,4 +136,6 @@ namespace agebull
 		};
 	}
 }
+
+#endif // PLAN
 #endif //!_PLAN_DISPATCHER_H_

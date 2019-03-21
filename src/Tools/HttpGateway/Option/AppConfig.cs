@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     路由配置
@@ -86,6 +86,7 @@ namespace ZeroNet.Http.Gateway
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
+                throw new Exception($"路由配置文件{ConfigFileName}解析错误");
             }
             if (RouteMap == null)
                 RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);

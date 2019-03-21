@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using Agebull.Common.Rpc;
 using Agebull.Common.Tson;
-using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     ///     消息发布器

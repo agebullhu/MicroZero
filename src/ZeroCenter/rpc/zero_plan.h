@@ -4,6 +4,10 @@
 #include "../stdinc.h"
 #include "../ext/shared_char.h"
 #include "../cfg/json_config.h"
+#ifdef PLAN
+
+
+
 
 namespace agebull
 {
@@ -335,4 +339,5 @@ namespace agebull
 	}
 }
 
+#endif // PLAN
 #endif //!_ZERO_PLAN_H_

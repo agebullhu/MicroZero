@@ -1,15 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+﻿using Agebull.Common.Logging;
+using Agebull.MicroZero;
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApi;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
+    /// <summary>
+    ///     Http配置类
+    /// </summary>
+    public class HttpOption
+    {
+        /// <summary>
+        /// 端口号
+        /// </summary>
+        public int Port { get; set; }
+
+        /// <summary>
+        /// 是否Https
+        /// </summary>
+        public bool IsHttps { get; set; }
+
+        /// <summary>
+        /// 证书文件路径
+        /// </summary>
+        public string CerFile { get; set; }
+
+        /// <summary>
+        /// 证书密码
+        /// </summary>
+        public string CerPwd { get; set; }
+    }
+
     /// <summary>
     ///     调用映射核心类
     /// </summary>
@@ -51,6 +73,7 @@ namespace ZeroNet.Http.Gateway
             caller.CheckStateResult();
             return Data.ResultMessage = caller.Result;
         }
+
         private string CallApi2(ZeroHost zeroHost)
         {
             var config = ZeroApplication.Config[zeroHost.Station];
@@ -59,7 +82,7 @@ namespace ZeroNet.Http.Gateway
                 Data.UserState = UserOperatorStateType.NotFind;
                 Data.ZeroState = ZeroOperatorStateType.NotFind;
                 {
-                    return Data.ResultMessage = ApiResult.NoFindJson;
+                    return Data.ResultMessage = ApiResultIoc.NoFindJson;
                 }
             }
 
@@ -80,25 +103,25 @@ namespace ZeroNet.Http.Gateway
                     Data.ResultMessage = caller.Result;
                     Data.ZeroState = caller.State;
                     Data.UserState = UserOperatorStateType.NotFind;
-                    return Data.ResultMessage = ApiResult.NoFindJson;
+                    return Data.ResultMessage = ApiResultIoc.NoFindJson;
                 case ZeroStationType.Notify:
                 case ZeroStationType.Queue:
                     if (ZeroPublisher.DoPublish(zeroHost.Station, Data.ApiName, Data.ApiName, Data.HttpContext))
                     {
                         Data.UserState = UserOperatorStateType.Success;
                         Data.ZeroState = ZeroOperatorStateType.Ok;
-                        return Data.ResultMessage = ApiResult.SucceesJson;
+                        return Data.ResultMessage = ApiResultIoc.SucceesJson;
                     }
                     else
                     {
                         Data.UserState = UserOperatorStateType.NetWorkError;
                         Data.ZeroState = ZeroOperatorStateType.NetError;
-                        return Data.ResultMessage = ApiResult.NetworkErrorJson;
+                        return Data.ResultMessage = ApiResultIoc.NetworkErrorJson;
                     }
                 default:
                     Data.UserState = UserOperatorStateType.NotFind;
                     Data.ZeroState = ZeroOperatorStateType.NotFind;
-                    return Data.ResultMessage = ApiResult.NoFindJson;
+                    return Data.ResultMessage = ApiResultIoc.NoFindJson;
             }
             
         }

@@ -1,10 +1,8 @@
-﻿using System;
-using Agebull.Common.Configuration;
+﻿using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using ApiTest;
-using ZeroMQ;
-using ZeroNet.Http.Gateway;
+using MicroZero.Http.Gateway;
 
 
 namespace QueueTest

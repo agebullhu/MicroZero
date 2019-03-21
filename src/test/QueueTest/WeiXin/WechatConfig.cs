@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     系统配置

@@ -2,15 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     ///     Api站点
@@ -52,7 +50,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected abstract IZmqPool Prepare(byte[] identity, out ZSocket socket);
+        protected abstract IZmqPool PrepareLoop(byte[] identity, out ZSocket socket);
 
         /// <summary>
         /// 发送返回值 
@@ -125,6 +123,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     }.Start();
                     break;
             }
+            RealState = StationState.BeginRun;
             //第一次全部运行
             for (int idx = 0; idx < max; idx++)
                 _processSemaphore.Wait();
@@ -166,14 +165,14 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private void DoPoll(string realName, byte[] identity, bool checkWait)
         {
-            ApiExecuter executer = checkWait
+            var executer = checkWait
                 ? null
                 : new ApiExecuter
                 {
                     Station = this
                 };
             ZeroTrace.SystemLog(StationName, "Task", "start", realName);
-            using (var pool = Prepare(identity, out var socket))
+            using (var pool = PrepareLoop(identity, out var socket))
             {
                 Hearter.HeartReady(StationName, realName);
                 _processSemaphore?.Release();
@@ -234,7 +233,7 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
-                item.Result = ApiResult.UnavailableJson;
+                item.Result = ApiResultIoc.UnavailableJson;
                 OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
             }
             else
@@ -266,8 +265,7 @@ namespace Agebull.ZeroNet.ZeroApi
 
         #region 注册方法
 
-        internal readonly Dictionary<string, ApiAction> ApiActions =
-            new Dictionary<string, ApiAction>(StringComparer.OrdinalIgnoreCase);
+        internal readonly Dictionary<string, ApiAction> ApiActions = new Dictionary<string, ApiAction>(StringComparer.OrdinalIgnoreCase);
 
 
         /// <summary>
@@ -292,8 +290,8 @@ namespace Agebull.ZeroNet.ZeroApi
                 info == null
                     ? name
                     : info.Controller == null
-                    ? $"{name}({info.Name})"
-                    : $"{name}({info.Controller}.{info.Name})");
+                        ? $"{name}({info.Name})"
+                        : $"{name}({info.Controller}.{info.Name})");
         }
 
         /// <summary>
@@ -342,7 +340,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="access">访问设置</param>
         /// <param name="info">反射信息</param>
         public ApiAction RegistAction<TResult>(string name, Func<TResult> action, ApiAccessOption access, ApiActionInfo info = null)
-            where TResult : ApiResult
+            where TResult : IApiResult
         {
             var a = new ApiAction<TResult>
             {
@@ -382,7 +380,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="info">反射信息</param>
         public ApiAction RegistAction<TArgument, TResult>(string name, Func<TArgument, TResult> action, ApiAccessOption access, ApiActionInfo info = null)
             where TArgument : class, IApiArgument
-            where TResult : ApiResult
+            where TResult : IApiResult
         {
             var a = new ApiAction<TArgument, TResult>
             {

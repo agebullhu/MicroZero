@@ -2,17 +2,19 @@ using System;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Configuration;
+using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Agebull.ZeroNet.Core.ZeroManagemant;
+
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroManagemant;
 using ZeroMQ;
 using ZeroMQ.lib;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     ///     站点应用
@@ -146,7 +148,7 @@ namespace Agebull.ZeroNet.Core
         /// </summary>
         public static void CheckOption()
         {
-            ZeroTrace.SystemLog("Weconme ZeroNet");
+            ZeroTrace.SystemLog("Weconme MicroZero");
             ZContext.Initialize();
             ZeroTrace.SystemLog("ZMQ", zmq.LibraryVersion);
             //ZeroTrace.Initialize();
@@ -166,14 +168,20 @@ namespace Agebull.ZeroNet.Core
         {
             GlobalContext.ServiceKey = Config.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
-            GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}"; 
+            GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
+
+            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
+            TxtRecorder.LogPath = Config.LogFolder;
             LogRecorder.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
             LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
             LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
+            LogRecorder.Initialize();
+
             IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
+
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();
-            LogRecorder.Initialize();
+            
         }
 
 

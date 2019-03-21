@@ -1,7 +1,4 @@
-﻿using System;
-using Agebull.Common.Configuration;
-using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
+﻿using Agebull.MicroZero;
 
 namespace QueuePublisher
 {

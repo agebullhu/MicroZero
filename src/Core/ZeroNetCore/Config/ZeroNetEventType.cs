@@ -1,4 +1,4 @@
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 中心事件

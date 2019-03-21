@@ -29,7 +29,7 @@ namespace agebull
 			 * \brief 构造
 			 * \param config
 			 */
-			notify_station(shared_ptr<zero_config>& config)
+			notify_station(shared_ptr<station_config>& config)
 				: zero_station(config, zero_def::station_type::notify, ZMQ_ROUTER, ZMQ_PUB)
 			{
 			}
@@ -71,7 +71,7 @@ namespace agebull
 			/**
 			*\brief 运行
 			*/
-			static void run(shared_ptr<zero_config>& config)
+			static void run(shared_ptr<station_config>& config)
 			{
 				if (config->is_state(station_state::stop))
 					return;

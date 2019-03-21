@@ -178,14 +178,14 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 case ZeroOperatorStateType.LocalNoReady:
                 case ZeroOperatorStateType.LocalZmqError:
-                    return ApiResult.NoReadyJson;
+                    return ApiResultIoc.Ioc.NoReadyJson;
 
                 case ZeroOperatorStateType.LocalSendError:
                 case ZeroOperatorStateType.LocalRecvError:
-                    return ApiResult.NetworkErrorJson;
+                    return ApiResultIoc.Ioc.NetworkErrorJson;
 
                 case ZeroOperatorStateType.LocalException:
-                    return ApiResult.LocalExceptionJson;
+                    return ApiResultIoc.Ioc.LocalExceptionJson;
 
                 case ZeroOperatorStateType.Plan:
                 case ZeroOperatorStateType.Runing:
@@ -195,46 +195,46 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.VoteWaiting:
                 case ZeroOperatorStateType.VoteStart:
                 case ZeroOperatorStateType.VoteEnd:
-                    return JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Success, State.Text()));
+                    return JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Success, State.Text()));
 
                 case ZeroOperatorStateType.Error:
-                    return ApiResult.InnerErrorJson;
+                    return ApiResultIoc.Ioc.InnerErrorJson;
 
                 case ZeroOperatorStateType.Unavailable:
-                    return ApiResult.UnavailableJson;
+                    return ApiResultIoc.Ioc.UnavailableJson;
 
                 case ZeroOperatorStateType.NotSupport:
                 case ZeroOperatorStateType.NotFind:
                 case ZeroOperatorStateType.NoWorker:
                     //ApiContext.Current.LastError = ErrorCode.NoFind;
-                    return ApiResult.NoFindJson;
+                    return ApiResultIoc.Ioc.NoFindJson;
 
                 case ZeroOperatorStateType.ArgumentInvalid:
                     //ApiContext.Current.LastError = ErrorCode.LogicalError;
-                    return ApiResult.ArgumentErrorJson;
+                    return ApiResultIoc.Ioc.ArgumentErrorJson;
 
                 case ZeroOperatorStateType.TimeOut:
-                    return ApiResult.TimeOutJson;
+                    return ApiResultIoc.Ioc.TimeOutJson;
 
                 case ZeroOperatorStateType.FrameInvalid:
                     //ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    return ApiResult.NetworkErrorJson;
+                    return ApiResultIoc.Ioc.NetworkErrorJson;
 
                 case ZeroOperatorStateType.NetError:
                     //ApiContext.Current.LastError = ErrorCode.NetworkError;
-                    return ApiResult.NetworkErrorJson;
+                    return ApiResultIoc.Ioc.NetworkErrorJson;
 
                 case ZeroOperatorStateType.Failed:
                 case ZeroOperatorStateType.Bug:
                     //ApiContext.Current.LastError = ErrorCode.LocalError;
-                    return ApiResult.LogicalErrorJson;
+                    return ApiResultIoc.Ioc.LogicalErrorJson;
 
                 case ZeroOperatorStateType.Pause:
                     //ApiContext.Current.LastError = ErrorCode.LocalError;
-                    return ApiResult.LogicalErrorJson;
+                    return ApiResultIoc.Ioc.LogicalErrorJson;
 
                 default:
-                    return ApiResult.PauseJson;
+                    return ApiResultIoc.Ioc.PauseJson;
             }
         }
         private readonly string _address = ZeroApplication.Config.BridgeLocalAddress;//$"inproc://{ZeroApplication.Config.StationName}.inp"

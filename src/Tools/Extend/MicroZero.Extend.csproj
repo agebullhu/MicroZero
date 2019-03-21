@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <Description>Agebull.ZeroNet.Extend</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y" />
+  </Target>
+
+  <ItemGroup>
+    <Compile Remove="EntityEventProxy\**" />
+    <EmbeddedResource Remove="EntityEventProxy\**" />
+    <None Remove="EntityEventProxy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ZeroNetCore\MicroZero.Core.csproj" />
+  </ItemGroup>
+
+</Project>

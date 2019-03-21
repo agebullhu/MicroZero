@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
+using Agebull.MicroZero;
+using Agebull.MicroZero.PubSub;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;
 using Aliyun.Net.SDK.Core.Exceptions;
@@ -11,7 +11,7 @@ using Aliyun.Net.SDK.Core.Profile;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     ///     运行时警告

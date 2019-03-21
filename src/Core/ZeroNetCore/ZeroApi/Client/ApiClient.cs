@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     ///     Api站点
@@ -159,22 +159,22 @@ namespace Agebull.ZeroNet.ZeroApi
         {
             if (_result != null)
                 return;
-            ApiResult apiResult;
+            IApiResult apiResult;
             switch (State)
             {
                 case ZeroOperatorStateType.Ok:
-                    apiResult = ApiResult.Ok;
+                    apiResult = ApiResultIoc.Ioc.Ok;
                     break;
                 case ZeroOperatorStateType.LocalNoReady:
                 case ZeroOperatorStateType.LocalZmqError:
-                    apiResult = ApiResult.NoReady;
+                    apiResult = ApiResultIoc.Ioc.NoReady;
                     break;
                 case ZeroOperatorStateType.LocalSendError:
                 case ZeroOperatorStateType.LocalRecvError:
-                    apiResult = ApiResult.NetworkError;
+                    apiResult = ApiResultIoc.Ioc.NetworkError;
                     break;
                 case ZeroOperatorStateType.LocalException:
-                    apiResult = ApiResult.LocalException;
+                    apiResult = ApiResultIoc.Ioc.LocalException;
                     break;
                 case ZeroOperatorStateType.Plan:
                 case ZeroOperatorStateType.Runing:
@@ -184,45 +184,45 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.VoteWaiting:
                 case ZeroOperatorStateType.VoteStart:
                 case ZeroOperatorStateType.VoteEnd:
-                    apiResult = ApiResult.Error(ErrorCode.Success, State.Text());
+                    apiResult = ApiResultIoc.Ioc.Error(ErrorCode.Success, State.Text());
                     break;
                 case ZeroOperatorStateType.Error:
-                    apiResult = ApiResult.InnerError;
+                    apiResult = ApiResultIoc.Ioc.InnerError;
                     break;
                 case ZeroOperatorStateType.Unavailable:
-                    apiResult = ApiResult.Unavailable;
+                    apiResult = ApiResultIoc.Ioc.Unavailable;
                     break;
                 case ZeroOperatorStateType.NotSupport:
                 case ZeroOperatorStateType.NotFind:
                 case ZeroOperatorStateType.NoWorker:
-                    apiResult = ApiResult.NoFind;
+                    apiResult = ApiResultIoc.Ioc.NoFind;
                     break;
                 case ZeroOperatorStateType.ArgumentInvalid:
-                    apiResult = ApiResult.ArgumentError;
+                    apiResult = ApiResultIoc.Ioc.ArgumentError;
                     break;
                 case ZeroOperatorStateType.TimeOut:
-                    apiResult = ApiResult.TimeOut;
+                    apiResult = ApiResultIoc.Ioc.TimeOut;
                     break;
                 case ZeroOperatorStateType.FrameInvalid:
 
-                    apiResult = ApiResult.NetworkError;
+                    apiResult = ApiResultIoc.Ioc.NetworkError;
                     break;
                 case ZeroOperatorStateType.NetError:
 
-                    apiResult = ApiResult.NetworkError;
+                    apiResult = ApiResultIoc.Ioc.NetworkError;
                     break;
                 case ZeroOperatorStateType.Failed:
                 case ZeroOperatorStateType.Bug:
-                    apiResult = ApiResult.LogicalError;
+                    apiResult = ApiResultIoc.Ioc.LogicalError;
                     break;
                 case ZeroOperatorStateType.Pause:
-                    apiResult = ApiResult.Pause;
+                    apiResult = ApiResultIoc.Ioc.Pause;
                     break;
                 case ZeroOperatorStateType.DenyAccess:
-                    apiResult = ApiResult.DenyAccess;
+                    apiResult = ApiResultIoc.Ioc.DenyAccess;
                     break;
                 default:
-                    apiResult = ApiResult.RemoteEmptyError;
+                    apiResult = ApiResultIoc.Ioc.RemoteEmptyError;
                     break;
             }
             if (LastResult != null && LastResult.InteractiveSuccess)
@@ -249,7 +249,7 @@ namespace Agebull.ZeroNet.ZeroApi
             var socket = ZeroConnectionPool.GetSocket(Station, GlobalContext.RequestInfo.RequestId);
             if (socket?.Socket == null)
             {
-                _result = ApiResult.NoReadyJson;
+                _result = ApiResultIoc.NoReadyJson;
                 State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
@@ -499,7 +499,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="api">api名称</param>
         /// <param name="arg">参数</param>
         /// <returns></returns>
-        public static ApiResult<TResult> CallApi<TArgument, TResult>(string station, string api, TArgument arg)
+        public static IApiResult<TResult> CallApi<TArgument, TResult>(string station, string api, TArgument arg)
         {
             ApiClient client = new ApiClient
             {
@@ -512,7 +512,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
         }
         /// <summary>
         /// 调用远程方法
@@ -522,7 +522,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="api">api名称</param>
         /// <param name="arg">参数</param>
         /// <returns></returns>
-        public static ApiResult CallApi<TArgument>(string station, string api, TArgument arg)
+        public static IApiResult CallApi<TArgument>(string station, string api, TArgument arg)
         {
             ApiClient client = new ApiClient
             {
@@ -535,7 +535,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+            return ApiResultIoc.Ioc.DeserializeObject(client.Result);
         }
 
         /// <summary>
@@ -545,7 +545,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="station">站点</param>
         /// <param name="api">api名称</param>
         /// <returns></returns>
-        public static ApiResult<TResult> CallApi<TResult>(string station, string api)
+        public static IApiResult<TResult> CallApi<TResult>(string station, string api)
         {
             ApiClient client = new ApiClient
             {
@@ -557,7 +557,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// <param name="station">站点</param>
         /// <param name="api">api名称</param>
         /// <returns></returns>
-        public static ApiResult CallApi(string station, string api)
+        public static IApiResult CallApi(string station, string api)
         {
             ApiClient client = new ApiClient
             {
@@ -578,7 +578,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+            return ApiResultIoc.Ioc.DeserializeObject(client.Result);
         }
         #endregion
 

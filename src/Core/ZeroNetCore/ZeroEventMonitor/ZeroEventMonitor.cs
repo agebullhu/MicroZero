@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Agebull.ZeroNet.Core.ZeroManagemant.StateMachine;
-using Agebull.ZeroNet.PubSub;
+using Agebull.MicroZero.ZeroManagemant.StateMachine;
+using Agebull.MicroZero.PubSub;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core.ZeroManagemant
+namespace Agebull.MicroZero.ZeroManagemant
 {
     /// <summary>
     /// 系统侦听器

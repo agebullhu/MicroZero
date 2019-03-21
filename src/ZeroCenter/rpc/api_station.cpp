@@ -11,17 +11,17 @@ namespace agebull
 		*/
 		void api_station::launch(shared_ptr<api_station>& station)
 		{
-			zero_config& config = station->get_config();
+			station_config& config = station->get_config();
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			//station->task_semaphore_.post();
@@ -37,7 +37,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 
 		/**
@@ -60,7 +60,7 @@ namespace agebull
 			{
 				do
 				{
-					worker * wk = config_->get_worker();
+					auto * wk = config_->get_workers();
 					if (wk == nullptr)
 					{
 						send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);

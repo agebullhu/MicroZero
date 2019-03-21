@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using Agebull.Common.ApiDocuments;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Core.ZeroManagemant;
+using Agebull.MicroZero.ApiDocuments;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroManagemant;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebMonitor.Controllers

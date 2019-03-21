@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public interface IStartup
     {

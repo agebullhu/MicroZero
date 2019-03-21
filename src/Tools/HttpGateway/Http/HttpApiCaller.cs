@@ -4,15 +4,16 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     内部服务调用代理
@@ -153,7 +154,7 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.Exception(e);
                 jsonResult = ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
-            return string.IsNullOrWhiteSpace(jsonResult) ? ApiResult.RemoteEmptyErrorJson : jsonResult;
+            return string.IsNullOrWhiteSpace(jsonResult) ? ApiResultIoc.RemoteEmptyErrorJson : jsonResult;
         }
 
         /// <summary>
@@ -293,13 +294,13 @@ namespace ZeroNet.Http.Gateway
             {
                 if (response.ContentLength == 0)
                 {
-                    result = ApiResult.RemoteEmptyErrorJson;
+                    result = ApiResultIoc.RemoteEmptyErrorJson;
                 }
                 else
                 {
                     var receivedStream = response.GetResponseStream();
                     if (receivedStream == null)
-                        result = ApiResult.RemoteEmptyErrorJson;
+                        result = ApiResultIoc.RemoteEmptyErrorJson;
                     else
                         using (receivedStream)
                         {
@@ -327,7 +328,7 @@ namespace ZeroNet.Http.Gateway
         private string ToErrorString(int code, string message, string message2 = null)
         {
             LogRecorder.MonitorTrace($"调用异常：{message}.{message2}");
-            var result = ApiResult.Error(code, RemoteUrl + message, message2);
+            var result = ApiResultIoc.Ioc.Error(code, RemoteUrl + message, message2);
             result.Status.Point = "web api gateway";
             return JsonConvert.SerializeObject(result);
         }

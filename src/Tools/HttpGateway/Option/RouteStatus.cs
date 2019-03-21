@@ -1,4 +1,4 @@
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     一次路由执行状态

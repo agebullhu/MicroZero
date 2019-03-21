@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
 using ZeroMQ;
-using Agebull.Common.Rpc;
 
-namespace Agebull.ZeroNet.ZeroApi
+
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     ///     Api站点
@@ -25,7 +25,7 @@ namespace Agebull.ZeroNet.ZeroApi
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected override IZmqPool Prepare(byte[] identity, out ZSocket socket)
+        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
         {
             socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
             var pSocket = ZeroApplication.Config.ApiRouterModel

@@ -1,11 +1,12 @@
 using System;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
 
     /// <summary>
@@ -15,12 +16,12 @@ namespace ZeroNet.Http.Gateway
     {
         private RouteData _data;
         private string[] _words;
-        private ApiResult _result;
+        private IApiResult _result;
         public void Command(RouteData data)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                _result = ApiResult.NoReady;
+                _result = ApiResultIoc.Ioc.NoReady;
                 return;
             }
             _data = data;
@@ -29,7 +30,7 @@ namespace ZeroNet.Http.Gateway
             {
                 data.UserState = UserOperatorStateType.FormalError;
                 data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                data.ResultMessage = ApiResult.ArgumentErrorJson;
+                data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return;
             }
 
@@ -41,32 +42,32 @@ namespace ZeroNet.Http.Gateway
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                _result = ApiResult.NoReady;
+                _result = ApiResultIoc.Ioc.NoReady;
                 return;
             }
             if (_words.Length < 2)
             {
                 _data.UserState = UserOperatorStateType.FormalError;
                 _data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                _data.ResultMessage = ApiResult.ArgumentErrorJson;
+                _data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return;
             }            
             var value = SystemManager.Instance.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {
-                _result = ApiResult.NetworkError;
+                _result = ApiResultIoc.Ioc.NetworkError;
                 return;
             }
             switch (value.State)
             {
                 case ZeroOperatorStateType.NotSupport:
-                    _result = ApiResult.NotSupport;
+                    _result = ApiResultIoc.Ioc.NotSupport;
                     return;
                 case ZeroOperatorStateType.Ok:
                     _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
                     return;
                 default:
-                    _result = ApiResult.Error(ErrorCode.LogicalError, value.ErrorMessage,value.ToString());
+                    _result = ApiResultIoc.Ioc.Error(ErrorCode.LogicalError, value.ErrorMessage,value.ToString());
                     return;
             }
         }

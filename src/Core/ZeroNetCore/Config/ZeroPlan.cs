@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
 
     /// <summary>

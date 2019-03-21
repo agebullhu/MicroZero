@@ -63,7 +63,7 @@ namespace agebull
 			 * \brief 构造
 			 * \param config
 			 */
-			trace_station(shared_ptr<zero_config>& config)
+			trace_station(shared_ptr<station_config>& config)
 				: zero_station(config, zero_def::station_type::trace, ZMQ_ROUTER, 0)
 				, storage_(nullptr)
 			{
@@ -82,7 +82,7 @@ namespace agebull
 			/**
 			*\brief 运行
 			*/
-			static void run(shared_ptr<zero_config>& config)
+			static void run(shared_ptr<station_config>& config)
 			{
 				if (config->is_state(station_state::stop))
 					return;

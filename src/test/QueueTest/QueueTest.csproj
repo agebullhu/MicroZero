@@ -7,12 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.0.1" />
-    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.7" />
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.2" />
+    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.14.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\MicroZero.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

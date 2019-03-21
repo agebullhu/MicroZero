@@ -1,10 +1,9 @@
 using System;
 using System.Reflection;
-using Agebull.Common.Rpc;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
 
     /// <summary>
@@ -12,6 +11,11 @@ namespace Agebull.ZeroNet.ZeroApi
     /// </summary>
     public abstract class ApiAction
     {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public abstract object Argument { get; }
+
         /// <summary>
         ///     Api名称
         /// </summary>
@@ -67,6 +71,11 @@ namespace Agebull.ZeroNet.ZeroApi
     public sealed class ApiAction<TResult> : ApiAction
         where TResult : IApiResult
     {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => null;
+
         /// <summary>
         ///     执行行为
         /// </summary>
@@ -125,6 +134,10 @@ namespace Agebull.ZeroNet.ZeroApi
         /// </summary>
         private IApiArgument _argument;
 
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => _argument;
         /// <summary>
         ///     执行行为
         /// </summary>
@@ -186,7 +199,11 @@ namespace Agebull.ZeroNet.ZeroApi
         where TArgument : class, IApiArgument
         where TResult : IApiResult
     {
-        
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => _argument;
+
         /// <summary>
         ///     参数
         /// </summary>
@@ -243,6 +260,10 @@ namespace Agebull.ZeroNet.ZeroApi
     /// </summary>
     public sealed class ApiActionObj : ApiAction
     {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => _argument;
 
         /// <summary>
         ///     参数

@@ -22,27 +22,27 @@ namespace agebull
 		/**
 		*\brief 线程计数清零
 		*/
-		void reset_command_thread(int count);
+		void reset_station_thread(int count);
 
 		/**
 		*\brief 登记线程失败
 		*/
-		void set_command_thread_bad(const char* name);
+		void set_station_thread_bad(const char* name);
 
 		/**
 		*\brief 登记线程开始
 		*/
-		void set_command_thread_run(const char* name);
+		void set_station_thread_run(const char* name);
 
 		/**
 		*\brief 登记线程关闭
 		*/
-		void set_command_thread_end(const char* name);
+		void set_station_thread_end(const char* name);
 
 		/**
 		*\brief 等待关闭(仅限station_dispatcher结束时使用一次)
 		*/
-		void wait_close();
+		void dispatcher_wait_close();
 
 		/**
 		*\brief 事件通知

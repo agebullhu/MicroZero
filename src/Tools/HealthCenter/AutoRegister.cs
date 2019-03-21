@@ -1,10 +1,8 @@
-using System;
 using System.ComponentModel.Composition;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using ZeroNet.Http.Route;
+using Agebull.Common.Ioc;
+using MicroZero.Http.Route;
 
-namespace Agebull.ZeroNet.Log
+namespace Agebull.MicroZero.Log
 {
     /// <summary>
     ///   远程记录器

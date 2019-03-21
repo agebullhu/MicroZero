@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     ///     Api调用代理

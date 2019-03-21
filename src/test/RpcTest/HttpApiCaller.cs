@@ -8,8 +8,10 @@ using System.Web;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-using Gboxt.Common.DataModel;
-namespace ZeroNet.Http.Route
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
+
+namespace MicroZero.Http.Route
 {
     /// <summary>
     ///     内部服务调用代理

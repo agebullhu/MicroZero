@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
-using System.Threading;
 using Agebull.Common.Ioc;
 using Agebull.Common.Tson;
-using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     /// 消息订阅站点

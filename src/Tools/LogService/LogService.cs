@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using Agebull.Common.Logging;
 using Agebull.Common.Tson;
-using Agebull.ZeroNet.PubSub;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApi;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.LogService
+namespace Agebull.MicroZero.LogService
 {
     /// <inheritdoc />
     /// <summary>

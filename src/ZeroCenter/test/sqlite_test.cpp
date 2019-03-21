@@ -2,7 +2,6 @@
 
 void do_sqlite()
 {
-	agebull::zero_net::station_warehouse::clear();
 	if (!zero_net::rpc_service::initialize())
 		return;
 	var tm = boost::posix_time::microsec_clock::local_time();

@@ -3,15 +3,14 @@ using System.IO;
 using System.Text;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Senparc.NeuChar;
 using Senparc.Weixin.MP;
-using ZeroNet.Http.Route;
+using MicroZero.Http.Route;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
 
     /// <summary>

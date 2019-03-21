@@ -1,4 +1,4 @@
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     /// 运行时警告

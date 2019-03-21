@@ -31,14 +31,14 @@ namespace agebull
 		public:
 			static int using_count_;
 			/**
-			 * \bref 构造
+			 * \bref 构造(空)
 			 */
 			shared_char() : count_(nullptr), buffer_(nullptr), size_(0), alloc_size_(0), is_binary_(0), is_const_(false)
 			{
 			}
 
 			/**
-			 * \bref 构造
+			 * \bref 构造(增加引用)
 			 */
 			shared_char(const shared_char& fri) : count_(fri.count_), buffer_(fri.buffer_), size_(fri.size_),
 				alloc_size_(fri.alloc_size_), is_binary_(fri.is_binary_), is_const_(fri.is_const_)
@@ -48,7 +48,7 @@ namespace agebull
 			}
 
 			/**
-			 * \bref 构造
+			 * \bref 构造(复制)
 			 */
 			shared_char(char* buffer, size_t len) : shared_char()
 			{
@@ -56,7 +56,7 @@ namespace agebull
 			}
 
 			/**
-			 * \bref 构造
+			 * \bref 构造(复制)
 			 */
 			shared_char(uchar* buffer, size_t len) : shared_char()
 			{
@@ -64,7 +64,7 @@ namespace agebull
 			}
 
 			/**
-			 * \bref 构造
+			 * \bref 构造(复制)
 			 */
 			shared_char(const unsigned char* buffer)
 			{
@@ -84,7 +84,7 @@ namespace agebull
 			}
 
 			/**
-			 * \bref 构造
+			 * \bref 构造(复制)
 			 */
 			shared_char(const char* buffer)
 			{

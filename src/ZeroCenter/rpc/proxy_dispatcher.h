@@ -5,6 +5,8 @@
 #include "zero_station.h"
 #include "inner_socket.h"
 
+#ifdef PROXYSTATION
+
 namespace agebull
 {
 	namespace zero_net
@@ -133,4 +135,6 @@ namespace agebull
 		};
 	}
 }
+
+#endif // PROXYSTATION
 #endif //!_PROXY_DISPATCHER_H_

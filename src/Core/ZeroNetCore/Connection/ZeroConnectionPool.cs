@@ -1,7 +1,7 @@
 ﻿using Agebull.Common.Base;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <inheritdoc />
     /// <summary>

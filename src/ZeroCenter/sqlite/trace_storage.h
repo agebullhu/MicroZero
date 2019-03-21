@@ -20,7 +20,7 @@ namespace agebull
 			/**
 			* \brief 配置
 			*/
-			shared_ptr<zero_config> config_;
+			shared_ptr<station_config> config_;
 			static const char* trace_create_sql_;
 			static const char* trace_insert_sql_;
 			static const char* trace_last_sql_;

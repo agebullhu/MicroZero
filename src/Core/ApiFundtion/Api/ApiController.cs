@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-
-using Agebull.Common.DataModel.BusinessLogic;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Gboxt.Common.DataModel.MySql;
+using Agebull.Common.Context;
+using Agebull.EntityModel.Common;
+using Agebull.EntityModel.MySql;
+using Agebull.EntityModel.MySql.BusinessLogic;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using MySql.Data.MySqlClient;
 
 namespace Agebull.Common.WebApi
@@ -72,11 +73,11 @@ namespace Agebull.Common.WebApi
         #endregion
 
         #region API
+
         /// <summary>
-        /// 实体类型
+        ///     实体类型
         /// </summary>
         /// <returns></returns>
-
         [Route("edit/eid")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<EntityInfo> EntityType()
@@ -87,18 +88,19 @@ namespace Agebull.Common.WebApi
                 PageId = PageItem?.Id ?? 0
             });
         }
+
         /// <summary>
-        /// 列表数据
+        ///     列表数据
         /// </summary>
         /// <returns></returns>
-
         [Route("edit/list")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiPageResult<TData> List()
         {
             return List2();
         }
-        ApiPageResult<TData> List2()
+
+        private ApiPageResult<TData> List2()
         {
             GlobalContext.Current.Feature = 1;
             var data = GetListData();
@@ -115,15 +117,14 @@ namespace Agebull.Common.WebApi
                     ResultData = data
                 };
         }
+
         /// <summary>
         ///     单条详细数据
         /// </summary>
-
         [Route("edit/details")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> Details()
         {
-
             var data = DoDetails();
             return IsFailed
                 ? new ApiResult<TData>
@@ -137,12 +138,10 @@ namespace Agebull.Common.WebApi
         /// <summary>
         ///     新增数据
         /// </summary>
-
         [Route("edit/addnew")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> AddNew()
         {
-
             var data = DoAddNew();
             return IsFailed
                 ? new ApiResult<TData>
@@ -156,12 +155,10 @@ namespace Agebull.Common.WebApi
         /// <summary>
         ///     更新数据
         /// </summary>
-
         [Route("edit/update")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult<TData> Update()
         {
-
             var data = DoUpdate();
             return IsFailed
                 ? new ApiResult<TData>
@@ -175,19 +172,17 @@ namespace Agebull.Common.WebApi
         /// <summary>
         ///     删除多条数据
         /// </summary>
-
         [Route("edit/delete")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
         public ApiResult Delete()
         {
-
             DoDelete();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
@@ -209,7 +204,7 @@ namespace Agebull.Common.WebApi
         /// </summary>
         protected ApiPageData<TData> GetListData(Expression<Func<TData, bool>> lambda)
         {
-            return GetListData(new[] { lambda });
+            return GetListData(new[] {lambda});
         }
 
         /// <summary>
@@ -247,7 +242,7 @@ namespace Agebull.Common.WebApi
         /// </summary>
         protected ApiPageData<TData> GetListData(ConditionItem item)
         {
-            return GetListData(new[] { item });
+            return GetListData(new[] {item});
         }
 
         /// <summary>
@@ -411,6 +406,7 @@ namespace Agebull.Common.WebApi
                     SetFailed("数据不存在");
                     return null;
                 }
+
                 OnDetailsLoaded(data, false);
             }
 
@@ -489,7 +485,6 @@ namespace Agebull.Common.WebApi
         /// </summary>
         private void DoDelete()
         {
-
             var ids = GetArg("selects");
             if (string.IsNullOrEmpty(ids))
             {
@@ -497,7 +492,7 @@ namespace Agebull.Common.WebApi
                 return;
             }
 
-            var lid = ids.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            var lid = ids.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
             if (lid.Length == 0)
             {
                 SetFailed("没有数据");

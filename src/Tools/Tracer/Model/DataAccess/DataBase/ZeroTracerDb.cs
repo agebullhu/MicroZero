@@ -1,9 +1,10 @@
 ﻿#region
 using Agebull.Common.Configuration;
-using Gboxt.Common.DataModel.MySql;
+using Agebull.EntityModel.MySql;
+
 #endregion
 
-namespace ZeroNet.Devops.ZeroTracer.DataAccess
+namespace MicroZero.Devops.ZeroTracer.DataAccess
 {
     /// <summary>
     /// 本地数据库

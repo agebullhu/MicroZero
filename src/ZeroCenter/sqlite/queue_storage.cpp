@@ -29,7 +29,7 @@ namespace agebull
 		/**
 		 * \brief 准备存储
 		 */
-		bool queue_storage::prepare_storage(shared_ptr<zero_config>& config)
+		bool queue_storage::prepare_storage(shared_ptr<station_config>& config)
 		{
 			config_ = config;
 			strcpy(name_, config->station_name.c_str());
@@ -73,8 +73,10 @@ namespace agebull
 				log_msg1("[%s] : db > Create table tb_message", name_);
 
 				ex_result = sqlite3_get_table(sqlite_db_, load_max_sql_, &db_result, &row, &column, &errmsg);
+				
 				if (ex_result != SQLITE_OK)
 				{
+					sqlite3_free_table(db_result);
 					log_error2("[%s] : db > Can't open table tb_message:%s", name_, errmsg);
 					return false;
 				}
@@ -90,39 +92,39 @@ namespace agebull
 		*/
 		int64 queue_storage::save(const int64 gid, const char* title, const char* sub, const char* reqid, const char* publiher, const char* ctx, const char* arg, const char* arg2)
 		{
-			sqlite3_reset(insert_stmt_);
-			int idx = 0;
-			sqlite3_bind_int64(insert_stmt_, ++idx, ++last_id_);//local_id
-			sqlite3_bind_int64(insert_stmt_, ++idx, gid);//global_id
+			sqlite3_bind_int64(insert_stmt_, 1, ++last_id_);//local_id
+			sqlite3_bind_int64(insert_stmt_, 2, gid);//global_id
 			if (publiher == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 3);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, publiher, static_cast<int>(strlen(publiher)), nullptr);//publiher
+				sqlite3_bind_text(insert_stmt_, 3, publiher, static_cast<int>(strlen(publiher)), nullptr);//publiher
 			if (title == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 4);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, title, static_cast<int>(strlen(title)), nullptr);//pri_title
+				sqlite3_bind_text(insert_stmt_, 4, title, static_cast<int>(strlen(title)), nullptr);//pri_title
 			if (sub == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 5);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, sub, static_cast<int>(strlen(sub)), nullptr);//sub_title
+				sqlite3_bind_text(insert_stmt_, 5, sub, static_cast<int>(strlen(sub)), nullptr);//sub_title
 			if (reqid == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 6);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, reqid, static_cast<int>(strlen(reqid)), nullptr);//rid
+				sqlite3_bind_text(insert_stmt_, 6, reqid, static_cast<int>(strlen(reqid)), nullptr);//rid
 			if (ctx == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 7);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, ctx, static_cast<int>(strlen(ctx)), nullptr);//ctx
+				sqlite3_bind_text(insert_stmt_, 7, ctx, static_cast<int>(strlen(ctx)), nullptr);//ctx
 			if (arg == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 8);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, arg, static_cast<int>(strlen(arg)), nullptr);//arg
+				sqlite3_bind_text(insert_stmt_, 8, arg, static_cast<int>(strlen(arg)), nullptr);//arg
 			if (arg2 == nullptr)
-				sqlite3_bind_null(insert_stmt_, ++idx);
+				sqlite3_bind_null(insert_stmt_, 9);
 			else
-				sqlite3_bind_text(insert_stmt_, ++idx, arg2, static_cast<int>(strlen(arg2)), nullptr);//arg
-			if (sqlite3_step(insert_stmt_) == SQLITE_DONE)
+				sqlite3_bind_text(insert_stmt_, 9, arg2, static_cast<int>(strlen(arg2)), nullptr);//arg
+			int state = sqlite3_step(insert_stmt_);
+			sqlite3_reset(insert_stmt_);
+			if (state == SQLITE_DONE)
 				return last_id_;
 			log_error2("[%s] : db > Can't save data:%s", name_, sqlite3_errmsg(sqlite_db_));
 			return 0;
@@ -152,7 +154,7 @@ namespace agebull
 				return;
 			sqlite3_reset(load_stmt_);
 			sqlite3_bind_int64(load_stmt_, 1, min);
-			sqlite3_bind_int64(load_stmt_, 2, max ==0 ? last_id_ +1: max);
+			sqlite3_bind_int64(load_stmt_, 2, max <= 0 ? last_id_ +1: max);
 			while (sqlite3_step(load_stmt_) == SQLITE_ROW)
 			{
 				//pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2

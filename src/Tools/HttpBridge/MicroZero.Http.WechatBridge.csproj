@@ -1,0 +1,197 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <UserSecretsId>3909b577-6324-4fb6-b394-f48db7e0ad07</UserSecretsId>
+    <StartupObject></StartupObject>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.2" />
+    <PackageReference Include="Senparc.Weixin.MP.MVC" Version="7.2.7.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="AddIn\**" />
+    <Compile Remove="App_Data\**" />
+    <Compile Remove="Chahe\**" />
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="Datas\**" />
+    <Compile Remove="logs\**" />
+    <Compile Remove="wwwroot\backup\**" />
+    <Compile Remove="wwwroot\JY\**" />
+    <Compile Remove="Zero\**" />
+    <Content Remove="AddIn\**" />
+    <Content Remove="App_Data\**" />
+    <Content Remove="Chahe\**" />
+    <Content Remove="Controllers\**" />
+    <Content Remove="Datas\**" />
+    <Content Remove="logs\**" />
+    <Content Remove="wwwroot\backup\**" />
+    <Content Remove="wwwroot\JY\**" />
+    <Content Remove="Zero\**" />
+    <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="App_Data\**" />
+    <EmbeddedResource Remove="Chahe\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Datas\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="wwwroot\backup\**" />
+    <EmbeddedResource Remove="wwwroot\JY\**" />
+    <EmbeddedResource Remove="Zero\**" />
+    <None Remove="AddIn\**" />
+    <None Remove="App_Data\**" />
+    <None Remove="Chahe\**" />
+    <None Remove="Controllers\**" />
+    <None Remove="Datas\**" />
+    <None Remove="logs\**" />
+    <None Remove="wwwroot\backup\**" />
+    <None Remove="wwwroot\JY\**" />
+    <None Remove="Zero\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="App\IoHandler.cs" />
+    <Compile Remove="App\RouteApp.cs" />
+    <Compile Remove="App\RouteCounter.cs" />
+    <Compile Remove="App\Router - 复制.cs" />
+    <Compile Remove="WeiXin\WeixinController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+    <Content Remove="bower.json" />
+    <Content Remove="bundleconfig.json" />
+    <Content Remove="cache.json" />
+    <Content Remove="machine.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".bowerrc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="wwwroot\home\fonts\icomoon.svg" />
+    <None Include="wwwroot\home\images\loading.svg" />
+    <None Include="wwwroot\home\js\apiMain.js" />
+    <None Include="wwwroot\home\js\common.js" />
+    <None Include="wwwroot\home\js\detail.js" />
+    <None Include="wwwroot\home\js\discover.js" />
+    <None Include="wwwroot\home\js\feedback.js" />
+    <None Include="wwwroot\home\js\help.js" />
+    <None Include="wwwroot\home\js\hospital.js" />
+    <None Include="wwwroot\home\js\host.js" />
+    <None Include="wwwroot\home\js\index.js" />
+    <None Include="wwwroot\home\js\information.js" />
+    <None Include="wwwroot\home\js\login.js" />
+    <None Include="wwwroot\home\js\plugin.js" />
+    <None Include="wwwroot\home\js\require-config.js" />
+    <None Include="wwwroot\home\js\scanner.js" />
+    <None Include="wwwroot\home\js\timer.js" />
+    <None Include="wwwroot\home\js\toast.js" />
+    <None Include="wwwroot\home\js\user.js" />
+    <None Include="wwwroot\home\js\verified.js" />
+    <None Include="wwwroot\home\libs\echarts\echarts.js" />
+    <None Include="wwwroot\home\libs\echarts\echarts.min.js" />
+    <None Include="wwwroot\home\libs\fastclick\fastclick.js" />
+    <None Include="wwwroot\home\libs\jquery\jquery-1.12.4.js" />
+    <None Include="wwwroot\home\libs\jquery\jquery-1.12.4.min.js" />
+    <None Include="wwwroot\home\libs\LArea\LArea.min.js" />
+    <None Include="wwwroot\home\libs\LArea\LAreaData1.js" />
+    <None Include="wwwroot\home\libs\mock\dist\mock-min.js" />
+    <None Include="wwwroot\home\libs\mock\dist\mock.js" />
+    <None Include="wwwroot\home\libs\mock\gulpfile.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\constant.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\handler.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\parser.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\address.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\address_dict.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\basic.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\color.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\color_convert.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\color_dict.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\date.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\helper.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\image.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\index.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\misc.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\name.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\text.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\random\web.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\regexp\handler.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\regexp\index.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\regexp\parser.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\schema\index.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\schema\schema.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\util.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\valid\index.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\valid\valid.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\xhr\index.js" />
+    <None Include="wwwroot\home\libs\mock\src\mock\xhr\xhr.js" />
+    <None Include="wwwroot\home\libs\mock\test\materiels\noop.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.coveralls.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.mock.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.random.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.request.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.schema.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.spec.dpd.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.spec.dtd.js" />
+    <None Include="wwwroot\home\libs\mock\test\test.mock.valid.js" />
+    <None Include="wwwroot\home\libs\mock\test\valid.js" />
+    <None Include="wwwroot\home\libs\require\require.js" />
+    <None Include="wwwroot\home\libs\swiper\swiper.min.js" />
+    <None Include="wwwroot\home\libs\template\template.min.js" />
+    <None Include="wwwroot\static\css\app.0e932448a3039a54ac6aae104bb01c95.css.map" />
+    <None Include="wwwroot\static\img\icomoon.f76d4be.svg" />
+    <None Include="wwwroot\static\js\app.3dac6a2136f429cbff37.js" />
+    <None Include="wwwroot\static\js\app.3dac6a2136f429cbff37.js.map" />
+    <None Include="wwwroot\static\js\manifest.3ad1d5771e9b13dbdad2.js" />
+    <None Include="wwwroot\static\js\manifest.3ad1d5771e9b13dbdad2.js.map" />
+    <None Include="wwwroot\static\js\vendor.4a2f0973cae9b69fa632.js" />
+    <None Include="wwwroot\static\js\vendor.4a2f0973cae9b69fa632.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpGateway\MicroZero.Http.Gateway.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="config\route_config.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="libzmq.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libzmq.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

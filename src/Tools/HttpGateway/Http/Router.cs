@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类

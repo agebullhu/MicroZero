@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.ZeroApi;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 站点连接池

@@ -10,12 +10,13 @@
 
 using System;
 using System.Linq.Expressions;
-
-using Agebull.Common.DataModel.BusinessLogic;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Gboxt.Common.DataModel.MySql;
+using Agebull.Common.Context;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
+using Agebull.EntityModel.MySql;
+using Agebull.EntityModel.MySql.BusinessLogic;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApis;
 
 #endregion
 
@@ -233,12 +234,13 @@ namespace Agebull.Common.WebApi
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
             var state = GetIntArg("dataState", 0x100);
-            if (state >= 0)
+            if (state >= 0 && state < 0x100)
             {
-                if (state < 0x100)
-                    lambda.AddRoot(p => p.DataState == (DataStateType)state);
-                else
-                    lambda.AddRoot(p => p.DataState < DataStateType.Delete);
+                lambda.AddRoot(p => p.DataState == (DataStateType)state);
+            }
+            else
+            {
+                lambda.AddRoot(p => p.DataState < DataStateType.Delete);
             }
 
             return DoGetListData(lambda);

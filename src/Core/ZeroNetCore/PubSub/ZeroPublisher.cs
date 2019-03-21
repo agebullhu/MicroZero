@@ -1,11 +1,10 @@
 using System;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+using Agebull.Common.Context;
+using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     ///     消息发布

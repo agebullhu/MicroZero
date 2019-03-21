@@ -1,12 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Agebull.ZeroNet.Core;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     ///     广播节点

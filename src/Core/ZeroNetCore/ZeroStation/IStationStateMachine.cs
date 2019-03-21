@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Agebull.ZeroNet.Core.ZeroServices.StateMachine
+namespace Agebull.MicroZero.ZeroServices.StateMachine
 {
     /// <summary>
     /// 站点状态机

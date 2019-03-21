@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Agebull.ZeroNet.Core.ZeroServices.StateMachine
+namespace Agebull.MicroZero.ZeroServices.StateMachine
 {
     /// <summary>
     /// 监控状态机

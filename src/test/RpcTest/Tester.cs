@@ -2,9 +2,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Configuration;
+using Agebull.Common.Context;
 using Agebull.Common.Ioc;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
+
+using Agebull.MicroZero;
 
 namespace RpcTest
 {

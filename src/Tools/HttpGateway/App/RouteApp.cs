@@ -2,18 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Agebull.ZeroNet.PubSub;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApi;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类
@@ -28,7 +34,6 @@ namespace ZeroNet.Http.Gateway
         public static void Initialize()
         {
             ZeroApplication.Initialize();
-            RouteOption.CheckOption();
             RouteCache.InitCache();
             ZeroApplication.ZeroNetEvent += OnZeroNetEvent;
             ZeroApplication.Run();
@@ -42,6 +47,27 @@ namespace ZeroNet.Http.Gateway
             RouteCache.Flush();
         }
 
+        public static void Options(KestrelServerOptions options)
+        {
+            options.AddServerHeader = false;
+
+            var httpOptions = ConfigurationManager.Root.GetSection("http").Get<HttpOption[]>();
+            foreach (var option in httpOptions)
+            {
+                if (option.IsHttps)
+                {
+                    var filename = option.CerFile[0] == '/'
+                        ? option.CerFile
+                        : Path.Combine(Environment.CurrentDirectory, option.CerFile);
+                    var certificate = new X509Certificate2(filename, option.CerPwd);
+                    options.Listen(IPAddress.Any, option.Port, listenOptions => { listenOptions.UseHttps(certificate); });
+                }
+                else
+                {
+                    options.Listen(IPAddress.Any, option.Port);
+                }
+            }
+        }
         #endregion
 
         #region 基本调用
@@ -62,6 +88,15 @@ namespace ZeroNet.Http.Gateway
 
             return Task.Factory.StartNew(CallTask, context);
         }
+
+        /// <summary>
+        /// 修改缺省的路由对象
+        /// </summary>
+        public static Func<IRouter> CreateDefaultRouter { get; set; } = () => new Router();
+
+        /// <summary>
+        /// 特殊路径使用的不对路由器
+        /// </summary>
         public static Dictionary<string, Func<IRouter>> Extends = new Dictionary<string, Func<IRouter>>();
 
         /// <summary>
@@ -79,19 +114,21 @@ namespace ZeroNet.Http.Gateway
                 HttpProtocol.Cros(context.Response);
                 return;
             }
+            HttpProtocol.FormatResponse(context.Response);
             var uri = context.Request.GetUri();
-            //命令
-            using (MonitorScope.CreateScope(uri.AbsolutePath))
+            if (uri.AbsolutePath == "/")
             {
-                if (InnerCommand(uri.AbsolutePath, context.Request, context.Response))
-                {
-                    LogRecorder.MonitorTrace("InnerCommand");
-                    return;
-                }
+                //response.Redirect("/index.html");
+                context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
+                return;
+            }
+            if (RouteOption.Option.SystemConfig.EnableContext)
+            {
                 var folders = uri.AbsolutePath.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
                 if (folders.Length == 0)
                 {
-                    LogRecorder.MonitorTrace("Err..");
+                    //response.Redirect("/index.html");
+                    context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
                     return;
                 }
                 var ext = Path.GetExtension(folders[folders.Length - 1]);
@@ -101,12 +138,18 @@ namespace ZeroNet.Http.Gateway
                     cr.WriteContext(folders, ext);
                     return;
                 }
-
-                var router = Extends.TryGetValue(uri.AbsolutePath, out var creater) ? creater() : new Router();
-
+            }
+            if (RouteOption.Option.SystemConfig.EnableInnerCommand && InnerCommand(uri.AbsolutePath, context.Request, context.Response))
+            {
+                LogRecorder.MonitorTrace("InnerCommand");
+                return;
+            }
+            //命令
+            using (MonitorScope.CreateScope(uri.AbsolutePath))
+            {
+                var router = Extends.TryGetValue(uri.AbsolutePath, out var creater) ? creater() : CreateDefaultRouter();
                 try
                 {
-                    HttpProtocol.FormatResponse(context.Response);
                     //开始调用
                     if (router.Prepare(context))
                     {
@@ -191,11 +234,6 @@ namespace ZeroNet.Http.Gateway
             //命令
             switch (url)
             {
-                case "/":
-                    //response.Redirect("/index.html");
-                    HttpProtocol.FormatResponse(response);
-                    response.WriteAsync("Wecome ZeroNet Http Router!", Encoding.UTF8);
-                    return true;
                 case "/_1_clear_1_":
                     HttpProtocol.FormatResponse(response);
                     RouteCache.Flush();
@@ -217,7 +255,7 @@ namespace ZeroNet.Http.Gateway
                 case "/publish":
                     HttpProtocol.FormatResponse(response);
                     var suc = ZeroPublisher.DoPublish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], (string)request.Form["Arg"]);
-                    response.WriteAsync(suc ? ApiResult.SucceesJson : ApiResult.NetworkErrorJson, Encoding.UTF8);
+                    response.WriteAsync(suc ? ApiResultIoc.SucceesJson : ApiResultIoc.NetworkErrorJson, Encoding.UTF8);
                     return true;
                     //case "/_1_warings_1_":
                     //    response.WriteAsync(JsonConvert.SerializeObject(RuntimeWaring.WaringsTime, Formatting.Indented), Encoding.UTF8);
@@ -323,7 +361,7 @@ namespace ZeroNet.Http.Gateway
                     RouteOption.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
                 }
             }
-            zeroHost.Description =null;
+            zeroHost.Description = null;
             zeroHost.ByZero = true;
             zeroHost.Failed = false;
             zeroHost.Station = station.StationName;

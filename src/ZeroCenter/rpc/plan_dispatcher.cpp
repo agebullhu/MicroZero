@@ -1,4 +1,6 @@
 #include "../stdafx.h"
+#ifdef PLAN
+
 #include "zero_plan.h"
 #include "plan_dispatcher.h"
 #include "inner_socket.h"
@@ -22,13 +24,13 @@ namespace agebull
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			boost::thread(boost::bind(run_plan_poll, station.get()));
@@ -47,7 +49,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 		/**
 		* \brief 工作开始 : 处理请求数据
@@ -562,3 +564,5 @@ namespace agebull
 		}
 	}
 }
+
+#endif // PLAN

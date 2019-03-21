@@ -4,15 +4,15 @@ using System.Net;
 using System.Threading;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Senparc.Weixin.MP.Entities.Request;
 using Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public class WechatProcesser
     {

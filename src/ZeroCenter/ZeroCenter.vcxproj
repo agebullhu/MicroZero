@@ -25,11 +25,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfStl>libstdc++_static</UseOfStl>
-    <RemoteRootDir>/root/zero/projects</RemoteRootDir>
+    <RemoteRootDir>/root/zero/projects/</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <UseOfStl>libstdc++_shared</UseOfStl>
+    <UseOfStl>libstdc++_static</UseOfStl>
     <RemoteRootDir>/root/zero/projects/</RemoteRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -94,6 +94,7 @@
     <ClCompile Include="rpc\queue_station.cpp" />
     <ClCompile Include="rpc\plan_dispatcher.cpp" />
     <ClCompile Include="rpc\route_api_station.cpp" />
+    <ClCompile Include="rpc\signle_queue_station.cpp" />
     <ClCompile Include="rpc\station_dispatcher.cpp" />
     <ClCompile Include="rpc\station_warehouse.cpp" />
     <ClCompile Include="rpc\notify_station.cpp" />
@@ -108,8 +109,8 @@
     <ClCompile Include="sqlite\plan_storage.cpp" />
     <ClCompile Include="sqlite\queue_storage.cpp" />
     <ClCompile Include="sqlite\sqlite_storage.cpp" />
+    <ClCompile Include="sqlite\system_storage.cpp" />
     <ClCompile Include="sqlite\trace_storage.cpp" />
-    <ClCompile Include="test\sqlite_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boostinc.h" />
@@ -117,13 +118,16 @@
     <ClInclude Include="rpc\proxy_dispatcher.h" />
     <ClInclude Include="rpc\queue_station.h" />
     <ClInclude Include="rpc\route_api_station.h" />
+    <ClInclude Include="rpc\signle_queue_station.h" />
     <ClInclude Include="rpc\trace_station.h" />
     <ClInclude Include="rpc\zero_def_command.h" />
     <ClInclude Include="rpc\zero_def_frame.h" />
     <ClInclude Include="rpc\zero_def_status.h" />
+    <ClInclude Include="rpc\zero_frames.h" />
     <ClInclude Include="sqlite\plan_storage.h" />
     <ClInclude Include="sqlite\queue_storage.h" />
     <ClInclude Include="sqlite\sqlite_storage.h" />
+    <ClInclude Include="sqlite\system_storage.h" />
     <ClInclude Include="sqlite\trace_storage.h" />
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="stdafx.h" />

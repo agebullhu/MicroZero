@@ -1,9 +1,9 @@
-﻿using Agebull.ZeroNet.Core;
+﻿using Agebull.MicroZero;
 using Newtonsoft.Json;
 using System;
 using System.Runtime.Serialization;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     /// 计划

@@ -1,3 +1,6 @@
+
+#ifdef PROXYSTATION
+
 #include "../stdafx.h"
 #include "proxy_dispatcher.h"
 #include "inner_socket.h"
@@ -17,18 +20,18 @@ namespace agebull
 		void proxy_dispatcher::launch(shared_ptr<proxy_dispatcher>& station)
 		{
 			zero_config& config = station->get_config();
-			set_command_thread_bad(config.station_name.c_str());
+			set_station_thread_bad(config.station_name.c_str());
 			return;
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			boost::thread(boost::bind(run_proxy_poll, station.get()));
@@ -46,7 +49,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 
 		/**
@@ -248,3 +251,5 @@ namespace agebull
 
 	}
 }
+
+#endif // PROXYSTATION

@@ -1,9 +1,9 @@
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero.ZeroApi;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
-    /// ZeroNet状态值
+    /// MicroZero状态值
     /// </summary>
     public static class ZeroStatuValue
     {

@@ -11,17 +11,17 @@ namespace agebull
 		*/
 		void route_api_station::launch(shared_ptr<route_api_station>& station)
 		{
-			zero_config& config = station->get_config();
+			station_config& config = station->get_config();
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			station->task_semaphore_.post();
@@ -37,7 +37,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 
 		/**

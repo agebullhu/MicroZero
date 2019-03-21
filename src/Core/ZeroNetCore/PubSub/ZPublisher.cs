@@ -1,6 +1,6 @@
-using Agebull.Common.Rpc;
 
-namespace Agebull.ZeroNet.PubSub
+
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     ///     消息发布

@@ -1,5 +1,6 @@
 #include "../stdafx.h"
 
+#ifdef REDIS
 namespace agebull
 {
 	boost::mutex lock_mutex_;
@@ -739,3 +740,4 @@ namespace agebull
 	}
 
 }
+#endif

@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Agebull.Common.Ioc;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+
+using Agebull.MicroZero;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
 using Microsoft.AspNetCore.Mvc;
-using ZeroNet.Http.Route;
+using MicroZero.Http.Route;
 
 namespace WebMonitor.Controllers
 {
@@ -167,7 +165,7 @@ namespace WebMonitor.Controllers
         protected DateTime? GetDateArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value, out var date))
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value, out _))
             {
                 return null;
             }
@@ -266,6 +264,7 @@ namespace WebMonitor.Controllers
         ///     读取页面参数(decimal型数据)
         /// </summary>
         /// <param name="name">参数名称</param>
+        /// <param name="def">默认值</param>
         /// <returns>decimal型数据,如果未读取值则为-1,如果存在且不能转为decimal类型将出现异常</returns>
         protected decimal GetDecimalArg(string name, decimal def)
         {

@@ -12,6 +12,11 @@ namespace agebull
 {
 	namespace zero_net
 	{
+#ifdef PLAN
+#define BaseStationCount 3
+#else
+#define BaseStationCount 2
+#endif // PLAN
 		zmq_handler zmq_context;
 		volatile int net_state = zero_def::net_state::none;
 		//应该启动的线程数量
@@ -23,10 +28,11 @@ namespace agebull
 		//当前运行标识
 		char zero_run_identity[16];
 		/**
-		* \brief 任务信号量
+		* \brief 线程执行同步信号量
 		*/
-		boost::interprocess::interprocess_semaphore task_semaphore(0);
-		boost::interprocess::interprocess_semaphore close_semaphore(0);
+		boost::interprocess::interprocess_semaphore station_thread_sync_semaphore(0);
+
+		boost::interprocess::interprocess_semaphore dispatcher_close_semaphore(0);
 		boost::mutex task_mutex;
 
 
@@ -35,22 +41,22 @@ namespace agebull
 		*/
 		boost::interprocess::interprocess_semaphore rpc_service::wait_semaphore(0);
 		boost::posix_time::ptime rpc_service::start_time = boost::posix_time::microsec_clock::local_time();
+
+
 		/**
 		* \brief 初始化
 		*/
 		bool rpc_service::initialize()
 		{
 			memset(zero_run_identity, 0, sizeof(zero_run_identity));
-			sprintf(zero_run_identity,"%ld", time(nullptr));
+			sprintf(zero_run_identity, "%ld", time(nullptr));
 
 			//start_time = boost::posix_time::microsec_clock::local_time();
-			//系统信号发生回调绑定
-			for (int sig = SIGHUP; sig < SIGSYS; sig++)
-				signal(sig, on_sig);
+
 			//ØMQ版本号
 			int major, minor, patch;
 			zmq_version(&major, &minor, &patch);
-			// 初始化配置
+			// 初始化路径
 			char buf[512];
 			acl::string curpath = getcwd(buf, 512);
 			acl::string path;
@@ -83,14 +89,16 @@ namespace agebull
 			}
 			log_msg(ip_info);
 			//REDIS环境检查
-
 			json_config::init();
+#ifdef REDIS
 			if (!ping_redis())
 			{
 				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), global_config::redis_defdb);
 				return false;
 			}
 			log_msg2("redis addr:%s default db:%d", trans_redis::redis_ip(), global_config::redis_defdb);
+
+#endif
 			//站点仓库管理初始化
 			return station_warehouse::initialize();
 		}
@@ -125,47 +133,6 @@ namespace agebull
 			return zmq_context;
 		}
 
-		//线程计数清零
-		void reset_command_thread(int count)
-		{
-			log_msg1("zero thread count(%d)", count);
-			boost::lock_guard<boost::mutex> guard(task_mutex);
-			zero_thread_bad = 0;
-			zero_thread_run = 0;
-			zero_thread_count = count;
-		}
-		void check_semaphore_start()
-		{
-			if (zero_thread_run + zero_thread_bad <= 3)
-				task_semaphore.post();
-			else if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
-				task_semaphore.post();
-		}
-		//登记线程开始
-		void set_command_thread_run(const char* name)
-		{
-			boost::lock_guard<boost::mutex> guard(task_mutex);
-			zero_thread_run++;
-			log_msg2("[%s] zero thread join(%d)", name, zero_thread_run);
-			check_semaphore_start();
-		}
-		//登记线程失败
-		void set_command_thread_bad(const char* name)
-		{
-			boost::lock_guard<boost::mutex> guard(task_mutex);
-			zero_thread_bad++;
-			log_msg2("[%s] zero thread bad(%d)", name, zero_thread_bad);
-			check_semaphore_start();
-		}
-		//登记线程关闭
-		void set_command_thread_end(const char* name)
-		{
-			boost::lock_guard<boost::mutex> guard(task_mutex);
-			zero_thread_run--;
-			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
-			if (zero_thread_run <= 1)
-				task_semaphore.post();
-		}
 		//运行状态
 		int get_net_state()
 		{
@@ -175,7 +142,7 @@ namespace agebull
 		//初始化网络命令环境
 		int config_zero_center()
 		{
-			log_msg("$initiate...");
+			log_msg("config_zero_center...");
 			net_state = zero_def::net_state::none;
 			zmq_context = zmq_ctx_new();
 			assert(zmq_context != nullptr);
@@ -186,7 +153,7 @@ namespace agebull
 			if (global_config::MAX_MSGSZ > 0)
 				zmq_ctx_set(zmq_context, ZMQ_MAX_MSGSZ, global_config::MAX_MSGSZ);
 
-			log_msg("$initiated");
+			log_msg("config_zero_center");
 			return net_state;
 		}
 		//启动网络命令环境
@@ -196,7 +163,7 @@ namespace agebull
 
 			log_msg("$start system dispatcher ...");
 			station_dispatcher::run();
-			task_semaphore.wait();
+			station_thread_sync_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$system dispatcher failed ...");
@@ -207,15 +174,21 @@ namespace agebull
 		//启动网络命令环境
 		int start_proxy_dispatcher()
 		{
+#ifdef PROXYSTATION
+
+
 			station_warehouse::install(zero_def::name::proxy_dispatcher, zero_def::station_type::proxy, "proxy", "ZeroNet reverse proxy station.", true);
 			log_msg("$start proxy dispatcher ...");
 			proxy_dispatcher::run();
-			task_semaphore.wait();
+			station_thread_sync_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$proxy dispatcher failed ...");
 				//net_state = zero_def::net_state::failed;
 			}
+
+
+#endif // PROXYSTATION
 			return	net_state;
 		}
 		//启动网络命令环境
@@ -224,7 +197,7 @@ namespace agebull
 			log_msg("$start trace dispatcher ...");
 			station_warehouse::install(zero_def::name::trace_dispatcher, zero_def::station_type::trace, "trace", "ZeroNet net data trace station.", true);
 			trace_station::run();
-			task_semaphore.wait();
+			station_thread_sync_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("trace dispatcher failed ...");
@@ -235,17 +208,21 @@ namespace agebull
 		//启动网络命令环境
 		int start_plan_dispatcher()
 		{
+#ifdef PLAN
 			station_warehouse::install(zero_def::name::plan_dispatcher, zero_def::station_type::plan, "plan", "ZeroNet plan & task mamage station.", true);
 			//station_warehouse::install("RemoteLog", zero_def::station_type::notify, "log", "ZeroNet remote log station.", false);
 			//station_warehouse::install("HealthCenter", zero_def::station_type::notify, "hea", "ZeroNet health center log station.", false);
 			log_msg("$start plan dispatcher ...");
 			plan_dispatcher::run();
-			task_semaphore.wait();
+			station_thread_sync_semaphore.wait();
 			if (zero_thread_bad == 1)
 			{
 				log_msg("$plan dispatcher failed ...");
 				//net_state = zero_def::net_state::failed;
 			}
+
+
+#endif // PLAN
 			return net_state;
 		}
 		//启动网络命令环境
@@ -254,24 +231,25 @@ namespace agebull
 			//boost::thread thread_xxx(boost::bind(socket_ex::zmq_monitor, nullptr));
 
 			net_state = zero_def::net_state::runing;
-			reset_command_thread(static_cast<int>(3 + station_warehouse::get_station_count()));
+			reset_station_thread(static_cast<int>(BaseStationCount + station_warehouse::get_station_count()));
 			if (start_system_manage() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
 			if (start_plan_dispatcher() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
 			if (start_trace_dispatcher() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
-			//if (start_proxy_dispatcher() == zero_def::net_state::failed)
-			//	return zero_def::net_state::failed;
+			if (start_proxy_dispatcher() == zero_def::net_state::failed)
+				return zero_def::net_state::failed;
 
 			log_msg("$start business stations...");
-			if(zero_thread_count > 3)
+			if (zero_thread_count > BaseStationCount)
 			{
 				station_warehouse::restore();
-				task_semaphore.wait();
+				station_thread_sync_semaphore.wait();
 			}
 			var sp = boost::posix_time::microsec_clock::local_time() - rpc_service::start_time;
 			log_msg1("$all stations in service(%lldms),send system_start event", sp.total_milliseconds());
+			//10次通知,是因为Zmq广播有在连接过程中是可能丢失的,所以用2秒时间来保证全部App都已连接上来并能接收到此消息
 			for (int i = 0; i < 10; i++)
 			{
 				THREAD_SLEEP(200);
@@ -281,9 +259,10 @@ namespace agebull
 			log_msg1("$success(%lldms)\n", sp.total_milliseconds());
 			return net_state;
 		}
-		void wait_close()
+
+		void dispatcher_wait_close()
 		{
-			close_semaphore.wait();
+			dispatcher_close_semaphore.wait();
 		}
 
 		//关闭网络命令环境
@@ -295,21 +274,27 @@ namespace agebull
 			var sp = tm - rpc_service::start_time;
 			log_msg3("$total run %lld:%lld:%lld", sp.hours(), sp.minutes(), sp.seconds());
 			log_msg("$closing...");
+			//通知远程App将要关闭
 			for (int i = 0; i < 5; i++)
 			{
-				system_event(zero_net_event::event_system_closing, zero_run_identity, ">>ZeroNet will be closing. <<");
+				system_event(zero_net_event::event_system_closing, zero_run_identity, ">>ZeroNet will be close. <<");
 				THREAD_SLEEP(40);
 			}
+			//设置关闭标记
 			net_state = zero_def::net_state::closing;
-			task_semaphore.wait();
+			//等待全部station关闭的通知
+			station_thread_sync_semaphore.wait();
+			//通知远程App已关闭
 			for (int i = 0; i < 5; i++)
 			{
 				system_event(zero_net_event::event_system_stop, zero_run_identity, ">>ZeroNet is closed,see you late!<<");
 				THREAD_SLEEP(40);
 			}
 			net_state = zero_def::net_state::closed;
-			close_semaphore.post();
-			task_semaphore.wait();
+			//通知station_dispatcher可以销毁连接
+			dispatcher_close_semaphore.post();
+			//等待station_dispatcher正常退出
+			station_thread_sync_semaphore.wait();
 			net_state = zero_def::net_state::distory;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
 			log_msg1("$distory(%lldms)", sp.total_milliseconds());
@@ -319,7 +304,51 @@ namespace agebull
 			zmq_ctx_term(zmq_context);
 			zmq_context = nullptr;
 			sp = boost::posix_time::microsec_clock::local_time() - tm;
-			log_msg1("$zmq success(%lldms)", sp.total_milliseconds());
+			log_msg1("$zmq shutdown success(%lldms)", sp.total_milliseconds());
+		}
+		/*线程同步计数*/
+
+		void check_semaphore_start()
+		{
+			//前三个系统级别的每次通知,其它的等全部运行发出一次通知
+			if (zero_thread_run + zero_thread_bad <= BaseStationCount)
+				station_thread_sync_semaphore.post();
+			else if ((zero_thread_run + zero_thread_bad) == zero_thread_count)
+				station_thread_sync_semaphore.post();
+		}
+		//线程计数清零
+		void reset_station_thread(int count)
+		{
+			log_msg1("zero thread count(%d)", count);
+			boost::lock_guard<boost::mutex> guard(task_mutex);
+			zero_thread_bad = 0;
+			zero_thread_run = 0;
+			zero_thread_count = count;
+		}
+		//登记线程开始
+		void set_station_thread_run(const char* name)
+		{
+			boost::lock_guard<boost::mutex> guard(task_mutex);
+			zero_thread_run++;
+			log_msg2("[%s] zero thread join(%d)", name, zero_thread_run);
+			check_semaphore_start();
+		}
+		//登记线程失败
+		void set_station_thread_bad(const char* name)
+		{
+			boost::lock_guard<boost::mutex> guard(task_mutex);
+			zero_thread_bad++;
+			log_msg2("[%s] zero thread bad(%d)", name, zero_thread_bad);
+			check_semaphore_start();
+		}
+		//登记线程关闭
+		void set_station_thread_end(const char* name)
+		{
+			boost::lock_guard<boost::mutex> guard(task_mutex);
+			zero_thread_run--;
+			log_msg2("[%s] zero thread left(%d)", name, zero_thread_run);
+			if (zero_thread_run <= 1)
+				station_thread_sync_semaphore.post();
 		}
 	}
 }

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Linq;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
 using Newtonsoft.Json;
 using Senparc.CO2NET.Extensions;
 using Senparc.CO2NET.Helpers;
@@ -15,7 +15,7 @@ using Senparc.NeuChar.Entities;
 using Senparc.Weixin.MP.AdvancedAPIs;
 using Senparc.NeuChar.Helpers;
 
-namespace ZeroNet.Http.Gateway.Weixin
+namespace MicroZero.Http.Gateway.Weixin
 {
     /// <summary>
     /// 自定义MessageHandler

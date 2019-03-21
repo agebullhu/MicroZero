@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.Serialization;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>Api方法的信息</summary>
     [DataContract]

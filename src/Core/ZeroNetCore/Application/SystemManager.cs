@@ -1,9 +1,10 @@
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Newtonsoft.Json;
 using System;
-using Agebull.Common.Rpc;
+using Agebull.Common.Context;
 
-namespace Agebull.ZeroNet.Core.ZeroManagemant
+
+namespace Agebull.MicroZero.ZeroManagemant
 {
     /// <summary>
     /// 系统侦听器
@@ -174,16 +175,16 @@ namespace Agebull.ZeroNet.Core.ZeroManagemant
             try
             {
                 result = CallCommand("doc", name);
-                if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
-                {
-                    ZeroTrace.WriteError("LoadDocument", name, result.State, result);
-                    doc = null;
-                    return false;
-                }
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("LoadDocument", e, name);
+                doc = null;
+                return false;
+            }
+            if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+            {
+                ZeroTrace.WriteError("LoadDocument", name, result.State);
                 doc = null;
                 return false;
             }
@@ -224,7 +225,7 @@ namespace Agebull.ZeroNet.Core.ZeroManagemant
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
-            ZeroTrace.SystemLog("LoadAllConfig", json);
+            //ZeroTrace.SystemLog("LoadAllConfig", json);
             return ZeroApplication.Config.FlushConfigs(json);
         }
 

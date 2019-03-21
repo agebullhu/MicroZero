@@ -1,6 +1,5 @@
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero.ZeroApi;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,7 +7,7 @@ using System.IO;
 using System.Threading;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     /// 消息订阅站点
@@ -32,7 +31,7 @@ namespace Agebull.ZeroNet.PubSub
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected override IZmqPool Prepare(byte[] identity, out ZSocket socket)
+        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
         {
             socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
             var pool = ZmqPool.CreateZmqPool();

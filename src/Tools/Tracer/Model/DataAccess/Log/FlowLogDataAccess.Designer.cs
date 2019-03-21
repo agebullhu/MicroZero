@@ -2,32 +2,12 @@
 #region
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
-using System.Runtime.Serialization;
-using System.IO;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-
-using Agebull.Common;
-using Agebull.Common.DataModel;
-using Agebull.Common.Rpc;
-using Agebull.Common.WebApi;
-using Gboxt.Common;
-using Gboxt.Common.DataModel;
-
-
-using Gboxt.Common.DataModel.Extends;
-using Gboxt.Common.DataModel.MySql;
+using Agebull.EntityModel.Common;
 #endregion
 
-namespace ZeroNet.Devops.ZeroTracer.DataAccess
+namespace MicroZero.Devops.ZeroTracer.DataAccess
 {
     /// <summary>
     /// 以流程方式记录日志

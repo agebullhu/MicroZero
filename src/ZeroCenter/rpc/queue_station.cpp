@@ -88,8 +88,8 @@ namespace agebull
 			}
 			if (pub_title == 0)
 				pub_title = sub_title;
-			else if (sub_title == 0)
-				sub_title = pub_title;
+			//else if (sub_title == 0)
+			//	sub_title = pub_title;
 			if (pub_title == 0)
 			{
 				config_->error("job_start", "title can`t empty");
@@ -102,7 +102,7 @@ namespace agebull
 			const int64 id = storage_.save(
 				global_id > 0 ? atoll(*list[global_id]) : 0,
 				*list[pub_title],
-				*list[sub_title],
+				sub_title > 0 ? *list[sub_title] : nullptr,
 				request_id > 0 ? *list[request_id] : nullptr,
 				requester > 0 ? *list[requester] : nullptr,
 				context > 0 ? *list[context] : nullptr,
@@ -124,17 +124,17 @@ namespace agebull
 		*/
 		void queue_station::launch(shared_ptr<queue_station> station)
 		{
-			zero_config& config = station->get_config();
+			station_config& config = station->get_config();
 			if (!station->initialize())
 			{
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			station->storage_.prepare_storage(station->config_);
@@ -150,7 +150,7 @@ namespace agebull
 			{
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 	}
 }

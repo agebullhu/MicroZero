@@ -1,5 +1,5 @@
 using System;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using ZeroMQ;
 
 namespace RpcTest

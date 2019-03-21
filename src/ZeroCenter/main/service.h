@@ -6,12 +6,6 @@ namespace agebull
 {
 	namespace zero_net
 	{
-		//初始化网络命令环境
-		int config_zero_center();
-		//启动网络命令环境
-		int start_zero_center();
-		//销毁网络命令环境
-		void close_net_command();
 		//生成CRC校验码
 		ushort get_crc(const char *msg, size_t len);
 
@@ -31,6 +25,13 @@ namespace agebull
 		* \brief sig对应的文本
 		*/
 		const char* sig_text(int sig);
+
+		//初始化网络命令环境
+		int config_zero_center();
+		//启动网络命令环境
+		int start_zero_center();
+		//销毁网络命令环境
+		void close_net_command();
 
 		class rpc_service
 		{

@@ -67,6 +67,7 @@ namespace agebull
 			in_trans_ = false;
 			return true;
 		}
+
 		/**
 		 * \brief 不存在就建立这个表
 		 */

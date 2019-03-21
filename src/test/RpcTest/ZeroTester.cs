@@ -1,7 +1,7 @@
 using System.Threading;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.ZeroApi;
 
 namespace RpcTest
 {

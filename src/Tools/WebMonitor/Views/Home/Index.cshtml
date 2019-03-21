@@ -1,10 +1,10 @@
 ﻿@using System.Linq
-@using Agebull.ZeroNet.Core
+@using Agebull.MicroZero
 @using Newtonsoft.Json
-@model Agebull.Common.ApiDocuments.AnnotationsConfig
+@model Agebull.MicroZero.ApiDocuments.AnnotationsConfig
 @{
     var filter = Model.Name?.ToLower();
-    ViewData["Title"] = "ZeroNet";
+    ViewData["Title"] = "MicroZero";
     ViewData["page"] = "home";
 
     StationInfo[] options;

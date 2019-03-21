@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     路由主机
@@ -11,7 +11,7 @@ namespace ZeroNet.Http.Gateway
     public class RouteHost
     {
         /// <summary>
-        ///     使用ZeroNet通讯吗
+        ///     使用MicroZero通讯吗
         /// </summary>
         public bool ByZero { get; set; }
 
@@ -93,7 +93,7 @@ namespace ZeroNet.Http.Gateway
     public class HostConfig
     {
         /// <summary>
-        ///     使用ZeroNet通讯吗
+        ///     使用MicroZero通讯吗
         /// </summary>
         [DataMember]
         [JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore,

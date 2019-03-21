@@ -1,6 +1,7 @@
 #ifndef ZMQ_API_PLAN_STORAGE_H
 #define ZMQ_API_PLAN_STORAGE_H
 #pragma once
+#ifdef PLAN
 #include "../rpc/zero_station.h"
 #include "sqlite_storage.h"
 
@@ -63,4 +64,5 @@ namespace agebull
 		};
 	}
 }
+#endif
 #endif//!ZMQ_API_PLAN_STORAGE_H

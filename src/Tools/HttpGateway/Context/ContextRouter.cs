@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using Microsoft.AspNetCore.Http;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类

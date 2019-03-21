@@ -1,4 +1,4 @@
-﻿using Agebull.ZeroNet.Core;
+﻿using Agebull.MicroZero;
 
 namespace ZeroService
 {

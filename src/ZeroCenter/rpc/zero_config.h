@@ -5,18 +5,19 @@
 #include "zero_net.h"
 #include <utility>
 #include "../log/mylogger.h"
+#include "../ext/shared_char.h"
 
 namespace agebull
 {
 	namespace zero_net
 	{
 		class zero_station;
-		class zero_config;
+		class station_config;
 
 		/**
 		* \brief 工作对象
 		*/
-		struct worker
+		struct station_worker
 		{
 			/**
 			* \brief 实名
@@ -45,7 +46,7 @@ namespace agebull
 			/**
 			 * \brief 构造
 			 */
-			worker()
+			station_worker()
 				: pre_time(boost::posix_time::microsec_clock::local_time())
 				, level(5)
 				, state(0)
@@ -67,7 +68,7 @@ namespace agebull
 		/**
 		* \brief ZMQ的网络站点配置
 		*/
-		class zero_config
+		class station_config
 		{
 			friend class zero_station;
 			/**
@@ -89,11 +90,11 @@ namespace agebull
 			/**
 			* \brief 前一个工具者索引
 			*/
-			int worker_idx;
+			int worker_idx_;
 			/**
 			* \brief 检查
 			*/
-			static int check_worker(worker& worker);
+			static int check_worker(station_worker& station_worker);
 
 		public:
 			/**
@@ -184,17 +185,17 @@ namespace agebull
 			*/
 			int64 worker_deny;
 
-			vector<worker> workers;
+			vector<station_worker> workers;
 
 			/**
 			* \brief 构造
 			*/
-			zero_config()
+			station_config()
 				: ready_works_(0)
 				  , type_name_("ERR")
 				  , station_state_(station_state::none)
 				  , config_state_(station_state::run)
-				  , worker_idx(-1)
+				  , worker_idx_(-1)
 				  , is_base(false)
 				  , is_fidelity(false)
 				  , station_type(0)
@@ -215,7 +216,7 @@ namespace agebull
 			* \param name
 			* \param type
 			*/
-			zero_config(const string& name, int type)
+			station_config(const string& name, int type)
 				: ready_works_(0)
 				  , station_state_(station_state::none)
 				  , config_state_(station_state::run)
@@ -281,7 +282,7 @@ namespace agebull
 			/**
 			* \brief 站点名称
 			*/
-			worker* get_worker();
+			station_worker* get_workers();
 
 			/**
 			* \brief 当前站点状态

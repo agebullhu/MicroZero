@@ -1,9 +1,9 @@
 using System.Runtime.Serialization;
-using Agebull.ZeroNet.PubSub;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero.PubSub;
+using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     /// 报警节点

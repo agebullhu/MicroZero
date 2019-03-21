@@ -29,7 +29,7 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			station_dispatcher(shared_ptr<zero_config>& config)
+			station_dispatcher(shared_ptr<station_config>& config)
 				:zero_station(config, zero_def::station_type::dispatcher, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
@@ -53,7 +53,7 @@ namespace agebull
 			/**
 			*\brief 运行
 			*/
-			static void run(shared_ptr<zero_config>& config)
+			static void run(shared_ptr<station_config>& config)
 			{
 				instance = new station_dispatcher(config);
 				boost::thread(boost::bind(launch, shared_ptr<station_dispatcher>(instance)));

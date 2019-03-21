@@ -1,6 +1,7 @@
 #ifndef AGEBULL_REDIS_H
 #define AGEBULL_REDIS_H
 #pragma once
+#ifdef REDIS
 #include "../stdinc.h"
 #include "../cfg/json_config.h"
 #include "../ext/shared_char.h"
@@ -724,4 +725,5 @@ namespace agebull
 		return lock_from_redis(key);
 	}
 }
+#endif
 #endif

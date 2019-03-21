@@ -1,6 +1,5 @@
 ﻿using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
+using Agebull.MicroZero.PubSub;
 using System;
 
 namespace ZFrameTest

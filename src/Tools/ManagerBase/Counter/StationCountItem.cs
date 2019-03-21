@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     [JsonObject(MemberSerialization.OptIn)]
     [DataContract]

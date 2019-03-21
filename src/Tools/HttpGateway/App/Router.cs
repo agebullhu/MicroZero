@@ -1,16 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Microsoft.AspNetCore.Http;
-using ZeroNet.Http.Route;
 
-namespace ZeroNet.Http.Gateway
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Microsoft.AspNetCore.Http;
+using MicroZero.Http.Route;
+
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     调用映射核心类
@@ -62,7 +60,12 @@ namespace ZeroNet.Http.Gateway
             var success = Data.Prepare(HttpContext);
             IoHandler.OnBegin(Data);
             if (!success)
+            {
+                Data.UserState = UserOperatorStateType.LogicalError;
+                Data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                Data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return false;
+            }
             SecurityChecker = new SecurityChecker { Data = Data };
             return SecurityChecker.PreCheck();
         }
@@ -84,7 +87,7 @@ namespace ZeroNet.Http.Gateway
             {
                 Data.UserState = UserOperatorStateType.NotFind;
                 Data.ZeroState = ZeroOperatorStateType.NotFind;
-                Data.ResultMessage = ApiResult.NoFindJson;
+                Data.ResultMessage = ApiResultIoc.NoFindJson;
 
                 return;
             }
@@ -95,7 +98,7 @@ namespace ZeroNet.Http.Gateway
                 Data.UserState = UserOperatorStateType.DenyAccess;
                 Data.ZeroState = ZeroOperatorStateType.DenyAccess;
                 if (Data.ResultMessage == null)
-                    Data.ResultMessage = ApiResult.DenyAccessJson;
+                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                 return;
             }
             // 3 缓存快速处理
@@ -116,11 +119,12 @@ namespace ZeroNet.Http.Gateway
             {
                 Data.UserState = UserOperatorStateType.LocalError;
                 Data.ZeroState = ZeroOperatorStateType.NotFind;
-                Data.ResultMessage = ApiResult.NoReadyJson;
+                Data.ResultMessage = ApiResultIoc.NoReadyJson;
                 return;
             }
             // 5 结果检查
-            SecurityChecker.CheckResult(Data);
+            if (RouteOption.Option.SystemConfig.CheckResult)
+                SecurityChecker.CheckResult(Data);
         }
 
 
@@ -143,12 +147,12 @@ namespace ZeroNet.Http.Gateway
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
             {
-                LogRecorder.MonitorTrace($"{Data.ApiName} no find");
+                LogRecorder.MonitorTrace($"{Data.HostName}/{Data.ApiName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             if (Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public))
-                return true; 
-            LogRecorder.MonitorTrace($"{Data.ApiName} deny access.");
+                return true;
+            LogRecorder.MonitorTrace($"{Data.HostName}/{Data.ApiName} deny access.");
             return false;
         }
 
@@ -178,7 +182,7 @@ namespace ZeroNet.Http.Gateway
             //// 缓存
             //RouteCache.CacheResult(Data);
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResult.RemoteEmptyErrorJson), Encoding.UTF8);
+            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
         }
 
         /// <summary>
@@ -203,7 +207,7 @@ namespace ZeroNet.Http.Gateway
                 Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
                 IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
-                context.Response.WriteAsync(ApiResult.LocalErrorJson, Encoding.UTF8);
+                context.Response.WriteAsync(ApiResultIoc.LocalErrorJson, Encoding.UTF8);
             }
             catch (Exception exception)
             {

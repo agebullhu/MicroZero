@@ -6,14 +6,14 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
-    <title>Agebull's NuGet</title>
+    <title>NuGet Private Repository</title>
     <style>
         body { font-family: Calibri; }
     </style>
 </head>
 <body>
     <div>
-        <h2>Agebull's NuGet</h2>
+        <h2>You are running NuGet.Server v<%= typeof(NuGetODataConfig).Assembly.GetName().Version %></h2>
         <p>
             Click <a href="<%= VirtualPathUtility.ToAbsolute("~/nuget/Packages") %>">here</a> to view your packages.
         </p>
@@ -34,7 +34,7 @@
             <% } %> 
         </fieldset>
 
-        <% if (Request.IsLocal) { %>
+        <% if (Request.IsLocal || ServiceResolver.Current.Resolve<NuGet.Server.Core.Infrastructure.ISettingsProvider>().GetBoolSetting("allowRemoteCacheManagement", false)) { %>
         <fieldset style="width:800px">
             <legend><strong>Adding packages</strong></legend>
 

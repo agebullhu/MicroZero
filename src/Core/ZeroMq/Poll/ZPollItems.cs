@@ -1,12 +1,10 @@
-using System.Runtime.InteropServices;
-
 namespace ZeroMQ
 {
     using lib;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    
+
     public static partial class ZPollItems
 	{
 

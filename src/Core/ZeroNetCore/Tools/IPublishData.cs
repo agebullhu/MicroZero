@@ -1,4 +1,4 @@
-namespace Agebull.ZeroNet.PubSub
+namespace Agebull.MicroZero.PubSub
 {
     /// <summary>
     /// 表示广播数据

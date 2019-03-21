@@ -1,7 +1,7 @@
-﻿using Agebull.Common.Rpc;
+﻿
 using System;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// API配置过滤器

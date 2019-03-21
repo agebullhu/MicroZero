@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     缓存数据

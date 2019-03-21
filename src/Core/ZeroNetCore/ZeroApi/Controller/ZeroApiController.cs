@@ -1,4 +1,4 @@
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// ZeroApi¿ØÖÆÆ÷»ùÀà

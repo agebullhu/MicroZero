@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
 
     /// <summary>

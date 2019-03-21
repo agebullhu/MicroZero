@@ -1,22 +1,24 @@
 using System;
 using System.Text.RegularExpressions;
+using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.Common.OAuth;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using ZeroNet.Http.Route;
+using MicroZero.Http.Route;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     安全检查员
     /// </summary>
-    public class SecurityChecker
+    internal class SecurityChecker
     {
         #region 变量
 
@@ -28,11 +30,11 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         public RouteData Data { get; set; }
 
-        private static readonly string UnknowDeviceJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_Device_Unknow));
+        private static readonly string UnknowDeviceJson = JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Auth_Device_Unknow));
 
-        private static readonly string UnknowAccessTokenJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_Unknow));
-        private static readonly string AccessTokenTimeOutJson = JsonConvert.SerializeObject(ApiResult.Error(ErrorCode.Auth_AccessToken_TimeOut));
-        private static readonly ApiResult<LoginUserInfo> DenyAccessResult = ApiResult.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
+        private static readonly string UnknowAccessTokenJson = JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Auth_AccessToken_Unknow));
+        private static readonly string AccessTokenTimeOutJson = JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Auth_AccessToken_TimeOut));
+        private static readonly IApiResult<LoginUserInfo> DenyAccessResult = ApiResultIoc.Ioc.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
 
         #endregion
 
@@ -48,7 +50,7 @@ namespace ZeroNet.Http.Gateway
                 return true;
             Data.UserState = UserOperatorStateType.DenyAccess;
             Data.ZeroState = ZeroOperatorStateType.DenyAccess;
-            Data.ResultMessage = ApiResult.DenyAccessJson;
+            Data.ResultMessage = ApiResultIoc.DenyAccessJson;
             return false;
 
         }
@@ -166,7 +168,7 @@ namespace ZeroNet.Http.Gateway
                 }
                 if (!CheckApisInner())
                 {
-                    Data.ResultMessage = ApiResult.DenyAccessJson;
+                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
                 if (string.IsNullOrWhiteSpace(Data.Token))
@@ -176,13 +178,13 @@ namespace ZeroNet.Http.Gateway
                         GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
                         return true;
                     }
-                    Data.ResultMessage = ApiResult.DenyAccessJson;
+                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
                 switch (Data.Token[0])
                 {
                     default:
-                        Data.ResultMessage = ApiResult.DenyAccessJson;
+                        Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                         return false;
                     case '*':
                     case '#':
@@ -190,7 +192,7 @@ namespace ZeroNet.Http.Gateway
                 }
                 if (RouteOption.Option.Security.DenyTokens.ContainsKey(Data.Token))
                 {
-                    Data.ResultMessage = ApiResult.DenyAccessJson;
+                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
                 for (var index = 1; index < Data.Token.Length; index++)
@@ -199,20 +201,20 @@ namespace ZeroNet.Http.Gateway
                     if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_')
                         continue;
                     LogRecorder.MonitorTrace("Token Layout Error");
-                    Data.ResultMessage = ApiResult.DenyAccessJson;
+                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
 
-                ApiResult result;
+                IApiResult result;
                 switch (Data.Token[0])
                 {
                     default:
-                        Data.ResultMessage = ApiResult.DenyAccessJson;
+                        Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                         return false;
                     case '*':
                         if (Data.ApiItem != null && Data.ApiItem.NeedLogin)
                         {
-                            Data.ResultMessage = ApiResult.DenyAccessJson;
+                            Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                             return false;
                         }
                         result = CheckToken("DeviceId", RouteOption.Option.Security.DeviceIdCheckApi, out var vl);
@@ -253,7 +255,7 @@ namespace ZeroNet.Http.Gateway
                 return true;
             }
         }
-        private ApiResult<LoginUserInfo> CheckToken(string name, string api, out string json)
+        private IApiResult<LoginUserInfo> CheckToken(string name, string api, out string json)
         {
             // 远程调用
             using (MonitorScope.CreateScope($"Check{name}:{Data.Token}"))
@@ -272,7 +274,7 @@ namespace ZeroNet.Http.Gateway
                 if (caller.Result == null)
                     return null;
                 //GlobalContext.Current.Request.Token = Data.Token;
-                var result = JsonConvert.DeserializeObject<ApiResult<LoginUserInfo>>(caller.Result);
+                var result = ApiResultIoc.Ioc.DeserializeObject<LoginUserInfo>(caller.Result);
                 if (result == null)
                     return DenyAccessResult;
                 if (!result.Success)
@@ -301,10 +303,8 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        internal static bool CheckResult(RouteData data)
+        public static bool CheckResult(RouteData data)
         {
-            if (!RouteOption.Option.SystemConfig.CheckResult)
-                return true;
             if (data.UserState != UserOperatorStateType.Success || data.HostName == null)
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
@@ -326,10 +326,10 @@ namespace ZeroNet.Http.Gateway
                     return true;
             }
 
-            ApiResult result;
+            IApiResult result;
             try
             {
-                result = JsonConvert.DeserializeObject<ApiResult>(data.ResultMessage);
+                result = ApiResultIoc.Ioc.DeserializeObject(data.ResultMessage);
                 if (result == null)
                 {
                     IocHelper.Create<IRuntimeWaring>()?.Waring(data.HostName, data.ApiName, "返回值非法(空内容)");

@@ -1,6 +1,6 @@
 using System;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// 路由名称

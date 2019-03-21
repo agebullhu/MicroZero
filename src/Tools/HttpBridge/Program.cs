@@ -1,9 +1,9 @@
 using Agebull.Common.Configuration;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public class Program
     {

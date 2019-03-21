@@ -5,14 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Reflection;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Gboxt.Common.DataModel;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// ZeroStation发现工具
@@ -141,18 +140,10 @@ namespace Agebull.ZeroNet.ZeroApi
             }
             //station.Copy(XmlMember.Find(type));
             string routeHead = null;
-            var attrib = type.GetCustomAttribute<RouteAttribute>();
+            var attrib = type.GetCustomAttribute<RoutePrefixAttribute>();
             if (attrib != null)
             {
                 routeHead = attrib.Name;
-            }
-            else
-            {
-                var attrib2 = type.GetCustomAttribute<RoutePrefixAttribute>();
-                if (attrib2 != null)
-                {
-                    routeHead = attrib2.Name;
-                }
             }
 
             if (string.IsNullOrWhiteSpace(routeHead))

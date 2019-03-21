@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
 
     /// <summary>

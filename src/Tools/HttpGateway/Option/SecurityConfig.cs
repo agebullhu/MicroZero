@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Agebull.Common.Rpc;
+using Agebull.MicroZero;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     安全相关的配置
@@ -44,6 +44,7 @@ namespace ZeroNet.Http.Gateway
         /// </summary>
         [JsonProperty("authStation")]
         public string AuthStation { get; set; }
+
         /// <summary>
         ///     DeviceId检查API
         /// </summary>

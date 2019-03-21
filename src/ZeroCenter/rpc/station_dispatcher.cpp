@@ -274,20 +274,20 @@ namespace agebull
 
 		void station_dispatcher::launch(shared_ptr<station_dispatcher>& station)
 		{
-			zero_config& config = station->get_config();
+			station_config& config = station->get_config();
 			config.is_base = true;
 			if (!station->initialize())
 			{
 				instance = nullptr;
 				config.failed("initialize");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			if (!station_warehouse::join(station.get()))
 			{
 				instance = nullptr;
 				config.failed("join warehouse");
-				set_command_thread_bad(config.station_name.c_str());
+				set_station_thread_bad(config.station_name.c_str());
 				return;
 			}
 			boost::thread(boost::bind(worker_monitor));
@@ -306,14 +306,14 @@ namespace agebull
 			else
 			{
 				config.log("waiting closed");
-				wait_close();
+				dispatcher_wait_close();
 				//THREAD_SLEEP(global_config::SNDTIMEO < 0 ? 1000 : global_config::SNDTIMEO + 10);//让未发送数据完成发送
 				instance = nullptr;
 				station_warehouse::left(station.get());
 				station->destruct();
 				config.closed();
 			}
-			set_command_thread_end(config.station_name.c_str());
+			set_station_thread_end(config.station_name.c_str());
 		}
 
 		/**
@@ -322,7 +322,7 @@ namespace agebull
 		void station_dispatcher::worker_monitor()
 		{
 			station_dispatcher* dispatcher = instance;
-			zero_config& config = dispatcher->get_config();
+			station_config& config = dispatcher->get_config();
 			config.log("worker_monitor start");
 			dispatcher->task_semaphore_.post();
 			int cnt = 0;
@@ -339,7 +339,7 @@ namespace agebull
 				vector<string> cfgs;
 				vector<string> names;
 				//复制避免锁定时间过长
-				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<zero_config>& cfg)
+				station_warehouse::foreach_configs([&cfgs, &names](shared_ptr<station_config>& cfg)
 				{
 					//非活跃站点不发出实时状态
 					auto state = cfg->get_state();

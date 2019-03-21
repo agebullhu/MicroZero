@@ -2,7 +2,7 @@
 #include "zero_station.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#include "zero_frames.h"
 
 
 namespace agebull
@@ -13,55 +13,13 @@ namespace agebull
 		//map<int64, vector<shared_char>> zero_station::results;
 		//boost::mutex zero_station::results_mutex_;
 
-		zero_station::zero_station(const string name, int type, int req_zmq_type, int res_zmq_type)
-			: req_zmq_type_(req_zmq_type)
-			, res_zmq_type_(res_zmq_type)
-			, station_type_(type)
-			, poll_items_(nullptr)
-			, poll_count_(0)
-			, task_semaphore_(0)
-			, station_name_(name)
-			, config_(station_warehouse::get_config(name.c_str()))
-			, request_scoket_tcp_(nullptr)
-			, request_socket_inproc_(nullptr)
-			, trace_socket_inproc_(nullptr)
-			, plan_socket_inproc_(nullptr)
-			, proxy_socket_inproc_(nullptr)
-			, worker_in_socket_tcp_(nullptr)
-			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
-			, zmq_state_(zmq_socket_state::succeed)
-		{
-			assert(req_zmq_type_ != ZMQ_PUB);
-		}
-
-		zero_station::zero_station(shared_ptr<zero_config>& config, int type, int req_zmq_type, int res_zmq_type)
-			: req_zmq_type_(req_zmq_type)
-			, res_zmq_type_(res_zmq_type)
-			, station_type_(type)
-			, poll_items_(nullptr)
-			, poll_count_(0)
-			, task_semaphore_(0)
-			, station_name_(config->station_name)
-			, config_(config)
-			, request_scoket_tcp_(nullptr)
-			, request_socket_inproc_(nullptr)
-			, trace_socket_inproc_(nullptr)
-			, plan_socket_inproc_(nullptr)
-			, proxy_socket_inproc_(nullptr), worker_in_socket_tcp_(nullptr)
-			, worker_out_socket_tcp_(nullptr)
-			//, worker_out_socket_ipc_(nullptr)
-			, zmq_state_(zmq_socket_state::succeed)
-		{
-			assert(req_zmq_type_ != ZMQ_PUB);
-		}
 
 		/**
 		* \brief 初始化
 		*/
 		bool zero_station::initialize()
 		{
-			if (config_->is_state(station_state::stop))
+			if (config_->get_state() >= station_state::stop)
 				return false;
 			//boost::lock_guard<boost::mutex> guard(mutex_);
 			config_->start();
@@ -263,7 +221,7 @@ namespace agebull
 		{
 			config_->runing();
 			//登记线程开始
-			set_command_thread_run(get_station_name());
+			set_station_thread_run(get_station_name());
 			while (true)
 			{
 				if (!can_do())
@@ -392,7 +350,7 @@ namespace agebull
 			if (strcmp(*list[list.size() - 1], global_config::service_key) != 0)
 			{
 				config_->error("on_response", "service key error");
-				send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false, true);
+				//send_request_status(socket.socket, *list[0], zero_def::status::deny_error, false, true);
 				return -3;
 			}
 			if (list[1].tag() == zero_def::frame::extend_end)

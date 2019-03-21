@@ -3,10 +3,9 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using Agebull.Common;
 using Agebull.Common.Ioc;
-using Agebull.ZeroNet.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Agebull.ZeroNet.ZeroApi
+namespace Agebull.MicroZero.ZeroApi
 {
     /// <summary>
     /// MEF插件导入器
@@ -55,7 +54,6 @@ namespace Agebull.ZeroNet.ZeroApi
                 return;
             var path = IOHelper.CheckPath(ZeroApplication.Config.RootPath, ZeroApplication.Config.AddInPath);
             ZeroTrace.SystemLog("AddIn(Service)", path);
-            IocHelper.ServiceCollection.AddSingleton(pro => Instance);
             // 通过容器对象将宿主和部件组装到一起。 
             DirectoryCatalog directoryCatalog = new DirectoryCatalog(path);
             var container = new CompositionContainer(directoryCatalog);

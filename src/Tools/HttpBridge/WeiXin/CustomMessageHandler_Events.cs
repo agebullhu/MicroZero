@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Linq;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
 using Newtonsoft.Json;
 using Senparc.CO2NET.Extensions;
 using Senparc.CO2NET.Helpers;
 using Senparc.CO2NET.Helpers.BaiduMap;
-using Senparc.NeuChar;
 using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Entities;
 using Senparc.NeuChar.Entities;
 using Senparc.Weixin.MP.AdvancedAPIs;
-using ZeroNet.Http.Gateway;
+using MicroZero.Http.Gateway;
 using Senparc.NeuChar.Helpers;
-using Senparc.Weixin.MP.Entities.Request;
-using Senparc.Weixin.Tencent;
 
 namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
 {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 站点事件参数

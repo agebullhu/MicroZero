@@ -1,11 +1,13 @@
 ﻿using System;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
-using Agebull.ZeroNet.PubSub;
+
+using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero;
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApis;
 using Senparc.NeuChar;
-using ZeroNet.Http.Gateway.Weixin;
+using MicroZero.Http.Gateway.Weixin;
 
 namespace ApiTest
 {

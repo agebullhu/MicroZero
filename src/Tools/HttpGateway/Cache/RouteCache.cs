@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Agebull.ZeroNet.ZeroApi;
+using Agebull.MicroZero.ZeroApi;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     »º´æ

@@ -1,9 +1,8 @@
 using System;
 using System.Runtime.Serialization;
-using Agebull.Common.Logging;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     系统配置
@@ -14,7 +13,7 @@ namespace ZeroNet.Http.Gateway
     public class SystemConfig
     {
         /// <summary>
-        ///     是否加入ZeroNet
+        ///     是否加入MicroZero
         /// </summary>
         [JsonProperty]
         public bool FireZero { get; set; }
@@ -34,6 +33,12 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty]
         public bool CheckApiItem { get; set; }
 
+        /// <summary>
+        ///     开启管理命令
+        /// </summary>
+        [JsonProperty]
+        public bool EnableInnerCommand { get; set; }
+
 
         /// <summary>
         ///     超时时间
@@ -47,11 +52,12 @@ namespace ZeroNet.Http.Gateway
         [JsonProperty]
         public int WaringTime { get; set; }
 
+
         /// <summary>
-        ///     内容页地址
+        ///     是否启用内容页
         /// </summary>
         [JsonProperty]
-        public string ContextHost { get; set; }
+        public bool EnableContext { get; set; }
 
         /// <summary>
         ///     内容页地址
@@ -61,10 +67,10 @@ namespace ZeroNet.Http.Gateway
 
 
         /// <summary>
-        ///     内容页地址
+        ///     是否包含顶级目录(即域名后第一个节是目录而不是站点名称)
         /// </summary>
         [JsonProperty]
-        public string SiteFolder { get; set; }
+        public bool IsAppFolder { get; set; }
         
     }
 }

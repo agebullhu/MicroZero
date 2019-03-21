@@ -3,7 +3,7 @@ using System.Threading;
 using Agebull.Common.Base;
 using Agebull.Common.Logging;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 保证独立操作的范围(让启动的Task中使用相同范围时会在在此范围完成后顺序执行)

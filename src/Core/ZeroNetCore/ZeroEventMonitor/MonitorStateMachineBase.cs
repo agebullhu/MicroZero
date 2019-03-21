@@ -1,10 +1,10 @@
 ﻿using System;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
-namespace Agebull.ZeroNet.Core.ZeroManagemant.StateMachine
+namespace Agebull.MicroZero.ZeroManagemant.StateMachine
 {
     /// <summary>
     /// 系统侦听器

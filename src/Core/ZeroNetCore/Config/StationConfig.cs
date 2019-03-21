@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Newtonsoft.Json;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
 
     /// <summary>

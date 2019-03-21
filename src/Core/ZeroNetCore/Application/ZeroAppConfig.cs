@@ -7,14 +7,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using Agebull.Common;
-using Agebull.Common.ApiDocuments;
+using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
+
 using Newtonsoft.Json;
 using ZeroMQ;
+using Agebull.Common.Context;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 工作模式
@@ -664,6 +665,8 @@ namespace Agebull.ZeroNet.Core
             }
             #endregion
 
+            #region ServiceName
+
             if (string.IsNullOrWhiteSpace(Config.LocalIpAddress))
                 Config.LocalIpAddress = GetHostIps();
 
@@ -684,7 +687,9 @@ namespace Agebull.ZeroNet.Core
                 }
             }
 
-            #region Base
+            #endregion
+
+            #region Folder
 
             if (Config.StationIsolate == true)
             {
@@ -708,9 +713,6 @@ namespace Agebull.ZeroNet.Core
                 if (string.IsNullOrWhiteSpace(Config.ConfigFolder))
                     Config.ConfigFolder = IOHelper.CheckPath(rootPath, "config");
             }
-            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
-            TxtRecorder.LogPath = Config.LogFolder;
-
 
             #endregion
 

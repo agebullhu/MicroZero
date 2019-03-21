@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ZeroNet.Http.Route
+namespace MicroZero.Http.Route
 {
     /// <summary>
     /// 运行时警告节点

@@ -2,6 +2,8 @@
 #ifndef _AGEBULL_STATION_WAREHOUSE_H_
 #define _AGEBULL_STATION_WAREHOUSE_H_
 #include "zero_config.h"
+#include "../sqlite/system_storage.h"
+
 namespace agebull
 {
 	namespace zero_net
@@ -30,12 +32,15 @@ namespace agebull
 			/**
 			* \brief 配置集合
 			*/
-			static map<string, shared_ptr<zero_config>> configs_;
+			static map<string, shared_ptr<station_config>> configs_;
 			/**
 			* \brief 实例集合
 			*/
 			static map<string, zero_station*> examples_;
-
+			/**
+			* \brief sqlite存储类
+			*/
+			static system_storage storage_;
 		public:
 			/**
 			* \brief 取全局ID
@@ -48,10 +53,6 @@ namespace agebull
 				return (reboot_num_ << 48) | glogal_id_;
 			}
 			/**
-			* \brief 清除所有站点
-			*/
-			static void clear();
-			/**
 			* \brief 恢复站点
 			*/
 			static int restore();
@@ -59,12 +60,12 @@ namespace agebull
 			/**
 			* \brief 恢复站点
 			*/
-			static bool restore(shared_ptr<zero_config>& config);
+			static bool restore(shared_ptr<station_config>& config);
 
 			/**
 			* \brief 保存配置
 			*/
-			static void insert_config(shared_ptr<zero_config> config);
+			static void insert_config(shared_ptr<station_config> config);
 
 			/**
 			* \brief 保存配置
@@ -90,7 +91,7 @@ namespace agebull
 			/**
 			* \brief 取得配置
 			*/
-			static shared_ptr<zero_config>& get_config(const char* station_name, bool find_redis = true);
+			static shared_ptr<station_config>& get_config(const char* station_name, bool find = true);
 
 			/**
 			* \brief 加入站点
@@ -104,11 +105,10 @@ namespace agebull
 			* \brief 设置关闭
 			*/
 			static void set_all_destroy();
-		public:
 			/**
 			* \brief 遍历配置
 			*/
-			static void foreach_configs(std::function<bool(shared_ptr<zero_config>&)> look);
+			static void foreach_configs(std::function<bool(shared_ptr<station_config>&)> look);
 
 			/**
 			* \brief 取机器信息
@@ -160,7 +160,7 @@ namespace agebull
 			*/
 			static int install(const char* station_name, int type, const char* short_name, const char* desc, bool is_base)
 			{
-				shared_ptr<zero_config> config = make_shared<zero_config>();
+				shared_ptr<station_config> config = make_shared<station_config>();
 				config->station_type = type;
 				config->station_name = station_name;
 				config->short_name = short_name;
@@ -174,7 +174,7 @@ namespace agebull
 			/**
 			* \brief 保存站点
 			*/
-			static acl::string save(shared_ptr<zero_config>& config);
+			static acl::string save(shared_ptr<station_config>& config);
 
 			/**
 			* \brief 查找已运行站点
@@ -204,11 +204,11 @@ namespace agebull
 			/**
 			* \brief 检查站点名称
 			*/
-			static int check_station_name(shared_ptr<zero_config>& config);
+			static int check_station_name(shared_ptr<station_config>& config);
 			/**
 			* \brief 安装一个站点
 			*/
-			static void install_station(shared_ptr<zero_config>& config);
+			static void install_station(shared_ptr<station_config>& config);
 		};
 	}
 }

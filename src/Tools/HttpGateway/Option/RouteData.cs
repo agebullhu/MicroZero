@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+
+using Agebull.MicroZero;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.EntityModel.Common;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     /// <summary>
     ///     路由数据
@@ -38,7 +39,7 @@ namespace ZeroNet.Http.Gateway
         /// <summary>
         ///     Http Header中的Authorization信息
         /// </summary>
-        [DataMember] [JsonProperty("token")] public string Token { get; private set; }
+        [DataMember] [JsonProperty("token")] public string Token { get; set; }
 
         /// <summary>
         ///     HTTP method
@@ -195,33 +196,33 @@ namespace ZeroNet.Http.Gateway
         /// <returns></returns>
         private bool CheckCall()
         {
-            if (string.IsNullOrWhiteSpace(RouteOption.Option.SystemConfig.SiteFolder))
-            {
-                var words = Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length <= 1)
-                {
-                    UserState = UserOperatorStateType.FormalError;
-                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    ResultMessage = ApiResult.ArgumentErrorJson;
-                    return false;
-                }
-
-                HostName = words[0];
-                ApiName = words[1];
-            }
-            else
+            if (RouteOption.Option.SystemConfig.IsAppFolder)
             {
                 var words = Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
                 if (words.Length <= 1)
                 {
                     UserState = UserOperatorStateType.FormalError;
                     ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    ResultMessage = ApiResult.ArgumentErrorJson;
+                    ResultMessage = ApiResultIoc.ArgumentErrorJson;
                     return false;
                 }
 
                 HostName = words[1];
                 ApiName = words[2];
+            }
+            else
+            {
+                var words = Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length <= 1)
+                {
+                    UserState = UserOperatorStateType.FormalError;
+                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                    ResultMessage = ApiResultIoc.ArgumentErrorJson;
+                    return false;
+                }
+
+                HostName = words[0];
+                ApiName = words[1];
             }
             return true;
         }
@@ -257,7 +258,7 @@ namespace ZeroNet.Http.Gateway
                 LogRecorder.Exception(e, "读取远程参数");
                 UserState = UserOperatorStateType.FormalError;
                 ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                ResultMessage = ApiResult.ArgumentErrorJson;
+                ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return false;
             }
         }

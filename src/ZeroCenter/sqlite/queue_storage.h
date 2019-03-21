@@ -19,7 +19,7 @@ namespace agebull
 			/**
 			* \brief 配置
 			*/
-			shared_ptr<zero_config> config_;
+			shared_ptr<station_config> config_;
 			static const char* create_sql_;
 			static const char* insert_sql_;
 			static const char* load_max_sql_;
@@ -54,7 +54,7 @@ namespace agebull
 			/**
 			 * \brief 准备存储
 			 */
-			bool prepare_storage(shared_ptr<zero_config>& config);
+			bool prepare_storage(shared_ptr<station_config>& config);
 
 			/**
 			*\brief 将数据写入数据库中

@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
 using Agebull.Common.Logging;
-using Agebull.ZeroNet.Core.ZeroManagemant;
-using Agebull.ZeroNet.Core.ZeroServices.StateMachine;
+using Agebull.MicroZero.ZeroManagemant;
+using Agebull.MicroZero.ZeroServices.StateMachine;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 站点
@@ -142,12 +142,12 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.SystemLog(StationName, nameof(RealState), StationState.Text(_realState));
             }
         }
-//#if UseStateMachine
+        //#if UseStateMachine
         /// <summary>
         /// 状态机
         /// </summary>
         protected IStationStateMachine StateMachine { get; private set; }
-//#endif
+        //#endif
 
         private StationStateType _configState;
 
@@ -161,13 +161,13 @@ namespace Agebull.ZeroNet.Core
             {
                 if (_configState == value)
                     return;
-//#if UseStateMachine
+                //#if UseStateMachine
                 switch (value)
                 {
                     case StationStateType.None:
                     case StationStateType.Stop:
                     case StationStateType.Remove:
-                        if (!(StateMachine is EmptyStateMachine /*&& !StateMachine.IsDisposed*/))
+                        if (!(StateMachine is EmptyStateMachine) || StateMachine.IsDisposed)
                             StateMachine = new EmptyStateMachine { Station = this };
                         break;
                     case StationStateType.Run:
@@ -186,13 +186,13 @@ namespace Agebull.ZeroNet.Core
                         StateMachine = new StartStateMachine { Station = this };
                         break;
                 }
-//#endif
+                //#endif
                 _configState = value;
-//#if UseStateMachine
-                ZeroTrace.SystemLog(StationName, nameof(ConfigState), value, StateMachine.GetTypeName());
-//#else
-//                ZeroTrace.SystemLog(StationName, nameof(ConfigState), value);
-//#endif
+                //#if UseStateMachine
+                ZeroTrace.SystemLog(StationName, nameof(ConfigState), value, "StateMachine", StateMachine.GetTypeName());
+                //#else
+                //                ZeroTrace.SystemLog(StationName, nameof(ConfigState), value);
+                //#endif
             }
         }
 
@@ -205,7 +205,10 @@ namespace Agebull.ZeroNet.Core
         /// <summary>
         /// 能不能循环处理
         /// </summary>
-        protected bool CanLoop => ZeroApplication.CanDo && ConfigState == StationStateType.Run && RunTaskCancel != null && !RunTaskCancel.IsCancellationRequested;
+        protected bool CanLoop => ZeroApplication.CanDo && 
+                                  ConfigState == StationStateType.Run &&
+                                  (RealState == StationState.BeginRun || RealState == StationState.Run) &&
+                                  RunTaskCancel != null && !RunTaskCancel.IsCancellationRequested;
 
 
         #endregion
@@ -237,47 +240,59 @@ namespace Agebull.ZeroNet.Core
         {
             while (_waitToken.CurrentCount > 0)
                 _waitToken.Wait();
-            if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
-                return false;
-            ConfigState = StationStateType.Run;
             try
             {
-                using (OnceScope.CreateScope(this))
-                {
-                    RealState = StationState.Start;
-                    if (!CheckConfig())
-                    {
-                        ZeroApplication.OnObjectFailed(this);
-                        return false;
-                    }
-                    //名称初始化
-                    RealName = Config.StationName == ZeroApplication.Config.StationName
-                        ? ZSocket.CreateRealName(false)
-                        : ZSocket.CreateRealName(false, Config.StationName);
-                    Identity = RealName.ToAsciiBytes();
-                    ZeroTrace.SystemLog(StationName, Name, StationType, RealName, Config.WorkerCallAddress);
-                    //扩展动作
-                    if (!Prepare())
-                    {
-                        RealState = StationState.Failed;
-                        ZeroApplication.OnObjectFailed(this);
-                        return false;
-                    }
-                }
-                //可执行
-                //Hearter.HeartJoin(Config.StationName, RealName);
-                //执行主任务
-                RunTaskCancel = new CancellationTokenSource();
-                new Thread(Run)
-                {
-                    IsBackground=true
-                }.Start();
-                _waitToken.Wait();
+                if (DoStart())
+                    return true;
             }
             catch (Exception e)
             {
                 LogRecorder.Exception(e);
             }
+            RealState = StationState.Failed;
+            ZeroApplication.OnObjectFailed(this);
+            return false;
+        }
+
+        /// <summary>
+        /// 开始
+        /// </summary>
+        /// <returns></returns>
+        private bool DoStart()
+        {
+            if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
+                return false;
+            ConfigState = StationStateType.Run;
+
+            using (OnceScope.CreateScope(this))
+            {
+                RealState = StationState.Start;
+                if (!CheckConfig())
+                {
+                    return false;
+                }
+                //名称初始化
+                RealName = Config.StationName == ZeroApplication.Config.StationName
+                    ? ZSocket.CreateRealName(false)
+                    : ZSocket.CreateRealName(false, Config.StationName);
+                Identity = RealName.ToAsciiBytes();
+                ZeroTrace.SystemLog(StationName, Name, StationType, RealName, Config.WorkerCallAddress);
+                //扩展动作
+                if (!Prepare())
+                {
+                    return false;
+                }
+            }
+            //可执行
+            //Hearter.HeartJoin(Config.StationName, RealName);
+            //执行主任务
+            RunTaskCancel = new CancellationTokenSource();
+            new Thread(Run)
+            {
+                IsBackground = true
+            }.Start();
+            //保证Run真正执行后再完成本方法调用.
+            _waitToken.Wait();
             return true;
         }
 
@@ -305,9 +320,9 @@ namespace Agebull.ZeroNet.Core
             if (ConfigState < StationStateType.Stop)
                 ConfigState = !ZeroApplication.CanDo || success ? StationStateType.Closed : StationStateType.Failed;
             GC.Collect();
-//#if UseStateMachine
+            //#if UseStateMachine
             StateMachine.End();
-//#endif
+            //#endif
         }
 
 
@@ -322,7 +337,6 @@ namespace Agebull.ZeroNet.Core
                 ZeroTrace.WriteError(StationName, "Close", "station not runing");
                 return false;
             }
-            SystemManager.Instance.HeartLeft(StationName, RealName);
             RealState = StationState.Closing;
             RunTaskCancel.Cancel();
             ZeroTrace.SystemLog(StationName, "Close", "Run is cancel,waiting... ");
@@ -457,15 +471,15 @@ namespace Agebull.ZeroNet.Core
 
         bool IZeroObject.OnZeroStart()
         {
-//#if UseStateMachine
+            //#if UseStateMachine
             return StateMachine.Start();
-//#else
-//            if (RealState >= StationState.Start && RealState <= StationState.Closing)
-//            {
-//                return true;
-//            }
-//            return Start();
-//#endif
+            //#else
+            //            if (RealState >= StationState.Start && RealState <= StationState.Closing)
+            //            {
+            //                return true;
+            //            }
+            //            return Start();
+            //#endif
         }
 
         /// <summary>
@@ -475,7 +489,7 @@ namespace Agebull.ZeroNet.Core
         {
             while (RealState == StationState.Start || RealState == StationState.BeginRun || RealState == StationState.Closing)
                 Thread.Sleep(10);
-//#if UseStateMachine
+            //#if UseStateMachine
             switch (config.State)
             {
                 case ZeroCenterState.Initialize:
@@ -527,34 +541,34 @@ namespace Agebull.ZeroNet.Core
                 ConfigState = StationStateType.Initialized;
             //同步启动它
             Start();
-//#else
-//            ConfigState = config.State;
-//            if (RealState < StationState.Start || RealState > StationState.Closing)
-//            {
-//                if (config.State <= ZeroCenterState.Pause && ZeroApplication.CanDo)
-//                {
-//                    ZeroTrace.SystemLog(StationName, $"Start by config state({config.State}) changed");
-//                    Start();
-//                }
-//            }
-//            else
-//            {
-//                if (config.State >= ZeroCenterState.Failed || !ZeroApplication.CanDo)
-//                {
-//                    ZeroTrace.SystemLog(StationName, $"Close by config state({config.State}) changed");
-//                    Close();
-//                }
-//            }
-//#endif
+            //#else
+            //            ConfigState = config.State;
+            //            if (RealState < StationState.Start || RealState > StationState.Closing)
+            //            {
+            //                if (config.State <= ZeroCenterState.Pause && ZeroApplication.CanDo)
+            //                {
+            //                    ZeroTrace.SystemLog(StationName, $"Start by config state({config.State}) changed");
+            //                    Start();
+            //                }
+            //            }
+            //            else
+            //            {
+            //                if (config.State >= ZeroCenterState.Failed || !ZeroApplication.CanDo)
+            //                {
+            //                    ZeroTrace.SystemLog(StationName, $"Close by config state({config.State}) changed");
+            //                    Close();
+            //                }
+            //            }
+            //#endif
         }
 
         bool IZeroObject.OnZeroEnd()
         {
-//#if UseStateMachine
+            //#if UseStateMachine
             return StateMachine.Close();
-//#else
-//            return Close();
-//#endif
+            //#else
+            //            return Close();
+            //#endif
         }
 
         void IZeroObject.OnZeroDestory()

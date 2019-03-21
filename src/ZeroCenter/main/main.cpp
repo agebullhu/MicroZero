@@ -17,6 +17,9 @@ int zero_center_main()
 	//valgrind --tool=memcheck --leak-check=full mtrace ./zero_center.out output
 	//setenv("MALLOC_TRACE", "output", 1);
 	//mtrace();
+	//系统信号发生回调绑定
+	for (int sig = SIGHUP; sig < SIGUNUSED; sig++)
+		signal(sig, zero_net::on_sig);
 	//初始化
 	if (zero_net::rpc_service::initialize())
 	{

@@ -11,7 +11,7 @@ using Senparc.Weixin.Tencent;
 using Senparc.NeuChar.Exceptions;
 using Senparc.Weixin.MP;
 
-namespace ZeroNet.Http.Gateway.Weixin
+namespace MicroZero.Http.Gateway.Weixin
 {
     /// <summary>
     /// 自定义MessageHandler

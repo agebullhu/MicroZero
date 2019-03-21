@@ -4,11 +4,10 @@ using System.Linq;
 using System.Threading;
 using Agebull.Common;
 using Agebull.Common.Tson;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.PubSub;
+using Agebull.MicroZero.PubSub;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Log
+namespace Agebull.MicroZero.Log
 {
     /// <summary>
     ///     批量消息发布器

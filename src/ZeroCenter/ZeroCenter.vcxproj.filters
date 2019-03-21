@@ -51,9 +51,6 @@
     <Filter Include="ext\log">
       <UniqueIdentifier>{4483f9c0-9a2b-4c5a-8596-23dfccfc7a16}</UniqueIdentifier>
     </Filter>
-    <Filter Include="test">
-      <UniqueIdentifier>{02e9cd96-f340-4810-962e-5f3cf0281a0b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ext\shared_char">
       <UniqueIdentifier>{d20df558-29f8-44fd-8a57-926121571d2f}</UniqueIdentifier>
     </Filter>
@@ -125,9 +122,6 @@
     <ClCompile Include="rpc\proxy_dispatcher.cpp">
       <Filter>rpc\proxy</Filter>
     </ClCompile>
-    <ClCompile Include="test\sqlite_test.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
     <ClCompile Include="rpc\net_crc.cpp">
       <Filter>ext\shared_char</Filter>
     </ClCompile>
@@ -135,6 +129,12 @@
       <Filter>rpc\trace</Filter>
     </ClCompile>
     <ClCompile Include="sqlite\trace_storage.cpp">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc\signle_queue_station.cpp">
+      <Filter>rpc\queue</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlite\system_storage.cpp">
       <Filter>sqlite</Filter>
     </ClCompile>
   </ItemGroup>
@@ -237,6 +237,15 @@
     </ClInclude>
     <ClInclude Include="sqlite\trace_storage.h">
       <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\signle_queue_station.h">
+      <Filter>rpc\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="sqlite\system_storage.h">
+      <Filter>sqlite</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc\zero_frames.h">
+      <Filter>rpc\zero</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

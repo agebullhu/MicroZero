@@ -1,5 +1,5 @@
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 
 namespace RpcTest
 {

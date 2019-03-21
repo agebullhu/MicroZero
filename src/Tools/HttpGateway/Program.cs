@@ -1,12 +1,13 @@
 using Agebull.Common.Configuration;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace ZeroNet.Http.Gateway
+namespace MicroZero.Http.Gateway
 {
     public class Program
     {
+
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
@@ -14,10 +15,13 @@ namespace ZeroNet.Http.Gateway
         }
 
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            return WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
+                .UseKestrel(RouteApp.Options)
                 .UseStartup<Startup>()
                 .Build();
+        }
     }
 }

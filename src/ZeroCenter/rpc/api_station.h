@@ -25,7 +25,7 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			api_station(shared_ptr<zero_config>& config)
+			api_station(shared_ptr<station_config>& config)
 				: zero_station(config, zero_def::station_type::api, ZMQ_ROUTER, global_config::api_route_mode ? ZMQ_ROUTER : ZMQ_PUSH)
 			{
 			}
@@ -49,7 +49,7 @@ namespace agebull
 			/**
 			*\brief 运行
 			*/
-			static void run(shared_ptr<zero_config>& config)
+			static void run(shared_ptr<station_config>& config)
 			{
 				if (config->is_state(station_state::stop))
 					return;

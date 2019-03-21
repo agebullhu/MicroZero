@@ -4,6 +4,7 @@
 #include "inner_socket.h"
 #include "plan_dispatcher.h"
 using namespace boost::posix_time;
+#ifdef PLAN
 
 namespace agebull
 {
@@ -541,8 +542,8 @@ namespace agebull
 					vector<shared_char> result;
 					const size_t size = atol(iter.second);
 					acl::string worker;
-					acl::string key = iter.first;
-					key.substr(worker, 6, key.length() - 11);
+					acl::string rkey = iter.first;
+					rkey.substr(worker, 6, rkey.length() - 11);
 					for (size_t idx = 1; idx <= size; idx++)
 					{
 						sprintf(skey, "wroks:%s:%d", worker.c_str(), idx);
@@ -801,3 +802,5 @@ namespace agebull
 		}
 	}
 }
+
+#endif // PLAN

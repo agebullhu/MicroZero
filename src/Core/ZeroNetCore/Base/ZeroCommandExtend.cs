@@ -1,7 +1,7 @@
 using System;
 using ZeroMQ;
 
-namespace Agebull.ZeroNet.Core
+namespace Agebull.MicroZero
 {
     /// <summary>
     ///     Zmq帮助类

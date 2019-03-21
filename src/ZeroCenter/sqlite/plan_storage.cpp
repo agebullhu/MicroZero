@@ -3,7 +3,7 @@
  *
  *
  */
-
+#ifdef PLAN
 #include "../stdafx.h"
 #include "plan_storage.h"
 
@@ -193,3 +193,4 @@ namespace agebull
 		}
 	}
 }
+#endif
