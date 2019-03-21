@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.Core", "Core\ZeroNetCore\MicroZero.Core.csproj", "{6E0309CA-32DF-4CF3-9865-9753186396F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.MicroZero.Core", "Core\ZeroNetCore\Agebull.MicroZero.Core.csproj", "{6E0309CA-32DF-4CF3-9865-9753186396F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicroZero", "MicroZero", "{25946628-2217-4040-A7DA-95CB27CC3905}"
 EndProject
@@ -23,11 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZeroNet.Devops.Monitor", "T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.Extend", "Tools\Extend\MicroZero.Extend.csproj", "{9C8C6DB9-3232-4FCC-B546-B6C8DE762523}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.ClrZMQ", "Core\ZeroMq\MicroZero.ClrZMQ.csproj", "{8A815595-D468-415A-8964-603F43B886BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.MicroZero.ClrZMQ", "Core\ZeroMq\Agebull.MicroZero.ClrZMQ.csproj", "{8A815595-D468-415A-8964-603F43B886BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extend", "Extend", "{742B9856-B85F-41CC-9F4A-C62419394190}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.Service", "Core\ZeroService\MicroZero.Service.csproj", "{41D85732-219A-41DA-A52A-75A69744EC57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.MicroZero.Service", "Core\ZeroService\Agebull.MicroZero.Service.csproj", "{41D85732-219A-41DA-A52A-75A69744EC57}"
 	ProjectSection(ProjectDependencies) = postProject
 		{FAC9810E-3209-4097-A8E6-1F1F9C6910E1} = {FAC9810E-3209-4097-A8E6-1F1F9C6910E1}
 		{AAC4FF96-B77A-42DE-BF05-064363D924D1} = {AAC4FF96-B77A-42DE-BF05-064363D924D1}
@@ -40,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZFrameTest", "Test\ZFrameTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.Http.Gateway", "Tools\HttpGateway\MicroZero.Http.Gateway.csproj", "{C94AEE6F-B063-42DD-8C74-41773CAC0BA7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroZero.ModelApi", "Core\ApiFundtion\MicroZero.ModelApi.csproj", "{2E3BC6FE-6D19-472B-B6FA-84C97463BC90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Agebull.MicroZero.ModelApi", "Core\ApiFundtion\Agebull.MicroZero.ModelApi.csproj", "{2E3BC6FE-6D19-472B-B6FA-84C97463BC90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueTest", "test\QueueTest\QueueTest.csproj", "{0CCC8083-7821-4571-ACB4-2DFAA5E1953F}"
 EndProject

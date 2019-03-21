@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows;
 using Agebull.Common.Configuration;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 
 namespace Agebull.EntityModel.Designer
 {

@@ -1,5 +1,5 @@
 ﻿// /*****************************************************
-// (c)2008-2013 Copy right www.Gboxt.com
+// (c)2008-2013 Copy right www.Agebull.com
 // 作者:bull2
 // 工程:CodeRefactor-Agebull.CodeRefactor.CodeAnalyze.Application
 // 建立:2014-11-20
@@ -11,9 +11,7 @@
 using System.Collections;
 using System.Windows;
 using System.Windows.Media;
-using Agebull.Common.Ioc;
 using Agebull.Common.Mvvm;
-using Agebull.Common.Rpc;
 
 #endregion
 

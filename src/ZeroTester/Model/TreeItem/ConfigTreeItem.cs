@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Agebull.Common.Mvvm;
 using Agebull.EntityModel.Config;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
 
 namespace Agebull.EntityModel.Designer
 {

@@ -77,11 +77,6 @@
     <Compile Include="TreeItem\ConfigTreeItem.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Agebull.ZeroNet.Core">
-      <Version>1.2.0.55</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Style\" />
   </ItemGroup>
   <ItemGroup>
@@ -93,6 +88,11 @@
       <Project>{6f6dc5d2-85ef-4bb5-82fa-bd21f7aa3053}</Project>
       <Name>Agebull.Common.Mvvm</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Agebull.MicroZero.Core">
+      <Version>1.4.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -28,21 +28,18 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using Agebull.Common;
-using Agebull.Common.ApiDocuments;
-using Agebull.Common.Configuration;
-using Agebull.Common.Ioc;
+using Agebull.Common.Context;
 using Agebull.Common.OAuth;
-using Agebull.Common.Rpc;
-using Agebull.EntityModel.Config;
 using Agebull.EntityModel.Designer.DataTemplate;
-using Agebull.ZeroNet.Core;
-using Agebull.ZeroNet.ZeroApi;
-using Gboxt.Common.DataModel;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ApiDocuments;
+using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
 #endregion
@@ -157,7 +154,7 @@ namespace Agebull.EntityModel.Designer
             try
             {
                 SelecTestItem.RequestId = RandomOperate.Generate(8);
-                GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceKey, SelecTestItem.RequestId);
+                GlobalContext.Current.SetRequestContext(ZeroApplication.Config.ServiceKey,"", SelecTestItem.RequestId);
                 User.ContextJson = JsonConvert.SerializeObject(GlobalContext.Current, Formatting.Indented);
                 var client = new ApiClient
                 {
@@ -470,7 +467,7 @@ namespace Agebull.EntityModel.Designer
             try
             {
                 SelecTestItem.RequestId = RandomOperate.Generate(8);
-                GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceKey, SelecTestItem.RequestId);
+                GlobalContext.Current.SetRequestContext(ZeroApplication.Config.ServiceKey, "", SelecTestItem.RequestId);
                 var client = new ApiClient
                 {
                     Station = "Auth",
@@ -501,7 +498,7 @@ namespace Agebull.EntityModel.Designer
             try
             {
                 SelecTestItem.RequestId = RandomOperate.Generate(8);
-                GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceKey, SelecTestItem.RequestId);
+                GlobalContext.Current.SetRequestContext(ZeroApplication.Config.ServiceKey, "", SelecTestItem.RequestId);
                 GlobalContext.Customer.DeviceId = User.DeviceId;
                 GlobalContext.RequestInfo.Token = User.DeviceId;
                 var client = new ApiClient
@@ -537,7 +534,7 @@ namespace Agebull.EntityModel.Designer
             try
             {
                 SelecTestItem.RequestId = RandomOperate.Generate(8);
-                GlobalContext.SetRequestContext(ZeroApplication.Config.ServiceKey, SelecTestItem.RequestId);
+                GlobalContext.Current.SetRequestContext(ZeroApplication.Config.ServiceKey, "", SelecTestItem.RequestId);
                 var client = new ApiClient
                 {
                     Station = "UserCenter",

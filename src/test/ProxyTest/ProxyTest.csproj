@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroMq\MicroZero.ClrZMQ.csproj" />
-    <ProjectReference Include="..\..\Core\ZeroNetCore\MicroZero.Core.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroMq\Agebull.MicroZero.ClrZMQ.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

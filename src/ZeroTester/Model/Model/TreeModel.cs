@@ -1,13 +1,11 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using Agebull.Common.ApiDocuments;
-using Agebull.Common.Ioc;
 using Agebull.Common.Mvvm;
-using Agebull.Common.Rpc;
-using Agebull.ZeroNet.Core;
+using Agebull.MicroZero;
+using Agebull.MicroZero.ApiDocuments;
+using Agebull.MicroZero.ZeroManagemant;
 
 namespace Agebull.EntityModel.Designer
 {

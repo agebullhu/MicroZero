@@ -31,7 +31,7 @@
     <PackageReference Include="Aliyun.Net.SDK.Dysmsapi" Version="1.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\MicroZero.Core.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

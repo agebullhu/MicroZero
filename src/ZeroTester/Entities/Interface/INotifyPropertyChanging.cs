@@ -1,7 +1,7 @@
 ﻿// /*****************************************************
-// (c)2008-2013 Copy right www.Gboxt.com
+// (c)2008-2013 Copy right www.Agebull.com
 // 作者:bull2
-// 工程:CodeRefactor-Gboxt.Common.WpfMvvmBase
+// 工程:CodeRefactor-Agebull.Common.WpfMvvmBase
 // 建立:2014-11-29
 // 修改:2014-11-29
 // *****************************************************/

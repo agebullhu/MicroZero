@@ -1,4 +1,4 @@
-﻿namespace Gboxt.Design.EFMove
+﻿namespace Agebull.Design.EFMove
 {
     /// <summary>
     ///     SolutionAnalyzer.xaml 的交互逻辑

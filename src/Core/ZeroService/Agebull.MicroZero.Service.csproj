@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ZeroNetCore\MicroZero.Core.csproj" />
+    <ProjectReference Include="..\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
