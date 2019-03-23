@@ -6,12 +6,11 @@ using Agebull.Common.Logging;
 using Agebull.Common.OAuth;
 
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
-using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using MicroZero.Http.Route;
 
 namespace MicroZero.Http.Gateway
 {
@@ -284,8 +283,8 @@ namespace MicroZero.Http.Gateway
                 {
                     OrgId = result.ResultData.OrganizationId,
                     Name = result.ResultData.Organization,
-                    OrgKey = result.ResultData.Organization,
-                    RouteName = result.ResultData.Organization
+                    //OrgKey = result.ResultData.Organization,
+                    //RouteName = result.ResultData.Organization
                 });
                 var context = (JObject)JsonConvert.DeserializeObject(JsonConvert.SerializeObject(GlobalContext.Current));
                 JObject obj = (JObject)JsonConvert.DeserializeObject(json);

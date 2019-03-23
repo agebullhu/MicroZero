@@ -18,7 +18,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="title"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static bool DoPublish(string station, string title,string value)
+        public static bool DoPublish(string station, string title, string value)
         {
             return DoPublishInner(station, title, null, value);
         }
@@ -32,7 +32,7 @@ namespace Agebull.MicroZero.PubSub
         public static bool DoPublish<T>(string station, string title, T value)
             where T : class
         {
-            return DoPublishInner(station, title, null , value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
+            return DoPublishInner(station, title, null, value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Agebull.MicroZero.PubSub
             }
             using (socket)
             {
-                return Publish(socket.Socket,title, sub, value);
+                return Publish(socket.Socket, title, sub, value);
             }
         }
 
@@ -319,7 +319,7 @@ namespace Agebull.MicroZero.PubSub
                     GlobalContext.ServiceRealName.ToZeroBytes(),
                     GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
                     GlobalContext.CurrentNoLazy.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes()))
+                    ZeroCommandExtend.ServiceKeyBytes))
                     return socket.ReceiveString();
                 ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
                 return new ZeroResult
@@ -353,7 +353,7 @@ namespace Agebull.MicroZero.PubSub
                 GlobalContext.ServiceRealName.ToZeroBytes(),
                 GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
                 GlobalContext.CurrentNoLazy.ToZeroBytes(),
-                GlobalContext.ServiceKey.ToZeroBytes());
+                ZeroCommandExtend.ServiceKeyBytes);
         }
 
         /// <summary>
@@ -450,9 +450,9 @@ namespace Agebull.MicroZero.PubSub
                     subTitle.ToZeroBytes(),
                     content,
                     GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
-                    ZeroApplication.AppName.ToZeroBytes(),
-                    ZeroApplication.AppName.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes());
+                    ZeroCommandExtend.AppNameBytes,
+                    ZeroCommandExtend.AppNameBytes,
+                    ZeroCommandExtend.ServiceKeyBytes);
         }
     }
 }

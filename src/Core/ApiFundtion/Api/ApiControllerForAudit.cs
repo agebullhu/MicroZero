@@ -12,17 +12,17 @@ using System.Collections.Generic;
 
 using Agebull.EntityModel.Common;
 
-using Agebull.MicroZero.ZeroApi;
-using Agebull.EntityModel.Common.Extends;
+using Agebull.MicroZero.ZeroApis;
+using Agebull.EntityModel.Interfaces;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.Common.Context;
 using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.MySql.BusinessLogic;
+using Agebull.EntityModel.BusinessLogic.MySql;
 
 #endregion
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     审核支持API页面的基类

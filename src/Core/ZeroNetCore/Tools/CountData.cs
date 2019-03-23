@@ -3,7 +3,7 @@ using Agebull.MicroZero.PubSub;
 using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     统计数据

@@ -1,6 +1,6 @@
 using Agebull.MicroZero.ZeroApis;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// ApiResultµÄÐéÄâ»¯

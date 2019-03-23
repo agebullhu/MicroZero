@@ -2,7 +2,7 @@
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;

@@ -1,4 +1,4 @@
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero
 {

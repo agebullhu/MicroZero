@@ -6,7 +6,7 @@ using Agebull.Common.Logging;
 using ZeroMQ;
 
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     Api站点
@@ -83,7 +83,7 @@ namespace Agebull.MicroZero.ZeroApi
                 msg.Add((org.Value));
             }
             des[i++] = ZeroFrameType.SerivceKey;
-            msg.Add((GlobalContext.ServiceKey.ToZeroBytes()));
+            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
             des[i] = ZeroFrameType.ResultEnd;
             return SendResult(socket, new ZMessage(msg));
         }
@@ -116,7 +116,7 @@ namespace Agebull.MicroZero.ZeroApi
                 {
                     new ZFrame(item.Caller),
                     new ZFrame(LayoutErrorFrame),
-                    new ZFrame(GlobalContext.ServiceKey.ToZeroBytes())
+                    new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
                 });
             }
             catch (Exception e)

@@ -5,7 +5,7 @@ using System.Threading;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.MicroZero.ZeroApis;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;

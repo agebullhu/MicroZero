@@ -10,7 +10,7 @@ using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     Api调用

@@ -3,7 +3,7 @@ using Agebull.MicroZero.PubSub;
 using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 
-namespace MicroZero.Http.Route
+namespace Agebull.MicroZero.Helpers
 {
     /// <summary>
     /// 报警节点

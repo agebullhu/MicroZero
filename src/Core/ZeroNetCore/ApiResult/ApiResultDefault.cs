@@ -4,7 +4,7 @@ using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>API·µ»Ø»ùÀà</summary>
     public class ApiResultDefault : IApiResultDefault

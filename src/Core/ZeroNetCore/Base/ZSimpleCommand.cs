@@ -9,6 +9,7 @@ namespace Agebull.MicroZero
     /// </summary>
     public abstract class ZSimpleCommand
     {
+
         /// <summary>
         /// 是否内部
         /// </summary>
@@ -190,7 +191,7 @@ namespace Agebull.MicroZero
                 {
                     message.Add(new ZFrame(arg.ToZeroBytes()));
                 }
-                message.Add(new ZFrame(GlobalContext.ServiceKey.ToZeroBytes()));
+                message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
             }
             using (message)
                 if (socket.SendTo(message))

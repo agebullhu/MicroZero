@@ -11,7 +11,7 @@ using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

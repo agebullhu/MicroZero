@@ -7,7 +7,7 @@ using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -175,9 +175,9 @@ namespace MicroZero.Http.Gateway
                         else
                             Token = words[1];
                         break;
-                    case "USER-AGENT":
-                        userAgent = head.Value.LinkToString("|");
-                        break;
+                    //case "USER-AGENT":
+                    //    userAgent = head.Value.LinkToString("|");
+                    //    break;
                     default:
                         Headers.Add(key, head.Value.ToList());
                         break;

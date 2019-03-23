@@ -67,6 +67,16 @@ namespace Agebull.MicroZero
 
         #endregion
 
+        /// <summary>
+        /// 应用名称字节内容
+        /// </summary>
+        public static byte[] AppNameBytes { get; internal set; }
+
+        /// <summary>
+        /// 服务令牌字节内容
+        /// </summary>
+        public static byte[] ServiceKeyBytes { get; internal set; }
+
 
     }
 }

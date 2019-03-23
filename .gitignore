@@ -79,3 +79,4 @@ packages
 /install/zero/proxy/wwwroot
 /install/zero/Weixin
 /install/tool_install
+*.~vsdx

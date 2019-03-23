@@ -1,7 +1,7 @@
 ﻿using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>记录信息</summary>
     public class RecordInfoTson

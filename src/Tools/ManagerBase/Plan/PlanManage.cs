@@ -317,7 +317,7 @@ namespace MicroZero.Http.Route
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            GlobalContext.ServiceKey.ToZeroBytes());
+                            ZeroCommandExtend.ServiceKeyBytes);
                         break;
                     //Manage
                     case ZeroStationType.Notify:
@@ -326,7 +326,7 @@ namespace MicroZero.Http.Route
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            GlobalContext.ServiceKey.ToZeroBytes());
+                            ZeroCommandExtend.ServiceKeyBytes);
                         break;
                     default:
                         clientPlan.command = clientPlan.command.ToLower();
@@ -342,7 +342,7 @@ namespace MicroZero.Http.Route
                             plan.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            GlobalContext.ServiceKey.ToZeroBytes());
+                            ZeroCommandExtend.ServiceKeyBytes);
                         break;
                 }
                 if (!success)

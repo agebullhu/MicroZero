@@ -8,7 +8,7 @@ using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;

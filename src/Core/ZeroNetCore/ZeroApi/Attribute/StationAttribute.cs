@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// 站点名称

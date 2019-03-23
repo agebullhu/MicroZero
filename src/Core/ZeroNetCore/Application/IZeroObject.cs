@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Agebull.MicroZero.ZeroManagemant;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero
 {

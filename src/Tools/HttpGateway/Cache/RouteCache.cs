@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 
 namespace MicroZero.Http.Gateway
 {

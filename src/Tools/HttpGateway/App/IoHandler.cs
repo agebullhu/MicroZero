@@ -5,7 +5,7 @@ using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using Agebull.Common.Context;
@@ -125,6 +125,9 @@ namespace MicroZero.Http.Gateway
 
         private static readonly byte[] WebNameBytes = "WebClient".ToZeroBytes();
 
+
+        
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -142,9 +145,9 @@ namespace MicroZero.Http.Gateway
                     $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
                     data.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    ZeroApplication.AppName.ToZeroBytes(),
+                    ZeroCommandExtend.AppNameBytes,
                     WebNameBytes,
-                    GlobalContext.ServiceKey.ToZeroBytes());
+                    ZeroCommandExtend.ServiceKeyBytes);
                 if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
                 {
                     GlobalContext.Current.Request.LocalGlobalId = result.GlobalId;
@@ -188,12 +191,12 @@ namespace MicroZero.Http.Gateway
                     $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
                     result.ToZeroBytes(),
                     data.ToZeroBytes(),
-                    ZeroApplication.AppName.ToZeroBytes(),
+                    ZeroCommandExtend.AppNameBytes,
                     WebNameBytes,
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
                     GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
-                    GlobalContext.ServiceKey.ToZeroBytes());
+                    ZeroCommandExtend.ServiceKeyBytes);
             }
         }
         #endregion

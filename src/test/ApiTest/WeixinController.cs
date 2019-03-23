@@ -1,6 +1,6 @@
 ﻿using Senparc.Weixin.Exceptions;
 using Senparc.Weixin.MP.Entities;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Senparc.NeuChar.Entities;
 using Senparc.NeuChar.Helpers;
 using Agebull.Common.Configuration;

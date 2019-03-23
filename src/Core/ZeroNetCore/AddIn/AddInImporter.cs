@@ -5,7 +5,7 @@ using Agebull.Common;
 using Agebull.Common.Ioc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// MEF插件导入器

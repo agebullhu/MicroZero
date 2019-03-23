@@ -6,13 +6,11 @@ using System.Text;
 using Agebull.Common.Context;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.MySql.BusinessLogic;
-using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
-using Agebull.MicroZero.ZeroApis;
+using Agebull.EntityModel.BusinessLogic.MySql;
 using MySql.Data.MySqlClient;
+using Agebull.MicroZero.WebApi;
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     自动实现基本增删改查API页面的基类
@@ -317,20 +315,8 @@ namespace Agebull.Common.WebApi
 
         private void SaveQueryArguments(int page, string sort, string adesc, int rows)
         {
-            //if (BusinessContext.Context?.PowerChecker == null)
-            //    return;
-            ////if (!this.CanSaveQueryArguments)
-            ////{
-            ////    return;
-            ////}
-            //var requestArgs = new Dictionary<string, string>
-            //{
-            //    {"page", page.ToString()},
-            //    {"sort", sort},
-            //    {"order", adesc},
-            //    {"size", rows.ToString()}
-            //};
-            //BusinessContext.Context.PowerChecker.SaveQueryHistory(LoginUser, PageItem, Arguments);
+            if (this.CanSaveQueryArguments)
+                BusinessContext.Context?.PowerChecker?.SaveQueryHistory(LoginUser, PageItem, Arguments);
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;

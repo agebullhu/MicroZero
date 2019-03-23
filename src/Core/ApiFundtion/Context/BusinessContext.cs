@@ -16,15 +16,14 @@ using Agebull.Common.AppManage;
 using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-
-using Agebull.Common.WebApi.Auth;
+using Agebull.Common.OAuth;
 using Agebull.EntityModel.MySql;
 using Agebull.EntityModel.Redis;
 using Newtonsoft.Json;
 
 #endregion
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     为业务处理上下文对象

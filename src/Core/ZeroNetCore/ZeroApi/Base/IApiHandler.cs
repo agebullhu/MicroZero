@@ -1,4 +1,4 @@
-﻿namespace Agebull.MicroZero.ZeroApi
+﻿namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// Api处理器

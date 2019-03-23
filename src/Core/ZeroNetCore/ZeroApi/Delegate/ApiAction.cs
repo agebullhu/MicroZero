@@ -3,7 +3,7 @@ using System.Reflection;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
 
     /// <summary>

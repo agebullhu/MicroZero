@@ -1,7 +1,7 @@
 using System;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;

@@ -8,7 +8,7 @@ using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroManagemant;
 using ZeroMQ;
@@ -67,12 +67,12 @@ namespace Agebull.MicroZero
 
 
         #region State
-//#if UseStateMachine
+        //#if UseStateMachine
         /// <summary>
         /// 中心事件监控对象
         /// </summary>
         static readonly ZeroEventMonitor SystemMonitor = new ZeroEventMonitor();
-//#endif 
+        //#endif 
         /// <summary>
         ///     应用中心状态
         /// </summary>
@@ -157,6 +157,8 @@ namespace Agebull.MicroZero
                 IocHelper.AddScoped<GlobalContext, GlobalContext>();
             CheckConfig();
             InitializeDependency();
+            ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
+            ZeroCommandExtend.ServiceKeyBytes = GlobalContext.ServiceKey.ToZeroBytes();
             ShowOptionInfo();
         }
 
@@ -181,7 +183,7 @@ namespace Agebull.MicroZero
 
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();
-            
+
         }
 
 
@@ -391,7 +393,7 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void InvokeEvent(ZeroNetEventType centerEvent, string name, string context, StationConfig config)
         {
-            if (Config.CanRaiseEvent==true)
+            if (Config.CanRaiseEvent == true)
                 Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, name, context, config));
         }
 

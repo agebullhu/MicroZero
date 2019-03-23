@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
 
     /// <summary>

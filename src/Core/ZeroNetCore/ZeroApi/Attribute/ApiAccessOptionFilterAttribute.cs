@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// API配置过滤器

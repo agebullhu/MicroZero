@@ -1,7 +1,7 @@
 ﻿using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway

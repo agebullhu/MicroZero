@@ -14,7 +14,7 @@ using System.Linq;
 
 #endregion
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     FORM对象转化辅助类

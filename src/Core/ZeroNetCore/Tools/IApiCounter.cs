@@ -1,4 +1,4 @@
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// 性能计数器

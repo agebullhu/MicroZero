@@ -7,7 +7,7 @@ using Agebull.Common.Logging;
 
 using Agebull.Common.Tson;
 using Agebull.MicroZero.ZeroManagemant;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
 
 namespace Agebull.MicroZero.Log
@@ -90,7 +90,7 @@ namespace Agebull.MicroZero.Log
                         }
                         buf = serializer.Close();
                     }
-                    if (_socket.SendTo(LogDescription, _logsByte, buf, GlobalContext.ServiceKey.ToZeroBytes()))
+                    if (_socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes))
                         return;
                 }
             }
@@ -112,7 +112,7 @@ namespace Agebull.MicroZero.Log
                     RecordInfoTson.ToTson(serializer, info);
                     buf = serializer.Close();
                 }
-                if (_socket.SendTo(LogDescription, _logsByte, buf, GlobalContext.ServiceKey.ToZeroBytes()))
+                if (_socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes))
                     return;
             }
             LogRecorder.BaseRecorder.RecordLog(info);

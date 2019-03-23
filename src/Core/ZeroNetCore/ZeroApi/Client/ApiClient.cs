@@ -9,7 +9,7 @@ using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using ZeroMQ;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     Api站点
@@ -376,8 +376,10 @@ namespace Agebull.MicroZero.ZeroApi
                 ZeroApplication.Config.StationName,
                 GlobalContext.Current.Organizational.RouteName,
                 GlobalContext.RequestInfo.LocalGlobalId,
-                ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonConvert.SerializeObject(GlobalContext.CurrentNoLazy)),
-                GlobalContext.ServiceKey);
+                ContextJson ?? 
+                    (GlobalContext.CurrentNoLazy == null 
+                        ? null 
+                        : JsonConvert.SerializeObject(GlobalContext.CurrentNoLazy)));
 
             if (!LastResult.InteractiveSuccess)
             {
@@ -469,6 +471,8 @@ namespace Agebull.MicroZero.ZeroApi
                     {
                         message.Add(new ZFrame(arg.ToZeroBytes()));
                     }
+                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    
                 }
                 if (!socket.SendTo(message))
                 {

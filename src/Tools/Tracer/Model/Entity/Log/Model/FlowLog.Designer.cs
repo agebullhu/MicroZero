@@ -17,8 +17,8 @@ using Newtonsoft.Json;
 using Agebull.Common;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.Common;
-using Agebull.EntityModel.Common.Extends;
-using Agebull.Common.WebApi;
+using Agebull.EntityModel.Interfaces;
+using Agebull.MicroZero.ZeroApis;
 
 
 #endregion

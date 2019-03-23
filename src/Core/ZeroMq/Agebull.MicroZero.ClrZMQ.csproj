@@ -21,7 +21,7 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>ClrZmq的ZeroNet专用版本</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.0</Version>
+    <Version>1.4.0.3</Version>
     <!--<Version>1.3.0-alpha</Version>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -82,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.4.0" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.4.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 

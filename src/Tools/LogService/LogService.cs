@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.LogService

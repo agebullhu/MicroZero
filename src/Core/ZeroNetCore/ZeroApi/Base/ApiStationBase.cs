@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroManagemant;
-using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     Api站点

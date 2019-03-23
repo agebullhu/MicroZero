@@ -4,9 +4,9 @@ using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.Helpers;
+using Agebull.MicroZero.ZeroApis;
 using Microsoft.AspNetCore.Http;
-using MicroZero.Http.Route;
 
 namespace MicroZero.Http.Gateway
 {

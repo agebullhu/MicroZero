@@ -11,16 +11,16 @@
 using System;
 using System.Linq.Expressions;
 using Agebull.Common.Context;
-using Agebull.MicroZero.ZeroApi;
+using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.MySql.BusinessLogic;
+using Agebull.EntityModel.BusinessLogic.MySql;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 
 #endregion
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     支持数据状态的启用禁用方法的页面的基类

@@ -1,7 +1,7 @@
 using Agebull.Common.Ioc;
 using Newtonsoft.Json;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>API·µ»Ø»ùÀà</summary>
     public static class ApiResultIoc

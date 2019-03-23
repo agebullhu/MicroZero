@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Agebull.Common.WebApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// 兼容性

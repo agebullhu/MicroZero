@@ -2,7 +2,7 @@
 using Agebull.Common.OAuth;
 
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// ZeroApi控制器基类

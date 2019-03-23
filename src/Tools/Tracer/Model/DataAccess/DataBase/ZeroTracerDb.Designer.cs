@@ -1,6 +1,7 @@
 ﻿#region
 
 using Agebull.EntityModel.Common;
+using Agebull.EntityModel.Events;
 
 
 #endregion

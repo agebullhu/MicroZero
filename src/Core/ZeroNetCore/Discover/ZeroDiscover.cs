@@ -11,7 +11,7 @@ using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
-namespace Agebull.MicroZero.ZeroApi
+namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     /// ZeroStation发现工具

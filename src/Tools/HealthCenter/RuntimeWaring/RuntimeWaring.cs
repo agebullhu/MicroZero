@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
+using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.PubSub;
 using Aliyun.Acs.Dysmsapi.Model.V20170525;
 using Aliyun.Net.SDK.Core;

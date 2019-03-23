@@ -1,4 +1,4 @@
-namespace MicroZero.Http.Route
+namespace Agebull.MicroZero.Helpers
 {
     /// <summary>
     /// 运行时警告
