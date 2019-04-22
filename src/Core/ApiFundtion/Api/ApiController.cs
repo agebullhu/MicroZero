@@ -9,6 +9,7 @@ using Agebull.EntityModel.MySql;
 using Agebull.EntityModel.BusinessLogic.MySql;
 using MySql.Data.MySqlClient;
 using Agebull.MicroZero.WebApi;
+using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.ZeroApis
 {
@@ -93,7 +94,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         [Route("edit/list")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiPageResult<TData> List()
+        public ApiPageResult<TData> List(QueryArgument args)
         {
             return List2();
         }
@@ -121,7 +122,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         [Route("edit/details")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult<TData> Details()
+        public ApiResult<TData> Details(IdArguent arguent)
         {
             var data = DoDetails();
             return IsFailed
@@ -138,7 +139,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         [Route("edit/addnew")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult<TData> AddNew()
+        public ApiResult<TData> AddNew(TData arg)
         {
             var data = DoAddNew();
             return IsFailed
@@ -155,7 +156,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         [Route("edit/update")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult<TData> Update()
+        public ApiResult<TData> Update(TData arg)
         {
             var data = DoUpdate();
             return IsFailed
@@ -172,7 +173,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         [Route("edit/delete")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Delete()
+        public ApiResult Delete(IdsArguent arg)
         {
             DoDelete();
             return IsFailed
@@ -490,5 +491,68 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// 界面选择的ID
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
+    public class IdArguent
+    {
+        /// <summary>
+        /// 选择的ID
+        /// </summary>
+        [JsonProperty("id")]
+        public string Id { get; set; }
+    }
+    /// <summary>
+    /// 界面选择的ID
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
+    public class IdsArguent
+    {
+        /// <summary>
+        /// 选择的ID
+        /// </summary>
+        [JsonProperty("selects")]
+        public string Ids { get; set; }
+    }
+
+    /// <summary>
+    /// 查询参数
+    /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
+    public class QueryArgument
+    {
+
+        /// <summary>
+        /// 模糊查询关键字
+        /// </summary>
+        [JsonProperty("keyWord")]
+        public string KeyWord { get; set; }
+
+        /// <summary>
+        ///页号(1起始)
+        /// </summary>
+        [JsonProperty("page")]
+        public int Page { get; set; }
+
+        /// <summary>
+        /// 每页行数
+        /// </summary>
+        /// <value>1-999的数字</value>
+        [JsonProperty("rows")]
+        public int PageSize { get; set; }
+        /// <summary>
+        /// 排序字段
+        /// </summary>
+        [JsonProperty("sort")]
+        public string SortField { get; set; }
+        /// <summary>
+        /// 正反序
+        /// </summary>
+        /// <value>asc: 正序 desc:反序</value>
+        [JsonProperty("order")]
+        public string SortAsc { get; set; }
     }
 }

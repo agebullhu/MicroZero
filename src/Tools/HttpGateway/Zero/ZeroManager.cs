@@ -3,7 +3,6 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
-using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway
@@ -35,7 +34,7 @@ namespace MicroZero.Http.Gateway
             }
 
             Call();
-            _data.ResultMessage = JsonConvert.SerializeObject(_result);
+            _data.ResultMessage = JsonHelper.SerializeObject(_result);
         }
 
         private void Call()

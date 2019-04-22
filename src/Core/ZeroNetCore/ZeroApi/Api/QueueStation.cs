@@ -110,7 +110,7 @@ namespace Agebull.MicroZero.PubSub
                 {
                     var fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
 
-                    File.WriteAllText(fileName, JsonConvert.SerializeObject(processIds));
+                    File.WriteAllText(fileName, JsonHelper.SerializeObject(processIds));
                     Interlocked.Exchange(ref _isProcess, 0);
                 }
                 catch (Exception ex)

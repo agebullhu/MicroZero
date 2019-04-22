@@ -6,7 +6,6 @@ using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
-using Agebull.MicroZero.ZeroApis;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Senparc.Weixin.MP.Entities.Request;
@@ -70,8 +69,8 @@ namespace MicroZero.Http.Gateway
                     Station = "WechatCallBack",
                     Title = msg.MsgType.ToString(),
                     Commmand = "CallBack",
-                    Argument = JsonConvert.SerializeObject(msg),
-                    ExtendArgument = JsonConvert.SerializeObject(data.Arguments)
+                    Argument = JsonHelper.SerializeObject(msg),
+                    ExtendArgument = JsonHelper.SerializeObject(data.Arguments)
                 };
                 int cnt = 0;
                 while (++cnt < 3)

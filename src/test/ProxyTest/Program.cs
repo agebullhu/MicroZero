@@ -4,7 +4,6 @@ using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
-using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -47,7 +46,7 @@ namespace ProxyTest
                 GlobalContext.Current.Request.Token = token;
                 var result = JsonConvert.DeserializeObject<ApiResult>(caller.Result);
 
-                var context = JsonConvert.DeserializeObject(JsonConvert.SerializeObject(GlobalContext.Current)) as JObject;
+                var context = JsonConvert.DeserializeObject(JsonHelper.SerializeObject(GlobalContext.Current)) as JObject;
                 if (result.Success)
                 {
                     JObject obj = JsonConvert.DeserializeObject(json) as JObject;

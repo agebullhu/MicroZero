@@ -29,7 +29,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     当前请求调用的主机名称
         /// </summary>
-        [DataMember] [JsonProperty("host")] public string HostName { get; private set; }
+        [DataMember] [JsonProperty("apiHost")] public string ApiHost { get; private set; }
 
         /// <summary>
         ///     当前请求调用的API名称
@@ -65,6 +65,13 @@ namespace MicroZero.Http.Gateway
         [JsonProperty("arguments")]
         public Dictionary<string, string> Arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         
+        /// <summary>
+        /// 取参数
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public string this[string key] => Arguments.TryGetValue(key,out var vl) ? vl : null;
+
         /// <summary>
         ///     执行HTTP重写向吗
         /// </summary>
@@ -207,7 +214,7 @@ namespace MicroZero.Http.Gateway
                     return false;
                 }
 
-                HostName = words[1];
+                ApiHost = words[1];
                 ApiName = words[2];
             }
             else
@@ -221,7 +228,7 @@ namespace MicroZero.Http.Gateway
                     return false;
                 }
 
-                HostName = words[0];
+                ApiHost = words[0];
                 ApiName = words[1];
             }
             return true;

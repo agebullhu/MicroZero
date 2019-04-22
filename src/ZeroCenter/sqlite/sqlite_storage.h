@@ -83,7 +83,7 @@ namespace agebull
 		if (value.length() == 0)\
 			sqlite3_bind_null(_stmt_, col);\
 		else\
-			sqlite3_bind_text(_stmt_, col, value.c_str(), value.length(), nullptr)
+			sqlite3_bind_text(_stmt_, col, value.c_str(), static_cast<int>(value.length()), nullptr)
 	}
 }
 #endif//!ZMQ_API_SQLITE_STORAGE_H

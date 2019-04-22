@@ -45,7 +45,7 @@
     {
         klines = klines.Skip(klines.Count - 60).ToList();
     }
-    var lines = JsonConvert.SerializeObject(klines);
+    var lines = Agebull.MicroZero.JsonHelper.SerializeObject(klines);
     var config = new StationInfo(ZeroApplication.Config[Model.Name]);
     var configJson = JsonConvert.SerializeObject(config, Formatting.Indented);
 

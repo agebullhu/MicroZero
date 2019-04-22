@@ -1,7 +1,9 @@
 #ifndef ZMQ_API_PLAN_STORAGE_H
 #define ZMQ_API_PLAN_STORAGE_H
 #pragma once
-#ifdef PLAN
+
+
+#ifdef _ZERO_PLAN
 #include "../rpc/zero_station.h"
 #include "sqlite_storage.h"
 
@@ -47,7 +49,7 @@ namespace agebull
 			/**
 			 * \brief 准备存储
 			 */
-			bool prepare(shared_ptr<zero_config>& config);
+			bool prepare(shared_ptr<station_config>& config);
 
 			/**
 			*\brief 将数据写入数据库中

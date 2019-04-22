@@ -195,7 +195,7 @@ namespace Agebull.ZeroNet.ZeroApi
                 case ZeroOperatorStateType.VoteWaiting:
                 case ZeroOperatorStateType.VoteStart:
                 case ZeroOperatorStateType.VoteEnd:
-                    return JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Success, State.Text()));
+                    return JsonHelper.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Success, State.Text()));
 
                 case ZeroOperatorStateType.Error:
                     return ApiResultIoc.Ioc.InnerErrorJson;
@@ -314,7 +314,7 @@ namespace Agebull.ZeroNet.ZeroApi
                     Station,
                     Commmand,
                     GlobalContext.RequestInfo.RequestId,
-                    JsonConvert.SerializeObject(GlobalContext.Current),
+                    JsonHelper.SerializeObject(GlobalContext.Current),
                     Argument,
                     ExtendArgument,
                     ZeroApplication.Config.StationName,
@@ -382,14 +382,14 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<TResult>(client.Result);
+            return JsonHelper.DeserializeObject<TResult>(client.Result);
         }
         /// <summary>
         /// 调用远程方法
@@ -411,7 +411,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+            return JsonHelper.DeserializeObject<ApiResult<TResult>>(client.Result);
         }
 
         /// <summary>
@@ -429,14 +429,14 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult<TResult>>(client.Result);
+            return JsonHelper.DeserializeObject<ApiResult<TResult>>(client.Result);
         }
         /// <summary>
         /// 调用远程方法
@@ -452,14 +452,14 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+            return JsonHelper.DeserializeObject<ApiResult>(client.Result);
         }
         /// <summary>
         /// 调用远程方法
@@ -479,7 +479,7 @@ namespace Agebull.ZeroNet.ZeroApi
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<ApiResult>(client.Result);
+            return JsonHelper.DeserializeObject<ApiResult>(client.Result);
         }
         #endregion
     }

@@ -28,6 +28,12 @@ namespace MicroZero.Http.Gateway
         public bool FireSign { get; set; }
 
         /// <summary>
+        ///     启用验签
+        /// </summary>
+        [JsonProperty("auth2")]
+        public bool Auth2 { get; set; }
+        
+        /// <summary>
         ///     黑洞地址
         /// </summary>
         [JsonProperty("blockAddress")]
@@ -55,6 +61,11 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [JsonProperty("atApi")]
         public string AccessTokenCheckApi { get; set; }
+        /// <summary>
+        ///     AT检查API
+        /// </summary>
+        [JsonProperty("tokenApi")]
+        public string TokenCheckApi { get; set; }
 
         /// <summary>
         ///     黑名单令牌

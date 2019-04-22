@@ -1,7 +1,7 @@
 ﻿#region
 
-using Agebull.EntityModel.Common;
 using Agebull.EntityModel.Events;
+using Agebull.EntityModel.MySql;
 
 
 #endregion

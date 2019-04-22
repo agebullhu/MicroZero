@@ -30,7 +30,7 @@ namespace agebull
 
 			int size()
 			{
-				return frames.size();
+				return static_cast<int>(frames.size());
 			}
 			bool is_zmtp_ping()
 			{

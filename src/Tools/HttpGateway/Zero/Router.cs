@@ -58,7 +58,7 @@ namespace MicroZero.Http.Gateway
 
         private string CallApi(ZeroHost zeroHost)
         {
-            var form = JsonConvert.SerializeObject(Data.Arguments);
+            var form = JsonHelper.SerializeObject(Data.Arguments);
             var caller = new ApiClient
             {
                 Station = zeroHost.Station,
@@ -86,7 +86,7 @@ namespace MicroZero.Http.Gateway
                 }
             }
 
-            var form = JsonConvert.SerializeObject(Data.Arguments);
+            var form = JsonHelper.SerializeObject(Data.Arguments);
             switch (config.StationType)
             {
                 case ZeroStationType.Api:

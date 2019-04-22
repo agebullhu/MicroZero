@@ -32,7 +32,8 @@ namespace Agebull.MicroZero.PubSub
         public static bool DoPublish<T>(string station, string title, T value)
             where T : class
         {
-            return DoPublishInner(station, title, null, value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
+            return DoPublishInner(station, title, null, 
+                value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
         }
 
         /// <summary>
@@ -58,7 +59,8 @@ namespace Agebull.MicroZero.PubSub
         public static bool DoPublish<T>(string station, string title, string sub, T value)
             where T : class
         {
-            return DoPublishInner(station, title, sub, value == default(T) ? "{}" : JsonConvert.SerializeObject(value));
+            return DoPublishInner(station, title, sub, 
+                value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
         }
 
         /// <summary>

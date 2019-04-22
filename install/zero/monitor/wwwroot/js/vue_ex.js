@@ -72,7 +72,7 @@ var vue_option = {
             location.href = "/MachineEvent";
         },
         go_github() {
-            location.href = "https://github.com/agebullhu/ZeroNet";
+            location.href = "https://github.com/agebullhu/MicroZero";
         }
     }
 };

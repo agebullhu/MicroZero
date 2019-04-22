@@ -1,8 +1,9 @@
 using System;
 using System.Text;
+using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-
+using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
@@ -75,7 +76,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         async void IRouter.Call()
         {
-            if (Data.HostName.Equals("Zero", StringComparison.OrdinalIgnoreCase))
+            if (Data.ApiHost.Equals("Zero", StringComparison.OrdinalIgnoreCase))
             {
                 var manager = new ZeroManager();
                 manager.Command(Data);
@@ -133,9 +134,9 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         private bool FindHost()
         {
-            if (!RouteOption.RouteMap.TryGetValue(Data.HostName, out Data.RouteHost) || Data.RouteHost == null)
+            if (!RouteOption.RouteMap.TryGetValue(Data.ApiHost, out Data.RouteHost) || Data.RouteHost == null)
             {
-                LogRecorder.MonitorTrace($"{Data.HostName} no find");
+                LogRecorder.MonitorTrace($"{Data.ApiHost} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             //if(Data.RouteHost.Failed)
@@ -147,12 +148,12 @@ namespace MicroZero.Http.Gateway
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
             {
-                LogRecorder.MonitorTrace($"{Data.HostName}/{Data.ApiName} no find");
+                LogRecorder.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             if (Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public))
                 return true;
-            LogRecorder.MonitorTrace($"{Data.HostName}/{Data.ApiName} deny access.");
+            LogRecorder.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} deny access.");
             return false;
         }
 
@@ -168,7 +169,9 @@ namespace MicroZero.Http.Gateway
             //Data.ResultMessage = RouteOption.Option.Security.BlockHost;
             //Response.Redirect(RouteOption.Option.Security.BlockHost, false);
             //Data.Redirect = true;
-            return SecurityChecker.CheckToken();
+            return RouteOption.Option.Security.Auth2
+                ? SecurityChecker.CheckToken2()
+                : SecurityChecker.CheckToken();
         }
 
 

@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.EntityModel.Common;
+using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using ZeroMQ;
 
 namespace Agebull.MicroZero.ZeroApis
@@ -97,7 +100,7 @@ namespace Agebull.MicroZero.ZeroApis
                     }
                     using (MonitorScope.CreateScope("Do"))
                     {
-                        state = ExecCommand(item,true);
+                        state = ExecCommand(item, true);
                     }
 
                     if (state != ZeroOperatorStateType.Ok)
@@ -131,7 +134,7 @@ namespace Agebull.MicroZero.ZeroApis
             if (state == ZeroOperatorStateType.Ok)
             {
                 Prepare(item);
-                state = ExecCommand(item,false);
+                state = ExecCommand(item, false);
 
                 if (state != ZeroOperatorStateType.Ok)
                     Interlocked.Increment(ref Station.ErrorCount);
@@ -239,7 +242,7 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     if (monitor)
                         LogRecorder.MonitorTrace($"Error: argument validate {message}.");
-                    item.Result = JsonConvert.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.LogicalError, message));
+                    item.Result = JsonHelper.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.ArgumentError, message));
                     item.Status = UserOperatorStateType.LogicalError;
                     return ZeroOperatorStateType.ArgumentInvalid;
                 }
@@ -259,6 +262,12 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 GlobalContext.Current.DependencyObjects.Annex(action);
                 var res = action.Execute();
+                if (action.ResultType == typeof(string))
+                {
+                    item.Result = res as string;
+                    item.Status = UserOperatorStateType.Success;
+                    return ZeroOperatorStateType.Ok;
+                }
                 switch (res)
                 {
                     case IApiResult result:
@@ -266,7 +275,7 @@ namespace Agebull.MicroZero.ZeroApis
                             result.Status = new ApiStatusResult { InnerMessage = item.GlobalId };
                         else
                             result.Status.InnerMessage = item.GlobalId;
-                        item.Result = JsonConvert.SerializeObject(result);
+                        item.Result = JsonHelper.SerializeObject(result);
                         item.Status = result.Success ? UserOperatorStateType.Success : UserOperatorStateType.LogicalError;
                         return result.Success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Failed;
                     case string str:
@@ -285,7 +294,7 @@ namespace Agebull.MicroZero.ZeroApis
                 LogRecorder.Exception(e);
                 if (monitor)
                     LogRecorder.MonitorTrace($"Error: execute {e.Message}.");
-                ZeroTrace.WriteException(Station.StationName, e, item.ApiName, "execute", JsonConvert.SerializeObject(item));
+                ZeroTrace.WriteException(Station.StationName, e, item.ApiName, "execute", JsonHelper.SerializeObject(item));
                 item.Result = ApiResultIoc.LocalExceptionJson;
                 item.Status = UserOperatorStateType.LocalException;
                 return ZeroOperatorStateType.LocalException;

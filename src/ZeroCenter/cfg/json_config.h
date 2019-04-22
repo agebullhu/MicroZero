@@ -207,11 +207,11 @@ namespace agebull
 
 #define json_add_chr(node,key,text) if(text[0] !=0 )  node.add_text(key, text)
 
-#define json_add_num(node,key,num) node.add_number(key, num)
+#define json_add_num(node,key,num) if(num !=0) node.add_number(key, num)
 
-#define json_add_bool(node,key,num) node.add_bool(key, num)
+#define json_add_bool(node,key,num)if(num)  node.add_bool(key, num)
 
-#define json_add_array_str(node,text) if(!text.empty()) node.add_array_text(text.c_str())
+#define json_add_array_str(node,text) text.empty() ? node.add_array_null() : node.add_array_text(text.c_str())
 
 }
 #endif

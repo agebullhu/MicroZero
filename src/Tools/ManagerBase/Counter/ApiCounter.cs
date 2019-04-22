@@ -54,7 +54,7 @@ namespace MicroZero.Http.Route
                 return;
 
             Root.End();
-            var json = JsonConvert.SerializeObject(Root);
+            var json = JsonHelper.SerializeObject(Root);
             Root.Start();
             preSend = DateTime.Now;
             WebSocketNotify.Publish("api", "root", json);

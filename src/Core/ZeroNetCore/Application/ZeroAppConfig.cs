@@ -104,6 +104,12 @@ namespace Agebull.MicroZero
         [DataMember]
         public bool? CanRaiseEvent { get; set; }
 
+        /// <summary>
+        ///   使用自定义JSON大数字序列化器
+        /// </summary>
+        [DataMember]
+        public bool? CuseomJsonNumber { get; set; }
+
 
         /// <summary>
         ///     站点孤立
@@ -189,6 +195,8 @@ namespace Agebull.MicroZero
         /// <param name="option"></param>
         internal void CopyByHase(ZeroAppConfig option)
         {
+            if (option.CuseomJsonNumber == null)
+                CuseomJsonNumber = option.CuseomJsonNumber;
             if (!string.IsNullOrWhiteSpace(option.AddInPath))
                 AddInPath = option.AddInPath;
             if (!string.IsNullOrWhiteSpace(option.AddInPath))
@@ -234,6 +242,9 @@ namespace Agebull.MicroZero
         /// <param name="option"></param>
         internal void CopyByEmpty(ZeroAppConfig option)
         {
+            
+            if (CuseomJsonNumber == null)
+                CuseomJsonNumber = option.CuseomJsonNumber;
             if (string.IsNullOrWhiteSpace(AddInPath))
                 AddInPath = option.AddInPath;
             if (string.IsNullOrWhiteSpace(AddInPath))
@@ -814,7 +825,7 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("LogPath", TxtRecorder.LogPath);
             ZeroTrace.SystemLog("ZeroCenter", Config.ZeroAddress, Config.ZeroManagePort, Config.ZeroMonitorPort);
             ZeroTrace.SystemLog("Name", Config.StationName, GlobalContext.ServiceName, GlobalContext.ServiceRealName, Config.LocalIpAddress);
-
+            
             string model;
             switch (Config.SpeedLimitModel)
             {
@@ -834,6 +845,8 @@ namespace Agebull.MicroZero
             }
 
             ZeroTrace.SystemLog("SpeedLimitModel", model);
+            ZeroTrace.SystemLog("CuseomJsonNumber", Config.CuseomJsonNumber);
+
         }
     }
 }

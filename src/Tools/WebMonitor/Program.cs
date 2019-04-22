@@ -3,7 +3,6 @@ using Agebull.MicroZero;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-
 namespace WebMonitor
 {
     public class Program

@@ -4,7 +4,9 @@
 #include "inner_socket.h"
 #include "plan_dispatcher.h"
 using namespace boost::posix_time;
-#ifdef PLAN
+
+
+#ifdef _ZERO_PLAN
 
 namespace agebull
 {

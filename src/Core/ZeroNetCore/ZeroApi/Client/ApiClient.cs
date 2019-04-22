@@ -231,7 +231,7 @@ namespace Agebull.MicroZero.ZeroApis
                     point = "zero_center";
                 apiResult.Status.Point = point;
             }
-            _result = JsonConvert.SerializeObject(apiResult);
+            _result = JsonHelper.SerializeObject(apiResult);
         }
 
         /// <summary>
@@ -379,7 +379,7 @@ namespace Agebull.MicroZero.ZeroApis
                 ContextJson ?? 
                     (GlobalContext.CurrentNoLazy == null 
                         ? null 
-                        : JsonConvert.SerializeObject(GlobalContext.CurrentNoLazy)));
+                        : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy)));
 
             if (!LastResult.InteractiveSuccess)
             {
@@ -509,7 +509,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
@@ -532,7 +532,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
@@ -604,14 +604,14 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 Station = station,
                 Commmand = api,
-                Argument = arg == null ? null : JsonConvert.SerializeObject(arg)
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
             };
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<TResult>(client.Result);
+            return JsonHelper.DeserializeObject<TResult>(client.Result);
         }
 
         /// <summary>
@@ -633,7 +633,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 client.CheckStateResult();
             }
-            return JsonConvert.DeserializeObject<TResult>(client.Result);
+            return JsonHelper.DeserializeObject<TResult>(client.Result);
         }
 
         #endregion

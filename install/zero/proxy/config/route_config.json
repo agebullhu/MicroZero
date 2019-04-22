@@ -1,7 +1,7 @@
 {
   /*系统设置*/
   "sysConfig": {
-    /*是否开启ZeroNet网络*/
+    /*是否开启MicroZero网络*/
     "FireZero": true,
     /*是否开启返回值检查*/
     "CheckResult": false,
@@ -11,12 +11,14 @@
     "HttpTimeOut": 30000,
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
+    /*是否包含顶级目录*/
+    "IsAppFolder": false,
+    /*启用管理命令*/
+    "EnableInnerCommand": false,
+    /*启用内容页*/
+    "EnableContext": false,
     /*内容页地址*/
-    "SiteFolder": "",
-    /*内容页地址*/
-    "ContextHost": "http://zero.yizuanbao.cn:8080/",
-    /*内容页地址*/
-    "ContextAddr": "D:\\玢翔医疗\\研发部\\Git\\InternetHospital\\Hospital\\SimpleHIS\\标注\\标注\\玢翔支付后台"
+    "ContextAddr": ""
   },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {
@@ -37,9 +39,11 @@
   "security": {
     /*是否校验Auth*/
     "fireBearer": true,
-    "authStation": "Auth",
+    "auth2": true,
+    "authStation": "Authority",
     "didApi": "v1/verify/did",
     "atApi": "v1/verify/at",
+    "tokenApi": "v2/verify/token",
     /*黑洞地址（字母有错，不要介意）*/
     "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
     /*拒绝使用的令牌，Key Value一样*/

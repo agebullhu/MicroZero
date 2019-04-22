@@ -25,12 +25,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfStl>libstdc++_static</UseOfStl>
-    <RemoteRootDir>/root/zero/projects/</RemoteRootDir>
+    <RemoteRootDir>/usr/zero/projects/</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <UseOfStl>libstdc++_static</UseOfStl>
-    <RemoteRootDir>/root/zero/projects/</RemoteRootDir>
+    <RemoteRootDir>/usr/zero/projects/</RemoteRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -41,7 +41,7 @@
     <LibraryPath>
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
-    <OutDir>/root/zero/center/</OutDir>
+    <OutDir>/usr/zero/center/</OutDir>
     <RemoteProjectDir>$(RemoteRootDir)/$(ProjectName)</RemoteProjectDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -49,7 +49,7 @@
     </LibraryPath>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <IncludePath>\usr\Include;\usr\local\include</IncludePath>
-    <OutDir>/root/zero/center/</OutDir>
+    <OutDir>/usr/zero/center/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
@@ -68,8 +68,9 @@
       <UnrollLoops>true</UnrollLoops>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;conversion;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;conversion;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;%(CppAdditionalWarning)</CppAdditionalWarning>
-      <RelaxIEEE>false</RelaxIEEE>
+      <RelaxIEEE>true</RelaxIEEE>
       <CompileAs>Default</CompileAs>
+      <PreprocessorDefinitions>_ZERO_REDIS;_ZERO_PLAN;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -80,7 +81,7 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG_</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_ZERO_REDIS;_ZERO_PLAN;_DEBUG_</PreprocessorDefinitions>
       <AdditionalOptions>-DLINUX2 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>

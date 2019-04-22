@@ -65,7 +65,7 @@ namespace agebull
 			/**
 			* \brief 保存配置
 			*/
-			static void insert_config(shared_ptr<station_config> config);
+			static void insert_config(shared_ptr<station_config>& config);
 
 			/**
 			* \brief 保存配置
@@ -163,7 +163,7 @@ namespace agebull
 				shared_ptr<station_config> config = make_shared<station_config>();
 				config->station_type = type;
 				config->station_name = station_name;
-				config->short_name = short_name;
+				//config->short_name = short_name;
 				config->station_description = desc;
 				config->is_base = is_base;
 				int state = check_station_name(config);

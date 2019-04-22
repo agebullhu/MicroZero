@@ -96,7 +96,7 @@ namespace MicroZero.Http.Gateway
             {
                 RemoteRequest.ContentType = "application/x-www-form-urlencoded";
                 var builder = new StringBuilder();
-                builder.Append($"_api_context_={HttpUtility.UrlEncode(JsonConvert.SerializeObject(GlobalContext.Current), Encoding.UTF8)}");
+                builder.Append($"_api_context_={HttpUtility.UrlEncode(JsonHelper.SerializeObject(GlobalContext.Current), Encoding.UTF8)}");
                 foreach (var kvp in data.Arguments)
                 {
                     builder.Append('&');
@@ -330,7 +330,7 @@ namespace MicroZero.Http.Gateway
             LogRecorder.MonitorTrace($"调用异常：{message}.{message2}");
             var result = ApiResultIoc.Ioc.Error(code, RemoteUrl + message, message2);
             result.Status.Point = "web api gateway";
-            return JsonConvert.SerializeObject(result);
+            return JsonHelper.SerializeObject(result);
         }
         #endregion
     }

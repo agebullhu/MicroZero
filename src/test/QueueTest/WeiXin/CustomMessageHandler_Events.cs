@@ -5,7 +5,6 @@ using System.Xml.Linq;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
-using Newtonsoft.Json;
 using Senparc.CO2NET.Extensions;
 using Senparc.CO2NET.Helpers;
 using Senparc.CO2NET.Helpers.BaiduMap;
@@ -62,7 +61,7 @@ namespace MicroZero.Http.Gateway.Weixin
                 {
                     Station = "Weixin",
                     Commmand = command,
-                    Argument = JsonConvert.SerializeObject(argument)
+                    Argument = JsonHelper.SerializeObject(argument)
                 };
                 caller.CallCommand();
                 ResultXml = caller.State == ZeroOperatorStateType.Ok ? caller.Result : "";

@@ -69,8 +69,10 @@ var ws = function(option) {
     that.onmessage = function(e) {
         var data = null;
         try {
-            if (typeof(e.data) != "string")
+            if (typeof (e.data) != "string") {
+                console.log(e);
                 return;
+            }
             data = eval('(' + e.data + ')');
             if (data)
                 that.process(data);

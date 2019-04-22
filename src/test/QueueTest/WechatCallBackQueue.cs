@@ -5,7 +5,6 @@ using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApis;
 using Senparc.NeuChar;
 using MicroZero.Http.Gateway.Weixin;
 

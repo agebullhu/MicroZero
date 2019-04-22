@@ -12,7 +12,7 @@ namespace agebull
 {
 	namespace zero_net
 	{
-#ifdef PLAN
+#ifdef _ZERO_PLAN
 #define BaseStationCount 3
 #else
 #define BaseStationCount 2
@@ -90,7 +90,7 @@ namespace agebull
 			log_msg(ip_info);
 			//REDIS环境检查
 			json_config::init();
-#ifdef REDIS
+#ifdef _ZERO_REDIS
 			if (!ping_redis())
 			{
 				log_error2("redis failed!\n   addr:%s default db:%d", trans_redis::redis_ip(), global_config::redis_defdb);
@@ -208,7 +208,7 @@ namespace agebull
 		//启动网络命令环境
 		int start_plan_dispatcher()
 		{
-#ifdef PLAN
+#ifdef _ZERO_PLAN
 			station_warehouse::install(zero_def::name::plan_dispatcher, zero_def::station_type::plan, "plan", "ZeroNet plan & task mamage station.", true);
 			//station_warehouse::install("RemoteLog", zero_def::station_type::notify, "log", "ZeroNet remote log station.", false);
 			//station_warehouse::install("HealthCenter", zero_def::station_type::notify, "hea", "ZeroNet health center log station.", false);

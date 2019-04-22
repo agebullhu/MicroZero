@@ -74,7 +74,7 @@ namespace WebMonitor
         {
             if (e.EventName != "station_state")
                 return;
-            Publish("config", JsonConvert.SerializeObject(e.EventConfig));
+            Publish("config", JsonHelper.SerializeObject(e.EventConfig));
         }
 
         void OnRouterReceiveReady(object sender, WsSocketEventArgs eventArgs)

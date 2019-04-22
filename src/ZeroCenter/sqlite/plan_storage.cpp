@@ -3,7 +3,7 @@
  *
  *
  */
-#ifdef PLAN
+#ifdef _ZERO_PLAN
 #include "../stdafx.h"
 #include "plan_storage.h"
 
@@ -43,7 +43,7 @@ namespace agebull
 		/**
 		 * \brief 准备存储
 		 */
-		bool plan_storage::prepare(shared_ptr<zero_config>& config)
+		bool plan_storage::prepare(shared_ptr<station_config>& config)
 		{
 			strcpy(name_, config->station_name.c_str());
 			acl::string path;

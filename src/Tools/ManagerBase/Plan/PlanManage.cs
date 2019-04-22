@@ -64,7 +64,7 @@ namespace MicroZero.Http.Route
             if (!Plans.TryGetValue(plan.plan_id, out _)) return;
             Plans.Remove(plan.plan_id);
             plan.plan_state = plan_message_state.remove;
-            WebSocketNotify.Publish("plan_notify", "remove", JsonConvert.SerializeObject(plan));
+            WebSocketNotify.Publish("plan_notify", "remove", JsonHelper.SerializeObject(plan));
         }
         public static void UpdatePlan(ZeroPlan plan)
         {
@@ -76,7 +76,7 @@ namespace MicroZero.Http.Route
             old.real_repet = plan.real_repet;
             old.skip_set = plan.skip_set;
             old.skip_num = plan.skip_num;
-            WebSocketNotify.Publish("plan_notify", "update", JsonConvert.SerializeObject(plan));
+            WebSocketNotify.Publish("plan_notify", "update", JsonHelper.SerializeObject(plan));
         }
 
         public static void SyncPlan(ZeroPlan plan)
@@ -90,7 +90,7 @@ namespace MicroZero.Http.Route
                 Plans.Add(plan.plan_id, plan);
             }
 
-            WebSocketNotify.Publish("plan_notify", "add", JsonConvert.SerializeObject(plan));
+            WebSocketNotify.Publish("plan_notify", "add", JsonHelper.SerializeObject(plan));
         }
 
 

@@ -11,11 +11,7 @@
 using System.Collections.Generic;
 
 using Agebull.EntityModel.Common;
-
-using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Interfaces;
-using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApis;
 using Agebull.Common.Context;
 using Agebull.EntityModel.MySql;
 using Agebull.EntityModel.BusinessLogic.MySql;
@@ -34,6 +30,146 @@ namespace Agebull.MicroZero.ZeroApis
         where TBusinessLogic : BusinessLogicByAudit<TData, TAccess, TDatabase>, new()
         where TDatabase : MySqlDataBase
     {
+
+        #region API
+
+        /// <summary>
+        ///     审核不通过
+        /// </summary>
+
+        [Route("audit/deny")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult AuditDeny(IdsArguent arg)
+        {
+
+            OnAuditDeny();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        /// <summary>
+        ///     拉回已提交的审核
+        /// </summary>
+
+        [Route("audit/pullback")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult Pullback(IdsArguent arg)
+        {
+
+            OnPullback();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        /// <summary>
+        ///     提交审核
+        /// </summary>
+
+        [Route("audit/submit")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult SubmitAudit(IdsArguent arg)
+        {
+
+            OnSubmitAudit();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        /// <summary>
+        ///     校验审核数据
+        /// </summary>
+
+        [Route("audit/validate")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult Validate(IdsArguent arg)
+        {
+
+            DoValidate(GetLongArrayArg("selects"));
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+
+        /// <summary>
+        ///     审核通过
+        /// </summary>
+
+        [Route("audit/pass")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult AuditPass(IdsArguent arg)
+        {
+
+            OnAuditPass();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        /// <summary>
+        ///     重新审核
+        /// </summary>
+
+        [Route("audit/redo")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult UnAudit(IdsArguent arg)
+        {
+            OnUnAudit();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        /// <summary>
+        ///     退回(审核)
+        /// </summary>
+
+        [Route("audit/back")]
+        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        public ApiResult BackAudit(IdsArguent arg)
+        {
+
+            OnBackAudit();
+            return IsFailed
+                ? (new ApiResult
+                {
+                    Success = false,
+                    Status = GlobalContext.Current.LastStatus
+                })
+                : ApiResult.Ok;
+        }
+
+        #endregion
+
+        #region 抽象
+
         /// <summary>
         ///     提交审核
         /// </summary>
@@ -115,7 +251,8 @@ namespace Agebull.MicroZero.ZeroApis
             if (!Business.AuditDeny(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
-
+        #endregion
+        #region 列表数据
 
         /// <summary>
         ///     取得列表数据
@@ -125,7 +262,7 @@ namespace Agebull.MicroZero.ZeroApis
             var audit = GetIntArg("audit", -1);
             if (audit == 0x100 || audit < 0)
                 return base.GetListData(lambda);
-            if (audit <= (int) AuditStateType.End)
+            if (audit <= (int)AuditStateType.End)
             {
                 lambda.AddRoot(p => p.AuditState == (AuditStateType)audit);
                 return base.GetListData(lambda);
@@ -150,142 +287,6 @@ namespace Agebull.MicroZero.ZeroApis
 
             return base.GetListData(lambda);
         }
-
-        #region API
-
-        /// <summary>
-        ///     审核不通过
-        /// </summary>
-
-        [Route("audit/deny")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult AuditDeny()
-        {
-            
-            OnAuditDeny();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-        /// <summary>
-        ///     拉回已提交的审核
-        /// </summary>
-
-        [Route("audit/pullback")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Pullback()
-        {
-            
-            OnPullback();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-        /// <summary>
-        ///     提交审核
-        /// </summary>
-        
-        [Route("audit/submit")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult SubmitAudit()
-        {
-            
-            OnSubmitAudit();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-        /// <summary>
-        ///     校验审核数据
-        /// </summary>
-        
-        [Route("audit/validate")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Validate()
-        {
-            
-            DoValidate(GetLongArrayArg("selects"));
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-
-        /// <summary>
-        ///     审核通过
-        /// </summary>
-        
-        [Route("audit/pass")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult AuditPass()
-        {
-            
-            OnAuditPass();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-        /// <summary>
-        ///     重新审核
-        /// </summary>
-        
-        [Route("audit/redo")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult UnAudit()
-        {
-            OnUnAudit();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
-        /// <summary>
-        ///     退回(审核)
-        /// </summary>
-
-        [Route("audit/back")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult BackAudit()
-        {
-            
-            OnBackAudit();
-            return IsFailed
-                ? (new ApiResult
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                })
-                : ApiResult.Ok;
-        }
-
         #endregion
     }
 

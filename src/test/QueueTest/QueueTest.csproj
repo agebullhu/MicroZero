@@ -6,9 +6,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.Development.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.Development.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.2" />
-    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.14.2" />
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.3" />
+    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.15" />
   </ItemGroup>
 
   <ItemGroup>

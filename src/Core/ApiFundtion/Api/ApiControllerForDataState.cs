@@ -11,12 +11,9 @@
 using System;
 using System.Linq.Expressions;
 using Agebull.Common.Context;
-using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.MySql;
 using Agebull.EntityModel.BusinessLogic.MySql;
-using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroApis;
 
 #endregion
 
@@ -71,7 +68,7 @@ namespace Agebull.MicroZero.ZeroApis
         
         [Route("state/reset")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Reset()
+        public ApiResult Reset(IdsArguent arg)
         {
             
             OnReset();
@@ -90,7 +87,7 @@ namespace Agebull.MicroZero.ZeroApis
         
         [Route("state/lock")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Lock()
+        public ApiResult Lock(IdsArguent arg)
         {
             
             OnLock();
@@ -109,7 +106,7 @@ namespace Agebull.MicroZero.ZeroApis
         
         [Route("state/discard")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Discard()
+        public ApiResult Discard(IdsArguent arg)
         {
             
             OnDiscard();
@@ -128,7 +125,7 @@ namespace Agebull.MicroZero.ZeroApis
         
         [Route("state/disable")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Disable()
+        public ApiResult Disable(IdsArguent arg)
         {
             
             OnDisable();
@@ -147,7 +144,7 @@ namespace Agebull.MicroZero.ZeroApis
         
         [Route("state/enable")]
         [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
-        public ApiResult Enable()
+        public ApiResult Enable(IdsArguent arg)
         {
             
             OnEnable();

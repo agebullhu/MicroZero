@@ -4,7 +4,9 @@
 #include "../stdinc.h"
 #include "../ext/shared_char.h"
 #include "../cfg/json_config.h"
-#ifdef PLAN
+
+
+#ifdef _ZERO_PLAN
 
 
 

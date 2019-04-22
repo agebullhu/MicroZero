@@ -8,7 +8,7 @@ namespace Agebull.MicroZero
     /// </summary>
     public static class ZmqExtend
     {
-        private static readonly byte[] EmptyBytes = new byte[]{0};
+        private static readonly byte[] EmptyBytes = new byte[] { 0 };
 
         /// <summary>
         /// 转为UTF8字节
@@ -19,16 +19,5 @@ namespace Agebull.MicroZero
         {
             return string.IsNullOrEmpty(word) ? EmptyBytes : Encoding.UTF8.GetBytes(word);
         }
-
-        /// <summary>
-        /// 转为UTF8字节
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns>字节</returns>
-        public static byte[] ToZeroBytes<T>(this T v) where T : class
-        {
-            return v == null ? EmptyBytes : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(v));
-        }
-
     }
 }

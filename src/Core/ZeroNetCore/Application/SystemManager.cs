@@ -154,7 +154,7 @@ namespace Agebull.MicroZero.ZeroManagemant
             {
                 if (!doc.IsLocal)
                     continue;
-                var result = CallCommand("doc", doc.Name, JsonConvert.SerializeObject(doc));
+                var result = CallCommand("doc", doc.Name, JsonHelper.SerializeObject(doc));
                 if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
                 {
                     ZeroTrace.WriteError("UploadDocument", result);
@@ -225,7 +225,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
             }
-            //ZeroTrace.SystemLog("LoadAllConfig", json);
+            ZeroTrace.SystemLog("LoadAllConfig", json);
             return ZeroApplication.Config.FlushConfigs(json);
         }
 

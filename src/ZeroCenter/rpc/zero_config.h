@@ -109,18 +109,18 @@ namespace agebull
 			* \brief 站点标题
 			*/
 			string station_caption;
-			/**
-			* \brief 站点名称
-			*/
-			string short_name;
+			///**
+			//* \brief 站点名称
+			//*/
+			//string short_name;
 			/**
 			* \brief 站点说明
 			*/
 			string station_description;
-			/**
-			* \brief 站点别名
-			*/
-			vector<string> alias;
+			///**
+			//* \brief 站点别名
+			//*/
+			//vector<string> alias;
 
 			/**
 			* \brief 是否基础站点

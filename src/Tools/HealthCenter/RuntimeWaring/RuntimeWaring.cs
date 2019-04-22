@@ -213,7 +213,7 @@ namespace MicroZero.Http.Route
                 SignName = SmsConfig.AliSignName,
                 TemplateCode = SmsConfig.AliTemplateCode,
                 //服务器${server}的${url}发生${message}错误${count}次，请立即处理
-                TemplateParam = JsonConvert.SerializeObject(new
+                TemplateParam = JsonHelper.SerializeObject(new
                 {
                     server,
                     api,

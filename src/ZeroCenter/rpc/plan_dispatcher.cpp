@@ -1,5 +1,7 @@
 #include "../stdafx.h"
-#ifdef PLAN
+
+
+#ifdef _ZERO_PLAN
 
 #include "zero_plan.h"
 #include "plan_dispatcher.h"
@@ -19,7 +21,7 @@ namespace agebull
 		*/
 		void plan_dispatcher::launch(shared_ptr<plan_dispatcher>& station)
 		{
-			zero_config& config = station->get_config();
+			station_config& config = station->get_config();
 			config.is_base = true;
 			if (!station->initialize())
 			{

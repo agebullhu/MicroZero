@@ -338,10 +338,66 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="action">动作</param>
         /// <param name="access">访问设置</param>
         /// <param name="info">反射信息</param>
+        public ApiAction RegistAction(string name, Func<object> action, ApiAccessOption access, ApiActionInfo info = null)
+        {
+            var a = new ApiActionObj2
+            {
+                Name = name,
+                Action = action,
+                Access = access
+            };
+            RegistAction(name, a, info);
+            return a;
+        }
+
+        /// <summary>
+        ///     注册方法
+        /// </summary>
+        /// <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+        /// <param name="action">动作</param>
+        /// <param name="access">访问设置</param>
+        /// <param name="info">反射信息</param>
         public ApiAction RegistAction<TResult>(string name, Func<TResult> action, ApiAccessOption access, ApiActionInfo info = null)
             where TResult : IApiResult
         {
             var a = new ApiAction<TResult>
+            {
+                Name = name,
+                Action = action,
+                Access = access
+            };
+            RegistAction(name, a, info);
+            return a;
+        }
+        /// <summary>
+        ///     注册方法
+        /// </summary>
+        /// <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+        /// <param name="action">动作</param>
+        /// <param name="access">访问设置</param>
+        /// <param name="info">反射信息</param>
+        public ApiAction RegistAction2<TResult>(string name, Func<TResult> action, ApiAccessOption access, ApiActionInfo info = null)
+        {
+            var a = new ApiAction2<TResult>
+            {
+                Name = name,
+                Action = action,
+                Access = access
+            };
+            RegistAction(name, a, info);
+            return a;
+        }
+
+        /// <summary>
+        ///     注册方法
+        /// </summary>
+        /// <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+        /// <param name="action">动作</param>
+        /// <param name="access">访问设置</param>
+        /// <param name="info">反射信息</param>
+        public ApiAction RegistAction2<TArg, TResult>(string name, Func<TArg,TResult> action, ApiAccessOption access, ApiActionInfo info = null)
+        {
+            var a = new ApiAction2<TArg, TResult>
             {
                 Name = name,
                 Action = action,

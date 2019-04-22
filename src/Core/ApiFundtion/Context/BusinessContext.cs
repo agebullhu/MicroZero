@@ -46,7 +46,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         public void Cache()
         {
-            LogRecorder.MonitorTrace(JsonConvert.SerializeObject(this));
+            LogRecorder.MonitorTrace(JsonHelper.SerializeObject(this));
             using (RedisProxy proxy = new RedisProxy())
             {
                 proxy.Set(GetCacheKey(RequestInfo.RequestId), this);

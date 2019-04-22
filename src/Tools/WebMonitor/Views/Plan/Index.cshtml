@@ -1,7 +1,4 @@
-﻿@using Newtonsoft.Json
-@using MicroZero.Http.Route
-@using Agebull.Common.Ioc
-@using Agebull.MicroZero
+﻿@using MicroZero.Http.Route
 @{
     ViewData["Title"] = "Task & Plan";
     ViewData["page"] = "plan";
@@ -11,7 +8,7 @@
 }
 @section InitScript{
     <script>
-        var plans = @(Html.Raw(JsonConvert.SerializeObject(PlanManage.Plans.Values)));
+        var plans = @(Html.Raw(Agebull.MicroZero.JsonHelper.SerializeObject(PlanManage.Plans.Values)));
     </script>
 }
 @section VUE{

@@ -38,24 +38,24 @@ namespace agebull
 			* \brief 工作开始 : 处理请求数据
 			*/
 			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
-			/* *
-			*\brief 发送消息
-			* /
-			bool publish(const shared_char& title, const shared_char& description, vector<shared_char>& datas);
+			///**
+			//*\brief 发送消息
+			//* /
+			//bool publish(const shared_char& title, const shared_char& description, vector<shared_char>& datas);
 
-			/* *
-			*\brief 发布消息
-			* /
-			bool publish(const string& publiher, const string& title, const string& arg);
-			/* *
-			*\brief 通知内容
-			* /
-			bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
-			/* *
-			*\brief 发布消息
-			* /
-			bool publish(const string& publiher, const string& title, const string& sub, const string& arg, const string& rid, const int64 gid, const int64 lid);
-			*/
+			///**
+			//*\brief 发布消息
+			//* /
+			//bool publish(const string& publiher, const string& title, const string& arg);
+			///**
+			//*\brief 通知内容
+			//* /
+			//bool publish(const string& publiher, const string& title, const string& sub, const string& arg);
+			///**
+			//*\brief 发布消息
+			//* /
+			//bool publish(const string& publiher, const string& title, const string& sub, const string& arg, const string& rid, const int64 gid, const int64 lid);
+			//*/
 
 			/**
 			 * \brief 析构

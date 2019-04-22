@@ -1,7 +1,8 @@
 #ifndef AGEBULL_REDIS_H
 #define AGEBULL_REDIS_H
 #pragma once
-#ifdef REDIS
+
+#ifdef _ZERO_REDIS
 #include "../stdinc.h"
 #include "../cfg/json_config.h"
 #include "../ext/shared_char.h"

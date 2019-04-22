@@ -108,7 +108,7 @@ namespace Agebull.MicroZero.PubSub
                 var file = CacheFileName;
                 try
                 {
-                    File.WriteAllText(file, JsonConvert.SerializeObject(datas));
+                    File.WriteAllText(file, JsonHelper.SerializeObject(datas));
                 }
                 catch (Exception e)
                 {

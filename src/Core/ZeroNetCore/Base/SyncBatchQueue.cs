@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Agebull.Common;
 using Newtonsoft.Json;
 
-namespace Agebull.Common
+namespace Agebull.MicroZero
 {
     /// <summary>
     /// 多生产者单消费者的同步列表（线程安全）
@@ -102,7 +103,7 @@ namespace Agebull.Common
             List<TData> data = new List<TData>();
             data.AddRange(Line1);
             data.AddRange(Line2);
-            var json = JsonConvert.SerializeObject(data);
+            var json = JsonHelper.SerializeObject(data);
             IOHelper.CheckPath(Path.GetDirectoryName(file));
             File.WriteAllText(file, json);
         }

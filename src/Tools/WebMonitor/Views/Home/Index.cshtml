@@ -229,8 +229,8 @@
 @section Scripts{
     <script>
         function on_config_push(station) {
-            if (!filter_station(station))
-                return;
+            //if (!filter_station(station))
+            //    return;
             for (var idx = 0; idx < stations.length; idx++) {
                 var cfg = stations[idx];
                 if (cfg.name === station.name) {
@@ -242,6 +242,7 @@
                         Vue.set(stations, idx, station);
                         station.status = status;
                     }
+                    console.log(`${cfg.name}:${station.status}`);
                     return;
                 }
             }

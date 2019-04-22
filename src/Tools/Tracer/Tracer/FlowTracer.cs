@@ -8,12 +8,11 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
-using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using WebMonitor;
 using MicroZero.Devops.ZeroTracer;
 using MicroZero.Devops.ZeroTracer.DataAccess;
-using Timer=System.Timers.Timer;
+using Timer = System.Timers.Timer;
 namespace MicroZero.Http.Route
 {
     /// <summary>
@@ -209,7 +208,7 @@ namespace MicroZero.Http.Route
                     Thread.Sleep(10);
                     cnt = 0;
                 }
-                var json = JsonConvert.SerializeObject(root);
+                var json = JsonHelper.SerializeObject(root);
                 WebSocketNotify.Publish("trace_flow", root.RequestId, json);
                 if (access.Any(p => p.RequestId == root.RequestId))
                     access.SetValue(p => p.FlowJson, json, p => p.RequestId == root.RequestId);

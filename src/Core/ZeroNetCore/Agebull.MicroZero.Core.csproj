@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.0.3</Version>
+    <Version>1.4.0.21</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -41,6 +41,11 @@
     <Optimize>true</Optimize>
     <DefineConstants>UseStateMachine</DefineConstants>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ZeroNetCore\Agebull.MicroZero.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
+    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ZeroNetCore\Agebull.MicroZero.Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

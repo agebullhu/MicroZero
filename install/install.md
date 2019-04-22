@@ -50,7 +50,7 @@ supervisorctl update
 3. 将install\lib目录下的文件复制到 /usr/local/lib目录下
 > 有些情况，/usr/local/lib目录下运行会找不到对应的库，那么就将文件复制到/usr/lib目录下
 ## 6 运行ZeroCenter
-> /root/zero/center/zero_center.out
+> /usr/zero/center/zero_center.out
 查看是否运行正常，运行完成关闭（ctr+c)
 
 ### 如有外网无法访问，请配置防火墙或暂时关闭它
@@ -75,4 +75,8 @@ sudo ufw disable
 1 在浏览器打开你的站点的 81端口，看三个项目是否正确运行
 2 在浏览器打开你的站点的5000端口，看监控后台是否正确运行
 
+MY SQL 本地权限
+grant all privileges on db_zero_base.* to root@'locahost' identified by '123456';
 
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';

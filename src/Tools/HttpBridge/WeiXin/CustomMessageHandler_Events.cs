@@ -63,7 +63,7 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
                 {
                     Station = "WechatCallBack",
                     Commmand = command,
-                    Argument = JsonConvert.SerializeObject(argument)
+                    Argument = JsonHelper.SerializeObject(argument)
                 };
                 caller.CallCommand();
                 ResultXml = caller.State == ZeroOperatorStateType.Ok ? caller.Result : "";

@@ -116,20 +116,21 @@ namespace WebMonitor.Models
             ShortName = src.ShortName;
             Alias = src.StationAlias.LinkToString(',');
 
-            switch (src.StationType)
-            {
-                case ZeroStationType.Vote:
-                case ZeroStationType.Api:
-                case ZeroStationType.Queue:
-                case ZeroStationType.RouteApi:
-                    Type = "API"; break;
-                case ZeroStationType.Trace:
-                case ZeroStationType.Proxy:
-                case ZeroStationType.Plan:
-                case ZeroStationType.Dispatcher:
-                case ZeroStationType.Notify:
-                    Type = "Pub"; break;
-            }
+            //switch (src.StationType)
+            //{
+            //    case ZeroStationType.Vote:
+            //    case ZeroStationType.Api:
+            //    case ZeroStationType.Queue:
+            //    case ZeroStationType.RouteApi:
+            //        Type = "API"; break;
+            //    case ZeroStationType.Trace:
+            //    case ZeroStationType.Proxy:
+            //    case ZeroStationType.Plan:
+            //    case ZeroStationType.Dispatcher:
+            //    case ZeroStationType.Notify:
+            //        Type = "Pub"; break;
+            //}
+            Type = src.StationType.ToString();
             RequestAddress = src.RequestAddress;
             WorkerCallAddress = src.WorkerCallAddress;
             IsGeneralStation = src.IsGeneral;

@@ -70,7 +70,7 @@ namespace MicroZero.Http.Gateway
 
                 if (Data.Arguments.Count > 0)
                 {
-                    LogRecorder.MonitorTrace($"Arguments:{JsonConvert.SerializeObject(Data.Arguments)}");
+                    LogRecorder.MonitorTrace($"Arguments:{JsonHelper.SerializeObject(Data.Arguments)}");
                 }
                 if (Request.ContentLength != null)
                 {

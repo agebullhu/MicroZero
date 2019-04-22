@@ -56,7 +56,7 @@ namespace WebMonitor.Models
 
             try
             {
-                var result = SystemManager.Instance.CallCommand("update", JsonConvert.SerializeObject(option));
+                var result = SystemManager.Instance.CallCommand("update", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");
@@ -96,7 +96,7 @@ namespace WebMonitor.Models
 
             try
             {
-                var result = SystemManager.Instance.CallCommand("install", JsonConvert.SerializeObject(option));
+                var result = SystemManager.Instance.CallCommand("install", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");

@@ -40,6 +40,7 @@ namespace agebull
 		 */
 		bool system_storage::prepare_storage()
 		{
+			next_port = global_config::base_tcp_port;
 			acl::string path;
 			path.format("%s/config/zero_center.db", global_config::root_path);
 			if (!open_db(path.c_str()))
@@ -254,7 +255,6 @@ namespace agebull
 			{
 				return 1;
 			}
-			sqlite3_free_table(db_result);
 			reboot_num = atoi(db_result[1]);
 			return reboot_num;
 		}

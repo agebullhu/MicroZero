@@ -119,7 +119,7 @@ namespace MicroZero.Http.Route
         private string ToErrorString(int code, string message, string message2 = null)
         {
             LogRecorder.MonitorTrace($"调用异常：{message}");
-            return JsonConvert.SerializeObject(ApiResult.Error(code, _url + message, message2));
+            return Agebull.MicroZero.JsonHelper.SerializeObject(ApiResult.Error(code, _url + message, message2));
         }
 
         /// <summary>

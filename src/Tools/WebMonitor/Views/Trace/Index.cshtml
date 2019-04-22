@@ -16,7 +16,7 @@
 }
 @section VUE{
     <script>
-        var data = [@(Html.Raw(JsonConvert.SerializeObject(ApiCounter.Root)))];
+        var data = [@(Html.Raw(Agebull.MicroZero.JsonHelper.SerializeObject(ApiCounter.Root)))];
 
         extend_data({
             hosts: data,

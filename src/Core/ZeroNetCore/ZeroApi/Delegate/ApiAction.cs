@@ -1,5 +1,8 @@
 using System;
 using System.Reflection;
+using System.Security;
+using System.Security.Permissions;
+using System.Security.Policy;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
@@ -40,11 +43,16 @@ namespace Agebull.MicroZero.ZeroApis
         ///     是否可能存在用户信息
         /// </summary>
         public bool HaseUser => (Access & (ApiAccessOption)0xFFF0) > ApiAccessOption.None;
-        
+
         /// <summary>
         ///     参数类型
         /// </summary>
         public Type ArgumenType { get; set; }
+
+        /// <summary>
+        ///     参数类型
+        /// </summary>
+        public Type ResultType { get; set; }
 
         /// <summary>
         ///     还原参数
@@ -63,8 +71,52 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         /// <returns></returns>
         public abstract object Execute();
+
     }
 
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiActionObj2 : ApiAction
+    {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => null;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<object> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            return true;
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            message = null;
+            return true;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            return Action();
+        }
+    }
     /// <summary>
     ///     Api动作
     /// </summary>
@@ -110,6 +162,49 @@ namespace Agebull.MicroZero.ZeroApis
         }
     }
 
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiAction2<TResult> : ApiAction
+    {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => null;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<TResult> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            return true;
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            message = null;
+            return true;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            return Action();
+        }
+    }
     /// <summary>
     ///     API标准委托
     /// </summary>
@@ -255,6 +350,61 @@ namespace Agebull.MicroZero.ZeroApis
         }
     }
 
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiAction2<TArgument, TResult> : ApiAction
+    {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => _argument;
+
+        /// <summary>
+        ///     参数
+        /// </summary>
+        private TArgument _argument;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<TArgument, TResult> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            _argument = JsonConvert.DeserializeObject<TArgument>(argument);
+            return _argument != null;
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            if (Access.HasFlag(ApiAccessOption.ArgumentCanNil))
+            {
+                message = null;
+                return true;
+            }
+
+            message = "参数不能为空";
+            return false;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            return Action(_argument);
+        }
+    }
     /// <summary>
     ///     Api动作
     /// </summary>

@@ -55,13 +55,13 @@ namespace MicroZero.Http.Gateway
                 LogRecorder.BeginStepMonitor("HTTP");
                 var args = new StringBuilder();
                 args.Append("Headers：");
-                args.Append(JsonConvert.SerializeObject(data.Headers));
+                args.Append(JsonHelper.SerializeObject(data.Headers));
                 LogRecorder.MonitorTrace(args.ToString());
                 LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
                 LogRecorder.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
-                LogRecorder.MonitorTrace($"Command:{data.HostName}/{data.ApiName}");
+                LogRecorder.MonitorTrace($"Command:{data.ApiHost}/{data.ApiName}");
                 if (data.Arguments.Count > 0)
-                    LogRecorder.MonitorTrace($"Arguments：{JsonConvert.SerializeObject(data.Arguments)}");
+                    LogRecorder.MonitorTrace($"Arguments：{JsonHelper.SerializeObject(data.Arguments)}");
                 if (!string.IsNullOrWhiteSpace(data.HttpContext))
                     LogRecorder.MonitorTrace("Context:" + data.HttpContext);
             }
@@ -142,7 +142,7 @@ namespace MicroZero.Http.Gateway
             using (socket)
             {
                 var result = socket.Socket.Publish("Http", Description,
-                    $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
+                    $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
                     data.ToZeroBytes(),
                     GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
                     ZeroCommandExtend.AppNameBytes,
@@ -188,7 +188,7 @@ namespace MicroZero.Http.Gateway
             using (socket)
             {
                 socket.Socket.Publish("Http", desc,
-                    $"{data.HostName}/{data.ApiName}".ToZeroBytes(),
+                    $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
                     result.ToZeroBytes(),
                     data.ToZeroBytes(),
                     ZeroCommandExtend.AppNameBytes,
@@ -215,7 +215,7 @@ namespace MicroZero.Http.Gateway
             {
                 Start = data.Start.Ticks,
                 End = DateTime.Now.Ticks,
-                HostName = data.HostName,
+                HostName = data.ApiHost,
                 ApiName = data.ApiName,
                 Status = data.UserState,
                 Requester = $"http_route={GlobalContext.RequestInfo.Ip}:{GlobalContext.RequestInfo.Port}"

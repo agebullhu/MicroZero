@@ -1,5 +1,4 @@
 using Agebull.MicroZero.ZeroApis;
-using Agebull.MicroZero.ZeroApis;
 
 namespace RpcTest
 {

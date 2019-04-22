@@ -198,16 +198,17 @@ namespace agebull
 			, "worker_in_port"
 			, "description"
 			, "caption"
-			, "station_alias"
+			//, "station_alias"
 			, "station_state"
 			, "request_in"
 			, "request_out"
 			, "request_err"
+			, "request_deny"
 			, "worker_in"
 			, "worker_out"
 			, "worker_err"
-			, "short_name"
-			,"is_base"
+			, "worker_deny"
+			//, "short_name"
 		};
 		enum class config_fields
 		{
@@ -218,7 +219,7 @@ namespace agebull
 			, worker_in_port
 			, description
 			, caption
-			, station_alias
+			//, station_alias
 			, station_state
 			, request_in
 			, request_out
@@ -228,8 +229,7 @@ namespace agebull
 			, worker_out
 			, worker_err
 			, worker_deny
-			, short_name
-			, is_base
+			//, short_name
 		};
 		void station_config::read_json(const char* val)
 		{
@@ -255,32 +255,29 @@ namespace agebull
 				case config_fields::station_type:
 					station_type = json_read_int(iter);
 					break;
-				case config_fields::short_name:
-					short_name = iter->get_string();
-					break;
+				//case config_fields::short_name:
+				//	short_name = iter->get_string();
+				//	break;
 				case config_fields::description:
 					station_description = iter->get_string();
 					break;
 				case config_fields::caption:
 					station_caption = iter->get_string();
 					break;
-				case config_fields::is_base:
-					// is_base = false;json_read_bool(iter);
-					break;
-				case config_fields::station_alias:
-					alias.clear();
-					{
-						var ch = iter->first_child();
-						var iter_arr = ch->first_child();
-						while (iter_arr)
-						{
-							auto txt = iter_arr->get_text();
-							if (txt != nullptr)
-								alias.emplace_back(txt);
-							iter_arr = ch->next_child();
-						}
-					}
-					break;
+				//case config_fields::station_alias:
+				//	alias.clear();
+				//	{
+				//		var ch = iter->first_child();
+				//		var iter_arr = ch->first_child();
+				//		while (iter_arr)
+				//		{
+				//			auto txt = iter_arr->get_text();
+				//			if (txt != nullptr)
+				//				alias.emplace_back(txt);
+				//			iter_arr = ch->next_child();
+				//		}
+				//	}
+				//	break;
 				case config_fields::request_port:
 					request_port = json_read_int(iter);
 					break;
@@ -333,32 +330,28 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(mutex);
 			acl::json json;
 			acl::json_node& node = json.create_node();
-			//站点基础信息,不包含在状态中
-			if (type != 2)
-			{
-				json_add_bool(node, "is_base", is_base);
-				json_add_num(node, "station_type", station_type);
-				json_add_num(node, "request_port", request_port);
-				json_add_num(node, "worker_in_port", worker_in_port);
-				json_add_num(node, "worker_out_port", worker_out_port);
-			}
+
 			json_add_str(node, "name", station_name);
 			//站点基础信息,不包含在状态中
 			if (type != 2)
 			{
-				node.add_text("short_name", short_name.empty() ? station_name.c_str() : short_name.c_str());
+				json_add_num(node, "station_type", station_type);
+				json_add_num(node, "request_port", request_port);
+				json_add_num(node, "worker_in_port", worker_in_port);
+				json_add_num(node, "worker_out_port", worker_out_port);
+				json_add_bool(node, "is_base", is_base);
 				json_add_str(node, "description", station_description);
-				if (alias.size() > 0)
-				{
-					acl::json_node& array = json.create_array();
-					for (auto alia : alias)
-					{
-						json_add_array_str(array, alia);
-					}
-					node.add_child("station_alias", array);
-				}
+				//node.add_text("short_name", short_name.empty() ? station_name.c_str() : short_name.c_str());
+				//if (alias.size() > 0)
+				//{
+				//	acl::json_node& array = json.create_array();
+				//	for (auto alia : alias)
+				//	{
+				//		json_add_array_str(array, alia);
+				//	}
+				//	node.add_child("station_alias", array);
+				//}
 			}
-			json_add_num(node, "station_state", static_cast<int>(station_state_));
 			//站点计数,不包含在基础信息中
 			if (type != 1)
 			{
@@ -389,6 +382,7 @@ namespace agebull
 				node.add_child("workers", array);
 			}
 
+			json_add_num(node, "station_state", static_cast<int>(station_state_));
 			return node.to_string();
 		}
 	}

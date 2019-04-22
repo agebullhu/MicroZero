@@ -1,7 +1,9 @@
 #pragma once
 #ifndef _PLAN_DISPATCHER_H_
 #define _PLAN_DISPATCHER_H_
-#ifdef PLAN
+
+
+#ifdef _ZERO_PLAN
 
 #include "../stdinc.h"
 #include "zero_plan.h"
@@ -38,7 +40,7 @@ namespace agebull
 			/**
 			* \brief 构造
 			*/
-			plan_dispatcher(shared_ptr<zero_config>& config)
+			plan_dispatcher(shared_ptr<station_config>& config)
 				:zero_station(config, zero_def::station_type::plan, ZMQ_ROUTER, ZMQ_PUB)
 			{
 
@@ -62,7 +64,7 @@ namespace agebull
 			/**
 			*\brief 运行
 			*/
-			static void run(shared_ptr<zero_config>& config)
+			static void run(shared_ptr<station_config>& config)
 			{
 				instance = new plan_dispatcher(config);
 				boost::thread(boost::bind(launch, shared_ptr<plan_dispatcher>(instance)));
