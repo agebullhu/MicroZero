@@ -141,7 +141,7 @@ namespace MicroZero.Http.Gateway
             }
             if (RouteOption.Option.SystemConfig.EnableInnerCommand && InnerCommand(uri.AbsolutePath, context.Request, context.Response))
             {
-                LogRecorder.MonitorTrace("InnerCommand");
+                LogRecorderX.MonitorTrace("InnerCommand");
                 return;
             }
             //命令
@@ -312,7 +312,7 @@ namespace MicroZero.Http.Gateway
 
             //if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
             //    return;
-            //LogRecorder.SystemLog($"Reload Document by {e.Event}.");
+            //LogRecorderX.SystemLog($"Reload Document by {e.Event}.");
             //OnZeroNetRuning();
         }
 

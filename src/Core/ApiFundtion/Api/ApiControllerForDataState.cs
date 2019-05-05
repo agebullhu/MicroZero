@@ -11,9 +11,8 @@
 using System;
 using System.Linq.Expressions;
 using Agebull.Common.Context;
+using Agebull.EntityModel.BusinessLogic;
 using Agebull.EntityModel.Common;
-using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.BusinessLogic.MySql;
 
 #endregion
 
@@ -22,12 +21,10 @@ namespace Agebull.MicroZero.ZeroApis
     /// <summary>
     ///     支持数据状态的启用禁用方法的页面的基类
     /// </summary>
-    public abstract class ApiControllerForDataState<TData, TAccess, TDatabase, TBusinessLogic> :
-        ApiController<TData, TAccess, TDatabase, TBusinessLogic>
+    public abstract class ApiControllerForDataState<TData, TBusinessLogic> :
+        ApiController<TData, TBusinessLogic>
         where TData : EditDataObject, IStateData, IIdentityData, new()
-        where TAccess : DataStateTable<TData, TDatabase>, new()
-        where TBusinessLogic : BusinessLogicByStateData<TData, TAccess, TDatabase>, new()
-        where TDatabase : MySqlDataBase
+        where TBusinessLogic :class, IBusinessLogicByStateData<TData>, new()
     {
         #region 数据校验支持
 
@@ -67,7 +64,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         
         [Route("state/reset")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Reset(IdsArguent arg)
         {
             
@@ -86,7 +83,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         
         [Route("state/lock")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Lock(IdsArguent arg)
         {
             
@@ -105,7 +102,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         
         [Route("state/discard")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Discard(IdsArguent arg)
         {
             
@@ -124,7 +121,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         
         [Route("state/disable")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Disable(IdsArguent arg)
         {
             
@@ -143,7 +140,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         
         [Route("state/enable")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Enable(IdsArguent arg)
         {
             
@@ -230,7 +227,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            var state = GetIntArg("dataState", 0x100);
+            var state = GetIntArg("_dataState_", 0x100);
             if (state >= 0 && state < 0x100)
             {
                 lambda.AddRoot(p => p.DataState == (DataStateType)state);
@@ -246,14 +243,4 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
     }
 
-    /// <summary>
-    ///     支持数据状态的启用禁用方法的页面的基类
-    /// </summary>
-    public abstract class ApiControllerForDataState<TData, TAccess, TDatabase> :
-        ApiController<TData, TAccess, TDatabase, BusinessLogicByStateData<TData, TAccess, TDatabase>>
-        where TData : EditDataObject, IStateData, IIdentityData, new()
-        where TAccess : DataStateTable<TData, TDatabase>, new()
-        where TDatabase : MySqlDataBase
-    {
-    }
 }

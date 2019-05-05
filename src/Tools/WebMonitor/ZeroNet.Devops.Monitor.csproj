@@ -30,9 +30,7 @@
   <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="Controllers\科室.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="C:\Users\DELL\Desktop\电子健康卡接口规范\数据字典.json" Link="数据字典.json" />
+    <Content Remove="Views\Doc\Index - 复制.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">

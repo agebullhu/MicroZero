@@ -313,7 +313,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (Simple)
                 return;
-            LogRecorder.MonitorTrace($"Station:{Station},Command:{Commmand}");
+            LogRecorderX.MonitorTrace($"Station:{Station},Command:{Commmand}");
             foreach (var handler in _handlers)
                 try
                 {
@@ -330,7 +330,7 @@ namespace Agebull.MicroZero.ZeroApis
             CheckStateResult();
             if (Simple)
                 return;
-            LogRecorder.MonitorTrace($"Result:{Result}");
+            LogRecorderX.MonitorTrace($"Result:{Result}");
             foreach (var handler in _handlers)
             {
                 try
@@ -409,7 +409,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             }
             LastResult.TryGetValue(ZeroFrameType.ResultText, out _result);
-            LogRecorder.MonitorTrace($"Remte result:{_result}");
+            LogRecorderX.MonitorTrace($"Remte result:{_result}");
             State = LastResult.State;
         }
 
@@ -420,7 +420,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="messages"></param>
         public static void WriteError(string title, params object[] messages)
         {
-            LogRecorder.MonitorTrace($"{title} : {messages.LinkToString(" > ")}");
+            LogRecorderX.MonitorTrace($"{title} : {messages.LinkToString(" > ")}");
         }
 
         /// <summary>

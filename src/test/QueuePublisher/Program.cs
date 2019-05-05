@@ -1,4 +1,13 @@
-﻿using Agebull.MicroZero;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Agebull.Common.Context;
+using Agebull.Common.Ioc;
+using Agebull.Common.Logging;
+using Agebull.EntityModel.Common;
+using Agebull.MicroZero;
+using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApis;
 
 namespace QueuePublisher
 {
@@ -8,7 +17,27 @@ namespace QueuePublisher
         {
             ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
-            ZeroApplication.RunAwaite();
+            ZeroApplication.Run();
+
+            Test();
+
+            ZeroApplication.Shutdown();
+        }
+
+        static void Test()
+        {
+            using (IocScope.CreateScope())
+            {
+                GlobalContext.Current.Request.RequestId = RandomOperate.Generate(8);
+                try
+                {
+                    ApiClient.Call("WechatCallBack", "CallBack", "{}");
+                }
+                catch (Exception e)
+                {
+                    LogRecorderX.Exception(e);
+                }
+            }
         }
     }
 }

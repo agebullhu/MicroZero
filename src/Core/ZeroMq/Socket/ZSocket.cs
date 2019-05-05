@@ -317,13 +317,13 @@ namespace ZeroMQ
             var socket = Create(type, out var error);
             if (error != null)
             {
-                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             ConfigSocket(socket, true);
             if (socket.Bind(address, out error))
                 return socket;
-            LogRecorder.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorderX.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }
@@ -342,7 +342,7 @@ namespace ZeroMQ
             var socket = Create(type, out var error);
             if (error != null)
             {
-                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             if (identity != null)
@@ -352,7 +352,7 @@ namespace ZeroMQ
 
             if (socket.Connect(address, out error))
                 return socket;
-            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }
@@ -371,7 +371,7 @@ namespace ZeroMQ
             var socket = Create(type, out var error);
             if (error != null)
             {
-                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             socket.SetOption(ZSocketOption.IDENTITY, identity);
@@ -386,7 +386,7 @@ namespace ZeroMQ
 
             if (socket.Connect(address, out error))
                 return socket;
-            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }
@@ -1881,7 +1881,7 @@ namespace ZeroMQ
             if (zmq.msg_send(frame.Ptr, SocketPtr, flags) >= 0)
                 return true;
             _error = ZError.GetLastErr();
-            LogRecorder.Error($"Send Error: {_error.Text} | {Endpoint} | Socket Ptr:{SocketPtr}");
+            LogRecorderX.Error($"Send Error: {_error.Text} | {Endpoint} | Socket Ptr:{SocketPtr}");
             return false;
         }
 
@@ -1930,7 +1930,7 @@ namespace ZeroMQ
                 return true;
             _error = ZError.GetLastErr();
             frame.Dispose();
-            LogRecorder.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
+            LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
             return false;
         }
 
@@ -2007,7 +2007,7 @@ namespace ZeroMQ
                     if (-1 == zmq.close(SocketPtr))
                     {
                         error = _error = ZError.GetLastErr();
-                        LogRecorder.Error($"Socket Close Error:{_error}");
+                        LogRecorderX.Error($"Socket Close Error:{_error}");
                         State |= SocketState.Failed;
                         success = false;
                     }
@@ -2019,7 +2019,7 @@ namespace ZeroMQ
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 error = new ZError(ZError.Code.ENETDOWN);
             }
             return false;
@@ -2059,7 +2059,7 @@ namespace ZeroMQ
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 error = new ZError(ZError.Code.ENETDOWN);
             }
             return false;
@@ -2106,7 +2106,7 @@ namespace ZeroMQ
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 error = new ZError(ZError.Code.ENETDOWN);
             }
             return false;
@@ -2138,7 +2138,7 @@ namespace ZeroMQ
                 }
             }
             State = SocketState.Binding;
-            LogRecorder.SystemLog($"Bind:{endpoint}");
+            LogRecorderX.SystemLog($"Bind:{endpoint}");
             Endpoint = endpoint;
             return true;
         }
@@ -2168,7 +2168,7 @@ namespace ZeroMQ
                 }
             }
             State |= SocketState.Close;
-            LogRecorder.SystemLog($"Unbind:{endpoint}");
+            LogRecorderX.SystemLog($"Unbind:{endpoint}");
             return true;
         }
         private bool SetOptionInner(ZSocketOption option, IntPtr optionValue, int optionLength)

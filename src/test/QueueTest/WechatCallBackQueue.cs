@@ -45,7 +45,7 @@ namespace ApiTest
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return ApiResult.LocalException;
             }
         }

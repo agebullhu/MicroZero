@@ -178,7 +178,7 @@ namespace MicroZero.Http.Route
             if (message.Length >= 20)
                 message = message.Substring(20);
             //发送短信
-            LogRecorder.Warning($"服务器{host}的{api}发生${message}错误{item.LastCount}次，请立即处理");
+            LogRecorderX.Warning($"服务器{host}的{api}发生${message}错误{item.LastCount}次，请立即处理");
             if (SmsConfig?.Phones == null)
                 return;
             foreach (var phone in SmsConfig.Phones)
@@ -230,17 +230,17 @@ namespace MicroZero.Http.Route
             }
             catch (ServerException e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return false;
             }
             catch (ClientException e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return false;
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return false;
             }
 

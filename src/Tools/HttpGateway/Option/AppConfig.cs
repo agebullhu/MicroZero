@@ -85,7 +85,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 throw new Exception($"路由配置文件{ConfigFileName}解析错误");
             }
             if (RouteMap == null)

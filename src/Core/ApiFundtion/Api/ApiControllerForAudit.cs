@@ -13,8 +13,7 @@ using System.Collections.Generic;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.Interfaces;
 using Agebull.Common.Context;
-using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.BusinessLogic.MySql;
+using Agebull.EntityModel.BusinessLogic;
 
 #endregion
 
@@ -23,14 +22,11 @@ namespace Agebull.MicroZero.ZeroApis
     /// <summary>
     ///     审核支持API页面的基类
     /// </summary>
-    public abstract class ApiControllerForAudit<TData, TAccess, TDatabase, TBusinessLogic> :
-        ApiControllerForDataState<TData, TAccess, TDatabase, TBusinessLogic>
+    public abstract class ApiControllerForAudit<TData, TBusinessLogic>
+        : ApiControllerForDataState<TData, TBusinessLogic>
         where TData : EditDataObject, IStateData, IHistoryData, IAuditData, IIdentityData, new()
-        where TAccess : DataStateTable<TData, TDatabase>, new()
-        where TBusinessLogic : BusinessLogicByAudit<TData, TAccess, TDatabase>, new()
-        where TDatabase : MySqlDataBase
+        where TBusinessLogic :class, IBusinessLogicByAudit<TData>, new()
     {
-
         #region API
 
         /// <summary>
@@ -38,7 +34,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/deny")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult AuditDeny(IdsArguent arg)
         {
 
@@ -57,7 +53,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/pullback")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Pullback(IdsArguent arg)
         {
 
@@ -76,7 +72,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/submit")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult SubmitAudit(IdsArguent arg)
         {
 
@@ -95,7 +91,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/validate")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Validate(IdsArguent arg)
         {
 
@@ -115,7 +111,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/pass")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult AuditPass(IdsArguent arg)
         {
 
@@ -134,7 +130,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/redo")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult UnAudit(IdsArguent arg)
         {
             OnUnAudit();
@@ -152,7 +148,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
 
         [Route("audit/back")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult BackAudit(IdsArguent arg)
         {
 
@@ -167,7 +163,6 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
         #endregion
-
         #region 抽象
 
         /// <summary>
@@ -259,7 +254,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            var audit = GetIntArg("audit", -1);
+            var audit = GetIntArg("_audit_", -1);
             if (audit == 0x100 || audit < 0)
                 return base.GetListData(lambda);
             if (audit <= (int)AuditStateType.End)
@@ -290,14 +285,4 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
     }
 
-    /// <summary>
-    ///     审核支持API页面的基类
-    /// </summary>
-    public abstract class ApiControllerForAudit<TData, TAccess, TDatabase> :
-        ApiControllerForDataState<TData, TAccess, TDatabase, BusinessLogicByAudit<TData, TAccess, TDatabase>>
-        where TData : EditDataObject, IStateData, IHistoryData, IAuditData, IIdentityData, new()
-        where TAccess : DataStateTable<TData, TDatabase>, new()
-        where TDatabase : MySqlDataBase
-    {
-    }
 }

@@ -247,7 +247,7 @@ namespace Agebull.MicroZero
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
             }
             RealState = StationState.Failed;
             ZeroApplication.OnObjectFailed(this);

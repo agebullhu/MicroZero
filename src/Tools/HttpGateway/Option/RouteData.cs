@@ -262,7 +262,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e, "读取远程参数");
+                LogRecorderX.Exception(e, "读取远程参数");
                 UserState = UserOperatorStateType.FormalError;
                 ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                 ResultMessage = ApiResultIoc.ArgumentErrorJson;

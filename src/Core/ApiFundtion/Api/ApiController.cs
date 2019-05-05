@@ -1,26 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using Agebull.Common.Context;
 using Agebull.EntityModel.Common;
-using Agebull.EntityModel.MySql;
-using Agebull.EntityModel.BusinessLogic.MySql;
-using MySql.Data.MySqlClient;
+using Agebull.EntityModel.BusinessLogic;
 using Agebull.MicroZero.WebApi;
-using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.ZeroApis
 {
     /// <summary>
     ///     自动实现基本增删改查API页面的基类
     /// </summary>
-    public abstract class ApiController<TData, TAccess, TDatabase, TBusinessLogic> : ApiControlerEx
+    public abstract class ApiController<TData, TBusinessLogic> : ApiControlerEx
         where TData : EditDataObject, IIdentityData, new()
-        where TAccess : MySqlTable<TData, TDatabase>, new()
-        where TBusinessLogic : UiBusinessLogicBase<TData, TAccess, TDatabase>, new()
-        where TDatabase : MySqlDataBase
+        where TBusinessLogic : class, IUiBusinessLogicBase<TData>, new()
     {
         #region 数据校验支持
 
@@ -78,28 +74,26 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         /// <returns></returns>
         [Route("edit/eid")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<EntityInfo> EntityType()
         {
             return ApiResult.Succees(new EntityInfo
             {
                 EntityType = Business.EntityType,
-                PageId = PageItem?.Id ?? 0
+                //PageId = PageItem?.Id ?? 0
             });
         }
 
         /// <summary>
         ///     列表数据
         /// </summary>
+        /// <remarks>
+        /// 参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+        /// </remarks>
         /// <returns></returns>
         [Route("edit/list")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiPageResult<TData> List(QueryArgument args)
-        {
-            return List2();
-        }
-
-        private ApiPageResult<TData> List2()
         {
             GlobalContext.Current.Feature = 1;
             var data = GetListData();
@@ -121,7 +115,7 @@ namespace Agebull.MicroZero.ZeroApis
         ///     单条详细数据
         /// </summary>
         [Route("edit/details")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<TData> Details(IdArguent arguent)
         {
             var data = DoDetails();
@@ -138,7 +132,7 @@ namespace Agebull.MicroZero.ZeroApis
         ///     新增数据
         /// </summary>
         [Route("edit/addnew")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<TData> AddNew(TData arg)
         {
             var data = DoAddNew();
@@ -155,7 +149,7 @@ namespace Agebull.MicroZero.ZeroApis
         ///     更新数据
         /// </summary>
         [Route("edit/update")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<TData> Update(TData arg)
         {
             var data = DoUpdate();
@@ -172,7 +166,7 @@ namespace Agebull.MicroZero.ZeroApis
         ///     删除多条数据
         /// </summary>
         [Route("edit/delete")]
-        [ApiAccessOptionFilter(ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.Customer)]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Delete(IdsArguent arg)
         {
             DoDelete();
@@ -186,7 +180,6 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
         #endregion
-
 
         #region 列表读取支持
 
@@ -203,18 +196,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected ApiPageData<TData> GetListData(Expression<Func<TData, bool>> lambda)
         {
-            return GetListData(new[] {lambda});
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
-        protected ApiPageData<TData> GetListData(IEnumerable<Expression<Func<TData, bool>>> lambdas)
-        {
-            var lg = new TAccess();
-            var condition = new ConditionItem();
-            foreach (var lambda in lambdas) PredicateConvert.Convert(lg.FieldDictionary, lambda, condition);
-            return GetListData(condition);
+            return GetListData(Business.Access.Compile(lambda));
         }
 
         /// <summary>
@@ -231,9 +213,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected ApiPageData<TData> DoGetListData(LambdaItem<TData> lambda)
         {
-            var lg = new TAccess();
-            var condition = PredicateConvert.Convert(lg.FieldDictionary, lambda);
-            return GetListData(condition);
+            return GetListData(Business.Access.Compile(lambda));
         }
 
         /// <summary>
@@ -241,7 +221,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected ApiPageData<TData> GetListData(ConditionItem item)
         {
-            return GetListData(new[] {item});
+            return GetListData(new[] { item });
         }
 
         /// <summary>
@@ -249,7 +229,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected ApiPageData<TData> GetListData(IEnumerable<ConditionItem> items)
         {
-            var parameters = new List<MySqlParameter>();
+            var parameters = new List<DbParameter>();
             var sb = new StringBuilder();
             var isFirst = true;
             foreach (var item in items)
@@ -272,13 +252,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     取得列表数据
         /// </summary>
-        protected ApiPageData<TData> LoadListData(string condition, MySqlParameter[] args)
+        protected ApiPageData<TData> LoadListData(string condition, DbParameter[] args)
         {
             var page = GetIntArg("page", 1);
             var rows = GetIntArg("rows", 20);
             var sort = GetArg("sort");
             bool desc;
-            var adesc = GetArg("order", "asc").ToLower();
             if (sort == null)
             {
                 sort = Business.Access.KeyField;
@@ -286,10 +265,10 @@ namespace Agebull.MicroZero.ZeroApis
             }
             else
             {
-                desc = adesc == "desc";
+                desc = GetArg("order", "asc").ToLower() == "desc";
             }
 
-            SaveQueryArguments(page, sort, adesc, rows);
+            //SaveQueryArguments(page, sort, adesc, rows);
 
             if (!string.IsNullOrEmpty(BaseQueryCondition))
             {
@@ -299,6 +278,10 @@ namespace Agebull.MicroZero.ZeroApis
                     condition = $"({BaseQueryCondition}) AND ({condition})";
             }
 
+            if (!DataExtendChecker.PrepareQuery<TData>(Business.Access, ref condition, ref args))
+            {
+                return null;
+            }
             var data = Business.PageData(page, rows, sort, desc, condition, args);
             if (OnListLoaded(data.Rows, data.RowCount))
             {
@@ -308,7 +291,7 @@ namespace Agebull.MicroZero.ZeroApis
 
             return data;
         }
-
+        /*
         /// <summary>
         ///     是否保存查询条件
         /// </summary>
@@ -316,9 +299,9 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void SaveQueryArguments(int page, string sort, string adesc, int rows)
         {
-            if (this.CanSaveQueryArguments)
+            if (CanSaveQueryArguments)
                 BusinessContext.Context?.PowerChecker?.SaveQueryHistory(LoginUser, PageItem, Arguments);
-        }
+        }*/
 
         /// <summary>
         ///     数据准备返回的处理
@@ -326,8 +309,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="result">当前的查询结果</param>
         /// <param name="condition">当前的查询条件</param>
         /// <param name="args">当前的查询参数</param>
-        protected virtual bool CheckListResult(ApiPageData<TData> result, string condition,
-            params MySqlParameter[] args)
+        protected virtual bool CheckListResult(ApiPageData<TData> result, string condition, params DbParameter[] args)
         {
             return true;
         }
@@ -393,7 +375,6 @@ namespace Agebull.MicroZero.ZeroApis
                     SetFailed("数据不存在");
                     return null;
                 }
-
                 OnDetailsLoaded(data, false);
             }
 
@@ -426,18 +407,11 @@ namespace Agebull.MicroZero.ZeroApis
             var convert = new FormConvert(Arguments);
             ReadFormData(data, convert);
             data.__IsFromUser = true;
-            //if (convert.Failed)
-            //{
-            //    SetFailed(/*"数据不正确,保存失败<br/>" +*/
-            //              string.Join("<br/>", convert.Messages.Select(p => string.Format("{0}:{1}", p.Key, p.Value))));
-            //    return;
-            //}
             if (!Business.AddNew(data))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
                 return null;
             }
-
             return data;
         }
 
@@ -446,24 +420,30 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected virtual TData DoUpdate()
         {
-            var data = Business.Details(ContextDataId) ?? new TData();
+            var data = Business.Details(ContextDataId);
+            if (data == null)
+            {
+                GlobalContext.Current.LastState = ErrorCode.ArgumentError;
+                GlobalContext.Current.LastMessage = "参数错误";
+                return null;
+            }
             //数据校验
-
-            var convert = new FormConvert(Arguments);
+            var convert = new FormConvert(Arguments)
+            {
+                IsUpdata = true
+            };
             ReadFormData(data, convert);
             data.__IsFromUser = true;
-            //if (convert.Failed)
-            //{
-            //    SetFailed(/*"数据不正确,保存失败<br/>" +*/
-            //              string.Join("<br/>", convert.Messages.Select(p => string.Format("{0}:{1}", p.Key, p.Value))));
-            //    return;
-            //}
+
+            if (!DataExtendChecker.PrepareUpdate(data))
+            {
+                return null;
+            }
             if (!Business.Update(data))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
                 return null;
             }
-
             return data;
         }
 
@@ -479,13 +459,17 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             }
 
-            var lid = ids.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            var lid = ids.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
             if (lid.Length == 0)
             {
                 SetFailed("没有数据");
                 return;
             }
 
+            if (!DataExtendChecker.PrepareDelete<TData>(lid))
+            {
+                return;
+            }
             if (!Business.Delete(lid))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -493,66 +477,4 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
     }
 
-    /// <summary>
-    /// 界面选择的ID
-    /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
-    public class IdArguent
-    {
-        /// <summary>
-        /// 选择的ID
-        /// </summary>
-        [JsonProperty("id")]
-        public string Id { get; set; }
-    }
-    /// <summary>
-    /// 界面选择的ID
-    /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
-    public class IdsArguent
-    {
-        /// <summary>
-        /// 选择的ID
-        /// </summary>
-        [JsonProperty("selects")]
-        public string Ids { get; set; }
-    }
-
-    /// <summary>
-    /// 查询参数
-    /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
-    public class QueryArgument
-    {
-
-        /// <summary>
-        /// 模糊查询关键字
-        /// </summary>
-        [JsonProperty("keyWord")]
-        public string KeyWord { get; set; }
-
-        /// <summary>
-        ///页号(1起始)
-        /// </summary>
-        [JsonProperty("page")]
-        public int Page { get; set; }
-
-        /// <summary>
-        /// 每页行数
-        /// </summary>
-        /// <value>1-999的数字</value>
-        [JsonProperty("rows")]
-        public int PageSize { get; set; }
-        /// <summary>
-        /// 排序字段
-        /// </summary>
-        [JsonProperty("sort")]
-        public string SortField { get; set; }
-        /// <summary>
-        /// 正反序
-        /// </summary>
-        /// <value>asc: 正序 desc:反序</value>
-        [JsonProperty("order")]
-        public string SortAsc { get; set; }
-    }
 }

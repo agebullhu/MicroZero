@@ -216,7 +216,7 @@ namespace Agebull.MicroZero.ZeroApis
                     }
                     catch (Exception e)
                     {
-                        LogRecorder.Exception(e);
+                        LogRecorderX.Exception(e);
                     }
                 }
                 Hearter.HeartLeft(StationName, realName);

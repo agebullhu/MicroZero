@@ -47,32 +47,32 @@ namespace MicroZero.Http.Gateway
         /// <param name="data"></param>
         private static void BeginMonitor(RouteData data)
         {
-            if (!LogRecorder.LogMonitor)
+            if (!LogRecorderX.LogMonitor)
                 return;
             try
             {
-                LogRecorder.BeginMonitor(data.Uri.ToString());
-                LogRecorder.BeginStepMonitor("HTTP");
+                LogRecorderX.BeginMonitor(data.Uri.ToString());
+                LogRecorderX.BeginStepMonitor("HTTP");
                 var args = new StringBuilder();
                 args.Append("Headers：");
                 args.Append(JsonHelper.SerializeObject(data.Headers));
-                LogRecorder.MonitorTrace(args.ToString());
-                LogRecorder.MonitorTrace($"Method：{data.HttpMethod}");
-                LogRecorder.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
-                LogRecorder.MonitorTrace($"Command:{data.ApiHost}/{data.ApiName}");
+                LogRecorderX.MonitorTrace(args.ToString());
+                LogRecorderX.MonitorTrace($"Method：{data.HttpMethod}");
+                LogRecorderX.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
+                LogRecorderX.MonitorTrace($"Command:{data.ApiHost}/{data.ApiName}");
                 if (data.Arguments.Count > 0)
-                    LogRecorder.MonitorTrace($"Arguments：{JsonHelper.SerializeObject(data.Arguments)}");
+                    LogRecorderX.MonitorTrace($"Arguments：{JsonHelper.SerializeObject(data.Arguments)}");
                 if (!string.IsNullOrWhiteSpace(data.HttpContext))
-                    LogRecorder.MonitorTrace("Context:" + data.HttpContext);
+                    LogRecorderX.MonitorTrace("Context:" + data.HttpContext);
             }
             catch (Exception e)
             {
-                LogRecorder.MonitorTrace(e.Message);
-                LogRecorder.Exception(e);
+                LogRecorderX.MonitorTrace(e.Message);
+                LogRecorderX.Exception(e);
             }
             finally
             {
-                LogRecorder.EndStepMonitor();
+                LogRecorderX.EndStepMonitor();
             }
         }
 
@@ -82,22 +82,22 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private static void EndMonitor(RouteData data)
         {
-            if (!LogRecorder.LogMonitor)
+            if (!LogRecorderX.LogMonitor)
                 return;
             try
             {
-                LogRecorder.MonitorTrace($"UserState : {data.UserState}");
-                LogRecorder.MonitorTrace($"ZeroState : {data.ZeroState}");
-                LogRecorder.MonitorTrace($"Result：{data.ResultMessage}");
+                LogRecorderX.MonitorTrace($"UserState : {data.UserState}");
+                LogRecorderX.MonitorTrace($"ZeroState : {data.ZeroState}");
+                LogRecorderX.MonitorTrace($"Result：{data.ResultMessage}");
             }
             catch (Exception e)
             {
-                LogRecorder.MonitorTrace(e.Message);
-                LogRecorder.Exception(e);
+                LogRecorderX.MonitorTrace(e.Message);
+                LogRecorderX.Exception(e);
             }
             finally
             {
-                LogRecorder.EndMonitor();
+                LogRecorderX.EndMonitor();
             }
         }
 

@@ -206,7 +206,7 @@ namespace Agebull.MicroZero.ZeroApis
                 else if (defOption != null)
                     option = defOption.Value;
                 else
-                    option = ApiAccessOption.Public | ApiAccessOption.Internal | ApiAccessOption.ArgumentCanNil | ApiAccessOption.Anymouse;
+                    option = ApiAccessOption.Internal | ApiAccessOption.Customer | ApiAccessOption.Employe;
 
                 var category = method.GetCustomAttribute<CategoryAttribute>()?.Category.SafeTrim();
                 var page = method.GetCustomAttribute<ApiPageAttribute>()?.PageUrl.SafeTrim();
@@ -223,10 +223,10 @@ namespace Agebull.MicroZero.ZeroApis
                 };
                 var doc = XmlMember.Find(type, method.Name, "M");
                 api.Copy(doc);
-                if (method.DeclaringType != type)
-                {
-                    api.Caption = $"{xdoc?.Caption ?? xdoc?.Name} : {api.Caption ?? api.Name}";
-                }
+                //if (method.DeclaringType != type)
+                //{
+                //    api.Caption = $"{xdoc?.Caption ?? xdoc?.Name} : {api.Caption ?? api.Name}";
+                //}
                 var arg = method.GetParameters().FirstOrDefault();
                 api.HaseArgument = arg != null;
                 api.ResultType = method.ReturnType;

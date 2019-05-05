@@ -25,21 +25,6 @@
             </summary>
             <param name="message"></param>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiControlerEx.IsPublicPage">
-            <summary>
-                是否公开页面
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiControlerEx.PageItem">
-            <summary>
-                当前页面节点配置
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiControlerEx.PagePower">
-            <summary>
-                当前页面权限配置
-            </summary>
-        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiControlerEx.UserIsLogin">
             <summary>
                 当前用户是否已登录成功
@@ -65,12 +50,12 @@
                 初始化查询字符串
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.ConvertQueryString(System.String,System.Action{System.String})">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiControlerEx.Item(System.String)">
             <summary>
-                转换页面参数
+            获取或更新(修改)参数
             </summary>
-            <param name="name">参数名称</param>
-            <param name="action">转换方法</param>
+            <param name="arg">参数名称</param>
+            <returns>参数值</returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.ContainsArgument(System.String)">
             <summary>
@@ -106,6 +91,13 @@
             </summary>
             <param name="name"></param>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.ConvertQueryString(System.String,System.Action{System.String})">
+            <summary>
+                转换页面参数
+            </summary>
+            <param name="name">参数名称</param>
+            <param name="action">转换方法</param>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetArg(System.String)">
             <summary>
                 读取页面参数(文本)
@@ -139,6 +131,34 @@
             <returns>文本</returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetIntArg(System.String)">
+            <summary>
+                读取页面参数int类型
+            </summary>
+            <param name="name">参数名称</param>
+            <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetDoubleArg(System.String)">
+            <summary>
+                读取页面参数int类型
+            </summary>
+            <param name="name">参数名称</param>
+            <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetSingleArg(System.String)">
+            <summary>
+                读取页面参数int类型
+            </summary>
+            <param name="name">参数名称</param>
+            <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetGuidArg(System.String)">
+            <summary>
+                读取页面参数int类型
+            </summary>
+            <param name="name">参数名称</param>
+            <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControlerEx.GetByteArg(System.String)">
             <summary>
                 读取页面参数int类型
             </summary>
@@ -233,12 +253,12 @@
             <param name="names">多个名称</param>
             <returns>名称解析到的第一个不为0的数字,如果有名称存在且不能转为int类型将出现异常</returns>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ApiController`4">
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiController`2">
             <summary>
                 自动实现基本增删改查API页面的基类
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.CheckUnique``1(System.String,System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.CheckUnique``1(System.String,System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
                 检查值的唯一性
             </summary>
@@ -246,94 +266,87 @@
             <param name="name"></param>
             <param name="field"></param>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`4.Business">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`2.Business">
             <summary>
                 业务逻辑对象
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`4.BaseQueryCondition">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`2.BaseQueryCondition">
             <summary>
                 基本查询条件(SQL表述方式)
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.EntityType">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.EntityType">
             <summary>
                 实体类型
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.List(Agebull.MicroZero.ZeroApis.QueryArgument)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.List(Agebull.MicroZero.ZeroApis.QueryArgument)">
             <summary>
                 列表数据
             </summary>
+            <remarks>
+            参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+            </remarks>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.Details(Agebull.MicroZero.ZeroApis.IdArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Details(Agebull.MicroZero.ZeroApis.IdArguent)">
             <summary>
                 单条详细数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.AddNew(`0)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.AddNew(`0)">
             <summary>
                 新增数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.Update(`0)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Update(`0)">
             <summary>
                 更新数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.Delete(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Delete(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 删除多条数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData(System.Collections.Generic.IEnumerable{System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}}})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoGetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.DoGetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(Agebull.EntityModel.Common.ConditionItem)">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData(Agebull.EntityModel.MySql.ConditionItem)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(System.Collections.Generic.IEnumerable{Agebull.EntityModel.Common.ConditionItem})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.GetListData(System.Collections.Generic.IEnumerable{Agebull.EntityModel.MySql.ConditionItem})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.LoadListData(System.String,System.Data.Common.DbParameter[])">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.LoadListData(System.String,MySql.Data.MySqlClient.MySqlParameter[])">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`4.CanSaveQueryArguments">
-            <summary>
-                是否保存查询条件
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.CheckListResult(Agebull.MicroZero.ZeroApis.ApiPageData{`0},System.String,MySql.Data.MySqlClient.MySqlParameter[])">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.CheckListResult(Agebull.MicroZero.ZeroApis.ApiPageData{`0},System.String,System.Data.Common.DbParameter[])">
             <summary>
                 数据准备返回的处理
             </summary>
@@ -341,199 +354,142 @@
             <param name="condition">当前的查询条件</param>
             <param name="args">当前的查询参数</param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.OnListLoaded(System.Collections.Generic.IList{`0},System.Int32)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnListLoaded(System.Collections.Generic.IList{`0},System.Int32)">
             <summary>
                 数据载入的处理
             </summary>
             <param name="datas"></param>
             <param name="count"></param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.OnListLoaded(System.Collections.Generic.IList{`0})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnListLoaded(System.Collections.Generic.IList{`0})">
             <summary>
                 数据载入的处理
             </summary>
             <param name="datas"></param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.ReadFormData(`0,Agebull.MicroZero.ZeroApis.FormConvert)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.ReadFormData(`0,Agebull.MicroZero.ZeroApis.FormConvert)">
             <summary>
                 读取Form传过来的数据
             </summary>
             <param name="entity">实体</param>
             <param name="convert">转化器</param>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`4.ContextDataId">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`2.ContextDataId">
             <summary>
                 当前上下文数据ID
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.DoDetails">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoDetails">
             <summary>
                 载入当前操作的数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.OnDetailsLoaded(`0,System.Boolean)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnDetailsLoaded(`0,System.Boolean)">
             <summary>
                 详细数据载入
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.CreateData">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.CreateData">
             <summary>
                 新增一条带默认值的数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.DoAddNew">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoAddNew">
             <summary>
                 新增
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.DoUpdate">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoUpdate">
             <summary>
                 更新对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`4.DoDelete">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoDelete">
             <summary>
                 删除对象
             </summary>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IdArguent">
-            <summary>
-            界面选择的ID
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IdArguent.Id">
-            <summary>
-            选择的ID
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IdsArguent">
-            <summary>
-            界面选择的ID
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IdsArguent.Ids">
-            <summary>
-            选择的ID
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.QueryArgument">
-            <summary>
-            查询参数
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.KeyWord">
-            <summary>
-            模糊查询关键字
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.Page">
-             <summary>
-            页号(1起始)
-             </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.PageSize">
-            <summary>
-            每页行数
-            </summary>
-            <value>1-999的数字</value>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortField">
-            <summary>
-            排序字段
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortAsc">
-            <summary>
-            正反序
-            </summary>
-            <value>asc: 正序 desc:反序</value>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4">
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2">
             <summary>
                 审核支持API页面的基类
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.AuditDeny(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.AuditDeny(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 审核不通过
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.Pullback(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.Pullback(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 拉回已提交的审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.SubmitAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.SubmitAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 提交审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.Validate(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.Validate(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 校验审核数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.AuditPass(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.AuditPass(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 审核通过
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.UnAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.UnAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 重新审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.BackAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.BackAudit(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                 退回(审核)
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnSubmitAudit">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnSubmitAudit">
             <summary>
                 提交审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnBackAudit">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnBackAudit">
             <summary>
                 退回审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnUnAudit">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnUnAudit">
             <summary>
                 审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnAuditPass">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnAuditPass">
             <summary>
                 审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnPullback">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnPullback">
             <summary>
                 拉回
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.OnAuditDeny">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.OnAuditDeny">
             <summary>
                 审核
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`4.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`2.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForAudit`3">
-            <summary>
-                审核支持API页面的基类
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4">
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2">
             <summary>
                 支持数据状态的启用禁用方法的页面的基类
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.CheckUnique``1(System.String,System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.CheckUnique``1(System.String,System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
                 检查值的唯一性
             </summary>
@@ -541,70 +497,156 @@
             <param name="name"></param>
             <param name="field"></param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.Reset(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.Reset(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                  重置数据状态
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.Lock(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.Lock(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                  锁定数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.Discard(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.Discard(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                  废弃数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.Disable(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.Disable(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                  禁用数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.Enable(Agebull.MicroZero.ZeroApis.IdsArguent)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.Enable(Agebull.MicroZero.ZeroApis.IdsArguent)">
             <summary>
                  启用数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.OnLock">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnLock">
             <summary>
                 锁定对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.OnReset">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnReset">
             <summary>
                 恢复对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.OnDiscard">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnDiscard">
             <summary>
                 废弃对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.OnEnable">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnEnable">
             <summary>
                 启用对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.OnDisable">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnDisable">
             <summary>
                 禁用对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.GetListData">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.GetListData">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`4.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
             <summary>
                 取得列表数据
             </summary>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`3">
+        <member name="T:Agebull.MicroZero.ZeroApis.IDataExtendChecker">
             <summary>
-                支持数据状态的启用禁用方法的页面的基类
+                数据扩展检查器
             </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareAddnew``1(``0)">
+            <summary>
+            新增前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareUpdate``1(``0)">
+            <summary>
+            更新前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareDelete``1(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+            删除前检查
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareQuery(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
+            <summary>
+            查询前检查
+            </summary>
+            <param name="dataTable"></param>
+            <param name="condition"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.DataExtendChecker">
+            <summary>
+                数据扩展检查器
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.DataExtendChecker.ExtendCheckers.Dictionary">
+            <summary>
+            检查器集合
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.DataExtendChecker.ExtendCheckers.Convert">
+            <summary>
+            转换器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.Regist``2">
+            <summary>
+            注册检查器
+            </summary>
+            <typeparam name="TDataExtendChecker">检查器本身</typeparam>
+            <typeparam name="TTargetType">检查的目标类型</typeparam>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareAddnew``1(``0)">
+            <summary>
+            新增前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareUpdate``1(``0)">
+            <summary>
+            更新前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareDelete``1(System.Int64[])">
+            <summary>
+            删除前检查
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareQuery``1(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
+            <summary>
+            查询前检查
+            </summary>
+            <param name="dataTable"></param>
+            <param name="condition"></param>
+            <param name="args"></param>
+            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.HttpPostAttribute">
             <summary>
@@ -624,6 +666,11 @@
         <member name="F:Agebull.MicroZero.ZeroApis.FormConvert.Messages">
             <summary>
                 读取过程的错误消息记录
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.FormConvert.IsUpdata">
+            <summary>
+                是否更新状态
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.FormConvert.Failed">
@@ -902,80 +949,65 @@
             <param name="parse">转换方法</param>
             <returns>值</returns>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.BusinessContext">
+        <member name="T:Agebull.MicroZero.ZeroApis.IdArguent">
             <summary>
-                为业务处理上下文对象
+            单个ID
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.BusinessContext.Context">
+        <member name="P:Agebull.MicroZero.ZeroApis.IdArguent.Id">
             <summary>
-                取得或设置线程单例对象，当前对象不存在时，会自动构架一个
+            选择的ID
+            </summary>
+            <example>1</example>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.IdsArguent">
+            <summary>
+            多个ID
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.Cache">
+        <member name="P:Agebull.MicroZero.ZeroApis.IdsArguent.Ids">
             <summary>
-            缓存当前上下文
+            选择的ID
+            </summary>
+            <value>不是数组,而是逗号分开的文本</value>
+            <example>2,1</example>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.QueryArgument">
+            <summary>
+            查询参数
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.GetCacheKey(System.Guid)">
+        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.KeyWord">
             <summary>
-            得到缓存的键
+            模糊查询关键字
             </summary>
+            <example>nike</example>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.GetCacheKey(System.String)">
+        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.Page">
+             <summary>
+            页号(1起始)
+             </summary>
+             <example>1</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.PageSize">
             <summary>
-            得到缓存的键
+            每页行数
             </summary>
+            <value>1-999的数字</value>
+            <example>20</example>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.#ctor">
+        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortField">
             <summary>
-                构造
+            排序字段
             </summary>
+            <example>id</example>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.Finalize">
+        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortAsc">
             <summary>
-                析构
+            正反序
             </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.OnDispose">
-            <inheritdoc />
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.BusinessContext.PageItem">
-            <summary>
-                当前页面节点配置
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.BusinessContext._powerChecker">
-            <summary>
-                权限校验对象
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.BusinessContext.PowerChecker">
-            <summary>
-                权限校验对象
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.BusinessContext._powers">
-            <summary>
-                用户的角色权限
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.BusinessContext.Powers">
-            <summary>
-                用户的角色权限
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.BusinessContext.CurrentPagePower">
-            <summary>
-            当前页面权限设置
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.BusinessContext.CanDoCurrentPageAction(System.String)">
-            <summary>
-            在当前页面检查是否可以执行操作
-            </summary>
-            <param name="action">操作</param>
-            <returns></returns>
+            <value>asc: 正序 desc:反序</value>
+            <example>asc</example>
         </member>
         <member name="T:Agebull.Common.Helper.UrlHelper">
             <summary>

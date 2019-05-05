@@ -138,7 +138,7 @@ namespace Agebull.MicroZero
             }
             catch (Exception e)
             {
-                LogRecorder.MonitorTrace($"Restory context exception:{e.Message}");
+                LogRecorderX.MonitorTrace($"Restory context exception:{e.Message}");
                 ZeroTrace.WriteException(station, e, "restory context", Content);
                 GlobalContext.SetContext(new GlobalContext());
             }

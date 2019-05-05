@@ -117,7 +117,10 @@
         if (!vue_option.data.menu_wid)
             vue_option.data.menu_wid = '300px';
         vue_obj = new Vue(vue_option);
-        $('#main_menu').width(vue_option.data.menu_wid);
+        if (vue_option.data.isCollapse)
+            $('#main_menu').width('auto');
+        else
+            $('#main_menu').width(vue_option.data.menu_wid);
         function close_open() {
             vue_option.data.isCollapse = !vue_option.data.isCollapse;
             if (vue_option.data.isCollapse)

@@ -115,7 +115,7 @@ namespace Agebull.MicroZero.PubSub
                 }
                 catch (Exception ex)
                 {
-                    LogRecorder.Exception(ex);
+                    LogRecorderX.Exception(ex);
                 }
             }
         }
@@ -196,7 +196,7 @@ namespace Agebull.MicroZero.PubSub
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return new ZeroResult
                 {
                     InteractiveSuccess = false,

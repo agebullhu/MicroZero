@@ -66,9 +66,9 @@ namespace MicroZero.Http.Gateway.Weixin
                 caller.CallCommand();
                 ResultXml = caller.State == ZeroOperatorStateType.Ok ? caller.Result : "";
                 Success = caller.State == ZeroOperatorStateType.Ok && !String.IsNullOrWhiteSpace(ResultXml);
-                LogRecorder.MonitorTrace($"{caller.State } : {caller.Result}");
-                LogRecorder.MonitorTrace($"Success  : {Success}");
-                LogRecorder.MonitorTrace($"ResultXml: {ResultXml}");
+                LogRecorderX.MonitorTrace($"{caller.State } : {caller.Result}");
+                LogRecorderX.MonitorTrace($"Success  : {Success}");
+                LogRecorderX.MonitorTrace($"ResultXml: {ResultXml}");
             }
         }
 
@@ -84,7 +84,7 @@ namespace MicroZero.Http.Gateway.Weixin
                 var res = new ResponseMessageText();
                 res.FillEntityWithXml(XDocument.Parse(ResultXml));
                 var result = CustomApi.SendText(Option.WeixinAppId, requestMessage.FromUserName, res.Content);
-                LogRecorder.MonitorTrace(result.ToJson());
+                LogRecorderX.MonitorTrace(result.ToJson());
             }
             return new ResponseMessageText();
         }
@@ -101,7 +101,7 @@ namespace MicroZero.Http.Gateway.Weixin
                 var res = new ResponseMessageNews();
                 res.FillEntityWithXml(XDocument.Parse(ResultXml));
                 var result = CustomApi.SendNews(Option.WeixinAppId, requestMessage.FromUserName, res.Articles);
-                LogRecorder.MonitorTrace(result.ToJson());
+                LogRecorderX.MonitorTrace(result.ToJson());
             }
             return new ResponseMessageText();
         }

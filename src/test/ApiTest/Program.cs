@@ -47,20 +47,31 @@ namespace ApiTest
         //}
     }
 
+    public class TestItem
+    {
+        public long? Test { get; set; } = long.MaxValue;
+    }
     /// <summary>
     /// Weixin服务
     /// </summary>
-    [ApiPage("/index.htm")]
     public class TestController : ApiController
     {
         /// <summary>
         /// 处理文字请求
         /// </summary>
         /// <returns></returns>
-        [Route("v1/msg/text")]
+        [Route("v1/test")]
         public ApiResult  OnTextRequest(Argument a)
         {
-            return ApiResult.ArgumentError ;
+            return new ApiArrayResult<TestItem>
+            {
+                Success = true,
+                ResultData = new System.Collections.Generic.List<TestItem>
+                {
+                    new TestItem(),
+                    new TestItem(),
+                }
+            };
         }
     }
 }

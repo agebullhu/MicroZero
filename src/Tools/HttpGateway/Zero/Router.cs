@@ -2,7 +2,6 @@
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
-using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway
 {
@@ -45,7 +44,7 @@ namespace MicroZero.Http.Gateway
         {
             if (!(Data.RouteHost is ZeroHost host))
             {
-                LogRecorder.MonitorTrace("Host Type Failed");
+                LogRecorderX.MonitorTrace("Host Type Failed");
                 return Data.ResultMessage;
             }
 

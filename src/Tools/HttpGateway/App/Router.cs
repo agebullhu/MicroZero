@@ -53,7 +53,7 @@ namespace MicroZero.Http.Gateway
         /// <param name="context"></param>
         bool IRouter.Prepare(HttpContext context)
         {
-            LogRecorder.MonitorTrace("ApiRouter");
+            LogRecorderX.MonitorTrace("ApiRouter");
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
@@ -136,24 +136,24 @@ namespace MicroZero.Http.Gateway
         {
             if (!RouteOption.RouteMap.TryGetValue(Data.ApiHost, out Data.RouteHost) || Data.RouteHost == null)
             {
-                LogRecorder.MonitorTrace($"{Data.ApiHost} no find");
+                LogRecorderX.MonitorTrace($"{Data.ApiHost} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             //if(Data.RouteHost.Failed)
             //{
-            //    LogRecorder.MonitorTrace($"{Data.HostName} is failed({Data.RouteHost.Description})");
+            //    LogRecorderX.MonitorTrace($"{Data.HostName} is failed({Data.RouteHost.Description})");
             //    return false; //Data.RouteHost = HttpHost.DefaultHost;
             //}
             if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
             {
-                LogRecorder.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} no find");
+                LogRecorderX.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             if (Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public))
                 return true;
-            LogRecorder.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} deny access.");
+            LogRecorderX.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} deny access.");
             return false;
         }
 
@@ -205,7 +205,7 @@ namespace MicroZero.Http.Gateway
         {
             try
             {
-                LogRecorder.MonitorTrace(e.Message);
+                LogRecorderX.MonitorTrace(e.Message);
                 Data.UserState = UserOperatorStateType.LocalException;
                 Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
@@ -214,7 +214,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception exception)
             {
-                LogRecorder.Exception(exception);
+                LogRecorderX.Exception(exception);
             }
         }
 

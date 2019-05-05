@@ -31,7 +31,7 @@ namespace ZFrameTest
             }
             catch (Exception ex)
             {
-                LogRecorder.Exception(ex);
+                LogRecorderX.Exception(ex);
             }
         }
     }

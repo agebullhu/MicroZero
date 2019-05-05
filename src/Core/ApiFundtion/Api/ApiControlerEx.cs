@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Agebull.Common.AppManage;
 using Agebull.Common.Context;
 using Agebull.Common.OAuth;
 using Agebull.EntityModel.Common;
-using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.ZeroApis
 {
@@ -43,7 +41,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region 权限相关
 
-        /// <summary>
+        /*// <summary>
         ///     是否公开页面
         /// </summary>
         protected bool IsPublicPage => BusinessContext.Context.PageItem.IsPublic;
@@ -56,12 +54,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     当前页面权限配置
         /// </summary>
-        public IRolePower PagePower => BusinessContext.Context.CurrentPagePower;
+        public IRolePower PagePower => BusinessContext.Context.CurrentPagePower;*/
 
         /// <summary>
         ///     当前用户是否已登录成功
         /// </summary>
-        protected bool UserIsLogin => BusinessContext.Context.LoginUserId > 0;
+        protected bool UserIsLogin => GlobalContext.Current.LoginUserId > 0;
 
         /// <summary>
         ///     当前登录用户
@@ -89,7 +87,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (_arguments != null)
                 return _arguments;
-            _arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            _arguments = new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
             var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
             if (context != null)
             {
@@ -100,6 +98,71 @@ namespace Agebull.MicroZero.ZeroApis
             return _arguments;
         }
 
+        /// <summary>
+        /// 获取或更新(修改)参数
+        /// </summary>
+        /// <param name="arg">参数名称</param>
+        /// <returns>参数值</returns>
+        protected string this[string arg]
+        {
+            get => arg == null ? null : Arguments.TryGetValue(arg, out var vl) ? vl : null;
+            set
+            {
+                if (Arguments.ContainsKey(arg))
+                    Arguments[arg] = value;
+                else
+                    Arguments.Add(arg, value);
+            }
+        }
+
+        /// <summary>
+        ///     当前请求是否包含这个参数
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>是否包含这个参数</returns>
+        protected bool ContainsArgument(string name)
+        {
+            return !string.IsNullOrWhiteSpace(name) && Arguments.ContainsKey(name);
+        }
+
+        /// <summary>
+        ///     设置替代参数
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        protected void SetArg(string name, string value)
+        {
+            this[name] = value;
+        }
+
+        /// <summary>
+        ///     设置替代参数
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        protected void SetArg(string name, int value)
+        {
+            this[name] = value.ToString();
+        }
+
+        /// <summary>
+        ///     设置替代参数
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        protected void SetArg(string name, object value)
+        {
+            this[name] = value?.ToString();
+        }
+
+        /// <summary>
+        ///     设置替代参数
+        /// </summary>
+        /// <param name="name"></param>
+        protected string GetArgValue(string name)
+        {
+            return this[name];
+        }
 
         /// <summary>
         ///     转换页面参数
@@ -112,63 +175,6 @@ namespace Agebull.MicroZero.ZeroApis
             if (!string.IsNullOrEmpty(val)) action(val);
         }
 
-        /// <summary>
-        ///     当前请求是否包含这个参数
-        /// </summary>
-        /// <param name="name">参数名称</param>
-        /// <returns>是否包含这个参数</returns>
-        protected bool ContainsArgument(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name)) return false;
-            return Arguments[name] != null;
-        }
-
-        /// <summary>
-        ///     设置替代参数
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, string value)
-        {
-            if (Arguments.ContainsKey(name))
-                Arguments[name] = value;
-            else Arguments.Add(name, value);
-        }
-
-        /// <summary>
-        ///     设置替代参数
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, int value)
-        {
-            if (Arguments.ContainsKey(name))
-                Arguments[name] = value.ToString();
-            else Arguments.Add(name, value.ToString());
-        }
-
-        /// <summary>
-        ///     设置替代参数
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, object value)
-        {
-            if (Arguments.ContainsKey(name))
-                Arguments[name] = value?.ToString();
-            else Arguments.Add(name, value?.ToString());
-        }
-
-        /// <summary>
-        ///     设置替代参数
-        /// </summary>
-        /// <param name="name"></param>
-        protected string GetArgValue(string name)
-        {
-            if (Arguments.ContainsKey(name))
-                return Arguments[name];
-            return null;
-        }
 
         /// <summary>
         ///     读取页面参数(文本)
@@ -177,7 +183,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns>文本</returns>
         protected string GetArg(string name)
         {
-            var value = GetArgValue(name);
+            var value = this[name];
             if (value == null) return null;
             var vl = value.Trim();
             if (vl == "null") return null;
@@ -237,7 +243,57 @@ namespace Agebull.MicroZero.ZeroApis
             if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return -1;
             return int.Parse(value);
         }
+        /// <summary>
+        ///     读取页面参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected double GetDoubleArg(string name)
+        {
+            var value = GetArgValue(name);
+            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+                return double.NaN;
+            return double.Parse(value);
+        }
 
+        /// <summary>
+        ///     读取页面参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected float GetSingleArg(string name)
+        {
+            var value = GetArgValue(name);
+            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+                return float.NaN;
+            return float.Parse(value);
+        }
+
+        /// <summary>
+        ///     读取页面参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected Guid GetGuidArg(string name)
+        {
+            var value = GetArgValue(name);
+            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+                return Guid.Empty;
+            return Guid.Parse(value);
+        }
+        /// <summary>
+        ///     读取页面参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected byte GetByteArg(string name)
+        {
+            var value = GetArgValue(name);
+            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
+                return 0;
+            return byte.Parse(value);
+        }
+        
         /// <summary>
         ///     读取页面参数int类型
         /// </summary>

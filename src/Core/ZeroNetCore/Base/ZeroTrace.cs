@@ -56,10 +56,10 @@ namespace Agebull.MicroZero
                 switch (message.Type)
                 {
                     case 0:
-                        LogRecorder.Debug(message.Title);
+                        LogRecorderX.Debug(message.Title);
                         break;
                     default:
-                        LogRecorder.Debug(message.Messages.LinkToString($"[{message.Title}]  ", " > "));
+                        LogRecorderX.Debug(message.Messages.LinkToString($"[{message.Title}]  ", " > "));
                         break;
                 }
             //if (message.Title == null)
@@ -119,10 +119,10 @@ namespace Agebull.MicroZero
         //    switch (message.Type)
         //    {
         //        case 0:
-        //            LogRecorder.Trace(message.Title);
+        //            LogRecorderX.Trace(message.Title);
         //            break;
         //        default:
-        //            LogRecorder.Trace(message.Messages.LinkToString(message.Title, " > "));
+        //            LogRecorderX.Trace(message.Messages.LinkToString(message.Title, " > "));
         //            break;
         //    }
         //}
@@ -152,9 +152,9 @@ namespace Agebull.MicroZero
         public static void SystemLog(string title, params object[] messages)
         {
             if (messages.Length == 0)
-                LogRecorder.SystemLog(title);
+                LogRecorderX.SystemLog(title);
             else
-                LogRecorder.SystemLog("{0} : {1}", title, messages.LinkToString(" $ "));
+                LogRecorderX.SystemLog("{0} : {1}", title, messages.LinkToString(" $ "));
         }
         /// <summary>
         /// 
@@ -164,7 +164,7 @@ namespace Agebull.MicroZero
         public static void WriteError(string title, params object[] messages)
         {
             //SystemLog(title, messages);
-            LogRecorder.Error("{0} : {1}", title, messages.LinkToString(" * "));
+            LogRecorderX.Error("{0} : {1}", title, messages.LinkToString(" * "));
         }
         /// <summary>
         /// 
@@ -175,7 +175,7 @@ namespace Agebull.MicroZero
         public static void WriteException(string title, Exception exception, params object[] messages)
         {
             //SystemLog(title, "Exception", exception.Message, messages);
-            LogRecorder.Exception(exception, "{0} : {1}", title, messages.LinkToString(" * "));
+            LogRecorderX.Exception(exception, "{0} : {1}", title, messages.LinkToString(" * "));
         }
     }
 }

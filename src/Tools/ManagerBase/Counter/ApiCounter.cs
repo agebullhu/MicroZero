@@ -189,7 +189,7 @@ namespace MicroZero.Http.Route
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
             }
         }
 

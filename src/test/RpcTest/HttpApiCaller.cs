@@ -118,7 +118,7 @@ namespace MicroZero.Http.Route
         /// <returns></returns>
         private string ToErrorString(int code, string message, string message2 = null)
         {
-            LogRecorder.MonitorTrace($"调用异常：{message}");
+            LogRecorderX.MonitorTrace($"调用异常：{message}");
             return Agebull.MicroZero.JsonHelper.SerializeObject(ApiResult.Error(code, _url + message, message2));
         }
 
@@ -136,13 +136,13 @@ namespace MicroZero.Http.Route
             catch (WebException e)
             {
                 Status = e.Status;
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e) : ResponseError(e);
             }
             catch (Exception e)
             {
                 Status = WebExceptionStatus.UnknownError;
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
         }
@@ -172,13 +172,13 @@ namespace MicroZero.Http.Route
                     }
                 }
                 var msg = ReadResponse(exception.Response);
-                LogRecorder.Error($"Call {Host}/{ApiName} Error:{msg}");
+                LogRecorderX.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)
             {
                 Status = WebExceptionStatus.UnknownError;
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return ToErrorString(ErrorCode.NetworkError, "未知错误", e.Message);
             }
         }

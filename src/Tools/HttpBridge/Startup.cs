@@ -40,7 +40,7 @@ namespace MicroZero.Http.Gateway
             app.UseFileServer();
 
             string ext = ConfigurationManager.AppSettings["WechatPath"];
-            LogRecorder.SystemLog(ext);
+            LogRecorderX.SystemLog(ext);
             RouteApp.Extends.Add(ext, () => new WechatRouter());
             RouteApp.Extends.Add(ext + "/", () => new WechatRouter());
             RouteApp.Initialize();

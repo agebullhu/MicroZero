@@ -35,7 +35,7 @@ namespace WebMonitor
                 }
                 catch (Exception e)
                 {
-                    LogRecorder.Exception(e);
+                    LogRecorderX.Exception(e);
                     return _config = new WebSocketConfig();
                 }
             }

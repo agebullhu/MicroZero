@@ -120,7 +120,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return true;
             }
         }
@@ -203,7 +203,7 @@ namespace MicroZero.Http.Gateway
                     var ch = Data.Token[index];
                     if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_')
                         continue;
-                    LogRecorder.MonitorTrace("Token Layout Error");
+                    LogRecorderX.MonitorTrace("Token Layout Error");
                     Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
@@ -254,7 +254,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return true;
             }
         }
@@ -349,7 +349,7 @@ namespace MicroZero.Http.Gateway
                         var ch = Data.Token[index];
                         if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_')
                             continue;
-                        LogRecorder.MonitorTrace("Token Layout Error");
+                        LogRecorderX.MonitorTrace("Token Layout Error");
                         Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                         return false;
                     }
@@ -403,7 +403,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return true;
             }
         }

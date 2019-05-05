@@ -27,6 +27,11 @@ namespace Agebull.MicroZero.ZeroApis
         public readonly Dictionary<string, string> Messages = new Dictionary<string, string>();
 
         /// <summary>
+        ///     是否更新状态
+        /// </summary>
+        public bool IsUpdata { get; set; }
+
+        /// <summary>
         ///     是否发生解析错误
         /// </summary>
         public bool Failed { get; set; }

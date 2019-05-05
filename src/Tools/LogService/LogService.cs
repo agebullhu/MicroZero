@@ -34,7 +34,7 @@ namespace Agebull.MicroZero.LogService
             {
                 if (args.Content != null)
                 {
-                    LogRecorder.BaseRecorder.RecordLog(JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content));
+                    LogRecorderX.BaseRecorder.RecordLog(JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content));
                     return;
                 }
 
@@ -52,7 +52,7 @@ namespace Agebull.MicroZero.LogService
                         case TsonDataType.Object:
                             RecordInfo info = new RecordInfo();
                             RecordInfoTson.FromTson(serializer, info);
-                            LogRecorder.BaseRecorder.RecordLog(info);
+                            LogRecorderX.BaseRecorder.RecordLog(info);
                             break;
                         case TsonDataType.Array:
                             serializer.ReadType();
@@ -66,14 +66,14 @@ namespace Agebull.MicroZero.LogService
                                 serializer.End();
                                 infos.Add(info);
                             }
-                            LogRecorder.BaseRecorder.RecordLog(infos);
+                            LogRecorderX.BaseRecorder.RecordLog(infos);
                             break;
                     }
                 }
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
             }
         }
 

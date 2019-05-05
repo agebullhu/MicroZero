@@ -64,8 +64,7 @@ namespace Agebull.MicroZero
         }
 
         #endregion
-
-
+        
         #region State
         //#if UseStateMachine
         /// <summary>
@@ -137,8 +136,7 @@ namespace Agebull.MicroZero
         public static bool IsClosed => ApplicationState >= StationState.Closed;
 
         #endregion
-
-
+        
         #region Flow
 
         #region Option
@@ -164,7 +162,7 @@ namespace Agebull.MicroZero
 
 
         /// <summary>
-        ///     设置LogRecorder的依赖属性(内部使用)
+        ///     设置LogRecorderX的依赖属性(内部使用)
         /// </summary>
         private static void InitializeDependency()
         {
@@ -172,12 +170,12 @@ namespace Agebull.MicroZero
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
-            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
-            TxtRecorder.LogPath = Config.LogFolder;
-            LogRecorder.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
-            LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
-            LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
-            LogRecorder.Initialize();
+            ConfigurationManager.Get("LogRecorderX")["txtPath"] = Config.LogFolder;
+            LogRecorderX.LogPath = Config.LogFolder;
+            LogRecorderX.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
+            LogRecorderX.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
+            LogRecorderX.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
+            LogRecorderX.Initialize();
 
             IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
 
@@ -374,7 +372,7 @@ namespace Agebull.MicroZero
             ZContext.Destroy();
             ApplicationState = StationState.Disposed;
             WaitToken?.Release();
-            LogRecorder.Shutdown();
+            LogRecorderX.Shutdown();
         }
 
         #endregion

@@ -31,7 +31,7 @@
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
     <Copyright />
     <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
-    <Version>1.4.0.21</Version>
+    <Version>1.4.1.20</Version>
     <RootNamespace />
   </PropertyGroup>
 
@@ -69,9 +69,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Context\**" />
+    <Compile Remove="MySql\**" />
     <Compile Remove="Redis\**" />
+    <Compile Remove="SqlServer\**" />
+    <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="MySql\**" />
     <EmbeddedResource Remove="Redis\**" />
+    <EmbeddedResource Remove="SqlServer\**" />
+    <None Remove="Context\**" />
+    <None Remove="MySql\**" />
     <None Remove="Redis\**" />
+    <None Remove="SqlServer\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,10 +88,8 @@
     <Compile Remove="Api\HttpResponseMessageExtend.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Common\" />
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.BusinessLogic" Version="2.4.0.50" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ZeroNetCore\Agebull.MicroZero.Core.csproj" />

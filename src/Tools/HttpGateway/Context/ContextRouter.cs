@@ -57,19 +57,19 @@ namespace MicroZero.Http.Gateway
                 var file = Path.Combine(RouteOption.Option.SystemConfig.ContextAddr, path.LinkToString(ZeroApplication.Config.IsLinux ? '/' : '\\'));
                 if (File.Exists(file))
                 {
-                    LogRecorder.MonitorTrace($"Success:{file}");
+                    LogRecorderX.MonitorTrace($"Success:{file}");
                     var bytes = File.ReadAllBytes(file);
                     await Response.Body.WriteAsync(bytes);
                 }
                 else
                 {
-                    LogRecorder.MonitorTrace($"NoFind:{file}");
+                    LogRecorderX.MonitorTrace($"NoFind:{file}");
                     await Response.WriteAsync("404 No find!", Encoding.UTF8);
                 }
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 await Response.WriteAsync("404 No find!", Encoding.UTF8);
             }
         }

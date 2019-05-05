@@ -144,14 +144,14 @@ namespace MicroZero.Http.Gateway
             }
             catch (WebException e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 jsonResult = e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e) : ResponseError(e);
             }
             catch (Exception e)
             {
                 UserState = UserOperatorStateType.LocalException;
                 ZeroState = ZeroOperatorStateType.LocalException;
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 jsonResult = ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
             return string.IsNullOrWhiteSpace(jsonResult) ? ApiResultIoc.RemoteEmptyErrorJson : jsonResult;
@@ -182,14 +182,14 @@ namespace MicroZero.Http.Gateway
                         }
 
                 var msg = ReadResponse(exception.Response);
-                LogRecorder.Error($"Call {Host}/{ApiName} Error:{msg}");
+                LogRecorderX.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)
             {
                 UserState = UserOperatorStateType.LocalException;
                 ZeroState = ZeroOperatorStateType.LocalException;
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
                 return ToErrorString(ErrorCode.NetworkError, "未知错误", e.Message);
             }
             finally
@@ -327,7 +327,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private string ToErrorString(int code, string message, string message2 = null)
         {
-            LogRecorder.MonitorTrace($"调用异常：{message}.{message2}");
+            LogRecorderX.MonitorTrace($"调用异常：{message}.{message2}");
             var result = ApiResultIoc.Ioc.Error(code, RemoteUrl + message, message2);
             result.Status.Point = "web api gateway";
             return JsonHelper.SerializeObject(result);

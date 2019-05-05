@@ -121,7 +121,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e);
+                LogRecorderX.Exception(e);
             }
         }
 
@@ -153,7 +153,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorder.Exception(e, "ApiStation.SendResult");
+                LogRecorderX.Exception(e, "ApiStation.SendResult");
                 return false;
             }
             finally
