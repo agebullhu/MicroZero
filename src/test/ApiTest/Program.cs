@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
@@ -49,8 +50,14 @@ namespace ApiTest
 
     public class TestItem
     {
-        public long? Test { get; set; } = long.MaxValue;
+        public IEnumerable<long> Test { get; set; }
     }
+
+    public class TestItems
+    {
+        IEnumerable<TestItem> Items { get; set; }
+    }
+
     /// <summary>
     /// Weixin·þÎñ
     /// </summary>
@@ -61,16 +68,11 @@ namespace ApiTest
         /// </summary>
         /// <returns></returns>
         [Route("v1/test")]
-        public ApiResult  OnTextRequest(Argument a)
+        public ApiResult<TestItems> OnTextRequest()
         {
-            return new ApiArrayResult<TestItem>
+            return new ApiResult<TestItems>
             {
-                Success = true,
-                ResultData = new System.Collections.Generic.List<TestItem>
-                {
-                    new TestItem(),
-                    new TestItem(),
-                }
+                Success = true
             };
         }
     }

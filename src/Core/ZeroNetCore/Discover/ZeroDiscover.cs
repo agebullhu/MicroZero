@@ -715,12 +715,17 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 else if (type.IsGenericType)
                 {
-                    if (memType.IsSupperInterface(typeof(ICollection<>)))
+                    if (memType.GetGenericTypeDefinition().IsSupperInterface(typeof(IEnumerable<>)))
                     {
                         isArray = true;
                         type = type.GetGenericArguments()[0];
                     }
-                    else if (memType.IsSupperInterface(typeof(IDictionary<,>)))
+                    else if (memType.GetGenericTypeDefinition().IsSupperInterface(typeof(ICollection<>)))
+                    {
+                        isArray = true;
+                        type = type.GetGenericArguments()[0];
+                    }
+                    else if (memType.GetGenericTypeDefinition().IsSupperInterface(typeof(IDictionary<,>)))
                     {
                         var fields = type.GetGenericArguments();
                         field.Fields.Add("Key", ReadEntity(fields[0], "Key"));

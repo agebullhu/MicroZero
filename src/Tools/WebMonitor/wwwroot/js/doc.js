@@ -1,23 +1,46 @@
-﻿
-function toCSharp(cls) {
-    if (!cls || !cls.fields)
-        return '';
-    var sb = "";
-    var first = true;
+﻿function htmlEncode(str) {
+    if (!str)
+        return "";
+    var s = str.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    s = s.replace(/ /g, "&nbsp;");
+    s = s.replace(/\'/g, "&#39;");
+    s = s.replace(/\"/g, "&quot;");
+    return s;
+}
+function checkArray(cls) {
     var idxx = cls.type.indexOf('[');
     if (idxx > 0) {
         cls.isArray = true;
         cls.type = cls.type.substring(0, idxx);
     }
+    idxx = cls.type.indexOf('IEnumerable<');
+    if (idxx < 0)
+        idxx = cls.type.indexOf('List<');
+    if (idxx < 0)
+        idxx = cls.type.indexOf('Collection<');
+    if (idxx >= 0) {
+        idxx = cls.type.indexOf('<');
+        cls.isArray = true;
+        cls.type = cls.type.substring(idxx + 1);
+    }
+}
+function toCSharp(cls) {
+    if (!cls || !cls.fields)
+        return '';
+    checkArray(cls);
+    var sb = "";
+    var first = true;
     if (cls.isArray)
         sb += `
-<li><span class='bool'>new</span>&nbsp;<span class='class'>List&lt;${cls.type}&gt;</span></li>
+<li><span class='bool'>new</span>&nbsp;<span class='class'>List&lt;${htmlEncode(cls.type)}&gt;</span></li>
 <li>{</li>
 <li>
 <ul>`;
 
     sb += `
-<li><span class='bool'>new</span>&nbsp;<span class='class'>${cls.type}</span></li>
+<li><span class='bool'>new</span>&nbsp;<span class='class'>${htmlEncode(cls.type)}</span></li>
 <li>{</li>
 <li>
 <ul>`;
@@ -33,17 +56,17 @@ function toCSharp(cls) {
             sb += `<li><span class='name'></span>${field.name} = `;
             if (field.enum) {
                 if (field.example) {
-                    sb += `<span class='class'>${field.class}</span>.<span class='num'>${field.example}</span>`;
+                    sb += `<span class='class'>${htmlEncode(field.class)}</span>.<span class='num'>${field.example}</span>`;
                 } else if (field.fields) {
                     for (var en in field.fields) {
                         if (field.fields.hasOwnProperty(en)) {
                             var item = field.fields[en];
-                            sb += `<span class='class'>${field.class}</span>.<span class='num'>${item.name}</span>`;
+                            sb += `<span class='class'>${htmlEncode(field.class)}</span>.<span class='num'>${item.name}</span>`;
                             break;
                         }
                     }
                 } else {
-                    sb += `<span class='class'>${field.class}</span>.<span class='num'>None</span>`;
+                    sb += `<span class='class'>${htmlEncode(field.class)}</span>.<span class='num'>None</span>`;
                 }
                 continue;
             }
@@ -92,18 +115,14 @@ function classCSharp(cls) {
     if (!cls || !cls.type || !cls.fields) {
         return "";
     }
-    var idxx = cls.type.indexOf('[');
-    if (idxx > 0) {
-        cls.isArray = true;
-        cls.type = cls.type.substring(0, idxx);
-    }
+    checkArray(cls);
     var sb = `<ul>`;
     if (cls.caption)
         sb += `
 <li><span class='class'>/// &lt;summary&gt;</span>${cls.caption}<span class='class'>&lt;/summary&gt;</span></li>`;
     sb += `
 <li>[JsonObject]</li>
-<li><span class='bool'>public&nbsp;class</span>&nbsp;<span class='class'>${cls.type}</span></li>
+<li><span class='bool'>public&nbsp;class</span>&nbsp;<span class='class'>${htmlEncode(cls.type)}</span></li>
 <li>{</li><li><ul>`;
 
     var name;
@@ -111,13 +130,14 @@ function classCSharp(cls) {
     for (name in cls.fields) {
         if (cls.fields.hasOwnProperty(name)) {
             field = cls.fields[name];
+            checkArray(field);
             if (field.caption && field.name !== field.caption)
                 sb += `<li><span class='class'>/// &lt;summary&gt;</span>${field.caption}<span class='class'>&lt;/summary&gt;</span></li>`;
             sb += `<li>[JsonProperty`;
             if (field.jsonName && field.name !== field.jsonName)
                 sb += `"<span class='str'>${field.jsonName}</span>")`;
             sb += `]</li>
-<li><span class='class'>public&nbsp;${field.type} </span><span class='name'>${field.name} </span>{&nbsp;get;&nbsp;set;&nbsp;}</li><br/>`;
+<li><span class='class'>public&nbsp;${htmlEncode(field.class)} </span><span class='name'>${field.name} </span>{&nbsp;get;&nbsp;set;&nbsp;}</li><br/>`;
         }
     }
     sb += `</ul></li><li>}</li>
@@ -142,13 +162,14 @@ function enumCSharp(cls) {
     if (!cls || !cls.type || !cls.fields) {
         return "";
     }
+    checkArray(cls);
     var sb = `<ul>`;
     if (cls.caption)
         sb += `
 <li><span class='class'>/// &lt;summary&gt;</span>${cls.caption}<span class='class'>&lt;/summary&gt;</span></li>`;
     sb += `
 <li>[JsonObject]</li>
-<li><span class='bool'>public&nbsp;enum</span>&nbsp;<span class='class'>${cls.type}</span></li>
+<li><span class='bool'>public&nbsp;enum</span>&nbsp;<span class='class'>${htmlEncode(cls.type)}</span></li>
 <li>{</li><li><ul>`;
 
     var name;
@@ -156,6 +177,7 @@ function enumCSharp(cls) {
     for (name in cls.fields) {
         if (cls.fields.hasOwnProperty(name)) {
             field = cls.fields[name];
+            checkArray(field);
             if (field.caption && field.name !== field.caption)
                 sb += `<li><span class='class'>/// &lt;summary&gt;</span>${field.caption}<span class='class'>&lt;/summary&gt;</span></li>`;
             sb += `<li><span class='name'>${field.name}</span>&nbsp;=&nbsp;span class='number'>${field.example},</span></li>`;
@@ -169,10 +191,12 @@ function enumCSharp(cls) {
 function toJson(cls) {
     if (!cls || !cls.fields)
         return '';
+    checkArray(cls);
     var sb = "";
     for (var name in cls.fields) {
         if (cls.fields.hasOwnProperty(name)) {
             var field = cls.fields[name];
+            checkArray(field);
             if (sb)
                 sb += ",</li>";
             sb += `<li><span class='name'>"${field.jsonName}"</span> : `;
@@ -207,11 +231,6 @@ function toJson(cls) {
                 }
                 continue;
             }
-            var idxx = cls.type.indexOf('[');
-            if (idxx > 0) {
-                field.isArray = true;
-                field.type = cls.type.substring(0, idxx);
-            }
             if (field.isArray)
                 sb += "[";
             sb += "{</li><li><ul>";
@@ -229,10 +248,12 @@ function toJson(cls) {
 function toApiTags(cls, head) {
     if (!cls || !cls.fields)
         return '';
+    checkArray(cls);
     var sb = "";
     for (var name in cls.fields) {
         if (cls.fields.hasOwnProperty(name)) {
             var field = cls.fields[name];
+            checkArray(field);
             sb += "<tr>";
             if (field.enum || field.fields) {
                 sb += `<td>${head}<span class='class'>${field.name}</span></td>
@@ -242,11 +263,11 @@ function toApiTags(cls, head) {
                        <td>${head}${field.jsonName ? field.jsonName : field.name}</td>`;
             }
             if (!field.fields) {
-                sb += `<td>${field.type}</td>`;
+                sb += `<td>${htmlEncode(field.class)}</td>`;
             } else if (field.enum) {
-                sb += `<td>${field.type}<span class='name'>(Enum)</span></td>`;
+                sb += `<td>${htmlEncode(field.class)}<span class='name'>(Enum)</span></td>`;
             } else {
-                sb += `<td>object<span class='name'>(${field.type})</span></td>`;
+                sb += `<td>object<span class='name'>(${htmlEncode(field.class)})</span></td>`;
             }
             if (field.enum || field.fields) {
                 sb += `<td>${head}<span class='class'>${field.caption ? field.caption : ''}</span></td>`;

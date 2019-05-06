@@ -170,7 +170,7 @@ namespace Agebull.MicroZero
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
-            ConfigurationManager.Get("LogRecorderX")["txtPath"] = Config.LogFolder;
+            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
             LogRecorderX.LogPath = Config.LogFolder;
             LogRecorderX.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
             LogRecorderX.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
