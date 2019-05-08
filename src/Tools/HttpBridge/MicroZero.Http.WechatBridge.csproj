@@ -102,10 +102,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpGateway\MicroZero.Http.Gateway.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="config\route_config.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
@@ -125,6 +121,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GatewayBase\MicroZero.Http.GatewayBase.csproj" />
   </ItemGroup>
 
 </Project>

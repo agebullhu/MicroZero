@@ -26,33 +26,57 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AddIn\**" />
+    <Compile Remove="App\**" />
+    <Compile Remove="Cache\**" />
+    <Compile Remove="Context\**" />
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
+    <Compile Remove="Http\**" />
     <Compile Remove="logs\**" />
+    <Compile Remove="Option\**" />
+    <Compile Remove="Security\**" />
     <Compile Remove="wwwroot\dist\**" />
     <Compile Remove="wwwroot\static\**" />
+    <Compile Remove="Zero\**" />
     <Content Remove="AddIn\**" />
+    <Content Remove="App\**" />
+    <Content Remove="Cache\**" />
+    <Content Remove="Context\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Datas\**" />
+    <Content Remove="Http\**" />
     <Content Remove="logs\**" />
+    <Content Remove="Option\**" />
+    <Content Remove="Security\**" />
     <Content Remove="wwwroot\dist\**" />
     <Content Remove="wwwroot\static\**" />
+    <Content Remove="Zero\**" />
     <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="App\**" />
+    <EmbeddedResource Remove="Cache\**" />
+    <EmbeddedResource Remove="Context\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Datas\**" />
+    <EmbeddedResource Remove="Http\**" />
     <EmbeddedResource Remove="logs\**" />
+    <EmbeddedResource Remove="Option\**" />
+    <EmbeddedResource Remove="Security\**" />
     <EmbeddedResource Remove="wwwroot\dist\**" />
     <EmbeddedResource Remove="wwwroot\static\**" />
+    <EmbeddedResource Remove="Zero\**" />
     <None Remove="AddIn\**" />
+    <None Remove="App\**" />
+    <None Remove="Cache\**" />
+    <None Remove="Context\**" />
     <None Remove="Controllers\**" />
     <None Remove="Datas\**" />
+    <None Remove="Http\**" />
     <None Remove="logs\**" />
+    <None Remove="Option\**" />
+    <None Remove="Security\**" />
     <None Remove="wwwroot\dist\**" />
     <None Remove="wwwroot\static\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="App\RouteCounter.cs" />
+    <None Remove="Zero\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +100,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <ProjectReference Include="..\GatewayBase\MicroZero.Http.GatewayBase.csproj" />
   </ItemGroup>
 
   <ItemGroup>
