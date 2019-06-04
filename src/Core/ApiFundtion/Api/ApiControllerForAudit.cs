@@ -25,7 +25,7 @@ namespace Agebull.MicroZero.ZeroApis
     public abstract class ApiControllerForAudit<TData, TBusinessLogic>
         : ApiControllerForDataState<TData, TBusinessLogic>
         where TData : EditDataObject, IStateData, IHistoryData, IAuditData, IIdentityData, new()
-        where TBusinessLogic :class, IBusinessLogicByAudit<TData>, new()
+        where TBusinessLogic : class, IBusinessLogicByAudit<TData>, new()
     {
         #region API
 
@@ -94,8 +94,12 @@ namespace Agebull.MicroZero.ZeroApis
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Validate(IdsArguent arg)
         {
+            if (!TryGet("selects", out long[] ids))
+            {
+                return ApiResult.ArgumentError;
+            }
 
-            DoValidate(GetLongArrayArg("selects"));
+            DoValidate(ids);
             return IsFailed
                 ? (new ApiResult
                 {
@@ -163,6 +167,7 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
         #endregion
+
         #region 抽象
 
         /// <summary>
@@ -170,8 +175,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected virtual void OnSubmitAudit()
         {
-
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!DoValidate(ids))
                 return;
             if (!Business.Submit(ids))
@@ -184,7 +192,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnBackAudit()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!Business.Back(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -194,7 +206,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnUnAudit()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!Business.UnAudit(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -204,7 +220,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected virtual void OnAuditPass()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!DoValidate(ids))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
@@ -232,7 +252,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnPullback()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!Business.Pullback(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -242,11 +266,16 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnAuditDeny()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
             if (!Business.AuditDeny(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
         #endregion
+
         #region 列表数据
 
         /// <summary>
@@ -254,9 +283,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            var audit = GetIntArg("_audit_", -1);
-            if (audit == 0x100 || audit < 0)
+            if (!TryGet("_audit_", out int audit) || audit == 0x100 || audit < 0)
                 return base.GetListData(lambda);
+
             if (audit <= (int)AuditStateType.End)
             {
                 lambda.AddRoot(p => p.AuditState == (AuditStateType)audit);
@@ -279,7 +308,6 @@ namespace Agebull.MicroZero.ZeroApis
                     lambda.AddRoot(p => p.AuditState < AuditStateType.End);
                     break;
             }
-
             return base.GetListData(lambda);
         }
         #endregion

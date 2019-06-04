@@ -35,8 +35,7 @@
     <Compile Remove="logs\**" />
     <Compile Remove="Option\**" />
     <Compile Remove="Security\**" />
-    <Compile Remove="wwwroot\dist\**" />
-    <Compile Remove="wwwroot\static\**" />
+    <Compile Remove="wwwroot\**" />
     <Compile Remove="Zero\**" />
     <Content Remove="AddIn\**" />
     <Content Remove="App\**" />
@@ -48,8 +47,7 @@
     <Content Remove="logs\**" />
     <Content Remove="Option\**" />
     <Content Remove="Security\**" />
-    <Content Remove="wwwroot\dist\**" />
-    <Content Remove="wwwroot\static\**" />
+    <Content Remove="wwwroot\**" />
     <Content Remove="Zero\**" />
     <EmbeddedResource Remove="AddIn\**" />
     <EmbeddedResource Remove="App\**" />
@@ -61,8 +59,7 @@
     <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="Option\**" />
     <EmbeddedResource Remove="Security\**" />
-    <EmbeddedResource Remove="wwwroot\dist\**" />
-    <EmbeddedResource Remove="wwwroot\static\**" />
+    <EmbeddedResource Remove="wwwroot\**" />
     <EmbeddedResource Remove="Zero\**" />
     <None Remove="AddIn\**" />
     <None Remove="App\**" />
@@ -74,8 +71,7 @@
     <None Remove="logs\**" />
     <None Remove="Option\**" />
     <None Remove="Security\**" />
-    <None Remove="wwwroot\dist\**" />
-    <None Remove="wwwroot\static\**" />
+    <None Remove="wwwroot\**" />
     <None Remove="Zero\**" />
   </ItemGroup>
 
@@ -107,10 +103,6 @@
     <None Update="cert.pfx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

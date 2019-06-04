@@ -402,11 +402,17 @@ namespace Agebull.MicroZero.ZeroApis
         protected virtual TData DoAddNew()
         {
             var data = new TData();
+            data.__IsFromUser = true;
             //数据校验
 
-            var convert = new FormConvert(Arguments);
+            var convert = new FormConvert(this, data);
             ReadFormData(data, convert);
-            data.__IsFromUser = true;
+            if (convert.Failed)
+            {
+                GlobalContext.Current.LastState = ErrorCode.ArgumentError;
+                GlobalContext.Current.LastMessage = convert.Message;
+                return null;
+            }
             if (!Business.AddNew(data))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
@@ -427,14 +433,19 @@ namespace Agebull.MicroZero.ZeroApis
                 GlobalContext.Current.LastMessage = "参数错误";
                 return null;
             }
+            data.__IsFromUser = true;
             //数据校验
-            var convert = new FormConvert(Arguments)
+            var convert = new FormConvert(this, data)
             {
                 IsUpdata = true
             };
             ReadFormData(data, convert);
-            data.__IsFromUser = true;
-
+            if(convert.Failed)
+            {
+                GlobalContext.Current.LastState = ErrorCode.ArgumentError;
+                GlobalContext.Current.LastMessage = convert.Message;
+                return null;
+            }
             if (!DataExtendChecker.PrepareUpdate(data))
             {
                 return null;
@@ -452,25 +463,16 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void DoDelete()
         {
-            var ids = GetArg("selects");
-            if (string.IsNullOrEmpty(ids))
+            if (!TryGet("selects",out long[] ids))
             {
                 SetFailed("没有数据");
                 return;
             }
-
-            var lid = ids.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            if (lid.Length == 0)
-            {
-                SetFailed("没有数据");
-                return;
-            }
-
-            if (!DataExtendChecker.PrepareDelete<TData>(lid))
+            if (!DataExtendChecker.PrepareDelete<TData>(ids))
             {
                 return;
             }
-            if (!Business.Delete(lid))
+            if (!Business.Delete(ids))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
 

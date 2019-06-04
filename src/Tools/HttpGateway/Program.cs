@@ -20,7 +20,7 @@ namespace MicroZero.Http.Gateway
             return WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
                 .UseKestrel(RouteApp.Options)
-                .UseStartup<Startup>()
+                .UseStartup<GatewayStartup>()
                 .Build();
         }
     }

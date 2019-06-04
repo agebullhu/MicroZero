@@ -24,7 +24,7 @@ namespace Agebull.MicroZero.ZeroApis
     public abstract class ApiControllerForDataState<TData, TBusinessLogic> :
         ApiController<TData, TBusinessLogic>
         where TData : EditDataObject, IStateData, IIdentityData, new()
-        where TBusinessLogic :class, IBusinessLogicByStateData<TData>, new()
+        where TBusinessLogic : class, IBusinessLogicByStateData<TData>, new()
     {
         #region 数据校验支持
 
@@ -60,97 +60,87 @@ namespace Agebull.MicroZero.ZeroApis
         #region API
 
         /// <summary>
-        ///      重置数据状态
+        ///     重置数据状态
         /// </summary>
-        
         [Route("state/reset")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Reset(IdsArguent arg)
         {
-            
             OnReset();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
         /// <summary>
-        ///      锁定数据
+        ///     锁定数据
         /// </summary>
-        
         [Route("state/lock")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Lock(IdsArguent arg)
         {
-            
             OnLock();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
         /// <summary>
-        ///      废弃数据
+        ///     废弃数据
         /// </summary>
-        
         [Route("state/discard")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Discard(IdsArguent arg)
         {
-            
             OnDiscard();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
         /// <summary>
-        ///      禁用数据
+        ///     禁用数据
         /// </summary>
-        
         [Route("state/disable")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Disable(IdsArguent arg)
         {
-            
             OnDisable();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
         /// <summary>
-        ///      启用数据
+        ///     启用数据
         /// </summary>
-        
         [Route("state/enable")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult Enable(IdsArguent arg)
         {
-            
             OnEnable();
             return IsFailed
-                ? (new ApiResult
+                ? new ApiResult
                 {
                     Success = false,
                     Status = GlobalContext.Current.LastStatus
-                })
+                }
                 : ApiResult.Ok;
         }
 
@@ -163,7 +153,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected virtual void OnLock()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
+
             if (!Business.LoopIds(ids, Business.Lock))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -173,7 +168,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnReset()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
+
             if (!Business.LoopIds(ids, Business.Reset))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -183,7 +183,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnDiscard()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
+
             if (!Business.LoopIds(ids, Business.Discard))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -193,7 +198,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnEnable()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
+
             if (!Business.LoopIds(ids, Business.Enable))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -203,7 +213,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void OnDisable()
         {
-            var ids = GetLongArrayArg("selects");
+            if (!TryGet("selects", out long[] ids))
+            {
+                SetFailed("没有数据");
+                return;
+            }
+
             if (!Business.LoopIds(ids, Business.Disable))
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
         }
@@ -227,20 +242,13 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            var state = GetIntArg("_dataState_", 0x100);
-            if (state >= 0 && state < 0x100)
-            {
-                lambda.AddRoot(p => p.DataState == (DataStateType)state);
-            }
-            else
-            {
-                lambda.AddRoot(p => p.DataState < DataStateType.Delete);
-            }
-
+            if (!TryGet("_audit_", out int state) || state < 0 || state >= 0x100)
+                return base.GetListData(lambda);
+            GlobalContext.Current.IsManageMode = true;
+            lambda.AddRoot(p => p.DataState == (DataStateType)state);
             return DoGetListData(lambda);
         }
 
         #endregion
     }
-
 }

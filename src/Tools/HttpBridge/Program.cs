@@ -17,7 +17,7 @@ namespace MicroZero.Http.Gateway
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
-                .UseStartup<Startup>()
+                .UseStartup<SenparcStartup>()
                 .Build();
     }
 }

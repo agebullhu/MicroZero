@@ -275,7 +275,10 @@ namespace Agebull.MicroZero
 
                 if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
                 {
-                    ZeroDiscover discover = new ZeroDiscover();
+                    ZeroDiscover discover = new ZeroDiscover
+                    {
+                        StationName= obj.StationName
+                    };
                     discover.FindApies(obj.GetType());
                     //ZeroDiscover.DiscoverApiDocument(obj.GetType());
                 }

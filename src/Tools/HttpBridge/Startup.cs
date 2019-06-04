@@ -15,10 +15,6 @@ namespace MicroZero.Http.Gateway
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            ZeroApplication.CheckOption();
-            RouteOption.ConfigFileName = Path.Combine(ZeroApplication.Config.ConfigFolder, "route_config.json");
-            ZeroTrace.SystemLog("HttpGateway", RouteOption.ConfigFileName);
-            RouteOption.CheckOption();
         }
 
         public static IConfiguration Configuration { get; set; }

@@ -95,7 +95,7 @@ namespace MicroZero.Http.Gateway
         public static Func<IRouter> CreateDefaultRouter { get; set; } = () => new Router();
 
         /// <summary>
-        /// 特殊路径使用的不对路由器
+        /// 特殊路径使用的路由器
         /// </summary>
         public static Dictionary<string, Func<IRouter>> Extends = new Dictionary<string, Func<IRouter>>();
 

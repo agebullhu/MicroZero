@@ -627,8 +627,7 @@ namespace Agebull.MicroZero
                 if (File.Exists(file))
                     ConfigurationManager.Load(file);
             }
-
-            ConfigurationManager.Root["rootPath"] = rootPath;
+            ConfigurationManager.BasePath = ConfigurationManager.Root["rootPath"] = rootPath;
 
             var sec = ConfigurationManager.Get("Zero");
             if (sec == null)
@@ -813,7 +812,7 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("LogPath", LogRecorderX.LogPath);
             ZeroTrace.SystemLog("ZeroCenter", Config.ZeroAddress, Config.ZeroManagePort, Config.ZeroMonitorPort);
             ZeroTrace.SystemLog("Name", Config.StationName, GlobalContext.ServiceName, GlobalContext.ServiceRealName, Config.LocalIpAddress);
-            
+
             string model;
             switch (Config.SpeedLimitModel)
             {

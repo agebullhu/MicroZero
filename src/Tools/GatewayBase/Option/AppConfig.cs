@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using Agebull.Common.Logging;
+using Agebull.MicroZero;
 using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway
@@ -71,23 +72,28 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         public static bool CheckOption()
         {
+            ConfigFileName = Path.Combine(ZeroApplication.Config.ConfigFolder, "route_config.json");
+            ZeroTrace.SystemLog("HttpGateway", ConfigFileName);
+
             if (!File.Exists(ConfigFileName))
-                return false;
+                throw new Exception($"路由配置文件{ConfigFileName}不存在");
             try
             {
                 Option = JsonConvert.DeserializeObject<RouteOption>(File.ReadAllText(ConfigFileName));
-                if (Option == null)
-                    throw new Exception($"路由配置文件{ConfigFileName}不存在");
-
-                Option.CheckRouteMap();
-                Option.CheckSecurity();
-                IsInitialized = true;
+                
             }
             catch (Exception e)
             {
                 LogRecorderX.Exception(e);
                 throw new Exception($"路由配置文件{ConfigFileName}解析错误");
             }
+            if (Option == null)
+                throw new Exception($"路由配置文件{ConfigFileName}内容错误");
+
+            Option.CheckRouteMap();
+            Option.CheckSecurity();
+            IsInitialized = true;
+
             if (RouteMap == null)
                 RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
             if (Option.Security == null)

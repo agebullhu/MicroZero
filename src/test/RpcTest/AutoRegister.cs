@@ -4,6 +4,7 @@ using RpcTest;
 
 namespace Agebull.MicroZero.Log
 {
+
     /// <summary>
     ///   远程记录器
     /// </summary>

@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
+using Agebull.MicroZero.ZeroManagemant;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Senparc.CO2NET;
@@ -26,8 +28,10 @@ namespace ApiTest
             ZeroApplication.CheckOption();
             ZeroApplication.Discove(Assembly.GetExecutingAssembly());
             ZeroApplication.Initialize();
+                        ZeroApplication.Run();
 
-            ZeroApplication.RunAwaite();
+            SystemManager.Instance.LoadDocument("Hpc", out var doc);
+            Console.ReadKey();
         }
 
         //static void Weixin()

@@ -12,26 +12,18 @@ namespace Agebull.MicroZero.ZeroApis
     /// </summary>
     public abstract class ApiControlerEx : ApiController
     {
-        /// <summary>
-        /// 构造
-        /// </summary>
-        protected ApiControlerEx()
-        {
-            GlobalContext.Current.IsManageMode = true;
-        }
-
         #region 状态
 
         /// <summary>
         ///     是否操作失败
         /// </summary>
-        protected bool IsFailed => GlobalContext.Current.LastState != ErrorCode.Success;
+        protected internal bool IsFailed => GlobalContext.Current.LastState != ErrorCode.Success;
 
         /// <summary>
         ///     设置当前操作失败
         /// </summary>
         /// <param name="message"></param>
-        protected void SetFailed(string message)
+        protected internal void SetFailed(string message)
         {
             GlobalContext.Current.LastState = ErrorCode.LogicalError;
             GlobalContext.Current.LastMessage = message;
@@ -44,7 +36,7 @@ namespace Agebull.MicroZero.ZeroApis
         /*// <summary>
         ///     是否公开页面
         /// </summary>
-        protected bool IsPublicPage => BusinessContext.Context.PageItem.IsPublic;
+        internal protected bool IsPublicPage => BusinessContext.Context.PageItem.IsPublic;
 
         /// <summary>
         ///     当前页面节点配置
@@ -59,12 +51,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     当前用户是否已登录成功
         /// </summary>
-        protected bool UserIsLogin => GlobalContext.Current.LoginUserId > 0;
+        protected internal bool UserIsLogin => GlobalContext.Current.LoginUserId > 0;
 
         /// <summary>
         ///     当前登录用户
         /// </summary>
-        protected ILoginUserInfo LoginUser => GlobalContext.Current.User;
+        protected internal ILoginUserInfo LoginUser => GlobalContext.Current.User;
 
         #endregion
 
@@ -78,10 +70,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     参数
         /// </summary>
-        protected Dictionary<string, string> Arguments => _arguments ?? (_arguments = InitArguments());
+        protected internal Dictionary<string, string> Arguments => _arguments ?? (_arguments = InitArguments());
 
         /// <summary>
-        ///     初始化查询字符串
+        ///     初始化参数字典
         /// </summary>
         public Dictionary<string, string> InitArguments()
         {
@@ -89,21 +81,20 @@ namespace Agebull.MicroZero.ZeroApis
                 return _arguments;
             _arguments = new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
             var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
-            if (context != null)
-            {
-                foreach (var kv in context)
-                    if (!_arguments.ContainsKey(kv.Key))
-                        _arguments.Add(kv.Key, kv.Value);
-            }
+            if (context == null) return _arguments;
+            foreach (var kv in context)
+                if (!_arguments.ContainsKey(kv.Key))
+                    _arguments.Add(kv.Key, kv.Value);
             return _arguments;
         }
 
         /// <summary>
-        /// 获取或更新(修改)参数
+        /// 获取或新增(修改)参数
         /// </summary>
         /// <param name="arg">参数名称</param>
+        /// <param name="value">参数值</param>
         /// <returns>参数值</returns>
-        protected string this[string arg]
+        protected internal string this[string arg]
         {
             get => arg == null ? null : Arguments.TryGetValue(arg, out var vl) ? vl : null;
             set
@@ -120,7 +111,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>是否包含这个参数</returns>
-        protected bool ContainsArgument(string name)
+        protected internal bool ContainsArgument(string name)
         {
             return !string.IsNullOrWhiteSpace(name) && Arguments.ContainsKey(name);
         }
@@ -128,9 +119,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     设置替代参数
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, string value)
+        /// <param name="name">参数名</param>
+        /// <param name="value">参数值</param>
+        protected internal void SetArg(string name, string value)
         {
             this[name] = value;
         }
@@ -138,9 +129,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     设置替代参数
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, int value)
+        /// <param name="name">参数名</param>
+        /// <param name="value">参数值</param>
+        protected internal void SetArg(string name, int value)
         {
             this[name] = value.ToString();
         }
@@ -148,28 +139,29 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     设置替代参数
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
-        protected void SetArg(string name, object value)
+        /// <param name="name">参数名</param>
+        /// <param name="value">参数值</param>
+        protected internal void SetArg(string name, object value)
         {
             this[name] = value?.ToString();
         }
 
         /// <summary>
-        ///     设置替代参数
+        ///     获取参数
         /// </summary>
-        /// <param name="name"></param>
-        protected string GetArgValue(string name)
+        /// <param name="name">参数名</param>
+        /// <returns>参数值</returns>
+        protected internal string GetArgValue(string name)
         {
             return this[name];
         }
 
         /// <summary>
-        ///     转换页面参数
+        ///     转换面参数
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="action">转换方法</param>
-        protected void ConvertQueryString(string name, Action<string> action)
+        protected internal void ConvertQueryString(string name, Action<string> action)
         {
             var val = Arguments[name];
             if (!string.IsNullOrEmpty(val)) action(val);
@@ -177,32 +169,29 @@ namespace Agebull.MicroZero.ZeroApis
 
 
         /// <summary>
-        ///     读取页面参数(文本)
+        ///     获取参数(文本)
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>文本</returns>
-        protected string GetArg(string name)
+        protected internal string GetArg(string name)
         {
-            var value = this[name];
-            if (value == null) return null;
+            if (!Arguments.TryGetValue(name, out var value))
+                return null;
             var vl = value.Trim();
-            if (vl == "null") return null;
-            if (value == "undefined") return null;
             return string.IsNullOrWhiteSpace(vl) ? null : vl;
         }
 
         /// <summary>
-        ///     读参数(文本),如果参数为空或不存在,用默认值填充
+        ///     读参数(泛型),如果参数为空或不存在,用默认值填充
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="convert">转换方法</param>
         /// <param name="def">默认值</param>
-        /// <returns>文本</returns>
-        protected T GetArg<T>(string name, Func<string, T> convert, T def)
+        /// <returns>值</returns>
+        protected internal T GetArg<T>(string name, Func<string, T> convert, T def)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return def;
-            return convert(value);
+            return string.IsNullOrEmpty(value) ? def : convert(value);
         }
 
 
@@ -212,237 +201,585 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="name">参数名称</param>
         /// <param name="convert">转换方法</param>
         /// <returns>参数为空或不存在,返回不成功,其它情况视convert返回值自行控制</returns>
-        protected bool GetArg(string name, Func<string, bool> convert)
+        protected internal bool GetArg(string name, Func<string, bool> convert)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return false;
-            return convert(value);
+            return !string.IsNullOrEmpty(value) && convert(value);
         }
-
         /// <summary>
         ///     读参数(文本),如果参数为空或不存在,用默认值填充
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="def">默认值</param>
         /// <returns>文本</returns>
-        protected string GetArg(string name, string def)
+        protected internal string GetArg(string name, string def)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return def;
-            return value;
+            return string.IsNullOrEmpty(value) ? def : value;
         }
 
         /// <summary>
-        ///     读取页面参数int类型
+        ///     获取参数int类型
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected int GetIntArg(string name)
+        protected internal int GetIntArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return -1;
-            return int.Parse(value);
-        }
-        /// <summary>
-        ///     读取页面参数int类型
-        /// </summary>
-        /// <param name="name">参数名称</param>
-        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected double GetDoubleArg(string name)
-        {
-            var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
-                return double.NaN;
-            return double.Parse(value);
+            return string.IsNullOrEmpty(value) ? -1 : int.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数int类型
+        ///     获取参数int类型
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected float GetSingleArg(string name)
+        protected internal double GetDoubleArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
-                return float.NaN;
-            return float.Parse(value);
+            return string.IsNullOrEmpty(value) ? double.NaN : double.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数int类型
+        ///     获取参数int类型
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected Guid GetGuidArg(string name)
+        protected internal float GetSingleArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
-                return Guid.Empty;
-            return Guid.Parse(value);
-        }
-        /// <summary>
-        ///     读取页面参数int类型
-        /// </summary>
-        /// <param name="name">参数名称</param>
-        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected byte GetByteArg(string name)
-        {
-            var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null")
-                return 0;
-            return byte.Parse(value);
-        }
-        
-        /// <summary>
-        ///     读取页面参数int类型
-        /// </summary>
-        /// <param name="name">参数名称</param>
-        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected int[] GetIntArrayArg(string name)
-        {
-            var value = GetArgValue(name);
-
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return new int[0];
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            return string.IsNullOrEmpty(value) ? float.NaN : float.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(int类型),如果参数为空或不存在,用默认值填充
+        ///     获取参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected internal Guid GetGuidArg(string name)
+        {
+            var value = GetArgValue(name);
+            return string.IsNullOrEmpty(value) ? Guid.Empty : Guid.Parse(value);
+        }
+        /// <summary>
+        ///     获取参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected internal byte GetByteArg(string name)
+        {
+            var value = GetArgValue(name);
+            return string.IsNullOrEmpty(value) ? (byte)0 : byte.Parse(value);
+        }
+
+        /// <summary>
+        ///     获取参数int类型
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
+        protected internal int[] GetIntArrayArg(string name)
+        {
+            var value = GetArgValue(name);
+
+            return string.IsNullOrEmpty(value)
+                ? (new int[0])
+                : value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+        }
+
+        /// <summary>
+        ///     获取参数(int类型),如果参数为空或不存在,用默认值填充
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="def">默认值</param>
         /// <returns>int类型,如果存在且不能转为int类型将出现异常</returns>
-        protected int GetIntArg(string name, int def)
+        protected internal int GetIntArg(string name, int def)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "NaN" || value == "undefined" || value == "null")
-                return def;
-            return int.Parse(value);
+            return string.IsNullOrEmpty(value) || value == "NaN" ? def : int.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(数字),模糊名称读取
+        ///     获取参数(数字),模糊名称读取
         /// </summary>
         /// <param name="names">多个名称</param>
         /// <returns>名称解析到的第一个不为0的数字,如果有名称存在且不能转为int类型将出现异常</returns>
-        protected int GetIntAnyArg(params string[] names)
+        protected internal int GetIntAnyArg(params string[] names)
         {
             return names.Select(p => GetIntArg(p, 0)).FirstOrDefault(re => re != 0);
         }
 
         /// <summary>
-        ///     读取页面参数(日期类型)
+        ///     获取参数(日期类型)
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>日期类型,为空则为空,如果存在且不能转为日期类型将出现异常</returns>
-        protected DateTime? GetDateArg(string name)
+        protected internal DateTime? GetDateArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return null;
-            return DateTime.Parse(value);
+            return string.IsNullOrEmpty(value) ? null : (DateTime?)DateTime.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(日期类型)
+        ///     获取参数(日期类型)
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>日期类型,为空则为DateTime.MinValue,如果存在且不能转为日期类型将出现异常</returns>
-        protected DateTime GetDateArg2(string name)
+        protected internal DateTime GetDateArg2(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return DateTime.MinValue;
-            return DateTime.Parse(value);
+            return string.IsNullOrEmpty(value) ? DateTime.MinValue : DateTime.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(日期类型)
+        ///     获取参数(日期类型)
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="def"></param>
         /// <returns>日期类型,为空则为空,如果存在且不能转为日期类型将出现异常</returns>
-        protected DateTime GetDateArg(string name, DateTime def)
+        protected internal DateTime GetDateArg(string name, DateTime def)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return def;
-            return DateTime.Parse(value);
+            return string.IsNullOrEmpty(value) ? def : DateTime.Parse(value);
         }
 
 
         /// <summary>
-        ///     读取页面参数bool类型
+        ///     获取参数bool类型
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected bool GetBoolArg(string name)
+        protected internal bool GetBoolArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return false;
-            return value != "0" && (value == "1" || value == "yes" || bool.Parse(value));
+            return !string.IsNullOrEmpty(value) && (value != "0" && (value == "1" || value == "yes" || bool.Parse(value)));
         }
 
 
         /// <summary>
-        ///     读取页面参数(decimal型数据)
+        ///     获取参数(decimal型数据)
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>decimal型数据,如果未读取值则为-1,如果存在且不能转为decimal类型将出现异常</returns>
-        protected decimal GetDecimalArg(string name)
+        protected internal decimal GetDecimalArg(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return -1;
-            return decimal.Parse(value);
+            return string.IsNullOrEmpty(value) ? -1 : decimal.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(decimal型数据),如果参数为空或不存在,用默认值填充
+        ///     获取参数(decimal型数据),如果参数为空或不存在,用默认值填充
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="def">默认值</param>
         /// <returns>decimal型数据,如果存在且不能转为decimal类型将出现异常</returns>
-        protected decimal GetDecimalArg(string name, decimal def)
+        protected internal decimal GetDecimalArg(string name, decimal def)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return def;
-            return decimal.Parse(value);
+            return string.IsNullOrEmpty(value) ? def : decimal.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数(long型数据),如果参数为空或不存在,用默认值填充
+        ///     获取参数(long型数据),如果参数为空或不存在,用默认值填充
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <param name="def">默认值</param>
         /// <returns>long型数据,如果存在且不能转为long类型将出现异常</returns>
-        protected long GetLongArg(string name, long def = -1)
+        protected internal long GetLongArg(string name, long def = -1)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return def;
-            return long.Parse(value);
+            return string.IsNullOrEmpty(value) ? def : long.Parse(value);
         }
 
         /// <summary>
-        ///     读取页面参数int类型
+        ///     获取参数int类型
         /// </summary>
         /// <param name="name">参数名称</param>
         /// <returns>int类型,为空则为-1,如果存在且不能转为int类型将出现异常</returns>
-        protected long[] GetLongArrayArg(string name)
+        protected internal long[] GetLongArrayArg(string name)
         {
             var value = GetArgValue(name);
 
-            if (string.IsNullOrEmpty(value) || value == "undefined" || value == "null") return new long[0];
-            return value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            return string.IsNullOrEmpty(value)
+                ? (new long[0])
+                : value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
         }
 
         /// <summary>
-        ///     读取页面参数(数字),模糊名称读取
+        ///     获取参数(数字),模糊名称读取
         /// </summary>
         /// <param name="names">多个名称</param>
         /// <returns>名称解析到的第一个不为0的数字,如果有名称存在且不能转为int类型将出现异常</returns>
-        protected long GetLongAnyArg(params string[] names)
+        protected internal long GetLongAnyArg(params string[] names)
         {
             return names.Select(p => GetLongArg(p, 0)).FirstOrDefault(re => re != 0);
         }
 
+        #region TryGet
+
+        /// <summary>
+        ///     读参数(泛型),如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="convert">转换方法</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGe<T>(string name, Func<string, T> convert, out T value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = default(T);
+                return false;
+            }
+
+            try
+            {
+                value = convert(str);
+                return true;
+            }
+            catch
+            {
+                value = default(T);
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        ///     尝试获取参数
+        /// </summary>
+        /// <param name="name">参数名</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值是否存在</returns>
+        protected internal bool TryGet(string name, out string value)
+        {
+            return Arguments.TryGetValue(name, out value) && !string.IsNullOrWhiteSpace(value);
+        }
+
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out bool value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = false;
+                return false;
+            }
+            try
+            {
+                switch (str.ToUpper())
+                {
+                    case "1":
+                    case "yes":
+                        value = true;
+                        return true;
+                    case "0":
+                    case "no":
+                        value = false;
+                        return true;
+                    default:
+                        return bool.TryParse(str, out value);
+                }
+            }
+            catch
+            {
+                value = false;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out DateTime value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = DateTime.MinValue;
+                return false;
+            }
+            try
+            {
+                return DateTime.TryParse(str, out value);
+            }
+            catch
+            {
+                value = DateTime.MinValue;
+                return false;
+            }
+        }
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out int value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = 0;
+                return false;
+            }
+            try
+            {
+                return int.TryParse(str, out value);
+            }
+            catch
+            {
+                value = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out decimal value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = 0;
+                return false;
+            }
+            try
+            {
+                return decimal.TryParse(str, out value);
+            }
+            catch
+            {
+                value = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out float value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = float.NaN;
+                return false;
+            }
+            try
+            {
+                return float.TryParse(str, out value) && !float.IsNaN(value);
+            }
+            catch
+            {
+                value = float.NaN;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out double value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = double.NaN;
+                return false;
+            }
+            try
+            {
+                return double.TryParse(str, out value) && !double.IsNaN(value);
+            }
+            catch
+            {
+                value = double.NaN;
+                return false;
+            }
+        }
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out short value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = 0;
+                return false;
+            }
+            try
+            {
+                return short.TryParse(str, out value);
+            }
+            catch
+            {
+                value = 0;
+                return false;
+            }
+        }
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out long value)
+        {
+            if (!Arguments.TryGetValue(name, out var str))
+            {
+                value = 0;
+                return false;
+            }
+            try
+            {
+                return long.TryParse(str, out value);
+            }
+            catch
+            {
+                value = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out string[] value)
+        {
+            if (!Arguments.TryGetValue(name, out var str) || string.IsNullOrWhiteSpace(str))
+            {
+                value = new string[0];
+                return false;
+            }
+            try
+            {
+                value = str.Split(new[] { ',' });
+                return value.Length > 0;
+            }
+            catch
+            {
+                value = new string[0];
+                return false;
+            }
+        }
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out int[] value)
+        {
+            if (!Arguments.TryGetValue(name, out var str) || string.IsNullOrWhiteSpace(str))
+            {
+                value = new int[0];
+                return false;
+            }
+            try
+            {
+                value = str.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+                return value.Length > 0;
+            }
+            catch
+            {
+                value = new int[0];
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out List<int> value)
+        {
+            if (!Arguments.TryGetValue(name, out var str) || string.IsNullOrWhiteSpace(str))
+            {
+                value = new List<int>();
+                return false;
+            }
+            try
+            {
+                value = str.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+                return value.Count > 0;
+            }
+            catch
+            {
+                value = new List<int>();
+                return false;
+            }
+        }
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGetIDs(string name, out List<long> value)
+        {
+            if (!Arguments.TryGetValue(name, out var str) || string.IsNullOrWhiteSpace(str))
+            {
+                value = new List<long>();
+                return false;
+            }
+            try
+            {
+                value = str.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToList();
+                return value.Count > 0;
+            }
+            catch
+            {
+                value = new List<long>();
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     读参数,如果参数为空或不存在,用默认值填充
+        /// </summary>
+        /// <param name="name">参数名称</param>
+        /// <param name="value">参数值</param>
+        /// <returns>值</returns>
+        protected internal bool TryGet(string name, out long[] value)
+        {
+            if (!Arguments.TryGetValue(name, out var str) || string.IsNullOrWhiteSpace(str))
+            {
+                value = new long[0];
+                return false;
+            }
+            try
+            {
+                value = str.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+                return value.Length > 0;
+            }
+            catch
+            {
+                value = new long[0];
+                return false;
+            }
+        }
+        #endregion
         #endregion
     }
 

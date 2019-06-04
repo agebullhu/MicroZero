@@ -1437,7 +1437,7 @@ namespace ZeroMQ
         /// <summary>
         ///     Gets or sets the Identity.
         ///     Note: The string contains chars like \0 (null terminator,
-        ///     which are NOT printed (in Console.WriteLine)!
+        ///     which are NOT printed (in LogRecorderX.Debug)!
         /// </summary>
         /// <value>Identity as string</value>
         public string IdentityString

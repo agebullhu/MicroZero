@@ -72,10 +72,12 @@ namespace Agebull.MicroZero.ZeroApis
         ///     结果状态
         /// </summary>
         public ZeroOperatorStateType State { get; set; }
+
         /// <summary>
         /// 最后一个返回值
         /// </summary>
         public ZeroResult LastResult { get; set; }
+
         /// <summary>
         /// 简单调用
         /// </summary>

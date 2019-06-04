@@ -1,5 +1,4 @@
-﻿using System;
-using ZeroMQ.lib;
+﻿using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
@@ -72,19 +71,16 @@ namespace ZeroMQ
             if (index > Sockets.Length)
             {
                 message = null;
-                Console.WriteLine("index > Sockets.Length");
                 return false;
             }
             var native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;
-                Console.WriteLine("native->ReadyEvents == 0");
                 return false;
             }
             if (!((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In))
             {
-                Console.WriteLine("!((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In)");
                 message = null;
                 return false;
             }

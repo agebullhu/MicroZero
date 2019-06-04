@@ -26,6 +26,7 @@
     <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
     <Compile Remove="RemoteRecorder.cs" />
+    <Compile Remove="RpcTestController.cs" />
     <Compile Remove="StationTester.cs" />
     <Compile Remove="ZeroPublishTester.cs" />
   </ItemGroup>

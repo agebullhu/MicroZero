@@ -790,6 +790,22 @@
             配置
             </summary>
         </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiPageAttribute">
+            <summary>
+            API对应页面的特性
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiPageAttribute.#ctor(System.String)">
+            <summary>
+            构造
+            </summary>
+            <param name="pageUrl">页面</param>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPageAttribute.PageUrl">
+            <summary>
+            页面
+            </summary>
+        </member>
         <member name="T:Agebull.MicroZero.ZeroApis.RouteAttribute">
             <summary>
             路由名称
@@ -2059,7 +2075,7 @@
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.InitializeDependency">
             <summary>
-                设置LogRecorder的依赖属性(内部使用)
+                设置LogRecorderX的依赖属性(内部使用)
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.Discove(System.Reflection.Assembly,System.String)">
@@ -2408,11 +2424,6 @@
         <member name="P:Agebull.MicroZero.ZeroAppConfig.CanRaiseEvent">
             <summary>
               是否需要发出事件
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroAppConfig.CuseomJsonNumber">
-            <summary>
-              使用自定义JSON大数字序列化器
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroAppConfig.StationIsolate">
@@ -4841,48 +4852,6 @@
             释放一个连接对象
             </summary>
             <returns></returns>
-        </member>
-        <member name="T:Agebull.MicroZero.JsonHelper">
-            <summary>
-            Json序列化装饰器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.JsonHelper.ToZeroBytes``1(``0)">
-            <summary>
-            转为UTF8字节
-            </summary>
-            <param name="v"></param>
-            <returns>字节</returns>
-        </member>
-        <member name="M:Agebull.MicroZero.JsonHelper.SerializeObject``1(``0)">
-            <summary>
-            序列化
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="t"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.JsonHelper.DeserializeObject``1(System.String)">
-            <summary>
-            反序列化
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.JsonNumberConverter">
-            <summary>
-                大数字序列化器
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.JsonNumberConverter.CanRead">
-            <inheritdoc />
-        </member>
-        <member name="M:Agebull.MicroZero.JsonNumberConverter.WriteJson(Newtonsoft.Json.JsonWriter,System.Object,Newtonsoft.Json.JsonSerializer)">
-            <inheritdoc />
-        </member>
-        <member name="M:Agebull.MicroZero.JsonNumberConverter.ReadJson(Newtonsoft.Json.JsonReader,System.Type,System.Object,Newtonsoft.Json.JsonSerializer)">
-            <inheritdoc />
-        </member>
-        <member name="M:Agebull.MicroZero.JsonNumberConverter.CanConvert(System.Type)">
-            <inheritdoc />
         </member>
         <member name="T:Agebull.MicroZero.Log.BatchPublisher`1">
             <summary>

@@ -13,21 +13,33 @@ using Senparc.Weixin.RegisterServices;
 
 namespace MicroZero.Http.Gateway
 {
-    public class SenparcStartup : IStartup
+    public class SenparcStartup : GatewayStartup
     {
-        public IConfiguration Configuration { get; set; }
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="configuration"></param>
+        public SenparcStartup(IConfiguration configuration) : base(configuration)
+        {
+        }
 
-        
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        /// <summary>
+        /// 执行系统配置
+        /// </summary>
+        /// <param name="services"></param>
+        protected override void DoConfigureServices(IServiceCollection services)
         {
             services.AddMemoryCache();
             services.AddSenparcGlobalServices(Configuration)//Senparc.CO2NET 全局注册
                 .AddSenparcWeixinServices(Configuration);//Senparc.Weixin 注册
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        /// <summary>
+        /// 应用配置
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
+        protected override void DoConfigure(IApplicationBuilder app, IHostingEnvironment env)
         {
             var senparcSetting = ConfigurationManager.Root.GetSection("SenparcSetting")?.Get<SenparcSetting>();
             var senparcWeixinSetting = ConfigurationManager.Root.GetSection("SenparcWeixinSetting")?.Get<SenparcWeixinSetting>();
@@ -69,6 +81,5 @@ namespace MicroZero.Http.Gateway
 
             #endregion
         }
-
     }
 }

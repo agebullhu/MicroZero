@@ -1,0 +1,1134 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MicroZero.Http.GatewayBase</name>
+    </assembly>
+    <members>
+        <member name="T:MicroZero.Http.Gateway.IoHandler">
+            <summary>
+                Http进站出站的处理类
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.OnBegin(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                开始时的处理
+            </summary>
+            <returns>如果返回内容不为空，直接返回,后续的处理不再继续</returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.OnEnd(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                结束时的处理
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginMonitor(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                开始日志监测
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.EndMonitor(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                开始计数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.IoHandler.Description">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.EndZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.CountApi(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                开始计数
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.IRouter">
+            <summary>
+                调用映射核心类
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.Prepare(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                开始
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.Call">
+            <summary>
+                调用
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.WriteResult">
+            <summary>
+                写入返回
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.End">
+            <summary>
+                结束
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.OnError(System.Exception,Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            异常处理
+            </summary>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteApp">
+            <summary>
+                调用映射核心类
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.Initialize">
+            <summary>
+                初始化
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.Flush">
+            <summary>
+                刷新
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.Call(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                POST调用
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteApp.CreateDefaultRouter">
+            <summary>
+            修改缺省的路由对象
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteApp.Extends">
+            <summary>
+            特殊路径使用的不对路由器
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(System.Object)">
+            <summary>
+                调用
+            </summary>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.InnerCommand(System.String,Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                内部命令处理
+            </summary>
+            <param name="url"></param>
+            <param name="request"></param>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.Router">
+            <summary>
+                调用映射核心类
+            </summary>
+            <summary>
+                调用映射核心类
+            </summary>
+            <summary>
+                调用映射核心类
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.Router.HttpContext">
+            <summary>
+                Http上下文
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.Router.Request">
+            <summary>
+                Http请求
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.Router.Response">
+            <summary>
+                Http返回
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.Router.Data">
+            <summary>
+                Http返回
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.Router.SecurityChecker">
+            <summary>
+                安全检查器
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#Prepare(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                调用
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#Call">
+            <summary>
+                调用
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.FindHost">
+            <summary>
+                查找站点
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.TokenCheck">
+            <summary>
+                安全检查
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#WriteResult">
+            <summary>
+                写入返回
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#End">
+            <summary>
+                结束
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#OnError(System.Exception,Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            异常处理
+            </summary>
+            <param name="e"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.CallHttp">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.CallZero">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.CacheData">
+            <summary>
+                缓存数据
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.UpdateTime">
+            <summary>
+                下次更新时间
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.Content">
+            <summary>
+                缓存内容
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.CacheFeature">
+            <summary>
+                缓存特征
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.None">
+            <summary>
+                无
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.Bear">
+            <summary>
+                身份头相同
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.NetError">
+            <summary>
+                发生网络错误时
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.QueryString">
+            <summary>
+                参数相同（Get与POST请求）
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.Form">
+            <summary>
+                表单相同(POST请求）
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.CacheOption">
+            <summary>
+                缓存设置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.Api">
+            <summary>
+                API名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.Bear">
+            <summary>
+                用于校验的身份头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.FlushSecond">
+            <summary>
+                缓存更新的秒数
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.OnlyName">
+            <summary>
+                缓存时仅使用名称（否则包含查询字符串）
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.ByNetError">
+            <summary>
+                发生网络错误时缓存
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheOption.Feature">
+            <summary>
+                缓存特征
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.CacheOption.Initialize">
+            <summary>
+                初始化
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteCache">
+            <summary>
+                缓存
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteCache.Cache">
+            <summary>
+                缓存数据
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteCache.Flush">
+            <summary>
+                刷新
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteCache.LoadCache(System.Uri,System.String,MicroZero.Http.Gateway.CacheOption@,System.String@,System.String@)">
+            <summary>
+                检查缓存
+            </summary>
+            <returns>取到缓存，可以直接返回</returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteCache.CacheResult(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                缓存返回值
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteCache.CacheMap">
+            <summary>
+                路由配置
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteCache.InitCache">
+            <summary>
+                初始化路由
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.ContextRouter">
+            <summary>
+                调用映射核心类
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ContextRouter.HttpContext">
+            <summary>
+                Http上下文
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ContextRouter.Request">
+            <summary>
+                Http请求
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ContextRouter.Response">
+            <summary>
+                Http返回
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.ContextRouter.#ctor(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                内部构架
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.ContextRouter.WriteContext(System.String[],System.String)">
+            <summary>
+                调用
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.ContextRouter.FormatResponse(System.String)">
+            <summary>
+                跨域支持
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.HttpApiCaller">
+            <summary>
+                内部服务调用代理
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.#ctor(System.String)">
+            <summary>
+                构造
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpApiCaller.Host">
+            <summary>
+                主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpApiCaller.ApiName">
+            <summary>
+                ApiName
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.HttpApiCaller.RemoteUrl">
+            <summary>
+                远程地址
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.HttpApiCaller.RemoteRequest">
+            <summary>
+            远程请求对象
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpApiCaller.UserState">
+            <summary>
+            执行状态
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpApiCaller.ZeroState">
+            <summary>
+            执行状态
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.CreateRequest(System.String,System.String,Microsoft.AspNetCore.Http.HttpRequest,MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                生成请求对象
+            </summary>
+            <param name="apiName"></param>
+            <param name="method"></param>
+            <param name="localRequest"></param>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.Call">
+            <summary>
+                取返回值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.ProtocolError(System.Net.WebException)">
+            <summary>
+                协议错误
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.ReadResponse(System.Net.WebResponse)">
+            <summary>
+                读取返回消息
+            </summary>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpApiCaller.ToErrorString(System.Int32,System.String,System.String)">
+            <summary>
+                序列化到错误内容
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="message2"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.Cros(Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                跨域支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                跨域支持
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteOption">
+            <summary>
+                路由配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.Security">
+            <summary>
+                安全设置
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteOption._cacheSettings">
+            <summary>
+                缓存配置
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteOption._routeConfig">
+            <summary>
+                路由配置
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteOption._systemConfig">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.SystemConfig">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.ConfigFileName">
+            <summary>
+                文件名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.IsInitialized">
+            <summary>
+                是否已初始化
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckOption">
+            <summary>
+                初始化
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckSecurity">
+            <summary>
+                初始化安全检查
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.RouteMap">
+            <summary>
+                缓存图
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckRouteMap">
+            <summary>
+                初始化路由
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteHost">
+            <summary>
+                路由主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteHost.ByZero">
+            <summary>
+                使用MicroZero通讯吗
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteHost.Failed">
+            <summary>
+                是否异常
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteHost.Description">
+            <summary>
+                说明
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteHost.Alias">
+            <summary>
+                别名
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.ZeroHost">
+            <summary>
+                路由主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ZeroHost.Station">
+            <summary>
+                站点
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ZeroHost.AppName">
+            <summary>
+                适用于的App的名称组合，全适合则为null，部分适用为用逗号分隔的App名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ZeroHost.Apis">
+            <summary>
+             Api
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.HttpHost">
+            <summary>
+                路由主机
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.HttpHost.DefaultHost">
+            <summary>
+                默认主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpHost.Next">
+            <summary>
+                下一次命中的主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpHost.Hosts">
+            <summary>
+                主机列表
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.HostConfig">
+            <summary>
+                路由主机
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HostConfig.ByZero">
+            <summary>
+                使用MicroZero通讯吗
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HostConfig.Hosts">
+            <summary>
+                主机列表
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HostConfig.Alias">
+            <summary>
+                别名
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteData">
+            <summary>
+                路由数据
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.Uri">
+            <summary>
+                请求地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.ApiHost">
+            <summary>
+                当前请求调用的主机名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.ApiName">
+            <summary>
+                当前请求调用的API名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.Token">
+            <summary>
+                Http Header中的Authorization信息
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.HttpMethod">
+            <summary>
+                HTTP method
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.HttpContext">
+            <summary>
+                请求的内容
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.Headers">
+            <summary>
+                请求的表单
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.Arguments">
+            <summary>
+                请求的表单
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.Item(System.String)">
+            <summary>
+            取参数
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.Redirect">
+            <summary>
+                执行HTTP重写向吗
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.ResultMessage">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.Start">
+            <summary>
+                开始时间
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.End">
+            <summary>
+                结束时间
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.IsSucceed">
+            <summary>
+                是否正常
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.UserState">
+            <summary>
+                执行状态
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.ApiItem">
+            <summary>
+                当前请求调用的API配置
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.CacheKey">
+            <summary>
+                缓存键
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.CacheSetting">
+            <summary>
+                当前适用的缓存设置对象
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.GlobalContextJson">
+            <summary>
+                上下文的JSON内容(透传)
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.RouteHost">
+            <summary>
+                路由主机信息
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteData.ZeroState">
+            <summary>
+                结果状态
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteData.Prepare(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+                准备
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteData.CheckCall">
+            <summary>
+                检查调用内容
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.RouteStatus">
+            <summary>
+                一次路由执行状态
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.None">
+            <summary>
+                正常
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.Cache">
+            <summary>
+                缓存
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.HttpOptions">
+            <summary>
+                Http的OPTION协商
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.FormalError">
+            <summary>
+            非法格式
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.LogicalError">
+            <summary>
+            逻辑错误
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.LocalException">
+            <summary>
+            本地异常
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.LocalError">
+            <summary>
+            本地错误
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.RemoteError">
+            <summary>
+            远程错误
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.Unavailable">
+            <summary>
+            拒绝服务
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.NotFind">
+            <summary>
+            页面不存在
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteStatus.DenyAccess">
+            <summary>
+            非法请求
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.SecurityConfig">
+            <summary>
+                安全相关的配置
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.SecurityConfig.checkApis">
+            <summary>
+                需要检查的Api
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.SecurityConfig.denyHttpHeaders">
+            <summary>
+                禁止的Http头信息
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.FireSign">
+            <summary>
+                启用验签
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.Auth2">
+            <summary>
+                启用验签
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.BlockHost">
+            <summary>
+                黑洞地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.CheckBearer">
+            <summary>
+                是否检查Auth头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.AuthStation">
+            <summary>
+                是否检查Auth头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.DeviceIdCheckApi">
+            <summary>
+                DeviceId检查API
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.AccessTokenCheckApi">
+            <summary>
+                AT检查API
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.TokenCheckApi">
+            <summary>
+                AT检查API
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.denyTokens">
+            <summary>
+                黑名单令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.DenyTokens">
+            <summary>
+                黑名单令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.DenyHttpHeaders">
+            <summary>
+                禁止的Http头信息
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.DenyType">
+            <summary>
+                阻止类型
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.None">
+            <summary>
+                不阻止
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.Hase">
+            <summary>
+                有此内容
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.NonHase">
+            <summary>
+                没有此内容
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.Count">
+            <summary>
+                达到数组数量
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.Equals">
+            <summary>
+                内容等于
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.Like">
+            <summary>
+                内容包含
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.DenyType.Regex">
+            <summary>
+                正则匹配
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.ApiItem">
+            <summary>
+                Api节点
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.Name">
+            <summary>
+                头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.NoBearer">
+            <summary>
+                是否允许不携带OAuth2.0的令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.NeedLogin">
+            <summary>
+                需要登录
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.Os">
+            <summary>
+                操作系统
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.App">
+            <summary>
+                浏览器
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.DenyItem">
+            <summary>
+                阻止节点
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.DenyItem.Head">
+            <summary>
+                头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.DenyItem.Value">
+            <summary>
+                内容
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.DenyItem.DenyType">
+            <summary>
+                类型
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.SystemConfig">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.FireZero">
+            <summary>
+                是否加入MicroZero
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.CheckResult">
+            <summary>
+                是否检查返回值
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.CheckApiItem">
+            <summary>
+                是否开启API预检
+            </summary>
+            <remarks>
+                即检查API是否存在、是否需要令牌、是否可公开访问
+            </remarks>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableInnerCommand">
+            <summary>
+                开启管理命令
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.HttpTimeOut">
+            <summary>
+                超时时间
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.WaringTime">
+            <summary>
+                触发警告的执行时间
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableContext">
+            <summary>
+                是否启用内容页
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.ContextAddr">
+            <summary>
+                内容页地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.IsAppFolder">
+            <summary>
+                是否包含顶级目录(即域名后第一个节是目录而不是站点名称)
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.SecurityChecker">
+            <summary>
+                安全检查员
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityChecker.Data">
+            <summary>
+                数据
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.PreCheck">
+            <summary>
+                预检
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckSign">
+            <summary>
+                验签
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.KillDenyHttpHeaders">
+            <summary>
+                针对HttpHeader特征阻止不安全访问
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckApisInner">
+            <summary>
+                检查特定操作系统与App的适用性
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckToken">
+            <summary>
+                执行检查
+            </summary>
+            <returns>
+                0:表示通过验证，可以继续
+                1：令牌为空或不合格
+                2：令牌是伪造的
+            </returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckToken2">
+            <summary>
+                执行检查
+            </summary>
+            <returns>
+                0:表示通过验证，可以继续
+                1：令牌为空或不合格
+                2：令牌是伪造的
+            </returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.SecurityChecker.VerifyTokenArgument">
+            <summary>
+            AT校验请求参数
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityChecker.VerifyTokenArgument.AuthToken">
+            <summary>
+            身份令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityChecker.VerifyTokenArgument.SceneToken">
+            <summary>
+            场景令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityChecker.VerifyTokenArgument.Page">
+            <summary>
+            场景令牌
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SecurityChecker.VerifyTokenArgument.API">
+            <summary>
+            当前API
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckResult(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                检查返回值是否合理
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.HttpOption">
+            <summary>
+                Http配置类
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.Port">
+            <summary>
+            端口号
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.IsHttps">
+            <summary>
+            是否Https
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.CerFile">
+            <summary>
+            证书文件路径
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.CerPwd">
+            <summary>
+            证书密码
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.ZeroManager">
+            <summary>
+                管理类
+            </summary>
+        </member>
+    </members>
+</doc>

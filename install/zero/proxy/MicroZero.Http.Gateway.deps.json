@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2/linux-x64",
-    "signature": "d4f64800ae83c813abef5b74b7b73b1394d1ed21"
+    "signature": "36d2d1d88f484cf577e72ba7f4caaabcfc20b68b"
   },
   "compilationOptions": {
     "defines": [
@@ -24,7 +24,8 @@
     ".NETCoreApp,Version=v2.2": {
       "MicroZero.Http.Gateway/1.0.0": {
         "dependencies": {
-          "Agebull.MicroZero.Core": "1.4.0.16",
+          "Agebull.MicroZero.Core": "1.4.1.38",
+          "MicroZero.Http.GatewayBase": "1.4.1.23",
           "Microsoft.AspNetCore.All": "2.2.0",
           "Microsoft.NETCore.App": "2.2.0"
         },
@@ -32,7 +33,7 @@
           "MicroZero.Http.Gateway.dll": {}
         }
       },
-      "Agebull.Common.Extend/2.4.0.46": {
+      "Agebull.Common.Extend/2.4.1.9": {
         "dependencies": {
           "Microsoft.CSharp": "4.5.0",
           "Microsoft.Extensions.Configuration": "2.2.0",
@@ -41,7 +42,7 @@
           "Microsoft.Extensions.DependencyInjection": "2.2.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.2.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "2.2.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Reflection.Emit.Lightweight": "4.3.0",
           "System.Threading": "4.3.0"
         },
@@ -49,26 +50,27 @@
           "lib/netcoreapp2.1/Agebull.Common.Extend.dll": {}
         }
       },
-      "Agebull.Common.LogRecorder/2.4.0.46": {
+      "Agebull.Common.LogRecorder/2.4.1.9": {
         "dependencies": {
-          "Agebull.Common.Extend": "2.4.0.46"
+          "Agebull.Common.Extend": "2.4.1.9"
         },
         "compile": {
           "lib/netcoreapp2.1/Agebull.Common.LogRecorder.dll": {}
         }
       },
-      "Agebull.EntityModel.Core/2.4.0.46": {
+      "Agebull.EntityModel.Core/2.4.1.18": {
         "dependencies": {
-          "Agebull.MicroZero.Abstractions": "2.4.0.46"
+          "Agebull.MicroZero.Abstractions": "2.4.1.18",
+          "NPOI": "2.4.1"
         },
         "compile": {
           "lib/netcoreapp2.1/Agebull.EntityModel.Core.dll": {}
         }
       },
-      "Agebull.MicroZero.Abstractions/2.4.0.46": {
+      "Agebull.MicroZero.Abstractions/2.4.1.18": {
         "dependencies": {
-          "Agebull.Common.LogRecorder": "2.4.0.46",
-          "Newtonsoft.Json": "12.0.1"
+          "Agebull.Common.LogRecorder": "2.4.1.9",
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netcoreapp2.1/Agebull.ZeroNet.Abstractions.dll": {}
@@ -132,7 +134,7 @@
       },
       "Microsoft.AspNet.WebApi.Client/5.2.6": {
         "dependencies": {
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "Newtonsoft.Json.Bson": "1.0.1"
         },
         "compile": {
@@ -437,7 +439,7 @@
       "Microsoft.AspNetCore.Authentication.OAuth/2.2.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication": "2.2.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.OAuth.dll": {}
@@ -727,7 +729,7 @@
           "Microsoft.AspNetCore.Http.Connections.Common": "1.1.0",
           "Microsoft.AspNetCore.Routing": "2.2.0",
           "Microsoft.AspNetCore.WebSockets": "2.2.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Security.Principal.Windows": "4.5.0"
         },
         "compile": {
@@ -737,7 +739,7 @@
       "Microsoft.AspNetCore.Http.Connections.Common/1.1.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Connections.Abstractions": "2.2.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Buffers": "4.5.0"
         },
         "compile": {
@@ -823,7 +825,7 @@
       "Microsoft.AspNetCore.JsonPatch/2.2.0": {
         "dependencies": {
           "Microsoft.CSharp": "4.5.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.AspNetCore.JsonPatch.dll": {}
@@ -1035,7 +1037,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.Hosting.Abstractions": "2.2.0",
           "Microsoft.Extensions.Logging.Console": "2.2.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.AspNetCore.NodeServices.dll": {}
@@ -1274,7 +1276,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.Connections.Abstractions": "2.2.0",
           "Microsoft.Extensions.Options": "2.2.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Buffers": "4.5.0"
         },
         "compile": {
@@ -1298,7 +1300,7 @@
       "Microsoft.AspNetCore.SignalR.Protocols.Json/1.1.0": {
         "dependencies": {
           "Microsoft.AspNetCore.SignalR.Common": "1.1.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.AspNetCore.SignalR.Protocols.Json.dll": {}
@@ -1374,7 +1376,7 @@
           "Microsoft.Rest.ClientRuntime": "2.3.8",
           "Microsoft.Rest.ClientRuntime.Azure": "3.3.7",
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Net.Http": "4.3.0"
         },
         "compile": {
@@ -1385,7 +1387,7 @@
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.2.0",
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Collections": "4.3.0",
           "System.Collections.Concurrent": "4.3.0",
           "System.Linq": "4.3.0",
@@ -1704,7 +1706,7 @@
         "dependencies": {
           "Microsoft.Extensions.Configuration": "2.2.0",
           "Microsoft.Extensions.Configuration.FileExtensions": "2.2.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.Extensions.Configuration.Json.dll": {}
@@ -1753,7 +1755,7 @@
       "Microsoft.Extensions.DependencyModel/2.1.0": {
         "dependencies": {
           "Microsoft.DotNet.PlatformAbstractions": "2.1.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Diagnostics.Debug": "4.3.0",
           "System.Dynamic.Runtime": "4.3.0",
           "System.Linq": "4.3.0"
@@ -1952,7 +1954,7 @@
       "Microsoft.Extensions.Logging.EventSource/2.2.0": {
         "dependencies": {
           "Microsoft.Extensions.Logging": "2.2.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.Extensions.Logging.EventSource.dll": {}
@@ -2044,7 +2046,7 @@
       "Microsoft.IdentityModel.JsonWebTokens/5.3.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Tokens": "5.3.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.dll": {}
@@ -2076,7 +2078,7 @@
       "Microsoft.IdentityModel.Protocols.OpenIdConnect/5.3.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Protocols": "5.3.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Dynamic.Runtime": "4.3.0",
           "System.IdentityModel.Tokens.Jwt": "5.3.0"
         },
@@ -2098,7 +2100,7 @@
       "Microsoft.IdentityModel.Tokens/5.3.0": {
         "dependencies": {
           "Microsoft.IdentityModel.Logging": "5.3.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Collections": "4.3.0",
           "System.Diagnostics.Tools": "4.3.0",
           "System.Reflection": "4.3.0",
@@ -2319,7 +2321,7 @@
       "Microsoft.Rest.ClientRuntime/2.3.8": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.dll": {}
@@ -2329,7 +2331,7 @@
         "dependencies": {
           "Microsoft.Rest.ClientRuntime": "2.3.8",
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard1.4/Microsoft.Rest.ClientRuntime.Azure.dll": {}
@@ -2362,12 +2364,17 @@
           "ref/netstandard2.0/Microsoft.Win32.Registry.dll": {}
         }
       },
+      "Microsoft.Win32.SystemEvents/4.5.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.2.0"
+        }
+      },
       "NETStandard.Library/2.0.3": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.2.0"
         }
       },
-      "Newtonsoft.Json/12.0.1": {
+      "Newtonsoft.Json/12.0.2": {
         "compile": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
@@ -2375,10 +2382,23 @@
       "Newtonsoft.Json.Bson/1.0.1": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard1.3/Newtonsoft.Json.Bson.dll": {}
+        }
+      },
+      "NPOI/2.4.1": {
+        "dependencies": {
+          "SharpZipLib": "1.0.0",
+          "System.Configuration.ConfigurationManager": "4.5.0",
+          "System.Drawing.Common": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/NPOI.OOXML.dll": {},
+          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {},
+          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {},
+          "lib/netstandard2.0/NPOI.dll": {}
         }
       },
       "Remotion.Linq/2.2.0": {
@@ -2475,6 +2495,11 @@
       "runtime.win-arm64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x64.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
       "runtime.win-x86.runtime.native.System.Data.SqlClient.sni/4.4.0": {},
+      "SharpZipLib/1.0.0": {
+        "compile": {
+          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {}
+        }
+      },
       "SQLitePCLRaw.bundle_green/1.1.11": {
         "dependencies": {
           "SQLitePCLRaw.core": "1.1.11",
@@ -2596,6 +2621,15 @@
           "ref/netstandard2.0/System.ComponentModel.Composition.dll": {}
         }
       },
+      "System.Configuration.ConfigurationManager/4.5.0": {
+        "dependencies": {
+          "System.Security.Cryptography.ProtectedData": "4.5.0",
+          "System.Security.Permissions": "4.5.0"
+        },
+        "compile": {
+          "ref/netstandard2.0/System.Configuration.ConfigurationManager.dll": {}
+        }
+      },
       "System.Console/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.2.0",
@@ -2689,6 +2723,15 @@
           "System.Runtime": "4.3.0"
         }
       },
+      "System.Drawing.Common/4.5.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.2.0",
+          "Microsoft.Win32.SystemEvents": "4.5.0"
+        },
+        "compile": {
+          "ref/netstandard2.0/System.Drawing.Common.dll": {}
+        }
+      },
       "System.Dynamic.Runtime/4.3.0": {
         "dependencies": {
           "System.Collections": "4.3.0",
@@ -2736,7 +2779,7 @@
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "5.3.0",
           "Microsoft.IdentityModel.Tokens": "5.3.0",
-          "Newtonsoft.Json": "12.0.1"
+          "Newtonsoft.Json": "12.0.2"
         },
         "compile": {
           "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.dll": {}
@@ -3232,6 +3275,7 @@
           "System.Threading.Tasks": "4.3.0"
         }
       },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {},
       "System.Security.Cryptography.X509Certificates/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.2.0",
@@ -3477,36 +3521,44 @@
         "dependencies": {
           "Microsoft.Data.OData": "5.8.2",
           "NETStandard.Library": "2.0.3",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Spatial": "5.8.2"
         },
         "compile": {
           "lib/netstandard1.3/Microsoft.WindowsAzure.Storage.dll": {}
         }
       },
-      "Agebull.MicroZero.ClrZMQ/1.4.0.16": {
+      "Agebull.MicroZero.ClrZMQ/1.4.1.38": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.0.46",
-          "Newtonsoft.Json": "12.0.1"
+          "Agebull.EntityModel.Core": "2.4.1.18"
         },
         "compile": {
           "Agebull.MicroZero.ClrZMQ.dll": {}
         }
       },
-      "Agebull.MicroZero.Core/1.4.0.16": {
+      "Agebull.MicroZero.Core/1.4.1.38": {
         "dependencies": {
-          "Agebull.MicroZero.ClrZMQ": "1.4.0.16",
+          "Agebull.MicroZero.ClrZMQ": "1.4.1.38",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "compile": {
           "Agebull.MicroZero.Core.dll": {}
+        }
+      },
+      "MicroZero.Http.GatewayBase/1.4.1.23": {
+        "dependencies": {
+          "Agebull.MicroZero.Core": "1.4.1.38"
+        },
+        "compile": {
+          "MicroZero.Http.GatewayBase.dll": {}
         }
       }
     },
     ".NETCoreApp,Version=v2.2/linux-x64": {
       "MicroZero.Http.Gateway/1.0.0": {
         "dependencies": {
-          "Agebull.MicroZero.Core": "1.4.0.16",
+          "Agebull.MicroZero.Core": "1.4.1.38",
+          "MicroZero.Http.GatewayBase": "1.4.1.23",
           "Microsoft.AspNetCore.All": "2.2.0",
           "Microsoft.NETCore.App": "2.2.0"
         },
@@ -3514,7 +3566,7 @@
           "MicroZero.Http.Gateway.dll": {}
         }
       },
-      "Agebull.Common.Extend/2.4.0.46": {
+      "Agebull.Common.Extend/2.4.1.9": {
         "dependencies": {
           "Microsoft.CSharp": "4.5.0",
           "Microsoft.Extensions.Configuration": "2.2.0",
@@ -3523,48 +3575,49 @@
           "Microsoft.Extensions.DependencyInjection": "2.2.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.2.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "2.2.0",
-          "Newtonsoft.Json": "12.0.1",
+          "Newtonsoft.Json": "12.0.2",
           "System.Reflection.Emit.Lightweight": "4.3.0",
           "System.Threading": "4.3.0"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.Common.Extend.dll": {
-            "assemblyVersion": "2.4.0.46",
-            "fileVersion": "2.4.0.46"
+            "assemblyVersion": "2.4.1.9",
+            "fileVersion": "2.4.1.9"
           }
         }
       },
-      "Agebull.Common.LogRecorder/2.4.0.46": {
+      "Agebull.Common.LogRecorder/2.4.1.9": {
         "dependencies": {
-          "Agebull.Common.Extend": "2.4.0.46"
+          "Agebull.Common.Extend": "2.4.1.9"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.Common.LogRecorder.dll": {
-            "assemblyVersion": "2.4.0.46",
-            "fileVersion": "2.4.0.46"
+            "assemblyVersion": "2.4.1.9",
+            "fileVersion": "2.4.1.9"
           }
         }
       },
-      "Agebull.EntityModel.Core/2.4.0.46": {
+      "Agebull.EntityModel.Core/2.4.1.18": {
         "dependencies": {
-          "Agebull.MicroZero.Abstractions": "2.4.0.46"
+          "Agebull.MicroZero.Abstractions": "2.4.1.18",
+          "NPOI": "2.4.1"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.EntityModel.Core.dll": {
-            "assemblyVersion": "2.4.0.46",
-            "fileVersion": "2.4.0.46"
+            "assemblyVersion": "2.4.1.18",
+            "fileVersion": "2.4.1.18"
           }
         }
       },
-      "Agebull.MicroZero.Abstractions/2.4.0.46": {
+      "Agebull.MicroZero.Abstractions/2.4.1.18": {
         "dependencies": {
-          "Agebull.Common.LogRecorder": "2.4.0.46",
-          "Newtonsoft.Json": "12.0.1"
+          "Agebull.Common.LogRecorder": "2.4.1.9",
+          "Newtonsoft.Json": "12.0.2"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.ZeroNet.Abstractions.dll": {
-            "assemblyVersion": "2.4.0.46",
-            "fileVersion": "2.4.0.46"
+            "assemblyVersion": "2.4.1.18",
+            "fileVersion": "2.4.1.18"
           }
         }
       },
@@ -3596,16 +3649,52 @@
       },
       "Microsoft.NETCore.Platforms/2.2.0": {},
       "Microsoft.NETCore.Targets/2.0.0": {},
+      "Microsoft.Win32.SystemEvents/4.5.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.2.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
       "NETStandard.Library/2.0.3": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.2.0"
         }
       },
-      "Newtonsoft.Json/12.0.1": {
+      "Newtonsoft.Json/12.0.2": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
             "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.1.22727"
+            "fileVersion": "12.0.2.23222"
+          }
+        }
+      },
+      "NPOI/2.4.1": {
+        "dependencies": {
+          "SharpZipLib": "1.0.0",
+          "System.Configuration.ConfigurationManager": "4.5.0",
+          "System.Drawing.Common": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NPOI.OOXML.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          },
+          "lib/netstandard2.0/NPOI.OpenXml4Net.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          },
+          "lib/netstandard2.0/NPOI.OpenXmlFormats.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          },
+          "lib/netstandard2.0/NPOI.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
           }
         }
       },
@@ -3637,6 +3726,14 @@
           }
         }
       },
+      "SharpZipLib/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {
+            "assemblyVersion": "1.0.0.999",
+            "fileVersion": "1.0.0.999"
+          }
+        }
+      },
       "System.ComponentModel.Composition/4.5.0": {
         "dependencies": {
           "System.Security.Permissions": "4.5.0"
@@ -3648,22 +3745,61 @@
           }
         }
       },
-      "Agebull.MicroZero.ClrZMQ/1.4.0.16": {
+      "System.Configuration.ConfigurationManager/4.5.0": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.0.46",
-          "Newtonsoft.Json": "12.0.1"
+          "System.Security.Cryptography.ProtectedData": "4.5.0",
+          "System.Security.Permissions": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Configuration.ConfigurationManager.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Drawing.Common/4.5.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.2.0",
+          "Microsoft.Win32.SystemEvents": "4.5.0"
+        },
+        "runtime": {
+          "runtimes/unix/lib/netcoreapp2.0/System.Drawing.Common.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.26515.6"
+          }
+        }
+      },
+      "Agebull.MicroZero.ClrZMQ/1.4.1.38": {
+        "dependencies": {
+          "Agebull.EntityModel.Core": "2.4.1.18"
         },
         "runtime": {
           "Agebull.MicroZero.ClrZMQ.dll": {}
         }
       },
-      "Agebull.MicroZero.Core/1.4.0.16": {
+      "Agebull.MicroZero.Core/1.4.1.38": {
         "dependencies": {
-          "Agebull.MicroZero.ClrZMQ": "1.4.0.16",
+          "Agebull.MicroZero.ClrZMQ": "1.4.1.38",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "runtime": {
           "Agebull.MicroZero.Core.dll": {}
+        }
+      },
+      "MicroZero.Http.GatewayBase/1.4.1.23": {
+        "dependencies": {
+          "Agebull.MicroZero.Core": "1.4.1.38"
+        },
+        "runtime": {
+          "MicroZero.Http.GatewayBase.dll": {}
         }
       }
     }
@@ -3674,33 +3810,33 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Agebull.Common.Extend/2.4.0.46": {
+    "Agebull.Common.Extend/2.4.1.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YbqWDYRTKJ53H/LJdKLxhFql70kWAsgK/RONJWe7tW2i7lh2qh+74QVs1luthD2CbgZO9+jOIqyKmpvJy+f2AA==",
-      "path": "agebull.common.extend/2.4.0.46",
-      "hashPath": "agebull.common.extend.2.4.0.46.nupkg.sha512"
+      "sha512": "sha512-9TfOVNIUq8aPgtZ0iyCpDiQBPpkNBYhIGBk9dT/1zSFFSB9I8AuhKAO1QWeBRnqBzWz49b6GVD5iC0swO7EAkg==",
+      "path": "agebull.common.extend/2.4.1.9",
+      "hashPath": "agebull.common.extend.2.4.1.9.nupkg.sha512"
     },
-    "Agebull.Common.LogRecorder/2.4.0.46": {
+    "Agebull.Common.LogRecorder/2.4.1.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-F4wuDYhAqOdvjBGm5qRwWfPprNQZW2sXty3lZisLYMIiPP21Aha4rDnfM1zzNkfTEEFTg41icDNGgtXUvaxwlw==",
-      "path": "agebull.common.logrecorder/2.4.0.46",
-      "hashPath": "agebull.common.logrecorder.2.4.0.46.nupkg.sha512"
+      "sha512": "sha512-d+t1ZJlOK8UxeHD5KDBLXx1JC7U6pqpef4lX8cybvhYM2JOXzUB8dJonXECAlL+D5XJJ4fuu3THWFzkfnrIVFQ==",
+      "path": "agebull.common.logrecorder/2.4.1.9",
+      "hashPath": "agebull.common.logrecorder.2.4.1.9.nupkg.sha512"
     },
-    "Agebull.EntityModel.Core/2.4.0.46": {
+    "Agebull.EntityModel.Core/2.4.1.18": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Rf/7TWjsAWk9LzPT9Hu2XQjK1Nejv8/sSLi9CZKo4QUc8DVcVI6Sn6jauwHhNh/N2C3CH7/9WlFMoZl4LbmqrQ==",
-      "path": "agebull.entitymodel.core/2.4.0.46",
-      "hashPath": "agebull.entitymodel.core.2.4.0.46.nupkg.sha512"
+      "sha512": "sha512-AHbdSUyoLpGk0aJoPjnxyNuWFev9SoFcflrvyG9Y0Tffd6uc7uY9t930mnqOyPLUjxyv2MWI3i8d0GT7Tqo4ng==",
+      "path": "agebull.entitymodel.core/2.4.1.18",
+      "hashPath": "agebull.entitymodel.core.2.4.1.18.nupkg.sha512"
     },
-    "Agebull.MicroZero.Abstractions/2.4.0.46": {
+    "Agebull.MicroZero.Abstractions/2.4.1.18": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-KptdDPcuQpnWQal/6JCEhZA/ZESfpH/us/8kTa4eL4ab0jq53TzDVV66K5NlehvU7RazcBvWIhL6fbh9e2BSpw==",
-      "path": "agebull.microzero.abstractions/2.4.0.46",
-      "hashPath": "agebull.microzero.abstractions.2.4.0.46.nupkg.sha512"
+      "sha512": "sha512-51iGsoEVX3C5ymBEUkM12szHZ8DRlR4MPXEQzlcoB9lpRZfrOYpU2Uhqe9AynU5ynJS4m0eMLsgJjtzlK2wlwQ==",
+      "path": "agebull.microzero.abstractions/2.4.1.18",
+      "hashPath": "agebull.microzero.abstractions.2.4.1.18.nupkg.sha512"
     },
     "Microsoft.NETCore.App/2.2.0": {
       "type": "package",
@@ -3744,6 +3880,13 @@
       "path": "microsoft.netcore.targets/2.0.0",
       "hashPath": "microsoft.netcore.targets.2.0.0.nupkg.sha512"
     },
+    "Microsoft.Win32.SystemEvents/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-K2TAr07pgl/m/J9ed3cmAzx0SD55kYuVfBG6SPRIH/ELTh/D2qGrjOWDQJo7r+LZl1nO2Nkl0UAQBUt6S2ewqQ==",
+      "path": "microsoft.win32.systemevents/4.5.0",
+      "hashPath": "microsoft.win32.systemevents.4.5.0.nupkg.sha512"
+    },
     "NETStandard.Library/2.0.3": {
       "type": "package",
       "serviceable": true,
@@ -3751,12 +3894,19 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "Newtonsoft.Json/12.0.1": {
+    "Newtonsoft.Json/12.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-jmVyoEyk0In8r+AObYQyFKVFm7uSRzE0XSHSbEtBJcZDMV6DqJoyB4FLcHwprPVhAh826so0db3DIKXVnpGoPA==",
-      "path": "newtonsoft.json/12.0.1",
-      "hashPath": "newtonsoft.json.12.0.1.nupkg.sha512"
+      "sha512": "sha512-rTK0s2EKlfHsQsH6Yx2smvcTCeyoDNgCW7FEYyV01drPlh2T243PR2DiDXqtC5N4GDm4Ma/lkxfW5a/4793vbA==",
+      "path": "newtonsoft.json/12.0.2",
+      "hashPath": "newtonsoft.json.12.0.2.nupkg.sha512"
+    },
+    "NPOI/2.4.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-85790/CY9z4DCU1KLpcdLSqaqaqmQOenTqXJfcsYK8LIKNAAoTgjT5LYLbORgdwAd63sbaJiCfB1SIn/dAXrJw==",
+      "path": "npoi/2.4.1",
+      "hashPath": "npoi.2.4.1.nupkg.sha512"
     },
     "runtime.linux-x64.Microsoft.NETCore.App/2.2.0": {
       "type": "package",
@@ -3786,6 +3936,13 @@
       "path": "runtime.linux-x64.microsoft.netcore.dotnethostresolver/2.2.0",
       "hashPath": "runtime.linux-x64.microsoft.netcore.dotnethostresolver.2.2.0.nupkg.sha512"
     },
+    "SharpZipLib/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YuYztmY3jEb21F6e5LIPHJjApdtzdCPQ284UzsCKNfkgW71bukFHJES6RbKi+wm053XzFg0LX5/2vj/9gl8F/g==",
+      "path": "sharpziplib/1.0.0",
+      "hashPath": "sharpziplib.1.0.0.nupkg.sha512"
+    },
     "System.ComponentModel.Composition/4.5.0": {
       "type": "package",
       "serviceable": true,
@@ -3793,12 +3950,38 @@
       "path": "system.componentmodel.composition/4.5.0",
       "hashPath": "system.componentmodel.composition.4.5.0.nupkg.sha512"
     },
-    "Agebull.MicroZero.ClrZMQ/1.4.0.16": {
+    "System.Configuration.ConfigurationManager/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UIFvaFfuKhLr9u5tWMxmVoDPkFeD+Qv8gUuap4aZgVGYSYMdERck4OhLN/2gulAc0nYTEigWXSJNNWshrmxnng==",
+      "path": "system.configuration.configurationmanager/4.5.0",
+      "hashPath": "system.configuration.configurationmanager.4.5.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AiJFxxVPdeITstiRS5aAu8+8Dpf5NawTMoapZ53Gfirml24p7HIfhjmCRxdXnmmf3IUA3AX3CcW7G73CjWxW/Q==",
+      "path": "system.drawing.common/4.5.0",
+      "hashPath": "system.drawing.common.4.5.0.nupkg.sha512"
+    },
+    "System.Security.Cryptography.ProtectedData/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wLBKzFnDCxP12VL9ANydSYhk59fC4cvOr9ypYQLPnAj48NQIhqnjdD2yhP8yEKyBJEjERWS9DisKL7rX5eU25Q==",
+      "path": "system.security.cryptography.protecteddata/4.5.0",
+      "hashPath": "system.security.cryptography.protecteddata.4.5.0.nupkg.sha512"
+    },
+    "Agebull.MicroZero.ClrZMQ/1.4.1.38": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "Agebull.MicroZero.Core/1.4.0.16": {
+    "Agebull.MicroZero.Core/1.4.1.38": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MicroZero.Http.GatewayBase/1.4.1.23": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

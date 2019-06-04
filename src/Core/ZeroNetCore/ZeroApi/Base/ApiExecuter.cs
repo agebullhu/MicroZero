@@ -159,7 +159,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 if (!string.IsNullOrWhiteSpace(item.Context))
                 {
-                    GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(item.Context));
+                    GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(item.Context));//BUG:数据不能全覆盖
                 }
                 GlobalContext.Current.DependencyObjects.Annex(item);
                 if (!string.IsNullOrWhiteSpace(item.Argument))

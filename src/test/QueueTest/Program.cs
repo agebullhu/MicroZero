@@ -12,7 +12,7 @@ namespace QueueTest
         static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.RegistZeroObject<WechatCallBackQueue>();
+            ZeroApplication.RegistZeroObject<PayCallbackController>();
             ZeroApplication.Initialize();
 
             var senparcStartup = new SenparcStartup

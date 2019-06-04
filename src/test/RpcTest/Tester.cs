@@ -99,24 +99,26 @@ namespace RpcTest
 
         void Async()
         {
-            Interlocked.Increment(ref WaitCount);
-            GlobalContext.Reset();
-            DateTime s = DateTime.Now;
+            using (IocScope.CreateScope())
+            {
+                Interlocked.Increment(ref WaitCount);
+                DateTime s = DateTime.Now;
 
-            DoAsync();
+                DoAsync();
 
-            Interlocked.Decrement(ref WaitCount);
-            var sp = (DateTime.Now - s);
-            Last = sp.TotalMilliseconds;
-            Interlocked.Add(ref RunTime, sp.Ticks);
-            if (sp.TotalMilliseconds > Max)
-                Max = sp.TotalMilliseconds;
-            if (sp.TotalMilliseconds < Min)
-                Min = sp.TotalMilliseconds;
-            if (sp.TotalMilliseconds > 1000)
-                Interlocked.Increment(ref TmError);
-            if ((Interlocked.Increment(ref ExCount) % 1000) == 0)
-                Count();
+                Interlocked.Decrement(ref WaitCount);
+                var sp = (DateTime.Now - s);
+                Last = sp.TotalMilliseconds;
+                Interlocked.Add(ref RunTime, sp.Ticks);
+                if (sp.TotalMilliseconds > Max)
+                    Max = sp.TotalMilliseconds;
+                if (sp.TotalMilliseconds < Min)
+                    Min = sp.TotalMilliseconds;
+                if (sp.TotalMilliseconds > 1000)
+                    Interlocked.Increment(ref TmError);
+                if ((Interlocked.Increment(ref ExCount) % 100) == 0)
+                    Count();
+            }
         }
         protected abstract void DoAsync();
 
