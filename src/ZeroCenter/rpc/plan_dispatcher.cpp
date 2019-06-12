@@ -37,7 +37,7 @@ namespace agebull
 			}
 			boost::thread(boost::bind(run_plan_poll, station.get()));
 			station->task_semaphore_.wait();
-			station->storage_.prepare(station->config_);
+			//station->storage_.prepare(station->config_);
 			station->poll();
 			station->task_semaphore_.wait();
 			station_warehouse::left(station.get());
@@ -120,33 +120,6 @@ namespace agebull
 			send_request_status_by_trace(socket, *list[0], code, list, glid_index, rqid_index, rqer_index, json.c_str());
 		}
 
-		/**
-		* \brief 计划列表
-		*/
-		void plan_dispatcher::plan_list(string& json)
-		{
-			redis_live_scope redis(global_config::redis_defdb);
-			json = "[";
-			bool first = true;
-			int cursor = 0;
-			do
-			{
-				vector<acl::string> keys;
-				cursor = redis->scan(cursor, keys, "msg:*");
-				for (acl::string& key : keys)
-				{
-					if (first)
-						first = false;
-					else
-						json.append(",");
-					shared_ptr<plan_message> message = plan_message::load_message(key.c_str());
-
-					json.append(message->write_json());
-				}
-
-			} while (cursor > 0);
-			json.append("]");
-		}
 		const char* plan_commands_1[] =
 		{
 			"list","message", "skip", "pause", "close", "remove", "reset"
@@ -167,7 +140,7 @@ namespace agebull
 			{
 			case plan_commands_2::list:
 			{
-				plan_list(json);
+				plan_message::plan_list(json);
 				return zero_def::status::ok;
 			}
 			case plan_commands_2::message:
@@ -355,7 +328,7 @@ namespace agebull
 				return false;
 			}
 			message->read_plan(*list[plan]);
-			if (message->plan_repet == 0 || (message->skip_set > 0 && message->plan_repet > 0 && message->plan_repet <= message->skip_set))
+			if (!message->validate())
 			{
 				send_request_status_by_trace(socket, *caller, zero_def::status::arg_invalid, list, glid, rqid, reqer, nullptr);
 				return false;
@@ -364,11 +337,7 @@ namespace agebull
 			send_request_status_by_trace(socket, *caller, zero_def::status::jion_plan, list, glid, rqid, reqer, nullptr);
 
 			message->station_type = config->station_type;
-			if (message->plan_time <= 0)
-			{
-				message->plan_time = time(nullptr);
-			}
-
+			
 			description.append_frame(zero_def::frame::plan);
 			message->frames.emplace_back("");
 
@@ -390,8 +359,10 @@ namespace agebull
 				sprintf(frame_head.c_str(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
 			}
 
+			
+			//message->save_message(true,false,true,false,false,false);
 			message->next();
-			storage_.save_plan(*message);
+			//storage_.save_plan(*message);
 			return true;
 		}
 
@@ -404,20 +375,23 @@ namespace agebull
 				return;
 			message->plan_state = plan_message_state::execute;
 			message->exec_time = time(nullptr);
-			const auto ptr = sockets_.find(*message->station);
-			shared_ptr<inner_socket> socket;
-			if (ptr == sockets_.end())
-			{
-				socket = make_shared<inner_socket>(get_station_name(), *message->station);
-				sockets_.insert(make_pair(*message->station, socket));
-			}
-			else
-			{
-				socket = ptr->second;
-			}
+			//const auto ptr = sockets_.find(*message->station);
+			//shared_ptr<inner_socket> socket;
+			//if (ptr == sockets_.end())
+			//{
+			//	socket = make_shared<inner_socket>(get_station_name(), *message->station);
+			//	sockets_.insert(make_pair(*message->station, socket));
+			//}
+			//else
+			//{
+			//	socket = ptr->second;
+			//}
+			//char key[256];
+			//sprintf(key, "%lld-%ld", message->plan_id, message->exec_time);
+			inner_socket socket(get_station_name(), *message->station);
 			message->frames[1].state(zero_def::command::proxy);
 			message->frames[message->frames.size() - 2] = message->write_info();
-			var state = socket->send(message->frames);
+			var state = socket.send(message->frames);
 			message->frames[message->frames.size() - 2].free();//防止无义的保存
 
 			vector<shared_char> result;
@@ -430,7 +404,7 @@ namespace agebull
 				on_plan_result(message, config ? zero_def::status::send_error : zero_def::status::not_find, result);
 				return;
 			}
-			state = socket->recv(result);
+			state = socket.recv(result);
 			if (state != zmq_socket_state::succeed)
 			{
 				shared_char frame;
@@ -446,7 +420,7 @@ namespace agebull
 			}
 			message->exec_state = result[0].state();
 
-			storage_.save_log(*message);
+			//storage_.save_log(*message);
 			message->save_message(false, true, false, false, false, false);
 		}
 
@@ -513,7 +487,7 @@ namespace agebull
 				}
 			}
 			result_event(message, list);
-			storage_.save_log(*message, list);
+			//storage_.save_log(*message, list);
 			message->save_message_result(*message->station, list);
 		}
 

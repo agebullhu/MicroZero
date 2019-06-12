@@ -6,6 +6,7 @@ namespace agebull
 	global_config json_config::global;
 	int global_config::base_tcp_port = 7999;
 	int global_config::plan_exec_timeout = 300;
+	int global_config::plan_redis_db = 0x11;
 	int global_config::plan_cache_size = 1024;
 	int global_config::pool_timeout = 1000;
 	bool global_config::monitor_socket = false;
@@ -39,7 +40,7 @@ namespace agebull
 	int global_config::HEARTBEAT_IVL = 60000;
 	int global_config::HEARTBEAT_TIMEOUT = 1000;
 	int global_config::HEARTBEAT_TTL = 60000;
-	
+
 	/**
 	* \brief 系统根目录
 	*/
@@ -89,7 +90,7 @@ namespace agebull
 			global_config::trace_net = zero.boolean("trace_net", global_config::trace_net);
 			global_config::api_route_mode = zero.boolean("api_route_mode", global_config::api_route_mode);
 			global_config::pool_timeout = zero.number("pool_timeout", global_config::pool_timeout);
-			
+
 			var key = zero.str("service_key");
 			if (key != nullptr)
 				strcpy(global_config::service_key, key);
@@ -101,6 +102,7 @@ namespace agebull
 			if (addr != nullptr)
 				strcpy(global_config::redis_addr, addr);
 			global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
+			global_config::plan_redis_db = redis.number("plandb", global_config::plan_redis_db);
 		}
 		//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
 	}
@@ -117,8 +119,10 @@ namespace agebull
 		log_msg1("config => worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
 		log_msg1("config => trace_net : %d", global_config::trace_net);
-		log_msg1("config => plan_exec_timeout : %d", global_config::plan_exec_timeout);
-		log_msg1("config => plan_cache_size : %d", global_config::plan_cache_size);
+
+		log_msg1("plan => redis_db : %d", global_config::plan_redis_db);
+		log_msg1("plan => exec_timeout : %d", global_config::plan_exec_timeout);
+		log_msg1("plan => cache_size : %d", global_config::plan_cache_size);
 
 		log_msg1("redis => addr : %s", global_config::redis_addr);
 		log_msg1("redis => defdb : %d", global_config::redis_defdb);

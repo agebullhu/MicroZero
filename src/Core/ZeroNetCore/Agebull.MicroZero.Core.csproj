@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.1.40</Version>
+    <Version>1.4.1.42-alpha</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

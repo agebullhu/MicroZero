@@ -85,6 +85,8 @@ namespace Agebull.MicroZero.ZeroApis
             foreach (var kv in context)
                 if (!_arguments.ContainsKey(kv.Key))
                     _arguments.Add(kv.Key, kv.Value);
+
+            GlobalContext.Current.DependencyObjects.Annex(this);
             return _arguments;
         }
 

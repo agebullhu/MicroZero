@@ -63,6 +63,7 @@ namespace agebull
 		static bool api_route_mode;
 		static bool trace_net;
 		static int base_tcp_port;
+		static int plan_redis_db;
 		static int plan_exec_timeout;
 		static int plan_cache_size;
 		static int pool_timeout;

@@ -203,6 +203,7 @@ namespace MicroZero.Http.Route
             try
             {
                 var list = JsonConvert.DeserializeObject<List<ZeroPlan>>(json);
+                Plans.Clear();
                 foreach (var plan in list)
                 {
                     SyncPlan(plan);
@@ -276,7 +277,7 @@ namespace MicroZero.Http.Route
             clientPlan.station = config.StationName;
 
 
-            CustomPlan plan = new CustomPlan
+            var plan = new ZeroPlanInfo
             {
                 plan_type = clientPlan.plan_type,
                 plan_value = clientPlan.plan_value,

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Agebull.Common.Context;
@@ -212,6 +213,11 @@ namespace Agebull.MicroZero
 
             for (int idx = 2; idx < end && messages.Length > idx - move; idx++)
             {
+                if (idx >= description.Length)
+                {
+                    Console.WriteLine("BUG is wenwenwen");
+                    break;
+                }
                 var bytes = messages[idx - move];
                 message._frames.Add(idx - 2, new ZeroFrameItem
                 {

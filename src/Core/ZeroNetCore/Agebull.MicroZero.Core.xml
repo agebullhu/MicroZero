@@ -1177,7 +1177,7 @@
                 Api站点
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient._result">
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient._core">
             <summary>
                 返回的数据
             </summary>
@@ -1195,11 +1195,6 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.ContextJson">
             <summary>
                 上下文内容（透传方式）
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.RequestId">
-            <summary>
-                请求站点
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.Title">
@@ -1222,11 +1217,6 @@
                 扩展参数
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient.GlobalId">
-            <summary>
-                请求时申请的全局标识(本地)
-            </summary>
-        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.State">
             <summary>
                 结果状态
@@ -1246,6 +1236,17 @@
             2 无远程定向路由,
             3 无上下文信息
             </remarks>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallCommand">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CheckStateResult">
+            <summary>
+                检查在非成功状态下的返回值
+            </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallSync(System.String,System.String,System.String)">
             <summary>
@@ -1272,23 +1273,6 @@
             <param name="station"></param>
             <param name="commmand"></param>
             <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallCommand">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CheckStateResult">
-            <summary>
-                检查在非成功状态下的返回值
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.Call">
-            <summary>
-                远程调用
-            </summary>
             <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiClient.IHandler">
@@ -1323,34 +1307,6 @@
             <summary>
                 注册处理器
             </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient.CallDescription">
-            <summary>
-                请求格式说明
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.WriteError(System.String,System.Object[])">
-            <summary>
-            
-            </summary>
-            <param name="title"></param>
-            <param name="messages"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.Receive(ZeroMQ.ZSocket)">
-            <summary>
-                接收文本
-            </summary>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.Send(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallApi``2(System.String,System.String,``0)">
             <summary>
@@ -1408,6 +1364,154 @@
             <typeparam name="TResult">参数类型</typeparam>
             <param name="station">站点</param>
             <param name="api">api名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``1(System.String,System.String,System.DateTime,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="time">计划时间</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``1(System.String,System.String,Agebull.MicroZero.plan_date_type,System.Int16,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="type">类型(除none time之外,基准时间为现在)</param>
+            <param name="num">计划值</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``2(System.String,System.String,``0,System.DateTime,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <param name="time">计划时间</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``2(System.String,System.String,``0,Agebull.MicroZero.plan_date_type,System.Int16,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <param name="type">类型(除none time之外,基准时间为现在)</param>
+            <param name="num">计划值</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiClientCore">
+            <summary>
+                Api站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Result">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Station">
+            <summary>
+                请求站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.ContextJson">
+            <summary>
+                上下文内容（透传方式）
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.RequestId">
+            <summary>
+                请求站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Title">
+            <summary>
+                标题
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Commmand">
+            <summary>
+                调用命令
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Argument">
+            <summary>
+                参数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.ExtendArgument">
+            <summary>
+                扩展参数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.State">
+            <summary>
+                结果状态
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.LastResult">
+            <summary>
+            最后一个返回值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.CheckStateResult">
+            <summary>
+                检查在非成功状态下的返回值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Call">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Plan(Agebull.MicroZero.ZeroPlanInfo)">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.CallDescription">
+            <summary>
+                请求格式说明
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.PlanDescription">
+            <summary>
+                请求格式说明
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Receive(ZeroMQ.ZSocket)">
+            <summary>
+                接收文本
+            </summary>
+            <param name="socket"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Send(ZeroMQ.ZSocket,System.Byte[],System.Byte[][])">
+            <summary>
+                一次请求
+            </summary>
+            <param name="socket"></param>
+            <param name="description"></param>
+            <param name="args"></param>
             <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerBase">

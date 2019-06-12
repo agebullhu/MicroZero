@@ -21,7 +21,7 @@ namespace agebull
 		class plan_dispatcher :public zero_station
 		{
 			friend plan_message;
-			plan_storage storage_;
+			//plan_storage storage_;
 			map<string, shared_ptr<inner_socket>> sockets_;
 		public:
 			/**
@@ -131,10 +131,6 @@ namespace agebull
 			* \brief 执行命令
 			*/
 			static char exec_command(const char* command, vector<shared_char>& arguments, string& json);
-			/**
-			* \brief 计划列表
-			*/
-			static void plan_list(string& json);
 		};
 	}
 }

@@ -193,7 +193,7 @@ namespace agebull
 			* \brief 执行时间
 			*/
 			time_t exec_time;
-			
+
 			/**
 			* \brief 消息内容
 			*/
@@ -205,19 +205,19 @@ namespace agebull
 			*/
 			plan_message()
 				: plan_id(0)
-				  , station_type(0)
-				  , plan_type()
-				  , plan_value(0)
-				  , plan_repet(0)
-				  , real_repet(0)
-				  , no_skip(false)
-				  , skip_set(0)
-				  , skip_num(0)
-				  , exec_state(0)
-				  , plan_state(plan_message_state::none)
-				  , add_time(0)
-				  , plan_time(0)
-				  , exec_time(0)
+				, station_type(0)
+				, plan_type()
+				, plan_value(0)
+				, plan_repet(0)
+				, real_repet(0)
+				, no_skip(false)
+				, skip_set(0)
+				, skip_num(0)
+				, exec_state(0)
+				, plan_state(plan_message_state::none)
+				, add_time(0)
+				, plan_time(0)
+				, exec_time(0)
 			{
 			}
 
@@ -258,6 +258,10 @@ namespace agebull
 			* \brief 读取消息
 			*/
 			static shared_ptr<plan_message> load_message(const char* key);
+			/**
+			* \brief 数据检查
+			*/
+			bool validate();
 
 			/**
 			* \brief 恢复执行
@@ -332,6 +336,10 @@ namespace agebull
 			*/
 			static void exec_now(std::function<void(shared_ptr<plan_message>&)> exec);
 
+			/**
+			* \brief 计划列表
+			*/
+			static void plan_list(string& json);
 
 			/**
 			* \brief 设置跳过

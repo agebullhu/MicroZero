@@ -1,13 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Agebull.Common.Context;
 using Agebull.Common.Logging;
-using Agebull.EntityModel.Common;
-using Agebull.MicroZero.ZeroApis;
-using Newtonsoft.Json;
-using ZeroMQ;
 
 namespace Agebull.MicroZero.ZeroApis
 {
@@ -21,62 +15,52 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     返回的数据
         /// </summary>
-        private string _result;
+        private readonly ApiClientCore _core = new ApiClientCore();
 
         /// <summary>
         ///     返回值
         /// </summary>
-        public string Result => _result;
+        public string Result => _core.Result;
 
         /// <summary>
         ///     请求站点
         /// </summary>
-        public string Station { get; set; }
+        public string Station { get => _core.Station; set => _core.Station = value; }
 
         /// <summary>
         ///     上下文内容（透传方式）
         /// </summary>
-        public string ContextJson { get; set; }
-
-        /// <summary>
-        ///     请求站点
-        /// </summary>
-        public string RequestId { get; } = RandomOperate.Generate(8);
+        public string ContextJson { get => _core.ContextJson; set => _core.ContextJson = value; }
 
         /// <summary>
         ///     标题
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get => _core.Title; set => _core.Title = value; }
 
         /// <summary>
         ///     调用命令
         /// </summary>
-        public string Commmand { get; set; }
+        public string Commmand { get => _core.Commmand; set => _core.Commmand = value; }
 
         /// <summary>
         ///     参数
         /// </summary>
-        public string Argument { get; set; }
+        public string Argument { get => _core.Argument; set => _core.Argument = value; }
 
         /// <summary>
         ///     扩展参数
         /// </summary>
-        public string ExtendArgument { get; set; }
-
-        /// <summary>
-        ///     请求时申请的全局标识(本地)
-        /// </summary>
-        public string GlobalId;
+        public string ExtendArgument { get => _core.ExtendArgument; set => _core.ExtendArgument = value; }
 
         /// <summary>
         ///     结果状态
         /// </summary>
-        public ZeroOperatorStateType State { get; set; }
+        public ZeroOperatorStateType State => _core.State;
 
         /// <summary>
         /// 最后一个返回值
         /// </summary>
-        public ZeroResult LastResult { get; set; }
+        public ZeroResult LastResult => _core.LastResult;
 
         /// <summary>
         /// 简单调用
@@ -90,8 +74,35 @@ namespace Agebull.MicroZero.ZeroApis
 
         #endregion
 
+        #region 流程
 
-        #region Command
+
+        /// <summary>
+        ///     远程调用
+        /// </summary>
+        /// <returns></returns>
+        public void CallCommand()
+        {
+            using (MonitorScope.CreateScope("内部Zero调用"))
+            {
+                Prepare();
+                _core.Call();
+                End();
+            }
+        }
+
+        /// <summary>
+        ///     检查在非成功状态下的返回值
+        /// </summary>
+        public void CheckStateResult()
+        {
+            _core.CheckStateResult();
+        }
+
+
+        #endregion
+
+        #region async
 
         /// <summary>
         ///     远程调用
@@ -124,7 +135,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="commmand"></param>
         /// <param name="argument"></param>
         /// <returns></returns>
-        public static string Call(string station, string commmand, string argument)
+        private static string Call(string station, string commmand, string argument)
         {
             var client = new ApiClient
             {
@@ -133,137 +144,12 @@ namespace Agebull.MicroZero.ZeroApis
                 Argument = argument
             };
             client.CallCommand();
+            client._core.CheckStateResult();
             return client.Result;
         }
 
 
-        /// <summary>
-        ///     远程调用
-        /// </summary>
-        /// <returns></returns>
-        public void CallCommand()
-        {
-            using (MonitorScope.CreateScope("内部Zero调用"))
-            {
-                Prepare();
-                Call();
-                End();
-            }
-        }
         #endregion
-
-        #region Flow
-
-        /// <summary>
-        ///     检查在非成功状态下的返回值
-        /// </summary>
-        public void CheckStateResult()
-        {
-            if (_result != null)
-                return;
-            IApiResult apiResult;
-            switch (State)
-            {
-                case ZeroOperatorStateType.Ok:
-                    apiResult = ApiResultIoc.Ioc.Ok;
-                    break;
-                case ZeroOperatorStateType.LocalNoReady:
-                case ZeroOperatorStateType.LocalZmqError:
-                    apiResult = ApiResultIoc.Ioc.NoReady;
-                    break;
-                case ZeroOperatorStateType.LocalSendError:
-                case ZeroOperatorStateType.LocalRecvError:
-                    apiResult = ApiResultIoc.Ioc.NetworkError;
-                    break;
-                case ZeroOperatorStateType.LocalException:
-                    apiResult = ApiResultIoc.Ioc.LocalException;
-                    break;
-                case ZeroOperatorStateType.Plan:
-                case ZeroOperatorStateType.Runing:
-                case ZeroOperatorStateType.VoteBye:
-                case ZeroOperatorStateType.Wecome:
-                case ZeroOperatorStateType.VoteSend:
-                case ZeroOperatorStateType.VoteWaiting:
-                case ZeroOperatorStateType.VoteStart:
-                case ZeroOperatorStateType.VoteEnd:
-                    apiResult = ApiResultIoc.Ioc.Error(ErrorCode.Success, State.Text());
-                    break;
-                case ZeroOperatorStateType.Error:
-                    apiResult = ApiResultIoc.Ioc.InnerError;
-                    break;
-                case ZeroOperatorStateType.Unavailable:
-                    apiResult = ApiResultIoc.Ioc.Unavailable;
-                    break;
-                case ZeroOperatorStateType.NotSupport:
-                case ZeroOperatorStateType.NotFind:
-                case ZeroOperatorStateType.NoWorker:
-                    apiResult = ApiResultIoc.Ioc.NoFind;
-                    break;
-                case ZeroOperatorStateType.ArgumentInvalid:
-                    apiResult = ApiResultIoc.Ioc.ArgumentError;
-                    break;
-                case ZeroOperatorStateType.TimeOut:
-                    apiResult = ApiResultIoc.Ioc.TimeOut;
-                    break;
-                case ZeroOperatorStateType.FrameInvalid:
-
-                    apiResult = ApiResultIoc.Ioc.NetworkError;
-                    break;
-                case ZeroOperatorStateType.NetError:
-
-                    apiResult = ApiResultIoc.Ioc.NetworkError;
-                    break;
-                case ZeroOperatorStateType.Failed:
-                case ZeroOperatorStateType.Bug:
-                    apiResult = ApiResultIoc.Ioc.LogicalError;
-                    break;
-                case ZeroOperatorStateType.Pause:
-                    apiResult = ApiResultIoc.Ioc.Pause;
-                    break;
-                case ZeroOperatorStateType.DenyAccess:
-                    apiResult = ApiResultIoc.Ioc.DenyAccess;
-                    break;
-                default:
-                    apiResult = ApiResultIoc.Ioc.RemoteEmptyError;
-                    break;
-            }
-            if (LastResult != null && LastResult.InteractiveSuccess)
-            {
-                if (!LastResult.TryGetValue(ZeroFrameType.Responser, out var point))
-                    point = "zero_center";
-                apiResult.Status.Point = point;
-            }
-            _result = JsonHelper.SerializeObject(apiResult);
-        }
-
-        /// <summary>
-        ///     远程调用
-        /// </summary>
-        /// <returns></returns>
-        private void Call()
-        {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                State = ZeroOperatorStateType.LocalNoReady;
-                return;
-            }
-
-            var socket = ZeroConnectionPool.GetSocket(Station, GlobalContext.RequestInfo.RequestId);
-            if (socket?.Socket == null)
-            {
-                _result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
-                return;
-            }
-
-            using (socket)
-            {
-                CallApi(socket);
-            }
-        }
-
-        #endregion
-
 
         #region 操作注入
 
@@ -329,7 +215,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void End()
         {
-            CheckStateResult();
+            _core.CheckStateResult();
             if (Simple)
                 return;
             LogRecorderX.MonitorTrace($"Result:{Result}");
@@ -348,152 +234,6 @@ namespace Agebull.MicroZero.ZeroApis
 
         #endregion
 
-        #region Socket
-
-        /// <summary>
-        ///     请求格式说明
-        /// </summary>
-        private static readonly byte[] CallDescription =
-        {
-            9,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.Command,
-            ZeroFrameType.Argument,
-            ZeroFrameType.TextContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Requester,
-            ZeroFrameType.Responser,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-        private void CallApi(PoolSocket socket)
-        {
-            LastResult = Send(socket.Socket, CallDescription,
-                Commmand,
-                Argument,
-                ExtendArgument,
-                GlobalContext.RequestInfo.RequestId,
-                ZeroApplication.Config.StationName,
-                GlobalContext.Current.Organizational.RouteName,
-                GlobalContext.RequestInfo.LocalGlobalId,
-                ContextJson ?? 
-                    (GlobalContext.CurrentNoLazy == null 
-                        ? null 
-                        : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy)));
-
-            if (!LastResult.InteractiveSuccess)
-            {
-                socket.HaseFailed = true;
-                State = LastResult.State;
-                return;
-            }
-
-            LastResult = Receive(socket.Socket);
-            if (!LastResult.InteractiveSuccess)
-            {
-                socket.HaseFailed = true;
-                State = LastResult.State;
-                return;
-            }
-            if (LastResult.State != ZeroOperatorStateType.Runing)
-            {
-                socket.HaseFailed = true;
-                State = LastResult.State;
-                return;
-            }
-            LastResult = Receive(socket.Socket);
-            if (!LastResult.InteractiveSuccess)
-            {
-                socket.HaseFailed = true;
-                State = LastResult.State;
-                return;
-            }
-            LastResult.TryGetValue(ZeroFrameType.ResultText, out _result);
-            LogRecorderX.MonitorTrace($"Remte result:{_result}");
-            State = LastResult.State;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="messages"></param>
-        public static void WriteError(string title, params object[] messages)
-        {
-            LogRecorderX.MonitorTrace($"{title} : {messages.LinkToString(" > ")}");
-        }
-
-        /// <summary>
-        ///     接收文本
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        private ZeroResult Receive(ZSocket socket)
-        {
-            if (!socket.Recv(out var frames))
-            {
-                return new ZeroResult
-                {
-                    State = ZeroOperatorStateType.LocalRecvError
-                };
-            }
-            try
-            {
-                return ZeroResultData.Unpack<ZeroResult>(frames, true);
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("Receive", e, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}.");
-                return new ZeroResult
-                {
-                    State = ZeroOperatorStateType.LocalException,
-                    Exception = e
-                };
-            }
-        }
-
-        /// <summary>
-        ///     一次请求
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="desicription"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        static ZeroResult Send(ZSocket socket, byte[] desicription, params string[] args)
-        {
-            using (var message = new ZMessage())
-            {
-                var frame = new ZFrame(desicription);
-                message.Add(frame);
-                if (args != null)
-                {
-                    foreach (var arg in args)
-                    {
-                        message.Add(new ZFrame(arg.ToZeroBytes()));
-                    }
-                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
-                    
-                }
-                if (!socket.SendTo(message))
-                {
-                    return new ZeroResult
-                    {
-                        State = ZeroOperatorStateType.LocalSendError,
-                        ZmqError = socket.LastError
-                    };
-                }
-            }
-            return new ZeroResult
-            {
-                State = ZeroOperatorStateType.Ok,
-                InteractiveSuccess = true
-            };
-        }
-
-        #endregion
-
         #region 快捷方法
 
         /// <summary>
@@ -507,7 +247,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static IApiResult<TResult> CallApi<TArgument, TResult>(string station, string api, TArgument arg)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api,
@@ -516,7 +256,7 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
         }
@@ -530,7 +270,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static IApiResult CallApi<TArgument>(string station, string api, TArgument arg)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api,
@@ -539,7 +279,7 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return ApiResultIoc.Ioc.DeserializeObject(client.Result);
         }
@@ -553,7 +293,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static IApiResult<TResult> CallApi<TResult>(string station, string api)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api
@@ -561,7 +301,7 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
         }
@@ -574,7 +314,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static IApiResult CallApi(string station, string api)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api
@@ -582,14 +322,10 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return ApiResultIoc.Ioc.DeserializeObject(client.Result);
         }
-        #endregion
-
-
-        #region 快捷方法
 
         /// <summary>
         /// 调用远程方法
@@ -602,7 +338,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static TResult Call<TArgument, TResult>(string station, string api, TArgument arg)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api,
@@ -611,7 +347,7 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return JsonHelper.DeserializeObject<TResult>(client.Result);
         }
@@ -625,7 +361,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static TResult Call<TResult>(string station, string api)
         {
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = station,
                 Commmand = api
@@ -633,11 +369,185 @@ namespace Agebull.MicroZero.ZeroApis
             client.CallCommand();
             if (client.State != ZeroOperatorStateType.Ok)
             {
-                client.CheckStateResult();
+                client._core.CheckStateResult();
             }
             return JsonHelper.DeserializeObject<TResult>(client.Result);
         }
 
+        #endregion
+
+
+        #region 计划调用(一次)
+
+        /// <summary>
+        /// 计划调用(一次)
+        /// </summary>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="time">计划时间</param>
+        /// <param name="description">计划说明</param>
+        /// <returns></returns>
+        public static IApiResult<TResult> ApiPlan<TResult>(string station, string api, DateTime time, string description)
+        {
+            var client = new ApiClient
+            {
+                Station = station,
+                Commmand = api
+            };
+
+            var plan = new ZeroPlanInfo
+            {
+                plan_type = plan_date_type.time,
+                plan_value = 0,
+                plan_repet = 1,
+                description = description,
+                no_skip = true,
+                skip_set = 0,
+                plan_time = (int)((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000)
+            };
+            using (MonitorScope.CreateScope("内部Zero调用"))
+            {
+                client.Prepare();
+                client._core.Plan(plan);
+                client.End();
+            }
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client._core.CheckStateResult();
+            }
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
+        }
+
+
+        /// <summary>
+        /// 计划调用(一次)
+        /// </summary>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="type">类型(除none time之外,基准时间为现在)</param>
+        /// <param name="num">计划值</param>
+        /// <param name="description">计划说明</param>
+        /// <returns></returns>
+        public static IApiResult<TResult> ApiPlan<TResult>(string station, string api,plan_date_type type, short num, string description)
+        {
+            var client = new ApiClient
+            {
+                Station = station,
+                Commmand = api
+            };
+
+            var plan = new ZeroPlanInfo
+            {
+                plan_type = type,
+                plan_value = num,
+                plan_repet = 1,
+                description = description,
+                no_skip = true,
+                skip_set = 0,
+                plan_time = (int)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000)
+            };
+            using (MonitorScope.CreateScope("内部Zero调用"))
+            {
+                client.Prepare();
+                client._core.Plan(plan);
+                client.End();
+            }
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client._core.CheckStateResult();
+            }
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
+        }
+
+        /// <summary>
+        /// 计划调用(一次)
+        /// </summary>
+        /// <typeparam name="TArgument">参数类型</typeparam>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="arg">参数</param>
+        /// <param name="time">计划时间</param>
+        /// <param name="description">计划说明</param>
+        /// <returns></returns>
+        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg,DateTime time,string description)
+        {
+            var client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
+            };
+
+            var plan = new ZeroPlanInfo
+            {
+                plan_type = plan_date_type.time,
+                plan_value = 0,
+                plan_repet = 1,
+                description = description,
+                no_skip = true,
+                skip_set = 0,
+                plan_time = (int)((time.ToUniversalTime().Ticks - 621355968000000000) / 10000000)
+            };
+            using (MonitorScope.CreateScope("内部Zero调用"))
+            {
+                client.Prepare();
+                client._core.Plan(plan);
+                client.End();
+            }
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client._core.CheckStateResult();
+            }
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
+        }
+
+
+        /// <summary>
+        /// 计划调用(一次)
+        /// </summary>
+        /// <typeparam name="TArgument">参数类型</typeparam>
+        /// <typeparam name="TResult">返回值类型</typeparam>
+        /// <param name="station">站点</param>
+        /// <param name="api">api名称</param>
+        /// <param name="arg">参数</param>
+        /// <param name="type">类型(除none time之外,基准时间为现在)</param>
+        /// <param name="num">计划值</param>
+        /// <param name="description">计划说明</param>
+        /// <returns></returns>
+        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg, plan_date_type type,short num, string description)
+        {
+            var client = new ApiClient
+            {
+                Station = station,
+                Commmand = api,
+                Argument = arg == null ? null : JsonHelper.SerializeObject(arg)
+            };
+
+            var plan = new ZeroPlanInfo
+            {
+                plan_type = type,
+                plan_value = num,
+                plan_repet = 1,
+                description = description,
+                no_skip = true,
+                skip_set = 0,
+                plan_time = (int)((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000)
+            };
+            using (MonitorScope.CreateScope("内部Zero调用"))
+            {
+                client.Prepare();
+                client._core.Plan(plan);
+                client.End();
+            }
+            if (client.State != ZeroOperatorStateType.Ok)
+            {
+                client._core.CheckStateResult();
+            }
+            return ApiResultIoc.Ioc.DeserializeObject<TResult>(client.Result);
+        }
         #endregion
     }
 }

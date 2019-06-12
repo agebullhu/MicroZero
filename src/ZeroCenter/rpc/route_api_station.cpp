@@ -84,11 +84,11 @@ namespace agebull
 			list.insert(list.begin(), router);
 			if (send_response(list, false) != zmq_socket_state::succeed)
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);
+				send_request_status_by_trace(socket, *caller, zero_def::status::not_worker, list, glid_index, reqid, reqer);
 			}
 			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				send_request_status_by_trace(socket, list, description, zero_def::status::runing, false);
+				send_request_status_by_trace(socket, *caller, zero_def::status::runing, list, glid_index, reqid, reqer);
 			}
 		}
 		/**

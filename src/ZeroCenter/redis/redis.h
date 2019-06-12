@@ -253,6 +253,12 @@ namespace agebull
 			sprintf(buf, "%lld", number);
 			m_redis_cmd->hset(key, sub_key, buf);
 		}
+		void set_hash_val(const char* key, const char* sub_key, int64_t number)
+		{
+			char buf[32];
+			sprintf(buf, "%lld", number);
+			m_redis_cmd->hset(key, sub_key, buf);
+		}
 		void set_hash_val(const char* key, const char* sub_key,uint64 number)
 		{
 			char buf[32];
@@ -269,11 +275,9 @@ namespace agebull
 			sprintf(buf, "%d", number);
 			m_redis_cmd->hset(key, sub_key, buf);
 		}
-		void set_hash_val(const char* key, const char* sub_key, int64_t number)
+		void set_hash_val(const char* key, const char* sub_key, const char* str)
 		{
-			char buf[32];
-			sprintf(buf, "%lld", number);
-			m_redis_cmd->hset(key, sub_key, buf);
+			m_redis_cmd->hset(key, sub_key, str);
 		}
 		void set_hash_val(const char* key, const char* sub_key, uint number)
 		{
@@ -421,7 +425,7 @@ namespace agebull
 		/**
 		* \brief 对象获取
 		*/
-		trans_redis* t() const
+		trans_redis* redis() const
 		{
 			return redis_;
 		}

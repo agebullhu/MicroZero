@@ -69,6 +69,7 @@ namespace agebull
 				 * 以下为返回时的快捷状态:说明帧的第二节字([1])
 				 */
 
+				constexpr uchar succeed = uchar(0x1);
 				constexpr uchar ok = uchar(0x1);
 				constexpr uchar jion_plan = uchar(0x2);
 				constexpr uchar runing = uchar(0x3);

@@ -13,7 +13,8 @@
   },
   "redis": {
     "addr": "127.0.0.1:6379",
-    "defdb": "20"
+    "defdb": "20",
+    "plandb": "20"
   },
   "ZMQ": {
     "MAX_SOCKETS": -1,

@@ -31,7 +31,7 @@ namespace QueuePublisher
                 GlobalContext.Current.Request.RequestId = RandomOperate.Generate(8);
                 try
                 {
-                    ApiClient.Call("WechatCallBack", "CallBack", "{}");
+                    ApiClient.CallApi("WechatCallBack", "CallBack", "{}");
                 }
                 catch (Exception e)
                 {

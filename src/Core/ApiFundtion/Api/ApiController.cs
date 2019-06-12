@@ -402,7 +402,8 @@ namespace Agebull.MicroZero.ZeroApis
         protected virtual TData DoAddNew()
         {
             var data = new TData();
-            data.__IsFromUser = true;
+            data.__status.IsNew = true;
+            data.__status.IsFromClient = true;
             //数据校验
 
             var convert = new FormConvert(this, data);
@@ -411,6 +412,10 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 GlobalContext.Current.LastState = ErrorCode.ArgumentError;
                 GlobalContext.Current.LastMessage = convert.Message;
+                return null;
+            }
+            if (!DataExtendChecker.PrepareAddnew(data))
+            {
                 return null;
             }
             if (!Business.AddNew(data))
@@ -433,7 +438,8 @@ namespace Agebull.MicroZero.ZeroApis
                 GlobalContext.Current.LastMessage = "参数错误";
                 return null;
             }
-            data.__IsFromUser = true;
+            data.__status.IsExist = true;
+            data.__status.IsFromClient = true;
             //数据校验
             var convert = new FormConvert(this, data)
             {
