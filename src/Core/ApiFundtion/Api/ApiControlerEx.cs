@@ -81,10 +81,14 @@ namespace Agebull.MicroZero.ZeroApis
                 return _arguments;
             _arguments = new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
             var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
-            if (context == null) return _arguments;
+            if (context == null)
+                return _arguments;
             foreach (var kv in context)
-                if (!_arguments.ContainsKey(kv.Key))
-                    _arguments.Add(kv.Key, kv.Value);
+            {
+                var key = kv.Key.Trim();
+                if (!_arguments.ContainsKey(key))
+                    _arguments.Add(key, kv.Value?.Trim());
+            }
 
             GlobalContext.Current.DependencyObjects.Annex(this);
             return _arguments;
@@ -125,7 +129,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="value">参数值</param>
         protected internal void SetArg(string name, string value)
         {
-            this[name] = value;
+            this[name] = string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         /// <summary>
@@ -165,8 +169,8 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="action">转换方法</param>
         protected internal void ConvertQueryString(string name, Action<string> action)
         {
-            var val = Arguments[name];
-            if (!string.IsNullOrEmpty(val)) action(val);
+            if (Arguments.TryGetValue(name, out var val))
+                action(val);
         }
 
 
@@ -454,7 +458,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns>值是否存在</returns>
         protected internal bool TryGet(string name, out string value)
         {
-            return Arguments.TryGetValue(name, out value) && !string.IsNullOrWhiteSpace(value);
+            if (!Arguments.TryGetValue(name, out value))
+            {
+                return false;
+            }
+            value = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+            return true;
         }
 
 

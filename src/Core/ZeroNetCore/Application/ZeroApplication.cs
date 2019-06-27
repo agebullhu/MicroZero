@@ -53,11 +53,11 @@ namespace Agebull.MicroZero
 
                 var result = SystemManager.Instance.CallCommand(words);
                 if (result.InteractiveSuccess)
-                    ZeroTrace.SystemLog("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
+                    ZeroTrace.SystemLog("Console", result.TryGetString(ZeroFrameType.Status, out var value)
                         ? value
                         : result.State.Text());
                 else
-                    ZeroTrace.WriteError("Console", result.TryGetValue(ZeroFrameType.Status, out var value)
+                    ZeroTrace.WriteError("Console", result.TryGetString(ZeroFrameType.Status, out var value)
                         ? value
                         : result.State.Text());
             }

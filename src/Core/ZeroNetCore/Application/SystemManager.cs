@@ -188,7 +188,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 doc = null;
                 return false;
             }
-            if (!result.TryGetValue(ZeroFrameType.Status, out var json))
+            if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("LoadDocument", name, "Empty");
                 doc = null;
@@ -220,7 +220,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 ZeroTrace.WriteError("LoadConfig", result);
                 return false;
             }
-            if (!result.TryGetValue(ZeroFrameType.Status, out var json))
+            if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
                 return false;
@@ -248,8 +248,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 return null;
             }
 
-            var json = result.GetValue(ZeroFrameType.Status);
-            if (json == null || json[0] != '{')
+            if (result.TryGetString(ZeroFrameType.Status,out var json) || json[0] != '{')
             {
                 ZeroTrace.WriteError("LoadConfig", stationName, "not a json", json);
                 return null;

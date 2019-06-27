@@ -11,8 +11,6 @@
     "HttpTimeOut": 30000,
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
-    /*是否包含顶级目录*/
-    "IsAppFolder": false,
     /*启用管理命令*/
     "EnableInnerCommand": false,
     /*启用内容页*/

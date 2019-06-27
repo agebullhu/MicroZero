@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using Agebull.Common.Context;
 using Agebull.EntityModel.Common;
 using Agebull.EntityModel.BusinessLogic;
@@ -91,12 +89,44 @@ namespace Agebull.MicroZero.ZeroApis
         /// 参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
         /// </remarks>
         /// <returns></returns>
+        [Route("import/xlsx")]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
+        public ApiFileResult Import(QueryArgument args)
+        {
+            var data = new TData();
+            GlobalContext.Current.Feature = 1;
+            var filter = new LambdaItem<TData>();
+            GetQueryFilter(filter);
+            var res = Business.Import(data.__Struct.Caption, filter);
+            GlobalContext.Current.Feature = 0;
+            return res;
+        }
+
+        /// <summary>
+        ///     读取查询条件
+        /// </summary>
+        /// <param name="filter">筛选器</param>
+        public virtual void GetQueryFilter(LambdaItem<TData> filter)
+        {
+
+        }
+
+        /// <summary>
+        ///     列表数据
+        /// </summary>
+        /// <remarks>
+        /// 参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+        /// </remarks>
+        /// <returns></returns>
         [Route("edit/list")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiPageResult<TData> List(QueryArgument args)
         {
             GlobalContext.Current.Feature = 1;
-            var data = GetListData();
+
+            var filter = new LambdaItem<TData>();
+            GetQueryFilter(filter);
+            var data = GetListData(filter);
             GlobalContext.Current.Feature = 0;
             return IsFailed
                 ? new ApiPageResult<TData>
@@ -110,6 +140,7 @@ namespace Agebull.MicroZero.ZeroApis
                     ResultData = data
                 };
         }
+
 
         /// <summary>
         ///     单条详细数据
@@ -186,73 +217,16 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     取得列表数据
         /// </summary>
-        protected virtual ApiPageData<TData> GetListData()
-        {
-            return LoadListData(null, null);
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
-        protected ApiPageData<TData> GetListData(Expression<Func<TData, bool>> lambda)
-        {
-            return GetListData(Business.Access.Compile(lambda));
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
         protected virtual ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            return DoGetListData(lambda);
-        }
-
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
-        protected ApiPageData<TData> DoGetListData(LambdaItem<TData> lambda)
-        {
-            return GetListData(Business.Access.Compile(lambda));
+            var item = Business.Access.Compile(lambda);
+            return LoadListData(item.ConditionSql, item.Parameters);
         }
 
         /// <summary>
         ///     取得列表数据
         /// </summary>
-        protected ApiPageData<TData> GetListData(ConditionItem item)
-        {
-            return GetListData(new[] { item });
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
-        protected ApiPageData<TData> GetListData(IEnumerable<ConditionItem> items)
-        {
-            var parameters = new List<DbParameter>();
-            var sb = new StringBuilder();
-            var isFirst = true;
-            foreach (var item in items)
-            {
-                if (!string.IsNullOrEmpty(item.ConditionSql))
-                {
-                    if (isFirst)
-                        isFirst = false;
-                    else
-                        sb.Append(" AND ");
-                    sb.Append("(" + item.ConditionSql + ")");
-                }
-
-                parameters.AddRange(item.Parameters);
-            }
-
-            return LoadListData(sb.ToString(), parameters.ToArray());
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
-        protected ApiPageData<TData> LoadListData(string condition, DbParameter[] args)
+        private ApiPageData<TData> LoadListData(string condition, DbParameter[] args)
         {
             var page = GetIntArg("page", 1);
             var rows = GetIntArg("rows", 20);

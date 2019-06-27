@@ -16,15 +16,10 @@ namespace Agebull.MicroZero
     public class ZeroNetMessage
     {
         /// <summary>
-        /// 逻辑操作状态
+        /// 第二帧(请求为命令类型,返回为状态)
         /// </summary>
-        public ZeroOperatorStateType State { get; set; }
-
-        /// <summary>
-        /// 帧数据类型
-        /// </summary>
-        public byte Tag { get; set; }
-
+        public byte ZeroState { get; set; }
+        
         /// <summary>
         ///     头帧
         /// </summary>
@@ -32,10 +27,25 @@ namespace Agebull.MicroZero
         public byte[] Head { get; set; }
 
         /// <summary>
+        ///     帧说明
+        /// </summary>
+        [JsonProperty]
+        public byte[] Description { get; set; }
+
+        /// <summary>
         /// 内部简化命令
         /// </summary>
         [JsonIgnore]
-        public ZeroByteCommand InnerCommand { get; set; }
+        public ZeroByteCommand InnerCommand
+        {
+            get => (ZeroByteCommand)ZeroState;
+            set => ZeroState = (byte)value;
+        }
+        
+        /// <summary>
+        /// 结束标识
+        /// </summary>
+        public byte Tag { get; set; }
 
         /// <summary>
         /// 请求还是返回
@@ -113,7 +123,7 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     内容
         /// </summary>
-        [JsonIgnore] internal Dictionary<int, ZeroFrameItem> _frames;
+        [JsonIgnore] protected Dictionary<int, ZeroFrameItem> _frames;
 
         /// <summary>
         /// 帧内容
@@ -171,7 +181,8 @@ namespace Agebull.MicroZero
         /// <param name="message"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static bool Unpack<TZeroMessage>(bool isResult, byte[][] messages, out TZeroMessage message, Action<TZeroMessage, byte, byte[]> action) where TZeroMessage : ZeroNetMessage, new()
+        public static bool Unpack<TZeroMessage>(bool isResult, byte[][] messages, out TZeroMessage message, Func<TZeroMessage, byte, byte[], bool> action)
+            where TZeroMessage : ZeroNetMessage, new()
         {
             message = new TZeroMessage
             {
@@ -183,7 +194,7 @@ namespace Agebull.MicroZero
             {
                 if (messages.Length == 0)
                 {
-                    message.State = ZeroOperatorStateType.FrameInvalid;
+                    message.ZeroState = (byte)ZeroOperatorStateType.FrameInvalid;
                     return false;
                 }
                 description = messages[0];
@@ -192,23 +203,25 @@ namespace Agebull.MicroZero
             {
                 if (messages.Length < 2)
                 {
-                    message.State = ZeroOperatorStateType.FrameInvalid;
+                    message.ZeroState = (byte)ZeroOperatorStateType.FrameInvalid;
                     return false;
                 }
                 description = messages[1];
                 message.Head = messages[0];
             }
+
+            message.Description = description;
             if (description.Length < 2)
             {
-                message.State = ZeroOperatorStateType.FrameInvalid;
+                message.ZeroState = (byte)ZeroOperatorStateType.FrameInvalid;
                 return false;
             }
             int end = description[0] + 2;
-            message.InnerCommand = (ZeroByteCommand)description[1];
-            message.State = (ZeroOperatorStateType)description[1];
+            message.ZeroState = description[1];
             int size = description[0] + 2;
             if (size < description.Length)
                 message.Tag = description[size];
+
             message._frames = new Dictionary<int, ZeroFrameItem>();
 
             for (int idx = 2; idx < end && messages.Length > idx - move; idx++)
@@ -226,10 +239,18 @@ namespace Agebull.MicroZero
                 });
                 if (bytes.Length == 0)
                     continue;
+                if(action != null && action.Invoke(message, description[idx], bytes))
+                    continue;
                 switch (description[idx])
                 {
                     case ZeroFrameType.Requester:
                         message.Requester = GetString(bytes);
+                        break;
+                    case ZeroFrameType.Station:
+                        message.Station = GetString(bytes);
+                        break;
+                    case ZeroFrameType.StationType:
+                        message.StationType = GetString(bytes);
                         break;
                     case ZeroFrameType.RequestId:
                         message.RequestId = GetString(bytes);
@@ -249,14 +270,10 @@ namespace Agebull.MicroZero
                     case ZeroFrameType.TextContent:
                         message.Content = GetString(bytes);
                         break;
-                    case ZeroFrameType.Station:
-                        message.Station = GetString(bytes);
-                        break;
-                    case ZeroFrameType.StationType:
-                        message.StationType = GetString(bytes);
+                    case ZeroFrameType.BinaryContent:
+                        message.Content = GetString(bytes);
                         break;
                 }
-                action?.Invoke(message, description[idx], messages[idx]);
             }
 
             return true;
@@ -328,7 +345,7 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="type">名称</param>
         /// <returns>存在返回值，不存在返回空对象</returns>
-        public byte[] GetValue<TValue>(byte type)
+        public byte[] GetValue(byte type)
         {
             if (_frames == null || _frames.Count == 0)
                 return null;
@@ -351,7 +368,7 @@ namespace Agebull.MicroZero
                 return false;
             }
             var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            value = vl == null ? default(TValue) : parse(vl.Data);
+            value = vl == null || vl.Data.Length == 0 ? default(TValue) : parse(vl.Data);
             return vl != null;
         }
 
@@ -366,7 +383,7 @@ namespace Agebull.MicroZero
             if (_frames == null || _frames.Count == 0)
                 return default(TValue);
             var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            return vl == null ? default(TValue) : parse(vl.Data);
+            return vl == null || vl.Data.Length == 0 ? default(TValue) : parse(vl.Data);
         }
     }
 

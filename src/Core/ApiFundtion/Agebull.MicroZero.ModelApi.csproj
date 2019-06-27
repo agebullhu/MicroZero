@@ -31,7 +31,7 @@
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
     <Copyright />
     <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
-    <Version>1.4.1.42-alpha</Version>
+    <Version>1.4.2.5</Version>
     <RootNamespace />
   </PropertyGroup>
 
@@ -70,14 +70,17 @@
 
   <ItemGroup>
     <Compile Remove="Context\**" />
+    <Compile Remove="Helper\**" />
     <Compile Remove="MySql\**" />
     <Compile Remove="Redis\**" />
     <Compile Remove="SqlServer\**" />
     <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="Helper\**" />
     <EmbeddedResource Remove="MySql\**" />
     <EmbeddedResource Remove="Redis\**" />
     <EmbeddedResource Remove="SqlServer\**" />
     <None Remove="Context\**" />
+    <None Remove="Helper\**" />
     <None Remove="MySql\**" />
     <None Remove="Redis\**" />
     <None Remove="SqlServer\**" />

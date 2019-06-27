@@ -20,7 +20,7 @@ namespace agebull
 			 * \param name
 			 */
 			queue_station(string name)
-				: zero_station(std::move(name), zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(std::move(name), zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 
@@ -29,7 +29,7 @@ namespace agebull
 			 * \param config
 			 */
 			queue_station(shared_ptr<station_config>& config)
-				: zero_station(config, zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUB)
+				: zero_station(config, zero_def::station_type::queue, ZMQ_ROUTER, ZMQ_PUSH)
 			{
 			}
 
@@ -45,6 +45,11 @@ namespace agebull
 			* \brief 工作开始 : 处理请求数据
 			*/
 			void job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old) final;
+
+			/**
+			* \brief 工作结束(发送到请求者)
+			*/
+			void job_end(vector<shared_char>& list) final;
 
 			/**
 			* \brief 运行一个通知线程

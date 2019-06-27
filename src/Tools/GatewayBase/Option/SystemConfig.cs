@@ -64,13 +64,5 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [JsonProperty]
         public string ContextAddr { get; set; }
-
-
-        /// <summary>
-        ///     是否包含顶级目录(即域名后第一个节是目录而不是站点名称)
-        /// </summary>
-        [JsonProperty]
-        public bool IsAppFolder { get; set; }
-        
     }
 }

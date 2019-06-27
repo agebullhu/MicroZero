@@ -781,14 +781,8 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 field.CanNull = rule.CanNull;
                 field.Regex = rule.Regex;
-                if (rule.Min != long.MinValue)
-                    field.Min = rule.Min;
-                if (rule.Max != long.MinValue)
-                    field.Max = rule.Max;
-                if (rule.MinDate != DateTime.MinValue)
-                    field.MinDate = rule.MinDate;
-                if (rule.MaxDate != DateTime.MaxValue)
-                    field.MaxDate = rule.MaxDate;
+                field.Min = rule.Min;
+                field.Max = rule.Max;
             }
             document.Fields.Add(member.Name, field);
 

@@ -31,11 +31,17 @@ namespace agebull
 		*/
 		void queue_station::async_replay(queue_station* queue, int64 min, int64 max)
 		{
-			queue->storage_.load(min, max, [queue](vector<shared_char>& data)
-			{
-				queue->send_response(data, true);
-			});
+			char name[64];
+			sprintf(name, "%ld", time(nullptr));
+			zmq_handler socket = socket_ex::create_req_socket_inproc(queue->station_name_.c_str(), name);
+			queue->storage_.load(min, max, [socket, queue](vector<shared_char>& data)
+				{
+					queue->send_response(socket, data, false);
+				});
+			make_inproc_address(address, queue->station_name_.c_str());
+			socket_ex::close_req_socket(socket, address);
 		}
+
 		/**
 		* \brief 处理请求
 		*/
@@ -55,11 +61,14 @@ namespace agebull
 				send_request_status_by_trace(socket, list, description, zero_def::status::pause, true);
 				return;
 			}
-			size_t request_id = 0, global_id = 0, argument = 0, text = 0, context = 0, pub_title = 0, sub_title = 0, requester = 0;
+			size_t request_id = 0, q_id = 0, global_id = 0, argument = 0, text = 0, context = 0, pub_title = 0, sub_title = 0, requester = 0;
 			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
 			{
 				switch (description[idx])
 				{
+				case zero_def::frame::local_id:
+					q_id = idx;
+					break;
 				case zero_def::frame::request_id:
 					request_id = idx;
 					break;
@@ -94,29 +103,49 @@ namespace agebull
 			{
 				config_->error("job_start", "title can`t empty");
 				config_->request_deny++;
-				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id, requester);
+				if (q_id == 0)
+					send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id, requester);
 				return;
 			}
-			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, request_id, requester);
+			if (q_id == 0)
+			{
+				send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id, request_id, requester);
 
-			const int64 id = storage_.save(
-				global_id > 0 ? atoll(*list[global_id]) : 0,
-				*list[pub_title],
-				sub_title > 0 ? *list[sub_title] : nullptr,
-				request_id > 0 ? *list[request_id] : nullptr,
-				requester > 0 ? *list[requester] : nullptr,
-				context > 0 ? *list[context] : nullptr,
-				argument > 0 ? *list[argument] : nullptr,
-				text > 0 ? *list[text] : nullptr);
+				q_id = storage_.save(
+					global_id > 0 ? atoll(*list[global_id]) : 0,
+					*list[pub_title],
+					sub_title > 0 ? *list[sub_title] : nullptr,
+					request_id > 0 ? *list[request_id] : nullptr,
+					requester > 0 ? *list[requester] : nullptr,
+					context > 0 ? *list[context] : nullptr,
+					argument > 0 ? *list[argument] : nullptr,
+					text > 0 ? *list[text] : nullptr);
 
-			description.append_frame(zero_def::frame::local_id);
-			shared_char local_id;
-			local_id.set_int64(id);
-			list.emplace_back(local_id);
+				description.append_frame(zero_def::frame::local_id);
+				shared_char local_id;
+				local_id.set_int64(q_id);
+				list.emplace_back(local_id);
+			}
 
 			list[0] = list[pub_title];
 			list[1] = description;
-			send_response(list, true);
+			zmq_socket_state state = send_response(list, true);
+
+			if (state != zmq_socket_state::succeed)
+			{
+				storage_.set_state(q_id, zero_def::status::none);
+			}
+		}
+
+		/**
+		* \brief 工作结束(发送到请求者)
+		*/
+		void queue_station::job_end(vector<shared_char>& list)
+		{
+			if (list.size() < 3)
+				return;
+			shared_char description(list[2].c_str(), list[2].size());
+			storage_.set_state(atoll(*list[3]), description[1]);
 		}
 
 		/**

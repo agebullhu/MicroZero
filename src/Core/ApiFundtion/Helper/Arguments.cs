@@ -37,11 +37,18 @@ namespace Agebull.MicroZero.ZeroApis
     public class QueryArgument
     {
         /// <summary>
-        /// 模糊查询关键字
+        /// 查询值
         /// </summary>
         /// <example>nike</example>
-        [JsonProperty("keyWord")]
-        public string KeyWord { get; set; }
+        [JsonProperty("_value_")]
+        public string Value { get; set; }
+
+        /// <summary>
+        /// 查询字段(为_any_时则为模糊查询),也可以直接将字段作为名称传递,其中日期类型字段可加(_beign _end )后缀查询时间范围,外键字段可以传多个值(逗号分开)使用包含查询
+        /// </summary>
+        /// <example>name</example>
+        [JsonProperty("_field_")]
+        public string Field { get; set; }
 
         /// <summary>
         ///页号(1起始)
@@ -57,12 +64,14 @@ namespace Agebull.MicroZero.ZeroApis
         /// <example>20</example>
         [JsonProperty("rows")]
         public int PageSize { get; set; }
+
         /// <summary>
         /// 排序字段
         /// </summary>
         /// <example>id</example>
         [JsonProperty("sort")]
         public string SortField { get; set; }
+
         /// <summary>
         /// 正反序
         /// </summary>
@@ -71,4 +80,5 @@ namespace Agebull.MicroZero.ZeroApis
         [JsonProperty("order")]
         public string SortAsc { get; set; }
     }
+
 }

@@ -9,14 +9,21 @@ namespace Agebull.MicroZero
         ///     终止符号
         /// </summary>
         public const byte End = 0;
+
         /// <summary>
         ///     终止符号
         /// </summary>
         public const byte ExtendEnd = 0xFF;
+
         /// <summary>
-        ///     终止符号
+        ///     终止符号(一般返回值)
         /// </summary>
         public const byte ResultEnd = 0xFE;
+        
+        /// <summary>
+        ///     终止符号(文件返回值)
+        /// </summary>
+        public const byte ResultFileEnd = 0xFD;
 
         /// <summary>
         ///     全局标识
@@ -166,6 +173,11 @@ namespace Agebull.MicroZero
         ///     返回文本内容
         /// </summary>
         public const byte ResultText = (byte)'J';
+
+        /// <summary>
+        ///     返回文本内容
+        /// </summary>
+        public const byte ExtendText = (byte)'X';
 
 
         /// <summary>

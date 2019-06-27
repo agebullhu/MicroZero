@@ -62,7 +62,7 @@ namespace MicroZero.Http.Gateway
                     _result = ApiResultIoc.Ioc.NotSupport;
                     return;
                 case ZeroOperatorStateType.Ok:
-                    _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
+                    _result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
                     return;
                 default:
                     _result = ApiResultIoc.Ioc.Error(ErrorCode.LogicalError, value.ErrorMessage,value.ToString());

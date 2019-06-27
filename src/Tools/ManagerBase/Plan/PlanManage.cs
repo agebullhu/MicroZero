@@ -194,7 +194,7 @@ namespace MicroZero.Http.Route
             {
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
-            if (!result.TryGetValue(ZeroFrameType.Status, out var json))
+            if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("FlushList", "Empty");
                 return ApiResult.Error(ErrorCode.LogicalError, "空数据");

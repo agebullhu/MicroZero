@@ -20,6 +20,11 @@
     /*内容页地址*/
     "ContextAddr": ""
   },
+  "hostPath": {
+    "zero.hpcang.com": 0,
+    "zero.yizuanbao.cn": 0,
+    "zapi": 1
+  },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {
     /*缺省地址* /

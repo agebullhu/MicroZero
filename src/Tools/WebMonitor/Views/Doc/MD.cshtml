@@ -1,0 +1,332 @@
+﻿@using Agebull.MicroZero
+@using System.Linq
+@using Agebull.MicroZero.ApiDocuments
+@using Newtonsoft.Json
+@model StationDocument
+@functions {
+
+private string GetIcon(ZeroStationType type)
+{
+    switch (type)
+    {
+        case ZeroStationType.Api:
+        case ZeroStationType.RouteApi:
+            {
+                return "el-icon-star-on";
+            }
+        case ZeroStationType.Vote:
+            {
+                return "el-icon-star-off";
+            }
+        case ZeroStationType.Notify:
+        case ZeroStationType.Queue:
+            {
+                return "el-icon-share";
+            }
+        case ZeroStationType.Plan:
+            {
+                return "el-icon-time";
+            }
+        default:
+            {
+                return "el-icon-setting";
+            }
+    }
+}
+
+
+}
+@{
+
+    ViewData["Title"] = "Document";
+    ViewData["page"] = "doc";
+    var stas = ZeroApplication.Config.GetConfigs(p => !p.IsSystem).OrderBy(p => p.RequestPort).GroupBy(p => p.StationType).Select(arg => new
+    {
+        type = arg.Key.ToString(),
+        icon = GetIcon(arg.Key),
+        items = arg.Select(p => new
+        {
+            name = p.Name,
+            title = p.Caption ?? p.Name
+        }).ToArray()
+    }).ToArray();
+    var stations = JsonConvert.SerializeObject(stas);
+
+    var group = JsonConvert.SerializeObject(Model.Aips.Values.GroupBy(p => p.Category ?? "通用").Select(p => new
+    {
+        name = p.Key,
+        apis = p.ToArray()
+    }).ToArray());
+}
+@section Styles{
+    <style>
+        .item {
+            margin-top: 10px;
+            margin-right: 40px;
+        }
+
+        table {
+            table-layout: auto;
+            width: 100%;
+            border: solid 1px black;
+            border-collapse: collapse
+        }
+
+        td {
+            border: solid 1px black
+        }
+
+        .my_label {
+            width: 60px;
+            display: inline-block;
+            text-align: right
+        }
+
+        .el-dialog {
+            background-color: whitesmoke
+        }
+
+        .el-dialog__body {
+            padding: 10px
+        }
+
+        .el-card__body {
+            padding: 10px 10px 0 10px;
+        }
+
+        .code ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .title ul {
+            list-style-type: decimal;
+            padding: 0;
+            color: black;
+            margin: 8px;
+        }
+
+        .code li {
+            padding-left: 28px;
+        }
+
+        .name {
+            color: tomato
+        }
+
+        .str {
+            color: lightsalmon
+        }
+
+        .num {
+            color: cornflowerblue
+        }
+
+        .bool {
+            color: blue
+        }
+
+        .null {
+            color: silver
+        }
+
+        .class {
+            color: forestgreen
+        }
+
+        .menu_boards {
+            overflow: auto;
+            text-align: left;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: auto;
+            min-width: 200px;
+            border-top: solid 1px whitesmoke;
+            border-bottom: solid 1px whitesmoke;
+        }
+
+        .menu_panel {
+            overflow: visible;
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            width: auto;
+        }
+    </style>
+}
+
+@section Menus{
+    <el-menu @@select="menu_select"
+             :collapse="isCollapse"
+             :default-active="name"
+             background-color="#545c64"
+             text-color="#fff" unique-opened
+             active-text-color="#ffd04b">
+        <el-submenu index="_setting_">
+            <template slot="title">
+                <i class="el-icon-setting"></i>
+                <span>设置</span>
+            </template>
+            <el-menu-item index="_update">
+                <template slot="title">
+                    <i class="el-icon-refresh"></i>
+                    <span>刷新</span>
+                </template>
+            </el-menu-item>
+        </el-submenu>
+        <template v-for="group in stations">
+            <el-submenu :index="group.type">
+                <template slot="title">
+                    <i :class="group.icon"></i>
+                    <span>{{group.type}}</span>
+                </template>
+                <template v-for="station in group.items">
+                    <el-menu-item :index="station.name">
+                        <template slot="title">
+                            <i :class="group.icon"></i>
+                            <span>{{station.title}}</span>
+                        </template>
+                    </el-menu-item>
+                </template>
+            </el-submenu>
+        </template>
+    </el-menu>
+}
+@section InitScript{
+    <script src="/js/doc.js"></script>
+    <script>
+        var arg = {
+            jsView: true,
+            isCollapse:true,
+            name: `@Model.Name`,
+            caption: `@(Model.Caption ?? Model.Name)`,
+            desc: `@Model.Description`,
+            see: `@Model.Seealso`,
+            stations:@Html.Raw(stations),
+            group: @Html.Raw(group)
+        };
+        prepareApi();
+        extend_data(arg);
+    </script>
+}
+
+<el-container style="width:100%;height:100%;margin:0;padding:0;overflow:hidden">
+
+    <el-aside class="message_boards" style="height:100%;line-height:26px;padding:2px;text-align:left; border: solid 1px whitesmoke;width:360px">
+
+        <div style="height: 100%; width: 100%; overflow: scroll;">
+            
+            <el-switch style="display: block"
+                       v-model="jsView"
+                       active-color="#13ce66"
+                       inactive-color="#ff4949"
+                       active-text="JS"
+                       inactive-text="C#">
+            </el-switch>
+            <div style="overflow: visible; margin: 0" class="title">
+                <el-menu background-color="#545c64"
+                         text-color="#fff"
+                         active-text-color="#ffd04b">
+                    <template v-for="category in group">
+                        <el-submenu :index="category.name">
+                            <template slot="title">
+                                <label>{{category.name}}</label>
+                            </template>
+                            <template v-for="api in category.apis">
+                                <el-menu-item :index="api.name">
+                                    <template slot="title">
+                                        <a style="color: #fff" :href="api.route | toMark">{{api.caption}}({{api.api}})</a>
+                                    </template>
+                                </el-menu-item>
+                            </template>
+                        </el-submenu>
+                    </template>
+                </el-menu>
+            </div>
+        </div>
+    </el-aside>
+    <el-main style="width:100%;height:100%;margin:0;padding:0;overflow:auto">
+        <div v-if='caption' style="width: 100%; margin: 0; padding: 0; overflow: visible">
+            <div style="min-height: 100%; text-align: center; background-color: silver; padding: 20px">
+                <div style="text-align: left; border: solid 1px silver; background-color: white; padding: 20px">
+                    <h1 style="font-size:20px">{{caption}} 接口文档</h1>
+                    <h3>说明</h3>
+                    <p>{{desc}}</p>
+                    <h3>参见</h3>
+                    <h1>{{see}}</h1>
+                    <template v-for="category in group">
+                        <hr />
+                        <h2>{{category.name}}</h2>
+                        <template v-for="api in category.apis">
+                            <hr />
+                            <h3 :id="api.route | toMarkApi">{{category.name}} : {{api.caption}}</h3>
+                            <h4>Api名称</h4>
+                            <p>{{name}}/{{api.route}}</p>
+                            <h4>登录令牌</h4>
+                            <p>{{api.token}}</p>
+                            <h4>调用范围</h4>
+                            <p>{{api.scope}}</p>
+                            <template v-if="api.description">
+                                <h4>说明</h4>
+                                <p>{{api.description}}</p>
+                            </template>
+                            <h4>参数</h4>
+                            <template v-if="!api.argument">
+                                <p>无</p>
+                            </template>
+                            <template v-if="api.argument">
+                                <p>{{api.argument.caption}}({{api.argument.type}})</p>
+                                <p v-if="api.argument.description">{{api.argument.description}}</p>
+                                <table>
+                                    <tr style="background-color: silver">
+                                        <td style="text-align:center">C#</td>
+                                        <td style="text-align:center">Js</td>
+                                        <td style="text-align:center">类型</td>
+                                        <td style="text-align:center">中文</td>
+                                        <td style="text-align:center">说明</td>
+                                        <td style="text-align:center">示例</td>
+                                    </tr>
+                                    <tbody v-html="api.argHtml"></tbody>
+                                </table>
+                                <div class="code">
+                                    <h5>示例</h5>
+                                    <ul v-if="!jsView" style="display: block" v-html="api.argCs"></ul>
+                                    <ul v-if="jsView" style="display: block" v-html="api.argJs"></ul>
+                                </div>
+                            </template>
+
+                            <h4>返回值</h4>
+                            <template v-if="!api.result">
+                                <p>无</p>
+                            </template>
+                            <template v-if="api.result">
+                                <p>{{api.result.caption}}</p>
+                                <p>{{api.result.description}}</p>
+                                <table>
+                                    <thead>
+                                        <tr style="background-color: silver;">
+                                            <td style="text-align:center">C#</td>
+                                            <td style="text-align:center">Js</td>
+                                            <td style="text-align:center">类型</td>
+                                            <td style="text-align:center">中文</td>
+                                            <td style="text-align:center">说明</td>
+                                            <td style="text-align:center">示例</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody v-html="api.resHtml"></tbody>
+                                </table>
+                                <h5>示例</h5>
+                                <div class="code">
+                                    <ul v-if="!jsView" style="display: block" v-html="api.resCs"></ul>
+                                    <ul v-if="jsView" style="display: block" v-html="api.resJs"></ul>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </el-main>
+</el-container>

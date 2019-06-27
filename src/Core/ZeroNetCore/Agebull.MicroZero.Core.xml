@@ -749,31 +749,6 @@
                 配置校验
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <param name="state"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiAccessOptionFilterAttribute">
             <summary>
             API配置过滤器
@@ -899,9 +874,29 @@
             请求参数
             </summary>
         </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiCallItem.Extend">
+            <summary>
+            请求参数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiCallItem.Files">
+            <summary>
+                文件
+            </summary>
+        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiCallItem.Result">
             <summary>
             返回
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiCallItem.EndTag">
+            <summary>
+            说明帧结束标识
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiCallItem.Binary">
+            <summary>
+            扩展的二进制
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiCallItem.Status">
@@ -927,24 +922,43 @@
                 Api调用
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute(ZeroMQ.ZSocket@,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecuteAsync">
             <summary>
             调用 
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.RestoryContext(Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute">
+            <summary>
+            调用 
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.RestoryContext">
             <summary>
             还原调用上下文
             </summary>
-            <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecCommand(Agebull.MicroZero.ZeroApis.ApiCallItem,System.Boolean)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.CommandPrepare(System.Boolean,Agebull.MicroZero.ZeroApis.ApiAction@)">
             <summary>
                 执行命令
             </summary>
-            <param name="item"></param>
             <param name="monitor"></param>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.CommandExec(System.Boolean,Agebull.MicroZero.ZeroApis.ApiAction)">
+            <summary>
+                执行命令
+            </summary>
+            <param name="monitor"></param>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.CheckCommandResult(System.Object)">
+            <summary>
+                执行命令
+            </summary>
+            <param name="res"></param>
             <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiStationBase">
@@ -988,6 +1002,14 @@
             </summary>
             <param name="socket"></param>
             <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="message"></param>
             <returns></returns>
         </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.CallCount">
@@ -1177,9 +1199,24 @@
                 Api站点
             </summary>
         </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient.Files">
+            <summary>
+                文件
+            </summary>
+        </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiClient._core">
             <summary>
                 返回的数据
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.ResultType">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.Binary">
+            <summary>
+                返回值
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.Result">
@@ -1421,7 +1458,22 @@
                 Api站点
             </summary>
         </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Files">
+            <summary>
+                文件
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.ResultType">
+            <summary>
+                返回值
+            </summary>
+        </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Result">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiClientCore.Binary">
             <summary>
                 返回值
             </summary>
@@ -1514,6 +1566,15 @@
             <param name="args"></param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.SendToZero(ZeroMQ.ZSocket,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
+            <summary>
+                一次请求
+            </summary>
+            <param name="socket"></param>
+            <param name="description"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiControllerBase">
             <summary>
             ZeroApi控制器基类
@@ -1541,7 +1602,12 @@
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiControllerBase.ApiCallItem">
             <summary>
-            HTTP调用时的UserAgent
+            原始调用帧消息
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiControllerBase.Files">
+            <summary>
+            客户端上传的文件
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiController">
@@ -2934,6 +3000,11 @@
             返回值
             </summary>
         </member>
+        <member name="P:Agebull.MicroZero.ZeroResultData.State">
+            <summary>
+            逻辑操作状态
+            </summary>
+        </member>
         <member name="P:Agebull.MicroZero.ZeroResultData.InteractiveSuccess">
             <summary>
             与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
@@ -2960,12 +3031,13 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroResultData.Unpack``1(ZeroMQ.ZMessage,System.Boolean)">
+        <member name="M:Agebull.MicroZero.ZeroResultData.Unpack``1(ZeroMQ.ZMessage,System.Boolean,System.Func{``0,System.Byte,System.Byte[],System.Boolean})">
             <summary>
             命令解包
             </summary>
             <param name="showError"></param>
             <param name="frames"></param>
+            <param name="action"></param>
             <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroResult">
@@ -2973,7 +3045,7 @@
             返回值
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroResult.TryGetValue(System.Byte,System.String@)">
+        <member name="M:Agebull.MicroZero.ZeroResult.TryGetString(System.Byte,System.String@)">
             <summary>
             取值
             </summary>
@@ -2981,12 +3053,27 @@
             <param name="value">返回值</param>
             <returns>是否存在</returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroResult.GetValue(System.Byte)">
+        <member name="M:Agebull.MicroZero.ZeroResult.GetString(System.Byte)">
             <summary>
             取值
             </summary>
             <param name="name">名称</param>
             <returns>存在返回值，不存在返回空对象</returns>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroResult.ResultType">
+            <summary>
+                返回值类型
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroResult.Result">
+            <summary>
+            返回值
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroResult.Binary">
+            <summary>
+            二进制内容
+            </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroTrace">
             <summary>
@@ -3516,7 +3603,12 @@
         </member>
         <member name="F:Agebull.MicroZero.ZeroFrameType.ResultEnd">
             <summary>
-                终止符号
+                终止符号(一般返回值)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroFrameType.ResultFileEnd">
+            <summary>
+                终止符号(文件返回值)
             </summary>
         </member>
         <member name="F:Agebull.MicroZero.ZeroFrameType.GlobalId">
@@ -3675,6 +3767,11 @@
             </summary>
         </member>
         <member name="F:Agebull.MicroZero.ZeroFrameType.ResultText">
+            <summary>
+                返回文本内容
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroFrameType.ExtendText">
             <summary>
                 返回文本内容
             </summary>
@@ -3869,14 +3966,9 @@
             一次传输的消息
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroNetMessage.State">
+        <member name="P:Agebull.MicroZero.ZeroNetMessage.ZeroState">
             <summary>
-            逻辑操作状态
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroNetMessage.Tag">
-            <summary>
-            帧数据类型
+            第二帧(请求为命令类型,返回为状态)
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroNetMessage.Head">
@@ -3884,9 +3976,19 @@
                 头帧
             </summary>
         </member>
+        <member name="P:Agebull.MicroZero.ZeroNetMessage.Description">
+            <summary>
+                帧说明
+            </summary>
+        </member>
         <member name="P:Agebull.MicroZero.ZeroNetMessage.InnerCommand">
             <summary>
             内部简化命令
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroNetMessage.Tag">
+            <summary>
+            结束标识
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroNetMessage.RequestOrResult">
@@ -3971,7 +4073,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroNetMessage.Unpack``1(System.Boolean,System.Byte[][],``0@,System.Action{``0,System.Byte,System.Byte[]})">
+        <member name="M:Agebull.MicroZero.ZeroNetMessage.Unpack``1(System.Boolean,System.Byte[][],``0@,System.Func{``0,System.Byte,System.Byte[],System.Boolean})">
             <summary>
             解包
             </summary>
@@ -4010,7 +4112,7 @@
             <param name="value">返回值</param>
             <returns>是否存在</returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroNetMessage.GetValue``1(System.Byte)">
+        <member name="M:Agebull.MicroZero.ZeroNetMessage.GetValue(System.Byte)">
             <summary>
             取值
             </summary>
@@ -5083,7 +5185,7 @@
             <param name="publishItem"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.PublishItem.Unpack``1(ZeroMQ.ZMessage,``0@,System.Action{``0,System.Byte,System.Byte[]})">
+        <member name="M:Agebull.MicroZero.PubSub.PublishItem.Unpack``1(ZeroMQ.ZMessage,``0@,System.Func{``0,System.Byte,System.Byte[],System.Boolean})">
             <summary>
                 广播消息解包
             </summary>

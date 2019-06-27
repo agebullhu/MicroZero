@@ -400,6 +400,21 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Import(Agebull.MicroZero.ZeroApis.QueryArgument)">
+            <summary>
+                列表数据
+            </summary>
+            <remarks>
+            参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+            </remarks>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetQueryFilter(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                读取查询条件
+            </summary>
+            <param name="filter">筛选器</param>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.List(Agebull.MicroZero.ZeroApis.QueryArgument)">
             <summary>
                 列表数据
@@ -429,32 +444,7 @@
                 删除多条数据
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoGetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(Agebull.EntityModel.Common.ConditionItem)">
-            <summary>
-                取得列表数据
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.GetListData(System.Collections.Generic.IEnumerable{Agebull.EntityModel.Common.ConditionItem})">
             <summary>
                 取得列表数据
             </summary>
@@ -663,11 +653,6 @@
         <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.OnDisable">
             <summary>
                 禁用对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.GetListData">
-            <summary>
-                取得列表数据
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiControllerForDataState`2.GetListData(Agebull.EntityModel.Common.LambdaItem{`0})">
@@ -1072,95 +1057,6 @@
             <param name="field">名称</param>
             <param name="value">字段名称</param>
             <returns>是否接收值</returns>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IdArguent">
-            <summary>
-            单个ID
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IdArguent.Id">
-            <summary>
-            选择的ID
-            </summary>
-            <example>1</example>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IdsArguent">
-            <summary>
-            多个ID
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IdsArguent.Ids">
-            <summary>
-            选择的ID
-            </summary>
-            <value>不是数组,而是逗号分开的文本</value>
-            <example>2,1</example>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.QueryArgument">
-            <summary>
-            查询参数
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.KeyWord">
-            <summary>
-            模糊查询关键字
-            </summary>
-            <example>nike</example>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.Page">
-             <summary>
-            页号(1起始)
-             </summary>
-             <example>1</example>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.PageSize">
-            <summary>
-            每页行数
-            </summary>
-            <value>1-999的数字</value>
-            <example>20</example>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortField">
-            <summary>
-            排序字段
-            </summary>
-            <example>id</example>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.QueryArgument.SortAsc">
-            <summary>
-            正反序
-            </summary>
-            <value>asc: 正序 desc:反序</value>
-            <example>asc</example>
-        </member>
-        <member name="T:Agebull.Common.Helper.UrlHelper">
-            <summary>
-            对URL的扩展
-            </summary>
-        </member>
-        <member name="M:Agebull.Common.Helper.UrlHelper.GetQueryString(System.String)">
-            <summary>
-            将查询字符串解析转换为名值集合.
-            </summary>
-            <param name="queryString"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.Common.Helper.UrlHelper.GetQueryString(System.String,System.Text.Encoding,System.Boolean)">
-            <summary>
-            将查询字符串解析转换为名值集合.
-            </summary>
-            <param name="queryString"></param>
-            <param name="encoding"></param>
-            <param name="isEncoded"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.Common.Helper.UrlHelper.MyUrlDeCode(System.String,System.Text.Encoding)">
-            <summary>
-            解码URL.
-            </summary>
-            <param name="encoding">null为自动选择编码</param>
-            <param name="str"></param>
-            <returns></returns>
         </member>
     </members>
 </doc>

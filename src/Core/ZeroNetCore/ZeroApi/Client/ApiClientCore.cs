@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 using Agebull.EntityModel.Common;
@@ -14,9 +15,24 @@ namespace Agebull.MicroZero.ZeroApis
         #region Properties
 
         /// <summary>
+        ///     文件
+        /// </summary>
+        public Dictionary<string, byte[]> Files;
+
+        /// <summary>
+        ///     返回值
+        /// </summary>
+        internal byte ResultType;
+
+        /// <summary>
         ///     返回值
         /// </summary>
         internal string Result;
+
+        /// <summary>
+        ///     返回值
+        /// </summary>
+        internal byte[] Binary;
 
         /// <summary>
         ///     请求站点
@@ -64,7 +80,7 @@ namespace Agebull.MicroZero.ZeroApis
         internal ZeroResult LastResult;
 
         #endregion
-        
+
         #region Flow
 
         /// <summary>
@@ -142,7 +158,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             if (LastResult != null && LastResult.InteractiveSuccess)
             {
-                if (!LastResult.TryGetValue(ZeroFrameType.Responser, out var point))
+                if (!LastResult.TryGetString(ZeroFrameType.Responser, out var point))
                     point = "zero_center";
                 apiResult.Status.Point = point;
             }
@@ -195,7 +211,7 @@ namespace Agebull.MicroZero.ZeroApis
                 State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
-            
+
 
             using (socket)
             {
@@ -227,6 +243,14 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void CallApi(PoolSocket socket)
         {
+            if (Files != null && Files.Count == 0)
+                CallByFileApi(socket);
+            else
+                CallNoFileApi(socket);
+        }
+
+        private void CallNoFileApi(PoolSocket socket)
+        {
             LastResult = Send(socket.Socket, CallDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
@@ -240,6 +264,47 @@ namespace Agebull.MicroZero.ZeroApis
             CallEnd(socket);
         }
 
+        private void CallByFileApi(PoolSocket socket)
+        {
+            List<byte[]> frames = new List<byte[]>
+            {
+                Commmand.ToZeroBytes(),
+                Argument.ToZeroBytes(),
+                ExtendArgument.ToZeroBytes(),
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                ZeroApplication.Config.StationName.ToZeroBytes(),
+                GlobalContext.Current.Organizational.RouteName.ToZeroBytes(),
+                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                (ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy))).ToZeroBytes()
+            };
+
+            var len = (int) (12 + Files.Count * 2);
+            byte[] description = new byte[len];
+            int i = 0;
+            description[i++] = (byte) (9 + Files.Count * 2);
+            description[i++] = (byte) ZeroByteCommand.General;
+            description[i++] = ZeroFrameType.Command;
+            description[i++] = ZeroFrameType.Argument;
+            description[i++] = ZeroFrameType.TextContent;
+            description[i++] = ZeroFrameType.RequestId;
+            description[i++] = ZeroFrameType.Requester;
+            description[i++] = ZeroFrameType.Responser;
+            description[i++] = ZeroFrameType.CallId;
+            description[i++] = ZeroFrameType.Context;
+            foreach (var file in Files)
+            {
+                description[i++] = ZeroFrameType.ExtendText;
+                description[i++] = ZeroFrameType.BinaryContent;
+                frames.Add(file.Key.ToZeroBytes());
+                frames.Add(file.Value);
+            }
+            description[i++] = ZeroFrameType.SerivceKey;
+            description[i++] = ZeroFrameType.End;
+
+            LastResult = SendToZero(socket.Socket, description, frames);
+
+            CallEnd(socket);
+        }
         /// <summary>
         ///     请求格式说明
         /// </summary>
@@ -297,6 +362,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 socket.HaseFailed = true;
                 State = LastResult.State;
+                LastResult.InteractiveSuccess = false;
                 return;
             }
             LastResult = Receive(socket.Socket);
@@ -306,8 +372,10 @@ namespace Agebull.MicroZero.ZeroApis
                 State = LastResult.State;
                 return;
             }
-            LastResult.TryGetValue(ZeroFrameType.ResultText, out Result);
-            LogRecorderX.MonitorTrace($"Remte result:{Result}");
+            Result = LastResult.Result;
+            Binary = LastResult.Binary;
+            ResultType = LastResult.ResultType;
+            LogRecorderX.MonitorTrace($"Remote result:{Result}");
             State = LastResult.State;
         }
 
@@ -327,7 +395,20 @@ namespace Agebull.MicroZero.ZeroApis
             }
             try
             {
-                return ZeroResultData.Unpack<ZeroResult>(frames, true);
+                return ZeroResultData.Unpack<ZeroResult>(frames, true, (res, type, bytes) =>
+                {
+                    switch (type)
+                    {
+                        case ZeroFrameType.ResultText:
+                            res.Result = ZeroNetMessage.GetString(bytes);
+                            return true;
+                        case ZeroFrameType.BinaryContent:
+                            res.Binary = bytes;
+                            return true;
+                    }
+
+                    return false;
+                });
             }
             catch (Exception e)
             {
@@ -348,6 +429,20 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="args"></param>
         /// <returns></returns>
         internal static ZeroResult Send(ZSocket socket, byte[] description, params byte[][] args)
+        {
+            return SendToZero(socket,description,args);
+        }
+
+
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="description"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        private static ZeroResult SendToZero(ZSocket socket, byte[] description, IEnumerable<byte[]> args)
         {
             using (var message = new ZMessage())
             {
@@ -376,6 +471,7 @@ namespace Agebull.MicroZero.ZeroApis
                 InteractiveSuccess = true
             };
         }
+
 
         #endregion
 

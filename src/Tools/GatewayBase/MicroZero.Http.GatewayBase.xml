@@ -116,7 +116,7 @@
         </member>
         <member name="F:MicroZero.Http.Gateway.RouteApp.Extends">
             <summary>
-            特殊路径使用的不对路由器
+            特殊路径使用的路由器
             </summary>
         </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(System.Object)">
@@ -474,6 +474,11 @@
                 路由配置
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.Option">
+            <summary>
+            实例配置
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.RouteOption.Security">
             <summary>
                 安全设置
@@ -490,6 +495,11 @@
             </summary>
         </member>
         <member name="F:MicroZero.Http.Gateway.RouteOption._systemConfig">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteOption.HostPath">
             <summary>
                 系统配置
             </summary>
@@ -669,6 +679,11 @@
             <param name="key"></param>
             <returns></returns>
         </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.Files">
+            <summary>
+                返回二进制值
+            </summary>
+        </member>
         <member name="F:MicroZero.Http.Gateway.RouteData.Redirect">
             <summary>
                 执行HTTP重写向吗
@@ -676,7 +691,17 @@
         </member>
         <member name="F:MicroZero.Http.Gateway.RouteData.ResultMessage">
             <summary>
-                返回值
+                返回文本值
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.ResultBinary">
+            <summary>
+                返回二进制值
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteData.IsFile">
+            <summary>
+                返回值是否文件
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.RouteData.Start">
@@ -1009,11 +1034,6 @@
                 内容页地址
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.SystemConfig.IsAppFolder">
-            <summary>
-                是否包含顶级目录(即域名后第一个节是目录而不是站点名称)
-            </summary>
-        </member>
         <member name="T:MicroZero.Http.Gateway.SecurityChecker">
             <summary>
                 安全检查员
@@ -1099,6 +1119,48 @@
             </summary>
             <param name="data"></param>
             <returns></returns>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.GatewayStartup">
+            <summary>
+            启动基类
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            构造
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.GatewayStartup.Configuration">
+            <summary>
+            配置对象
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            This method gets called by the runtime. Use this method to add services to the container.
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            执行系统配置
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+             This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+            <summary>
+            应用配置
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
         </member>
         <member name="T:MicroZero.Http.Gateway.HttpOption">
             <summary>

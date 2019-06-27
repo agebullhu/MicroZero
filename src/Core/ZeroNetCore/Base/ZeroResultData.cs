@@ -12,6 +12,15 @@ namespace Agebull.MicroZero
     public class ZeroResultData : ZeroNetMessage, IZeroState
     {
         /// <summary>
+        /// 逻辑操作状态
+        /// </summary>
+        public ZeroOperatorStateType State
+        {
+            get => (ZeroOperatorStateType)ZeroState;
+            set => ZeroState = (byte)value;
+        }
+
+        /// <summary>
         /// 与服务器网络交互是否正常（特别注意：不是指逻辑操作是否成功,逻辑成功看InteractiveSuccess=true时的State）
         /// </summary>
         public bool InteractiveSuccess { get; set; }
@@ -61,8 +70,9 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="showError"></param>
         /// <param name="frames"></param>
+        /// <param name="action"></param>
         /// <returns></returns>
-        public static TZeroResultData Unpack<TZeroResultData>(ZMessage frames, bool showError)
+        public static TZeroResultData Unpack<TZeroResultData>(ZMessage frames, bool showError, Func<TZeroResultData, byte, byte[],bool> action=null)
             where TZeroResultData : ZeroResultData, new()
         {
             try
@@ -72,7 +82,7 @@ namespace Agebull.MicroZero
                 {
                     messages = frames.Select(p => p.ReadAll()).ToArray();
                 }
-                if (!Unpack(true, messages, out TZeroResultData result, null))
+                if (!Unpack(true, messages, out TZeroResultData result, action))
                 {
                     if (showError)
                         ZeroTrace.WriteError("Unpack", "LaoutError");
@@ -104,7 +114,7 @@ namespace Agebull.MicroZero
         /// <param name="name">名称</param>
         /// <param name="value">返回值</param>
         /// <returns>是否存在</returns>
-        public bool TryGetValue(byte name, out string value)
+        public bool TryGetString(byte name, out string value)
         {
             return TryGetValue(name, out value, b => Encoding.UTF8.GetString(b));
         }
@@ -114,9 +124,25 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="name">名称</param>
         /// <returns>存在返回值，不存在返回空对象</returns>
-        public string GetValue(byte name)
+        public string GetString(byte name)
         {
             return GetValue(name, b => Encoding.UTF8.GetString(b));
         }
+
+        /// <summary>
+        ///     返回值类型
+        /// </summary>
+        public byte ResultType => Tag;
+
+
+        /// <summary>
+        /// 返回值
+        /// </summary>
+        public string Result { get; set; }
+        
+        /// <summary>
+        /// 二进制内容
+        /// </summary>
+        public byte[] Binary { get; set; }
     }
 }

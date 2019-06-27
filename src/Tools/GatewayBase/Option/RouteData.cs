@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
@@ -64,13 +65,18 @@ namespace MicroZero.Http.Gateway
         [DataMember]
         [JsonProperty("arguments")]
         public Dictionary<string, string> Arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        
+
         /// <summary>
         /// 取参数
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public string this[string key] => Arguments.TryGetValue(key,out var vl) ? vl : null;
+        public string this[string key] => Arguments.TryGetValue(key, out var vl) ? vl : null;
+
+        /// <summary>
+        ///     返回二进制值
+        /// </summary>
+        [IgnoreDataMember] [JsonIgnore] public Dictionary<string, byte[]> Files;
 
         /// <summary>
         ///     执行HTTP重写向吗
@@ -80,9 +86,19 @@ namespace MicroZero.Http.Gateway
         public bool Redirect;
 
         /// <summary>
-        ///     返回值
+        ///     返回文本值
         /// </summary>
         [DataMember] [JsonProperty("result")] public string ResultMessage;
+
+        /// <summary>
+        ///     返回二进制值
+        /// </summary>
+        [IgnoreDataMember] [JsonIgnore] public byte[] ResultBinary;
+
+        /// <summary>
+        ///     返回值是否文件
+        /// </summary>
+        [DataMember] [JsonProperty("binary")] public bool IsFile;
 
         /// <summary>
         ///     开始时间
@@ -165,36 +181,47 @@ namespace MicroZero.Http.Gateway
 
         private string CheckHeaders(HttpContext context, HttpRequest request)
         {
-            string userAgent = null;
-            foreach (var head in request.Headers)
+            var auth = request.Headers["AUTHORIZATION"];
+            if (auth.Count == 0)
             {
-                var key = head.Key.ToUpper();
-                switch (key)
-                {
-                    case "AUTHORIZATION":
-                        var token = head.Value.LinkToString();
-                        var words = token.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-                        if (words.Length != 2 ||
-                            !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
-                            words[1].Equals("null") ||
-                            words[1].Equals("undefined"))
-                            Token = null;
-                        else
-                            Token = words[1];
-                        break;
-                    //case "USER-AGENT":
-                    //    userAgent = head.Value.LinkToString("|");
-                    //    break;
-                    default:
-                        Headers.Add(key, head.Value.ToList());
-                        break;
-                }
+                Token = null;
+                return null;
             }
-            if (string.IsNullOrWhiteSpace(Token))
-            {
-                Token = context.Request.Query["token"];
-            }
-            return userAgent;
+            var words = auth[auth.Count - 1].Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            Token = words.Length == 1 ? words[0] : words[1];
+            if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
+                Token = null;
+            return null;
+            //string userAgent = null;
+            //foreach (var head in request.Headers)
+            //{
+            //    var key = head.Key.ToUpper();
+            //    switch (key)
+            //    {
+            //        case "AUTHORIZATION":
+            //            var token = head.Value.LinkToString();
+            //            var words = token.Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
+            //            if (words.Length != 2 ||
+            //                !string.Equals(words[0], "Bearer", StringComparison.OrdinalIgnoreCase) ||
+            //                words[1].Equals("null") ||
+            //                words[1].Equals("undefined"))
+            //                Token = null;
+            //            else
+            //                Token = words[1];
+            //            break;
+            //        //case "USER-AGENT":
+            //        //    userAgent = head.Value.LinkToString("|");
+            //        //    break;
+            //        default:
+            //            Headers.Add(key, head.Value.ToList());
+            //            break;
+            //    }
+            //}
+            //if (string.IsNullOrWhiteSpace(Token))
+            //{
+            //    Token = context.Request.Query["token"];
+            //}
+            //return userAgent;
         }
 
         /// <summary>
@@ -203,34 +230,28 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private bool CheckCall()
         {
-            if (RouteOption.Option.SystemConfig.IsAppFolder)
+            var words = Uri.LocalPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length <= 1)
             {
-                var words = Uri.LocalPath.Split('/', 3, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length <= 1)
-                {
-                    UserState = UserOperatorStateType.FormalError;
-                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    ResultMessage = ApiResultIoc.ArgumentErrorJson;
-                    return false;
-                }
-
-                ApiHost = words[1];
-                ApiName = words[2];
+                UserState = UserOperatorStateType.FormalError;
+                ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                ResultMessage = ApiResultIoc.ArgumentErrorJson;
+                return false;
             }
-            else
+
+            if (!RouteOption.Option.HostPath.TryGetValue(Uri.Host, out var idx))
             {
-                var words = Uri.LocalPath.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length <= 1)
-                {
-                    UserState = UserOperatorStateType.FormalError;
-                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                    ResultMessage = ApiResultIoc.ArgumentErrorJson;
-                    return false;
-                }
-
-                ApiHost = words[0];
-                ApiName = words[1];
+                idx = 0;
             }
+            if (words.Length <= idx + 1)
+            {
+                UserState = UserOperatorStateType.FormalError;
+                ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                ResultMessage = ApiResultIoc.ArgumentErrorJson;
+                return false;
+            }
+            ApiHost = words[idx];
+            ApiName = string.Join('/', words.Skip(idx + 1));
             return true;
         }
 
@@ -248,7 +269,31 @@ namespace MicroZero.Http.Gateway
                 {
                     foreach (var key in request.Form.Keys)
                         Arguments.TryAdd(key, request.Form[key]);
+                    var files = request.Form?.Files;
+                    if (files != null && files.Count > 0)
+                    {
+                        Files = new Dictionary<string, byte[]>();
+                        foreach (var file in files)
+                        {
+                            if (Files.ContainsKey(file.Name))
+                            {
+                                UserState = UserOperatorStateType.FormalError;
+                                ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                                ResultMessage = ApiResultIoc.ArgumentErrorJson;
+                                return false;
+                            }
+
+                            var bytes = new byte[file.Length];
+                            using (var stream = file.OpenReadStream())
+                            {
+                                stream.Read(bytes, 0, (int)file.Length);
+                            }
+                            Files.Add(file.Name, bytes);
+                        }
+                    }
+
                 }
+
                 if (request.ContentLength == null)
                     return true;
                 using (var texter = new StreamReader(request.Body))

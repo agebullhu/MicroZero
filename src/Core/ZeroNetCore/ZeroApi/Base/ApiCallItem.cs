@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -56,10 +57,31 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         public string Argument { get; set; }
 
+
+        /// <summary>
+        /// 请求参数
+        /// </summary>
+        public string Extend { get; set; }
+
+        /// <summary>
+        ///     文件
+        /// </summary>
+        public List<NameValue<string, byte[]>> Files = new List<NameValue<string, byte[]>>();
+
         /// <summary>
         /// 返回
         /// </summary>
         public string Result { get; set; }
+
+        /// <summary>
+        /// 说明帧结束标识
+        /// </summary>
+        public byte EndTag { get; set; }
+
+        /// <summary>
+        /// 扩展的二进制
+        /// </summary>
+        public byte[] Binary { get; set; }
 
         /// <summary>
         /// 执行状态
@@ -97,10 +119,13 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         case ZeroFrameType.LocalId:
                             item.LocalId = GetString(bytes);
-                            break;
+                            return true;
                         case ZeroFrameType.Argument:
                             item.Argument = GetString(bytes);
-                            break;
+                            return true;
+                        case ZeroFrameType.TextContent:
+                            item.Extend = GetString(bytes);
+                            return true;
                         case ZeroFrameType.Original1:
                         case ZeroFrameType.Original2:
                         case ZeroFrameType.Original3:
@@ -111,8 +136,19 @@ namespace Agebull.MicroZero.ZeroApis
                         case ZeroFrameType.Original8:
                             if (!item.Originals.ContainsKey(type))
                                 item.Originals.Add(type, bytes);
-                            break;
+                            return true;
+                        case ZeroFrameType.ExtendText:
+                            item.Files.Add(new NameValue<string, byte[]>
+                            {
+                                name = GetString(bytes)
+                            });
+                            return true;
+                        case ZeroFrameType.BinaryContent:
+                            if (item.Files.Count > 0)
+                                item.Files.Last().value = bytes;
+                            return true;
                     }
+                    return false;
                 }))
                     return false;
                 return callItem.ApiName != null;// && item.GlobalId != null;
@@ -122,7 +158,7 @@ namespace Agebull.MicroZero.ZeroApis
                 ZeroTrace.WriteException("Receive", e, $"FrameSize{buffers.Length}");
                 callItem = new ApiCallItem
                 {
-                    State = ZeroOperatorStateType.FrameInvalid
+                    ZeroState = (byte)ZeroOperatorStateType.FrameInvalid
                 };
                 return false;
             }

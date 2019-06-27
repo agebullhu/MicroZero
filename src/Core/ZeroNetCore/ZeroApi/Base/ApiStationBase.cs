@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroManagemant;
@@ -58,7 +57,50 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal abstract bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state);
+        internal virtual bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        {
+            int i = 0;
+            var des = new byte[10 + item.Originals.Count];
+            des[i++] = (byte)(item.Originals.Count + (item.EndTag == ZeroFrameType.ResultFileEnd ? 7 : 6));
+            des[i++] = (byte)state;
+            des[i++] = ZeroFrameType.Requester;
+            des[i++] = ZeroFrameType.RequestId;
+            des[i++] = ZeroFrameType.CallId;
+            des[i++] = ZeroFrameType.GlobalId;
+            des[i++] = ZeroFrameType.ResultText;
+            var msg = new List<byte[]>
+            {
+                item.Caller,
+                des,
+                item.Requester.ToZeroBytes(),
+                item.RequestId.ToZeroBytes(),
+                item.CallId.ToZeroBytes(),
+                item.GlobalId.ToZeroBytes(),
+                item.Result.ToZeroBytes()
+            };
+            if (item.EndTag == ZeroFrameType.ResultFileEnd)
+            {
+                des[i++] = ZeroFrameType.BinaryContent;
+                msg.Add(item.Binary);
+            }
+            foreach (var org in item.Originals)
+            {
+                des[i++] = org.Key;
+                msg.Add((org.Value));
+            }
+            des[i++] = ZeroFrameType.SerivceKey;
+            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
+            des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
+            return SendResult(socket, new ZMessage(msg));
+        }
+
+        private static readonly byte[] LayoutErrorFrame = new byte[]
+        {
+            1,
+            (byte) ZeroOperatorStateType.FrameInvalid,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.ResultEnd
+        };
 
         /// <summary>
         /// 发送返回值 
@@ -66,8 +108,61 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal abstract void SendLayoutErrorResult(ZSocket socket, ApiCallItem item);
+        internal virtual void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
+        {
+            if (!CanLoop)
+            {
+                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+                return;
+            }
+            if (item == null)
+                return;
+            try
+            {
+                SendResult(socket, new ZMessage
+                {
+                    new ZFrame(item.Caller),
+                    new ZFrame(LayoutErrorFrame),
+                    new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                });
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+            }
+        }
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected bool SendResult(ZSocket socket, ZMessage message)
+        {
+            if (!CanLoop)
+            {
+                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+                return false;
+            }
 
+            try
+            {
+                ZError error;
+                using (message)
+                {
+                    if (socket.Send(message, out error))
+                        return true;
+                }
+                ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                Interlocked.Increment(ref SendError);
+                return false;
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e, "ApiStation.SendResult");
+                return false;
+            }
+        }
         #endregion
 
         #region 主循环
@@ -76,7 +171,6 @@ namespace Agebull.MicroZero.ZeroApis
         /// 调用计数
         /// </summary>
         public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError, WaitCount;
-
 
 
         /// <summary>
@@ -100,7 +194,7 @@ namespace Agebull.MicroZero.ZeroApis
                         new Thread(RunThread)
                         {
                             IsBackground = true,
-                            Priority=ThreadPriority.Highest
+                            Priority = ThreadPriority.Highest
                         }.Start(idx);
                     break;
                 case SpeedLimitType.WaitCount:
@@ -154,7 +248,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void RunThread(object arg)
         {
-            var idx = (int) arg;
+            var idx = (int)arg;
             var realName = $"{RealName}-{idx:D2}";
             DoPoll(realName, realName.ToAsciiBytes(), false);
         }
@@ -208,9 +302,9 @@ namespace Agebull.MicroZero.ZeroApis
                             SendLayoutErrorResult(socket, item);
                             continue;
                         }
-                        Interlocked.Increment(ref WaitCount);
+                        Interlocked.Increment(ref CallCount);
                         if (checkWait)
-                            Execute(socket, item);
+                            ExecuteAsync(socket, item);
                         else
                             Execute(executer, ref socket, item);
                     }
@@ -228,31 +322,53 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region 方法
 
-        private void Execute(ZSocket socket, ApiCallItem item)
+        #region 调用
+
+        private async void ExecuteAsync(ZSocket socket, ApiCallItem item)
         {
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
                 item.Result = ApiResultIoc.UnavailableJson;
                 OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
+                return;
             }
-            else
+            if (!PrepareExecute(item))
+                return;
+            var executer = new ApiExecuter
             {
-                Task.Factory.StartNew(() =>
-                {
-                    var socketT = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName));
-                    Execute(new ApiExecuter
-                    {
-                        Station = this
-                    }, ref socketT, item);
-                });
+                Station = this,
+                Item = item,
+                Socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName))
+            };
+            try
+            {
+                await executer.ExecuteAsync();
+            }
+            finally
+            {
+                executer.Socket.Dispose();
+                Interlocked.Decrement(ref WaitCount);
             }
         }
 
         private void Execute(ApiExecuter executer, ref ZSocket socket, ApiCallItem item)
         {
-            if (PrepareExecute(item))
-                executer.Execute(ref socket, item);
+            if (!PrepareExecute(item))
+                return;
+            executer.Socket = socket;
+            executer.Item = item;
+            Interlocked.Increment(ref WaitCount);
+            try
+            {
+                executer.Execute();
+            }
+            finally
+            {
+                Interlocked.Decrement(ref WaitCount);
+            }
+            socket = executer.Socket;
         }
+
         /// <summary>
         /// 准备执行
         /// </summary>
@@ -261,6 +377,8 @@ namespace Agebull.MicroZero.ZeroApis
         {
             return true;
         }
+
+        #endregion
 
         #region 注册方法
 
@@ -395,7 +513,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="action">动作</param>
         /// <param name="access">访问设置</param>
         /// <param name="info">反射信息</param>
-        public ApiAction RegistAction2<TArg, TResult>(string name, Func<TArg,TResult> action, ApiAccessOption access, ApiActionInfo info = null)
+        public ApiAction RegistAction2<TArg, TResult>(string name, Func<TArg, TResult> action, ApiAccessOption access, ApiActionInfo info = null)
         {
             var a = new ApiAction2<TArg, TResult>
             {
@@ -464,15 +582,22 @@ namespace Agebull.MicroZero.ZeroApis
         {
             ApiHandlers.Add(() => new TApiHandler());
         }
+
+        private List<IApiHandler> _handlers;
+
         /// <summary>
         ///     注册处理器
         /// </summary>
         internal List<IApiHandler> CreateHandlers()
         {
-            List<IApiHandler> handlers = new List<IApiHandler>();
+            if (ApiHandlers.Count == 0)
+                return null;
+            if (_handlers != null)
+                return _handlers;
+            _handlers = new List<IApiHandler>();
             foreach (var func in ApiHandlers)
-                handlers.Add(func());
-            return handlers;
+                _handlers.Add(func());
+            return _handlers;
         }
 
         #endregion

@@ -11,7 +11,6 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway
 {
@@ -84,14 +83,12 @@ namespace MicroZero.Http.Gateway
                 url.Append(data.Uri.Query);
             }
             RemoteUrl = url.ToString();
-
-
-
             RemoteRequest = (HttpWebRequest)WebRequest.Create(RemoteUrl);
             RemoteRequest.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {data.Token}");
             RemoteRequest.Timeout = RouteOption.Option.SystemConfig.HttpTimeOut;
             RemoteRequest.Method = method;
             RemoteRequest.KeepAlive = true;
+
             if (localRequest.HasFormContentType)
             {
                 RemoteRequest.ContentType = "application/x-www-form-urlencoded";
@@ -140,12 +137,14 @@ namespace MicroZero.Http.Gateway
             try
             {
                 var resp = await RemoteRequest.GetResponseAsync();
-                jsonResult = ReadResponse(resp);
+                jsonResult = await ReadResponse(resp);
             }
             catch (WebException e)
             {
                 LogRecorderX.Exception(e);
-                jsonResult = e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e) : ResponseError(e);
+                jsonResult = e.Status == WebExceptionStatus.ProtocolError
+                    ? await ProtocolError(e)
+                    : ResponseError(e);
             }
             catch (Exception e)
             {
@@ -162,7 +161,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="exception"></param>
         /// <returns></returns>
-        private string ProtocolError(WebException exception)
+        private async Task<string> ProtocolError(WebException exception)
         {
             try
             {
@@ -181,7 +180,7 @@ namespace MicroZero.Http.Gateway
                                 return ToErrorString(ErrorCode.NetworkError, "拒绝访问", "页面不存在");
                         }
 
-                var msg = ReadResponse(exception.Response);
+                var msg = await ReadResponse(exception.Response);
                 LogRecorderX.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
@@ -287,35 +286,33 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private static string ReadResponse(WebResponse response)
+        private static async Task<string> ReadResponse(WebResponse response)
         {
-            string result;
+            Memory<char> memory = new Memory<char>();
+            //int len;
             using (response)
             {
                 if (response.ContentLength == 0)
                 {
-                    result = ApiResultIoc.RemoteEmptyErrorJson;
+                    return ApiResultIoc.RemoteEmptyErrorJson;
                 }
-                else
+
+                var receivedStream = response.GetResponseStream();
+                if (receivedStream == null)
+                    return ApiResultIoc.RemoteEmptyErrorJson;
+
+                using (receivedStream)
                 {
-                    var receivedStream = response.GetResponseStream();
-                    if (receivedStream == null)
-                        result = ApiResultIoc.RemoteEmptyErrorJson;
-                    else
-                        using (receivedStream)
-                        {
-                            using (var streamReader = new StreamReader(receivedStream))
-                            {
-                                result = streamReader.ReadToEnd();
-                                streamReader.Close();
-                            }
-                            receivedStream.Close();
-                        }
+                    using (var streamReader = new StreamReader(receivedStream))
+                    {
+                        /*len = */await streamReader.ReadAsync(memory);
+                        streamReader.Close();
+                    }
+                    receivedStream.Close();
                 }
                 response.Close();
             }
-
-            return result;
+            return memory.ToNullString();
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace MicroZero.Devops.ZeroTracer
     public partial class FlowLogData : IIdentityData
     {
         #region 构造
-        
+
         /// <summary>
         /// 构造
         /// </summary>
@@ -47,7 +47,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 流水号
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public long _id;
 
         partial void OnIdGet();
@@ -58,11 +58,11 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnIdSeted();
 
-        
+
         /// <summary>
         /// 流水号
         /// </summary>
-        [DataMember , JsonIgnore , ReadOnly(true) , DisplayName(@"流水号")]
+        [DataMember, JsonIgnore, ReadOnly(true), DisplayName(@"流水号")]
         public long Id
         {
             get
@@ -72,7 +72,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._id == value)
+                if (this._id == value)
                     return;
                 //if(this._id > 0)
                 //    throw new Exception("主键一旦设置就不可以修改");
@@ -85,7 +85,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 请求标识
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public string _requestId;
 
         partial void OnRequestIdGet();
@@ -94,7 +94,7 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnRequestIdSeted();
 
-        
+
         /// <summary>
         /// 请求标识
         /// </summary>
@@ -102,8 +102,8 @@ namespace MicroZero.Devops.ZeroTracer
         /// 可存储200个字符.合理长度应不大于200.
         /// </value>
         [DataRule(CanNull = true)]
-        [DataMember , JsonProperty("requestId", NullValueHandling = NullValueHandling.Ignore) , DisplayName(@"请求标识")]
-        public  string RequestId
+        [DataMember, JsonProperty("requestId", NullValueHandling = NullValueHandling.Ignore), DisplayName(@"请求标识")]
+        public string RequestId
         {
             get
             {
@@ -112,7 +112,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._requestId == value)
+                if (this._requestId == value)
                     return;
                 OnRequestIdSet(ref value);
                 this._requestId = value;
@@ -123,7 +123,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 根站点
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public string _rootStation;
 
         partial void OnRootStationGet();
@@ -132,7 +132,7 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnRootStationSeted();
 
-        
+
         /// <summary>
         /// 根站点
         /// </summary>
@@ -140,8 +140,8 @@ namespace MicroZero.Devops.ZeroTracer
         /// 可存储200个字符.合理长度应不大于200.
         /// </value>
         [DataRule(CanNull = true)]
-        [DataMember , JsonProperty("rootStation", NullValueHandling = NullValueHandling.Ignore) , DisplayName(@"根站点")]
-        public  string RootStation
+        [DataMember, JsonProperty("rootStation", NullValueHandling = NullValueHandling.Ignore), DisplayName(@"根站点")]
+        public string RootStation
         {
             get
             {
@@ -150,7 +150,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._rootStation == value)
+                if (this._rootStation == value)
                     return;
                 OnRootStationSet(ref value);
                 this._rootStation = value;
@@ -161,7 +161,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 根命令
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public string _rootCommand;
 
         partial void OnRootCommandGet();
@@ -170,7 +170,7 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnRootCommandSeted();
 
-        
+
         /// <summary>
         /// 根命令
         /// </summary>
@@ -178,8 +178,8 @@ namespace MicroZero.Devops.ZeroTracer
         /// 可存储200个字符.合理长度应不大于200.
         /// </value>
         [DataRule(CanNull = true)]
-        [DataMember , JsonProperty("rootCommand", NullValueHandling = NullValueHandling.Ignore) , DisplayName(@"根命令")]
-        public  string RootCommand
+        [DataMember, JsonProperty("rootCommand", NullValueHandling = NullValueHandling.Ignore), DisplayName(@"根命令")]
+        public string RootCommand
         {
             get
             {
@@ -188,7 +188,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._rootCommand == value)
+                if (this._rootCommand == value)
                     return;
                 OnRootCommandSet(ref value);
                 this._rootCommand = value;
@@ -199,7 +199,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 记录时间
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public DateTime _recordDate;
 
         partial void OnRecordDateGet();
@@ -208,13 +208,13 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnRecordDateSeted();
 
-        
+
         /// <summary>
         /// 记录时间
         /// </summary>
         [DataRule(CanNull = true)]
-        [DataMember , JsonProperty("recordDate", NullValueHandling = NullValueHandling.Ignore) , JsonConverter(typeof(MyDateTimeConverter)) , DisplayName(@"记录时间")]
-        public  DateTime RecordDate
+        [DataMember, JsonProperty("recordDate", NullValueHandling = NullValueHandling.Ignore), JsonConverter(typeof(MyDateTimeConverter)), DisplayName(@"记录时间")]
+        public DateTime RecordDate
         {
             get
             {
@@ -223,7 +223,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._recordDate == value)
+                if (this._recordDate == value)
                     return;
                 OnRecordDateSet(ref value);
                 this._recordDate = value;
@@ -234,7 +234,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 流程内容的Json表示
         /// </summary>
-        [IgnoreDataMember,JsonIgnore]
+        [IgnoreDataMember, JsonIgnore]
         public string _flowJson;
 
         partial void OnFlowJsonGet();
@@ -243,7 +243,7 @@ namespace MicroZero.Devops.ZeroTracer
 
         partial void OnFlowJsonSeted();
 
-        
+
         /// <summary>
         /// 流程内容的Json表示
         /// </summary>
@@ -251,8 +251,8 @@ namespace MicroZero.Devops.ZeroTracer
         /// 可存储200个字符.合理长度应不大于200.
         /// </value>
         [DataRule(CanNull = true)]
-        [DataMember , JsonProperty("flowJson", NullValueHandling = NullValueHandling.Ignore) , DisplayName(@"流程内容的Json表示")]
-        public  string FlowJson
+        [DataMember, JsonProperty("flowJson", NullValueHandling = NullValueHandling.Ignore), DisplayName(@"流程内容的Json表示")]
+        public string FlowJson
         {
             get
             {
@@ -261,7 +261,7 @@ namespace MicroZero.Devops.ZeroTracer
             }
             set
             {
-                if(this._flowJson == value)
+                if (this._flowJson == value)
                     return;
                 OnFlowJsonSet(ref value);
                 this._flowJson = value;
@@ -281,7 +281,7 @@ namespace MicroZero.Devops.ZeroTracer
 
         #region 名称的属性操作
 
-    
+
 
         /// <summary>
         ///     设置属性值
@@ -290,34 +290,34 @@ namespace MicroZero.Devops.ZeroTracer
         /// <param name="value"></param>
         protected override void SetValueInner(string property, object value)
         {
-            if(property == null) return;
-            switch(property.Trim().ToLower())
+            if (property == null) return;
+            switch (property.Trim().ToLower())
             {
-            case "id":
-                this.Id = (long)Convert.ToDecimal(value);
-                return;
-            case "requestid":
-                this.RequestId = value == null ? null : value.ToString();
-                return;
-            case "rootstation":
-                this.RootStation = value == null ? null : value.ToString();
-                return;
-            case "rootcommand":
-                this.RootCommand = value == null ? null : value.ToString();
-                return;
-            case "recorddate":
-                this.RecordDate = Convert.ToDateTime(value);
-                return;
-            case "flowjson":
-                this.FlowJson = value == null ? null : value.ToString();
-                return;
+                case "id":
+                    this.Id = (long)Convert.ToDecimal(value);
+                    return;
+                case "requestid":
+                    this.RequestId = value == null ? null : value.ToString();
+                    return;
+                case "rootstation":
+                    this.RootStation = value == null ? null : value.ToString();
+                    return;
+                case "rootcommand":
+                    this.RootCommand = value == null ? null : value.ToString();
+                    return;
+                case "recorddate":
+                    this.RecordDate = Convert.ToDateTime(value);
+                    return;
+                case "flowjson":
+                    this.FlowJson = value == null ? null : value.ToString();
+                    return;
             }
 
             //System.Diagnostics.Trace.WriteLine(property + @"=>" + value);
 
         }
 
-    
+
 
         /// <summary>
         ///     设置属性值
@@ -326,26 +326,26 @@ namespace MicroZero.Devops.ZeroTracer
         /// <param name="value"></param>
         protected override void SetValueInner(int index, object value)
         {
-            switch(index)
+            switch (index)
             {
-            case _DataStruct_.Id:
-                this.Id = Convert.ToInt64(value);
-                return;
-            case _DataStruct_.RequestId:
-                this.RequestId = value == null ? null : value.ToString();
-                return;
-            case _DataStruct_.RootStation:
-                this.RootStation = value == null ? null : value.ToString();
-                return;
-            case _DataStruct_.RootCommand:
-                this.RootCommand = value == null ? null : value.ToString();
-                return;
-            case _DataStruct_.RecordDate:
-                this.RecordDate = Convert.ToDateTime(value);
-                return;
-            case _DataStruct_.FlowJson:
-                this.FlowJson = value == null ? null : value.ToString();
-                return;
+                case _DataStruct_.Id:
+                    this.Id = Convert.ToInt64(value);
+                    return;
+                case _DataStruct_.RequestId:
+                    this.RequestId = value == null ? null : value.ToString();
+                    return;
+                case _DataStruct_.RootStation:
+                    this.RootStation = value == null ? null : value.ToString();
+                    return;
+                case _DataStruct_.RootCommand:
+                    this.RootCommand = value == null ? null : value.ToString();
+                    return;
+                case _DataStruct_.RecordDate:
+                    this.RecordDate = Convert.ToDateTime(value);
+                    return;
+                case _DataStruct_.FlowJson:
+                    this.FlowJson = value == null ? null : value.ToString();
+                    return;
             }
         }
 
@@ -356,20 +356,20 @@ namespace MicroZero.Devops.ZeroTracer
         /// <param name="property"></param>
         protected override object GetValueInner(string property)
         {
-            switch(property)
+            switch (property)
             {
-            case "id":
-                return this.Id;
-            case "requestid":
-                return this.RequestId;
-            case "rootstation":
-                return this.RootStation;
-            case "rootcommand":
-                return this.RootCommand;
-            case "recorddate":
-                return this.RecordDate;
-            case "flowjson":
-                return this.FlowJson;
+                case "id":
+                    return this.Id;
+                case "requestid":
+                    return this.RequestId;
+                case "rootstation":
+                    return this.RootStation;
+                case "rootcommand":
+                    return this.RootCommand;
+                case "recorddate":
+                    return this.RecordDate;
+                case "flowjson":
+                    return this.FlowJson;
             }
 
             return null;
@@ -382,7 +382,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <param name="index"></param>
         protected override object GetValueInner(int index)
         {
-            switch(index)
+            switch (index)
             {
                 case _DataStruct_.Id:
                     return this.Id;
@@ -404,7 +404,7 @@ namespace MicroZero.Devops.ZeroTracer
         #endregion
 
         #region 复制
-        
+
 
         partial void CopyExtendValue(FlowLogData source);
 
@@ -415,8 +415,17 @@ namespace MicroZero.Devops.ZeroTracer
         protected override void CopyValueInner(DataObjectBase source)
         {
             var sourceEntity = source as FlowLogData;
-            if(sourceEntity == null)
+            if (sourceEntity == null)
                 return;
+            Copy(sourceEntity);
+        }
+
+        /// <summary>
+        /// 复制
+        /// </summary>
+        /// <param name="sourceEntity">复制的源字段</param>
+        public void Copy(FlowLogData sourceEntity)
+        {
             this._id = sourceEntity._id;
             this._requestId = sourceEntity._requestId;
             this._rootStation = sourceEntity._rootStation;
@@ -424,26 +433,12 @@ namespace MicroZero.Devops.ZeroTracer
             this._recordDate = sourceEntity._recordDate;
             this._flowJson = sourceEntity._flowJson;
             CopyExtendValue(sourceEntity);
-            this.__EntityStatus.SetModified();
-        }
-
-        /// <summary>
-        /// 复制
-        /// </summary>
-        /// <param name="source">复制的源字段</param>
-        public void Copy(FlowLogData source)
-        {
-                this.Id = source.Id;
-                this.RequestId = source.RequestId;
-                this.RootStation = source.RootStation;
-                this.RootCommand = source.RootCommand;
-                this.RecordDate = source.RecordDate;
-                this.FlowJson = source.FlowJson;
+            this.__status.IsModified = true;
         }
         #endregion
 
         #region 后期处理
-        
+
 
         /// <summary>
         /// 单个属性修改的后期处理(保存后)
@@ -453,36 +448,36 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对当前对象的属性的更改,请自行保存,否则将丢失
         /// </remarks>
-        protected override void OnLaterPeriodBySignleModified(EntitySubsist subsist,byte[] modifieds)
+        protected override void OnLaterPeriodBySignleModified(EntitySubsist subsist, byte[] modifieds)
         {
             if (subsist == EntitySubsist.Deleting)
             {
-                OnIdModified(subsist,false);
-                OnRequestIdModified(subsist,false);
-                OnRootStationModified(subsist,false);
-                OnRootCommandModified(subsist,false);
-                OnRecordDateModified(subsist,false);
-                OnFlowJsonModified(subsist,false);
+                OnIdModified(subsist, false);
+                OnRequestIdModified(subsist, false);
+                OnRootStationModified(subsist, false);
+                OnRootCommandModified(subsist, false);
+                OnRecordDateModified(subsist, false);
+                OnFlowJsonModified(subsist, false);
                 return;
             }
             else if (subsist == EntitySubsist.Adding || subsist == EntitySubsist.Added)
             {
-                OnIdModified(subsist,true);
-                OnRequestIdModified(subsist,true);
-                OnRootStationModified(subsist,true);
-                OnRootCommandModified(subsist,true);
-                OnRecordDateModified(subsist,true);
-                OnFlowJsonModified(subsist,true);
+                OnIdModified(subsist, true);
+                OnRequestIdModified(subsist, true);
+                OnRootStationModified(subsist, true);
+                OnRootCommandModified(subsist, true);
+                OnRecordDateModified(subsist, true);
+                OnFlowJsonModified(subsist, true);
                 return;
             }
-            else if(modifieds != null && modifieds[6] > 0)
+            else if (modifieds != null && modifieds[6] > 0)
             {
-                OnIdModified(subsist,modifieds[_DataStruct_.Real_Id] == 1);
-                OnRequestIdModified(subsist,modifieds[_DataStruct_.Real_RequestId] == 1);
-                OnRootStationModified(subsist,modifieds[_DataStruct_.Real_RootStation] == 1);
-                OnRootCommandModified(subsist,modifieds[_DataStruct_.Real_RootCommand] == 1);
-                OnRecordDateModified(subsist,modifieds[_DataStruct_.Real_RecordDate] == 1);
-                OnFlowJsonModified(subsist,modifieds[_DataStruct_.Real_FlowJson] == 1);
+                OnIdModified(subsist, modifieds[_DataStruct_.Real_Id] == 1);
+                OnRequestIdModified(subsist, modifieds[_DataStruct_.Real_RequestId] == 1);
+                OnRootStationModified(subsist, modifieds[_DataStruct_.Real_RootStation] == 1);
+                OnRootCommandModified(subsist, modifieds[_DataStruct_.Real_RootCommand] == 1);
+                OnRecordDateModified(subsist, modifieds[_DataStruct_.Real_RecordDate] == 1);
+                OnFlowJsonModified(subsist, modifieds[_DataStruct_.Real_FlowJson] == 1);
             }
         }
 
@@ -494,7 +489,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnIdModified(EntitySubsist subsist,bool isModified);
+        partial void OnIdModified(EntitySubsist subsist, bool isModified);
 
         /// <summary>
         /// 请求标识修改的后期处理(保存前)
@@ -504,7 +499,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnRequestIdModified(EntitySubsist subsist,bool isModified);
+        partial void OnRequestIdModified(EntitySubsist subsist, bool isModified);
 
         /// <summary>
         /// 根站点修改的后期处理(保存前)
@@ -514,7 +509,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnRootStationModified(EntitySubsist subsist,bool isModified);
+        partial void OnRootStationModified(EntitySubsist subsist, bool isModified);
 
         /// <summary>
         /// 根命令修改的后期处理(保存前)
@@ -524,7 +519,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnRootCommandModified(EntitySubsist subsist,bool isModified);
+        partial void OnRootCommandModified(EntitySubsist subsist, bool isModified);
 
         /// <summary>
         /// 记录时间修改的后期处理(保存前)
@@ -534,7 +529,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnRecordDateModified(EntitySubsist subsist,bool isModified);
+        partial void OnRecordDateModified(EntitySubsist subsist, bool isModified);
 
         /// <summary>
         /// 流程内容的Json表示修改的后期处理(保存前)
@@ -544,7 +539,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <remarks>
         /// 对关联的属性的更改,请自行保存,否则可能丢失
         /// </remarks>
-        partial void OnFlowJsonModified(EntitySubsist subsist,bool isModified);
+        partial void OnFlowJsonModified(EntitySubsist subsist, bool isModified);
         #endregion
 
         #region 数据结构
@@ -552,7 +547,7 @@ namespace MicroZero.Devops.ZeroTracer
         /// <summary>
         /// 实体结构
         /// </summary>
-        [IgnoreDataMember,Browsable (false)]
+        [IgnoreDataMember, Browsable(false)]
         public override EntitySturct __Struct
         {
             get
@@ -585,13 +580,13 @@ namespace MicroZero.Devops.ZeroTracer
             /// 实体说明
             /// </summary>
             public const string EntityPrimaryKey = "Id";
-            
-            
+
+
             /// <summary>
             /// 流水号的数字标识
             /// </summary>
             public const byte Id = 1;
-            
+
             /// <summary>
             /// 流水号的实时记录顺序
             /// </summary>
@@ -601,7 +596,7 @@ namespace MicroZero.Devops.ZeroTracer
             /// 请求标识的数字标识
             /// </summary>
             public const byte RequestId = 2;
-            
+
             /// <summary>
             /// 请求标识的实时记录顺序
             /// </summary>
@@ -611,7 +606,7 @@ namespace MicroZero.Devops.ZeroTracer
             /// 根站点的数字标识
             /// </summary>
             public const byte RootStation = 3;
-            
+
             /// <summary>
             /// 根站点的实时记录顺序
             /// </summary>
@@ -621,7 +616,7 @@ namespace MicroZero.Devops.ZeroTracer
             /// 根命令的数字标识
             /// </summary>
             public const byte RootCommand = 4;
-            
+
             /// <summary>
             /// 根命令的实时记录顺序
             /// </summary>
@@ -631,7 +626,7 @@ namespace MicroZero.Devops.ZeroTracer
             /// 记录时间的数字标识
             /// </summary>
             public const byte RecordDate = 5;
-            
+
             /// <summary>
             /// 记录时间的实时记录顺序
             /// </summary>
@@ -641,7 +636,7 @@ namespace MicroZero.Devops.ZeroTracer
             /// 流程内容的Json表示的数字标识
             /// </summary>
             public const byte FlowJson = 6;
-            
+
             /// <summary>
             /// 流程内容的Json表示的实时记录顺序
             /// </summary>
@@ -653,8 +648,8 @@ namespace MicroZero.Devops.ZeroTracer
             public static readonly EntitySturct Struct = new EntitySturct
             {
                 EntityName = EntityName,
-                Caption    = EntityCaption,
-                Description= EntityDescription,
+                Caption = EntityCaption,
+                Description = EntityDescription,
                 PrimaryKey = EntityPrimaryKey,
                 EntityType = EntityIdentity,
                 Properties = new Dictionary<int, PropertySturct>

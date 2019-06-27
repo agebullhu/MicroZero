@@ -17,6 +17,9 @@ namespace MicroZero.Http.Gateway
     {
         #region 配置
 
+        /// <summary>
+        /// 实例配置
+        /// </summary>
         public static RouteOption Option { get; set; }
 
 
@@ -44,6 +47,13 @@ namespace MicroZero.Http.Gateway
         [DataMember]
         [JsonProperty("sysConfig")]
         private SystemConfig _systemConfig;
+
+        /// <summary>
+        ///     系统配置
+        /// </summary>
+        [DataMember]
+        [JsonProperty("hostPath")]
+        public Dictionary<string,int> HostPath{ get; set; }
 
         /// <summary>
         ///     系统配置
@@ -94,15 +104,29 @@ namespace MicroZero.Http.Gateway
             Option.CheckSecurity();
             IsInitialized = true;
 
-            if (RouteMap == null)
-                RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
+            if (Option.HostPath == null)
+            {
+                Option.HostPath = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                var tmp = Option.HostPath;
+                Option.HostPath = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in tmp)
+                    Option.HostPath.Add(kv.Key, kv.Value);
+            }
+
             if (Option.Security == null)
+            {
                 Option.Security = new SecurityConfig
                 {
                     DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 };
+            }
             else if (Option.Security.DenyTokens == null)
+            {
                 Option.Security.DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
             return true;
         }
 

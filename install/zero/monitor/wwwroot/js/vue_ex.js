@@ -76,6 +76,7 @@ var vue_option = {
         }
     }
 };
+
 function extend_data(data) {
     vue_option.data = $.extend(vue_option.data, data);
 }
@@ -88,7 +89,7 @@ function extend_methods(methods) {
 
 function ws_state(active) {
     vue_option.data.ws_active = active;
-};
+}
 
 /**
  * 更新到vue数组

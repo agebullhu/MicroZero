@@ -13,9 +13,25 @@ namespace Agebull.MicroZero.ZeroApis
         #region Properties
 
         /// <summary>
+        ///     文件
+        /// </summary>
+        public Dictionary<string, byte[]> Files;
+
+        /// <summary>
         ///     返回的数据
         /// </summary>
         private readonly ApiClientCore _core = new ApiClientCore();
+
+        /// <summary>
+        ///     返回值
+        /// </summary>
+        public byte ResultType => _core.ResultType;
+
+        /// <summary>
+        ///     返回值
+        /// </summary>
+        public byte[] Binary => _core.Binary;
+
 
         /// <summary>
         ///     返回值

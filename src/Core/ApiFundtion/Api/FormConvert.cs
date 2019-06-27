@@ -102,12 +102,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns>是否接收值</returns>
         public bool TryGetValue(string field, out string value)
         {
-            if (!Controler.Arguments.TryGetValue(field, out var str))
+            if (!Controler.Arguments.TryGetValue(field, out value))
             {
-                value = null;
                 return false;
             }
-            value = str;
+            value = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
             return true;
         }
 

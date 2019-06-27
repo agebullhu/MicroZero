@@ -1,4 +1,5 @@
-﻿using Agebull.Common.Logging;
+﻿using System.Threading.Tasks;
+using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
@@ -57,6 +58,7 @@ namespace MicroZero.Http.Gateway
 
         private string CallApi(ZeroHost zeroHost)
         {
+            Task.Yield();
             var form = JsonHelper.SerializeObject(Data.Arguments);
             var caller = new ApiClient
             {
@@ -70,9 +72,11 @@ namespace MicroZero.Http.Gateway
             Data.ZeroState = caller.State;
             Data.UserState = caller.State.ToOperatorStatus(true);
             caller.CheckStateResult();
+            Data.IsFile = caller.ResultType == ZeroFrameType.ResultFileEnd;
+            Data.ResultBinary = caller.Binary;
             return Data.ResultMessage = caller.Result;
         }
-
+        /*
         private string CallApi2(ZeroHost zeroHost)
         {
             var config = ZeroApplication.Config[zeroHost.Station];
@@ -123,6 +127,6 @@ namespace MicroZero.Http.Gateway
                     return Data.ResultMessage = ApiResultIoc.NoFindJson;
             }
             
-        }
+        }*/
     }
 }

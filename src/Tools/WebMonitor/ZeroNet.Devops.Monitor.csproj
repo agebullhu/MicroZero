@@ -30,7 +30,6 @@
   <ItemGroup>
     <Content Remove="appsettings.json" />
     <Content Remove="Controllers\科室.json" />
-    <Content Remove="Views\Doc\Index - 复制.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="appsettings.json">

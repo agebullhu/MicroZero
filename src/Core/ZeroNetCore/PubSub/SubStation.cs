@@ -217,8 +217,8 @@ namespace Agebull.MicroZero.PubSub
                 using (ITsonDeserializer serializer = new TsonDeserializer(args.Tson))
                 {
                     serializer.ReadType();
-                    int size = serializer.ReadLen();
-                    for (int idx = 0; !serializer.IsBad && idx < size; idx++)
+                    var size = serializer.ReadLen();
+                    for (var idx = 0; !serializer.IsBad && idx < size; idx++)
                     {
                         using (var scope = TsonObjectScope.CreateScope(serializer))
                         {
@@ -238,9 +238,9 @@ namespace Agebull.MicroZero.PubSub
                 return JsonConvert.DeserializeObject<List<TData>>(args.Content);
             if (args.Buffer == null)
                 return new List<TData>();
-            using (MemoryStream ms = new MemoryStream(args.Buffer))
+            using (var ms = new MemoryStream(args.Buffer))
             {
-                DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(List<TData>));
+                var js = new DataContractJsonSerializer(typeof(List<TData>));
                 return (List<TData>)js.ReadObject(ms);
             }
 
@@ -263,16 +263,13 @@ namespace Agebull.MicroZero.PubSub
 
             if (args.Content != null)
                 return JsonConvert.DeserializeObject<TData>(args.Content);
-            if (args.Buffer != null)
+            if (args.Buffer == null) return default(TData);
+            using (var ms = new MemoryStream(args.Buffer))
             {
-                using (MemoryStream ms = new MemoryStream(args.Buffer))
-                {
-                    DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(TData));
-                    return (TData)js.ReadObject(ms);
-                }
+                var js = new DataContractJsonSerializer(typeof(TData));
+                return (TData)js.ReadObject(ms);
             }
 
-            return default(TData);
         }
 
     }

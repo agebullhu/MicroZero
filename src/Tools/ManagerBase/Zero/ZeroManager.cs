@@ -35,13 +35,13 @@ namespace WebMonitor.Models
                 case ZeroOperatorStateType.NotSupport:
                     return ApiResult.Error(ErrorCode.LogicalError, "不支持的操作");
                 case ZeroOperatorStateType.Ok:
-                    var _result = ApiValueResult.Succees(value.GetValue(ZeroFrameType.Context) ?? value.State.Text());
-                    _result.Status = new ApiStatusResult
+                    var result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
+                    result.Status = new ApiStatusResult
                     {
                         ErrorCode = ErrorCode.Success,
                         ClientMessage = "操作成功"
                     };
-                    return _result;
+                    return result;
                 default:
                     return ApiResult.Error(ErrorCode.LogicalError, value.State.Text());
             }

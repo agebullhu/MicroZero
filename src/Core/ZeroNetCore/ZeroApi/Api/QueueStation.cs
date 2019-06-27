@@ -70,7 +70,25 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         internal override bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            return string.IsNullOrEmpty(item.LocalId) || CacheProcess(long.Parse(item.LocalId));
+            if (!string.IsNullOrEmpty(item.LocalId))
+                CacheProcess(long.Parse(item.LocalId));
+
+            var des = new byte[]
+            {
+                2,
+                (byte) state,
+                ZeroFrameType.LocalId,
+                ZeroFrameType.SerivceKey,
+                ZeroFrameType.ResultEnd
+            };
+            var msg = new List<byte[]>
+            {
+                item.Caller,
+                des,
+                item.LocalId.ToZeroBytes(),
+                ZeroCommandExtend.ServiceKeyBytes
+            };
+            return SendResult(socket, new ZMessage(msg));
         }
 
         /// <summary>
@@ -94,6 +112,7 @@ namespace Agebull.MicroZero.PubSub
         {
             SaveIds();
         }
+
         #endregion
 
         #region 已处理集合

@@ -231,22 +231,13 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     取得列表数据
         /// </summary>
-        protected override ApiPageData<TData> GetListData()
-        {
-            var root = new LambdaItem<TData>();
-            return GetListData(root);
-        }
-
-        /// <summary>
-        ///     取得列表数据
-        /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
             if (!TryGet("_audit_", out int state) || state < 0 || state >= 0x100)
                 return base.GetListData(lambda);
             GlobalContext.Current.IsManageMode = true;
             lambda.AddRoot(p => p.DataState == (DataStateType)state);
-            return DoGetListData(lambda);
+            return base.GetListData(lambda);
         }
 
         #endregion

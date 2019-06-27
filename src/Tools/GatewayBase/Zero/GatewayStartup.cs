@@ -17,7 +17,7 @@ namespace MicroZero.Http.Gateway
         /// 构造
         /// </summary>
         /// <param name="configuration"></param>
-        protected GatewayStartup(IConfiguration configuration)
+        public GatewayStartup(IConfiguration configuration)
         {
             Configuration = configuration;
         }

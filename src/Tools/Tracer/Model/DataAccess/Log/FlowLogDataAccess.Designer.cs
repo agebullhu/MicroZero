@@ -123,35 +123,6 @@ UPDATE `tb_zt_flow_log` SET
  WHERE `id` = ?Id;";
             }
         }
-
-        /// <summary>
-        /// 取得仅更新的SQL语句
-        /// </summary>
-        public string GetModifiedSqlCode(FlowLogData data)
-        {
-            if (data.__EntityStatusNull || !data.__EntityStatus.IsModified)
-                return ";";
-            StringBuilder sql = new StringBuilder();
-            sql.AppendLine("UPDATE `tb_zt_flow_log` SET");
-            //请求标识
-            if (data.__EntityStatus.ModifiedProperties[FlowLogData._DataStruct_.Real_RequestId] > 0)
-                sql.AppendLine("       `request_id` = ?RequestId");
-            //根站点
-            if (data.__EntityStatus.ModifiedProperties[FlowLogData._DataStruct_.Real_RootStation] > 0)
-                sql.AppendLine("       `root_station` = ?RootStation");
-            //根命令
-            if (data.__EntityStatus.ModifiedProperties[FlowLogData._DataStruct_.Real_RootCommand] > 0)
-                sql.AppendLine("       `root_command` = ?RootCommand");
-            //记录时间
-            if (data.__EntityStatus.ModifiedProperties[FlowLogData._DataStruct_.Real_RecordDate] > 0)
-                sql.AppendLine("       `record_date` = ?RecordDate");
-            //流程内容的Json表示
-            if (data.__EntityStatus.ModifiedProperties[FlowLogData._DataStruct_.Real_FlowJson] > 0)
-                sql.AppendLine("       `flow_json` = ?FlowJson");
-            sql.Append(" WHERE `id` = ?Id;");
-            return sql.ToString();
-        }
-
         #endregion
 
 
@@ -209,21 +180,18 @@ UPDATE `tb_zt_flow_log` SET
         /// <param name="entity">读取数据的实体</param>
         protected sealed override void LoadEntity(MySqlDataReader reader,FlowLogData entity)
         {
-            using (new EditScope(entity.__EntityStatus, EditArrestMode.All, false))
-            {
-                if (!reader.IsDBNull(0))
-                    entity._id = (long)reader.GetInt64(0);
-                if (!reader.IsDBNull(1))
-                    entity._requestId = reader.GetString(1).ToString();
-                if (!reader.IsDBNull(2))
-                    entity._rootStation = reader.GetString(2).ToString();
-                if (!reader.IsDBNull(3))
-                    entity._rootCommand = reader.GetString(3).ToString();
-                if (!reader.IsDBNull(4))
-                    try{entity._recordDate = reader.GetMySqlDateTime(4).Value;}catch{}
-                if (!reader.IsDBNull(5))
-                    entity._flowJson = reader.GetString(5).ToString();
-            }
+            if (!reader.IsDBNull(0))
+                entity._id = (long)reader.GetInt64(0);
+            if (!reader.IsDBNull(1))
+                entity._requestId = reader.GetString(1).ToString();
+            if (!reader.IsDBNull(2))
+                entity._rootStation = reader.GetString(2).ToString();
+            if (!reader.IsDBNull(3))
+                entity._rootCommand = reader.GetString(3).ToString();
+            if (!reader.IsDBNull(4))
+                try { entity._recordDate = reader.GetMySqlDateTime(4).Value; } catch { }
+            if (!reader.IsDBNull(5))
+                entity._flowJson = reader.GetString(5).ToString();
         }
 
         /// <summary>
@@ -332,34 +300,6 @@ UPDATE `tb_zt_flow_log` SET
 
         #endregion
 
-        #region 简单读取
-
-        /// <summary>
-        /// SQL语句
-        /// </summary>
-        public override string SimpleFields
-        {
-            get
-            {
-                return @"";
-            }
-        }
-
-
-        /// <summary>
-        /// 载入数据
-        /// </summary>
-        /// <param name="reader">数据读取器</param>
-        /// <param name="entity">读取数据的实体</param>
-        public override void SimpleLoad(MySqlDataReader reader,FlowLogData entity)
-        {
-            using (new EditScope(entity.__EntityStatus, EditArrestMode.All, false))
-            {
-            }
-        }
-        #endregion
-
-        
     }
     
     partial class ZeroTracerDb

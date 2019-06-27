@@ -131,7 +131,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="publishItem"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        protected static bool Unpack<TPublishItem>(ZMessage msg, out TPublishItem publishItem, Action<TPublishItem, byte, byte[]> action)
+        protected static bool Unpack<TPublishItem>(ZMessage msg, out TPublishItem publishItem, Func<TPublishItem, byte, byte[],bool> action)
             where TPublishItem : PublishItem, new()
         {
             if (msg == null)
@@ -160,26 +160,27 @@ namespace Agebull.MicroZero.PubSub
             }
         }
 
-        static void UnpackAction(PublishItem item, byte type, byte[] bytes)
+        static bool UnpackAction(PublishItem item, byte type, byte[] bytes)
         {
             switch (type)
             {
                 case ZeroFrameType.PubTitle:
                     item.Title = GetString(bytes);
-                    break;
+                    return true;
                 case ZeroFrameType.SubTitle:
                     item.SubTitle = GetString(bytes);
-                    break; 
+                    return true;
                 case ZeroFrameType.TextContent:
                     item.Content = GetString(bytes);
-                    break;
+                    return true;
                 case ZeroFrameType.BinaryContent:
                     item.Buffer = bytes;
-                    break;
+                    return true;
                 case ZeroFrameType.TsonContent:
                     item.Tson = bytes;
-                    break;
+                    return true;
             }
+            return false;
         }
     }
 }

@@ -21,11 +21,33 @@ namespace agebull
 			"	rid       NVARCHAR(200)," \
 			"	ctx       TEXT," \
 			"	arg       TEXT," \
-			"	arg2      TEXT" \
+			"	arg2      TEXT," \
+			"	state	  INT, " \
+			"	join_time	  BIGINT," \
+			"	retry_time	  BIGINT" \
 			");";
-		const char* queue_storage::insert_sql_ = "insert into tb_message values(?,?,?,?,?,?,?,?,?);";
-		const char* queue_storage::load_max_sql_ = "select max(local_id) from tb_message;";
+
+		const char* queue_storage::insert_sql_ = "INSERT INTO tb_message VALUES(?,?,?,?,?,?,?,?,?,0,?,?);";
+		const char* queue_storage::update_sql_ = "UPDATE tb_message SET state=?,retry_time=? WHERE local_id=?;";
+		const char* queue_storage::load_max_sql_ = "SELECT max(local_id) FROM tb_message;";
 		const char* queue_storage::load_sql_ = "select pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2 from tb_message where local_id > ? AND local_id < ?;";
+		const char* queue_storage::retry_sql_ = "SELECT pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2 FROM tb_message WHERE state <> 1 AND state <> 209 AND retry_time <= ?;";//执行成功或帧数据错误的即不为死信,可不重试
+
+		char queue_storage::queue_frames_[] =
+		{
+			static_cast<char>(8),
+			zero_def::command::none,
+			zero_def::frame::local_id ,
+			zero_def::frame::publisher,
+			zero_def::frame::sub_title,
+			zero_def::frame::arg,
+			zero_def::frame::request_id,
+			zero_def::frame::global_id,
+			zero_def::frame::context,
+			zero_def::frame::content_text,
+			zero_def::frame::general_end
+		};
+		
 		/**
 		 * \brief 准备存储
 		 */
@@ -46,7 +68,9 @@ namespace agebull
 				return false;
 			}
 			sqlite3_prepare_v2(sqlite_db_, insert_sql_, static_cast<int>(strlen(insert_sql_)), &insert_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, update_sql_, static_cast<int>(strlen(update_sql_)), &update_stmt_, nullptr);
 			sqlite3_prepare_v2(sqlite_db_, load_sql_, static_cast<int>(strlen(load_sql_)), &load_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, retry_sql_, static_cast<int>(strlen(retry_sql_)), &retry_stmt_, nullptr);
 			return true;
 		}
 		/**
@@ -70,10 +94,12 @@ namespace agebull
 				}
 				sqlite3_exec(sqlite_db_, "CREATE INDEX[main].[lid] ON[tb_message]([local_id]);", nullptr, nullptr, &errmsg);
 				sqlite3_exec(sqlite_db_, "CREATE INDEX[main].[gid] ON[tb_message]([global_id]);", nullptr, nullptr, &errmsg);
+				sqlite3_exec(sqlite_db_, "CREATE INDEX[main].[state] ON[tb_message]([state]);", nullptr, nullptr, &errmsg);
+				sqlite3_exec(sqlite_db_, "CREATE INDEX[main].[time] ON[tb_message]([retry_time]);", nullptr, nullptr, &errmsg);
 				log_msg1("[%s] : db > Create table tb_message", name_);
 
 				ex_result = sqlite3_get_table(sqlite_db_, load_max_sql_, &db_result, &row, &column, &errmsg);
-				
+
 				if (ex_result != SQLITE_OK)
 				{
 					sqlite3_free_table(db_result);
@@ -87,6 +113,19 @@ namespace agebull
 			sqlite3_free_table(db_result);
 			return true;
 		}
+		/**
+		*\brief 保存执行状态
+		*/
+		void queue_storage::set_state(const int64 lid, uchar state)
+		{
+			sqlite3_bind_int(update_stmt_, 1, state);//state
+			sqlite3_bind_int64(update_stmt_, 2, time(nullptr) + 600);//local_id
+			sqlite3_bind_int64(update_stmt_, 3, lid);//local_id
+			if (sqlite3_step(update_stmt_) != SQLITE_DONE)
+				log_error3("[%s] : db > Can't save data:%s(%lld)", name_, sqlite3_errmsg(sqlite_db_), lid);
+			sqlite3_reset(update_stmt_);
+		}
+
 		/**
 		*\brief 将数据写入数据库中
 		*/
@@ -122,6 +161,8 @@ namespace agebull
 				sqlite3_bind_null(insert_stmt_, 9);
 			else
 				sqlite3_bind_text(insert_stmt_, 9, arg2, static_cast<int>(strlen(arg2)), nullptr);//arg
+			sqlite3_bind_int64(insert_stmt_, 10, time(nullptr));//time
+			sqlite3_bind_int64(insert_stmt_, 11, time(nullptr) + 600);//time
 			int state = sqlite3_step(insert_stmt_);
 			sqlite3_reset(insert_stmt_);
 			if (state == SQLITE_DONE)
@@ -129,20 +170,6 @@ namespace agebull
 			log_error2("[%s] : db > Can't save data:%s", name_, sqlite3_errmsg(sqlite_db_));
 			return 0;
 		}
-		char queue_storage::queue_frames_[] =
-		{
-			static_cast<char>(8),
-			zero_def::command::none,
-			zero_def::frame::local_id ,
-			zero_def::frame::publisher,
-			zero_def::frame::sub_title,
-			zero_def::frame::arg,
-			zero_def::frame::request_id, 
-			zero_def::frame::global_id,
-			zero_def::frame::context,
-			zero_def::frame::content_text,
-			zero_def::frame::general_end
-		};
 		/**
 		*\brief 取数据
 		*/
@@ -155,35 +182,53 @@ namespace agebull
 			sqlite3_reset(load_stmt_);
 			sqlite3_bind_int64(load_stmt_, 1, min);
 			sqlite3_bind_int64(load_stmt_, 2, max <= 0 ? last_id_ +1: max);
-			while (sqlite3_step(load_stmt_) == SQLITE_ROW)
+			read_exec(load_stmt_, exec);
+		}
+
+		/**
+		*\brief 取数据
+		*/
+		void queue_storage::retry(std::function<void(vector<shared_char>&)> exec)
+		{
+			sqlite3_reset(retry_stmt_);
+			sqlite3_bind_int64(retry_stmt_, 1, time(nullptr));
+			read_exec(retry_stmt_, exec);
+		}
+
+		/**
+		*\brief 取数据
+		*/
+		void queue_storage::read_exec(sqlite3_stmt *stmt, std::function<void(vector<shared_char>&)> exec)
+		{
+			while (sqlite3_step(stmt) == SQLITE_ROW)
 			{
 				//pri_title,local_id,publiher,sub_title,arg,rid,global_id,ctx,arg2
 				vector<shared_char> row;
 				//pri_title
-				row.emplace_back(sqlite3_column_text(load_stmt_, 0));
+				row.emplace_back(sqlite3_column_text(stmt, 0));
 
 				row.emplace_back(shared_char(queue_frames_, sizeof(queue_frames_)));
 
 				//local_id
 				shared_char local_id;
-				local_id.set_int64(sqlite3_column_int64(load_stmt_, 1));
+				local_id.set_int64(sqlite3_column_int64(stmt, 1));
 				row.emplace_back(local_id);
 				//publisher
-				row.emplace_back(sqlite3_column_text(load_stmt_, 2));
+				row.emplace_back(sqlite3_column_text(stmt, 2));
 				//sub_title
-				row.emplace_back(sqlite3_column_text(load_stmt_, 3));
+				row.emplace_back(sqlite3_column_text(stmt, 3));
 				//arg
-				row.emplace_back(sqlite3_column_text(load_stmt_, 4));
+				row.emplace_back(sqlite3_column_text(stmt, 4));
 				//rid
-				row.emplace_back(sqlite3_column_text(load_stmt_, 5));
+				row.emplace_back(sqlite3_column_text(stmt, 5));
 				//global_id
 				shared_char global_id;
-				global_id.set_int64(sqlite3_column_int64(load_stmt_, 6));
+				global_id.set_int64(sqlite3_column_int64(stmt, 6));
 				row.emplace_back(global_id);
 				//ctx
-				row.emplace_back(sqlite3_column_text(load_stmt_, 7));
+				row.emplace_back(sqlite3_column_text(stmt, 7));
 				//arg2
-				row.emplace_back(sqlite3_column_text(load_stmt_, 8));
+				row.emplace_back(sqlite3_column_text(stmt, 8));
 				exec(row);
 			}
 		}

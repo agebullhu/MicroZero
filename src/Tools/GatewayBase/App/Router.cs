@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text;
 using Agebull.Common.Context;
 using Agebull.Common.Ioc;
@@ -8,6 +9,7 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
 
 namespace MicroZero.Http.Gateway
 {
@@ -185,7 +187,17 @@ namespace MicroZero.Http.Gateway
             //// 缓存
             //RouteCache.CacheResult(Data);
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
+            if (!Data.IsFile || Data.ResultBinary == null || Data.ResultBinary.Length == 0)
+            {
+                Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
+                return;
+            }
+
+            var file = JsonHelper.DeserializeObject<ApiFileResult>(Data.ResultMessage);
+            Response.Headers.ContentLength = Data.ResultBinary.Length;
+            Response.ContentType = file.Mime;
+            Response.Headers.Add("Content-Disposition", $"attachment;filename={file.FileName}");
+            Response.Body.Write(Data.ResultBinary);
         }
 
         /// <summary>

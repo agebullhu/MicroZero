@@ -66,7 +66,7 @@ namespace MicroZero.Http.Route
                             Station = args.Requester,
                             Command = args.CommandOrSubTitle,
                             Tag = args.Tag,
-                            State = (byte)args.State
+                            State = args.ZeroState
                         }
                     });
                     Handle(args, root);
@@ -118,7 +118,7 @@ namespace MicroZero.Http.Route
                         Station = args.Requester,
                         Command = args.CommandOrSubTitle,
                         Tag = args.Tag,
-                        State = (byte)args.State,
+                        State = args.ZeroState,
                         Parent = par
                     });
                     par.Child.Add(step);
@@ -133,7 +133,7 @@ namespace MicroZero.Http.Route
                         step.Command = args.CommandOrSubTitle;
                     if (step.Tag < args.Tag)
                         step.Tag = args.Tag;
-                    step.State = (byte)args.State;
+                    step.State = args.ZeroState;
                 }
             }
             else
@@ -146,7 +146,7 @@ namespace MicroZero.Http.Route
                     Station = args.Station,
                     Command = args.CommandOrSubTitle,
                     Tag = args.Tag,
-                    State = (byte)args.State
+                    State = args.ZeroState
                 });
                 FlowStep par;
                 if (args.CallId == "0")
@@ -167,7 +167,7 @@ namespace MicroZero.Http.Route
             {
                 Item = args,
                 Tag = args.Tag,
-                State = (byte)args.State
+                State = args.ZeroState
             });
         }
 

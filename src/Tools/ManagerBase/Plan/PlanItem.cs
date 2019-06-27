@@ -12,6 +12,15 @@ namespace MicroZero.Http.Route
     public class PlanItem : PublishItem
     {
         /// <summary>
+        /// 逻辑操作状态
+        /// </summary>
+        public ZeroOperatorStateType State
+        {
+            get => (ZeroOperatorStateType)ZeroState;
+            set => ZeroState = (byte)value;
+        }
+
+        /// <summary>
         /// 调用返回值
         /// </summary>
         public string CallResultJson { get; set; }
@@ -34,33 +43,34 @@ namespace MicroZero.Http.Route
         }
 
 
-        static void UnpackAction(PlanItem item, byte type, byte[] bytes)
+        static bool UnpackAction(PlanItem item, byte type, byte[] bytes)
         {
             switch (type)
             {
                 case ZeroFrameType.SubTitle:
                     item.SubTitle = GetString(bytes);
-                    break;
+                    return true;
                 case ZeroFrameType.Context:
                     var json = GetString(bytes);
                     item.Plan = JsonConvert.DeserializeObject<ZeroPlan>(json);
-                    break;
+                    return true;
                 case ZeroFrameType.TextContent:
                     item.Content = GetString(bytes);
-                    break;
+                    return true;
                 case ZeroFrameType.ResultText:
                     item.CallResultJson = GetString(bytes);
-                    break;
+                    return true;
                 case ZeroFrameType.Status:
                     item.Status = bytes;
-                    break;
+                    return true;
                 case ZeroFrameType.BinaryContent:
                     item.Buffer = bytes;
-                    break;
+                    return true;
                 case ZeroFrameType.TsonContent:
                     item.Tson = bytes;
-                    break;
+                    return true;
             }
+            return false;
         }
     }
 }
