@@ -389,11 +389,6 @@
                 业务逻辑对象
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`2.BaseQueryCondition">
-            <summary>
-                基本查询条件(SQL表述方式)
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.EntityType">
             <summary>
                 实体类型
@@ -659,97 +654,6 @@
             <summary>
                 取得列表数据
             </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IDataExtendChecker">
-            <summary>
-                数据扩展检查器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareAddnew``1(``0)">
-            <summary>
-            新增前检查
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="data"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareUpdate``1(``0)">
-            <summary>
-            更新前检查
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="data"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareDelete``1(System.Collections.Generic.IEnumerable{System.Int64})">
-            <summary>
-            删除前检查
-            </summary>
-            <param name="ids"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.IDataExtendChecker.PrepareQuery(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
-            <summary>
-            查询前检查
-            </summary>
-            <param name="dataTable"></param>
-            <param name="condition"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.DataExtendChecker">
-            <summary>
-                数据扩展检查器
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.DataExtendChecker.ExtendCheckers.Dictionary">
-            <summary>
-            检查器集合
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.DataExtendChecker.ExtendCheckers.Convert">
-            <summary>
-            转换器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.Regist``2">
-            <summary>
-            注册检查器
-            </summary>
-            <typeparam name="TDataExtendChecker">检查器本身</typeparam>
-            <typeparam name="TTargetType">检查的目标类型</typeparam>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareAddnew``1(``0)">
-            <summary>
-            新增前检查
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="data"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareUpdate``1(``0)">
-            <summary>
-            更新前检查
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="data"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareDelete``1(System.Int64[])">
-            <summary>
-            删除前检查
-            </summary>
-            <param name="ids"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.DataExtendChecker.PrepareQuery``1(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
-            <summary>
-            查询前检查
-            </summary>
-            <param name="dataTable"></param>
-            <param name="condition"></param>
-            <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.HttpPostAttribute">
             <summary>

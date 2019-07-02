@@ -13,6 +13,12 @@ namespace MicroZero.Http.Route
         [JsonProperty("station")]
         public string Station { get; set; }
 
+        [JsonProperty("service")]
+        public string StationName { get; set; }
+
+        [JsonProperty("title")]
+        public string Title { get; set; }
+
         [JsonProperty("cmd")]
         public string Command { get; set; }
 

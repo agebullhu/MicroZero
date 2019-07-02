@@ -184,13 +184,18 @@ namespace MicroZero.Http.Gateway
             var auth = request.Headers["AUTHORIZATION"];
             if (auth.Count == 0)
             {
-                Token = null;
-                return null;
+                Token = context.Request.Query["token"];
             }
-            var words = auth[auth.Count - 1].Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            Token = words.Length == 1 ? words[0] : words[1];
-            if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
-                Token = null;
+            else
+            {
+                var words = auth[auth.Count - 1].Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
+                Token = words.Length == 1 ? words[0] : words[1];
+                if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
+                {
+                    Token = context.Request.Query["token"];
+                }
+            }
+
             return null;
             //string userAgent = null;
             //foreach (var head in request.Headers)

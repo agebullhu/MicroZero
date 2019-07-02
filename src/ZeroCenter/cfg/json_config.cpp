@@ -11,7 +11,8 @@ namespace agebull
 	int global_config::pool_timeout = 1000;
 	bool global_config::monitor_socket = false;
 	bool global_config::api_route_mode = false;
-	bool global_config::trace_net = false;
+	bool global_config::link_trace_open = false;
+	bool global_config::link_trace_storage = false;
 	//bool global_config::use_ipc_protocol = false;
 	char global_config::redis_addr[512] = "127.0.0.1:6379";
 	int global_config::redis_defdb = 0x10;
@@ -87,13 +88,18 @@ namespace agebull
 			global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
 			global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
 			global_config::monitor_socket = zero.boolean("monitor_socket", global_config::monitor_socket);
-			global_config::trace_net = zero.boolean("trace_net", global_config::trace_net);
 			global_config::api_route_mode = zero.boolean("api_route_mode", global_config::api_route_mode);
 			global_config::pool_timeout = zero.number("pool_timeout", global_config::pool_timeout);
 
 			var key = zero.str("service_key");
 			if (key != nullptr)
 				strcpy(global_config::service_key, key);
+		}
+		auto& link_trace = global["link_trace"];
+		if (link_trace.value_map.size() > 0)
+		{
+			global_config::link_trace_open = link_trace.boolean("open", global_config::link_trace_open);
+			global_config::link_trace_storage = link_trace.boolean("storage", global_config::link_trace_storage);
 		}
 		auto& redis = global["redis"];
 		if (redis.value_map.size() > 0)
@@ -113,41 +119,43 @@ namespace agebull
 	{
 		read();
 		log_msg1("config => base_tcp_port : %d", global_config::base_tcp_port);
-		log_msg1("config => monitor_socket : %d", global_config::monitor_socket);
-		log_msg1("config => api_route_mode : %d", global_config::api_route_mode);
-		log_msg1("config => pool_timeout : %d", global_config::pool_timeout);
-		log_msg1("config => worker_sound_ivl : %d", global_config::worker_sound_ivl);
+		log_msg1("          monitor_socket : %d", global_config::monitor_socket);
+		log_msg1("          api_route_mode : %d", global_config::api_route_mode);
+		log_msg1("          pool_timeout : %d", global_config::pool_timeout);
+		log_msg1("          worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
-		log_msg1("config => trace_net : %d", global_config::trace_net);
+		log_msg2("link_trace => %s storage: %s"
+			, global_config::link_trace_open ? "open" : "close"
+			, global_config::link_trace_storage ? "sqlite" : "close");
+
+		log_msg2("redis => %s:%d", global_config::redis_addr , global_config::redis_defdb);
 
 		log_msg1("plan => redis_db : %d", global_config::plan_redis_db);
-		log_msg1("plan => exec_timeout : %d", global_config::plan_exec_timeout);
-		log_msg1("plan => cache_size : %d", global_config::plan_cache_size);
+		log_msg1("        exec_timeout : %d", global_config::plan_exec_timeout);
+		log_msg1("        cache_size : %d", global_config::plan_cache_size);
 
-		log_msg1("redis => addr : %s", global_config::redis_addr);
-		log_msg1("redis => defdb : %d", global_config::redis_defdb);
 
 		log_msg1("ZMQ => MAX_SOCKETS : %d", global_config::MAX_SOCKETS);
-		log_msg1("ZMQ => IO_THREADS : %d", global_config::IO_THREADS);
-		log_msg1("ZMQ => MAX_MSGSZ : %d", global_config::MAX_MSGSZ);
+		log_msg1("       IO_THREADS : %d", global_config::IO_THREADS);
+		log_msg1("       MAX_MSGSZ : %d", global_config::MAX_MSGSZ);
 
-		log_msg1("ZMQ => IMMEDIATE : %d", global_config::IMMEDIATE);
-		log_msg1("ZMQ => LINGER : %d", global_config::LINGER);
-		log_msg1("ZMQ => RCVHWM : %d", global_config::RCVHWM);
-		log_msg1("ZMQ => RCVBUF : %d", global_config::RCVBUF);
-		log_msg1("ZMQ => RCVTIMEO : %d", global_config::RCVTIMEO);
-		log_msg1("ZMQ => SNDHWM : %d", global_config::SNDHWM);
-		log_msg1("ZMQ => SNDBUF : %d", global_config::SNDBUF);
-		log_msg1("ZMQ => SNDTIMEO : %d", global_config::SNDTIMEO);
-		log_msg1("ZMQ => BACKLOG : %d", global_config::BACKLOG);
+		log_msg1("       IMMEDIATE : %d", global_config::IMMEDIATE);
+		log_msg1("       LINGER : %d", global_config::LINGER);
+		log_msg1("       RCVHWM : %d", global_config::RCVHWM);
+		log_msg1("       RCVBUF : %d", global_config::RCVBUF);
+		log_msg1("       RCVTIMEO : %d", global_config::RCVTIMEO);
+		log_msg1("       SNDHWM : %d", global_config::SNDHWM);
+		log_msg1("       SNDBUF : %d", global_config::SNDBUF);
+		log_msg1("       SNDTIMEO : %d", global_config::SNDTIMEO);
+		log_msg1("       BACKLOG : %d", global_config::BACKLOG);
 
-		log_msg1("ZMQ => TCP_KEEPALIVE : %d", global_config::TCP_KEEPALIVE);
-		log_msg1("ZMQ => TCP_KEEPALIVE_IDLE : %d", global_config::TCP_KEEPALIVE_IDLE);
-		log_msg1("ZMQ => TCP_KEEPALIVE_INTVL : %d", global_config::TCP_KEEPALIVE_INTVL);
+		log_msg1("       TCP_KEEPALIVE : %d", global_config::TCP_KEEPALIVE);
+		log_msg1("       TCP_KEEPALIVE_IDLE : %d", global_config::TCP_KEEPALIVE_IDLE);
+		log_msg1("       TCP_KEEPALIVE_INTVL : %d", global_config::TCP_KEEPALIVE_INTVL);
 
-		log_msg1("ZMQ => HEARTBEAT_IVL : %d", global_config::HEARTBEAT_IVL);
-		log_msg1("ZMQ => HEARTBEAT_TIMEOUT : %d", global_config::HEARTBEAT_TIMEOUT);
-		log_msg1("ZMQ => HEARTBEAT_TTL : %d", global_config::HEARTBEAT_TTL);
+		log_msg1("       HEARTBEAT_IVL : %d", global_config::HEARTBEAT_IVL);
+		log_msg1("       HEARTBEAT_TIMEOUT : %d", global_config::HEARTBEAT_TIMEOUT);
+		log_msg1("       HEARTBEAT_TTL : %d", global_config::HEARTBEAT_TTL);
 	}
 
 	/**

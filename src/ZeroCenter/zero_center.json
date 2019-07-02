@@ -8,13 +8,16 @@
     "plan_cache_size": 1024,
     "api_route_mode": 0,
     "monitor_socket": 0,
-    "trace_net": "true",
     "service_key": "agebull"
   },
   "redis": {
     "addr": "127.0.0.1:6379",
     "defdb": "20",
     "plandb": "20"
+  },
+  "link_trace": {
+    "open": true,
+    "storage": false
   },
   "ZMQ": {
     "MAX_SOCKETS": -1,

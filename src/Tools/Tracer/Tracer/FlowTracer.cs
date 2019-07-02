@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using WebMonitor;
 using MicroZero.Devops.ZeroTracer;
 using MicroZero.Devops.ZeroTracer.DataAccess;
+using WebMonitor.Models;
 using Timer = System.Timers.Timer;
 namespace MicroZero.Http.Route
 {
@@ -52,6 +53,10 @@ namespace MicroZero.Http.Route
                     return;
                 if (string.IsNullOrWhiteSpace(args.CallId))
                     args.CallId = "0";
+                string title = args.CommandOrSubTitle;
+                GlobalValue.Documents.TryGetValue(args.Requester, out var doc);
+                if (doc != null && doc.Aips.TryGetValue(title, out var api))
+                    title = api.Caption;
                 //Console.WriteLine($"{args.RequestId}({args.CallId}>{args.GlobalId}) : {args.Tag}/{args.State} : {args.Station}/{args.CommandOrSubTitle}");
                 if (!_flows.TryGetValue(args.RequestId, out var root))
                 {
@@ -62,6 +67,8 @@ namespace MicroZero.Http.Route
                         {
                             Item = args,
                             GlobalId = args.GlobalId,
+                            StationName = doc?.Caption ?? args.Requester,
+                            Title= title,
                             CallId = args.CallId,
                             Station = args.Requester,
                             Command = args.CommandOrSubTitle,

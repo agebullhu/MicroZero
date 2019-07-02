@@ -533,7 +533,7 @@ namespace agebull
 		*/
 		void zero_station::trace(uchar io, vector<shared_char> list, const char* err_msg)
 		{
-			if (!global_config::trace_net)
+			if (!global_config::link_trace_open)
 				return;
 			shared_char description(list[1].get_buffer(), list[1].size());
 			description.append_frame(zero_def::frame::station_id);

@@ -61,7 +61,8 @@ namespace agebull
 		static char root_path[512];
 		static bool monitor_socket;
 		static bool api_route_mode;
-		static bool trace_net;
+		static bool link_trace_open;
+		static bool link_trace_storage;
 		static int base_tcp_port;
 		static int plan_redis_db;
 		static int plan_exec_timeout;

@@ -64,14 +64,15 @@ namespace agebull
 				send_request_status(socket, *caller, zero_def::status::ok, list, global_id, request_id, requester);
 			}
 
-			storage_->save(description.tag()
-				, vector_str(list, request_id)
-				, vector_int64(list, call_id)
-				, vector_int64(list, global_id)
-				, vector_str(list, station)
-				, vector_str(list, station_type)
-				, vector_str(list, status)
-				, list);
+			if (global_config::link_trace_storage)
+				storage_->save(description.tag()
+					, vector_str(list, request_id)
+					, vector_int64(list, call_id)
+					, vector_int64(list, global_id)
+					, vector_str(list, station)
+					, vector_str(list, station_type)
+					, vector_str(list, status)
+					, list);
 			list[0] = list[request_id];
 			send_response(list, false);
 		}

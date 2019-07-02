@@ -81,7 +81,7 @@ namespace WebMonitor
         }
         internal void Send(ArraySegment<byte> title, ArraySegment<byte> array)
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
             try
             {
@@ -94,12 +94,12 @@ namespace WebMonitor
             }
         }
 
-        private bool isDisposed;
+        private bool _isDisposed;
         public void Dispose()
         {
-            if (isDisposed)
+            if (_isDisposed)
                 return;
-            isDisposed = true;
+            _isDisposed = true;
             _clients.Remove(this);
             try
             {

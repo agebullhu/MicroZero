@@ -58,11 +58,6 @@ namespace Agebull.MicroZero.ZeroApis
             set => _business = value;
         }
 
-        /// <summary>
-        ///     基本查询条件(SQL表述方式)
-        /// </summary>
-        protected virtual string BaseQueryCondition => null;
-
         #endregion
 
         #region API
@@ -244,18 +239,6 @@ namespace Agebull.MicroZero.ZeroApis
 
             //SaveQueryArguments(page, sort, adesc, rows);
 
-            if (!string.IsNullOrEmpty(BaseQueryCondition))
-            {
-                if (string.IsNullOrEmpty(condition))
-                    condition = BaseQueryCondition;
-                else if (condition != BaseQueryCondition && !condition.Contains(BaseQueryCondition))
-                    condition = $"({BaseQueryCondition}) AND ({condition})";
-            }
-
-            if (!DataExtendChecker.PrepareQuery<TData>(Business.Access, ref condition, ref args))
-            {
-                return null;
-            }
             var data = Business.PageData(page, rows, sort, desc, condition, args);
             if (OnListLoaded(data.Rows, data.RowCount))
             {
@@ -388,10 +371,6 @@ namespace Agebull.MicroZero.ZeroApis
                 GlobalContext.Current.LastMessage = convert.Message;
                 return null;
             }
-            if (!DataExtendChecker.PrepareAddnew(data))
-            {
-                return null;
-            }
             if (!Business.AddNew(data))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
@@ -426,10 +405,6 @@ namespace Agebull.MicroZero.ZeroApis
                 GlobalContext.Current.LastMessage = convert.Message;
                 return null;
             }
-            if (!DataExtendChecker.PrepareUpdate(data))
-            {
-                return null;
-            }
             if (!Business.Update(data))
             {
                 GlobalContext.Current.LastState = ErrorCode.LogicalError;
@@ -446,10 +421,6 @@ namespace Agebull.MicroZero.ZeroApis
             if (!TryGet("selects",out long[] ids))
             {
                 SetFailed("没有数据");
-                return;
-            }
-            if (!DataExtendChecker.PrepareDelete<TData>(ids))
-            {
                 return;
             }
             if (!Business.Delete(ids))

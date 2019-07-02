@@ -239,8 +239,7 @@ namespace Agebull.MicroZero
                 });
                 if (bytes.Length == 0)
                     continue;
-                if(action != null && action.Invoke(message, description[idx], bytes))
-                    continue;
+
                 switch (description[idx])
                 {
                     case ZeroFrameType.Requester:
@@ -264,6 +263,11 @@ namespace Agebull.MicroZero
                     case ZeroFrameType.Command:
                         message.CommandOrSubTitle = GetString(bytes);
                         break;
+                }
+                if (action != null && action.Invoke(message, description[idx], bytes))
+                    continue;
+                switch (description[idx])
+                {
                     case ZeroFrameType.Context:
                         message.Context = GetString(bytes);
                         break;
