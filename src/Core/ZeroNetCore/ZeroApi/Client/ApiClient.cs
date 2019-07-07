@@ -15,7 +15,11 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     文件
         /// </summary>
-        public Dictionary<string, byte[]> Files;
+        public Dictionary<string, byte[]> Files
+        {
+            get => _core.Files;
+            set => _core.Files = value;
+        }
 
         /// <summary>
         ///     返回的数据
@@ -446,7 +450,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="num">计划值</param>
         /// <param name="description">计划说明</param>
         /// <returns></returns>
-        public static IApiResult<TResult> ApiPlan<TResult>(string station, string api,plan_date_type type, short num, string description)
+        public static IApiResult<TResult> ApiPlan<TResult>(string station, string api, plan_date_type type, short num, string description)
         {
             var client = new ApiClient
             {
@@ -488,7 +492,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="time">计划时间</param>
         /// <param name="description">计划说明</param>
         /// <returns></returns>
-        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg,DateTime time,string description)
+        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg, DateTime time, string description)
         {
             var client = new ApiClient
             {
@@ -533,7 +537,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="num">计划值</param>
         /// <param name="description">计划说明</param>
         /// <returns></returns>
-        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg, plan_date_type type,short num, string description)
+        public static IApiResult<TResult> ApiPlan<TArgument, TResult>(string station, string api, TArgument arg, plan_date_type type, short num, string description)
         {
             var client = new ApiClient
             {

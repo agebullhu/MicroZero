@@ -113,55 +113,62 @@ namespace Agebull.MicroZero.ZeroApis
                 buffers = messages.Select(p => p.ReadAll()).ToArray();
             try
             {
-                if (!Unpack(false, buffers, out callItem, (item, type, bytes) =>
-                {
-                    switch (type)
-                    {
-                        case ZeroFrameType.LocalId:
-                            item.LocalId = GetString(bytes);
-                            return true;
-                        case ZeroFrameType.Argument:
-                            item.Argument = GetString(bytes);
-                            return true;
-                        case ZeroFrameType.TextContent:
-                            item.Extend = GetString(bytes);
-                            return true;
-                        case ZeroFrameType.Original1:
-                        case ZeroFrameType.Original2:
-                        case ZeroFrameType.Original3:
-                        case ZeroFrameType.Original4:
-                        case ZeroFrameType.Original5:
-                        case ZeroFrameType.Original6:
-                        case ZeroFrameType.Original7:
-                        case ZeroFrameType.Original8:
-                            if (!item.Originals.ContainsKey(type))
-                                item.Originals.Add(type, bytes);
-                            return true;
-                        case ZeroFrameType.ExtendText:
-                            item.Files.Add(new NameValue<string, byte[]>
-                            {
-                                name = GetString(bytes)
-                            });
-                            return true;
-                        case ZeroFrameType.BinaryContent:
-                            if (item.Files.Count > 0)
-                                item.Files.Last().value = bytes;
-                            return true;
-                    }
-                    return false;
-                }))
+
+                if (!Unpack(false, buffers, out callItem, OnFrameRead))
                     return false;
                 return callItem.ApiName != null;// && item.GlobalId != null;
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Receive", e, $"FrameSize{buffers.Length}");
+                ZeroTrace.WriteException("Unpack", e, $"FrameSize:{buffers.Length}");
                 callItem = new ApiCallItem
                 {
                     ZeroState = (byte)ZeroOperatorStateType.FrameInvalid
                 };
                 return false;
             }
+        }
+
+        static bool OnFrameRead(ApiCallItem item, byte type, byte[] bytes)
+        {
+            switch (type)
+            {
+                case ZeroFrameType.LocalId:
+                    item.LocalId = GetString(bytes);
+                    return true;
+                case ZeroFrameType.Argument:
+                    item.Argument = GetString(bytes);
+                    return true;
+                case ZeroFrameType.TextContent:
+                    item.Extend = GetString(bytes);
+                    return true;
+                case ZeroFrameType.Original1:
+                case ZeroFrameType.Original2:
+                case ZeroFrameType.Original3:
+                case ZeroFrameType.Original4:
+                case ZeroFrameType.Original5:
+                case ZeroFrameType.Original6:
+                case ZeroFrameType.Original7:
+                case ZeroFrameType.Original8:
+                    if (!item.Originals.ContainsKey(type))
+                        item.Originals.Add(type, bytes);
+                    return true;
+                //ExtendText与BinaryContent成对出现
+                case ZeroFrameType.ExtendText:
+                    item.Files.Add(new NameValue<string, byte[]>
+                    {
+                        name = GetString(bytes)
+                    });
+                    return true;
+                case ZeroFrameType.BinaryContent:
+                    if (item.Files.Count > 0)
+                        item.Files.Last().value = bytes;
+                    else
+                        item.ZeroState = (byte) ZeroOperatorStateType.FrameInvalid;
+                    return true;
+            }
+
+            return false;
         }
     }
 }

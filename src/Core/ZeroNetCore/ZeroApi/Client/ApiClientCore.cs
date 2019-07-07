@@ -17,7 +17,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     文件
         /// </summary>
-        public Dictionary<string, byte[]> Files;
+        internal Dictionary<string, byte[]> Files;
 
         /// <summary>
         ///     返回值
@@ -243,15 +243,24 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void CallApi(PoolSocket socket)
         {
-            if (Files != null && Files.Count == 0)
-                CallByFileApi(socket);
+            if (Files == null || Files.Count <= 0)
+                LastResult = CallNoFileApi(socket);
             else
-                CallNoFileApi(socket);
+                LastResult = CallByFileApi(socket);
+
+            if (!LastResult.InteractiveSuccess)
+            {
+                socket.HaseFailed = true;
+                State = LastResult.State;
+                return;
+            }
+
+            CallEnd(socket);
         }
 
-        private void CallNoFileApi(PoolSocket socket)
+        private ZeroResult CallNoFileApi(PoolSocket socket)
         {
-            LastResult = Send(socket.Socket, CallDescription,
+           return Send(socket.Socket, CallDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
                 ExtendArgument.ToZeroBytes(),
@@ -261,10 +270,10 @@ namespace Agebull.MicroZero.ZeroApis
                 GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
                 (ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy))).ToZeroBytes());
 
-            CallEnd(socket);
+            
         }
 
-        private void CallByFileApi(PoolSocket socket)
+        private ZeroResult CallByFileApi(PoolSocket socket)
         {
             List<byte[]> frames = new List<byte[]>
             {
@@ -278,7 +287,7 @@ namespace Agebull.MicroZero.ZeroApis
                 (ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy))).ToZeroBytes()
             };
 
-            var len = (int) (12 + Files.Count * 2);
+            var len = 16 + Files.Count * 2;
             byte[] description = new byte[len];
             int i = 0;
             description[i++] = (byte) (9 + Files.Count * 2);
@@ -301,9 +310,7 @@ namespace Agebull.MicroZero.ZeroApis
             description[i++] = ZeroFrameType.SerivceKey;
             description[i++] = ZeroFrameType.End;
 
-            LastResult = SendToZero(socket.Socket, description, frames);
-
-            CallEnd(socket);
+            return SendToZero(socket.Socket, description, frames);
         }
         /// <summary>
         ///     请求格式说明
@@ -338,18 +345,18 @@ namespace Agebull.MicroZero.ZeroApis
                 (ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy))).ToZeroBytes(),
                 plan.ToZeroBytes());
 
-            CallEnd(socket);
-        }
-
-        void CallEnd(PoolSocket socket)
-        {
-
             if (!LastResult.InteractiveSuccess)
             {
                 socket.HaseFailed = true;
                 State = LastResult.State;
                 return;
             }
+
+            CallEnd(socket);
+        }
+
+        void CallEnd(PoolSocket socket)
+        {
 
             LastResult = Receive(socket.Socket);
             if (!LastResult.InteractiveSuccess)
@@ -380,7 +387,7 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
         /// <summary>
-        ///     接收文本
+        ///     接收
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>

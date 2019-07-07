@@ -1199,7 +1199,7 @@
                 Api站点
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient.Files">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.Files">
             <summary>
                 文件
             </summary>
@@ -1552,7 +1552,7 @@
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Receive(ZeroMQ.ZSocket)">
             <summary>
-                接收文本
+                接收
             </summary>
             <param name="socket"></param>
             <returns></returns>

@@ -336,7 +336,7 @@ namespace agebull
 				cursor = scope->scan(cursor, keys, "msg:*");
 				for (acl::string& key : keys)
 				{
-					shared_ptr<plan_message> message = plan_message::load_message(key.c_str());
+					shared_ptr<plan_message> message = load_message(key.c_str());
 					if (message == nullptr)
 						continue;
 					if (first)

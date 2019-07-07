@@ -627,6 +627,31 @@
                 别名
             </summary>
         </member>
+        <member name="T:MicroZero.Http.Gateway.HttpOption">
+            <summary>
+                Http配置类
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.Port">
+            <summary>
+            端口号
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.IsHttps">
+            <summary>
+            是否Https
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.CerFile">
+            <summary>
+            证书文件路径
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.HttpOption.CerPwd">
+            <summary>
+            证书密码
+            </summary>
+        </member>
         <member name="T:MicroZero.Http.Gateway.RouteData">
             <summary>
                 路由数据
@@ -1161,31 +1186,6 @@
             </summary>
             <param name="app"></param>
             <param name="env"></param>
-        </member>
-        <member name="T:MicroZero.Http.Gateway.HttpOption">
-            <summary>
-                Http配置类
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.Port">
-            <summary>
-            端口号
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.IsHttps">
-            <summary>
-            是否Https
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerFile">
-            <summary>
-            证书文件路径
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerPwd">
-            <summary>
-            证书密码
-            </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.ZeroManager">
             <summary>

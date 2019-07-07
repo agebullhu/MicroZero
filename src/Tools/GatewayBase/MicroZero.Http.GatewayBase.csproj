@@ -27,7 +27,7 @@
     <Company>ZMQ</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.2.7</Version>
+    <Version>1.4.2.8</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>MicroZero.Http.GatewayBase.xml</DocumentationFile>

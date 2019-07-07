@@ -1,15 +1,11 @@
 using System;
-using System.IO;
 using System.Text;
-using Agebull.Common.Context;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
-using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.FileProviders;
 
 namespace MicroZero.Http.Gateway
 {
@@ -164,8 +160,6 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         private bool TokenCheck()
         {
-
-            SecurityChecker.Data = Data;
             //if (SecurityChecker.CheckToken())
             //    return true;
             //Data.ResultMessage = RouteOption.Option.Security.BlockHost;
@@ -203,10 +197,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     结束
         /// </summary>
-        void IRouter.End()
-        {
-            IoHandler.OnEnd(Data);
-        }
+        void IRouter.End() => IoHandler.OnEnd(Data);
 
         /// <summary>
         /// 异常处理
