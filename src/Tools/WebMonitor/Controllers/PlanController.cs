@@ -42,6 +42,19 @@ namespace WebMonitor.Controllers
             return new JsonResult(result);
         }
 
+        [HttpGet]
+        public IActionResult Clear(string id)
+        {
+            var result = IocHelper.Create<PlanManage>().Clear();
+            return new JsonResult(result);
+        }
+        [HttpGet]
+        public IActionResult Test(string id)
+        {
+            var result = IocHelper.Create<PlanManage>().Test();
+            return new JsonResult(result);
+        }
+        
         #region 参数解析
 
 

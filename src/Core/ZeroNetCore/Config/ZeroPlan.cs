@@ -73,13 +73,13 @@ namespace Agebull.MicroZero
         /// </summary>
         pause,
         /// <summary>
-        /// 正常关闭
-        /// </summary>
-        close,
-        /// <summary>
         /// 错误关闭
         /// </summary>
         error,
+        /// <summary>
+        /// 正常关闭
+        /// </summary>
+        close,
         /// <summary>
         /// 删除
         /// </summary>
@@ -157,6 +157,11 @@ namespace Agebull.MicroZero
     public class ZeroPlan : ZeroPlanInfo
     {
         /// <summary>
+        /// 名称
+        /// </summary>
+        public string name;
+
+        /// <summary>
         /// 消息标识
         /// </summary>
         public long plan_id;
@@ -217,11 +222,6 @@ namespace Agebull.MicroZero
         /// 调用的API
         /// </summary>
         public string command;
-
-        /// <summary>
-        /// 调用使用的帧
-        /// </summary>
-        public List<string> frames = new List<string>();
 
         /// <summary>
         /// 上下文

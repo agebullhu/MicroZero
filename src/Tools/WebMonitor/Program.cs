@@ -13,6 +13,8 @@ namespace WebMonitor
             WebSocketNotify.Close();
             ZeroApplication.Shutdown();
         }
+
+
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)

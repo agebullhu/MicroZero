@@ -419,6 +419,11 @@
             </remarks>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.QueryFirst(`0)">
+            <summary>
+                单条数据查询
+            </summary>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Details(Agebull.MicroZero.ZeroApis.IdArguent)">
             <summary>
                 单条详细数据
@@ -457,13 +462,6 @@
             <param name="condition">当前的查询条件</param>
             <param name="args">当前的查询参数</param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnListLoaded(System.Collections.Generic.IList{`0},System.Int32)">
-            <summary>
-                数据载入的处理
-            </summary>
-            <param name="datas"></param>
-            <param name="count"></param>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnListLoaded(System.Collections.Generic.IList{`0})">
             <summary>
                 数据载入的处理
@@ -477,12 +475,7 @@
             <param name="entity">实体</param>
             <param name="convert">转化器</param>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiController`2.ContextDataId">
-            <summary>
-                当前上下文数据ID
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoDetails">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoDetails(System.Int64)">
             <summary>
                 载入当前操作的数据
             </summary>
@@ -502,7 +495,7 @@
                 新增
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoUpdate">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.DoUpdate(System.Int64)">
             <summary>
                 更新对象
             </summary>

@@ -8,7 +8,6 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
-using Newtonsoft.Json;
 using WebMonitor;
 using MicroZero.Devops.ZeroTracer;
 using MicroZero.Devops.ZeroTracer.DataAccess;
@@ -21,6 +20,7 @@ namespace MicroZero.Http.Route
     /// </summary>
     public class FlowTracer : SubStation<CountData, PublishItem>
     {
+        private bool saveTrace;
         /// <summary>
         /// 构造路由计数器
         /// </summary>
@@ -30,6 +30,7 @@ namespace MicroZero.Http.Route
             StationName = "TraceDispatcher";
             IsRealModel = true;
             _timer = new Timer(1000) { AutoReset = true };
+            saveTrace = Agebull.Common.Configuration.ConfigurationManager.AppSettings.GetBool("saveTrace", false);
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
         }
@@ -68,7 +69,7 @@ namespace MicroZero.Http.Route
                             Item = args,
                             GlobalId = args.GlobalId,
                             StationName = doc?.Caption ?? args.Requester,
-                            Title= title,
+                            Title = title,
                             CallId = args.CallId,
                             Station = args.Requester,
                             Command = args.CommandOrSubTitle,
@@ -217,6 +218,8 @@ namespace MicroZero.Http.Route
                 }
                 var json = JsonHelper.SerializeObject(root);
                 WebSocketNotify.Publish("trace_flow", root.RequestId, json);
+                if (!saveTrace)
+                    continue;
                 if (access.Any(p => p.RequestId == root.RequestId))
                     access.SetValue(p => p.FlowJson, json, p => p.RequestId == root.RequestId);
                 else

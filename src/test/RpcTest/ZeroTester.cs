@@ -13,6 +13,7 @@ namespace RpcTest
         }
         protected override void DoAsync()
         {
+            Thread.Sleep(10);
             ApiClient client = new ApiClient
             {
                 Station = Station,

@@ -24,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
   </ItemGroup>
 </Project>

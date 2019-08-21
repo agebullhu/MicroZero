@@ -31,7 +31,6 @@ namespace Agebull.MicroZero.ZeroApis
         {
             using (IocScope.CreateScope())
             {
-                GlobalContext.Current.DependencyObjects.Annex(Item);
                 try
                 {
                     if (LogRecorderX.LogMonitor)
@@ -302,6 +301,7 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(Item.Context));//BUG:数据不能全覆盖
                 }
+                GlobalContext.Current.DependencyObjects.Annex(Item);
                 if (!string.IsNullOrWhiteSpace(Item.Argument))
                 {
                     try

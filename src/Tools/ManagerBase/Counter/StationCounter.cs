@@ -100,8 +100,7 @@ namespace MicroZero.Http.Route
             var info = new StationInfo(config);
             if (StationCountItems.TryGetValue(config.Name, out var status))
                 info.Status = status;
-            var json = JsonHelper.SerializeObject(info);
-            WebSocketNotify.Publish("config", config.Name, json);
+            WebSocketNotify.Publish("config", config.Name, JsonConvert.SerializeObject(info));
         }
         private void StationEvent(ZeroNetEventArgument e)
         {
@@ -186,7 +185,7 @@ namespace MicroZero.Http.Route
                 item.State = config.State;
                 item.CheckValue(now);
 
-                WebSocketNotify.Publish("status", now.Station, JsonHelper.SerializeObject(item));
+                WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
                 long value = config.StationType == ZeroStationType.Api ||
                              config.StationType == ZeroStationType.Vote
                     ? item.LastTps
@@ -247,7 +246,7 @@ namespace MicroZero.Http.Route
                 while (KLines[key].Count > 240)
                     KLines[key].RemoveAt(0);
                 KLines[key].Add(line);
-                WebSocketNotify.Publish("kline", key, JsonHelper.SerializeObject(line));
+                WebSocketNotify.Publish("kline", key, JsonConvert.SerializeObject(line));
                 var nLine = new KLine
                 {
                     Time = GetTime(BaseLine)

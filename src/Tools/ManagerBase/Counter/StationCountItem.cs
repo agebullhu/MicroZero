@@ -36,7 +36,7 @@ namespace MicroZero.Http.Route
         /// </summary>
         [DataMember]
         [JsonProperty("worker_count")]
-        public int WorkerCount => Workers == null ? 0 : Workers.Count;
+        public int WorkerCount => Workers?.Count ?? 0;
 
         /// <summary>
         ///     请求入

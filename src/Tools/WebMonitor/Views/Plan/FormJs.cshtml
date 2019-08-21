@@ -68,14 +68,15 @@
         var type = plan.plan_type ? parseInt(plan.plan_type) : 0;
         if (type < 1 || type > 7)
             return "错误";
+        var date;
         if (type == 1) {
             if (!plan.plan_time)
                 return "立即执行一次，不重复";
-            var date = new Date(plan.plan_time);
+            date = new Date(plan.plan_time);
             if (plan.no_skip)
-                return "在" + formatDate(date, 'MM-dd hh:mm:ss') + "执行，如果时间已过则立即执行，不重复";
+                return `在${formatDate(date, 'MM-dd hh:mm:ss')}执行，如果时间已过则立即执行，不重复`;
             else
-                return "仅在" + formatDate(date, 'MM-dd hh:mm:ss') + "没有过去的情况下执行一次，不重复";
+                return `仅在${formatDate(date, 'MM-dd hh:mm:ss')}没有过去的情况下执行一次，不重复`;
         }
         var value = plan.plan_value ? parseInt(plan.plan_value) : 0;
         var skip = plan.skip_set ? parseInt(plan.skip_set) : 0;
@@ -92,11 +93,11 @@
                 txt += "现在起";
             else {
 
-                var date = new Date(plan.plan_time);
+                date = new Date(plan.plan_time);
                 txt += formatDate(date, 'MM-dd hh:mm:ss') + "起";
             }
             if (skip > 0) {
-                txt += "，跳过" + (skip * value);
+                txt += `，跳过${skip * value}`;
                 switch (type) {
                     case 2:
                         txt += "秒";
@@ -113,7 +114,7 @@
                 }
                 txt += "后，";
             }
-            txt += "每" + value;
+            txt += `每${value}`;
 
             switch (type) {
                 case 2:
@@ -139,30 +140,30 @@
             if (value <= 0 || value > 7)
                 return "错误";
             if (skip > 0) {
-                txt += "跳过前" + skip + "周后，";
+                txt += `跳过前${skip}周后，`;
             }
-            txt += "每周" + (value == 7 ? "日" : value.toString());
+            txt += `每周${value == 7 ? "日" : value.toString()}`;
             if (!plan.plan_time)
                 txt += "零点";
             else {
-                var date = new Date(plan.plan_time);
-                txt += "的" + formatDate(date, 'hh:mm:ss');
+                date = new Date(plan.plan_time);
+                txt += `的${formatDate(date, 'hh:mm:ss')}`;
             }
             sk = "不计算过去的时间。";
         }
         if (type == 7) {
             if (skip > 0) {
-                txt += "跳过前" + skip + "个月后，";
+                txt += `跳过前${skip}个月后，`;
             }
             txt += "每月";
             if (value > 0)
                 txt += value + "号";
             else
-                txt += "倒数第" + Math.abs(value) + "天";
+                txt += `倒数第${Math.abs(value)}天`;
             if (!plan.plan_time)
                 txt += "零点";
             else {
-                var date = new Date(plan.plan_time);
+                date = new Date(plan.plan_time);
                 txt += formatDate(date, 'hh:mm:ss');
             }
             sk = "不计算过去的时间。";
@@ -170,7 +171,7 @@
         if (repet < 0)
             txt += "执行一次，永久重复执行。";
         else {
-            txt += "执行一次，重复" + repet + "次后结束。";
+            txt += `执行一次，重复${repet}次后结束。`;
         }
         txt += sk;
         return txt;
@@ -196,7 +197,7 @@
             if (vl > 0)
                 return "号";
 
-            return "倒数第" + Math.abs(vl) + "天";
+            return `倒数第${Math.abs(vl)}天`;
         },
         format_plan(plan) {
             return format_plan(plan);
@@ -227,7 +228,7 @@
                         data.visible = false;
                     }
                     else {
-                        that.$message.error('操作失败:' + result.status.msg);
+                        that.$message.error(`操作失败:${result.status.msg}`);
                     }
                     data.loading = false;
                 }).error(function () {

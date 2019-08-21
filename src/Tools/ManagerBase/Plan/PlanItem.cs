@@ -1,4 +1,5 @@
-﻿using Agebull.MicroZero;
+﻿using System.Linq;
+using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Newtonsoft.Json;
 using ZeroMQ;
@@ -30,6 +31,28 @@ namespace MicroZero.Http.Route
         /// </summary>
         public ZeroPlan Plan { get; set; }
 
+
+        /// <summary>
+        ///     广播消息解包
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="planItem"></param>
+        /// <returns></returns>
+        public static bool UnpackResult(ZMessage msg, out PlanItem planItem)
+        {
+            if (msg == null)
+            {
+                planItem = null;
+                return false;
+            }
+
+            byte[][] msgs;
+            using (msg)
+            {
+                msgs = msg.Select(p => p.ReadAll()).ToArray();
+            }
+            return Unpack(true, msgs, out planItem, null);
+        }
 
         /// <summary>
         ///     广播消息解包

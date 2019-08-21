@@ -79,7 +79,10 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (_arguments != null)
                 return _arguments;
-            _arguments = new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
+
+            _arguments = !string.IsNullOrWhiteSpace(ApiCallItem.Content) && ApiCallItem.Content[0] == '{'
+                ? JsonHelper.DeserializeObject<Dictionary<string, string>>(ApiCallItem.Content)
+                : new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
             var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
             if (context == null)
                 return _arguments;
@@ -183,7 +186,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!Arguments.TryGetValue(name, out var value))
                 return null;
-            var vl = value.Trim();
+            var vl = value?.Trim();
             return string.IsNullOrWhiteSpace(vl) ? null : vl;
         }
 
@@ -793,6 +796,4 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
         #endregion
     }
-
-
 }

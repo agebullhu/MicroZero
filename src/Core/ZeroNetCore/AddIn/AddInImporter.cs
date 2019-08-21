@@ -52,7 +52,10 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (string.IsNullOrEmpty(ZeroApplication.Config.AddInPath))
                 return;
-            var path = IOHelper.CheckPath(ZeroApplication.Config.RootPath, ZeroApplication.Config.AddInPath);
+
+            var path = ZeroApplication.Config.AddInPath[0] == '/'
+                ? ZeroApplication.Config.AddInPath
+                : IOHelper.CheckPath(ZeroApplication.Config.RootPath, ZeroApplication.Config.AddInPath);
             ZeroTrace.SystemLog("AddIn(Service)", path);
             // 通过容器对象将宿主和部件组装到一起。 
             DirectoryCatalog directoryCatalog = new DirectoryCatalog(path);

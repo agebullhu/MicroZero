@@ -7,7 +7,7 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <Description>微服务框架MicroZero的App端.</Description>
+    <Description>微服务框架MicroZero的核心程序集</Description>
     <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageId></PackageId>
@@ -23,9 +23,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Agebull</Authors>
     <Company>Agebull</Company>
-    <PackageReleaseNotes>ZeroNet在.Net中的核心类</PackageReleaseNotes>
+    <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.2.8</Version>
+    <Version>1.4.3.9</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

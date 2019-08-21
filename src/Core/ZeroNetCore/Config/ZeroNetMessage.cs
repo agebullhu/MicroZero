@@ -19,7 +19,7 @@ namespace Agebull.MicroZero
         /// 第二帧(请求为命令类型,返回为状态)
         /// </summary>
         public byte ZeroState { get; set; }
-        
+
         /// <summary>
         ///     头帧
         /// </summary>
@@ -41,7 +41,7 @@ namespace Agebull.MicroZero
             get => (ZeroByteCommand)ZeroState;
             set => ZeroState = (byte)value;
         }
-        
+
         /// <summary>
         /// 结束标识
         /// </summary>
@@ -143,14 +143,14 @@ namespace Agebull.MicroZero
         {
             try
             {
-                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Content)
-                    ? JsonConvert.DeserializeObject<GlobalContext>(Content)
+                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Context)
+                    ? JsonConvert.DeserializeObject<GlobalContext>(Context)
                     : new GlobalContext());
             }
             catch (Exception e)
             {
                 LogRecorderX.MonitorTrace($"Restory context exception:{e.Message}");
-                ZeroTrace.WriteException(station, e, "restory context", Content);
+                ZeroTrace.WriteException(station, e, "restory context", Context);
                 GlobalContext.SetContext(new GlobalContext());
             }
             GlobalContext.Current.Request.CallGlobalId = CallId;
@@ -188,6 +188,8 @@ namespace Agebull.MicroZero
             {
                 messages = messages
             };
+            if (messages.Length == 0)
+                return false;
             int move = isResult ? 1 : 0;
             byte[] description;
             if (isResult)
@@ -201,13 +203,20 @@ namespace Agebull.MicroZero
             }
             else
             {
-                if (messages.Length < 2)
+                if (messages.Length == 1)
                 {
-                    message.ZeroState = (byte)ZeroOperatorStateType.FrameInvalid;
-                    return false;
+                    description = messages[1];
                 }
-                description = messages[1];
-                message.Head = messages[0];
+                else
+                {
+                    if (messages.Length < 2)
+                    {
+                        message.ZeroState = (byte)ZeroOperatorStateType.FrameInvalid;
+                        return false;
+                    }
+                    description = messages[1];
+                    message.Head = messages[0];
+                }
             }
 
             message.Description = description;
@@ -229,6 +238,10 @@ namespace Agebull.MicroZero
                 if (idx >= description.Length)
                 {
                     Console.WriteLine("BUG is wenwenwen");
+                    foreach (var line in messages)
+                    {
+                        Console.WriteLine(Encoding.UTF8.GetString(line));
+                    }
                     break;
                 }
                 var bytes = messages[idx - move];
