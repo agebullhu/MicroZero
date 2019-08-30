@@ -29,11 +29,12 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void ILogRecorder.Initialize()
         {
-            LogRecorderX.TraceToConsole = false;
+            //LogRecorderX.TraceToConsole = false;
             IsInitialized = true;
             _state = StationState.Initialized;
             ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize", LogRecorderX.Level);
         }
+
         /// <inheritdoc />
         /// <summary>
         ///   停止
@@ -57,7 +58,7 @@ namespace Agebull.MicroZero.Log
             3,
             (byte)ZeroByteCommand.General,
             ZeroFrameType.PubTitle,
-            ZeroFrameType.TsonContent,
+            ZeroFrameType.TextContent,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
@@ -68,35 +69,43 @@ namespace Agebull.MicroZero.Log
         /// <param name="infos"> 日志消息 </param>
         void ILogRecorder.RecordLog(List<RecordInfo> infos)
         {
+            if (infos.Count == 0)
+                return;
             if (_socket == null)
             {
                 LogRecorderX.BaseRecorder.RecordLog(infos);
                 return;
             }
-            int idx = 0;
             var array = infos.ToArray();
             infos.Clear();
-            while (idx <= array.Length)
-            {
-                byte[] buf;
-                using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
-                {
-                    serializer.WriteType(TsonDataType.Object);
-                    int size = array.Length - idx;
-                    if (size > 255)
-                        size = 255;
-                    serializer.WriteLen(size);
-                    for (; size > 0 && idx < array.Length; idx++, --size)
-                    {
-                        serializer.Begin();
-                        RecordInfoTson.ToTson(serializer, array[idx]);
-                        serializer.End();
-                    }
 
-                    buf = serializer.Close();
-                }
-                _socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes);
-            }
+            _socket.SendTo(
+                LogDescription, 
+                _logsByte,
+                JsonHelper.SerializeObject(array).ToZeroBytes(),
+                ZeroCommandExtend.ServiceKeyBytes);
+            //int idx = 0;
+            //while (idx <= array.Length)
+            //{
+            //    byte[] buf;
+            //    using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
+            //    {
+            //        serializer.WriteType(TsonDataType.Object);
+            //        int size = array.Length - idx;
+            //        if (size > 255)
+            //            size = 255;
+            //        serializer.WriteLen(size);
+            //        for (; size > 0 && idx < array.Length; idx++, --size)
+            //        {
+            //            serializer.Begin();
+            //            RecordInfoTson.ToTson(serializer, array[idx]);
+            //            serializer.End();
+            //        }
+
+            //        buf = serializer.Close();
+            //    }
+            //    _socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes);
+            //}
 
         }
 
@@ -107,6 +116,8 @@ namespace Agebull.MicroZero.Log
         /// <param name="info"> 日志消息 </param>
         void ILogRecorder.RecordLog(RecordInfo info)
         {
+            if (info == null)
+                return;
             if (_socket != null)
             {
                 byte[] buf;
@@ -233,10 +244,10 @@ namespace Agebull.MicroZero.Log
             using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
                 var pool = ZmqPool.CreateZmqPool();
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PULL));
+                pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
                 using (pool)
                 {
-                    _socket = ZSocket.CreateClientSocketByInproc("inproc://RemoteLog.req", ZSocketType.PUSH);
+                    _socket = ZSocket.CreateClientSocketByInproc("inproc://RemoteLog.req", ZSocketType.PAIR);
                     var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName));
                     while (CanRun)
                     {

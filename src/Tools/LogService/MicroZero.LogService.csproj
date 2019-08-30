@@ -17,7 +17,12 @@
     <None Remove="test.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

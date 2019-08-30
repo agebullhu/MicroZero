@@ -1,4 +1,5 @@
 using System.ComponentModel.Composition;
+using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +18,13 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
-            //if (ConfigurationManager.AppSettings.GetBool("RemoteLog"))
-            IocHelper.ServiceCollection.AddTransient<ILogRecorder>(provider => RemoteLogRecorder.Instance);
+            if (!ConfigurationManager.Get("LogRecorder").GetBool("local", false))
+            {
+                ZeroTrace.SystemLog("RemoteLogRecorder", "IAutoRegister.Initialize");
+                IocHelper.ServiceCollection.AddTransient<ILogRecorder>(provider => RemoteLogRecorder.Instance);
+                IocHelper.Update();
+                LogRecorderX.Initialize();
+            }
             //IocHelper.Update();
             //LogRecorderX.Initialize();
             //if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))

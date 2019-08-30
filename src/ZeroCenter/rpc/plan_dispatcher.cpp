@@ -154,7 +154,7 @@ namespace agebull
 				{
 					return zero_def::status::arg_invalid;
 				}
-				json = plan->write_json();
+				json = plan->write_json(true);
 				return zero_def::status::ok;
 			}
 			case plan_commands_2::skip:
@@ -508,7 +508,7 @@ namespace agebull
 			datas.emplace_back(shared_char().set_int64(message->plan_id));
 			if (message)
 			{
-				datas.emplace_back(event_type == zero_net_event::event_plan_add ? message->write_json() : message->write_state());
+				datas.emplace_back(event_type == zero_net_event::event_plan_add ? message->write_json(true) : message->write_state());
 			}
 			return send_response(datas, true) == zmq_socket_state::succeed;
 		}

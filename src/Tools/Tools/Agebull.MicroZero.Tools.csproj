@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>MicroZero基础工具</Description>
+    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <AssemblyName>Agebull.MicroZero.Tools.sys_addin</AssemblyName>
+    <DebugType>portable</DebugType>
+    <PackageId></PackageId>
+    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <PackageReleaseNotes>MicroZero基础工具</PackageReleaseNotes>
+    <Product>Agebull.MicroZero</Product>
+    <Version>1.4.3.13</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -143,14 +143,14 @@ namespace Agebull.MicroZero
         {
             try
             {
-                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Content)
-                    ? JsonConvert.DeserializeObject<GlobalContext>(Content)
+                GlobalContext.SetContext(!string.IsNullOrWhiteSpace(Context)
+                    ? JsonConvert.DeserializeObject<GlobalContext>(Context)
                     : new GlobalContext());
             }
             catch (Exception e)
             {
                 LogRecorderX.MonitorTrace($"Restory context exception:{e.Message}");
-                ZeroTrace.WriteException(station, e, "restory context", Content);
+                ZeroTrace.WriteException(station, e, "restory context", Context);
                 GlobalContext.SetContext(new GlobalContext());
             }
             GlobalContext.Current.Request.CallGlobalId = CallId;

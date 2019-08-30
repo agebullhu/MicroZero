@@ -542,127 +542,6 @@
             </summary>
             <param name="type"></param>
         </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.CountData">
-            <summary>
-                统计数据
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.IsInner">
-            <summary>
-                是否Api内部统计
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.Start">
-            <summary>
-                开始时间
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.End">
-            <summary>
-                结束时间
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.ToId">
-            <summary>
-                执行的全局标识
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.FromId">
-            <summary>
-                请求的全局标识
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.Requester">
-            <summary>
-                请求地址
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.HostName">
-            <summary>
-                当前请求调用的主机名称
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.ApiName">
-            <summary>
-                当前请求调用的API名称
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.Status">
-            <summary>
-                执行状态
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.CountData.Title">
-            <summary>
-                标题
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.IApiCounter">
-            <summary>
-            性能计数器
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IApiCounter.IsEnable">
-            <summary>
-            是否启用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.IApiCounter.Count(Agebull.MicroZero.ZeroApis.CountData)">
-            <summary>
-            统计
-            </summary>
-            <param name="data"></param>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.RecordInfoTson">
-            <summary>记录信息</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Local">
-            <summary>本地日志</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Time">
-            <summary>时间</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Index">
-            <summary>日志记录序号</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.ThreadID">
-            <summary>线程ID</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.RequestID">
-            <summary>日志ID</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Machine">
-            <summary>机器</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Name">
-            <summary>名称</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Message">
-            <summary>格式化消息</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.Type">
-            <summary>日志类型</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.TypeName">
-            <summary>日志扩展名称,类型为None</summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.RecordInfoTson.MyIndex.User">
-            <summary>当前用户</summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.RecordInfoTson.ToTson(Agebull.Common.Tson.ITsonSerializer,Agebull.Common.Logging.RecordInfo)">
-            <summary>
-            序列化到TSON
-            </summary>
-            <param name="serializer"></param>
-            <param name="info"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.RecordInfoTson.FromTson(Agebull.Common.Tson.ITsonDeserializer,Agebull.Common.Logging.RecordInfo)">
-            <summary>
-            从TSON反序列化
-            </summary>
-            <param name="serializer"></param>
-            <param name="info"></param>
-        </member>
         <member name="T:Agebull.MicroZero.ZeroApis.UserOperatorStateType">
             <summary>
             一次路由执行状态
@@ -5640,39 +5519,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:Agebull.MicroZero.Helpers.IRuntimeWaring">
-            <summary>
-            运行时警告
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.Helpers.IRuntimeWaring.Waring(System.String,System.String,System.String)">
-            <summary>
-            运行时警告
-            </summary>
-            <param name="host"></param>
-            <param name="api"></param>
-            <param name="message"></param>
-        </member>
-        <member name="T:Agebull.MicroZero.Helpers.WaringItem">
-            <summary>
-            报警节点
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.Helpers.WaringItem.Host">
-            <summary>
-            API对象
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.Helpers.WaringItem.Api">
-            <summary>
-            API对象
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.Helpers.WaringItem.Message">
-            <summary>
-            消息
-            </summary>
-        </member>
         <member name="T:Agebull.MicroZero.ZeroServices.StateMachine.EmptyStateMachine">
             <summary>
             监控状态机
@@ -6009,21 +5855,6 @@
         <member name="M:Agebull.MicroZero.ZeroStation.Agebull#MicroZero#IZeroObject#OnStationStateChanged(Agebull.MicroZero.StationConfig)">
             <summary>
             站点状态变更时调用
-            </summary>
-        </member>
-        <member name="T:Agebull.Common.Tson.CountDataTsonOperator">
-            <summary>
-            CountData序列化
-            </summary>
-        </member>
-        <member name="M:Agebull.Common.Tson.CountDataTsonOperator.ToTson(Agebull.Common.Tson.ITsonSerializer,Agebull.MicroZero.ZeroApis.CountData)">
-            <summary>
-            序列化
-            </summary>
-        </member>
-        <member name="M:Agebull.Common.Tson.CountDataTsonOperator.FromTson(Agebull.Common.Tson.ITsonDeserializer,Agebull.MicroZero.ZeroApis.CountData)">
-            <summary>
-            反序列化
             </summary>
         </member>
     </members>

@@ -233,7 +233,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected override ApiPageData<TData> GetListData(LambdaItem<TData> lambda)
         {
-            if (!TryGet("_audit_", out int state) || state < 0 || state >= 0x100)
+            if (!TryGet("_state_", out int state) || state < 0 || state >= 0x100)
                 return base.GetListData(lambda);
             GlobalContext.Current.IsManageMode = true;
             lambda.AddRoot(p => p.DataState == (DataStateType)state);

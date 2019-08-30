@@ -15,8 +15,8 @@ namespace Agebull.MicroZero.LogService
     public class RemoteLogStation : SubStation
     {
         /// <summary>
-      ///     刷新
-      /// </summary>
+        ///     刷新
+        /// </summary>
         public RemoteLogStation()
         {
             Name = "RemoteLog";
@@ -35,7 +35,12 @@ namespace Agebull.MicroZero.LogService
             {
                 if (args.Content != null)
                 {
-                    LogRecorderX.BaseRecorder.RecordLog(JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content));
+                    var infos = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
+                    LogRecorderX.BaseRecorder.RecordLog(infos);
+                    foreach (var info in infos)
+                    {
+                        Console.WriteLine(info.Message );
+                    }
                     return;
                 }
 

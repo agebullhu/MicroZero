@@ -454,6 +454,20 @@
                 取得列表数据
             </summary>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.CheckListResult(Agebull.MicroZero.ZeroApis.ApiPageData{`0},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                数据准备返回的处理
+            </summary>
+            <param name="result">当前的查询结果</param>
+            <param name="condition">当前的查询条件</param>
+            <param name="args">当前的查询参数</param>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.OnListLoaded(System.Collections.Generic.IList{`0})">
+            <summary>
+                数据载入的处理
+            </summary>
+            <param name="datas"></param>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.ReadFormData(`0,Agebull.MicroZero.ZeroApis.FormConvert)">
             <summary>
                 读取Form传过来的数据

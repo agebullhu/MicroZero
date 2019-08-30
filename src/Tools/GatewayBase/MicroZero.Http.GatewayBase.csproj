@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.All" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
+    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <Description>
