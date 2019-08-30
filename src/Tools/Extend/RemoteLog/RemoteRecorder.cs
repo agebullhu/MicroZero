@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
 using Agebull.Common.Tson;
@@ -69,32 +68,36 @@ namespace Agebull.MicroZero.Log
         /// <param name="infos"> 日志消息 </param>
         void ILogRecorder.RecordLog(List<RecordInfo> infos)
         {
-            if (_socket != null)
+            if (_socket == null)
             {
-                int idx = 0;
-                while (idx <= infos.Count)
-                {
-                    byte[] buf;
-                    using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
-                    {
-                        serializer.WriteType(TsonDataType.Object);
-                        int size = infos.Count - idx;
-                        if (size > 255)
-                            size = 255;
-                        serializer.WriteLen(size);
-                        for (; size > 0 && idx < infos.Count; idx++, --size)
-                        {
-                            serializer.Begin();
-                            RecordInfoTson.ToTson(serializer, infos[idx]);
-                            serializer.End();
-                        }
-                        buf = serializer.Close();
-                    }
-                    if (_socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes))
-                        return;
-                }
+                LogRecorderX.BaseRecorder.RecordLog(infos);
+                return;
             }
-            LogRecorderX.BaseRecorder.RecordLog(infos);
+            int idx = 0;
+            var array = infos.ToArray();
+            infos.Clear();
+            while (idx <= array.Length)
+            {
+                byte[] buf;
+                using (TsonSerializer serializer = new TsonSerializer(TsonDataType.Array))
+                {
+                    serializer.WriteType(TsonDataType.Object);
+                    int size = array.Length - idx;
+                    if (size > 255)
+                        size = 255;
+                    serializer.WriteLen(size);
+                    for (; size > 0 && idx < array.Length; idx++, --size)
+                    {
+                        serializer.Begin();
+                        RecordInfoTson.ToTson(serializer, array[idx]);
+                        serializer.End();
+                    }
+
+                    buf = serializer.Close();
+                }
+                _socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes);
+            }
+
         }
 
 
@@ -173,7 +176,7 @@ namespace Agebull.MicroZero.Log
                     ZeroApplication.OnObjectFailed(this);
                     return false;
                 }
-                RealName = ZSocket.CreateRealName(false,Config.StationName);
+                RealName = ZSocket.CreateRealName(false, Config.StationName);
                 Identity = RealName.ToAsciiBytes();
                 RunTaskCancel = new CancellationTokenSource();
                 //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
@@ -241,7 +244,6 @@ namespace Agebull.MicroZero.Log
                         {
                             continue;
                         }
-
                         using (message)
                         {
                             using (var copy = message.Duplicate())

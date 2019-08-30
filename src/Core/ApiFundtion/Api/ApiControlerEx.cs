@@ -183,7 +183,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!Arguments.TryGetValue(name, out var value))
                 return null;
-            var vl = value.Trim();
+            var vl = value?.Trim();
             return string.IsNullOrWhiteSpace(vl) ? null : vl;
         }
 
@@ -793,6 +793,4 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
         #endregion
     }
-
-
 }

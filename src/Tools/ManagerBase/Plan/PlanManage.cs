@@ -119,6 +119,25 @@ namespace MicroZero.Http.Route
         }
 
 
+        public ApiResult Clear()
+        {
+            int cnt = 0;
+            foreach (var plan in Plans.Where(p => p.Value.plan_state == plan_message_state.close).ToArray())
+            {
+                var result = CallCommand("remove", $"msg:{plan.Value.station}:{plan.Value.plan_id:x}");
+                if (result.State != ZeroOperatorStateType.Ok)
+                    continue;
+                Plans.Remove(plan.Key);
+                cnt++;
+            }
+            return ApiResult.Succees(cnt);
+        }
+
+
+        public ApiResult Test()
+        {
+            return ApiResult.Succees(Plans.Values.ToList());
+        }
 
         public ApiResult Remove(string id)
         {
@@ -358,7 +377,7 @@ namespace MicroZero.Http.Route
                     return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
                 }
 
-                PlanItem.Unpack(message, out var item);
+                PlanItem.UnpackResult(message, out var item);
                 return item.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, item.State.Text());
 
             }

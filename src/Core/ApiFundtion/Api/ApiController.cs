@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Linq.Expressions;
 using Agebull.Common.Context;
 using Agebull.EntityModel.Common;
@@ -106,6 +107,32 @@ namespace Agebull.MicroZero.ZeroApis
 
         }
 
+        IDisposable GetFieldFilter()
+        {
+            if (TryGet("_filter_", out string[] fieldFilter))
+            {
+                var test = new TData();
+                List<PropertySturct> properties = new List<PropertySturct>();
+                foreach (var field in fieldFilter)
+                {
+                    var pro = test.__Struct.Properties.Values.FirstOrDefault(p => p.JsonName == field || p.PropertyName == field);
+                    if (pro != null && pro.ColumnName != null)
+                    {
+                        properties.Add(pro);
+                    }
+                }
+                if (properties.Count > 0)
+                    return DbReaderScope<TData>.CreateScope(Business.Access, properties.Select(p => p.ColumnName).LinkToString(","), (reader, entity) =>
+                    {
+                        for (var idx = 0; idx < properties.Count; idx++)
+                        {
+                            if (!reader.IsDBNull(idx))
+                                entity.SetValue(properties[idx].Index, reader.GetValue(idx));
+                        }
+                    });
+            }
+            return null;
+        }
         /// <summary>
         ///     列表数据
         /// </summary>
@@ -117,25 +144,74 @@ namespace Agebull.MicroZero.ZeroApis
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiPageResult<TData> List(QueryArgument args)
         {
-            GlobalContext.Current.Feature = 1;
+            IDisposable scope = null;
+            try
+            {
 
-            var filter = new LambdaItem<TData>();
-            GetQueryFilter(filter);
-            var data = GetListData(filter);
-            GlobalContext.Current.Feature = 0;
-            return IsFailed
-                ? new ApiPageResult<TData>
-                {
-                    Success = false,
-                    Status = GlobalContext.Current.LastStatus
-                }
-                : new ApiPageResult<TData>
-                {
-                    Success = true,
-                    ResultData = data
-                };
+                scope = GetFieldFilter();
+
+                GlobalContext.Current.Feature = 1;
+
+                var filter = new LambdaItem<TData>();
+                GetQueryFilter(filter);
+                var data = GetListData(filter);
+                GlobalContext.Current.Feature = 0;
+                return IsFailed
+                    ? new ApiPageResult<TData>
+                    {
+                        Success = false,
+                        Status = GlobalContext.Current.LastStatus
+                    }
+                    : new ApiPageResult<TData>
+                    {
+                        Success = true,
+                        ResultData = data
+                    };
+            }
+            finally
+            {
+                scope?.Dispose();
+            }
         }
 
+
+        /// <summary>
+        ///     单条数据查询
+        /// </summary>
+        [Route("edit/first")]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
+        public ApiResult<TData> QueryFirst(TData arguent)
+        {
+            IDisposable scope = null;
+            try
+            {
+                scope = GetFieldFilter();
+                GlobalContext.Current.Feature = 1;
+                var filter = new LambdaItem<TData>();
+                GetQueryFilter(filter);
+                var data = Business.Access.First(filter);
+                if (data != null)
+                {
+                    OnDetailsLoaded(data, false);
+                }
+                GlobalContext.Current.Feature = 0;
+                return IsFailed
+                    ? new ApiResult<TData>
+                    {
+                        Success = false,
+                        Status = GlobalContext.Current.LastStatus,
+                    }
+                    : new ApiResult<TData>
+                    {
+                        Success = true,
+                        ResultData = data
+                    };
+            }
+            finally
+            {
+                scope?.Dispose();
+            }
+        }
 
         /// <summary>
         ///     单条详细数据
@@ -144,7 +220,9 @@ namespace Agebull.MicroZero.ZeroApis
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<TData> Details(IdArguent arguent)
         {
-            var data = DoDetails();
+            if (!TryGet("id", out long id))
+                return ApiResult.Error<TData>(ErrorCode.ArgumentError, "参数[id]不是有效的数字");
+            var data = DoDetails(id);
             return IsFailed
                 ? new ApiResult<TData>
                 {
@@ -178,7 +256,9 @@ namespace Agebull.MicroZero.ZeroApis
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
         public ApiResult<TData> Update(TData arg)
         {
-            var data = DoUpdate();
+            if (!TryGet("id", out long id))
+                return ApiResult.Error<TData>(ErrorCode.ArgumentError, "参数[id]不是有效的数字");
+            var data = DoUpdate(id);
             return IsFailed
                 ? new ApiResult<TData>
                 {
@@ -225,27 +305,15 @@ namespace Agebull.MicroZero.ZeroApis
         {
             var page = GetIntArg("page", 1);
             var rows = GetIntArg("rows", 20);
-            var sort = GetArg("sort");
-            bool desc;
+            TryGet("sort", out string sort);
             if (sort == null)
-            {
                 sort = Business.Access.KeyField;
-                desc = true;
-            }
-            else
-            {
-                desc = GetArg("order", "asc").ToLower() == "desc";
-            }
+            var desc = TryGet("order", out string order) && order?.ToLower() == "desc";
 
             //SaveQueryArguments(page, sort, adesc, rows);
 
             var data = Business.PageData(page, rows, sort, desc, condition, args);
-            if (OnListLoaded(data.Rows, data.RowCount))
-            {
-                CheckListResult(data, condition, args);
-                return data;
-            }
-
+            OnListLoaded(data.Rows);
             return data;
         }
         /*
@@ -258,8 +326,8 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (CanSaveQueryArguments)
                 BusinessContext.Context?.PowerChecker?.SaveQueryHistory(LoginUser, PageItem, Arguments);
-        }*/
-
+        }
+        */
         /// <summary>
         ///     数据准备返回的处理
         /// </summary>
@@ -275,21 +343,10 @@ namespace Agebull.MicroZero.ZeroApis
         ///     数据载入的处理
         /// </summary>
         /// <param name="datas"></param>
-        /// <param name="count"></param>
-        protected virtual bool OnListLoaded(IList<TData> datas, int count)
-        {
-            OnListLoaded(datas);
-            return true;
-        }
-
-        /// <summary>
-        ///     数据载入的处理
-        /// </summary>
-        /// <param name="datas"></param>
         protected virtual void OnListLoaded(IList<TData> datas)
         {
         }
-
+        
         #endregion
 
         #region 基本增删改查
@@ -301,32 +358,20 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="convert">转化器</param>
         protected abstract void ReadFormData(TData entity, FormConvert convert);
 
-
-        private long _dataId = -1;
-
-        /// <summary>
-        ///     当前上下文数据ID
-        /// </summary>
-        public long ContextDataId
-        {
-            get => _dataId < 0 ? (_dataId = GetLongArg("id")) : _dataId;
-            protected set => _dataId = value;
-        }
-
         /// <summary>
         ///     载入当前操作的数据
         /// </summary>
-        protected virtual TData DoDetails()
+        protected virtual TData DoDetails(long id)
         {
             TData data;
-            if (ContextDataId <= 0)
+            if (id <= 0)
             {
                 data = CreateData();
                 OnDetailsLoaded(data, true);
             }
             else
             {
-                data = Business.Details(ContextDataId);
+                data = Business.Details(id);
                 if (data == null)
                 {
                     SetFailed("数据不存在");
@@ -382,9 +427,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     更新对象
         /// </summary>
-        protected virtual TData DoUpdate()
+        protected virtual TData DoUpdate(long id)
         {
-            var data = Business.Details(ContextDataId);
+            var data = Business.Details(id);
             if (data == null)
             {
                 GlobalContext.Current.LastState = ErrorCode.ArgumentError;
@@ -399,7 +444,7 @@ namespace Agebull.MicroZero.ZeroApis
                 IsUpdata = true
             };
             ReadFormData(data, convert);
-            if(convert.Failed)
+            if (convert.Failed)
             {
                 GlobalContext.Current.LastState = ErrorCode.ArgumentError;
                 GlobalContext.Current.LastMessage = convert.Message;
@@ -418,7 +463,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void DoDelete()
         {
-            if (!TryGet("selects",out long[] ids))
+            if (!TryGet("selects", out long[] ids))
             {
                 SetFailed("没有数据");
                 return;

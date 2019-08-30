@@ -235,7 +235,7 @@ namespace Agebull.MicroZero
         {
             if (string.IsNullOrWhiteSpace(AddInPath))
                 AddInPath = option.AddInPath;
-            if (string.IsNullOrWhiteSpace(AddInPath))
+            if (string.IsNullOrWhiteSpace(ConfigFolder))
                 ConfigFolder = option.ConfigFolder;
             if (string.IsNullOrWhiteSpace(LogFolder))
                 LogFolder = option.LogFolder;
@@ -326,6 +326,7 @@ namespace Agebull.MicroZero
          */
 
         #endregion
+
         #region 站点
 
         /// <summary>
@@ -594,9 +595,11 @@ namespace Agebull.MicroZero
         {
             #region 配置组合
 
-            AppName = ConfigurationManager.Root["AppName"];
-            if (AppName == null)
-                throw new Exception("无法找到配置[AppName],请在appsettings.json中设置");
+            var name = ConfigurationManager.Root["AppName"];
+            if (name != null)
+                AppName = name;
+            if(string.IsNullOrWhiteSpace(AppName))
+                throw new Exception("无法找到配置[AppName],请在appsettings.json或代码中设置");
 
             var curPath = Environment.CurrentDirectory;
             string rootPath;
@@ -612,8 +615,6 @@ namespace Agebull.MicroZero
                 if (s != null)
                 {
                     baseConfig = s.Child<ZeroAppConfig>("Global");
-                    if (!string.IsNullOrWhiteSpace(baseConfig?.RootPath))
-                        rootPath = baseConfig.RootPath;
                     var so = s.Child<SocketOption>("socketOption");
                     if (so != null)
                         ZSocket.Option = so;

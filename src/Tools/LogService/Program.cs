@@ -1,14 +1,15 @@
-using Agebull.ZeroNet.Core;
-using System;
+﻿using Agebull.MicroZero;
+using Agebull.MicroZero.LogService;
 
-namespace Agebull.ZeroNet.LogService
+namespace ZeroService
 {
-    internal class Program
+    class Program
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
+            ZeroApplication.CheckOption();
+            ZeroApplication.RegistZeroObject<RemoteLogStation>();
             ZeroApplication.Initialize();
-            ZeroApplication.Discove();
             ZeroApplication.RunAwaite();
         }
     }

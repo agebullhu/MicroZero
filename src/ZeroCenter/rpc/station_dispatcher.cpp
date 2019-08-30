@@ -74,6 +74,7 @@ namespace agebull
 				description.append_frame(zero_def::frame::content);
 				datas.emplace_back(content);
 			}
+			datas[1].sync(description);
 			return instance->send_response(datas, false) == zmq_socket_state::succeed;
 		}
 		char frames[] = {
@@ -100,6 +101,7 @@ namespace agebull
 			shared_char global_id;
 			global_id.set_int64(station_warehouse::get_glogal_id());
 			datas.emplace_back(global_id);
+			datas[1].sync(description);
 			return send_response(datas, false) == zmq_socket_state::succeed;
 		}
 

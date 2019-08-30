@@ -11,7 +11,7 @@ var vue_option = {
             return formatDate(date, 'MM-dd hh:mm:ss');
         },
         formatUnixDate(unix) {
-            if (unix === 0)
+            if (unix == 0)
                 return "*";
             var date = new Date(unix * 1000);
             return formatDate(date, 'MM-dd hh:mm:ss');
@@ -134,12 +134,12 @@ function do_sync_get(url, job, callback) {
         if (data.success && callback) {
             callback(data);
         }
-    }).error(function (e) {
+    })/*.error(function (e) {
         vue_obj.$notify.error({
             title: job,
             message: '网络异常',
             position: 'bottom-right',
             duration: 2000
         });
-    });
+    })*/;
 }

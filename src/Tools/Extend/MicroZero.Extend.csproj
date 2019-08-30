@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>1.0.4</Version>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
-    <Description>Agebull.ZeroNet.Extend</Description>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -13,8 +9,11 @@
   </Target>
 
   <ItemGroup>
+    <Compile Remove="Counter\**" />
     <Compile Remove="EntityEventProxy\**" />
+    <EmbeddedResource Remove="Counter\**" />
     <EmbeddedResource Remove="EntityEventProxy\**" />
+    <None Remove="Counter\**" />
     <None Remove="EntityEventProxy\**" />
   </ItemGroup>
 

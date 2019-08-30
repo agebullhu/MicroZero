@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
@@ -58,7 +59,7 @@ namespace MicroZero.Http.Route
 
         public override string ToString()
         {
-            return new DateTime(Time* 10000 + 621355968000000000).ToString();
+            return new DateTime(Time* 10000 + 621355968000000000).ToString(CultureInfo.InvariantCulture);
         }
     }
 }

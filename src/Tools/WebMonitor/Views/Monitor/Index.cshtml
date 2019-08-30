@@ -1,5 +1,4 @@
-﻿@using System.Collections.Generic
-@using System.Linq
+﻿@using System.Linq
 @using Agebull.MicroZero
 @using Newtonsoft.Json
 @using MicroZero.Http.Route
@@ -213,7 +212,7 @@
                         }
                     ]
                 }));
-        @if (config.Type == "API")
+        @if (config.Type == "Api")
         {
             <text>
 
@@ -275,7 +274,7 @@
                             series: [
                                 {
                                     name: 'Speed',
-                                    data: [@(config.Type == "API" ? item.RequestIn - item.RequestOut : 0)]
+                                    data: [@(config.Type == "Api" ? item.RequestIn - item.RequestOut : 0)]
                                 }
                             ]
                         }));
@@ -289,7 +288,7 @@
                             series: [
                                 {
                                     name: 'Speed',
-                                    data: [@(config.Type == "API" ? item.WorkerOut - item.WorkerIn : 0)]
+                                    data: [@(config.Type == "Api" ? item.WorkerOut - item.WorkerIn : 0)]
                                 }
                             ]
                         }));
@@ -381,10 +380,12 @@
             return avg;
         }
 
-        var klines = eval('(@Html.Raw(lines))');
+        
+        var klines = @Html.Raw(lines);
         var kavgs = [];
         var idx = 0;
         for (; idx < klines.length; idx++) {
+            klines[idx].x = Number(klines[idx].x);
             kavgs.push(check_k_avg(klines[idx]));
         }
         var chart = Highcharts.chart('container',
@@ -426,7 +427,7 @@
                 series: [
                     {
                         name: 'K线',
-                        type: 'boxplot',
+                        type: 'boxplot', //boxplot
                         color: "blue",
                         data: klines,
                         tooltip: {
@@ -451,12 +452,12 @@
 
         function on_status(item) {
             Vue.set(vue_option.data.config, "status", item);
-            const time = (new Date()).getTime();
             update_chart(chart_q_late, item.LastQps);
             update_chart(chart_q_avg, item.AvgQps);
             update_chart(chart_q_max, item.MaxQps);
-            chart_q_container.series[0].addPoint([time, item.LastQps], true, true);
-            @if (config.Type == "API")
+            const time = (new Date()).getTime();
+            chart_q_container.series[0].addPoint({ x: time, y: Number(item.LastQps) }, true, true);
+            @if (config.Type == "Api")
             {
                 <text>
                     update_chart(chart_t_late, item.LastTps);
@@ -464,14 +465,14 @@
                     update_chart(chart_t_max, item.MaxTps);
                     update_chart(chart_q_hungry, item.request_in - item.request_out);
                     update_chart(chart_t_hungry, item.worker_out - item.worker_in);
-                    chart_t_container.series[0].addPoint([time, item.LastTps], true, true);
+                    chart_t_container.series[0].addPoint({ x: time, y: Number(item.LastTps) }, true, true);
                 </text>
             }
         }
 
         function on_kline(item) {
-            chart.series[1].addPoint(check_k_avg(item), true, count > 100);
             chart.series[0].addPoint(item, true, count > 100);
+            chart.series[1].addPoint(check_k_avg(item), true, count > 100);
         }
     </script>
 }
@@ -522,7 +523,7 @@
                     <div id="q_container" class="chart_block"></div>
                 </div>
             </div>
-            <div v-if="config.type == 'API'">
+            <div v-if="config.type == 'Api'">
                 <div class="chart_parent">
                     <div id="t_late" class="chart_block"></div>
                 </div>
@@ -537,13 +538,13 @@
                 <div class="chart_parent">
                     <div id="q_max" class="chart_block"></div>
                 </div>
-                <div class="chart_parent" v-if="config.type == 'API'">
+                <div class="chart_parent" v-if="config.type == 'Api'">
                     <div id="t_max" class="chart_block"></div>
                 </div>
                 <div class="chart_parent">
                     <div id="q_hungry" class="chart_block"></div>
                 </div>
-                <div class="chart_parent" v-if="config.type == 'API'">
+                <div class="chart_parent" v-if="config.type == 'Api'">
                     <div id="t_hungry" class="chart_block"></div>
                 </div>
             </div>
@@ -573,7 +574,7 @@
                             <h3>
                                 Worker
                             </h3>
-                            <template v-if="config.type == 'API'">
+                            <template v-if="config.type == 'Api'">
                                 <div><span class="my_label">Issued</span> : {{config.status.worker_out | thousandsNumber}}</div>
                                 <div><span class="my_label">Result</span> : {{config.status.worker_in | thousandsNumber}}</div>
                                 <div><span class="my_label">Error</span> : {{config.status.worker_err | thousandsNumber}}</div>

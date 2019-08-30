@@ -1199,7 +1199,7 @@
                 Api站点
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiClient.Files">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiClient.Files">
             <summary>
                 文件
             </summary>
@@ -1552,7 +1552,7 @@
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClientCore.Receive(ZeroMQ.ZSocket)">
             <summary>
-                接收文本
+                接收
             </summary>
             <param name="socket"></param>
             <returns></returns>
@@ -1608,6 +1608,11 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiControllerBase.Files">
             <summary>
             客户端上传的文件
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ActionController">
+            <summary>
+            ZeroApi控制器基类
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiController">
@@ -4406,14 +4411,14 @@
             暂停
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.plan_message_state.close">
-            <summary>
-            正常关闭
-            </summary>
-        </member>
         <member name="F:Agebull.MicroZero.plan_message_state.error">
             <summary>
             错误关闭
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.plan_message_state.close">
+            <summary>
+            正常关闭
             </summary>
         </member>
         <member name="F:Agebull.MicroZero.plan_message_state.remove">

@@ -110,6 +110,11 @@ namespace agebull
 			shared_char request_id;
 
 			/**
+			* \brief redis名称
+			*/
+			shared_char name;
+
+			/**
 			* \brief 站点
 			*/
 			shared_char station;
@@ -245,7 +250,7 @@ namespace agebull
 			/**
 			* \brief JSON序列化
 			*/
-			acl::string write_json() const;
+			acl::string write_json(bool full) const;
 			/**
 			* \brief 保存下一次执行时间
 			*/

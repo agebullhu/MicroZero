@@ -294,6 +294,7 @@ namespace agebull
 			plan_dispatcher::instance->zero_event(zero_net_event::event_plan_pause, this);
 			return true;
 		}
+
 		/**
 		* \brief 关闭一个消息
 		*/
@@ -305,6 +306,7 @@ namespace agebull
 			redis_live_scope scope(global_config::plan_redis_db);
 			scope->zrem("plan:time:set", key);
 			save_message(false, false, false, false, false, true);
+			scope->expireat(key, time(nullptr) + global_config::plan_auto_remove);//自动过期
 			return true;
 		}
 		/**
@@ -338,13 +340,16 @@ namespace agebull
 				{
 					shared_ptr<plan_message> message = load_message(key.c_str());
 					if (message == nullptr)
+					{
+						scope->del(key);
 						continue;
+					}
 					if (first)
 						first = false;
 					else
 						json.append(",");
 
-					json.append(message->write_json());
+					json.append(message->write_json(false));
 				}
 
 			} while (cursor > 0);
@@ -370,8 +375,9 @@ namespace agebull
 			//local_chche[key] = message;
 
 			trans_redis* redis = scope.redis();
-
 			shared_ptr<plan_message> message = make_shared<plan_message>();
+
+			message->name = key;
 			redis->get_hash_val(key, "caller", message->caller);
 			redis->get_hash_val(key, "request_id", message->request_id);
 			redis->get_hash_val(key, "plan_id", message->plan_id);
@@ -843,26 +849,30 @@ namespace agebull
 		/**
 		* \brief JSON序列化
 		*/
-		acl::string plan_message::write_json() const
+		acl::string plan_message::write_json(bool full) const
 		{
 			acl::json json;
 			acl::json_node& node = json.create_node();
+			json_add_str(node, "name", name);
 			json_add_str(node, "description", description);
-			json_add_str(node, "station", station);
+			json_add_str(node, "station", station); 
 			json_add_num(node, "station_type", station_type);
 			json_add_str(node, "command", command);
 			write_info(node);
-			acl::json_node& array = json.create_array();
-			for (const auto& line : frames)
+			if(full)
 			{
-				if (line.empty())
-					array.add_array_null();
-				else if (line[0] >= ' ')
-					array.add_array_text(*line);
-				else
-					array.add_array_text(zero_def::desc_str(false, line.get_buffer(), line.size()));
+				acl::json_node& array = json.create_array();
+				for (const auto& line : frames)
+				{
+					if (line.empty())
+						array.add_array_null();
+					else if (line[0] >= ' ')
+						array.add_array_text(*line);
+					else
+						array.add_array_text(zero_def::desc_str(false, line.get_buffer(), line.size()));
+				}
+				node.add_child("frames", array);
 			}
-			node.add_child("frames", array);
 			return node.to_string();
 		}
 	}

@@ -1908,7 +1908,6 @@ namespace ZeroMQ
                     error = _error = default(ZError);
                     continue;
                 }
-
                 pin.Free();
                 return false;
             }

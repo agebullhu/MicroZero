@@ -10,9 +10,9 @@ namespace WebMonitor.Models
     /// <summary>
     ///     站点配置
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
     [DataContract]
     [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public class StationInfo
     {
         /// <summary>

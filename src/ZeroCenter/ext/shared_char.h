@@ -403,6 +403,14 @@ namespace agebull
 				return *this;
 			}
 
+			bool sync(const shared_char& fri)
+			{
+				if (buffer_ != fri.buffer_ || &fri == this)
+					return false;
+				size_ = fri.size_;
+				alloc_size_ = fri.alloc_size_;
+				return true;
+			}
 			bool is_string() const
 			{
 				return is_binary_ == 1;

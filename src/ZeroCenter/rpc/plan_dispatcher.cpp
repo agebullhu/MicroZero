@@ -112,7 +112,7 @@ namespace agebull
 			}
 			if (cmd == nullptr)
 			{
-				send_request_status_by_trace(socket, *list[0], zero_def::status::arg_invalid,list,glid_index, rqid_index, rqer_index, nullptr);
+				send_request_status_by_trace(socket, *list[0], zero_def::status::arg_invalid, list, glid_index, rqid_index, rqer_index, nullptr);
 				return;
 			}
 			string json;
@@ -198,7 +198,7 @@ namespace agebull
 					return zero_def::status::arg_invalid;
 				}
 				shared_ptr<plan_message> plan = plan_message::load_message(*arguments[0]);
-				if (!plan || plan->plan_state < plan_message_state::pause || 
+				if (!plan || plan->plan_state < plan_message_state::pause ||
 					plan->plan_state > plan_message_state::error)
 				{
 					return zero_def::status::arg_invalid;
@@ -257,9 +257,9 @@ namespace agebull
 					break;
 				pre = boost::posix_time::second_clock::universal_time();
 				plan_message::exec_now([this](shared_ptr<plan_message>& msg)
-				{
-					return exec_plan(msg);
-				});
+					{
+						return exec_plan(msg);
+					});
 			}
 			sockets_.clear();
 			get_config().log("plan poll end");
@@ -283,9 +283,9 @@ namespace agebull
 			message->frames.emplace_back(frame_head);
 			message->frames.emplace_back(description);
 
-			size_t plan = 0, glid = 0, reqer = 0,pid = 0;
+			size_t plan = 0, glid = 0, reqer = 0, pid = 0;
 
-			const size_t rqid = 0,size= list[1].frame_size();
+			const size_t rqid = 0, size = list[1].frame_size();
 			for (size_t idx = 2; idx <= size && idx < list.size(); idx++)
 			{
 				switch (list[1][idx])
@@ -337,7 +337,7 @@ namespace agebull
 			send_request_status_by_trace(socket, *caller, zero_def::status::jion_plan, list, glid, rqid, reqer, nullptr);
 
 			message->station_type = config->station_type;
-			
+
 			description.append_frame(zero_def::frame::plan);
 			message->frames.emplace_back("");
 
@@ -353,13 +353,14 @@ namespace agebull
 				global_id = list[glid];
 			}
 			message->plan_id = atoll(*global_id);
-			
+			message->frames[1].sync(description);
+
 			if (pid == 0)
 			{
 				sprintf(frame_head.c_str(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)
 			}
 
-			
+
 			//message->save_message(true,false,true,false,false,false);
 			message->next();
 			//storage_.save_plan(*message);
@@ -536,7 +537,8 @@ namespace agebull
 				description.append_frame(result[0][idx]);
 				datas.emplace_back(result[idx - 1]);
 			}
-			return send_response(datas,true) == zmq_socket_state::succeed;
+			datas[1].sync(description);
+			return send_response(datas, true) == zmq_socket_state::succeed;
 		}
 	}
 }

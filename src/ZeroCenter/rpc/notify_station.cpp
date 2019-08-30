@@ -54,6 +54,7 @@ namespace agebull
 			}
 			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id,request_id , requester);
 			list[0] = list[pub_title];
+			list[1].sync(description);
 			send_response(list, true);
 		}
 

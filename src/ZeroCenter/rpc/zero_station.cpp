@@ -86,13 +86,15 @@ namespace agebull
 				}
 				if (station_type_ == zero_def::station_type::queue)
 				{
-					worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_PUB, config_->worker_in_port);
+					worker_in_socket_tcp_ = socket_ex::create_res_socket_tcp(station_name, ZMQ_ROUTER, config_->worker_in_port);
 					if (worker_in_socket_tcp_ == nullptr)
 					{
 						config_->runtime_state(station_state::failed);
 						config_->error("initialize worker in", zmq_strerror(zmq_errno()));
 						return false;
 					}
+					socket_ex::setsockopt(worker_in_socket_tcp_, ZMQ_ROUTER_MANDATORY, 1);
+					poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 				}
 				//if (json_config::use_ipc_protocol)
 				//{

@@ -166,9 +166,13 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 station = _defStation;
             }
-            var routeHead = type.GetCustomAttribute<RoutePrefixAttribute>()?.Name.SafeTrim(' ', '\t', '\r', '\n', '/');
+            string routeHead = type.GetCustomAttribute<RoutePrefixAttribute>()?.Name.SafeTrim(' ', '\t', '\r', '\n', '/');
             if (routeHead != null)
                 routeHead = routeHead + "/";
+            else if (type.IsSubclassOf(typeof(ActionController)))
+            {
+                routeHead = type.Name + "/";
+            }
             var defPage = type.GetCustomAttribute<ApiPageAttribute>()?.PageUrl?.SafeTrim();
             var defOption = type.GetCustomAttribute<ApiAccessOptionFilterAttribute>()?.Option;
             var defCategory = type.GetCustomAttribute<CategoryAttribute>()?.Category.SafeTrim();
@@ -605,7 +609,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 return;
             }
-            if (_typeDocs2.TryGetValue(type, out var _))
+            if (_typeDocs2.ContainsKey(type))
             {
                 ZeroTrace.WriteError("ReadEntity", "over flow", type.Name);
 

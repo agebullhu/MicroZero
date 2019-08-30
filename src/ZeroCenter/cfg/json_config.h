@@ -63,15 +63,20 @@ namespace agebull
 		static bool api_route_mode;
 		static bool link_trace_open;
 		static bool link_trace_storage;
+		static int worker_sound_ivl;
+
 		static int base_tcp_port;
+		static int pool_timeout;
+
 		static int plan_redis_db;
 		static int plan_exec_timeout;
 		static int plan_cache_size;
-		static int pool_timeout;
+		static int plan_auto_remove;
+
 		//static bool use_ipc_protocol;
 		static char redis_addr[512];
 		static int redis_defdb;
-		static int worker_sound_ivl;
+
 		static int IMMEDIATE;
 		static int LINGER;
 		static int RCVHWM;

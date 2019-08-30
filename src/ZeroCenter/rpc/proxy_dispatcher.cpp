@@ -184,6 +184,7 @@ namespace agebull
 				description.append_frame(list[1][idx]);
 				frames.emplace_back(list[idx]);
 			}
+			frames[1].sync(description);
 			if (!hase)
 			{
 				on_result(res_socket, *list[0], zero_def::status::not_find);

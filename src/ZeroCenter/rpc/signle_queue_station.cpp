@@ -116,6 +116,7 @@ namespace agebull
 
 			list[0] = list[pub_title];
 			list[1] = description;
+			list[1].sync(description);
 			send_response(list, true);
 		}
 

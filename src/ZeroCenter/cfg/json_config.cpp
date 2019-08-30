@@ -5,10 +5,9 @@ namespace agebull
 	config_item config_item::empty;
 	global_config json_config::global;
 	int global_config::base_tcp_port = 7999;
-	int global_config::plan_exec_timeout = 300;
-	int global_config::plan_redis_db = 0x11;
-	int global_config::plan_cache_size = 1024;
 	int global_config::pool_timeout = 1000;
+	int global_config::worker_sound_ivl = 2000;
+	char global_config::service_key[512] = "agebull";
 	bool global_config::monitor_socket = false;
 	bool global_config::api_route_mode = false;
 	bool global_config::link_trace_open = false;
@@ -16,9 +15,12 @@ namespace agebull
 	//bool global_config::use_ipc_protocol = false;
 	char global_config::redis_addr[512] = "127.0.0.1:6379";
 	int global_config::redis_defdb = 0x10;
-	int global_config::worker_sound_ivl = 2000;
-	char global_config::service_key[512] = "agebull";
 
+	int global_config::plan_exec_timeout = 300;
+	int global_config::plan_redis_db = 0x11;
+	int global_config::plan_cache_size = 1024;
+	int global_config::plan_auto_remove = 86400;
+	
 
 	int global_config::IMMEDIATE = 1;
 	int global_config::LINGER = -1;
@@ -54,6 +56,41 @@ namespace agebull
 	{
 		if (!load_file("zero_center.json", global))
 			return;
+		auto& zero = global["zero"];
+		if (zero.value_map.size() > 0)
+		{
+			global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
+			global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
+			global_config::monitor_socket = zero.boolean("monitor_socket", global_config::monitor_socket);
+			global_config::api_route_mode = zero.boolean("api_route_mode", global_config::api_route_mode);
+			global_config::pool_timeout = zero.number("pool_timeout", global_config::pool_timeout);
+
+			var key = zero.str("service_key");
+			if (key != nullptr)
+				strcpy(global_config::service_key, key);
+		}
+		auto& plan = global["plan"];
+		if (plan.value_map.size() > 0)
+		{
+			global_config::plan_auto_remove = plan.boolean("auto_remove", global_config::plan_auto_remove);
+			global_config::plan_cache_size = zero.number("cache_size", global_config::plan_cache_size);
+			global_config::plan_exec_timeout = zero.number("exec_timeout", global_config::plan_exec_timeout);
+			global_config::plan_redis_db = plan.number("redis_db", global_config::plan_redis_db);
+		}
+		auto& link_trace = global["link_trace"];
+		if (link_trace.value_map.size() > 0)
+		{
+			global_config::link_trace_open = link_trace.boolean("open", global_config::link_trace_open);
+			global_config::link_trace_storage = link_trace.boolean("storage", global_config::link_trace_storage);
+		}
+		auto& redis = global["redis"];
+		if (redis.value_map.size() > 0)
+		{
+			var addr = redis.str("addr");
+			if (addr != nullptr)
+				strcpy(global_config::redis_addr, addr);
+			global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
+		}
 		auto& zmq = global["ZMQ"];
 		if (zmq.value_map.size() > 0)
 		{
@@ -79,36 +116,6 @@ namespace agebull
 			global_config::HEARTBEAT_IVL = zmq.number("HEARTBEAT_IVL", global_config::HEARTBEAT_IVL);
 			global_config::HEARTBEAT_TIMEOUT = zmq.number("HEARTBEAT_TIMEOUT", global_config::HEARTBEAT_TIMEOUT);
 			global_config::HEARTBEAT_TTL = zmq.number("HEARTBEAT_TTL", global_config::HEARTBEAT_TTL);
-		}
-		auto& zero = global["zero"];
-		if (zero.value_map.size() > 0)
-		{
-			global_config::plan_exec_timeout = zero.number("plan_exec_timeout", global_config::plan_exec_timeout);
-			global_config::plan_cache_size = zero.number("plan_cache_size", global_config::plan_cache_size);
-			global_config::base_tcp_port = zero.number("base_tcp_port", global_config::base_tcp_port);
-			global_config::worker_sound_ivl = zero.number("worker_sound_ivl", global_config::worker_sound_ivl);
-			global_config::monitor_socket = zero.boolean("monitor_socket", global_config::monitor_socket);
-			global_config::api_route_mode = zero.boolean("api_route_mode", global_config::api_route_mode);
-			global_config::pool_timeout = zero.number("pool_timeout", global_config::pool_timeout);
-
-			var key = zero.str("service_key");
-			if (key != nullptr)
-				strcpy(global_config::service_key, key);
-		}
-		auto& link_trace = global["link_trace"];
-		if (link_trace.value_map.size() > 0)
-		{
-			global_config::link_trace_open = link_trace.boolean("open", global_config::link_trace_open);
-			global_config::link_trace_storage = link_trace.boolean("storage", global_config::link_trace_storage);
-		}
-		auto& redis = global["redis"];
-		if (redis.value_map.size() > 0)
-		{
-			var addr = redis.str("addr");
-			if (addr != nullptr)
-				strcpy(global_config::redis_addr, addr);
-			global_config::redis_defdb = redis.number("defdb", global_config::redis_defdb);
-			global_config::plan_redis_db = redis.number("plandb", global_config::plan_redis_db);
 		}
 		//use_ipc_protocol = get_global_bool("use_ipc_protocol", use_ipc_protocol);
 	}
