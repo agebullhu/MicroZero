@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2/linux-x64",
-    "signature": "487ccdbd3f0c8ce556048b462305002cae766576"
+    "signature": "6265149117e96e259800162d845e7228a7273878"
   },
   "compilationOptions": {
     "defines": [
@@ -58,7 +58,7 @@
           "lib/netcoreapp2.1/Agebull.Common.LogRecorder.dll": {}
         }
       },
-      "Agebull.EntityModel.Core/2.4.3.6": {
+      "Agebull.EntityModel.Core/2.4.3.8": {
         "dependencies": {
           "Agebull.MicroZero.Abstractions": "2.4.3.4",
           "NPOI": "2.4.1"
@@ -67,19 +67,19 @@
           "lib/netcoreapp2.1/Agebull.EntityModel.Core.dll": {}
         }
       },
-      "Agebull.EntityModel.Excel/2.4.3.6": {
+      "Agebull.EntityModel.Excel/2.4.3.8": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6",
+          "Agebull.EntityModel.Core": "2.4.3.8",
           "NPOI": "2.4.1"
         },
         "compile": {
           "lib/netcoreapp2.1/Agebull.EntityModel.Excel.dll": {}
         }
       },
-      "Agebull.EntityModel.MySql/2.4.3.6": {
+      "Agebull.EntityModel.MySql/2.4.3.8": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6",
-          "Agebull.EntityModel.Excel": "2.4.3.6",
+          "Agebull.EntityModel.Core": "2.4.3.8",
+          "Agebull.EntityModel.Excel": "2.4.3.8",
           "MySql.Data": "8.0.15",
           "System.Data.SqlClient": "4.6.0"
         },
@@ -3278,26 +3278,34 @@
           "System.Xml.XPath": "4.3.0"
         }
       },
-      "Agebull.MicroZero.ClrZMQ/1.4.3.5": {
+      "Agebull.MicroZero.ClrZMQ/1.4.3.9": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6"
+          "Agebull.EntityModel.Core": "2.4.3.8"
         },
         "compile": {
           "Agebull.MicroZero.ClrZMQ.dll": {}
         }
       },
-      "Agebull.MicroZero.Core/1.4.3.8": {
+      "Agebull.MicroZero.Core/1.4.3.9": {
         "dependencies": {
-          "Agebull.MicroZero.ClrZMQ": "1.4.3.5",
+          "Agebull.MicroZero.ClrZMQ": "1.4.3.9",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "compile": {
           "Agebull.MicroZero.Core.dll": {}
         }
       },
+      "Agebull.MicroZero.Tools.sys_addin/1.4.3.13": {
+        "dependencies": {
+          "Agebull.MicroZero.Core": "1.4.3.9"
+        },
+        "compile": {
+          "Agebull.MicroZero.Tools.sys_addin.dll": {}
+        }
+      },
       "ZeroNet.Devops.ManagerBase/1.0.0": {
         "dependencies": {
-          "Agebull.MicroZero.Core": "1.4.3.8"
+          "Agebull.MicroZero.Tools.sys_addin": "1.4.3.13"
         },
         "compile": {
           "ZeroNet.Devops.ManagerBase.dll": {}
@@ -3305,7 +3313,7 @@
       },
       "ZeroNet.Devops.Tracer/1.0.0": {
         "dependencies": {
-          "Agebull.EntityModel.MySql": "2.4.3.6",
+          "Agebull.EntityModel.MySql": "2.4.3.8",
           "ZeroNet.Devops.ManagerBase": "1.0.0"
         },
         "compile": {
@@ -3356,41 +3364,41 @@
           }
         }
       },
-      "Agebull.EntityModel.Core/2.4.3.6": {
+      "Agebull.EntityModel.Core/2.4.3.8": {
         "dependencies": {
           "Agebull.MicroZero.Abstractions": "2.4.3.4",
           "NPOI": "2.4.1"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.EntityModel.Core.dll": {
-            "assemblyVersion": "2.4.3.6",
-            "fileVersion": "2.4.3.6"
+            "assemblyVersion": "2.4.3.8",
+            "fileVersion": "2.4.3.8"
           }
         }
       },
-      "Agebull.EntityModel.Excel/2.4.3.6": {
+      "Agebull.EntityModel.Excel/2.4.3.8": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6",
+          "Agebull.EntityModel.Core": "2.4.3.8",
           "NPOI": "2.4.1"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.EntityModel.Excel.dll": {
-            "assemblyVersion": "2.4.3.6",
-            "fileVersion": "2.4.3.6"
+            "assemblyVersion": "2.4.3.8",
+            "fileVersion": "2.4.3.8"
           }
         }
       },
-      "Agebull.EntityModel.MySql/2.4.3.6": {
+      "Agebull.EntityModel.MySql/2.4.3.8": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6",
-          "Agebull.EntityModel.Excel": "2.4.3.6",
+          "Agebull.EntityModel.Core": "2.4.3.8",
+          "Agebull.EntityModel.Excel": "2.4.3.8",
           "MySql.Data": "8.0.15",
           "System.Data.SqlClient": "4.6.0"
         },
         "runtime": {
           "lib/netcoreapp2.1/Agebull.EntityModel.MySql.dll": {
-            "assemblyVersion": "2.4.3.6",
-            "fileVersion": "2.4.3.6"
+            "assemblyVersion": "2.4.3.8",
+            "fileVersion": "2.4.3.8"
           }
         }
       },
@@ -3845,26 +3853,34 @@
           }
         }
       },
-      "Agebull.MicroZero.ClrZMQ/1.4.3.5": {
+      "Agebull.MicroZero.ClrZMQ/1.4.3.9": {
         "dependencies": {
-          "Agebull.EntityModel.Core": "2.4.3.6"
+          "Agebull.EntityModel.Core": "2.4.3.8"
         },
         "runtime": {
           "Agebull.MicroZero.ClrZMQ.dll": {}
         }
       },
-      "Agebull.MicroZero.Core/1.4.3.8": {
+      "Agebull.MicroZero.Core/1.4.3.9": {
         "dependencies": {
-          "Agebull.MicroZero.ClrZMQ": "1.4.3.5",
+          "Agebull.MicroZero.ClrZMQ": "1.4.3.9",
           "System.ComponentModel.Composition": "4.5.0"
         },
         "runtime": {
           "Agebull.MicroZero.Core.dll": {}
         }
       },
+      "Agebull.MicroZero.Tools.sys_addin/1.4.3.13": {
+        "dependencies": {
+          "Agebull.MicroZero.Core": "1.4.3.9"
+        },
+        "runtime": {
+          "Agebull.MicroZero.Tools.sys_addin.dll": {}
+        }
+      },
       "ZeroNet.Devops.ManagerBase/1.0.0": {
         "dependencies": {
-          "Agebull.MicroZero.Core": "1.4.3.8"
+          "Agebull.MicroZero.Tools.sys_addin": "1.4.3.13"
         },
         "runtime": {
           "ZeroNet.Devops.ManagerBase.dll": {}
@@ -3872,7 +3888,7 @@
       },
       "ZeroNet.Devops.Tracer/1.0.0": {
         "dependencies": {
-          "Agebull.EntityModel.MySql": "2.4.3.6",
+          "Agebull.EntityModel.MySql": "2.4.3.8",
           "ZeroNet.Devops.ManagerBase": "1.0.0"
         },
         "runtime": {
@@ -3901,26 +3917,26 @@
       "path": "agebull.common.logrecorder/2.4.3",
       "hashPath": "agebull.common.logrecorder.2.4.3.nupkg.sha512"
     },
-    "Agebull.EntityModel.Core/2.4.3.6": {
+    "Agebull.EntityModel.Core/2.4.3.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Yp0Bb4jXHKUsakQ2v7Qdgwil3GJMVr6WZhYGkZeFMH4rhqFsLhp9pLDO79/+BIFblJ4BLeo5xAtRLj2+eneSpQ==",
-      "path": "agebull.entitymodel.core/2.4.3.6",
-      "hashPath": "agebull.entitymodel.core.2.4.3.6.nupkg.sha512"
+      "sha512": "sha512-M1zngWOKwaJGxv998NpxZ5gUocQp2kQFioar16cq/utUBYORE0BiEnHt16qpJTce+GR3fYZy/3Oq5nTkWcqt0g==",
+      "path": "agebull.entitymodel.core/2.4.3.8",
+      "hashPath": "agebull.entitymodel.core.2.4.3.8.nupkg.sha512"
     },
-    "Agebull.EntityModel.Excel/2.4.3.6": {
+    "Agebull.EntityModel.Excel/2.4.3.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bG0g4VRO7wpWFrVJH3MzcLST8EIamCZiCpzD1dlEKNr1qhZQXIgXmJb2f2M5dz3fC2/pfUc8EyVGhE/7nFY2HA==",
-      "path": "agebull.entitymodel.excel/2.4.3.6",
-      "hashPath": "agebull.entitymodel.excel.2.4.3.6.nupkg.sha512"
+      "sha512": "sha512-6sIkM6SfzlhYVcnMjAbXi+56FVBHW95kj/IrPDcDBfU212vjoGsb9JTYU4lX+/5pmfvzXqGZq1+DeoVee1Nw0A==",
+      "path": "agebull.entitymodel.excel/2.4.3.8",
+      "hashPath": "agebull.entitymodel.excel.2.4.3.8.nupkg.sha512"
     },
-    "Agebull.EntityModel.MySql/2.4.3.6": {
+    "Agebull.EntityModel.MySql/2.4.3.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-uSl1Ku445EegJkXzXbitUBVYMszrNKi4ligoQWwaraPlhNCYMItinGgQt/U4M9uucedDuuPFkHe6E7b7WBe8BA==",
-      "path": "agebull.entitymodel.mysql/2.4.3.6",
-      "hashPath": "agebull.entitymodel.mysql.2.4.3.6.nupkg.sha512"
+      "sha512": "sha512-v4/3sDSCswlKL6mdN3hy2j3o98pUwww+mHiT+sqdfFGi2ZNOyGnMxiZ8CTsHb0r258lW03BXWbQoRxKKveBRrw==",
+      "path": "agebull.entitymodel.mysql/2.4.3.8",
+      "hashPath": "agebull.entitymodel.mysql.2.4.3.8.nupkg.sha512"
     },
     "Agebull.MicroZero.Abstractions/2.4.3.4": {
       "type": "package",
@@ -4202,12 +4218,17 @@
       "path": "system.security.cryptography.protecteddata/4.5.0",
       "hashPath": "system.security.cryptography.protecteddata.4.5.0.nupkg.sha512"
     },
-    "Agebull.MicroZero.ClrZMQ/1.4.3.5": {
+    "Agebull.MicroZero.ClrZMQ/1.4.3.9": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "Agebull.MicroZero.Core/1.4.3.8": {
+    "Agebull.MicroZero.Core/1.4.3.9": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Agebull.MicroZero.Tools.sys_addin/1.4.3.13": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

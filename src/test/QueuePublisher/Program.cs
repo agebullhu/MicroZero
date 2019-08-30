@@ -18,25 +18,44 @@ namespace QueuePublisher
             ZeroApplication.CheckOption();
             ZeroApplication.Initialize();
             ZeroApplication.Run();
+            s = DateTime.Now;
 
-            Test();
+            for (int i = 0; i < 16; i++)
+                Task.Factory.StartNew(DoTest);
+            Console.ReadKey();
 
             ZeroApplication.Shutdown();
+        }
+        static DateTime s;
+        static int idx = 0;
+        static void DoTest()
+        {
+            while(idx < 10000000)
+            {
+                Test();
+            }
         }
 
         static void Test()
         {
-            using (IocScope.CreateScope())
+            //using (IocScope.CreateScope())
             {
                 GlobalContext.Current.Request.RequestId = RandomOperate.Generate(8);
                 try
                 {
-                    ApiClient.CallApi("WechatCallBack", "CallBack", "{}");
+                    var result = ApiClient.CallApi("PayCallback", "CallBack", "{}");
+                    if (!result.Success)
+                        Console.WriteLine(result.Status.ClientMessage);
                 }
                 catch (Exception e)
                 {
                     LogRecorderX.Exception(e);
                 }
+            }
+            if (Interlocked.Add(ref idx, 1) % 100 == 0)
+            {
+                var sc = (DateTime.Now - s).TotalMilliseconds;
+                Console.WriteLine($"{idx} : {sc}ms : { idx / sc * 1000} / s");
             }
         }
     }
