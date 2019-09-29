@@ -11,19 +11,29 @@
     "HttpTimeOut": 30000,
     /*短信超时报警的时长(毫秒)*/
     "WaringTime": 2000,
-    /*是否包含顶级目录*/
-    "IsAppFolder": false,
     /*启用管理命令*/
     "EnableInnerCommand": false,
     /*启用内容页*/
-    "EnableContext": false,
+    "EnableContext": true,
     /*内容页地址*/
     "ContextAddr": ""
   },
-  "hostPath": {
-    "zero.hpcang.com": 0,
-    "zero.yizuanbao.cn": 0,
-    "zapi": 1
+  /*路径映射（ASHX->Zero）*/
+  "urlMap": {
+    ".ashx": {
+      "action": "action",
+      "models": [
+        {
+          "station": "device",
+          "paths": [
+            {
+              "name": "/WebService/Hardware/GateBrake.ashx",
+              "value": "v1/hardware"
+            }
+          ]
+        }
+      ]
+    }
   },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {

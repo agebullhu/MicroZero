@@ -40,7 +40,7 @@ namespace WebMonitor
 
             IocHelper.AddSingleton<PlanManage>();
             IocHelper.AddScoped<ZeroTracerDb, ZeroTracerDb>();
-            ZeroApplication.RegistZeroObject<FlowTracer>();//ApiCounter
+            //ZeroApplication.RegistZeroObject<FlowTracer>();//ApiCounter
             ZeroApplication.RegistZeroObject<PlanSubscribe>();
             ZeroApplication.Initialize();
 
@@ -49,7 +49,7 @@ namespace WebMonitor
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            Task.Factory.StartNew(ZeroApplication.Run);
+            Task.Factory.StartNew(ZeroApplication.Run,TaskCreationOptions.LongRunning);
             WebSocketNotify.Binding(app);
             StationCounter.Start();
 

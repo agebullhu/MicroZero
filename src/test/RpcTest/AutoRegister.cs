@@ -1,5 +1,6 @@
 using System.ComponentModel.Composition;
 using Agebull.Common.Ioc;
+using Microsoft.Extensions.DependencyInjection;
 using RpcTest;
 
 namespace Agebull.MicroZero.Log
@@ -12,12 +13,14 @@ namespace Agebull.MicroZero.Log
     [ExportMetadata("Symbol", '%')]
     public sealed class AutoRegister : IAutoRegister
     { 
+
+
         /// <summary>
         /// 初始化
         /// </summary>
         void IAutoRegister.Initialize()
         {
-            //IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
+            IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
         }
 
         /// <summary>

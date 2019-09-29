@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroManagemant;
@@ -96,8 +97,9 @@ namespace Agebull.MicroZero.ZeroApis
 
         private static readonly byte[] LayoutErrorFrame = new byte[]
         {
-            1,
+            2,
             (byte) ZeroOperatorStateType.FrameInvalid,
+            ZeroFrameType.Requester,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.ResultEnd
         };
@@ -110,27 +112,22 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         internal virtual void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
         {
-            if (!CanLoop)
-            {
-                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
-                return;
-            }
+            //if (!CanLoop)
+            //{
+            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+            //    return;
+            //}
             if (item == null)
                 return;
-            try
+            SendResult(socket, new ZMessage
             {
-                SendResult(socket, new ZMessage
-                {
-                    new ZFrame(item.Caller),
-                    new ZFrame(LayoutErrorFrame),
-                    new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
-                });
-            }
-            catch (Exception e)
-            {
-                LogRecorderX.Exception(e);
-            }
+                new ZFrame(item.Caller),
+                new ZFrame(LayoutErrorFrame),
+                new ZFrame(item.Requester),
+                new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+            });
         }
+
         /// <summary>
         /// 发送返回值 
         /// </summary>
@@ -139,29 +136,41 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected bool SendResult(ZSocket socket, ZMessage message)
         {
-            if (!CanLoop)
-            {
-                ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
-                return false;
-            }
+            //if (!CanLoop)
+            //{
+            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+            //    LogRecorderX.MonitorTrace($"{StationName} : Can`t send result,station is closed");
+            //    return false;
+            //}
 
             try
             {
                 ZError error;
-                using (message)
+                lock (socket)
                 {
-                    if (socket.Send(message, out error))
-                        return true;
+                    using (message)
+                    {
+                        if (socket.Send(message, out error))
+                            return true;
+                    }
                 }
+
                 ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                Interlocked.Increment(ref SendError);
-                return false;
+                LogRecorderX.MonitorTrace($"{StationName}({error.Name}) : {error.Text}");
             }
             catch (Exception e)
             {
                 LogRecorderX.Exception(e, "ApiStation.SendResult");
-                return false;
+                LogRecorderX.MonitorTrace(e.Message);
             }
+#if UNMANAGE_MONEY_CHECK
+            finally
+            {
+                LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
+            }
+#endif
+            Interlocked.Increment(ref SendError);
+            return false;
         }
         #endregion
 
@@ -258,12 +267,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private void DoPoll(string realName, byte[] identity, bool checkWait)
         {
-            var executer = checkWait
-                ? null
-                : new ApiExecuter
-                {
-                    Station = this
-                };
+            //var executer = checkWait
+            //    ? null
+            //    : new ApiExecuter
+            //    {
+            //        Station = this
+            //    };
             ZeroTrace.SystemLog(StationName, "Task", "start", realName);
             using (var pool = PrepareLoop(identity, out var socket))
             {
@@ -272,101 +281,153 @@ namespace Agebull.MicroZero.ZeroApis
                 //int cnt = 0;
                 while (CanLoop)
                 {
-                    try
+                    DoPollMessage(checkWait, pool, socket);
+                }
+                pool.Sockets[0].Disconnect(Config.WorkerCallAddress);
+                Hearter.HeartLeft(StationName, realName);
+                ZeroTrace.SystemLog(StationName, "closing");
+                try
+                {
+                    while (DoPollMessage(checkWait, pool, socket))
                     {
-                        if (!pool.Poll())
-                        {
-                            //cnt += pool.TimeoutMs;
-                            OnLoopIdle();
-                            //if (CanLoop && cnt >= 2000)
-                            //{
-                            //    hearter.Heartbeat(StationName, realName);
-                            //    cnt = 0;
-                            //}
-                            continue;
-                        }
-
-                        if (!CanLoop)
-                            break;
-                        if (pool.CheckIn(1, out var message))
-                        {
-                            message.Dispose();
-                        }
-                        if (!pool.CheckIn(0, out message))
-                        {
-                            continue;
-                        }
-                        Interlocked.Increment(ref RecvCount);
-                        if (!ApiCallItem.Unpack(message, out var item))
-                        {
-                            SendLayoutErrorResult(socket, item);
-                            continue;
-                        }
-                        Interlocked.Increment(ref CallCount);
-                        if (checkWait)
-                            ExecuteAsync(socket, item);
-                        else
-                            Execute(executer, ref socket, item);
-                    }
-                    catch (Exception e)
-                    {
-                        LogRecorderX.Exception(e);
+                        Console.WriteLine("处理堆积任务");
                     }
                 }
-                Hearter.HeartLeft(StationName, realName);
+                catch (Exception e)
+                {
+                    Console.WriteLine($"处理堆积任务{e.Message}");
+                }
+                while(WaitCount > 0)
+                    Thread.Sleep(10);
             }
             ZeroTrace.SystemLog(StationName, "Task", "end", realName);
             _processSemaphore?.Release();
         }
+
+        private bool DoPollMessage(bool checkWait, IZmqPool pool, ZSocket socket)
+        {
+            try
+            {
+                if (!pool.Poll())
+                {
+                    //cnt += pool.TimeoutMs;
+                    OnLoopIdle();
+                    //if (CanLoop && cnt >= 2000)
+                    //{
+                    //    hearter.Heartbeat(StationName, realName);
+                    //    cnt = 0;
+                    //}
+                    return false;
+                }
+
+                if (pool.CheckIn(1, out var message)) //对Result端口的返回的丢弃处理
+                {
+                    message.Dispose();
+                }
+
+                if (!pool.CheckIn(0, out message))
+                {
+                    message?.Dispose();
+                    return false;
+                }
+                Interlocked.Increment(ref RecvCount);
+                if (checkWait)
+                {
+                    Task.Factory.StartNew(ExecuteAsync, new TaskArg
+                    {
+                        Socket = socket,
+                        Messages = message
+                    }, TaskCreationOptions.PreferFairness);
+                }
+                else
+                {
+                    Execute(socket, message);
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region 方法
 
         #region 调用
 
-        private async void ExecuteAsync(ZSocket socket, ApiCallItem item)
+        class TaskArg
         {
+            public ZSocket Socket;
+            public ZMessage Messages;
+        }
+
+        private void ExecuteAsync(object arg)
+        {
+            var targ = (TaskArg)arg;
+            Interlocked.Increment(ref CallCount);
+            if (!ApiCallItem.Unpack(targ.Messages, out var item))
+            {
+                SendLayoutErrorResult(targ.Socket, item);
+                return;
+            }
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
                 item.Result = ApiResultIoc.UnavailableJson;
-                OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
+                OnExecuestEnd(targ.Socket, item, ZeroOperatorStateType.Unavailable);
                 return;
             }
-            if (!PrepareExecute(item))
-                return;
-            var executer = new ApiExecuter
-            {
-                Station = this,
-                Item = item,
-                Socket = ZSocket.CreateClientSocket(Config.WorkerResultAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName))
-            };
+            ExecuteAsync(targ.Socket, item);
+        }
+
+        private void ExecuteAsync(ZSocket socket, ApiCallItem item)
+        {
+            Interlocked.Increment(ref WaitCount);
             try
             {
-                await executer.ExecuteAsync();
+                if (!PrepareExecute(item))
+                    return;
+                var executer = new ApiExecuter
+                {
+                    Station = this,
+                    Item = item,
+                    Socket = socket
+                };
+                executer.ExecuteAsync();
             }
             finally
             {
-                executer.Socket.Dispose();
                 Interlocked.Decrement(ref WaitCount);
             }
         }
 
-        private void Execute(ApiExecuter executer, ref ZSocket socket, ApiCallItem item)
+        private void Execute(ZSocket socket, ZMessage message)
         {
-            if (!PrepareExecute(item))
+            Interlocked.Increment(ref CallCount);
+            if (!ApiCallItem.Unpack(message, out var item))
+            {
+                SendLayoutErrorResult(socket, item);
                 return;
-            executer.Socket = socket;
-            executer.Item = item;
+            }
             Interlocked.Increment(ref WaitCount);
             try
             {
+                if (!PrepareExecute(item))
+                    return;
+                var executer = new ApiExecuter
+                {
+                    Station = this,
+                    Item = item,
+                    Socket = socket
+                };
                 executer.Execute();
             }
             finally
             {
                 Interlocked.Decrement(ref WaitCount);
             }
-            socket = executer.Socket;
         }
 
         /// <summary>

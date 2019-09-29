@@ -28,12 +28,12 @@ namespace ZeroMQ
 
 		public static byte[] Encode(byte[] decoded)
 		{
-			int dataLen = decoded.Length;
+			var dataLen = decoded.Length;
 			if (dataLen % 4 > 0)
 			{
 				throw new InvalidOperationException("decoded.Length must be divisible by 4");
 			}
-			int destLen = (Int32)(decoded.Length * 1.25);
+			var destLen = (Int32)(decoded.Length * 1.25);
 
 			var data = GCHandle.Alloc(decoded, GCHandleType.Pinned);
 
@@ -87,7 +87,7 @@ namespace ZeroMQ
 
 		public static string Encode(string strg, Encoding encoding)
 		{
-			byte[] encoded = EncodeBytes(strg, encoding);
+			var encoded = EncodeBytes(strg, encoding);
 			return encoding.GetString(encoded);
 		}
 
@@ -98,19 +98,19 @@ namespace ZeroMQ
 
 		public static byte[] EncodeBytes(string strg, Encoding encoding)
 		{
-			byte[] bytes = encoding.GetBytes(strg);
+			var bytes = encoding.GetBytes(strg);
 			return Encode(bytes);
 		}
 
 
 		public static byte[] Decode(byte[] encoded)
 		{
-			int dataLen = encoded.Length;
+			var dataLen = encoded.Length;
 			if (dataLen % 5 > 0)
 			{
 				throw new InvalidOperationException("encoded.Length must be divisible by 5");
 			}
-			int destLen = (Int32)(encoded.Length * .8);
+			var destLen = (Int32)(encoded.Length * .8);
 
 			var data = GCHandle.Alloc(encoded, GCHandleType.Pinned);
 
@@ -163,13 +163,13 @@ namespace ZeroMQ
 
 		public static string Decode(string strg, Encoding encoding)
 		{
-			byte[] encoded = DecodeBytes(strg, encoding);
+			var encoded = DecodeBytes(strg, encoding);
 			return encoding.GetString(encoded);
 		}
 		
 		public static byte[] DecodeBytes(string strg, Encoding encoding)
 		{
-			byte[] bytes = encoding.GetBytes(strg);
+			var bytes = encoding.GetBytes(strg);
 			return Decode(bytes);
 		}
 	}

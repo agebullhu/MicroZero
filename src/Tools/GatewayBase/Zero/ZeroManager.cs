@@ -62,6 +62,7 @@ namespace MicroZero.Http.Gateway
                     _result = ApiResultIoc.Ioc.NotSupport;
                     return;
                 case ZeroOperatorStateType.Ok:
+                    //BUG
                     _result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
                     return;
                 default:

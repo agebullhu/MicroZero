@@ -61,7 +61,7 @@
 			// STREAM: get 2 frames, identity and body
 			ZMessage incoming = null;
             // IPAddress address = null;
-            if (!ReceiveMsg(sock, ref incoming, out string address, out error))
+            if (!ReceiveMsg(sock, ref incoming, out var address, out error))
             {
                 return false;
             }
@@ -100,7 +100,7 @@
 
             // read the ip4 address from (ZFrame)frame.GetOption("Peer-Address")
 
-            int receiveCount = 2;
+            var receiveCount = 2;
 			do
 			{
 				var frame = ZFrame.CreateEmpty();
@@ -161,7 +161,7 @@
 			{
 				// STREAM: write frames: identity, body, identity, empty
 				// Read identity
-				int ic = (int)incoming[0].Length;
+				var ic = (int)incoming[0].Length;
 				var identityBytes = new byte[ic];
 				incoming[0].Read(identityBytes, 0, ic); 
 
@@ -188,7 +188,7 @@
 		{
 			error = ZError.None;
 
-			foreach (ZFrame frame in msg)
+			foreach (var frame in msg)
 			{
 				while (-1 == zmq.msg_send(frame.Ptr, sock.SocketPtr, (int)(/* ZSocketFlags.DontWait | */ ZSocketFlags.More)))
 				{

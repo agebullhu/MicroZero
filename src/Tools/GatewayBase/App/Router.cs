@@ -5,6 +5,7 @@ using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace MicroZero.Http.Gateway
@@ -67,6 +68,51 @@ namespace MicroZero.Http.Gateway
             }
             SecurityChecker = new SecurityChecker { Data = Data };
             return SecurityChecker.PreCheck();
+        }
+
+        /// <summary>
+        /// 检查并重新映射（如果可以的话）
+        /// </summary>
+        /// <param name="map"></param>
+        void IRouter.CheckMap(AshxMapConfig map)
+        {
+            CheckMap(map);
+        }
+
+        /// <summary>
+        /// 检查并重新映射（如果可以的话）
+        /// </summary>
+        /// <param name="map"></param>
+        protected virtual void CheckMap(AshxMapConfig map)
+        {
+            if (map == null)
+                return;
+            var aPath= Request.GetUri().AbsolutePath;
+            foreach (var model in map.Models)
+            {
+                foreach (var path in model.Paths)
+                {
+                    if (path.Name.IndexOf(aPath, StringComparison.OrdinalIgnoreCase) != 0)
+                        continue;
+                    StringBuilder name = new StringBuilder();
+                    name.Append(path.Value);
+                    name.Append('/');
+                    if (aPath.Length > path.Name.Length)
+                    {
+                        var paths = aPath.Substring(aPath.Length).Split('/', '\\');
+                        int idx = 0;
+                        for (; idx < paths.Length - 1; idx++)
+                        {
+                            name.Append(paths[idx]);
+                            name.Append('/');
+                        }
+                        name.Append(paths[idx].Split('.')[1]);
+                        name.Append('/');
+                    }
+                    Data.ApiName = $"{name}{Data.Arguments[map.ActionName]}";
+                    Data.ApiHost = model.Station;
+                }
+            }
         }
 
         /// <summary>
@@ -176,6 +222,14 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         void IRouter.WriteResult()
         {
+            WriteResult();
+        }
+
+        /// <summary>
+        ///     写入返回
+        /// </summary>
+        protected virtual void WriteResult()
+        {
             //if (Data.Redirect)
             //    return;
             //// 缓存
@@ -193,7 +247,6 @@ namespace MicroZero.Http.Gateway
             Response.Headers.Add("Content-Disposition", $"attachment;filename={file.FileName}");
             Response.Body.Write(Data.ResultBinary);
         }
-
         /// <summary>
         ///     结束
         /// </summary>

@@ -38,6 +38,26 @@ namespace ZeroMQ
         }
 
         /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="events"></param>
+        public DispoIntPtr RePrepare(ZPollEvent events)
+        {
+            var old = Ptr;
+            Size = Sockets.Length;
+            Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_windows_t) * Sockets.Length);
+            var natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
+            for (var i = 0; i < Size; ++i)
+            {
+                var native = natives + i;
+                native->SocketPtr = Sockets[i].SocketPtr;
+                native->Events = (short)(events);
+                native->ReadyEvents = (short)ZPollEvent.None;
+            }
+            return old;
+        }
+
+        /// <summary>
         /// 一次Pool
         /// </summary>
         /// <returns></returns>

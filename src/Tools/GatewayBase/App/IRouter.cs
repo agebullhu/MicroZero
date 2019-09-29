@@ -36,5 +36,10 @@ namespace MicroZero.Http.Gateway
         /// <param name="context"></param>
         void OnError(Exception e, HttpContext context);
 
+        /// <summary>
+        /// 检查并重新映射（如果可以的话）
+        /// </summary>
+        /// <param name="map"></param>
+        void CheckMap(AshxMapConfig map);
     }
 }

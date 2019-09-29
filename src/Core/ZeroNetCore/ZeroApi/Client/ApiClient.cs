@@ -24,7 +24,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     返回的数据
         /// </summary>
-        private readonly ApiClientCore _core = new ApiClientCore();
+        private readonly ProxyCaller _core = new ProxyCaller();
 
         /// <summary>
         ///     返回值
@@ -123,6 +123,16 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
 
         #region async
+
+        /// <summary>
+        ///     远程调用
+        /// </summary>
+        /// <returns></returns>
+        public async Task CallCommandAsync()
+        {
+           await Task.Factory.StartNew(CallCommand);
+        }
+
 
         /// <summary>
         ///     远程调用

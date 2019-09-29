@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ZeroMQ;
 
 namespace Agebull.MicroZero
@@ -56,20 +57,20 @@ namespace Agebull.MicroZero
             {
                 pool.Resume();
             }
-
-            lock (Pools)
-            {
-                ZeroApplication.Config.Foreach(config =>
-                {
-                    if (!Pools.ContainsKey(config.StationName))
-                    {
-                        Pools.Add(config.StationName, new StationSocketPool
-                        {
-                            Config = config
-                        });
-                    }
-                });
-            }
+            //Console.WriteLine("lock (Pools)");
+            //lock (Pools)
+            //{
+            //    ZeroApplication.Config.Foreach(config =>
+            //    {
+            //        if (!Pools.ContainsKey(config.StationName))
+            //        {
+            //            Pools.Add(config.StationName, new StationSocketPool
+            //            {
+            //                Config = config
+            //            });
+            //        }
+            //    });
+            //}
             CanDo = true;
             ZeroApplication.OnObjectActive(this);
             return true;
@@ -107,6 +108,7 @@ namespace Agebull.MicroZero
         void IZeroObject.OnStationStateChanged(StationConfig config)
         {
             StationSocketPool pool;
+            //Console.WriteLine("lock (Pools)");
             lock (Pools)
             {
                 if (!Pools.TryGetValue(config.StationName, out pool))
@@ -171,6 +173,7 @@ namespace Agebull.MicroZero
             {
                 return pool.GetSocket();
             }
+            //Console.WriteLine("lock (Pools)");
             lock (Pools)
             {
                 if (!ZeroApplication.Config.TryGetConfig(station, out var config))

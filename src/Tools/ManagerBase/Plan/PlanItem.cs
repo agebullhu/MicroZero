@@ -73,7 +73,8 @@ namespace MicroZero.Http.Route
                 case ZeroFrameType.SubTitle:
                     item.SubTitle = GetString(bytes);
                     return true;
-                case ZeroFrameType.Context:
+                case ZeroFrameType.Plan:
+                    //BUG
                     var json = GetString(bytes);
                     item.Plan = JsonConvert.DeserializeObject<ZeroPlan>(json);
                     return true;

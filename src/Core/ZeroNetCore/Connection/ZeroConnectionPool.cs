@@ -127,7 +127,7 @@ namespace Agebull.MicroZero
             if (socket.HaseFailed)
                 Pool.CloseSocket(ref socket._socket);
             else
-                Pool.FreeSocket(socket.Socket);
+                Pool.FreeSocket(socket);
         }
 
         /// <summary>

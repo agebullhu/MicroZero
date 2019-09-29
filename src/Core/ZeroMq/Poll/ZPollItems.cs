@@ -54,8 +54,8 @@ namespace ZeroMQ
 
 		internal static bool PollSingleResult(ZSocket socket, ZPollItem item, ZPollEvent pollEvents, ref ZMessage message)
 		{
-			bool shouldReceive = item.ReceiveMessage != null && ((pollEvents & ZPollEvent.In) == ZPollEvent.In);
-			bool shouldSend = item.SendMessage != null && ((pollEvents & ZPollEvent.Out) == ZPollEvent.Out);
+			var shouldReceive = item.ReceiveMessage != null && ((pollEvents & ZPollEvent.In) == ZPollEvent.In);
+			var shouldSend = item.SendMessage != null && ((pollEvents & ZPollEvent.Out) == ZPollEvent.Out);
 
 			if (pollEvents == ZPollEvent.In)
 			{
@@ -115,7 +115,7 @@ namespace ZeroMQ
                 {
                     // throw?
                 }
-                else if (item.ReceiveMessage(socket, out message, out ZError recvWorkerE))
+                else if (item.ReceiveMessage(socket, out message, out var recvWorkerE))
                 {
                     // what to do?
 
@@ -134,7 +134,7 @@ namespace ZeroMQ
                 {
                     // throw?
                 }
-                else if (item.SendMessage(socket, message, out ZError sendWorkerE))
+                else if (item.SendMessage(socket, message, out var sendWorkerE))
                 {
                     // what to do?
 
@@ -176,11 +176,11 @@ namespace ZeroMQ
 
 		internal static bool PollManyResult(IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, ZPollEvent pollEvents, ref ZMessage[] messages)
 		{
-			int count = items.Count();
-			int readyCount = 0;
+			var count = items.Count();
+			var readyCount = 0;
 
-			bool send = messages != null && ((pollEvents & ZPollEvent.Out) == ZPollEvent.Out);
-			bool receive = ((pollEvents & ZPollEvent.In) == ZPollEvent.In);
+			var send = messages != null && ((pollEvents & ZPollEvent.Out) == ZPollEvent.Out);
+			var receive = ((pollEvents & ZPollEvent.In) == ZPollEvent.In);
 
 			ZMessage[] incoming = null;
 			if (receive)
@@ -188,11 +188,11 @@ namespace ZeroMQ
 				incoming = new ZMessage[count];
 			}
 
-			for (int i = 0; i < count; ++i)
+			for (var i = 0; i < count; ++i)
 			{
-				ZSocket socket = sockets.ElementAt(i);
-				ZPollItem item = items.ElementAt(i);
-				ZMessage message = send ? messages[i] : null;
+				var socket = sockets.ElementAt(i);
+				var item = items.ElementAt(i);
+				var message = send ? messages[i] : null;
 
 				if (PollSingleResult(socket, item, pollEvents, ref message))
 				{

@@ -16,7 +16,7 @@ namespace ZeroMQ.Monitoring
 		/// </summary>
 		public static bool Monitor(this ZSocket socket, string endpoint)
 		{
-            if (!Monitor(socket, endpoint, ZMonitorEvents.AllEvents, out ZError error))
+            if (!Monitor(socket, endpoint, ZMonitorEvents.AllEvents, out var error))
             {
                 throw new ZException(error);
             }
@@ -38,7 +38,7 @@ namespace ZeroMQ.Monitoring
 		/// </summary>
 		public static bool Monitor(this ZSocket socket, string endpoint, ZMonitorEvents eventsToMonitor)
 		{
-            if (!Monitor(socket, endpoint, eventsToMonitor, out ZError error))
+            if (!Monitor(socket, endpoint, eventsToMonitor, out var error))
             {
                 throw new ZException(error);
             }

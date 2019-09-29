@@ -77,7 +77,7 @@ namespace ZeroMQ
         {
             if (_frames != null)
             {
-                foreach (ZFrame frame in _frames)
+                foreach (var frame in _frames)
                 {
                     frame.Close();
                 }
@@ -92,7 +92,7 @@ namespace ZeroMQ
 
         public ZFrame ReplaceAt(int index, ZFrame replacement, bool dispose)
         {
-            ZFrame old = _frames[index];
+            var old = _frames[index];
             _frames[index] = replacement;
             if (dispose)
             {
@@ -132,18 +132,17 @@ namespace ZeroMQ
         /// Removes ZFrames.
         /// </summary>
         /// <returns>The <see cref="ZeroMQ.ZFrame"/>.</returns>
+        /// <param name="index"></param>
         /// <param name="dispose">If set to <c>false</c>, do not dispose the ZFrame.</param>
         public ZFrame RemoveAt(int index, bool dispose)
         {
-            ZFrame frame = _frames[index];
+            var frame = _frames[index];
             _frames.RemoveAt(index);
 
-            if (dispose)
-            {
-                frame.Dispose();
-                return null;
-            }
-            return frame;
+            if (!dispose)
+                return frame;
+            frame.Dispose();
+            return null;
         }
 
         public ZFrame Pop()
@@ -262,7 +261,7 @@ namespace ZeroMQ
 
         public ZFrame Unwrap()
         {
-            ZFrame frame = RemoveAt(0, false);
+            var frame = RemoveAt(0, false);
 
             if (Count > 0 && this[0].Length == 0)
             {
@@ -304,7 +303,7 @@ namespace ZeroMQ
 
         public void Clear()
         {
-            foreach (ZFrame frame in _frames)
+            foreach (var frame in _frames)
             {
                 frame.Dispose();
             }
@@ -319,7 +318,7 @@ namespace ZeroMQ
         void ICollection<ZFrame>.CopyTo(ZFrame[] array, int arrayIndex)
         {
             int i = 0, count = Count;
-            foreach (ZFrame frame in this)
+            foreach (var frame in this)
             {
                 array[arrayIndex + i] = ZFrame.CopyFrom(frame);
 
@@ -385,6 +384,7 @@ namespace ZeroMQ
         {
             return Duplicate();
         }
+
         /// <summary>
         /// 重用
         /// </summary>
@@ -392,16 +392,31 @@ namespace ZeroMQ
         public ZMessage Duplicate()
         {
             var message = new ZMessage();
-            foreach (ZFrame frame in this)
+            foreach (var frame in this)
             {
                 message.Add(frame.Duplicate());
             }
             return message;
         }
 
+        /// <summary>
+        /// 重用
+        /// </summary>
+        /// <returns></returns>
+        public ZMessage Duplicate(int start)
+        {
+            var message = new ZMessage();
+            for (var index = start; index < this.Count; index++)
+            {
+                var frame = this[index];
+                message.Add(frame.Duplicate());
+            }
+
+            return message;
+        }
         public override string ToString()
         {
-            StringBuilder co = new StringBuilder();
+            var co = new StringBuilder();
             co.AppendLine($"Frames:{Count}");
             foreach (var f in _frames)
             {

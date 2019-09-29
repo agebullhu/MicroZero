@@ -81,6 +81,7 @@
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
     <Content Remove="cache.json" />
+    <Content Remove="config\route_config.json" />
     <Content Remove="machine.json" />
   </ItemGroup>
 
@@ -92,6 +93,7 @@
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="config\route_config.json" />
   </ItemGroup>
 
   <ItemGroup>

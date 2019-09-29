@@ -14,9 +14,26 @@
     /*启用管理命令*/
     "EnableInnerCommand": false,
     /*启用内容页*/
-    "EnableContext": false,
+    "EnableContext": true,
     /*内容页地址*/
     "ContextAddr": ""
+  },
+  /*路径映射（ASHX->Zero）*/
+  "urlMap": {
+    "ashx": {
+      "action": "action",
+      "models": [
+        {
+          "station": "device",
+          "paths": [
+            {
+              "name": "WebService/Hardware/GateBrake.ashx",
+              "value": "v1/hardware"
+            }
+          ]
+        }
+      ]
+    }
   },
   /*HTTP路由信息，缺省地址为找不到时使用的地址*/
   "route": {

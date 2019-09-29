@@ -16,18 +16,18 @@
 				out ZError error, TimeSpan? timeout = null)
 			{
 				error = default(ZError);
-				bool result = false;
-				int count = items.Count();
-				int timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
+				var result = false;
+				var count = items.Count();
+				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
 
-				zmq_pollitem_posix_t* natives = stackalloc zmq_pollitem_posix_t[count];
+				var natives = stackalloc zmq_pollitem_posix_t[count];
 				// fixed (zmq_pollitem_posix_t* natives = managedArray) {
 
-				for (int i = 0; i < count; ++i)
+				for (var i = 0; i < count; ++i)
 				{
-					ZSocket socket = sockets.ElementAt(i);
-					ZPollItem item = items.ElementAt(i);
-					zmq_pollitem_posix_t* native = natives + i;
+					var socket = sockets.ElementAt(i);
+					var item = items.ElementAt(i);
+					var native = natives + i;
 
 					native->SocketPtr = socket.SocketPtr;
 					native->Events = (short)(item.Events & pollEvents);
@@ -46,10 +46,10 @@
 					break;
 				}
 
-				for (int i = 0; i < count; ++i)
+				for (var i = 0; i < count; ++i)
 				{
-					ZPollItem item = items.ElementAt(i);
-					zmq_pollitem_posix_t* native = natives + i;
+					var item = items.ElementAt(i);
+					var native = natives + i;
 
 					item.ReadyEvents = (ZPollEvent)native->ReadyEvents;
 				}
@@ -64,10 +64,10 @@
 				out ZError error, TimeSpan? timeout = null)
 			{
 				error = default(ZError);
-				bool result = false;
-				int timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
+				var result = false;
+				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
 
-				zmq_pollitem_posix_t* native = stackalloc zmq_pollitem_posix_t[1];
+				var native = stackalloc zmq_pollitem_posix_t[1];
 				// fixed (zmq_pollitem_posix_t* native = managedArray) {
 
 				native->SocketPtr = socket.SocketPtr;

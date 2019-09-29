@@ -64,7 +64,7 @@ namespace Agebull.MicroZero
         }
 
         #endregion
-        
+
         #region State
         //#if UseStateMachine
         /// <summary>
@@ -136,8 +136,9 @@ namespace Agebull.MicroZero
         public static bool IsClosed => ApplicationState >= StationState.Closed;
 
         #endregion
-        
+
         #region Flow
+
 
         #region Option
 
@@ -170,18 +171,20 @@ namespace Agebull.MicroZero
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
+            //日志
             ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
             LogRecorderX.LogPath = Config.LogFolder;
             LogRecorderX.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
             LogRecorderX.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
             LogRecorderX.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
             LogRecorderX.Initialize();
-
-            IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
-
+            
+            //插件
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();
 
+            //注册默认广播
+            IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
         }
 
 
@@ -210,7 +213,10 @@ namespace Agebull.MicroZero
         public static void Initialize()
         {
             if (WorkModel == ZeroWorkModel.Service)
-                RegistZeroObject(ZeroConnectionPool.CreatePool());
+            {
+                RegistZeroObject<ApiProxy>();
+                //RegistZeroObject(ZeroConnectionPool.CreatePool());
+            }
             AddInImporter.Instance.AutoRegist();
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
@@ -244,7 +250,7 @@ namespace Agebull.MicroZero
             };
             WaitToken = new SemaphoreSlim(0, 1);
             Start();
-            Task.Factory.StartNew(WaitTask).Wait();
+            Task.Factory.StartNew(WaitTask, TaskCreationOptions.LongRunning).Wait();
         }
 
         /// <summary>
@@ -321,13 +327,13 @@ namespace Agebull.MicroZero
             if (WorkModel == ZeroWorkModel.Service)
             {
                 SystemManager.Instance.UploadDocument();
-                Task.Factory.StartNew(OnZeroStart);
+                Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
             }
-            else if (WorkModel == ZeroWorkModel.Client)
-            {
-                ZeroConnectionPool.Pool = new SocketPool();
-                ZeroConnectionPool.Pool.OnZeroStart();
-            }
+            //else if (WorkModel == ZeroWorkModel.Client)
+            //{
+            //    ZeroConnectionPool.Pool = new SocketPool();
+            //    ZeroConnectionPool.Pool.OnZeroStart();
+            //}
             return true;
         }
 
@@ -404,6 +410,7 @@ namespace Agebull.MicroZero
             if (Config.CanRaiseEvent == true)
                 Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, null, null, null));
         }
+
         /// <summary>
         /// 发出事件
         /// </summary>

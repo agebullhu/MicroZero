@@ -74,7 +74,7 @@
 		{
 			Context = context;
 
-            if (!Initialize(frontendType, backendType, out ZError error))
+            if (!Initialize(frontendType, backendType, out var error))
             {
                 throw new ZException(error);
             }

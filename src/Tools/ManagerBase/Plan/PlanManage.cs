@@ -7,7 +7,6 @@ using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using WebMonitor;
 using Agebull.MicroZero.ZeroApis;
-using Agebull.Common.Context;
 
 namespace MicroZero.Http.Route
 {
@@ -24,10 +23,7 @@ namespace MicroZero.Http.Route
         /// <returns></returns>
         protected sealed override string GetAddress()
         {
-            var config = ZeroApplication.Config["PlanDispatcher"];
-            if (config == null)
-                return null;
-            return config.RequestAddress;
+            return ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
         }
 
 
@@ -321,8 +317,8 @@ namespace MicroZero.Http.Route
                 plan.plan_repet = 1;
             }
 
-            var socket = ZeroConnectionPool.GetSocket(clientPlan.station, null);
-            if (socket?.Socket == null)
+            var socket = ApiProxy.GetSocket(clientPlan.station, null);
+            if (socket == null)
                 return ApiResult.Error(ErrorCode.LocalError, "无法联系ZeroCenter");
 
             using (socket)
@@ -332,7 +328,7 @@ namespace MicroZero.Http.Route
                 {
                     case ZeroStationType.Api:
                     case ZeroStationType.Vote:
-                        success = socket.Socket.SendTo(_planApiDescription,
+                        success = socket.SendTo(_planApiDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
@@ -341,7 +337,7 @@ namespace MicroZero.Http.Route
                         break;
                     //Manage
                     case ZeroStationType.Notify:
-                        success = socket.Socket.SendTo(_planPubDescription,
+                        success = socket.SendTo(_planPubDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
@@ -358,7 +354,7 @@ namespace MicroZero.Http.Route
                         if (config.IsSystem)
                             return ApiResult.Error(ErrorCode.LogicalError, "不允许对内置站点设置计划");
 
-                        success = socket.Socket.SendTo(commandDescription,
+                        success = socket.SendTo(commandDescription,
                             plan.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
@@ -367,14 +363,14 @@ namespace MicroZero.Http.Route
                 }
                 if (!success)
                 {
-                    ZeroTrace.SystemLog("NewPlan", "Send", socket.Socket.GetLastError());
+                    ZeroTrace.SystemLog("NewPlan", "Send", socket.GetLastError());
 
-                    return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.GetLastError().Text);
                 }
-                if (!socket.Socket.Recv(out var message))
+                if (!socket.Recv(out var message))
                 {
-                    ZeroTrace.SystemLog("NewPlan", "Recv", socket.Socket.LastError);
-                    return ApiResult.Error(ErrorCode.NetworkError, socket.Socket.GetLastError().Text);
+                    ZeroTrace.SystemLog("NewPlan", "Recv", socket.LastError);
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.GetLastError().Text);
                 }
 
                 PlanItem.UnpackResult(message, out var item);

@@ -18,7 +18,172 @@ namespace RpcTest
             return true;
         }
 
-        private List<KeyValuePair<string, string>> users = new Dictionary<string, string>
+
+
+
+        string _token = "#CSLQXNM8WUYA";
+        protected override void DoAsync()
+        {
+            //LoadTest();
+            SettTest();
+        }
+
+
+        #region EShopTest
+
+
+        void GetToken()
+        {
+            Call("Authority/v1/login/hpc", $"{{\"MobilePhone\":\"{Users[1].Key}\",\"UserPassword\":\"{Users[1].Value}\"}}", null, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+                {
+                    //users.RemoveAt(idx);
+                    Interlocked.Increment(ref BugError);
+                    //Console.WriteLine($"¡¾login/hpc¡¿ {p}");
+                    return;
+                }
+                var r2 = (JObject)JsonConvert.DeserializeObject(result.Value<string>("Message"));
+                _token = r2.Value<string>("token");
+            });
+        }
+
+        private const string arg =
+            "{\"CurrentItem\":-1,\"OrderCode\":\"\",\"OrderType\":2,\"LogistcicsType\":1,\"Items\":[{\"ItemType\":1,\"PlatformId\":\"898663154082637\",\"BaseSkuSid\":\"898662818538286\",\"BarCode\":\"3760283409019\",\"SkuName\":\"Ä¢¹½Æøµæ·ÛÄýËªZD9001\",\"Number\":1,\"CostPrice\":38.9900,\"SalePrice\":69.0,\"ConfigJson\":\"\",\"Amount\":69.0,\"RealState\":1,\"Pay\":69.0,\"Extend\":\"\"},{\"ItemType\":1,\"PlatformId\":\"898663154082623\",\"BaseSkuSid\":\"898662818538272\",\"BarCode\":\"3760283407046\",\"SkuName\":\"³ÖÈó²»Õ´±­¿ÚºìZD7004\",\"Number\":1,\"CostPrice\":19.2100,\"SalePrice\":34.0,\"ConfigJson\":\"\",\"Amount\":34.0,\"RealState\":1,\"Pay\":34.0,\"Extend\":\"\"},{\"ItemType\":1,\"PlatformId\":\"898663154082628\",\"BaseSkuSid\":\"898662818538277\",\"BarCode\":\"3760283408036\",\"SkuName\":\"¾ªÕÀ´óÑÛË«Í·½ÞÃ«¸àZD8003\",\"Number\":1,\"CostPrice\":21.4700,\"SalePrice\":38.0,\"ConfigJson\":\"\",\"Amount\":38.0,\"RealState\":1,\"Pay\":38.0,\"Extend\":\"\"}],\"UserId\":\"6577516094666313728\",\"OrderDate\":\"2019-09-11T20:05:36.6340837+08:00\",\"Coupons\":[],\"OrgOID\":\"6402336636121645056\",\"Remark\":\"\",\"RealState\":1}";
+        void SettTest()
+        {
+            if (string.IsNullOrEmpty(_token))
+                GetToken();
+
+            Call("SettlementCenter/v1/order/check", arg, _token, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("success", out var val) || !val.Value<bool>())
+                {
+                    Interlocked.Increment(ref BugError);
+                }
+            });
+        }
+        void LoadTest()
+        {
+            if (string.IsNullOrEmpty(_token))
+                GetToken();
+            Call("eShop/v1/active/all",null, _token, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("success", out var val) || !val.Value<bool>())
+                {
+                    Interlocked.Increment(ref BugError);
+                }
+            });
+        }
+        #endregion
+        #region LoginTest
+
+        void LoginTest()
+        {
+            //Call("Authority/v1/refresh/did", "{\"appId\":\"10V6WMADM\"}", token, p =>
+            //{
+            //    var apiResult = (JObject)JsonConvert.DeserializeObject(p);
+            //    if (!apiResult.Value<bool>("success"))
+            //    {
+            //        Interlocked.Increment(ref BlError);
+            //        Console.WriteLine(p);
+            //        return;
+            //    }
+            //    var result = JsonConvert.DeserializeObject<ApiValueResult>(p);
+            //    token = result.ResultData;
+            //});
+            var random = new Random();
+            var idx = random.Next(0, Users.Count);
+
+            Call("Authority/v1/login/hpc", $"{{\"MobilePhone\":\"{Users[idx].Key}\",\"UserPassword\":\"{Users[idx].Value}\"}}", null, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+                {
+                    //users.RemoveAt(idx);
+                    Interlocked.Increment(ref BugError);
+                    Console.WriteLine($"¡¾login/hpc¡¿ {p}");
+                    return;
+                }
+                var r2 = (JObject)JsonConvert.DeserializeObject(result.Value<string>("Message"));
+                _token = r2.Value<string>("token");
+            });
+
+            if (string.IsNullOrEmpty(_token))
+                return;
+            Call("Authority/v1/scene/org/site", "{\"Value\":6402331437441220608}", _token, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+                {
+                    Interlocked.Increment(ref BugError);
+                    Console.WriteLine($"¡¾org/site¡¿ {p}");
+                }
+            });
+            string orgId = null;
+            Call("Authority/v2/org/list", null, _token, p =>
+            {
+                var apiResult = JsonConvert.DeserializeObject<ApiArrayResult<Org>>(p);
+                if (!apiResult.Success)
+                {
+                    Interlocked.Increment(ref BugError);
+                     Console.WriteLine($"¡¾org/list¡¿ {p}");
+                }
+                else orgId = apiResult.ResultData?.FirstOrDefault()?.OrgOID;
+            });
+            if (orgId != null)
+            {
+                Call("Authority/v1/scene/org/org", $"{{\"Value\":{orgId}}}", _token, p =>
+                {
+                    var result = (JObject)JsonConvert.DeserializeObject(p);
+                    if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+                    {
+                        Interlocked.Increment(ref BugError);
+                         Console.WriteLine($"¡¾org/org¡¿ {p}");
+                    }
+                });
+            }
+            Call("Authority/v2/token/info", null, _token, p =>
+            {
+                var result = (JObject)JsonConvert.DeserializeObject(p);
+                if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+                {
+                    Interlocked.Increment(ref BugError);
+                     Console.WriteLine($"¡¾token/info¡¿ {p}");
+                }
+            });
+        }
+        #endregion
+        #region Function
+
+        protected bool Call(string api, string arg, string token = null, Action<string> action = null)
+        {
+            HttpApiCaller caller = new HttpApiCaller(Host)
+            {
+                Bearer = token == null ? null : $"Bearer {token}"
+            };
+            caller.CreateRequest(api, "POST", arg ?? "{}");
+            var result = caller.GetResult().Result;
+            if (caller.Status != WebExceptionStatus.Success)
+            {
+                Interlocked.Increment(ref NetError);
+                return false;
+            }
+            action?.Invoke(result);
+            return true;
+        }
+
+        #endregion
+        #region Data
+
+        public class Org
+        {
+            public string OrgOID { get; set; }
+        }
+        private static readonly List<KeyValuePair<string, string>> Users = new Dictionary<string, string>
         {
             {"18821201689","123456"},
             {"13661603114","123456"},
@@ -90,102 +255,87 @@ namespace RpcTest
             {"13440101353","123456"},
             {"17633909335","123456"},
             {"18721717927","123456"}
-
         }.ToList();
 
-        public class Org
-        {
-            public string OrgOID { get; set; }
-            public string OrgName { get; set; }
-        }
+        #endregion
+    }
+}
+
+/*
+
         protected override void DoAsync()
         {
             string token = null;
-            Call("Authority/v1/refresh/did", "{\"appId\":\"10V6WMADM\"}", token, p =>
-            {
-                var apiResult = (JObject)JsonConvert.DeserializeObject(p);
-                if (!apiResult.Value<bool>("success"))
-                {
-                    Interlocked.Increment(ref BlError);
-                    Console.WriteLine(p);
-                    return;
-                }
-                var result = JsonConvert.DeserializeObject<ApiValueResult>(p);
-                token = result.ResultData;
-            });
+            //Call("Authority/v1/refresh/did", "{\"appId\":\"10V6WMADM\"}", token, p =>
+            //{
+            //    var apiResult = (JObject)JsonConvert.DeserializeObject(p);
+            //    if (!apiResult.Value<bool>("success"))
+            //    {
+            //        Interlocked.Increment(ref BlError);
+            //        Console.WriteLine(p);
+            //        return;
+            //    }
+            //    var result = JsonConvert.DeserializeObject<ApiValueResult>(p);
+            //    token = result.ResultData;
+            //});
             var random = new Random();
             var idx = random.Next(0, users.Count);
 
-            Call("Authority/v1/login/hpc", $"{{\"MobilePhone\":\"{users[idx].Key}\",\"UserPassword\":\"{users[idx].Value}\"}}", token, p =>
+            Call("Authority/v1/login/hpc", $"{{\"MobilePhone\":\"{users[idx].Key}\",\"UserPassword\":\"{users[idx].Value}\"}}", null, p =>
             {
                 var result = (JObject)JsonConvert.DeserializeObject(p);
-                if (result.Value<string>("State") != "success")
+                if (!result.TryGetValue("State",out var val) || val.Value<string>() != "success")
                 {
+                    //users.RemoveAt(idx);
                     Interlocked.Increment(ref BlError);
-                    Console.WriteLine(p);
+                    //Console.WriteLine($"¡¾login/hpc¡¿ {p}");
                     return;
                 }
                 var r2 = (JObject)JsonConvert.DeserializeObject(result.Value <string >("Message"));
                 token = r2.Value<string>("token");
             });
-            Call("Authority/v1/scene/org/site", "{\"Value\":6402331437441220608}", token, p =>
-            {
-                var result = (JObject)JsonConvert.DeserializeObject(p);
-                if (result.Value<string>("State") != "success")
-                {
-                    Interlocked.Increment(ref BlError);
-                    Console.WriteLine(p);
-                }
-            });
-            string orgId=null;
-            Call("Authority/v2/org/list", null, token, p =>
-            {
-                var apiResult = JsonConvert.DeserializeObject<ApiArrayResult< Org>>(p);
-                if (!apiResult.Success)
-                {
-                    Interlocked.Increment(ref BlError);
-                    Console.WriteLine(p);
-                }
-                else orgId = apiResult.ResultData?.FirstOrDefault()?.OrgOID;
-            });
-            if (orgId != null)
-            {
-                Call("Authority/v1/scene/org/org", $"{{\"Value\":{orgId}}}", token, p =>
-                {
-                    var result = (JObject)JsonConvert.DeserializeObject(p);
-                    if (result.Value<string>("State") != "success")
-                    {
-                        Interlocked.Increment(ref BlError);
-                        Console.WriteLine(p);
-                    }
-                });
-            }
+            if (string.IsNullOrEmpty(token))
+                return;
+            //Call("Authority/v1/scene/org/site", "{\"Value\":6402331437441220608}", token, p =>
+            //{
+            //    var result = (JObject)JsonConvert.DeserializeObject(p);
+            //    if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+            //    {
+            //        Interlocked.Increment(ref BlError);
+            //        // Console.WriteLine($"¡¾org/site¡¿ {p}");
+            //    }
+            //});
+            //string orgId = null;
+            //Call("Authority/v2/org/list", null, token, p =>
+            //{
+            //    var apiResult = JsonConvert.DeserializeObject<ApiArrayResult<Org>>(p);
+            //    if (!apiResult.Success)
+            //    {
+            //        Interlocked.Increment(ref BlError);
+            //        // Console.WriteLine($"¡¾org/list¡¿ {p}");
+            //    }
+            //    else orgId = apiResult.ResultData?.FirstOrDefault()?.OrgOID;
+            //});
+            //if (orgId != null)
+            //{
+            //    Call("Authority/v1/scene/org/org", $"{{\"Value\":{orgId}}}", token, p =>
+            //    {
+            //        var result = (JObject)JsonConvert.DeserializeObject(p);
+            //        if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
+            //        {
+            //            Interlocked.Increment(ref BlError);
+            //            // Console.WriteLine($"¡¾org/org¡¿ {p}");
+            //        }
+            //    });
+            //}
             Call("Authority/v2/token/info", null, token, p =>
             {
                 var result = (JObject)JsonConvert.DeserializeObject(p);
-                if (result.Value<string>("State") != "success")
+                if (!result.TryGetValue("State", out var val) || val.Value<string>() != "success")
                 {
                     Interlocked.Increment(ref BlError);
-                    Console.WriteLine(p);
+                    // Console.WriteLine($"¡¾token/info¡¿ {p}");
                 }
             });
         }
-
-        bool Call(string api, string arg, string token = null, Action<string> action = null)
-        {
-            HttpApiCaller caller = new HttpApiCaller(Host)
-            {
-                Bearer = token == null ? null : $"Bearer {token}"
-            };
-            caller.CreateRequest(api, "POST", arg ?? "{}");
-            var result = caller.GetResult().Result;
-            if (caller.Status != WebExceptionStatus.Success)
-            {
-                Interlocked.Increment(ref NetError);
-                return false;
-            }
-            action?.Invoke(result);
-            return true;
-        }
-    }
-}
+ */

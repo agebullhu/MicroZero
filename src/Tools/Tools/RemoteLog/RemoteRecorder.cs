@@ -191,7 +191,7 @@ namespace Agebull.MicroZero.Log
                 Identity = RealName.ToAsciiBytes();
                 RunTaskCancel = new CancellationTokenSource();
                 //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
-                Task.Factory.StartNew(RunWaite);
+                Task.Factory.StartNew(RunWaite, TaskCreationOptions.LongRunning);
                 return true;
             }
         }

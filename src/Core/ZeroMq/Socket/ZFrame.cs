@@ -22,7 +22,7 @@ namespace ZeroMQ
             var frame = Create(l);
             var buf = new byte[65535];
             int bufLen;
-            int current = -1;
+            var current = -1;
             do
             {
                 ++current;
@@ -66,14 +66,14 @@ namespace ZeroMQ
             get => _framePtr;
             set
             {
+                if (_framePtr == value)
+                    return;
                 if (null == value)
                 {
                     _framePtr?.Dispose();
                     _framePtr = null;
                     return;
                 }
-                if (_framePtr == value)
-                    return;
                 _framePtr?.Dispose();
 #if UNMANAGE_MONEY_CHECK
                 MemoryCheck.SetIsAloc(nameof(ZFrame));
@@ -90,9 +90,10 @@ namespace ZeroMQ
         // private ZeroMQ.lib.FreeMessageDelegate _freePtr;
 
         public ZFrame(byte[] buffer)
-            : this(CreateNative(buffer.Length), buffer.Length)
+            : this(CreateNative(buffer?.Length ?? 0), buffer?.Length ?? 0)
         {
-            Write(buffer, 0, buffer.Length);
+            if (buffer != null)
+                Write(buffer, 0, buffer.Length);
         }
 
         public ZFrame(byte[] buffer, int offset, int count)
@@ -174,10 +175,7 @@ namespace ZeroMQ
             _position = 0;
         }
 
-        ~ZFrame()
-        {
-            Dispose(false);
-        }
+        ~ZFrame() => Dispose(false);
 
         internal static DispoIntPtr CreateEmptyNative()
         {
@@ -336,13 +334,13 @@ namespace ZeroMQ
 
         public byte[] Read()
         {
-            int remaining = Math.Max(0, (int)(Length - _position));
+            var remaining = Math.Max(0, (int)(Length - _position));
             return Read(remaining);
         }
 
         public byte[] Read(int count)
         {
-            int remaining = Math.Min(count, Math.Max(0, (int)(Length - _position)));
+            var remaining = Math.Min(count, Math.Max(0, (int)(Length - _position)));
             if (remaining == 0)
             {
                 return new byte[0];
@@ -359,7 +357,7 @@ namespace ZeroMQ
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int remaining = Math.Min(count, Math.Max(0, (int)(Length - _position)));
+            var remaining = Math.Min(count, Math.Max(0, (int)(Length - _position)));
             if (remaining == 0)
             {
                 return 0;
@@ -387,9 +385,9 @@ namespace ZeroMQ
         public byte ReadAsByte()
         {
             if (_position + 1 > Length)
-                return default(byte);
+                return default;
 
-            byte byt = Marshal.ReadByte(DataPtr() + _position);
+            var byt = Marshal.ReadByte(DataPtr() + _position);
             ++_position;
             return byt;
         }
@@ -397,79 +395,44 @@ namespace ZeroMQ
         public short ReadInt16()
         {
             var bytes = new byte[2];
-            if (Read(bytes, 0, 2) < 2)
-            {
-                return default(short);
-            }
-
-            return BitConverter.ToInt16(bytes, 0);
+            return Read(bytes, 0, 2) < 2 ? default : BitConverter.ToInt16(bytes, 0);
         }
 
         public ushort ReadUInt16()
         {
             var bytes = new byte[2];
-            if (Read(bytes, 0, 2) < 2)
-            {
-                return default(ushort);
-            }
-
-            return BitConverter.ToUInt16(bytes, 0);
+            return Read(bytes, 0, 2) < 2 ? default : BitConverter.ToUInt16(bytes, 0);
         }
 
         public char ReadChar()
         {
             var bytes = new byte[2];
-            if (Read(bytes, 0, 2) < 2)
-            {
-                return default(char);
-            }
-
-            return BitConverter.ToChar(bytes, 0);
+            return Read(bytes, 0, 2) < 2 ? default : BitConverter.ToChar(bytes, 0);
         }
 
         public int ReadInt32()
         {
             var bytes = new byte[4];
-            int len = Read(bytes, 0, 4);
-            if (len < 4)
-            {
-                return default(int);
-            }
-
-            return BitConverter.ToInt32(bytes, 0);
+            var len = Read(bytes, 0, 4);
+            return len < 4 ? default : BitConverter.ToInt32(bytes, 0);
         }
 
         public uint ReadUInt32()
         {
             var bytes = new byte[4];
-            if (Read(bytes, 0, 4) < 4)
-            {
-                return default(uint);
-            }
-
-            return BitConverter.ToUInt32(bytes, 0);
+            return Read(bytes, 0, 4) < 4 ? default : BitConverter.ToUInt32(bytes, 0);
         }
 
         public long ReadInt64()
         {
             var bytes = new byte[8];
-            if (Read(bytes, 0, 8) < 8)
-            {
-                return default(long);
-            }
-
-            return BitConverter.ToInt64(bytes, 0);
+            return Read(bytes, 0, 8) < 8 ? default : BitConverter.ToInt64(bytes, 0);
         }
 
         public ulong ReadUInt64()
         {
             var bytes = new byte[8];
-            if (Read(bytes, 0, 8) < 8)
-            {
-                return default(ulong);
-            }
-
-            return BitConverter.ToUInt64(bytes, 0);
+            return Read(bytes, 0, 8) < 8 ? default : BitConverter.ToUInt64(bytes, 0);
         }
 
         public string ReadString()
@@ -489,7 +452,7 @@ namespace ZeroMQ
 
         public string ReadString(int byteCount, Encoding encoding)
         {
-            int remaining = Math.Min(byteCount, Math.Max(0, (int)Length - _position));
+            var remaining = Math.Min(byteCount, Math.Max(0, (int)Length - _position));
             if (remaining == 0)
             {
                 return string.Empty;
@@ -503,8 +466,8 @@ namespace ZeroMQ
             {
                 var bytes = (byte*)(DataPtr() + _position);
 
-                Decoder dec = encoding.GetDecoder();
-                int charCount = dec.GetCharCount(bytes, remaining, false);
+                var dec = encoding.GetDecoder();
+                var charCount = dec.GetCharCount(bytes, remaining, false);
                 if (charCount == 0)
                 {
                     return string.Empty;
@@ -520,20 +483,17 @@ namespace ZeroMQ
                     {
                         ++i;
 
-                        if (chars[i] == '\0')
-                        {
-                            charCount = i;
-                            ++z;
-
-                            break;
-                        }
+                        if (chars[i] != '\0')
+                            continue;
+                        charCount = i;
+                        ++z;
+                        break;
                     }
 
-                    Encoder enc = encoding.GetEncoder();
+                    var enc = encoding.GetEncoder();
                     _position += enc.GetByteCount(chars, charCount + z, true);
 
-                    if (charCount == 0) return string.Empty;
-                    return new string(chars, 0, charCount);
+                    return charCount == 0 ? string.Empty : new string(chars, 0, charCount);
                 }
             }
         }
@@ -550,7 +510,7 @@ namespace ZeroMQ
 
         public string ReadLine(int byteCount, Encoding encoding)
         {
-            int remaining = Math.Min(byteCount, Math.Max(0, (int)Length - _position));
+            var remaining = Math.Min(byteCount, Math.Max(0, (int)Length - _position));
             if (remaining == 0)
             {
                 return string.Empty;
@@ -564,8 +524,8 @@ namespace ZeroMQ
             {
                 var bytes = (byte*)(DataPtr() + _position);
 
-                Decoder dec = encoding.GetDecoder();
-                int charCount = dec.GetCharCount(bytes, remaining, false);
+                var dec = encoding.GetDecoder();
+                var charCount = dec.GetCharCount(bytes, remaining, false);
                 if (charCount == 0) return string.Empty;
 
                 var resultChars = new char[charCount];
@@ -600,11 +560,10 @@ namespace ZeroMQ
                         }
                     }
 
-                    Encoder enc = encoding.GetEncoder();
+                    var enc = encoding.GetEncoder();
                     _position += enc.GetByteCount(chars, charCount + z, true);
 
-                    if (charCount == 0) return string.Empty;
-                    return new string(chars, 0, charCount);
+                    return charCount == 0 ? string.Empty : new string(chars, 0, charCount);
                 }
             }
         }
@@ -725,12 +684,12 @@ namespace ZeroMQ
                 return;
             }
 
-            int charCount = str.Length;
-            Encoder enc = encoding.GetEncoder();
+            var charCount = str.Length;
+            var enc = encoding.GetEncoder();
 
             fixed (char* strP = str)
             {
-                int byteCount = enc.GetByteCount(strP, charCount, false);
+                var byteCount = enc.GetByteCount(strP, charCount, false);
 
                 if (create)
                 {
@@ -783,11 +742,11 @@ namespace ZeroMQ
             while (-1 == zmq.msg_copy(other.FramePtr, FramePtr))
             {
                 // zmq.msg_copy(dest, src)
-                ZError error = ZError.GetLastErr();
+                var error = ZError.GetLastErr();
 
                 if (error.IsError(ZError.Code.EINTR))
                 {
-                    error = default(ZError);
+                    error = default;
                     continue;
                 }
                 if (error.IsError(ZError.Code.EFAULT))
@@ -807,7 +766,7 @@ namespace ZeroMQ
 
                 if (error.IsError(ZError.Code.EINTR))
                 {
-                    error = default(ZError);
+                    error = default;
                     continue;
                 }
                 if (error.IsError(ZError.Code.EFAULT))
@@ -824,7 +783,7 @@ namespace ZeroMQ
         public int GetOption(ZFrameOption property)
         {
             int result;
-            if (-1 == (result = GetOption(property, out ZError error)))
+            if (-1 == (result = GetOption(property, out var error)))
             {
                 throw new ZException(error);
             }
@@ -847,14 +806,9 @@ namespace ZeroMQ
         public string GetOption(string property)
         {
             string result;
-            if (null == (result = GetOption(property, out ZError error)))
-            {
-                if (error != ZError.None)
-                {
-                    throw new ZException(error);
-                }
-            }
-            return result;
+            if (null != (result = GetOption(property, out var error)))
+                return result;
+            return !Equals(error, ZError.None) ? throw new ZException(error) : (string)null;
         }
 
         public string GetOption(string property, out ZError error)
@@ -905,15 +859,13 @@ namespace ZeroMQ
 
         public string ToString(Encoding encoding)
         {
-            if (Length > -1)
-            {
-                long old = _position;
-                Position = 0;
-                string retur = ReadString(encoding);
-                Position = old;
-                return retur;
-            }
-            return GetType().FullName;
+            if (Length <= -1)
+                return GetType().FullName;
+            var old = _position;
+            Position = 0;
+            var retur = ReadString(encoding);
+            _position = old;
+            return retur;
         }
     }
 }

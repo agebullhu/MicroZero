@@ -47,6 +47,10 @@ namespace MicroZero.Http.Gateway
             RouteCache.Flush();
         }
 
+        /// <summary>
+        /// 配置HTTP
+        /// </summary>
+        /// <param name="options"></param>
         public static void Options(KestrelServerOptions options)
         {
             options.AddServerHeader = false;
@@ -122,6 +126,8 @@ namespace MicroZero.Http.Gateway
                 context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
                 return;
             }
+
+            AshxMapConfig map = null;
             if (RouteOption.Option.SystemConfig.EnableContext)
             {
                 var folders = uri.AbsolutePath.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
@@ -134,11 +140,15 @@ namespace MicroZero.Http.Gateway
                 var ext = Path.GetExtension(folders[folders.Length - 1]);
                 if (!string.IsNullOrWhiteSpace(ext))
                 {
-                    var cr = new ContextRouter(context);
-                    cr.WriteContext(folders, ext);
-                    return;
+                    if (!RouteOption.Option.UrlMap.TryGetValue(ext, out map))
+                    {
+                        var cr = new ContextRouter(context);
+                        cr.WriteContext(folders, ext);
+                        return;
+                    }
                 }
             }
+
             if (RouteOption.Option.SystemConfig.EnableInnerCommand && InnerCommand(uri.AbsolutePath, context.Request, context.Response))
             {
                 LogRecorderX.MonitorTrace("InnerCommand");
@@ -153,8 +163,10 @@ namespace MicroZero.Http.Gateway
                     //开始调用
                     if (router.Prepare(context))
                     {
+                        if (map != null)
+                            router.CheckMap(map);
                         // 正常调用
-                        router.Call();
+                       router.Call();
                     }
                     // 写入返回
                     router.WriteResult();

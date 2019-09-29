@@ -56,7 +56,7 @@ namespace ZeroMQ.Monitoring
 		public static ZMonitor Create(ZContext context, string endpoint)
 		{
             ZMonitor monitor;
-            if (null == (monitor = Create(context, endpoint, out ZError error)))
+            if (null == (monitor = Create(context, endpoint, out var error)))
 			{
 				throw new ZException(error);
 			}
@@ -167,7 +167,7 @@ namespace ZeroMQ.Monitoring
 	    {
 	        using (_socket)
 	        {
-                if (!_socket.Connect(_endpoint, out ZError error))
+                if (!_socket.Connect(_endpoint, out var error))
                 {
                     LogError(error, "connect");
                     return;
@@ -177,7 +177,7 @@ namespace ZeroMQ.Monitoring
 
 	            while (!Cancellor.IsCancellationRequested)
 	            {
-                    if (!_socket.PollIn(poller, out ZMessage incoming, out error, PollingInterval))
+                    if (!_socket.PollIn(poller, out var incoming, out error, PollingInterval))
                     {
                         if (error.IsError(ZError.Code.EAGAIN))
                         {

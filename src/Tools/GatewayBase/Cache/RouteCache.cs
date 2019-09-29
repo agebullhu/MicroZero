@@ -111,9 +111,9 @@ namespace MicroZero.Http.Gateway
         public static void InitCache()
         {
             CacheMap = new Dictionary<string, CacheOption>(StringComparer.OrdinalIgnoreCase);
-            if (RouteOption.Option._cacheSettings == null)
+            if (RouteOption.Option.CacheSettings == null)
                 return;
-            foreach (var setting in RouteOption.Option._cacheSettings)
+            foreach (var setting in RouteOption.Option.CacheSettings)
             {
                 setting.Initialize();
                 if (!CacheMap.ContainsKey(setting.Api))

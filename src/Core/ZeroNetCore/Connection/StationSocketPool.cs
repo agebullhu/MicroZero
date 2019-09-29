@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Agebull.Common.Configuration;
 using Newtonsoft.Json;
 using ZeroMQ;
 
@@ -80,7 +81,7 @@ namespace Agebull.MicroZero
             //Close(ref socket);
             lock (_pools)
             {
-                if (_pools.Count > 999)
+                if (_pools.Count > ZeroApplication.Config.PoolSize)
                 {
                     Close(ref socket);
                 }

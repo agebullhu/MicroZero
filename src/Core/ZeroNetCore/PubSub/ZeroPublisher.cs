@@ -1,7 +1,6 @@
 using System;
 using Agebull.Common.Context;
-using Agebull.EntityModel.Common;
-using Newtonsoft.Json;
+using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
 
 namespace Agebull.MicroZero.PubSub
@@ -18,10 +17,12 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="title"></param>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete]
         public static bool DoPublish(string station, string title, string value)
         {
-            return DoPublishInner(station, title, null, value);
+            return Publish(station, title, null, value);
         }
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -29,11 +30,11 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="title"></param>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete]
         public static bool DoPublish<T>(string station, string title, T value)
             where T : class
         {
-            return DoPublishInner(station, title, null, 
-                value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
+            return Publish(station, title, null,value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
         }
 
         /// <summary>
@@ -44,10 +45,12 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="sub"></param>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete]
         public static bool DoPublish(string station, string title, string sub, string value)
         {
-            return DoPublishInner(station, title, sub, value);
+            return Publish(station, title, sub, value);
         }
+
         /// <summary>
         /// 发送广播
         /// </summary>
@@ -56,12 +59,13 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="sub"></param>
         /// <param name="value"></param>
         /// <returns></returns>
+        [Obsolete]
         public static bool DoPublish<T>(string station, string title, string sub, T value)
             where T : class
         {
-            return DoPublishInner(station, title, sub, 
-                value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
+            return Publish(station, title, sub, value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
         }
+
 
         /// <summary>
         /// 发送广播
@@ -71,151 +75,10 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="sub"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private static bool DoPublishInner(string station, string title, string sub, string value)
+        public static bool Publish<T>(string station, string title, string sub, T value)
+            where T : class
         {
-            var socket = ZeroConnectionPool.GetSocket(station, RandomOperate.Generate(8));
-            if (socket?.Socket == null)
-            {
-                return false;
-            }
-            using (socket)
-            {
-                return Publish(socket.Socket, title, sub, value);
-            }
-        }
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionTson =
-        {
-            7,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.TsonContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionJson =
-        {
-            7,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.TextContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionBin =
-        {
-            7,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.BinaryContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionTson2 =
-        {
-            8,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.SubTitle,
-            ZeroFrameType.TsonContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionJson2 =
-        {
-            8,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.SubTitle,
-            ZeroFrameType.TextContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static byte[] PubDescriptionBin2 =
-        {
-            8,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.SubTitle,
-            ZeroFrameType.BinaryContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        public static readonly byte[] PubDescriptionEmpty =
-        {
-            6,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.PubTitle,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.CallId,
-            ZeroFrameType.Context,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static bool Publish(this ZSocket socket, string title, string subTitle, string content)
-        {
-            return subTitle == null
-                ? Publish(socket, PubDescriptionJson, title, content.ToZeroBytes())
-                : Publish(socket, PubDescriptionJson2, title, subTitle, content.ToZeroBytes());
+            return Publish(station, title, sub, value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
         }
 
         /// <summary>
@@ -223,52 +86,69 @@ namespace Agebull.MicroZero.PubSub
         /// </summary>
         /// <param name="title"></param>
         /// <param name="content"></param>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <returns></returns>
-        public static bool Publish<T>(this ZSocket socket, string title, T content) where T : class
+        public static bool Publish<T>(string station, string title, T content) where T : class
         {
             return content == null
-                ? Publish(socket, title)
-                : Publish(socket, PubDescriptionJson, title, content.ToZeroBytes());
+                ? Publish(station, title)
+                : PublishInner(station, PubDescriptionJson, title, content.ToZeroBytes());
         }
 
         /// <summary>
         ///     发送广播
         /// </summary>
         /// <param name="item"></param>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <returns></returns>
-        public static bool Publish(this ZSocket socket, PublishItem item)
+        public static bool Publish(string station, PublishItem item)
         {
             if (item.Tson != null)
             {
-                return item.SubTitle == null
-                    ? Publish(socket, PubDescriptionTson, item.Title, item.Tson)
-                    : Publish(socket, PubDescriptionTson2, item.Title, item.SubTitle, item.Tson);
+                return PublishInner(station, PubDescriptionTson, item.Title, item.SubTitle, item.Tson);
             }
             if (item.Buffer != null)
             {
-                return item.SubTitle == null
-                    ? Publish(socket, PubDescriptionBin, item.Title, item.Buffer)
-                    : Publish(socket, PubDescriptionBin2, item.Title, item.SubTitle, item.Buffer);
+                return PublishInner(station, PubDescriptionBin, item.Title, item.SubTitle, item.Buffer);
             }
-            return item.SubTitle == null
-                ? Publish(socket, PubDescriptionJson, item.Title, item.Content.ToZeroBytes())
-                : Publish(socket, PubDescriptionJson2, item.Title, item.SubTitle, item.Content.ToZeroBytes());
+            return PublishInner(station, PubDescriptionJson, item.Title, item.SubTitle, item.Content.ToZeroBytes());
         }
 
         /// <summary>
         ///     发送广播
         /// </summary>
         /// <param name="title"></param>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <returns></returns>
-        public static bool Publish(this ZSocket socket, string title)
+        public static bool Publish(string station, string title)
         {
-            if (socket == null)
-                return false;
-            var result = PublishInner(socket, title, PubDescriptionEmpty, title.ToZeroBytes());
-            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
+            return PublishInner(station, PubDescriptionJson, title, null, null);
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static bool Publish(string station, string title,string content)
+        {
+            return PublishInner(station, PubDescriptionJson, title, null, content.ToZeroBytes());
+        }
+
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static bool Publish(string station, string title, string subTitle, string content)
+        {
+            return PublishInner(station, PubDescriptionJson, title, subTitle, content.ToZeroBytes());
         }
 
         /// <summary>
@@ -278,16 +158,30 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="title"></param>
         /// <param name="subTitle"></param>
         /// <param name="content"></param>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <returns></returns>
-        public static bool Publish(this ZSocket socket, byte[] description, string title, string subTitle, byte[] content)
+        public static bool Publish(string station, byte[] description, string title, string subTitle, byte[] content)
         {
-            if (socket == null)
-                return false;
-            var result = PublishInner(socket, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
+            var result = PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
             return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
+        #region Frames
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="description"></param>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        private static bool PublishInner(string station, byte[] description, string title, string subTitle, byte[] content)
+        {
+            var result = PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
+            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
+        }
 
         /// <summary>
         ///     发送广播
@@ -295,44 +189,111 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="description"></param>
         /// <param name="title"></param>
         /// <param name="content"></param>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <returns></returns>
-        private static bool Publish(ZSocket socket, byte[] description, string title, byte[] content)
+        private static bool PublishInner(string station, byte[] description, string title, byte[] content)
         {
-            if (socket == null)
-                return false;
-            var result = PublishInner(socket, title, description, title.ToZeroBytes(), content);
+            var result = PublishInner(station, title, description, title.ToZeroBytes(), content);
             return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
+
 
         /// <summary>
         ///     发送广播
         /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="title"></param>
+        /// <param name="station"></param>
         /// <param name="frames"></param>
         /// <returns></returns>
-        private static ZeroResult PublishInner(ZSocket socket, string title, params byte[][] frames)
+        public static ZeroResult Publish(string station, params byte[][] frames)
         {
             try
             {
-                if (socket.SendByExtend(frames,
-                    GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
-                    GlobalContext.ServiceRealName.ToZeroBytes(),
-                    GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes(),
-                    GlobalContext.CurrentNoLazy.ToZeroBytes(),
-                    ZeroCommandExtend.ServiceKeyBytes))
-                    return socket.ReceiveString();
-                ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
+                var socket = ApiProxy.GetSocket(station);
+                if (socket == null)
+                {
+                    return new ZeroResult
+                    {
+                        State = ZeroOperatorStateType.NetError,
+                        ErrorMessage = "站点不存在"
+                    };
+                }
+                ZError err;
+                using (socket)
+                {
+                    using (var message = new ZMessage(frames))
+                    {
+                        message.Insert(0, new ZFrame(station.ToZeroBytes()));
+                        if (socket.Send(message, out err))
+                            return socket.ReceiveString();
+                    }
+                }
+                ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint);
                 return new ZeroResult
                 {
                     State = ZeroOperatorStateType.NetError,
-                    ErrorMessage = socket.LastError.Text
+                    ErrorMessage = err.Text
                 };
             }
             catch (Exception e)
             {
-                ZeroTrace.WriteException("Pub", e, title, socket.Endpoint, $"Socket Ptr:{socket.SocketPtr}");
+                ZeroTrace.WriteException("Pub", e, station);
+                return new ZeroResult
+                {
+                    State = ZeroOperatorStateType.LocalException,
+                    Exception = e,
+                    ErrorMessage = e.Message
+                };
+            }
+        }
+
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        private static ZeroResult PublishInner(string station, string title, params byte[][] frames)
+        {
+            try
+            {
+                var socket = ApiProxy.GetSocket(station);
+                if (socket == null)
+                {
+                    return new ZeroResult
+                    {
+                        State = ZeroOperatorStateType.NetError,
+                        ErrorMessage = "站点不存在"
+                    };
+                }
+                ZError err;
+                using (socket)
+                {
+                    using (var message = new ZMessage(frames)
+                    {
+                        new ZFrame(GlobalContext.CurrentNoLazy?.ToZeroBytes()),
+                        new ZFrame(GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes()),
+                        new ZFrame(socket.Identity),
+                        new ZFrame(socket.Identity),
+                        new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                    })
+                    {
+                        message.Insert(0,new ZFrame(station.ToZeroBytes()));
+                        if (socket.Send(message, out err))
+                            return socket.ReceiveString();
+                    }
+                }
+                ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
+                return new ZeroResult
+                {
+                    State = ZeroOperatorStateType.NetError,
+                    ErrorMessage = err.Text
+                };
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("Pub", e, station, title);
                 return new ZeroResult
                 {
                     State = ZeroOperatorStateType.LocalException,
@@ -343,12 +304,71 @@ namespace Agebull.MicroZero.PubSub
         }
 
         /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        public static byte[] PubDescriptionTson =
+        {
+            8,
+            (byte)ZeroByteCommand.General,
+            ZeroFrameType.PubTitle,
+            ZeroFrameType.SubTitle,
+            ZeroFrameType.TsonContent,
+            ZeroFrameType.Context,
+            ZeroFrameType.CallId,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.End
+        };
+
+        /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        public static byte[] PubDescriptionJson =
+        {
+            8,
+            (byte)ZeroByteCommand.General,
+            ZeroFrameType.PubTitle,
+            ZeroFrameType.SubTitle,
+            ZeroFrameType.TextContent,
+            ZeroFrameType.Context,
+            ZeroFrameType.CallId,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.End
+        };
+        /// <summary>
+        ///     订阅时的标准网络数据说明
+        /// </summary>
+        public static byte[] PubDescriptionBin =
+        {
+            8,
+            (byte)ZeroByteCommand.General,
+            ZeroFrameType.PubTitle,
+            ZeroFrameType.SubTitle,
+            ZeroFrameType.BinaryContent,
+            ZeroFrameType.Context,
+            ZeroFrameType.CallId,
+            ZeroFrameType.RequestId,
+            ZeroFrameType.Publisher,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.End
+        };
+
+        #endregion
+    }
+}
+/*
+
+
+        /// <summary>
         ///     发送广播
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <param name="frames"></param>
         /// <returns></returns>
-        public static bool SendPublish(this ZSocket socket, params byte[][] frames)
+        public static bool SendPublish(string station, params byte[][] frames)
         {
             return socket.SendByExtend(frames,
                 GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
@@ -361,11 +381,11 @@ namespace Agebull.MicroZero.PubSub
         /// <summary>
         ///     发送广播
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="station"></param>
         /// <param name="title"></param>
         /// <param name="frames"></param>
         /// <returns></returns>
-        public static ZeroResult Publish(this ZSocket socket, string title, params byte[][] frames)
+        public static ZeroResult Publish(string station, string title, params byte[][] frames)
         {
             try
             {
@@ -389,72 +409,4 @@ namespace Agebull.MicroZero.PubSub
                 };
             }
         }
-
-
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static ZeroResult PublishNoGlobalId(this ZSocket socket, string title, string subTitle, string content)
-        {
-            return PublishNoGlobalId(socket, title, subTitle, content.ToZeroBytes());
-        }
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        public static ZeroResult PublishNoGlobalId<T>(this ZSocket socket, string title, string subTitle, T content)
-            where T : class
-        {
-            return PublishNoGlobalId(socket, title, subTitle, content.ToZeroBytes());
-        }
-
-        /// <summary>
-        ///     订阅时的标准网络数据说明
-        /// </summary>
-        private static readonly byte[] DescriptionNoGlobalId =
-        {
-            6,
-            (byte)ZeroByteCommand.General,
-            ZeroFrameType.SubTitle,
-            ZeroFrameType.TextContent,
-            ZeroFrameType.RequestId,
-            ZeroFrameType.Publisher,
-            ZeroFrameType.Station,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.End
-        };
-        /// <summary>
-        ///     发送广播
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        /// <param name="content"></param>
-        /// <param name="socket"></param>
-        /// <returns></returns>
-        private static ZeroResult PublishNoGlobalId(this ZSocket socket, string title, string subTitle, byte[] content)
-        {
-            if (socket == null)
-                return new ZeroResult
-                {
-                    State = ZeroOperatorStateType.ArgumentInvalid,
-                    ErrorMessage = "参数错误"
-                };
-            return PublishInner(socket, title, DescriptionNoGlobalId,
-                    subTitle.ToZeroBytes(),
-                    content,
-                    GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes(),
-                    ZeroCommandExtend.AppNameBytes,
-                    ZeroCommandExtend.AppNameBytes,
-                    ZeroCommandExtend.ServiceKeyBytes);
-        }
-    }
-}
+ */

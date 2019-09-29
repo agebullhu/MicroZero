@@ -91,7 +91,7 @@ namespace MicroZero.Http.Route
 
         private void SystemMonitor_StationEvent(object sender, ZeroNetEventArgument e)
         {
-            Task.Factory.StartNew(() => StationEvent(e));
+            Task.Factory.StartNew(() => StationEvent(e), TaskCreationOptions.None);
         }
         private void PublishConfig(StationConfig config)
         {

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="AutoRegister.cs" />
     <Compile Remove="EntityEventProxy.cs" />
     <Compile Remove="HtttpTester - 复制.cs" />
     <Compile Remove="RegistTester.cs" />
@@ -53,10 +54,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Tools\Tools\Agebull.MicroZero.Tools.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="http://json.schemastore.org/circleciconfig" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\ZeroNet\test\ZeroSerivce\AddIn\ /y" />

@@ -87,6 +87,12 @@
             <param name="e"></param>
             <param name="context"></param>
         </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.CheckMap(MicroZero.Http.Gateway.AshxMapConfig)">
+            <summary>
+            检查并重新映射（如果可以的话）
+            </summary>
+            <param name="map"></param>
+        </member>
         <member name="T:MicroZero.Http.Gateway.RouteApp">
             <summary>
                 调用映射核心类
@@ -101,6 +107,12 @@
             <summary>
                 刷新
             </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteApp.Options(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions)">
+            <summary>
+            配置HTTP
+            </summary>
+            <param name="options"></param>
         </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.Call(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
@@ -177,6 +189,18 @@
             </summary>
             <param name="context"></param>
         </member>
+        <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#CheckMap(MicroZero.Http.Gateway.AshxMapConfig)">
+            <summary>
+            检查并重新映射（如果可以的话）
+            </summary>
+            <param name="map"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.CheckMap(MicroZero.Http.Gateway.AshxMapConfig)">
+            <summary>
+            检查并重新映射（如果可以的话）
+            </summary>
+            <param name="map"></param>
+        </member>
         <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#Call">
             <summary>
                 调用
@@ -197,6 +221,11 @@
                 写入返回
             </summary>
         </member>
+        <member name="M:MicroZero.Http.Gateway.Router.WriteResult">
+            <summary>
+                写入返回
+            </summary>
+        </member>
         <member name="M:MicroZero.Http.Gateway.Router.MicroZero#Http#Gateway#IRouter#End">
             <summary>
                 结束
@@ -210,6 +239,12 @@
             <param name="context"></param>
         </member>
         <member name="M:MicroZero.Http.Gateway.Router.CallHttp">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.Router.CallZeroTask">
             <summary>
                 远程调用
             </summary>
@@ -469,6 +504,45 @@
                 跨域支持
             </summary>
         </member>
+        <member name="T:MicroZero.Http.Gateway.MapModelConfig">
+            <summary>
+            URL与接口映射
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.MapModelConfig.Station">
+            <summary>
+            站点映射
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.MapModelConfig.Paths">
+            <summary>
+            路径
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.MapItem">
+            <summary>名称内容对象</summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.MapItem.Name">
+            <summary>名称</summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.MapItem.Value">
+            <summary>值</summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.AshxMapConfig">
+            <summary>
+            ASH的URL与接口映射
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.AshxMapConfig.ActionName">
+            <summary>
+            action参数名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.AshxMapConfig.Models">
+            <summary>
+            模块集合
+            </summary>
+        </member>
         <member name="T:MicroZero.Http.Gateway.RouteOption">
             <summary>
                 路由配置
@@ -484,22 +558,32 @@
                 安全设置
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption._cacheSettings">
+        <member name="P:MicroZero.Http.Gateway.RouteOption.UrlMap">
+            <summary>
+                路径映射
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteOption.UrlMaps">
+            <summary>
+                路径映射
+            </summary>
+        </member>
+        <member name="F:MicroZero.Http.Gateway.RouteOption.CacheSettings">
             <summary>
                 缓存配置
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption._routeConfig">
+        <member name="F:MicroZero.Http.Gateway.RouteOption.RouteConfig">
             <summary>
                 路由配置
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption._systemConfig">
+        <member name="P:MicroZero.Http.Gateway.RouteOption.HostPath">
             <summary>
                 系统配置
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.HostPath">
+        <member name="F:MicroZero.Http.Gateway.RouteOption._systemConfig">
             <summary>
                 系统配置
             </summary>
@@ -539,6 +623,12 @@
         <member name="M:MicroZero.Http.Gateway.RouteOption.CheckRouteMap">
             <summary>
                 初始化路由
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckUrlMap">
+            <summary>
+                初始化路径映射
             </summary>
             <returns></returns>
         </member>

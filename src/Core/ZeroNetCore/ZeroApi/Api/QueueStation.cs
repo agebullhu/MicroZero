@@ -75,8 +75,9 @@ namespace Agebull.MicroZero.PubSub
 
             var des = new byte[]
             {
-                2,
+                3,
                 (byte) state,
+                ZeroFrameType.Requester,
                 ZeroFrameType.LocalId,
                 ZeroFrameType.SerivceKey,
                 ZeroFrameType.ResultEnd
@@ -85,6 +86,7 @@ namespace Agebull.MicroZero.PubSub
             {
                 item.Caller,
                 des,
+                item.Requester.ToZeroBytes(),
                 item.LocalId.ToZeroBytes(),
                 ZeroCommandExtend.ServiceKeyBytes
             };

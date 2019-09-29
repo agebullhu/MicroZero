@@ -30,12 +30,12 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     当前请求调用的主机名称
         /// </summary>
-        [DataMember] [JsonProperty("apiHost")] public string ApiHost { get; private set; }
+        [DataMember] [JsonProperty("apiHost")] public string ApiHost { get; internal set; }
 
         /// <summary>
         ///     当前请求调用的API名称
         /// </summary>
-        [DataMember] [JsonProperty("apiName")] public string ApiName { get; private set; }
+        [DataMember] [JsonProperty("apiName")] public string ApiName { get; internal set; }
 
         /// <summary>
         ///     Http Header中的Authorization信息

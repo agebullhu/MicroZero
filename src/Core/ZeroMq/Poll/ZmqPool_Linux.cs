@@ -18,15 +18,16 @@ namespace ZeroMQ
             error = null;
             Size = sockets.Length;
             Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_posix_t) * sockets.Length);
-            zmq_pollitem_posix_t* natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
-            for (int i = 0; i < Size; ++i)
+            var natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
+            for (var i = 0; i < Size; ++i)
             {
-                zmq_pollitem_posix_t* native = natives + i;
+                var native = natives + i;
                 native->SocketPtr = sockets[i].SocketPtr;
                 native->Events = (short)(events);
                 native->ReadyEvents = (short)ZPollEvent.None;
             }
         }
+
         /// <summary>
         /// 准备
         /// </summary>
@@ -38,14 +39,34 @@ namespace ZeroMQ
             error = null;
             Size = sockets.Length;
             Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_posix_t) * sockets.Length);
-            zmq_pollitem_posix_t* natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
-            for (int i = 0; i < Size; ++i)
+            var natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
+            for (var i = 0; i < Size; ++i)
             {
-                zmq_pollitem_posix_t* native = natives + i;
+                var native = natives + i;
                 native->SocketPtr = sockets[i].SocketPtr;
                 native->Events = (short)(events);
                 native->ReadyEvents = (short)ZPollEvent.None;
             }
+        }
+        
+        /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="events"></param>
+        public DispoIntPtr RePrepare(ZPollEvent events)
+        {
+            var old = Ptr;
+            Size = Sockets.Length;
+            Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_posix_t) * Sockets.Length);
+            var natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
+            for (var i = 0; i < Size; ++i)
+            {
+                var native = natives + i;
+                native->SocketPtr = Sockets[i].SocketPtr;
+                native->Events = (short)(events);
+                native->ReadyEvents = (short)ZPollEvent.None;
+            }
+            return old;
         }
 
         /// <summary>
@@ -56,7 +77,7 @@ namespace ZeroMQ
         {
             error = null;
 
-            zmq_pollitem_posix_t* natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
+            var natives = (zmq_pollitem_posix_t*)Ptr.Ptr;
             var state = zmq.poll(natives, Size, TimeoutMs);
             return state > 0;
         }
@@ -101,7 +122,7 @@ namespace ZeroMQ
                 message = null;
                 return false;
             }
-            zmq_pollitem_posix_t* native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
+            var native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 using Agebull.EntityModel.Common;
@@ -254,13 +255,13 @@ namespace Agebull.MicroZero.ZeroApis
                 State = LastResult.State;
                 return;
             }
-
+            Thread.Sleep(0);
             CallEnd(socket);
         }
 
         private ZeroResult CallNoFileApi(PoolSocket socket)
         {
-           return Send(socket.Socket, CallDescription,
+           return Send(socket, CallDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
                 ExtendArgument.ToZeroBytes(),
@@ -275,7 +276,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         private ZeroResult CallByFileApi(PoolSocket socket)
         {
-            List<byte[]> frames = new List<byte[]>
+            var frames = new List<byte[]>
             {
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
@@ -288,8 +289,8 @@ namespace Agebull.MicroZero.ZeroApis
             };
 
             var len = 16 + Files.Count * 2;
-            byte[] description = new byte[len];
-            int i = 0;
+            var description = new byte[len];
+            var i = 0;
             description[i++] = (byte) (9 + Files.Count * 2);
             description[i++] = (byte) ZeroByteCommand.General;
             description[i++] = ZeroFrameType.Command;
@@ -308,10 +309,11 @@ namespace Agebull.MicroZero.ZeroApis
                 frames.Add(file.Value);
             }
             description[i++] = ZeroFrameType.SerivceKey;
-            description[i++] = ZeroFrameType.End;
+            description[i] = ZeroFrameType.End;
 
-            return SendToZero(socket.Socket, description, frames);
+            return SendToZero(socket, description, frames);
         }
+
         /// <summary>
         ///     请求格式说明
         /// </summary>
@@ -334,7 +336,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void CallPlan(PoolSocket socket, ZeroPlanInfo plan)
         {
-            LastResult = Send(socket.Socket, PlanDescription,
+            LastResult = Send(socket, PlanDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
                 ExtendArgument.ToZeroBytes(),
@@ -358,7 +360,7 @@ namespace Agebull.MicroZero.ZeroApis
         void CallEnd(PoolSocket socket)
         {
 
-            LastResult = Receive(socket.Socket);
+            LastResult = Receive(socket);
             if (!LastResult.InteractiveSuccess)
             {
                 socket.HaseFailed = true;
@@ -372,7 +374,7 @@ namespace Agebull.MicroZero.ZeroApis
                 LastResult.InteractiveSuccess = false;
                 return;
             }
-            LastResult = Receive(socket.Socket);
+            LastResult = Receive(socket);
             if (!LastResult.InteractiveSuccess)
             {
                 socket.HaseFailed = true;

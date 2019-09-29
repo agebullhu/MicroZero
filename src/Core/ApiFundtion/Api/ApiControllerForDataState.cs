@@ -235,9 +235,11 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!TryGet("_state_", out int state) || state < 0 || state >= 0x100)
                 return base.GetListData(lambda);
-            GlobalContext.Current.IsManageMode = true;
-            lambda.AddRoot(p => p.DataState == (DataStateType)state);
-            return base.GetListData(lambda);
+            using (ManageModeScope.CreateScope())
+            {
+                lambda.AddRoot(p => p.DataState == (DataStateType)state);
+                return base.GetListData(lambda);
+            }
         }
 
         #endregion

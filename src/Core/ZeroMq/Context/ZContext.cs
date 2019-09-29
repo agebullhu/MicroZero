@@ -138,7 +138,7 @@ namespace ZeroMQ
         /// <param name="capture"></param>
         public static void Proxy(ZSocket frontend, ZSocket backend, ZSocket capture)
         {
-            if (!Proxy(frontend, backend, capture, out ZError error))
+            if (!Proxy(frontend, backend, capture, out var error))
             {
                 if (error.IsError(ZError.Code.ETERM))
                 {
@@ -200,7 +200,7 @@ namespace ZeroMQ
         /// <param name="control"></param>
         public static void ProxySteerable(ZSocket frontend, ZSocket backend, ZSocket capture, ZSocket control)
         {
-            if (!ProxySteerable(frontend, backend, capture, control, out ZError error))
+            if (!ProxySteerable(frontend, backend, capture, control, out var error))
             {
                 if (error.IsError(ZError.Code.ETERM))
                 {
@@ -244,7 +244,7 @@ namespace ZeroMQ
         {
             EnsureNotDisposed();
 
-            int rc = zmq.ctx_set(_contextPtr, (Int32)option, optionValue);
+            var rc = zmq.ctx_set(_contextPtr, (Int32)option, optionValue);
             if (rc != -1) return;
             var error = ZError.GetLastErr();
 
@@ -264,7 +264,7 @@ namespace ZeroMQ
         {
             EnsureNotDisposed();
 
-            int rc = zmq.ctx_get(_contextPtr, (Int32)option);
+            var rc = zmq.ctx_get(_contextPtr, (Int32)option);
             if (rc != -1) return rc;
             var error = ZError.GetLastErr();
 
@@ -362,7 +362,7 @@ namespace ZeroMQ
             }
             LogRecorderX.SystemLog("Terminate the ZeroMQ context.");
             
-            IntPtr ptr = _contextPtr;
+            var ptr = _contextPtr;
             _contextPtr = IntPtr.Zero;
             ZSocket[] array;
             lock (AliveSockets)
@@ -384,7 +384,7 @@ namespace ZeroMQ
         /// </summary>
         public void Terminate()
         {
-            if (!Terminate(out ZError error))
+            if (!Terminate(out var error))
             {
                 throw new ZException(error);
             }

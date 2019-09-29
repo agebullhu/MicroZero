@@ -5,7 +5,6 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
-using Newtonsoft.Json;
 
 namespace WebMonitor.Models
 {
@@ -35,6 +34,7 @@ namespace WebMonitor.Models
                 case ZeroOperatorStateType.NotSupport:
                     return ApiResult.Error(ErrorCode.LogicalError, "不支持的操作");
                 case ZeroOperatorStateType.Ok:
+                    //BUG
                     var result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
                     result.Status = new ApiStatusResult
                     {

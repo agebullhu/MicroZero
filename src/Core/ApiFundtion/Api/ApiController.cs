@@ -85,19 +85,39 @@ namespace Agebull.MicroZero.ZeroApis
         /// 参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
         /// </remarks>
         /// <returns></returns>
+        [Obsolete]
         [Route("import/xlsx")]
         [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
-        public ApiFileResult Import(QueryArgument args)
+        public ApiFileResult Export2(QueryArgument args)
         {
             var data = new TData();
             GlobalContext.Current.Feature = 1;
             var filter = new LambdaItem<TData>();
             GetQueryFilter(filter);
-            var res = Business.Import(data.__Struct.Caption, filter);
+            var res = Business.Export(data.__Struct.Caption, filter);
             GlobalContext.Current.Feature = 0;
             return res;
         }
 
+        /// <summary>
+        ///     列表数据
+        /// </summary>
+        /// <remarks>
+        /// 参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+        /// </remarks>
+        /// <returns></returns>
+        [Route("export/xlsx")]
+        [ApiAccessOptionFilter(ApiAccessOption.Internal | ApiAccessOption.Employe | ApiAccessOption.ArgumentIsDefault)]
+        public ApiFileResult Export(QueryArgument args)
+        {
+            var data = new TData();
+            GlobalContext.Current.Feature = 1;
+            var filter = new LambdaItem<TData>();
+            GetQueryFilter(filter);
+            var res = Business.Export(data.__Struct.Caption, filter);
+            GlobalContext.Current.Feature = 0;
+            return res;
+        }
         /// <summary>
         ///     读取查询条件
         /// </summary>

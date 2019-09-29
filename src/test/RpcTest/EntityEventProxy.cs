@@ -9,6 +9,7 @@ namespace Gboxt.Common.DataModel.ZeroNet
         public string Title => "Test";
     }
 
+
     /// <summary>
     /// 实体事件代理,实现网络广播功能
     /// </summary>

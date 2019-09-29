@@ -12,7 +12,6 @@ namespace MicroZero.Http.Gateway
     ///     路由配置
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    [DataContract]
     public class RouteOption
     {
         #region 配置
@@ -26,27 +25,31 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     安全设置
         /// </summary>
-        [DataMember]
         [JsonProperty("security")]
         public SecurityConfig Security { get; set; }
 
+
+        /// <summary>
+        ///     路径映射
+        /// </summary>
+        public Dictionary<string, AshxMapConfig> UrlMap { get; set; }
+
 #pragma warning disable CS0649
+
+        /// <summary>
+        ///     路径映射
+        /// </summary>
+        [JsonProperty("urlMap")] internal Dictionary<string, AshxMapConfig> UrlMaps;
+
         /// <summary>
         ///     缓存配置
         /// </summary>
-        [DataMember] [JsonProperty("cache")] internal List<CacheOption> _cacheSettings;
+        [DataMember] [JsonProperty("cache")] internal List<CacheOption> CacheSettings;
 
         /// <summary>
         ///     路由配置
         /// </summary>
-        [DataMember] [JsonProperty("route")] internal Dictionary<string, HostConfig> _routeConfig;
-
-        /// <summary>
-        ///     系统配置
-        /// </summary>
-        [DataMember]
-        [JsonProperty("sysConfig")]
-        private SystemConfig _systemConfig;
+        [DataMember] [JsonProperty("route")] internal Dictionary<string, HostConfig> RouteConfig;
 
         /// <summary>
         ///     系统配置
@@ -54,6 +57,13 @@ namespace MicroZero.Http.Gateway
         [DataMember]
         [JsonProperty("hostPath")]
         public Dictionary<string,int> HostPath{ get; set; }
+
+        /// <summary>
+        ///     系统配置
+        /// </summary>
+        [DataMember]
+        [JsonProperty("sysConfig")]
+        private SystemConfig _systemConfig;
 
         /// <summary>
         ///     系统配置
@@ -100,6 +110,7 @@ namespace MicroZero.Http.Gateway
             if (Option == null)
                 throw new Exception($"路由配置文件{ConfigFileName}内容错误");
 
+            Option.CheckUrlMap();
             Option.CheckRouteMap();
             Option.CheckSecurity();
             IsInitialized = true;
@@ -141,7 +152,7 @@ namespace MicroZero.Http.Gateway
                 foreach (var apiItem in Option.Security.denyTokens)
                     Option.Security.DenyTokens.Add(apiItem, apiItem);
         }
-
+        
         /// <summary>
         ///     缓存图
         /// </summary>
@@ -154,10 +165,10 @@ namespace MicroZero.Http.Gateway
         private void CheckRouteMap()
         {
             RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
-            if (_routeConfig == null)
+            if (RouteConfig == null)
                 return;
 
-            foreach (var kv in _routeConfig)
+            foreach (var kv in RouteConfig)
             {
                 var host = new HttpHost(kv.Value);
                 if (string.Equals(kv.Key, "Default", StringComparison.OrdinalIgnoreCase))
@@ -181,6 +192,21 @@ namespace MicroZero.Http.Gateway
                         RouteMap.Add(name, host);
                     else
                         RouteMap[name] = host;
+            }
+        }
+
+        /// <summary>
+        ///     初始化路径映射
+        /// </summary>
+        /// <returns></returns>
+        private void CheckUrlMap()
+        {
+            UrlMap = new Dictionary<string, AshxMapConfig>(StringComparer.OrdinalIgnoreCase);
+            if (UrlMaps == null)
+                return;
+            foreach (var kv in UrlMaps)
+            {
+                UrlMap.Add(kv.Key,kv.Value );
             }
         }
 

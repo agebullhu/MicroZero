@@ -21,8 +21,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.3" />
-    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.15" />
+    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.10" />
+    <PackageReference Include="Senparc.Weixin.MP" Version="16.7.17" />
   </ItemGroup>
 
   <ItemGroup>

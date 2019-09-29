@@ -16,7 +16,7 @@ namespace ZeroMQ
         /// <summary>
         /// Sockt数量
         /// </summary>
-        ZSocket[] Sockets { get; }
+        ZSocket[] Sockets { get; set; }
         /// <summary>
         /// 超时
         /// </summary>
@@ -28,19 +28,28 @@ namespace ZeroMQ
         /// <summary>
         /// 非托管句柄
         /// </summary>
-        DispoIntPtr Ptr { get; set; }
+        DispoIntPtr Ptr { get; }
+
+        /// <summary>
+        /// 准备
+        /// </summary>
+        /// <param name="events"></param>
+        DispoIntPtr RePrepare(ZPollEvent events);
+
         /// <summary>
         /// 准备
         /// </summary>
         /// <param name="sockets"></param>
         /// <param name="events"></param>
         void Prepare(ZSocket[] sockets, ZPollEvent events);
+
         /// <summary>
         /// 准备
         /// </summary>
         /// <param name="sockets"></param>
         /// <param name="events"></param>
         void Prepare(ZPollEvent events,params ZSocket[] sockets);
+
         /// <summary>
         /// 一次Pool
         /// </summary>

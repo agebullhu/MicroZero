@@ -21,7 +21,7 @@ namespace QueuePublisher
             s = DateTime.Now;
 
             for (int i = 0; i < 16; i++)
-                Task.Factory.StartNew(DoTest);
+                Task.Factory.StartNew(DoTest, TaskCreationOptions.LongRunning);
             Console.ReadKey();
 
             ZeroApplication.Shutdown();

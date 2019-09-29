@@ -169,5 +169,10 @@ namespace MicroZero.Http.Gateway
                 LogRecorderX.Exception(exception);
             }
         }
+
+        void IRouter.CheckMap(AshxMapConfig map)
+        {
+
+        }
     }
 }

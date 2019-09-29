@@ -238,12 +238,7 @@ namespace Agebull.MicroZero.PubSub
                 return JsonConvert.DeserializeObject<List<TData>>(args.Content);
             if (args.Buffer == null)
                 return new List<TData>();
-            using (var ms = new MemoryStream(args.Buffer))
-            {
-                var js = new DataContractJsonSerializer(typeof(List<TData>));
-                return (List<TData>)js.ReadObject(ms);
-            }
-
+            return JsonHelper.DeserializeObject<List<TData>>(args.Buffer.FromUtf8Bytes());
         }
 
         /// <summary>

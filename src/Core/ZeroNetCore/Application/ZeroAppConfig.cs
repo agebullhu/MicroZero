@@ -219,6 +219,8 @@ namespace Agebull.MicroZero
                 TaskCpuMultiple = option.TaskCpuMultiple;
             if (option.MaxWait > 0)
                 MaxWait = option.MaxWait;
+            if (option.PoolSize > 0)
+                PoolSize = option.PoolSize;
             if (option.CanRaiseEvent != null)
                 CanRaiseEvent = option.CanRaiseEvent;
 
@@ -245,6 +247,7 @@ namespace Agebull.MicroZero
                 ZeroAddress = option.ZeroAddress;
             if (ZeroMonitorPort <= 0)
                 ZeroMonitorPort = option.ZeroMonitorPort;
+            
             if (ZeroManagePort <= 0)
                 ZeroManagePort = option.ZeroManagePort;
             if (string.IsNullOrWhiteSpace(StationName))
@@ -264,6 +267,10 @@ namespace Agebull.MicroZero
                 TaskCpuMultiple = option.TaskCpuMultiple;
             if (MaxWait == 0)
                 MaxWait = option.MaxWait;
+
+            if (PoolSize <= 0)
+                PoolSize = option.PoolSize;
+
             if (CanRaiseEvent == null)
                 CanRaiseEvent = option.CanRaiseEvent;
 
@@ -300,6 +307,12 @@ namespace Agebull.MicroZero
         /// </summary>
         [IgnoreDataMember]
         public bool IsLinux { get; set; }
+
+        /// <summary>
+        ///    连接池大小
+        /// </summary>
+        [IgnoreDataMember]
+        public int PoolSize { get; set; }
 
         #region 桥接
 
@@ -356,6 +369,7 @@ namespace Agebull.MicroZero
 
         private bool CheckName(StationConfig config, string name)
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 if (_configs.Values.Where(p => p != config).Any(p => p.StationName == name))
@@ -380,6 +394,7 @@ namespace Agebull.MicroZero
             {
                 if (station == null)
                     return null;
+                //Console.WriteLine("lock (_configs)");
                 lock (_configs)
                 {
                     _configMap.TryGetValue(station, out var config);
@@ -390,6 +405,7 @@ namespace Agebull.MicroZero
 
         internal void Remove(StationConfig station)
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 _configs.Remove(station.Name);
@@ -403,6 +419,7 @@ namespace Agebull.MicroZero
 
         private void AddStation(StationConfig station)
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 if (_configs.TryGetValue(station.Name, out var config))
@@ -453,6 +470,7 @@ namespace Agebull.MicroZero
         /// </summary>
         public StationConfig[] GetConfigs()
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 return _configs.Values.Distinct().ToArray();
@@ -464,30 +482,10 @@ namespace Agebull.MicroZero
         /// </summary>
         public StationConfig[] GetConfigs(Func<StationConfig, bool> condition)
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 return _configs.Values.Where(condition).Distinct().ToArray();
-            }
-        }
-
-        /// <summary>
-        ///     刷新配置
-        /// </summary>
-        /// <param name="json"></param>
-        public bool FlushConfigs(string json)
-        {
-            try
-            {
-                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
-                foreach (var config in configs)
-                    AddStation(config);
-                ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
-                return true;
-            }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("LoadAllConfig", e, json);
-                return false;
             }
         }
 
@@ -497,9 +495,10 @@ namespace Agebull.MicroZero
         /// <param name="action"></param>
         public void Foreach(Action<StationConfig> action)
         {
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
-                foreach (var config in _configs.Values)
+                foreach (var config in _configs.Values.ToArray())
                     action(config);
             }
         }
@@ -518,6 +517,7 @@ namespace Agebull.MicroZero
                 return false;
             }
 
+            //Console.WriteLine("lock (_configs)");
             lock (_configs)
             {
                 return _configs.TryGetValue(stationName, out stationConfig);
@@ -560,6 +560,27 @@ namespace Agebull.MicroZero
             {
                 ZeroTrace.WriteException("UpdateConfig", e, stationName, json);
                 config = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     刷新配置
+        /// </summary>
+        /// <param name="json"></param>
+        public bool FlushConfigs(string json)
+        {
+            try
+            {
+                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
+                foreach (var config in configs)
+                    AddStation(config);
+                ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
+                return true;
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException("LoadAllConfig", e, json);
                 return false;
             }
         }
@@ -725,7 +746,8 @@ namespace Agebull.MicroZero
                 Config.ZeroManagePort = 8000;
             if (Config.ZeroMonitorPort <= 1024 || Config.ZeroMonitorPort >= 65000)
                 Config.ZeroMonitorPort = 8001;
-
+            if (Config.PoolSize > 4096 || Config.PoolSize < 10)
+                Config.PoolSize = 100;
             Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
             Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
             #endregion
@@ -813,6 +835,8 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("LogPath", LogRecorderX.LogPath);
             ZeroTrace.SystemLog("ZeroCenter", Config.ZeroAddress, Config.ZeroManagePort, Config.ZeroMonitorPort);
             ZeroTrace.SystemLog("Name", Config.StationName, GlobalContext.ServiceName, GlobalContext.ServiceRealName, Config.LocalIpAddress);
+
+            ZeroTrace.SystemLog("PoolSize", Config.PoolSize);
 
             string model;
             switch (Config.SpeedLimitModel)

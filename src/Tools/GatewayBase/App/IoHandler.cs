@@ -7,7 +7,6 @@ using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
-using Newtonsoft.Json;
 using Agebull.Common.Context;
 
 namespace MicroZero.Http.Gateway
@@ -134,25 +133,18 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void BeginZeroTrace(RouteData data)
         {
-            var socket = ZeroConnectionPool.GetSocket("TraceDispatcher", RandomOperate.Generate(8));
-            if (socket?.Socket == null)
+            var result = ZeroPublisher.Publish("TraceDispatcher", "Http".ToZeroBytes(), Description,
+                $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
+                data.ToZeroBytes(),
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                ZeroCommandExtend.AppNameBytes,
+                WebNameBytes,
+                ZeroCommandExtend.ServiceKeyBytes);
+            if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
             {
-                return;
+                GlobalContext.Current.Request.LocalGlobalId = result.GlobalId;
             }
-            using (socket)
-            {
-                var result = socket.Socket.Publish("Http", Description,
-                    $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
-                    data.ToZeroBytes(),
-                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    ZeroCommandExtend.AppNameBytes,
-                    WebNameBytes,
-                    ZeroCommandExtend.ServiceKeyBytes);
-                if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
-                {
-                    GlobalContext.Current.Request.LocalGlobalId = result.GlobalId;
-                }
-            }
+
         }
 
         /// <summary>
@@ -161,12 +153,6 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void EndZeroTrace(RouteData data)
         {
-            var socket = ZeroConnectionPool.GetSocket("TraceDispatcher", RandomOperate.Generate(8));
-            if (socket?.Socket == null)
-            {
-                return;
-            }
-
             var desc = new byte[]
             {
                 9,
@@ -185,19 +171,17 @@ namespace MicroZero.Http.Gateway
             var result = data.ResultMessage;
             data.ResultMessage = null;//拒绝重复传输
             data.Headers = null;//拒绝重复传输
-            using (socket)
-            {
-                socket.Socket.Publish("Http", desc,
-                    $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
-                    result.ToZeroBytes(),
-                    data.ToZeroBytes(),
-                    ZeroCommandExtend.AppNameBytes,
-                    WebNameBytes,
-                    GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                    GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
-                    GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
-                    ZeroCommandExtend.ServiceKeyBytes);
-            }
+            ZeroPublisher.Publish("TraceDispatcher", "Http".ToZeroBytes(),
+                desc,
+                $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
+                result.ToZeroBytes(),
+                data.ToZeroBytes(),
+                ZeroCommandExtend.AppNameBytes,
+                WebNameBytes,
+                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
+                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
+                GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
+                ZeroCommandExtend.ServiceKeyBytes);
         }
         #endregion
 

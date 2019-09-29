@@ -57,6 +57,7 @@ namespace ZeroMQ
         protected abstract void DoDispose();
 #if UNMANAGE_MONEY_CHECK
         public static Dictionary<string, int> Alocs = new Dictionary<string, int>();
+        
         /// <summary>
         /// 存活量
         /// </summary>
@@ -67,9 +68,9 @@ namespace ZeroMQ
         /// </summary>
         private static int _aliveCount;
         protected abstract string TypeName { get; }
-/// <summary>
-/// 析构
-/// </summary>
+        /// <summary>
+        /// 析构
+        /// </summary>
         public static void SetIsAloc(string name)
         {
             lock (Alocs)
@@ -96,15 +97,15 @@ namespace ZeroMQ
             }
             _aliveCount--;
         }
-/// <summary>
-/// 析构
-/// </summary>
+        /// <summary>
+        /// 析构
+        /// </summary>
         public void SetIsFree()
         {
             if (_isDisposed > 0)
                 return;
-            _isDisposed=1;
-            SetIsAloc(TypeName);
+            _isDisposed = 1;
+            SetIsFree(TypeName);
         }
 #endif
     }

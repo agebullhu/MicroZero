@@ -157,12 +157,12 @@ namespace Agebull.MicroZero.ZeroApis
                 case ZeroFrameType.ExtendText:
                     item.Files.Add(new NameValue<string, byte[]>
                     {
-                        name = GetString(bytes)
+                        Name = GetString(bytes)
                     });
                     return true;
                 case ZeroFrameType.BinaryContent:
                     if (item.Files.Count > 0)
-                        item.Files.Last().value = bytes;
+                        item.Files.Last().Value = bytes;
                     else
                         item.ZeroState = (byte) ZeroOperatorStateType.FrameInvalid;
                     return true;

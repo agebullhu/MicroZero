@@ -36,7 +36,7 @@ namespace ZeroMQ
         /// <summary>
         /// 非托管句柄
         /// </summary>
-        public DispoIntPtr Ptr { get; set; }
+        public DispoIntPtr Ptr { get; protected set; }
 
         /// <summary>
         /// 析构
@@ -50,5 +50,8 @@ namespace ZeroMQ
                 socket.Dispose();
             }
         }
+#if UNMANAGE_MONEY_CHECK
+        protected override string TypeName => "ZPoll";
+#endif
     }
 }

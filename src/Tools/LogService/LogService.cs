@@ -4,6 +4,7 @@ using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
+using MicroZero.LogService;
 using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.LogService
@@ -23,6 +24,23 @@ namespace Agebull.MicroZero.LogService
             StationName = "RemoteLog";
             //Subscribe = "Logs";
         }
+
+        private ZeroLogRecorder _recorder;
+
+        protected override void OnLoopBegin()
+        {
+            _recorder = new ZeroLogRecorder();
+            _recorder.Initialize();
+            base.OnLoopBegin();
+        }
+
+        protected override void OnLoopComplete()
+        {
+            _recorder.Shutdown();
+            _recorder = null;
+            base.OnLoopComplete();
+        }
+
         /// <inheritdoc />
         /// <summary>
         /// 执行命令
@@ -36,7 +54,7 @@ namespace Agebull.MicroZero.LogService
                 if (args.Content != null)
                 {
                     var infos = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
-                    LogRecorderX.BaseRecorder.RecordLog(infos);
+                    _recorder.RecordLog(infos);
                     foreach (var info in infos)
                     {
                         Console.WriteLine(info.Message );
@@ -57,7 +75,7 @@ namespace Agebull.MicroZero.LogService
                         case TsonDataType.Object:
                             RecordInfo info = new RecordInfo();
                             RecordInfoTson.FromTson(serializer, info);
-                            LogRecorderX.BaseRecorder.RecordLog(info);
+                            _recorder.RecordLog(info);
                             break;
                         case TsonDataType.Array:
                             serializer.ReadType();
@@ -71,7 +89,7 @@ namespace Agebull.MicroZero.LogService
                                 serializer.End();
                                 infos.Add(info);
                             }
-                            LogRecorderX.BaseRecorder.RecordLog(infos);
+                            _recorder.RecordLog(infos);
                             break;
                     }
                 }

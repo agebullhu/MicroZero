@@ -19,7 +19,7 @@ namespace Agebull.MicroZero.ZeroApis
     {
         internal ApiStationBase Station;
 
-        internal ZSocket Socket;
+        internal ZSocket Socket { get; set; }
 
 
         internal ApiCallItem Item;
@@ -27,16 +27,16 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 调用 
         /// </summary>
-        public async Task ExecuteAsync()
+        public void ExecuteAsync()
         {
             using (IocScope.CreateScope())
             {
                 try
                 {
                     if (LogRecorderX.LogMonitor)
-                        await AsyncCallByMonitor();
+                        AsyncCallByMonitor();
                     else
-                        await AsyncCallNoMonitor();
+                        AsyncCallNoMonitor();
                 }
                 catch (Exception ex)
                 {
@@ -49,17 +49,15 @@ namespace Agebull.MicroZero.ZeroApis
 
 
         #region 异步
-
-
-        private async Task AsyncCallByMonitor()
+        
+        private void AsyncCallByMonitor()
         {
             using (MonitorScope.CreateScope($"{Station.StationName}/{Item.ApiName}"))
             {
-                LogRecorderX.MonitorTrace($"Caller:{Encoding.ASCII.GetString(Item.Caller)}");
-                LogRecorderX.MonitorTrace($"GlobalId:{Item.GlobalId}");
-                LogRecorderX.MonitorTrace(JsonConvert.SerializeObject(Item, Formatting.Indented));
+                LogRecorderX.MonitorTrace($"【Caller】{Encoding.ASCII.GetString(Item.Caller)} 【GlobalId】{Item.GlobalId}");
+                LogRecorderX.MonitorTrace(JsonConvert.SerializeObject(Item));
 
-                ZeroOperatorStateType state = RestoryContext();
+                var state = RestoryContext();
 
                 if (state == ZeroOperatorStateType.Ok)
                 {
@@ -67,15 +65,15 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         Prepare();
                     }
-                    await Task.Yield();
+                    
                     using (MonitorScope.CreateScope("Do"))
                     {
                         state = CommandPrepare(true, out var action);
-                        await Task.Yield();
+                        
                         if (state == ZeroOperatorStateType.Ok)
                         {
                             var res = CommandExec(true, action);
-                            await Task.Yield();
+                            
                             state = CheckCommandResult(res);
                         }
                     }
@@ -96,27 +94,28 @@ namespace Agebull.MicroZero.ZeroApis
                     ZeroTrace.WriteError(Item.ApiName, "SendResult");
                     Interlocked.Increment(ref Station.SendError);
                 }
-                await Task.Yield();
+                
                 using (MonitorScope.CreateScope("End"))
                 {
                     End();
                 }
+                LogRecorderX.MonitorTrace($"【WaitCount】{Station.WaitCount}");
             }
         }
 
-        private async Task AsyncCallNoMonitor()
+        private void AsyncCallNoMonitor()
         {
             ZeroOperatorStateType state = RestoryContext();
             if (state == ZeroOperatorStateType.Ok)
             {
                 Prepare();
-                await Task.Yield();
+                
                 state = CommandPrepare(false, out var action);
-                await Task.Yield();
+                
                 if (state == ZeroOperatorStateType.Ok)
                 {
                     var res = CommandExec(false, action);
-                    await Task.Yield();
+                    
                     state = CheckCommandResult(res);
                 }
 
@@ -133,7 +132,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 Interlocked.Increment(ref Station.SendError);
             }
-            await Task.Yield();
+            
             End();
         }
 

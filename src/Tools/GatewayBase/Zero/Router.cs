@@ -14,6 +14,15 @@ namespace MicroZero.Http.Gateway
         ///     远程调用
         /// </summary>
         /// <returns></returns>
+        private Task<string> CallZeroTask()
+        {
+            return Task.Factory.StartNew(CallZero);
+        }
+
+        /// <summary>
+        ///     远程调用
+        /// </summary>
+        /// <returns></returns>
         private string CallZero()
         {
             if (!(Data.RouteHost is ZeroHost host))
@@ -25,30 +34,26 @@ namespace MicroZero.Http.Gateway
             // 远程调用
             using (MonitorScope.CreateScope("CallZero"))
             {
-                return CallApi(host);
-            }
-        }
+                var form = JsonHelper.SerializeObject(Data.Arguments);
+                var caller = new ApiClient
+                {
+                    Station = host.Station,
+                    Commmand = Data.ApiName,
+                    Argument = Data.HttpContext ?? form,
+                    ExtendArgument = form,
+                    Files = Data.Files,
+                    ContextJson = Data.GlobalContextJson
+                };
 
-        private string CallApi(ZeroHost zeroHost)
-        {
-            Task.Yield();
-            var form = JsonHelper.SerializeObject(Data.Arguments);
-            var caller = new ApiClient
-            {
-                Station = zeroHost.Station,
-                Commmand = Data.ApiName,
-                Argument = Data.HttpContext ?? form,
-                ExtendArgument = form,
-                Files = Data.Files,
-                ContextJson = Data.GlobalContextJson
-            };
-            caller.CallCommand();
-            Data.ZeroState = caller.State;
-            Data.UserState = caller.State.ToOperatorStatus(true);
-            caller.CheckStateResult();
-            Data.IsFile = caller.ResultType == ZeroFrameType.ResultFileEnd;
-            Data.ResultBinary = caller.Binary;
-            return Data.ResultMessage = caller.Result;
+                caller.CallCommand();
+
+                Data.ZeroState = caller.State;
+                Data.UserState = caller.State.ToOperatorStatus(true);
+                caller.CheckStateResult();
+                Data.IsFile = caller.ResultType == ZeroFrameType.ResultFileEnd;
+                Data.ResultBinary = caller.Binary;
+                return caller.Result;
+            }
         }
         /*
         private string CallApi2(ZeroHost zeroHost)

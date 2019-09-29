@@ -42,6 +42,7 @@ namespace ZeroMQ
             get;
             set;
         }
+
         /// <summary>
         /// 是否使用中（仅用于MicroZero）
         /// </summary>
@@ -92,13 +93,17 @@ namespace ZeroMQ
             /// </summary>
             Open = 0x8,
             /// <summary>
+            /// 对象正常但因暂停而不可用
+            /// </summary>
+            Pause = 0x10,
+            /// <summary>
             /// 正常关闭
             /// </summary>
-            Close = 0x10,
+            Close = 0x20,
             /// <summary>
             /// 对象已释放
             /// </summary>
-            Free = 0x20,
+            Free = 0x40,
             /// <summary>
             /// 损坏
             /// </summary>
@@ -221,7 +226,7 @@ namespace ZeroMQ
                 SocketType = socketType
             };
 
-            return !socket.Initialize(out error) ? default(ZSocket) : socket;
+            return !socket.Initialize(out error) ? null : socket;
         }
 
         /// <summary>
@@ -254,7 +259,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static string CreateRealName(bool isService, params string[] ranges)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(isService ? "+<" : "+>");
             sb.Append(GlobalContext.ServiceRealName);
             foreach (var range in ranges)
@@ -275,7 +280,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static byte[] CreateIdentity(bool isService = false)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(isService ? "+<" : "+>");
             sb.Append(GlobalContext.ServiceRealName);
             sb.Append("-");
@@ -290,7 +295,7 @@ namespace ZeroMQ
         /// <returns></returns>
         public static byte[] CreateIdentity(bool isService, params string[] ranges)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append(isService ? "+<" : "+>");
             sb.Append(GlobalContext.ServiceRealName);
             foreach (var range in ranges)
@@ -412,6 +417,38 @@ namespace ZeroMQ
         public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity)
         {
             return CreateClientSocketInner(address, type, identity);
+        }
+
+        /// <summary>
+        /// 构建长连接套接字
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="type"></param>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static ZSocket CreateLongLink(string address, ZSocketType type, byte[] identity)
+        {
+            if (!ZContext.IsAlive)
+                return null;
+            var socket = Create(type, out var error);
+            if (error != null)
+            {
+                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                return null;
+            }
+            socket.SetOption(ZSocketOption.IDENTITY, identity);
+            ConfigSocket(socket, false);
+            if (Option.HeartbeatIvl > 0)
+            {
+                socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+                socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+                socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
+            }
+            if (socket.Connect(address, out error))
+                return socket;
+            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            socket.Dispose();
+            return socket;
         }
 
         /// <summary>
@@ -727,14 +764,15 @@ namespace ZeroMQ
         {
             //EnsureNotDisposed();
 
-            error = _error = default(ZError);
-            flags = flags | ZSocketFlags.More;
+            error = _error = null;
+            flags |= ZSocketFlags.More;
 
             do
             {
                 var frame = ZFrame.CreateEmpty();
 
-                if (framesToReceive == 1) flags = flags & ~ZSocketFlags.More;
+                if (framesToReceive == 1)
+                    flags &= ~ZSocketFlags.More;
 
                 while (-1 == zmq.msg_recv(frame.Ptr, SocketPtr, (int)flags))
                 {
@@ -742,7 +780,7 @@ namespace ZeroMQ
 
                     if (error.IsError(ZError.Code.EINTR))
                     {
-                        error = _error = default(ZError);
+                        error = _error = null;
                         continue;
                     }
 
@@ -999,7 +1037,7 @@ namespace ZeroMQ
 
             if (frame.IsDismissed) throw new ObjectDisposedException("frame");
 
-            error = _error = default(ZError);
+            error = _error = null;
 
             while (-1 == zmq.msg_send(frame.Ptr, SocketPtr, (int)flags))
             {
@@ -1007,7 +1045,7 @@ namespace ZeroMQ
 
                 if (!error.IsError(ZError.Code.EINTR))
                     return false;
-                error = _error = default(ZError);
+                error = _error = null;
             }
 
             // Tell IDisposable to not unallocate zmq_msg
@@ -1026,7 +1064,7 @@ namespace ZeroMQ
         {
             //EnsureNotDisposed();
 
-            error = _error = default(ZError);
+            error = _error = null;
             message = null; // message is always null
 
             using (var msg = ZFrame.CreateEmpty())
@@ -1039,7 +1077,7 @@ namespace ZeroMQ
                         error = _error = ZError.GetLastErr();
                         if (!error.IsError(ZError.Code.EINTR))
                             return false;
-                        error = _error = default(ZError);
+                        error = _error = null;
                     }
 
                     // will have to receive more?
@@ -1053,7 +1091,7 @@ namespace ZeroMQ
 
                         if (!error.IsError(ZError.Code.EINTR))
                             return false;
-                        error = _error = default(ZError);
+                        error = _error = null;
                     }
 
                     // msg.Dismiss
@@ -1077,7 +1115,7 @@ namespace ZeroMQ
             if (message == null || message.Count == 0)
                 return false;
             _error = null;
-            int i = 0;
+            var i = 0;
             for (; i < message.Count - 1; ++i)
             {
                 if (!SendFrame(message[i], FlagsSndmore))
@@ -1102,7 +1140,7 @@ namespace ZeroMQ
                 return true;
             }
             _error = null;
-            int i = 0;
+            var i = 0;
             for (; i < array.Length - 1; ++i)
             {
                 using (var f = new ZFrame(array[i]))
@@ -1123,7 +1161,7 @@ namespace ZeroMQ
             if (array == null || array.Length == 0)
                 return false;
             _error = null;
-            int i = 0;
+            var i = 0;
             for (; i < array.Length - 1; ++i)
             {
                 using (var f = new ZFrame(array[i]))
@@ -1170,7 +1208,7 @@ namespace ZeroMQ
             if (array == null || array.Length == 0)
                 return false;
             _error = null;
-            int i = 0;
+            var i = 0;
             for (; i < array.Length - 1; ++i)
             {
                 if (!SendFrame(array[i], FlagsSndmore))
@@ -1305,6 +1343,7 @@ namespace ZeroMQ
         {
             SetOption(ZSocketOption.TCP_ACCEPT_FILTER, (string)null);
         }
+
         /// <summary>
         /// 配置
         /// </summary>
@@ -1712,7 +1751,7 @@ namespace ZeroMQ
 
         public byte[] GetOptionBytes(ZSocketOption option, int size = MaxBinaryOptionSize)
         {
-            if (GetOption(option, out byte[] result, size)) return result;
+            if (GetOption(option, out var result, size)) return result;
             return null;
         }
 
@@ -1741,7 +1780,7 @@ namespace ZeroMQ
 
         public bool GetOption(ZSocketOption option, out int value)
         {
-            value = default(int);
+            value = 0;
 
             var optionLength = Marshal.SizeOf(typeof(int));
             using (var optionValue = DispoIntPtr.Alloc(optionLength))
@@ -1758,8 +1797,7 @@ namespace ZeroMQ
 
         public int GetOptionInt32(ZSocketOption option)
         {
-            if (GetOption(option, out int result)) return result;
-            return default(int);
+            return GetOption(option, out int result) ? result : 0;
         }
 
         public bool GetOption(ZSocketOption option, out uint value)
@@ -1771,8 +1809,7 @@ namespace ZeroMQ
 
         public uint GetOptionUInt32(ZSocketOption option)
         {
-            if (GetOption(option, out uint result)) return result;
-            return default(uint);
+            return GetOption(option, out uint result) ? result : default(uint);
         }
 
         public bool GetOption(ZSocketOption option, out long value)
@@ -1832,7 +1869,7 @@ namespace ZeroMQ
         {
             if (value == null) return SetOptionNull(option);
 
-            using (var optionValue = DispoIntPtr.AllocString(value, out int optionLength))
+            using (var optionValue = DispoIntPtr.AllocString(value, out var optionLength))
             {
                 return SetOptionInner(option, optionValue, optionLength);
             }
@@ -1905,7 +1942,7 @@ namespace ZeroMQ
 
                 if (error.IsError(ZError.Code.EINTR))
                 {
-                    error = _error = default(ZError);
+                    error = _error = null;
                     continue;
                 }
                 pin.Free();
@@ -1953,7 +1990,7 @@ namespace ZeroMQ
                 error = _error = ZError.GetLastErr();
                 if (error.IsError(ZError.Code.EINTR))
                 {
-                    error = _error = default(ZError);
+                    error = _error = null;
                     continue;
                 }
 
@@ -1979,7 +2016,7 @@ namespace ZeroMQ
                 return false;
             }
             State = SocketState.Create;
-            error = _error = default(ZError);
+            error = _error = null;
             ZContext.AddSocket(this);
             return true;
         }
@@ -1994,7 +2031,7 @@ namespace ZeroMQ
                 return false;
             try
             {
-                bool success = true;
+                var success = true;
                 error = _error = ZError.None;
                 if (SocketPtr != IntPtr.Zero)
                 {
@@ -2035,7 +2072,7 @@ namespace ZeroMQ
         [HandleProcessCorruptedStateExceptions]//捕获c++异常
         private bool ConnectInner(string endpoint, out ZError error)
         {
-            error = _error = default(ZError);
+            error = _error = null;
             if (State.HasFlag(SocketState.Close) || State.HasFlag(SocketState.Connection) || State.HasFlag(SocketState.Failed))
                 return false;
             try
@@ -2075,7 +2112,7 @@ namespace ZeroMQ
         [HandleProcessCorruptedStateExceptions]//捕获c++异常
         private bool DisconnectInner(string endpoint, out ZError error)
         {
-            error = _error = default(ZError);
+            error = _error = null;
             if (State.HasFlag(SocketState.Close) || !State.HasFlag(SocketState.Connection) || State.HasFlag(SocketState.Failed))
                 return false;
             try
@@ -2122,7 +2159,7 @@ namespace ZeroMQ
         /// <param name="error"></param>
         private bool BindInner(string endpoint, out ZError error)
         {
-            error = _error = default(ZError);
+            error = _error = null;
             if (State.HasFlag(SocketState.Close) || State.HasFlag(SocketState.Binding) || State.HasFlag(SocketState.Failed))
                 return false;
             if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
@@ -2152,7 +2189,7 @@ namespace ZeroMQ
         /// <param name="error"></param>
         private bool UnbindInner(string endpoint, out ZError error)
         {
-            error = _error = default(ZError);
+            error = _error = null;
             if (State.HasFlag(SocketState.Close) || !State.HasFlag(SocketState.Binding) || State.HasFlag(SocketState.Failed))
                 return false;
             if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));

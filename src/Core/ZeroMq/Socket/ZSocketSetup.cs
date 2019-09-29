@@ -118,7 +118,7 @@
 				return;
 			}
 
-			foreach (Action<ZSocket> initializer in _socketInitializers)
+			foreach (var initializer in _socketInitializers)
 			{
 				initializer.Invoke(_socket);
 			}
@@ -128,12 +128,12 @@
 
 		public void BindConnect()
 		{
-			foreach (string endpoint in _bindings)
+			foreach (var endpoint in _bindings)
 			{
 				_socket.Bind(endpoint);
 			}
 
-			foreach (string endpoint in _connections)
+			foreach (var endpoint in _connections)
 			{
 				_socket.Connect(endpoint);
 			}
@@ -159,12 +159,12 @@
 
 			ZError error;
 
-			foreach (string endpoint in _bindings)
+			foreach (var endpoint in _bindings)
 			{
 				_socket.Unbind(endpoint, out error);
 			}
 
-			foreach (string endpoint in _connections)
+			foreach (var endpoint in _connections)
 			{
 				_socket.Disconnect(endpoint, out error);
 			}

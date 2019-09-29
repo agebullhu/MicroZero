@@ -32,7 +32,7 @@ namespace ZeroMQ.lib
 		MacOSX,
 	}
 
-	public static partial class Platform
+	public static class Platform
 	{
 		public static readonly string[] Compilers = new string[] {
 			"msvc2008",
@@ -73,7 +73,7 @@ namespace ZeroMQ.lib
 
 		static Platform()
 		{
-            typeof(object).Module.GetPEKind(out PortableExecutableKinds peKinds, out Architecture);
+            typeof(object).Module.GetPEKind(out var peKinds, out Architecture);
 
             Version osVersion;
 			switch (Environment.OSVersion.Platform)
@@ -154,7 +154,7 @@ namespace ZeroMQ.lib
 
 			IsMono = Type.GetType("Mono.Runtime") != null;
 
-			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			IsMonoTouch = assemblies.Any(a => a.GetName().Name.Equals("MonoTouch", StringComparison.InvariantCultureIgnoreCase));
 			IsMonoMac = assemblies.Any(a => a.GetName().Name.Equals("MonoMac", StringComparison.InvariantCultureIgnoreCase));
 			IsXamarinIOS = assemblies.Any(a => a.GetName().Name.Equals("Xamarin.iOS", StringComparison.InvariantCultureIgnoreCase));
@@ -201,13 +201,13 @@ namespace ZeroMQ.lib
 		public static void ExpandPaths(IList<string> stream,
 			string extension, IEnumerable<string> paths) 
 		{
-			int pathsC = paths == null ? 0 : paths.Count();
+			var pathsC = paths == null ? 0 : paths.Count();
 
-			foreach (string libraryPath in stream.ToArray())
+			foreach (var libraryPath in stream.ToArray())
 			{
 				if (-1 == libraryPath.IndexOf(extension)) continue;
 
-				int libraryPathI = stream.IndexOf(libraryPath);
+				var libraryPathI = stream.IndexOf(libraryPath);
 				stream.RemoveAt(libraryPathI);
 
 				if (pathsC == 0)
@@ -222,7 +222,7 @@ namespace ZeroMQ.lib
 					continue;
 				}
 
-				foreach (string realLibraryPath in paths)
+				foreach (var realLibraryPath in paths)
 				{
 					stream.Insert(libraryPathI, libraryPath.Replace(extension, realLibraryPath));
 					++libraryPathI;
@@ -234,11 +234,11 @@ namespace ZeroMQ.lib
 		public static void SetupImplementation(Type platformDependant)
 		{
 			// Baseline by PlatformKind
-			string platformKind = Enum.GetName(typeof(PlatformKind), Kind);
+			var platformKind = Enum.GetName(typeof(PlatformKind), Kind);
 			AssignImplementations(platformDependant, platformKind);
 
 			// Overwrite by PlatformName
-			string platformName = Enum.GetName(typeof(PlatformName), Name);
+			var platformName = Enum.GetName(typeof(PlatformName), Name);
 			if (platformName != platformKind)
 			{
 				AssignImplementations(platformDependant, platformName);
@@ -254,14 +254,14 @@ namespace ZeroMQ.lib
 
 		private static void AssignImplementations(Type platformDependant, string implementationName)
 		{
-			Type platformImplementation = platformDependant.GetNestedType(implementationName, bindings);
+			var platformImplementation = platformDependant.GetNestedType(implementationName, bindings);
 			// if (platformImplementation == null) return;
 
-			FieldInfo[] fields = platformDependant.GetFields(bindings);
-			foreach (FieldInfo field in fields)
+			var fields = platformDependant.GetFields(bindings);
+			foreach (var field in fields)
 			{
-				Type fieldType = field.FieldType;
-				string delegateName = fieldType.Name;
+				var fieldType = field.FieldType;
+				var delegateName = fieldType.Name;
 				MethodInfo methodInfo__internal = null;
 				FieldInfo fieldInfo__internal = null;
 
@@ -316,7 +316,7 @@ namespace ZeroMQ.lib
 				}
 				else if (fieldInfo__internal != null)
 				{
-					object value = fieldInfo__internal.GetValue(null);
+					var value = fieldInfo__internal.GetValue(null);
 					field.SetValue(null, value);
 				}
 				// else { field.SetValue(null, null); }
@@ -333,7 +333,7 @@ namespace ZeroMQ.lib
 				return true;
 			}
 
-			Stream resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+			var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
 
 			if (resourceStream == null)
 			{
@@ -345,7 +345,7 @@ namespace ZeroMQ.lib
 
 			try
 			{
-				using (FileStream fileStream = File.Create(outputPath))
+				using (var fileStream = File.Create(outputPath))
 				{
 					resourceStream.CopyTo(fileStream);
 				}

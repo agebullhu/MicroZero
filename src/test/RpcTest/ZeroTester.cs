@@ -11,23 +11,24 @@ namespace RpcTest
         {
             return SystemManager.Instance.TryInstall(Station, "api");
         }
+
         protected override void DoAsync()
         {
-            Thread.Sleep(10);
-            ApiClient client = new ApiClient
+            var client = new ApiClient
             {
                 Station = Station,
                 Commmand = Api,
                 Argument = Arg
             };
             client.CallCommand();
+
             if (client.State < ZeroOperatorStateType.Failed)
             {
                 Interlocked.Increment(ref SuCount);
             }
             else if (client.State < ZeroOperatorStateType.Error)
             {
-                Interlocked.Increment(ref BlError);
+                Interlocked.Increment(ref BugError);
             }
             else if (client.State < ZeroOperatorStateType.TimeOut)
             {

@@ -25,7 +25,7 @@ namespace MicroZero.Http.Route
         /// </summary>
         public HttpApiCaller(string host)
         {
-            Host = host; 
+            Host = host;
         }
 
         /// <summary>
@@ -44,10 +44,10 @@ namespace MicroZero.Http.Route
         public string Bearer { get; set; }
 
         #endregion
-         
+
 
         #region 辅助方法
-
+        
         /// <summary>
         ///     参数格式化
         /// </summary>
@@ -97,15 +97,15 @@ namespace MicroZero.Http.Route
             _webRequest.Timeout = 30000;
             _webRequest.KeepAlive = false;
             _webRequest.Method = method;
-            if (!string.IsNullOrEmpty(context))
-            {
-                _webRequest.ContentType = "application/json";
+            if (!string.IsNullOrEmpty(auth))
                 _webRequest.Headers.Add(HttpRequestHeader.Authorization, auth);
-                using (var rs = _webRequest.GetRequestStream())
-                {
-                    var formData = Encoding.UTF8.GetBytes(context);
-                    rs.Write(formData, 0, formData.Length);
-                }
+            if (string.IsNullOrEmpty(context))
+                return;
+            _webRequest.ContentType = "application/json";
+            using (var rs = _webRequest.GetRequestStream())
+            {
+                var formData = Encoding.UTF8.GetBytes(context);
+                rs.Write(formData, 0, formData.Length);
             }
         }
 

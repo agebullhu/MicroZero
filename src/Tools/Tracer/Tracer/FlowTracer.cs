@@ -20,7 +20,7 @@ namespace MicroZero.Http.Route
     /// </summary>
     public class FlowTracer : SubStation<CountData, PublishItem>
     {
-        private bool saveTrace;
+        private readonly bool _saveTrace;
         /// <summary>
         /// 构造路由计数器
         /// </summary>
@@ -29,8 +29,11 @@ namespace MicroZero.Http.Route
             Name = "FlowTracer";
             StationName = "TraceDispatcher";
             IsRealModel = true;
-            _timer = new Timer(1000) { AutoReset = true };
-            saveTrace = Agebull.Common.Configuration.ConfigurationManager.AppSettings.GetBool("saveTrace", false);
+            _timer = new Timer(1000)
+            {
+                AutoReset = true
+            };
+            _saveTrace = Agebull.Common.Configuration.ConfigurationManager.AppSettings.GetBool("saveTrace");
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
         }
@@ -40,6 +43,9 @@ namespace MicroZero.Http.Route
 
 
         private readonly Dictionary<string, FlowRoot> _flows = new Dictionary<string, FlowRoot>();
+
+
+        private readonly SortedDictionary<long, List<string>> _flow2 = new SortedDictionary<long, List<string>>();
 
         /// <summary>
         /// 执行命令
@@ -78,6 +84,10 @@ namespace MicroZero.Http.Route
                         }
                     });
                     Handle(args, root);
+                    var tk = DateTime.Now.Ticks;
+                    if(_flow2.TryGetValue(tk,out var ids))
+                        ids.Add(args.RequestId);
+                    else _flow2.Add(tk, new List<string> { args.RequestId });
                 }
                 else
                 {
@@ -185,26 +195,36 @@ namespace MicroZero.Http.Route
 
         void SendToWebSocket(FlowRoot root)
         {
-            lock (waiting)
+            lock (_waiting)
             {
-                if (!waiting.ContainsKey(root.RequestId))
-                    waiting.Add(root.RequestId, root);
+                if (!_waiting.ContainsKey(root.RequestId))
+                    _waiting.Add(root.RequestId, root);
             }
         }
 
         private readonly Timer _timer;
 
-        private readonly Dictionary<string, FlowRoot> waiting = new Dictionary<string, FlowRoot>();
+        private readonly Dictionary<string, FlowRoot> _waiting = new Dictionary<string, FlowRoot>();
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            List<FlowRoot> datas;
-            lock (waiting)
+            var max = DateTime.Now.AddMinutes(-5).Ticks;
+            foreach (var k in _flow2.Keys.Where(p=>p <= max).ToArray())
             {
-                if (waiting.Count == 0)
+                foreach (var id in _flow2[k])
+                {
+                    _flows.Remove(id);
+                }
+                _flow2.Remove(k);
+            }
+
+            List<FlowRoot> datas;
+            lock (_waiting)
+            {
+                if (_waiting.Count == 0)
                     return;
-                datas = waiting.Values.ToList();
-                waiting.Clear();
+                datas = _waiting.Values.ToList();
+                _waiting.Clear();
             }
 
             int cnt = 0;
@@ -218,7 +238,7 @@ namespace MicroZero.Http.Route
                 }
                 var json = JsonHelper.SerializeObject(root);
                 WebSocketNotify.Publish("trace_flow", root.RequestId, json);
-                if (!saveTrace)
+                if (!_saveTrace)
                     continue;
                 if (access.Any(p => p.RequestId == root.RequestId))
                     access.SetValue(p => p.FlowJson, json, p => p.RequestId == root.RequestId);
@@ -256,7 +276,7 @@ namespace MicroZero.Http.Route
                 {
                     WebSocketNotify.Publish("trace_flow", "~" + key, root.FlowJson);
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
             return new ApiResult
             {
                 Success = true,
