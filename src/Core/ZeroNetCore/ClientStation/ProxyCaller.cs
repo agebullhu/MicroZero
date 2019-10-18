@@ -97,6 +97,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
+                Result = ApiResultIoc.NoReadyJson;
                 State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
@@ -104,8 +105,8 @@ namespace Agebull.MicroZero.ZeroApis
             var socket = ApiProxy.GetSocket(Station, Name);
             if (socket == null)
             {
-                Result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
+                Result = ApiResultIoc.NetworkErrorJson;
+                State = ZeroOperatorStateType.LocalZmqError;
                 return;
             }
 
@@ -126,6 +127,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
+                Result = ApiResultIoc.NoReadyJson;
                 State = ZeroOperatorStateType.LocalNoReady;
                 return;
             }
@@ -133,8 +135,8 @@ namespace Agebull.MicroZero.ZeroApis
             var socket = ApiProxy.GetSocket(Station, Name);
             if (socket == null)
             {
-                Result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
+                Result = ApiResultIoc.NetworkErrorJson;
+                State = ZeroOperatorStateType.LocalZmqError;
                 return;
             }
             socket.SetOption(ZSocketOption.RCVTIMEO, 30000);

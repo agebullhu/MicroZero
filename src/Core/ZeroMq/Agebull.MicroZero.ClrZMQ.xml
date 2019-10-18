@@ -180,12 +180,12 @@
         </member>
         <member name="M:ZeroMQ.ZContext.RemoveSocket(ZeroMQ.ZSocket)">
             <summary>
-            Terminate the ZeroMQ context.
+            从资源池中删除
             </summary>
         </member>
         <member name="M:ZeroMQ.ZContext.Terminate(ZeroMQ.ZError@)">
             <summary>
-            Terminate the ZeroMQ context.
+            终止所有网络资源
             </summary>
         </member>
         <member name="M:ZeroMQ.ZContext.Terminate">
@@ -743,6 +743,12 @@
             非托管句柄
             </summary>
         </member>
+        <member name="M:ZeroMQ.IZmqPool.RePrepare(ZeroMQ.ZPollEvent)">
+            <summary>
+            准备
+            </summary>
+            <param name="events"></param>
+        </member>
         <member name="M:ZeroMQ.IZmqPool.Prepare(ZeroMQ.ZSocket[],ZeroMQ.ZPollEvent)">
             <summary>
             准备
@@ -808,6 +814,12 @@
             <param name="sockets"></param>
             <param name="events"></param>
         </member>
+        <member name="M:ZeroMQ.LinuxZPoll.RePrepare(ZeroMQ.ZPollEvent)">
+            <summary>
+            准备
+            </summary>
+            <param name="events"></param>
+        </member>
         <member name="M:ZeroMQ.LinuxZPoll.Poll">
             <summary>
             一次Pool
@@ -846,6 +858,12 @@
             准备
             </summary>
             <param name="sockets"></param>
+            <param name="events"></param>
+        </member>
+        <member name="M:ZeroMQ.WinZPoll.RePrepare(ZeroMQ.ZPollEvent)">
+            <summary>
+            准备
+            </summary>
             <param name="events"></param>
         </member>
         <member name="M:ZeroMQ.WinZPoll.Poll">
@@ -985,6 +1003,11 @@
         <member name="T:ZeroMQ.SocketOption">
             <summary>
             Socket默认配置
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.SocketOption.#ctor">
+            <summary>
+            构造
             </summary>
         </member>
         <member name="P:ZeroMQ.SocketOption.PoolTimeOut">
@@ -1142,6 +1165,7 @@
             Removes ZFrames.
             </summary>
             <returns>The <see cref="T:ZeroMQ.ZFrame"/>.</returns>
+            <param name="index"></param>
             <param name="dispose">If set to <c>false</c>, do not dispose the ZFrame.</param>
         </member>
         <member name="P:ZeroMQ.ZMessage.Count">
@@ -1155,118 +1179,21 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:ZeroMQ.ZSocket">
+        <member name="M:ZeroMQ.ZMessage.Duplicate(System.Int32)">
             <summary>
-                Sends and receives messages, single frames and byte frames across ZeroMQ.
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.StationName">
-            <summary>
-            关联的站点名称（仅用于MicroZero）
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.IsUsing">
-            <summary>
-            是否使用中（仅用于MicroZero）
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.Endpoint">
-            <summary>
-                已绑定地址
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.LastError">
-            <summary>
-            最后错误
-            </summary>
-        </member>
-        <member name="T:ZeroMQ.ZSocket.SocketState">
-            <summary>
-            状态
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.None">
-            <summary>
-            未确定
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Create">
-            <summary>
-            对象已生成
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Connection">
-            <summary>
-            连接
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Binding">
-            <summary>
-            绑定
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Open">
-            <summary>
-            连接方式开启
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Close">
-            <summary>
-            正常关闭
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Free">
-            <summary>
-            对象已释放
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.ZSocket.SocketState.Failed">
-            <summary>
-            损坏
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.State">
-            <summary>
-            状态 -1 连接失败
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.GetLastError">
-            <summary>
-            最后错误
+            重用
             </summary>
             <returns></returns>
         </member>
-        <member name="P:ZeroMQ.ZSocket.IsEmpty">
+        <member name="T:ZeroMQ.ZSocket">
             <summary>
-                是否为空
+                Sends and receives messages, single frames and byte frames across ZeroMQ.
             </summary>
         </member>
         <member name="P:ZeroMQ.ZSocket.SocketType">
             <summary>
                 Gets the <see cref="T:ZeroMQ.ZSocketType" /> value for the current socket.
             </summary>
-        </member>
-        <member name="P:ZeroMQ.ZSocket.ReceiveMore">
-            <summary>
-                Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZSocketType)">
-            <summary>
-                构造
-                You are using ZContext.Current!
-            </summary>
-            <returns>
-                实例
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
-            <summary>
-                构造
-            </summary>
-            <returns>
-                实例
-            </returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
             <summary>
@@ -1276,20 +1203,7 @@
                 实例
             </returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
         <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType)">
-            <summary>
-                构造
-            </summary>
-            <returns>
-                实例
-            </returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
             <summary>
                 构造
             </summary>
@@ -1313,110 +1227,86 @@
                 实例
             </returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateRealName(System.Boolean,System.String[])">
+        <member name="M:ZeroMQ.ZSocket.Create(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
             <summary>
-            格式化身份名称
+                构造
             </summary>
-            <param name="isService"></param>
-            <param name="ranges"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean)">
-            <summary>
-            格式化身份名称
-            </summary>
-            <param name="isService"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean,System.String[])">
-            <summary>
-            格式化身份名称
-            </summary>
-            <param name="isService"></param>
-            <param name="ranges"></param>
-            <returns></returns>
+            <returns>
+                实例
+            </returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.CreateServiceSocket(System.String,ZeroMQ.ZSocketType)">
             <summary>
             构建套接字
             </summary>
-            <param name="address"></param>
-            <param name="type"></param>
+            <param name="address">远程地址</param>
+            <param name="type">类型</param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocketInner(System.String,ZeroMQ.ZSocketType,System.Byte[])">
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocket(System.String,ZeroMQ.ZSocketType,System.Byte[],System.Boolean)">
             <summary>
             构建套接字
             </summary>
-            <param name="address"></param>
-            <param name="type"></param>
-            <param name="identity"></param>
+            <param name="address">远程地址</param>
+            <param name="type">类型</param>
+            <param name="identity">身份标签</param>
+            <param name="longLink">是否保持长连接</param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocketByHeartbeat(System.String,ZeroMQ.ZSocketType,System.Byte[])">
+        <member name="M:ZeroMQ.ZSocket.CreatePoolSocket(System.String,ZeroMQ.ZSocketType,System.Byte[])">
             <summary>
             构建套接字
             </summary>
-            <param name="address"></param>
-            <param name="type"></param>
-            <param name="identity"></param>
+            <param name="address">远程地址</param>
+            <param name="type">类型</param>
+            <param name="identity">身份标签</param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocketByInproc(System.String,ZeroMQ.ZSocketType)">
+        <member name="M:ZeroMQ.ZSocket.CreateLongLink(System.String,ZeroMQ.ZSocketType,System.Byte[])">
             <summary>
-            构建套接字
+            构建长连接套接字
             </summary>
-            <param name="address"></param>
-            <param name="type"></param>
+            <param name="address">远程地址</param>
+            <param name="type">类型</param>
+            <param name="identity">身份标签</param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.CreateClientSocket(System.String,ZeroMQ.ZSocketType,System.Byte[])">
+        <member name="M:ZeroMQ.ZSocket.CreateOnceSocket(System.String,System.Byte[],ZeroMQ.ZSocketType)">
             <summary>
-            构建套接字
+            构建一次性使用的套接字
             </summary>
-            <param name="address"></param>
-            <param name="type"></param>
-            <param name="identity"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.CreateDealerSocket(System.String,System.Byte[])">
-            <summary>
-            构建套接字
-            </summary>
-            <param name="address"></param>
-            <param name="identity"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[])">
-            <summary>
-            构建套接字
-            </summary>
-            <param name="address"></param>
-            <param name="identity"></param>
+            <param name="address">远程地址</param>
+            <param name="identity">身份标签</param>
+            <param name="type">类型</param>
             <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[],System.String)">
             <summary>
             构建套接字
             </summary>
-            <param name="address"></param>
-            <param name="subscribe"></param>
-            <param name="identity"></param>
+            <param name="address">远程地址</param>
+            <param name="subscribe">订阅内容</param>
+            <param name="identity">身份标签</param>
             <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.CreateSubSocket(System.String,System.Byte[],System.Collections.Generic.ICollection{System.String})">
             <summary>
             构建套接字
             </summary>
-            <param name="address"></param>
-            <param name="subscribes"></param>
-            <param name="identity"></param>
+            <param name="address">远程地址</param>
+            <param name="subscribes">订阅内容</param>
+            <param name="identity">身份标签</param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.Finalize">
+        <member name="M:ZeroMQ.ZSocket.CreateClientSocketInner(System.String,ZeroMQ.ZSocketType,System.Byte[],System.Boolean)">
             <summary>
-                Finalizes an instance of the 实例 class.
+            构建套接字
             </summary>
+            <param name="address">远程地址</param>
+            <param name="type">套接字类型</param>
+            <param name="identity">身份标签</param>
+            <param name="longLink">是否保持长连接</param>
+            <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZSocket.Close">
             <summary>
@@ -1561,7 +1451,7 @@
             <param name="array">消息</param>
             <returns>是否发送成功</returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.SendByExtend(System.Byte[][],System.Byte[][])">
+        <member name="M:ZeroMQ.ZSocket.SendTo(System.Byte[][],System.Byte[][])">
             <summary>
             发送
             </summary>
@@ -1636,6 +1526,21 @@
             </remarks>
             <param name="prefix">Prefix for subscribed messages.</param>
         </member>
+        <member name="P:ZeroMQ.ZSocket.ReceiveMore">
+            <summary>
+                Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.Endpoint">
+            <summary>
+                已绑定地址
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.LastEndpoint">
+            <summary>
+                已绑定地址
+            </summary>
+        </member>
         <member name="M:ZeroMQ.ZSocket.AddTcpAcceptFilter(System.String)">
             <summary>
                 Add a filter that will be applied for each new TCP transport connection on a listening socket.
@@ -1659,12 +1564,14 @@
             配置
             </summary>
         </member>
-        <member name="M:ZeroMQ.ZSocket.ConfigSocket(ZeroMQ.ZSocket,System.Boolean)">
+        <member name="M:ZeroMQ.ZSocket.ConfigSocket(ZeroMQ.ZSocket,System.Byte[],System.Boolean,System.Boolean)">
             <summary>
             配置套接字
             </summary>
             <param name="socket"></param>
+            <param name="identity"></param>
             <param name="service"></param>
+            <param name="longLink"></param>
             <returns></returns>
         </member>
         <member name="P:ZeroMQ.ZSocket.Affinity">
@@ -1779,6 +1686,115 @@
             <summary>
                 Gets or sets the override value for the TCP_KEEPINTVL socket option (where supported by OS). (Default = -1, OS
                 default).
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateRealName(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean)">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.CreateIdentity(System.Boolean,System.String[])">
+            <summary>
+            格式化身份名称
+            </summary>
+            <param name="isService"></param>
+            <param name="ranges"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.StationName">
+            <summary>
+            关联的站点名称（仅用于MicroZero）
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.IsUsing">
+            <summary>
+            是否使用中（仅用于MicroZero）
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.IsEmpty">
+            <summary>
+                是否为空
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.State">
+            <summary>
+            状态
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket._error">
+            <summary>
+            最后错误
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZSocket.LastError">
+            <summary>
+            最后错误
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.GetLastError">
+            <summary>
+            最后错误
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ZeroMQ.ZSocket.SocketState">
+            <summary>
+            状态
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.None">
+            <summary>
+            未确定
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Create">
+            <summary>
+            对象已生成
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Connection">
+            <summary>
+            连接
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Binding">
+            <summary>
+            绑定
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Open">
+            <summary>
+            连接方式开启
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Pause">
+            <summary>
+            对象正常但因暂停而不可用
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Close">
+            <summary>
+            正常关闭
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Free">
+            <summary>
+            对象已释放
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.ZSocket.SocketState.Failed">
+            <summary>
+            损坏
             </summary>
         </member>
         <member name="M:ZeroMQ.ZSocket.SendBytesInner(System.Byte[],System.Int32,System.Int32,ZeroMQ.ZSocketFlags,ZeroMQ.ZError@)">
@@ -2059,14 +2075,14 @@
             内存检查对象
             </summary>
         </member>
-        <member name="M:ZeroMQ.MemoryCheck.Finalize">
-            <summary>
-            析构
-            </summary>
-        </member>
         <member name="M:ZeroMQ.MemoryCheck.#ctor">
             <summary>
             构造
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.MemoryCheck.Finalize">
+            <summary>
+            析构
             </summary>
         </member>
         <member name="P:ZeroMQ.MemoryCheck.IsDisposed">

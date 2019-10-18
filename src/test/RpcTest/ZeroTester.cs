@@ -12,7 +12,7 @@ namespace RpcTest
             return SystemManager.Instance.TryInstall(Station, "api");
         }
 
-        protected override void DoAsync()
+        protected override void DoTest()
         {
             var client = new ApiClient
             {

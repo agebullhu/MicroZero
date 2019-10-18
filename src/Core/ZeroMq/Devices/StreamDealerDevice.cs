@@ -127,7 +127,7 @@
 
 				if (receiveCount == 2)
 				{
-					if (default(string) == (address = frame.GetOption("Peer-Address", out error)))
+					if (default == (address = frame.GetOption("Peer-Address", out error)))
 					{
 						// just ignore
 						error = default(ZError);

@@ -21,8 +21,6 @@
     <Compile Remove="MachineEventArg.cs" />
     <Compile Remove="MachineEventStation.cs" />
     <Compile Remove="TemplateMessage_PaySuccessNotice.cs" />
-    <Compile Remove="WeixinConfig.cs" />
-    <Compile Remove="WeixinController.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,5 +47,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

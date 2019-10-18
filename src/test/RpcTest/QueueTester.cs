@@ -16,7 +16,7 @@ namespace RpcTest
             return true;
         }
 
-        protected override void DoAsync()
+        protected override void DoTest()
         {
             using (IocScope.CreateScope())
             {

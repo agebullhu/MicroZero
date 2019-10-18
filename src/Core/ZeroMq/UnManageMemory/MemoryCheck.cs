@@ -12,13 +12,6 @@ namespace ZeroMQ
     public abstract class MemoryCheck : IDisposable
     {
         /// <summary>
-        /// 析构
-        /// </summary>
-        ~MemoryCheck()
-        {
-            Dispose();
-        }
-        /// <summary>
         /// 构造
         /// </summary>
         protected MemoryCheck()
@@ -26,6 +19,14 @@ namespace ZeroMQ
 #if UNMANAGE_MONEY_CHECK
             SetIsAloc(TypeName);
 #endif
+        }
+
+        /// <summary>
+        /// 析构
+        /// </summary>
+        ~MemoryCheck()
+        {
+            Dispose();
         }
 
         private int _isDisposed;

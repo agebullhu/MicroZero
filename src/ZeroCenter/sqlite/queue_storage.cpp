@@ -47,6 +47,27 @@ namespace agebull
 			zero_def::frame::content_text,
 			zero_def::frame::general_end
 		};
+
+		/**
+		 * \brief 准备存储
+		 */
+		bool queue_storage::prepare(shared_ptr<station_config>& config)
+		{
+			config_ = config;
+			strcpy(name_, config->station_name.c_str());
+			acl::string path;
+			path.format("%s/datas/%s.db", global_config::root_path, name_);
+			if (!open_db(path.c_str()))
+			{
+				return false;
+			}
+
+			sqlite3_prepare_v2(sqlite_db_, insert_sql_, static_cast<int>(strlen(insert_sql_)), &insert_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, update_sql_, static_cast<int>(strlen(update_sql_)), &update_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, load_sql_, static_cast<int>(strlen(load_sql_)), &load_stmt_, nullptr);
+			sqlite3_prepare_v2(sqlite_db_, retry_sql_, static_cast<int>(strlen(retry_sql_)), &retry_stmt_, nullptr);
+			return true;
+		}
 		
 		/**
 		 * \brief 准备存储
@@ -175,13 +196,13 @@ namespace agebull
 		*/
 		void queue_storage::load(int64 min, int64 max, std::function<void(vector<shared_char>&)> exec)
 		{
-			if (max == 0)
+			if (max <= min)
 				max = last_id_ + 1;
 			if (min >= max || max - 1 == min)
 				return;
 			sqlite3_reset(load_stmt_);
 			sqlite3_bind_int64(load_stmt_, 1, min);
-			sqlite3_bind_int64(load_stmt_, 2, max <= 0 ? last_id_ +1: max);
+			sqlite3_bind_int64(load_stmt_, 2, max);
 			read_exec(load_stmt_, exec);
 		}
 

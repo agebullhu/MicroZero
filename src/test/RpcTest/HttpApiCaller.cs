@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Agebull.Common.Logging;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
+
 using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroApis;
 
@@ -44,8 +44,7 @@ namespace MicroZero.Http.Route
         public string Bearer { get; set; }
 
         #endregion
-
-
+        
         #region 辅助方法
         
         /// <summary>
@@ -136,7 +135,6 @@ namespace MicroZero.Http.Route
             catch (WebException e)
             {
                 Status = e.Status;
-                LogRecorderX.Exception(e);
                 return e.Status == WebExceptionStatus.ProtocolError ? ProtocolError(e) : ResponseError(e);
             }
             catch (Exception e)

@@ -18,10 +18,16 @@ namespace ZeroMQ
     /// <summary>
     ///     Sends and receives messages, single frames and byte frames across ZeroMQ.
     /// </summary>
-    public class ZSocket : MemoryCheck
+    public sealed class ZSocket : MemoryCheck
     {
         #region Const
 
+
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+        // From options.hpp: unsigned char identity [256];
+        private const int MaxBinaryOptionSize = 256;
+
+        public const int BinaryKeySize = 32;
 
         public const int FlagsNone = 0;
         public const int FlagsDontwait = 1;
@@ -30,110 +36,10 @@ namespace ZeroMQ
 
         #endregion
 
-        #region State
+        #region Field
 #if UNMANAGE_MONEY_CHECK
-        protected override string TypeName => nameof(ZMessage);
+        protected override string TypeName => nameof(ZSocket);
 #endif
-        /// <summary>
-        /// 关联的站点名称（仅用于MicroZero）
-        /// </summary>
-        public string StationName
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// 是否使用中（仅用于MicroZero）
-        /// </summary>
-        public bool IsUsing
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        ///     已绑定地址
-        /// </summary>
-        public string Endpoint { get; private set; }
-
-
-
-        private ZError _error;
-
-        /// <summary>
-        /// 最后错误
-        /// </summary>
-        public ZError LastError => _error;
-
-        /// <summary>
-        /// 状态
-        /// </summary>
-        [Flags]
-        public enum SocketState
-        {
-            /// <summary>
-            /// 未确定
-            /// </summary>
-            None = 0x0,
-            /// <summary>
-            /// 对象已生成
-            /// </summary>
-            Create = 0x1,
-            /// <summary>
-            /// 连接
-            /// </summary>
-            Connection = 0x2,
-            /// <summary>
-            /// 绑定
-            /// </summary>
-            Binding = 0x4,
-            /// <summary>
-            /// 连接方式开启
-            /// </summary>
-            Open = 0x8,
-            /// <summary>
-            /// 对象正常但因暂停而不可用
-            /// </summary>
-            Pause = 0x10,
-            /// <summary>
-            /// 正常关闭
-            /// </summary>
-            Close = 0x20,
-            /// <summary>
-            /// 对象已释放
-            /// </summary>
-            Free = 0x40,
-            /// <summary>
-            /// 损坏
-            /// </summary>
-            Failed = 0x1000
-        }
-
-        /// <summary>
-        /// 状态 -1 连接失败
-        /// </summary>
-        public SocketState State { get; private set; }
-        /// <summary>
-        /// 最后错误
-        /// </summary>
-        /// <returns></returns>
-        public ZError GetLastError()
-        {
-            return _error = ZError.GetLastErr();
-        }
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
-        // From options.hpp: unsigned char identity [256];
-        private const int MaxBinaryOptionSize = 256;
-
-        public const int BinaryKeySize = 32;
-
-
-
-        /// <summary>
-        ///     是否为空
-        /// </summary>
-        public bool IsEmpty => SocketPtr == IntPtr.Zero;
 
         public ZContext Context { get; private set; }
 
@@ -145,48 +51,17 @@ namespace ZeroMQ
         public ZSocketType SocketType { get; private set; }
 
 
-        /// <summary>
-        ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
-        /// </summary>
-        public bool ReceiveMore => GetOptionInt32(ZSocketOption.RCVMORE) == 1;
-
-        public string LastEndpoint => GetOptionString(ZSocketOption.LAST_ENDPOINT);
         #endregion
 
         #region Create
 
         /// <summary>
         ///     构造
-        ///     You are using ZContext.Current!
         /// </summary>
         /// <returns>
         ///     实例
         /// </returns>
-        public ZSocket(ZSocketType socketType) : this(ZContext.Current, socketType)
-        {
-        }
-
-        /// <summary>
-        ///     构造
-        /// </summary>
-        /// <returns>
-        ///     实例
-        /// </returns>
-        public ZSocket(ZContext context, ZSocketType socketType)
-        {
-            Context = context;
-            SocketType = socketType;
-
-            if (!Initialize(out _error)) throw new ZException(_error);
-        }
-
-        /// <summary>
-        ///     构造
-        /// </summary>
-        /// <returns>
-        ///     实例
-        /// </returns>
-        public ZSocket(ZContext context, ZSocketType socketType, out ZError error)
+        private ZSocket(ZContext context, ZSocketType socketType, out ZError error)
         {
             Context = context;
             SocketType = socketType;
@@ -194,12 +69,6 @@ namespace ZeroMQ
             Initialize(out error);
         }
 
-        /// <summary>
-        /// 构造
-        /// </summary>
-        protected ZSocket()
-        {
-        }
 
         /// <summary>
         ///     构造
@@ -209,25 +78,9 @@ namespace ZeroMQ
         /// </returns>
         public static ZSocket Create(ZContext context, ZSocketType socketType)
         {
-            return new ZSocket(context, socketType);
+            return new ZSocket(context, socketType, out _);
         }
 
-        /// <summary>
-        ///     构造
-        /// </summary>
-        /// <returns>
-        ///     实例
-        /// </returns>
-        public static ZSocket Create(ZContext context, ZSocketType socketType, out ZError error)
-        {
-            var socket = new ZSocket
-            {
-                Context = context,
-                SocketType = socketType
-            };
-
-            return !socket.Initialize(out error) ? null : socket;
-        }
 
         /// <summary>
         ///     构造
@@ -237,7 +90,7 @@ namespace ZeroMQ
         /// </returns>
         public static ZSocket Create(ZSocketType socketType)
         {
-            return new ZSocket(socketType);
+            return new ZSocket(ZContext.Current, socketType, out _);
         }
 
         /// <summary>
@@ -252,68 +105,21 @@ namespace ZeroMQ
         }
 
         /// <summary>
-        /// 格式化身份名称
+        ///     构造
         /// </summary>
-        /// <param name="isService"></param>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public static string CreateRealName(bool isService, params string[] ranges)
+        /// <returns>
+        ///     实例
+        /// </returns>
+        public static ZSocket Create(ZContext context, ZSocketType socketType, out ZError error)
         {
-            var sb = new StringBuilder();
-            sb.Append(isService ? "+<" : "+>");
-            sb.Append(GlobalContext.ServiceRealName);
-            foreach (var range in ranges)
-            {
-                if (range == null)
-                    continue;
-                sb.Append("-");
-                sb.Append(range);
-            }
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString();
+            return new ZSocket(context, socketType, out error);
         }
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <returns></returns>
-        public static byte[] CreateIdentity(bool isService = false)
-        {
-            var sb = new StringBuilder();
-            sb.Append(isService ? "+<" : "+>");
-            sb.Append(GlobalContext.ServiceRealName);
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString().ToZeroBytes();
-        }
-        /// <summary>
-        /// 格式化身份名称
-        /// </summary>
-        /// <param name="isService"></param>
-        /// <param name="ranges"></param>
-        /// <returns></returns>
-        public static byte[] CreateIdentity(bool isService, params string[] ranges)
-        {
-            var sb = new StringBuilder();
-            sb.Append(isService ? "+<" : "+>");
-            sb.Append(GlobalContext.ServiceRealName);
-            foreach (var range in ranges)
-            {
-                if (range == null)
-                    continue;
-                sb.Append("-");
-                sb.Append(range);
-            }
-            sb.Append("-");
-            sb.Append(RandomOperate.Generate(4));
-            return sb.ToString().ToZeroBytes();
-        }
+
         /// <summary>
         /// 构建套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="type">类型</param>
         /// <returns></returns>
         public static ZSocket CreateServiceSocket(string address, ZSocketType type)
         {
@@ -325,7 +131,7 @@ namespace ZeroMQ
                 LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            ConfigSocket(socket, true);
+            ConfigSocket(socket, null, true, false);
             if (socket.Bind(address, out error))
                 return socket;
             LogRecorderX.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
@@ -336,95 +142,34 @@ namespace ZeroMQ
         /// <summary>
         /// 构建套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="type">类型</param>
+        /// <param name="identity">身份标签</param>
+        /// <param name="longLink">是否保持长连接</param>
         /// <returns></returns>
-        private static ZSocket CreateClientSocketInner(string address, ZSocketType type, byte[] identity)
+        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity, bool longLink)
         {
-            if (!ZContext.IsAlive)
-                return null;
-            var socket = Create(type, out var error);
-            if (error != null)
-            {
-                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-                return null;
-            }
-            if (identity != null)
-                socket.SetOption(ZSocketOption.IDENTITY, identity);
-            ConfigSocket(socket, false);
-
-
-            if (socket.Connect(address, out error))
-                return socket;
-            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-            socket.Dispose();
-            return null;
+            return CreateClientSocketInner(address, type, identity, longLink);
         }
 
         /// <summary>
         /// 构建套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="type">类型</param>
+        /// <param name="identity">身份标签</param>
         /// <returns></returns>
-        public static ZSocket CreateClientSocketByHeartbeat(string address, ZSocketType type, byte[] identity)
+        public static ZSocket CreatePoolSocket(string address, ZSocketType type, byte[] identity)
         {
-            if (!ZContext.IsAlive)
-                return null;
-            var socket = Create(type, out var error);
-            if (error != null)
-            {
-                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-                return null;
-            }
-            socket.SetOption(ZSocketOption.IDENTITY, identity);
-            ConfigSocket(socket, false);
-
-            //if (Option.HeartbeatIvl > 0)
-            //{
-            //    socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
-            //    socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
-            //    socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
-            //}
-
-            if (socket.Connect(address, out error))
-                return socket;
-            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
-            socket.Dispose();
-            return null;
-        }
-
-        /// <summary>
-        /// 构建套接字
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static ZSocket CreateClientSocketByInproc(string address, ZSocketType type)
-        {
-            return CreateClientSocketInner(address, type, null);
-        }
-
-        /// <summary>
-        /// 构建套接字
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity)
-        {
-            return CreateClientSocketInner(address, type, identity);
+            return CreateClientSocketInner(address, type, identity, false);
         }
 
         /// <summary>
         /// 构建长连接套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="type"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="type">类型</param>
+        /// <param name="identity">身份标签</param>
         /// <returns></returns>
         public static ZSocket CreateLongLink(string address, ZSocketType type, byte[] identity)
         {
@@ -436,14 +181,7 @@ namespace ZeroMQ
                 LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
-            socket.SetOption(ZSocketOption.IDENTITY, identity);
-            ConfigSocket(socket, false);
-            if (Option.HeartbeatIvl > 0)
-            {
-                socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
-                socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
-                socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
-            }
+            ConfigSocket(socket, identity, false, true);
             if (socket.Connect(address, out error))
                 return socket;
             LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
@@ -452,38 +190,27 @@ namespace ZeroMQ
         }
 
         /// <summary>
-        /// 构建套接字
+        /// 构建一次性使用的套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="identity">身份标签</param>
+        /// <param name="type">类型</param>
         /// <returns></returns>
-        public static ZSocket CreateDealerSocket(string address, byte[] identity)
+        public static ZSocket CreateOnceSocket(string address, byte[] identity, ZSocketType type = ZSocketType.DEALER)
         {
-            return CreateClientSocketInner(address, ZSocketType.DEALER, identity);
+            return CreateClientSocketInner(address, type, identity, false);
         }
 
         /// <summary>
         /// 构建套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="identity"></param>
-        /// <returns></returns>
-        public static ZSocket CreateSubSocket(string address, byte[] identity)
-        {
-            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
-            socket.SubscribeAll();
-            return socket;
-        }
-        /// <summary>
-        /// 构建套接字
-        /// </summary>
-        /// <param name="address"></param>
-        /// <param name="subscribe"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="subscribe">订阅内容</param>
+        /// <param name="identity">身份标签</param>
         /// <returns></returns>
         public static ZSocket CreateSubSocket(string address, byte[] identity, string subscribe)
         {
-            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
+            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity, true);
             if (string.IsNullOrEmpty(subscribe))
                 socket.SubscribeAll();
             else
@@ -494,13 +221,13 @@ namespace ZeroMQ
         /// <summary>
         /// 构建套接字
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="subscribes"></param>
-        /// <param name="identity"></param>
+        /// <param name="address">远程地址</param>
+        /// <param name="subscribes">订阅内容</param>
+        /// <param name="identity">身份标签</param>
         /// <returns></returns>
         public static ZSocket CreateSubSocket(string address, byte[] identity, ICollection<string> subscribes)
         {
-            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity);
+            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity, true);
             if (subscribes == null || subscribes.Count == 0)
                 socket.SubscribeAll();
             else
@@ -508,23 +235,43 @@ namespace ZeroMQ
                     socket.Subscribe(subscribe);
             return socket;
         }
+
+        /// <summary>
+        /// 构建套接字
+        /// </summary>
+        /// <param name="address">远程地址</param>
+        /// <param name="type">套接字类型</param>
+        /// <param name="identity">身份标签</param>
+        /// <param name="longLink">是否保持长连接</param>
+        /// <returns></returns>
+        private static ZSocket CreateClientSocketInner(string address, ZSocketType type, byte[] identity, bool longLink)
+        {
+            if (!ZContext.IsAlive)
+                return null;
+            var socket = Create(type, out var error);
+            if (error != null)
+            {
+                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                return null;
+            }
+
+            ConfigSocket(socket, identity, false, longLink);
+
+            if (socket.Connect(address, out error))
+                return socket;
+            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            socket.Dispose();
+            return null;
+        }
         #endregion
 
         #region Close
-
-
-        /// <summary>
-        ///     Finalizes an instance of the 实例 class.
-        /// </summary>
-        ~ZSocket()
-        {
-            Dispose();
-        }
 
         protected override void DoDispose()
         {
             Close(out _error);
         }
+
         /// <summary>
         ///     Close the current socket.
         /// </summary>
@@ -1179,7 +926,7 @@ namespace ZeroMQ
         /// <param name="array">消息</param>
         /// <param name="extend"></param>
         /// <returns>是否发送成功</returns>
-        public bool SendByExtend(byte[][] array, params byte[][] extend)
+        public bool SendTo(byte[][] array, params byte[][] extend)
         {
             _error = null;
             int i;
@@ -1319,6 +1066,22 @@ namespace ZeroMQ
         #region Option
 
         /// <summary>
+        ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
+        /// </summary>
+        public bool ReceiveMore => GetOptionInt32(ZSocketOption.RCVMORE) == 1;
+
+
+        /// <summary>
+        ///     已绑定地址
+        /// </summary>
+        public string Endpoint { get; private set; }
+
+        /// <summary>
+        ///     已绑定地址
+        /// </summary>
+        public string LastEndpoint => GetOptionString(ZSocketOption.LAST_ENDPOINT);
+
+        /// <summary>
         ///     Add a filter that will be applied for each new TCP transport connection on a listening socket.
         ///     Example: "127.0.0.1", "mail.ru/24", "::1", "::1/128", "3ffe:1::", "3ffe:1::/56"
         /// </summary>
@@ -1344,37 +1107,58 @@ namespace ZeroMQ
             SetOption(ZSocketOption.TCP_ACCEPT_FILTER, (string)null);
         }
 
+
         /// <summary>
         /// 配置
         /// </summary>
-        public static SocketOption Option;
+        public static SocketOption Option = new SocketOption();
 
         /// <summary>
         /// 配置套接字
         /// </summary>
         /// <param name="socket"></param>
+        /// <param name="identity"></param>
         /// <param name="service"></param>
+        /// <param name="longLink"></param>
         /// <returns></returns>
-        private static void ConfigSocket(ZSocket socket, bool service)
+        private static void ConfigSocket(ZSocket socket, byte[] identity, bool service, bool longLink)
         {
-            socket.SetOption(ZSocketOption.LINGER, Option.Linger);
-            socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
-            socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
+            if (identity != null)
+                socket.SetOption(ZSocketOption.IDENTITY, identity);
+            if (Option.Linger > 0)
+                socket.SetOption(ZSocketOption.LINGER, Option.Linger);
+            if (Option.RecvTimeout > 0)
+                socket.SetOption(ZSocketOption.RCVTIMEO, Option.RecvTimeout);
+            if (Option.SendTimeout > 0)
+                socket.SetOption(ZSocketOption.SNDTIMEO, Option.SendTimeout);
+            if (service)
+            {
+                if (Option.Backlog > 0)
+                    socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
+            }
+            else
+            {
+                if (Option.ConnectTimeout > 0)
+                    socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
+                if (Option.ReconnectIvl > 0)
+                    socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
+                if (Option.ReconnectIvlMax > 0)
+                    socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
+            }
+            if (!longLink)
+                return;
+
+            //if (Option.HeartbeatIvl > 0)
+            //{
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_IVL, Option.HeartbeatIvl);
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_TIMEOUT, Option.HeartbeatTimeout);
+            //    socket.SetOption(ZSocketOption.HEARTBEAT_TTL, Option.HeartbeatTtl);
+            //}
             if (Option.TcpKeepalive > 0)
             {
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE, 1);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_IDLE, Option.TcpKeepaliveIdle);
                 socket.SetOption(ZSocketOption.TCP_KEEPALIVE_INTVL, Option.TcpKeepaliveIntvl);
-            }
-            if (service)
-            {
-                socket.SetOption(ZSocketOption.BACKLOG, Option.Backlog);
-            }
-            else
-            {
-                socket.SetOption(ZSocketOption.CONNECT_TIMEOUT, Option.ConnectTimeout);
-                socket.SetOption(ZSocketOption.RECONNECT_IVL, Option.ReconnectIvl);
-                socket.SetOption(ZSocketOption.RECONNECT_IVL_MAX, Option.ReconnectIvlMax);
             }
         }
 
@@ -1908,6 +1692,163 @@ namespace ZeroMQ
         }
 
 
+
+        #endregion
+
+        #region Identity
+
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public static string CreateRealName(bool isService, params string[] ranges)
+        {
+            var sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            foreach (var range in ranges)
+            {
+                if (range == null)
+                    continue;
+                sb.Append("-");
+                sb.Append(range);
+            }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService = false)
+        {
+            var sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
+        }
+        /// <summary>
+        /// 格式化身份名称
+        /// </summary>
+        /// <param name="isService"></param>
+        /// <param name="ranges"></param>
+        /// <returns></returns>
+        public static byte[] CreateIdentity(bool isService, params string[] ranges)
+        {
+            var sb = new StringBuilder();
+            sb.Append(isService ? "+<" : "+>");
+            sb.Append(GlobalContext.ServiceRealName);
+            foreach (var range in ranges)
+            {
+                if (range == null)
+                    continue;
+                sb.Append("-");
+                sb.Append(range);
+            }
+            sb.Append("-");
+            sb.Append(RandomOperate.Generate(4));
+            return sb.ToString().ToZeroBytes();
+        }
+        #endregion
+
+        #region state
+
+        /// <summary>
+        /// 关联的站点名称（仅用于MicroZero）
+        /// </summary>
+        public string StationName
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// 是否使用中（仅用于MicroZero）
+        /// </summary>
+        public bool IsUsing
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        ///     是否为空
+        /// </summary>
+        public bool IsEmpty => SocketPtr == IntPtr.Zero;
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        public SocketState State { get; private set; }
+
+        /// <summary>
+        /// 最后错误
+        /// </summary>
+        private ZError _error;
+
+        /// <summary>
+        /// 最后错误
+        /// </summary>
+        public ZError LastError => _error;
+        /// <summary>
+        /// 最后错误
+        /// </summary>
+        /// <returns></returns>
+        public ZError GetLastError()
+        {
+            return _error = ZError.GetLastErr();
+        }
+
+        /// <summary>
+        /// 状态
+        /// </summary>
+        [Flags]
+        public enum SocketState
+        {
+            /// <summary>
+            /// 未确定
+            /// </summary>
+            None = 0x0,
+            /// <summary>
+            /// 对象已生成
+            /// </summary>
+            Create = 0x1,
+            /// <summary>
+            /// 连接
+            /// </summary>
+            Connection = 0x2,
+            /// <summary>
+            /// 绑定
+            /// </summary>
+            Binding = 0x4,
+            /// <summary>
+            /// 连接方式开启
+            /// </summary>
+            Open = 0x8,
+            /// <summary>
+            /// 对象正常但因暂停而不可用
+            /// </summary>
+            Pause = 0x10,
+            /// <summary>
+            /// 正常关闭
+            /// </summary>
+            Close = 0x20,
+            /// <summary>
+            /// 对象已释放
+            /// </summary>
+            Free = 0x40,
+            /// <summary>
+            /// 损坏
+            /// </summary>
+            Failed = 0x1000
+        }
 
         #endregion
 

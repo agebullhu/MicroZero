@@ -2,7 +2,6 @@
 using Agebull.Common.Ioc;
 using Agebull.MicroZero;
 using ApiTest;
-using MicroZero.Http.Gateway;
 
 
 namespace QueueTest
@@ -15,11 +14,6 @@ namespace QueueTest
             ZeroApplication.RegistZeroObject<PayCallbackController>();
             ZeroApplication.Initialize();
 
-            var senparcStartup = new SenparcStartup
-            {
-                Configuration = ConfigurationManager.Root
-            };
-            senparcStartup.ConfigureServices(IocHelper.ServiceCollection);
             ZeroApplication.RunAwaite();
         }
     }

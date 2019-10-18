@@ -5,29 +5,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
   <PropertyGroup>
-    <Description>
-      MicroZero的HttpGateway基础库,以便打包及扩展
-    </Description>
+    <Description>MicroZero的HttpGateway基础库,以便打包及扩展</Description>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <DebugType>portable</DebugType>
-    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/agebullhu/clrzmq4</RepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
+    
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>ZMQ</Authors>
-    <Company>ZMQ</Company>
+    
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
-    <Product>Agebull.MicroZero</Product>
-    <Version>1.4.4.4</Version>
+    <Product>MicroZero.Http.GatewayBase</Product>
+    <Version>1.4.4.20</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>MicroZero.Http.GatewayBase.xml</DocumentationFile>

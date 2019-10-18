@@ -6,7 +6,6 @@ using Agebull.MicroZero.ZeroApis;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Senparc.NeuChar;
-using MicroZero.Http.Gateway.Weixin;
 using Newtonsoft.Json;
 
 namespace ApiTest
@@ -38,7 +37,77 @@ namespace ApiTest
         {
             return ApiResult.Ok;
         }
+
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v2/wx/call")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnWxCallbackV2(WxPayResult arg)/**/
+        {
+            return ApiResult.Ok;
+        }
+
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v2/wx/refundcallback")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnRefundCallbackV2()/*WxPayResult arg*/
+        {
+            return ApiResult.Ok;
+        }
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v1/order/timeout")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnOrderTimeOutV1()/*WxPayResult arg*/
+        {
+            return ApiResult.Ok;
+        }
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v2/order/timeout")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnOrderTimeOutV2()/*WxPayResult arg*/
+        {
+            return ApiResult.Ok;
+        }
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v1/pay/timeout")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnPayTimeOutV1()/*WxPayResult arg*/
+        {
+            return ApiResult.Ok;
+        }
+        /// <summary>
+        /// 微信支付回调
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        [Route("v2/pay/timeout")]
+        [ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public ApiResult OnPayTimeOutV2(WxPayResult arg)/**/
+        {
+            return ApiResult.Ok;
+        }
+
     }
+
     /// <summary>
     /// 微信支付回调信息
     /// </summary>

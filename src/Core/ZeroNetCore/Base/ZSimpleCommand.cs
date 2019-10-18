@@ -106,7 +106,7 @@ namespace Agebull.MicroZero
                             ErrorMessage = "地址无效"
                         };
 
-                    Socket = ZSocket.CreateDealerSocket(ManageAddress, ZSocket.CreateIdentity(false, "Dispatcher"));
+                    Socket = ZSocket.CreateOnceSocket(ManageAddress, ZSocket.CreateIdentity(false, "Dispatcher"));
                 }
                 if (Socket == null)
                     return new ZeroResult

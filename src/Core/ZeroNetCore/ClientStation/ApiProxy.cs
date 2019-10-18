@@ -26,6 +26,17 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         private ZSocket _proxyServiceSocket;
 
+
+        /// <summary>
+        /// 取得连接器
+        /// </summary>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static ZSocket GetSocket(string station)
+        {
+            return GetSocket(station, RandomOperate.Generate(8));
+        }
+
         /// <summary>
         /// 取得连接器
         /// </summary>
@@ -36,31 +47,13 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!StationProxy.TryGetValue(station, out var item) || item.Config.State != ZeroCenterState.Run)
                 return null;
-            return ZSocket.CreateClientSocket(InprocAddress, ZSocketType.PAIR, name.ToZeroBytes());
-        }
-
-        /// <summary>
-        /// 取得连接器
-        /// </summary>
-        /// <param name="station"></param>
-        /// <returns></returns>
-        public static ZSocket GetSocket(string station)
-        {
-            if (!StationProxy.TryGetValue(station, out var item) || item.Config.State != ZeroCenterState.Run)
-                return null;
-            return ZSocket.CreateClientSocket(InprocAddress, ZSocketType.PAIR, RandomOperate.Generate(8).ToZeroBytes());
+            return ZSocket.CreateOnceSocket(InprocAddress, name.ToZeroBytes(), ZSocketType.PAIR);
         }
 
         /// <summary>
         /// 站点是否已修改
         /// </summary>
-        internal bool IsChanged { get; set; }
-
-
-        /// <summary>
-        /// 所有代理
-        /// </summary>
-        private static readonly Dictionary<string, StationProxyItem> StationProxy = new Dictionary<string, StationProxyItem>(StringComparer.OrdinalIgnoreCase);
+        internal static bool IsChanged { get; set; }
 
         #endregion
 
@@ -229,41 +222,6 @@ namespace Agebull.MicroZero.ZeroApis
             return true;
         }
 
-        /// <summary>
-        /// 开始执行的处理
-        /// </summary>
-        /// <returns></returns>
-        protected override void OnLoopBegin()
-        {
-            StationProxy.Clear();
-            var identity = GlobalContext.ServiceRealName.ToZeroBytes();
-            foreach (var config in ZeroApplication.Config.GetConfigs())
-            {
-                StationProxy.Add(config.StationName, new StationProxyItem
-                {
-                    Config = config,
-                    Open = DateTime.Now,
-                    Socket = ZSocket.CreateLongLink(config.RequestAddress, ZSocketType.DEALER, identity)
-                });
-            }
-            _proxyServiceSocket = ZSocket.CreateServiceSocket(InprocAddress, ZSocketType.ROUTER);
-            ZeroTrace.SystemLog("ApiProxy", "Run", $"{RealName} : {Config.RequestAddress}");
-            RealState = StationState.Run;
-            ZeroApplication.OnObjectActive(this);
-        }
-
-
-        /// <summary>
-        /// 关闭时的处理
-        /// </summary>
-        /// <returns></returns>
-        protected override void OnLoopComplete()
-        {
-            _proxyServiceSocket.Dispose();
-            RealState = StationState.Closed;
-            _zmqPool?.Dispose();
-            ZeroApplication.OnObjectClose(this);
-        }
 
 
         #endregion
@@ -332,6 +290,52 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region 配置
 
+
+        /// <summary>
+        /// 所有代理
+        /// </summary>
+        private static readonly Dictionary<string, StationProxyItem> StationProxy = new Dictionary<string, StationProxyItem>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 开始执行的处理
+        /// </summary>
+        /// <returns></returns>
+        protected override void OnLoopBegin()
+        {
+            var identity = GlobalContext.ServiceRealName.ToZeroBytes();
+            foreach (var config in ZeroApplication.Config.GetConfigs())
+            {
+                StationProxy.Add(config.StationName, new StationProxyItem
+                {
+                    Config = config,
+                    Open = DateTime.Now,
+                    Socket = ZSocket.CreateLongLink(config.RequestAddress, ZSocketType.DEALER, identity)
+                });
+            }
+            _proxyServiceSocket = ZSocket.CreateServiceSocket(InprocAddress, ZSocketType.ROUTER);
+            ZeroTrace.SystemLog("ApiProxy", "Run", $"{RealName} : {Config.RequestAddress}");
+            RealState = StationState.Run;
+            ZeroApplication.OnObjectActive(this);
+        }
+
+
+        /// <summary>
+        /// 关闭时的处理
+        /// </summary>
+        /// <returns></returns>
+        protected override void OnLoopComplete()
+        {
+            _proxyServiceSocket.Dispose();
+            RealState = StationState.Closed;
+            _zmqPool?.Dispose();
+
+            foreach (var proxyItem in StationProxy.Values)
+            {
+                proxyItem.Socket?.Dispose();
+            }
+            StationProxy.Clear();
+        }
+
         /// <summary>
         /// Pool对象
         /// </summary>
@@ -350,7 +354,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 var item = alive[idx];
                 if (item.Socket == null)
-                    item.Socket = ZSocket.CreateClientSocket(item.Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
+                    item.Socket = ZSocket.CreatePoolSocket(item.Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
                 list[idx + 1] = item.Socket;
             }
             if (_zmqPool == null)

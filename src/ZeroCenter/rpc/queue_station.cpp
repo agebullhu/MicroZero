@@ -20,7 +20,10 @@ namespace agebull
 				send_request_status(socket, *list[0], zero_def::status::ok, false, false);
 				int64 min = atoll(*list[2]);
 				int64 max = atoll(*list[3]);
-				boost::thread(async_replay, this, min, max);
+				if (min > 0 && max == min)
+					replay(socket, min);
+				else
+					boost::thread(async_replay, this, min, max);
 				return true;
 			}
 			return zero_station::simple_command(socket, list, description, inner);
@@ -29,17 +32,41 @@ namespace agebull
 		/**
 		* \brief 内部命令
 		*/
+		void queue_station::replay(zmq_handler so, int64 id)
+		{
+			//char name[64];
+			//sprintf(name, "%ld", time(nullptr));
+			//zmq_handler socket = socket_ex::create_req_socket_inproc(station_name_.c_str(), name);
+			storage_.load(id - 1, id + 1, [/*socket,*/ this](vector<shared_char>& data)
+				{
+					send_response(data, false);
+				});
+			//make_inproc_address(address, station_name_.c_str());
+			//socket_ex::close_req_socket(socket, address);
+		}
+
+		/**
+		* \brief 实例队列访问锁
+		*/
+		boost::mutex mutex;
+
+		/**
+		* \brief 内部命令
+		*/
 		void queue_station::async_replay(queue_station* queue, int64 min, int64 max)
 		{
+			boost::lock_guard<boost::mutex> guard(mutex);
 			char name[64];
 			sprintf(name, "%ld", time(nullptr));
-			zmq_handler socket = socket_ex::create_req_socket_inproc(queue->station_name_.c_str(), name);
-			queue->storage_.load(min, max, [socket, queue](vector<shared_char>& data)
+			queue_storage storage;
+			storage.prepare_storage(queue->config_);
+			//zmq_handler socket = socket_ex::create_req_socket_inproc(queue->station_name_.c_str(), name);
+			storage.load(min, max, [queue](vector<shared_char>& data)
 				{
-					queue->send_response(socket, data, false);
+					queue->send_response(data, false);
 				});
-			make_inproc_address(address, queue->station_name_.c_str());
-			socket_ex::close_req_socket(socket, address);
+			//make_inproc_address(address, queue->station_name_.c_str());
+			//socket_ex::close_req_socket(socket, address);
 		}
 
 		/**
@@ -113,7 +140,7 @@ namespace agebull
 
 				q_id = storage_.save(
 					global_id > 0 ? atoll(*list[global_id]) : 0,
-					*list[pub_title],
+					* list[pub_title],
 					sub_title > 0 ? *list[sub_title] : nullptr,
 					request_id > 0 ? *list[request_id] : nullptr,
 					requester > 0 ? *list[requester] : nullptr,

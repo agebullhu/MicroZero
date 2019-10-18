@@ -342,16 +342,16 @@ namespace ZeroMQ
         }
 
         /// <summary>
-        /// Terminate the ZeroMQ context.
+        /// 从资源池中删除
         /// </summary>
-        public static void RemoveSocket(ZSocket socket)
+        internal static void RemoveSocket(ZSocket socket)
         {
             lock (AliveSockets)
                 AliveSockets.Remove(socket);
         }
 
         /// <summary>
-        /// Terminate the ZeroMQ context.
+        /// 终止所有网络资源
         /// </summary>
         public bool Terminate(out ZError error)
         {

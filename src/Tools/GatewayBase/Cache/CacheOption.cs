@@ -7,8 +7,8 @@ namespace MicroZero.Http.Gateway
     /// <summary>
     ///     缓存设置
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
     [DataContract]
+    [JsonObject(MemberSerialization.OptIn)]
     public class CacheOption
     {
         /// <summary>
@@ -23,7 +23,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string Bear { get; set; }
+        public bool Bear { get; set; }
 
         /// <summary>
         ///     缓存更新的秒数
@@ -62,7 +62,7 @@ namespace MicroZero.Http.Gateway
                 FlushSecond = 300;
             else if (FlushSecond > 3600)
                 FlushSecond = 3600;
-            if (!string.IsNullOrWhiteSpace(Bear))
+            if (Bear)
                 Feature |= CacheFeature.Bear;
             if (!OnlyName)
                 Feature |= CacheFeature.QueryString;

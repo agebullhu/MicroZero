@@ -57,49 +57,46 @@ namespace agebull
 	/**
 	* 输出到DEBUG窗口
 	*/
-	void out_debug(boost::posix_time::ptime now, const char* msg)
+	void out_debug(const char* msg)
 	{
-		acl::string strTime;
-		strTime.format("[%s] %s\n", to_iso_extended_string(now).c_str(), msg);
-		{
-			//boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
-			cout << strTime.c_str();
-		}
+		//boost::lock_guard<boost::mutex> guard(server_cmd_mutex);
+		cout << to_iso_extended_string(boost::posix_time::microsec_clock::local_time()).c_str() << " : " << msg << endl;
 	}
+
 	void log_acl_msg(const char* msg)
 	{
-		out_debug(boost::posix_time::microsec_clock::local_time(), msg);
-		acl::log::msg1(msg);
+		out_debug(msg);
+		//acl::log::msg1(msg);
 	}
 	void log_acl_warn(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(boost::posix_time::microsec_clock::local_time(), msg);
-		acl::log::warn4(fname, line, func, msg);
+		out_debug(msg);
+		//acl::log::warn4(fname, line, func, msg);
 	}
 	void log_acl_error(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(boost::posix_time::microsec_clock::local_time(), msg);
-		acl::log::error1(msg);
+		out_debug(msg);
+		//acl::log::error1(msg);
 	}
 	void log_acl_fatal(const char* fname, int line, const char* func, const char* msg)
 	{
-		out_debug(boost::posix_time::microsec_clock::local_time(), msg);
-		acl::log::fatal4(fname, line, func, msg);
+		out_debug(msg);
+		//acl::log::fatal4(fname, line, func, msg);
 	}
 	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const char* msg)
 	{
-		if (level < 2)
+		//if (level < 2)
 		{
-			out_debug(boost::posix_time::microsec_clock::local_time(), msg);
+			out_debug(msg);
 		}
-		acl::log::msg6(section, level, fname, line, func, msg);
+		//acl::log::msg6(section, level, fname, line, func, msg);
 	}
 	void log_acl_trace(int section, int  level, const char* msg)
 	{
-		if (level < 2)
+		//if (level < 2)
 		{
-			out_debug(boost::posix_time::microsec_clock::local_time(), msg);
+			out_debug(msg);
 		}
-		acl::log::msg1(msg);
+		//acl::log::msg1(msg);
 	}
 }

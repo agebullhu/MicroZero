@@ -8,24 +8,24 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>微服务框架MicroZero的核心程序集</Description>
-    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageId></PackageId>
-    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
-    <PackageProjectUrl>https://github.com/agebullhu/ZmqNet</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/agebullhu/ZmqNet</RepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
+    
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    
     <Authors>Agebull</Authors>
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.4.4</Version>
+    <Version>1.4.4.20</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,15 +37,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
     <Optimize>true</Optimize>
     <DefineConstants>UseStateMachine</DefineConstants>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ZeroNetCore\Agebull.MicroZero.Core.xml</DocumentationFile>
+    <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
-    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ZeroNetCore\Agebull.MicroZero.Core.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -106,8 +106,5 @@
   <ItemGroup>
     <ProjectReference Include="..\ZeroMq\Agebull.MicroZero.ClrZMQ.csproj" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy   $(OutDir)$(TargetFileName) C:\Projects\Agebull\hotfix\ /y&#xD;&#xA;xcopy   $(OutDir)$(TargetName).pdb C:\Projects\Agebull\hotfix\ /y" />
-  </Target>
 
 </Project>

@@ -42,12 +42,6 @@ namespace agebull
 				if (global_config::RCVTIMEO >= 0)
 					setsockopt(socket, ZMQ_RCVTIMEO, global_config::RCVTIMEO);
 
-				if (global_config::HEARTBEAT_IVL > 0)
-				{
-					setsockopt(socket, ZMQ_HEARTBEAT_IVL, global_config::HEARTBEAT_IVL);
-					setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, global_config::HEARTBEAT_TIMEOUT);
-					setsockopt(socket, ZMQ_HEARTBEAT_TTL, global_config::HEARTBEAT_TTL);
-				}
 
 				if (global_config::TCP_KEEPALIVE > 0)
 				{
@@ -71,9 +65,18 @@ namespace agebull
 				}
 				else
 				{
+					if (global_config::HEARTBEAT_IVL > 0)
+					{
+						setsockopt(socket, ZMQ_HEARTBEAT_IVL, global_config::HEARTBEAT_IVL);
+						setsockopt(socket, ZMQ_HEARTBEAT_TIMEOUT, global_config::HEARTBEAT_TIMEOUT);
+						setsockopt(socket, ZMQ_HEARTBEAT_TTL, global_config::HEARTBEAT_TTL);
+					}
+
 					if (global_config::BACKLOG >= 0)
 						setsockopt(socket, ZMQ_BACKLOG, global_config::BACKLOG);
-
+					//当设置为1时，当建立或接受新连接时，套接字将自动发送空消息。您可以在REQ, DEALER, or ROUTER上设置此选项。
+					//应用程序必须过滤这些空消息。ZMQ_PROBE_ROUTER选项实际上为路由器应用程序提供了一个事件，通知新对等点的到来。
+					//setsockopt(socket, ZMQ_PROBE_ROUTER, 1);
 				}
 
 			}
@@ -168,7 +171,14 @@ namespace agebull
 			{
 				zmq_unbind(socket, addr);
 				while (zmq_close(socket) == -1)
-					log_error(state_str(check_zmq_error()));
+				{
+					var sta = check_zmq_error();
+					if (sta != zmq_socket_state::intr)
+					{
+						log_error(state_str(sta));
+						break;
+					}
+				}
 				socket = nullptr;
 			}
 
@@ -176,7 +186,14 @@ namespace agebull
 			{
 				zmq_disconnect(socket, addr);
 				while (zmq_close(socket) == -1)
-					log_error(state_str(check_zmq_error()));
+				{
+					var sta = check_zmq_error();
+					if (sta != zmq_socket_state::intr)
+					{
+						log_error(state_str(sta));
+						break;
+					}
+				}
 				socket = nullptr;
 			}
 		}
@@ -257,7 +274,7 @@ namespace agebull
 					case ZMQ_EVENT_CLOSED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > closed > %s", station.c_str(), str.c_str());
-						monitor_event(zero_net_event::event_monitor_net_close,  *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_close, *station, str.c_str());
 						//zmq_close(inproc);
 						//*socket = nullptr;
 						break;
@@ -278,28 +295,28 @@ namespace agebull
 					case ZMQ_EVENT_ACCEPTED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > join > %s", station.c_str(), str.c_str());
-						monitor_event(zero_net_event::event_monitor_net_connected,  *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_connected, *station, str.c_str());
 						break;
 					case ZMQ_EVENT_DISCONNECTED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > left > %s", station.c_str(), str.c_str());
-						monitor_event(zero_net_event::event_monitor_net_close,  *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_close, *station, str.c_str());
 						break;
 					case ZMQ_EVENT_ACCEPT_FAILED:
 						print_client_addr(event.value, str);
 						log_msg2("[%s] : monitor > join failed > %s", station.c_str(), str.c_str());
-						monitor_event(zero_net_event::event_monitor_net_failed,  *station, str.c_str());
+						monitor_event(zero_net_event::event_monitor_net_failed, *station, str.c_str());
 						break;
 					case ZMQ_EVENT_CONNECTED:
 						log_msg2("[%s] : monitor > connected > %s", station.c_str(), event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_DELAYED:
 						log_msg2("[%s] : monitor > connect delayed > %s", station.c_str(), event.address);
-						monitor_event(zero_net_event::event_monitor_net_failed,  *station, event.address);
+						monitor_event(zero_net_event::event_monitor_net_failed, *station, event.address);
 						break;
 					case ZMQ_EVENT_CONNECT_RETRIED:
 						log_msg2("[%s] : monitor > retried > %s", station.c_str(), event.address);
-						monitor_event(zero_net_event::event_monitor_net_try,  *station, event.address);
+						monitor_event(zero_net_event::event_monitor_net_try, *station, event.address);
 						break;
 					default: break;
 					}

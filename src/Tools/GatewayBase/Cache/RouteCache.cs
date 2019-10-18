@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Agebull.MicroZero.ZeroApis;
 
 namespace MicroZero.Http.Gateway
@@ -12,8 +13,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     缓存数据
         /// </summary>
-        internal static Dictionary<string, CacheData> Cache =
-            new Dictionary<string, CacheData>(StringComparer.OrdinalIgnoreCase);
+        internal static Dictionary<string, CacheData> Cache = new Dictionary<string, CacheData>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     刷新
@@ -30,37 +30,35 @@ namespace MicroZero.Http.Gateway
         ///     检查缓存
         /// </summary>
         /// <returns>取到缓存，可以直接返回</returns>
-        internal static bool LoadCache(Uri uri, string bearer, out CacheOption setting, out string key,
-            ref string resultMessage)
+        internal static bool LoadCache(RouteData data)
         {
-            if (!CacheMap.TryGetValue(uri.LocalPath, out setting))
+            if (!CacheMap.TryGetValue(data.Uri.LocalPath, out data.CacheSetting))
             {
-                key = null;
+                data.CacheKey = null;
                 return false;
             }
-
-            if (setting.Feature.HasFlag(CacheFeature.Bear) && bearer.Substring(0, setting.Bear.Length) != setting.Bear)
+            var kb = new StringBuilder();
+            kb.Append(data.Uri.LocalPath);
+            if (data.CacheSetting.Feature.HasFlag(CacheFeature.Bear))
             {
-                setting = null;
-                key = null;
-                return false;
+                kb.Append(data.Token);
             }
-
-            CacheData cacheData;
-
-            lock (setting)
+            if (data.CacheSetting.Feature.HasFlag(CacheFeature.QueryString))
             {
-                key = setting.OnlyName ? uri.LocalPath : uri.PathAndQuery;
-                if (!Cache.TryGetValue(key, out cacheData))
-                    return false;
-                if (cacheData.UpdateTime <= DateTime.Now)
+                foreach (var kv in data.Arguments)
                 {
-                    Cache.Remove(key);
-                    return false;
+                    kb.Append($"&{kv.Key}={kv.Value}");
                 }
             }
-
-            resultMessage = cacheData.Content;
+            data.CacheKey = kb.ToString();
+            if (!Cache.TryGetValue(data.CacheKey, out var cacheData))
+                return false;
+            if (cacheData.UpdateTime <= DateTime.Now)
+            {
+                Cache.Remove(data.CacheKey);
+                return false;
+            }
+            data.ResultMessage = cacheData.Content;
             return true;
         }
 

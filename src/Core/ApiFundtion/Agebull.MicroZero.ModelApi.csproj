@@ -10,28 +10,28 @@
   <PropertyGroup>
     <Description>MicroZero之实体操作Api基础</Description>
     <AssemblyTitle>Agebull.MicroZero.ModelApi</AssemblyTitle>
-    <TargetFrameworks>netcoreapp2.1;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName></AssemblyName>
     <PackageId>Agebull.MicroZero.ModelApi</PackageId>
     <PackageTags>Agebull.MicroZero.ModelApi</PackageTags>
-    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
+    
     <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
+    
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    
     <Authors>Agebull</Authors>
     <Company>Agebull</Company>
     <Product>Agebull.MicroZero</Product>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
     <Copyright />
     <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
-    <Version>1.4.4.4</Version>
+    <Version>1.4.4.20</Version>
     <RootNamespace />
   </PropertyGroup>
 
@@ -43,12 +43,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.1|AnyCPU'">
-    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ApiFundtion\Agebull.MicroZero.ModelApi.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.1|AnyCPU'">
-    <DocumentationFile>C:\Projects\Agebull\MicroZero\src\Core\ApiFundtion\Agebull.MicroZero.ModelApi.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

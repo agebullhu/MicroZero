@@ -166,6 +166,20 @@ namespace Agebull.MicroZero.PubSub
             return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
+
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static ZeroResult Send<T>(string station, string title, string sub, T value)
+            where T : class
+        {
+            return PublishInner(station, title, PubDescriptionJson, title.ToZeroBytes(), sub.ToZeroBytes(), value.ToZeroBytes());
+        }
         #region Frames
 
         /// <summary>

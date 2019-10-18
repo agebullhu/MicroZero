@@ -3,7 +3,6 @@ using System.Text;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
-using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -147,7 +146,7 @@ namespace MicroZero.Http.Gateway
                 return;
             }
             // 3 缓存快速处理
-            if (RouteCache.LoadCache(Data.Uri, Data.Token, out Data.CacheSetting, out Data.CacheKey, ref Data.ResultMessage))
+            if (RouteCache.LoadCache(Data))
             {
                 //找到并返回缓存
                 Data.UserState = UserOperatorStateType.Success;
@@ -162,14 +161,16 @@ namespace MicroZero.Http.Gateway
                 Data.ResultMessage = CallZero();
             else
             {
-                Data.UserState = UserOperatorStateType.LocalError;
+                Data.UserState = UserOperatorStateType.NotFind;
                 Data.ZeroState = ZeroOperatorStateType.NotFind;
-                Data.ResultMessage = ApiResultIoc.NoReadyJson;
+                Data.ResultMessage = ApiResultIoc.NoFindJson;
                 return;
             }
             // 5 结果检查
             if (RouteOption.Option.SystemConfig.CheckResult)
                 SecurityChecker.CheckResult(Data);
+
+            RouteCache.CacheResult(Data);
         }
 
 
@@ -265,7 +266,7 @@ namespace MicroZero.Http.Gateway
                 Data.UserState = UserOperatorStateType.LocalException;
                 Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
-                IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
+                ////IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
                 context.Response.WriteAsync(ApiResultIoc.LocalErrorJson, Encoding.UTF8);
             }
             catch (Exception exception)

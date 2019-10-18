@@ -37,6 +37,11 @@ namespace MicroZero.Http.Gateway
             ZeroApplication.CheckOption();
             RouteOption.CheckOption();
 
+            services.AddCors(options =>
+                options.AddPolicy("AllowSameDomain",
+                    builder => builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin().AllowCredentials())
+            );
+
             DoConfigureServices(services);
         }
 

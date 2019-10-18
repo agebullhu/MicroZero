@@ -43,6 +43,7 @@
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <OutDir>/usr/zero/center/</OutDir>
     <RemoteProjectDir>$(RemoteRootDir)/$(ProjectName)</RemoteProjectDir>
+    <RemoteDeployDir>/usr/zero/center/</RemoteDeployDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>

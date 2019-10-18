@@ -395,7 +395,16 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Import(Agebull.MicroZero.ZeroApis.QueryArgument)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Export2(Agebull.MicroZero.ZeroApis.QueryArgument)">
+            <summary>
+                列表数据
+            </summary>
+            <remarks>
+            参数中可传递实体字段具体的查询条件,所有的条件按AND组合查询
+            </remarks>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiController`2.Export(Agebull.MicroZero.ZeroApis.QueryArgument)">
             <summary>
                 列表数据
             </summary>

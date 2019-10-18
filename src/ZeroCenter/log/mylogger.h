@@ -26,12 +26,6 @@ namespace agebull
 	void log_acl_debug(int section, int  level, const char* fname, int line, const char* func, const char* msg);
 	void log_acl_trace(int section, int  level, const char* msg);
 
-	/**
-	* \bref 输出到DEBUG窗口
-	*/
-	void out_debug(string msg);
-
-
 #ifndef LOG_SPRINTF_FORMAT
 
 #define log_warn(msg)  \

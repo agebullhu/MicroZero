@@ -465,12 +465,12 @@ namespace agebull
 			ls.push_back(descirpt);
 			if (reqid_idx > 0)
 			{
-				descirpt.append_frame(zero_def::frame::requester);
+				descirpt.append_frame(zero_def::frame::request_id);
 				ls.push_back(vector_str(list, reqid_idx));
 			}
 			if (reqer_idx > 0)
 			{
-				descirpt.append_frame(zero_def::frame::request_id);
+				descirpt.append_frame(zero_def::frame::requester);
 				ls.push_back(vector_str(list, reqer_idx));
 			}
 			if (glbid_idx > 0)
@@ -499,12 +499,12 @@ namespace agebull
 			ls.push_back(descirpt);
 			if (reqid_idx > 0)
 			{
-				descirpt.append_frame(zero_def::frame::requester);
+				descirpt.append_frame(zero_def::frame::request_id);
 				ls.push_back(vector_str(list, reqid_idx));
 			}
 			if (reqer_idx > 0)
 			{
-				descirpt.append_frame(zero_def::frame::request_id);
+				descirpt.append_frame(zero_def::frame::requester);
 				ls.push_back(vector_str(list, reqer_idx));
 			}
 			if (glbid_idx > 0)

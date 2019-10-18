@@ -2,6 +2,7 @@
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
+using Agebull.MicroZero.ZeroApis;
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 namespace Agebull.MicroZero.ZeroManagemant.StateMachine
@@ -19,6 +20,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
         {
             if (identity == ZeroCenterIdentity)
                 return;
+            ApiProxy.IsChanged = true;
             ZeroCenterIdentity = identity;
             ZeroTrace.SystemLog("ZeroCenter", "center_start", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState >= ZeroCenterState.Failed)
@@ -36,6 +38,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             var id = $"*{identity}";
             if (id == ZeroCenterIdentity)
                 return;
+            ApiProxy.IsChanged = true;
             ZeroCenterIdentity = id;
             ZeroTrace.SystemLog("ZeroCenter", "center_closing", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
@@ -52,6 +55,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             var id = $"#{identity}";
             if (id == ZeroCenterIdentity)
                 return;
+            ApiProxy.IsChanged = true;
             ZeroCenterIdentity = id;
             ZeroTrace.SystemLog("ZeroCenter", "center_stop", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
@@ -102,6 +106,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, name, content, config);
             }
+            ApiProxy.IsChanged = true;
         }
         internal static void station_install(string name, string content)
         {
@@ -111,6 +116,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, name, content, config);
             }
+            ApiProxy.IsChanged = true;
         }
 
 
@@ -122,11 +128,13 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, name, content, config);
             }
+            ApiProxy.IsChanged = true;
         }
         internal static void ChangeStationState(string name, ZeroCenterState state, ZeroNetEventType eventType)
         {
             if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
                 return;
+            ApiProxy.IsChanged = true;
             if (!ZeroApplication.Config.TryGetConfig(name, out var config) || !config.ChangedState(state))
                 return;
             ZeroApplication.OnStationStateChanged(config);

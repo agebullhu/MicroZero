@@ -1,4 +1,6 @@
 ﻿using Agebull.MicroZero;
+using RpcTest;
+using ZeroMQ;
 
 namespace ZFrameTest
 {
@@ -6,14 +8,14 @@ namespace ZFrameTest
     {
         static void Main(string[] args)
         {
-            //ZContext.Initialize();
-            //Tester.StartTest();
-            //ZContext.Destroy();
+            ZContext.Initialize();
+            Tester.StartTest();
+            ZContext.Destroy();
 
-            ZeroApplication.CheckOption();
-            ZeroApplication.RegistZeroObject<HisSummarySubscribe>();
-            ZeroApplication.Initialize();
-            ZeroApplication.RunAwaite();
+            //ZeroApplication.CheckOption();
+            //ZeroApplication.RegistZeroObject<HisSummarySubscribe>();
+            //ZeroApplication.Initialize();
+            //ZeroApplication.RunAwaite();
         }
     }
 }

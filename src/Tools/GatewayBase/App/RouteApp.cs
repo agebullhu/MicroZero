@@ -266,7 +266,7 @@ namespace MicroZero.Http.Gateway
                     return true;
                 case "/publish":
                     HttpProtocol.FormatResponse(response);
-                    var suc = ZeroPublisher.DoPublish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], (string)request.Form["Arg"]);
+                    var suc = ZeroPublisher.Publish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], request.Form["Arg"]);
                     response.WriteAsync(suc ? ApiResultIoc.SucceesJson : ApiResultIoc.NetworkErrorJson, Encoding.UTF8);
                     return true;
                     //case "/_1_warings_1_":

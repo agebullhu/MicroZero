@@ -85,9 +85,10 @@
   },
   /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
   "cache": [
-    /*{
-   "Api": "/ForcedUpdating/v2/activty/getconfig",
-   "OnlyName": true
-   }*/
+    {
+      "Api": "/Authority/v2/token/info",
+      "OnlyName": true,
+      "Bear": true
+    }
   ]
 }

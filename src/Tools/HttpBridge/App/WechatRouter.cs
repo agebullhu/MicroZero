@@ -4,10 +4,8 @@ using System.Text;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
-using Agebull.MicroZero.Helpers;
 using Agebull.MicroZero.ZeroApis;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
 using Senparc.Weixin.MP;
 
 namespace MicroZero.Http.Gateway
@@ -154,7 +152,7 @@ namespace MicroZero.Http.Gateway
             {
                 Data.Status = UserOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
-                IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
+                //IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
             }
             catch (Exception exception)
             {

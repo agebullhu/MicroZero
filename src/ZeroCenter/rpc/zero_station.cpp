@@ -130,6 +130,8 @@ namespace agebull
 					config_->error("initialize worker in", zmq_strerror(zmq_errno()));
 					return false;
 				}
+
+				//zmq_setsockopt(worker_in_socket_tcp_, ZMQ_XPUB_WELCOME_MSG, station_name,strlen(station_name));
 				socket_ex::setsockopt(worker_in_socket_tcp_, ZMQ_ROUTER_MANDATORY, 1);
 				poll_items_[poll_count_++] = { worker_in_socket_tcp_, 0, ZMQ_POLLIN, 0 };
 			}
@@ -373,6 +375,7 @@ namespace agebull
 		*/
 		int zero_station::on_request(zmq_pollitem_t& socket, bool local)
 		{
+
 			vector<shared_char> list;
 			zmq_state_ = socket_ex::recv(socket.socket, list);
 
@@ -389,6 +392,7 @@ namespace agebull
 			}
 			if (strcmp(*list[1], "\004PING") == 0)
 			{
+				std::cout << *list[1] << std::endl;
 				ping(socket.socket, list);
 				return 1;
 			}
@@ -399,7 +403,7 @@ namespace agebull
 			}
 			if (description.command() < zero_def::command::none)
 			{
-				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false,true);
+				send_request_status(socket.socket, *list[0], zero_def::status::frame_invalid, false, true);
 				return -2;
 			}
 			var frame_size = description.frame_size();
@@ -585,7 +589,7 @@ namespace agebull
 			shared_char& description = list[1];
 			list.emplace_back(station_name_);
 			description.append_frame(zero_def::frame::station_id);
-			
+
 			if (socket_ex::send(plan_socket_inproc_, list) != zmq_socket_state::succeed)
 			{
 				config_->error("send to plan dispatcher failed", zero_def::desc_str(false, list[1].get_buffer(), list.size()));
@@ -604,7 +608,7 @@ namespace agebull
 			if (zero_def::station_type::is_sys_station(config_->station_type) || !config_->is_state(station_state::run))
 				return false;
 			config_->set_state(station_state::pause);
-			station_event(zero_net_event::event_station_pause,config_->station_name.c_str(), nullptr);
+			station_event(zero_net_event::event_station_pause, config_->station_name.c_str(), nullptr);
 			return true;
 		}
 

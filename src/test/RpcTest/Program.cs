@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
+using Agebull.MicroZero.ZeroApis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RpcTest
@@ -17,9 +18,9 @@ namespace RpcTest
             //IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
             //ZeroApplication.Discove(typeof(Program).Assembly);
             ZeroApplication.Initialize();
-            Task.Factory.StartNew(Test);
-            //ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
-            ZeroApplication.ZeroNetEvent += OnZeroEvent;
+            
+            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
+            //ZeroApplication.ZeroNetEvent += OnZeroEvent;
             ZeroApplication.RunAwaite();
         }
 
@@ -28,19 +29,29 @@ namespace RpcTest
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
+                    Task.Factory.StartNew(Test);
                     break;
+
             }
         }
 
         static void Test()
         {
-            while (true)
-            {
-                Console.ReadKey();
-                
-                var re= ZeroPublisher.DoPublish("UserMessage", "#", "{}");
-                Console.WriteLine(re);
-            }
+            ////定时过期
+            //ApiClient.ApiPlan<Argument<long>, string>("PayCallback", "v1/order/timeout",
+            //    new Argument<long> { Value = 10 },
+            //    plan_date_type.minute,
+            //    100,
+            //    "订单超时处理");
+
+            ApiClient.CallApi("MarkPoint", "v1/mk", "{}");
+            //while (true)
+            //{
+            //    Console.ReadKey();
+
+            //    var re= ZeroPublisher.DoPublish("UserMessage", "#", "{}");
+            //    Console.WriteLine(re);
+            //}
         }
     }
 

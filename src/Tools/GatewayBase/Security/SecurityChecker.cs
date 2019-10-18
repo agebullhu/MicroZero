@@ -9,9 +9,11 @@ using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
-using Agebull.MicroZero.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Linq;
 
 namespace MicroZero.Http.Gateway
 {
@@ -35,6 +37,8 @@ namespace MicroZero.Http.Gateway
         private static readonly string UnknowAccessTokenJson = JsonHelper.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Auth_AccessToken_Unknow));
         private static readonly string AccessTokenTimeOutJson = JsonHelper.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.Auth_AccessToken_TimeOut));
         private static readonly IApiResult<LoginUserInfo> DenyAccessResult = ApiResultIoc.Ioc.Error<LoginUserInfo>(ErrorCode.DenyAccess, null, null, "gateway", null, null);
+
+        //private static readonly ConcurrentDictionary<string, TimeJson> Tokens = new ConcurrentDictionary<string, TimeJson>();
 
         #endregion
 
@@ -163,7 +167,7 @@ namespace MicroZero.Http.Gateway
             {
                 if (!RouteOption.Option.Security.CheckBearer)
                 {
-                    GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
+                    //GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
                     return true;
                 }
 
@@ -258,8 +262,28 @@ namespace MicroZero.Http.Gateway
                 return true;
             }
         }
+        class TimeJson
+        {
+            public string Json;
+            public DateTime Valid;
+            public DateTime Time;
+        }
         private IApiResult<LoginUserInfo> CheckToken(string name, string api, out string json)
         {
+            //if (Tokens.TryGetValue(Data.Token, out var tj))
+            //{
+            //    if (tj.Valid >= DateTime.Now)
+            //    {
+            //        Console.WriteLine($"命中{Data.Token}");
+            //        return ToResult(json = tj.Json, false);
+            //    }
+            //    else
+            //    {
+            //        Tokens.TryRemove(Data.Token, out _);
+            //        json = tj.Json;
+            //        return null;
+            //    }
+            //}
             // 远程调用
             using (MonitorScope.CreateScope($"Check{name}:{Data.Token}"))
             {
@@ -274,14 +298,48 @@ namespace MicroZero.Http.Gateway
 
                 json = caller.Result;
 
-                if (caller.Result == null)
+                if (json == null)
                     return null;
+                return ToResult(json,true);
+            }
+        }
+
+        private IApiResult<LoginUserInfo> ToResult(string json,bool join)
+        {
+            try
+            {
                 //GlobalContext.Current.Request.Token = Data.Token;
-                var result = ApiResultIoc.Ioc.DeserializeObject<LoginUserInfo>(caller.Result);
+                var result = ApiResultIoc.Ioc.DeserializeObject<LoginUserInfo>(json);
+                if(join)
+                {
+                    //if (Tokens.Count > 10000)
+                    //{
+                    //    if (Monitor.TryEnter(Tokens))
+                    //    {
+                    //        var keys = Tokens.Where(p => p.Value.Time < DateTime.Now).Select(p => p.Key).ToArray();
+
+                    //        foreach (var key in keys)
+                    //        {
+                    //            Tokens.TryRemove(key, out _);
+                    //        }
+                    //        Monitor.Exit(Tokens);
+                    //    }
+                    //}
+                    //var val = result?.ResultData?.Valid;
+                    //if (val == null || val.Value < DateTime.Now)
+                    //    val = DateTime.Now.AddHours(2);
+                    //Tokens.TryAdd(Data.Token, new TimeJson
+                    //{
+                    //    Json = json,
+                    //    Time = DateTime.Now.AddMinutes(5),
+                    //    Valid = val.Value
+                    //});
+                }
                 if (result == null)
                     return DenyAccessResult;
                 if (!result.Success)
                     return result;
+
                 //形成透传上下文
                 GlobalContext.SetOrganizational(new OrganizationalInfo
                 {
@@ -290,11 +348,16 @@ namespace MicroZero.Http.Gateway
                     //OrgKey = result.ResultData.Organization,
                     //RouteName = result.ResultData.Organization
                 });
+                //这样做的原因是,防止未来使用重载版本时，此处基于LoginUserInfo反序列化失真了
                 var context = (JObject)JsonConvert.DeserializeObject(JsonHelper.SerializeObject(GlobalContext.Current));
                 var obj = (JObject)JsonConvert.DeserializeObject(json);
                 context["user"] = obj["data"];
                 Data.GlobalContextJson = context.ToString();
                 return result;
+            }
+            catch (Exception)
+            {
+                return DenyAccessResult;
             }
         }
         #endregion
@@ -354,7 +417,15 @@ namespace MicroZero.Http.Gateway
                         return false;
                     }
                 }
-
+                else
+                {
+                    if (Data.ApiItem != null && Data.ApiItem.NeedLogin)
+                    {
+                        Data.ResultMessage = ApiResultIoc.DenyAccessJson;
+                        return false;
+                    }
+                    return true;
+                }
 
                 IApiResult result;
                 switch (token1)
@@ -412,7 +483,7 @@ namespace MicroZero.Http.Gateway
         /// AT校验请求参数
         /// </summary>
         [DataContract, JsonObject(MemberSerialization.OptIn)]
-        public class VerifyTokenArgument 
+        public class VerifyTokenArgument
         {
             /// <summary>
             /// 身份令牌
@@ -438,17 +509,30 @@ namespace MicroZero.Http.Gateway
             [JsonProperty]
             public string API { get; set; }
         }
-        private IApiResult<LoginUserInfo> CheckToken2(string name,out string json)
+        private IApiResult<LoginUserInfo> CheckToken2(string name, out string json)
         {
+            //if (Tokens.TryGetValue(Data.Token, out var tj))
+            //{
+            //    if (tj.Valid >= DateTime.Now)
+            //    {
+            //        return ToResult(json = tj.Json, false);
+            //    }
+            //    else
+            //    {
+            //        Tokens.TryRemove(Data.Token, out _);
+            //        json = tj.Json;
+            //        return null;
+            //    }
+            //}
             // 远程调用
             using (MonitorScope.CreateScope($"Check{name}:{Data.Token}"))
             {
                 var arg = new VerifyTokenArgument
                 {
-                    AuthToken=Data.Token,
+                    AuthToken = Data.Token,
                     SceneToken = Data["__scene"],
                     Page = Data["__page"],
-                    API =  $"{Data.ApiHost}/{Data.ApiName}"
+                    API = $"{Data.ApiHost}/{Data.ApiName}"
                 };
                 var caller = new ApiClient
                 {
@@ -463,30 +547,13 @@ namespace MicroZero.Http.Gateway
 
                 if (caller.Result == null)
                     return null;
-                //GlobalContext.Current.Request.Token = Data.Token;
-                var result = ApiResultIoc.Ioc.DeserializeObject<LoginUserInfo>(caller.Result);
-                if (result == null)
-                    return DenyAccessResult;
-                if (!result.Success)
-                    return result;
-                //形成透传上下文
-                GlobalContext.SetOrganizational(new OrganizationalInfo
-                {
-                    OrgId = result.ResultData.OrganizationId,
-                    Name = result.ResultData.Organization,
-                    //OrgKey = result.ResultData.Organization,
-                    //RouteName = result.ResultData.Organization
-                });
-                var context = (JObject)JsonConvert.DeserializeObject(JsonHelper.SerializeObject(GlobalContext.Current));
-                var obj = (JObject)JsonConvert.DeserializeObject(json);
-                context["user"] = obj["data"];
-                Data.GlobalContextJson = context.ToString();
-                return result;
+                return ToResult(json,true);
             }
         }
         #endregion
 
         #region 返回值检查
+
 
         /// <summary>
         ///     检查返回值是否合理
@@ -499,7 +566,7 @@ namespace MicroZero.Http.Gateway
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
             {
-                IocHelper.Create<IRuntimeWaring>().Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                //IocHelper.Create<IRuntimeWaring>().Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                 data.UserState = UserOperatorStateType.FormalError;
                 data.ZeroState = ZeroOperatorStateType.FrameInvalid;
                 return false;
@@ -512,7 +579,7 @@ namespace MicroZero.Http.Gateway
                 case '[':
                     break;
                 default:
-                    IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                    //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                     return true;
             }
 
@@ -522,7 +589,7 @@ namespace MicroZero.Http.Gateway
                 result = ApiResultIoc.Ioc.DeserializeObject(data.ResultMessage);
                 if (result == null)
                 {
-                    IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                    //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                     data.UserState = UserOperatorStateType.FormalError;
                     data.ZeroState = ZeroOperatorStateType.Error;
                     return false;
@@ -530,7 +597,7 @@ namespace MicroZero.Http.Gateway
             }
             catch
             {
-                IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                 data.UserState = UserOperatorStateType.FormalError;
                 data.ZeroState = ZeroOperatorStateType.Error;
                 return false;
@@ -562,7 +629,7 @@ namespace MicroZero.Http.Gateway
             }
             data.UserState = UserOperatorStateType.FormalError;
             data.ZeroState = ZeroOperatorStateType.FrameInvalid;
-            IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
+            //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, result.Status?.ClientMessage ?? "处理错误但无消息");
             return false;
         }
 

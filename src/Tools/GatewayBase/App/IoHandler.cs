@@ -23,7 +23,7 @@ namespace MicroZero.Http.Gateway
         public static void OnBegin(RouteData data)
         {
             data.Start = DateTime.Now;
-            BeginZeroTrace(data);
+            //BeginZeroTrace(data);
             BeginMonitor(data);
         }
 
@@ -35,7 +35,7 @@ namespace MicroZero.Http.Gateway
             data.End = DateTime.Now;
             EndMonitor(data);
             //CountApi(data);
-            EndZeroTrace(data);
+            //EndZeroTrace(data);
         }
 
         #region LogMonitor
@@ -52,17 +52,16 @@ namespace MicroZero.Http.Gateway
             {
                 LogRecorderX.BeginMonitor(data.Uri.ToString());
                 LogRecorderX.BeginStepMonitor("HTTP");
-                var args = new StringBuilder();
-                args.Append("Headers：");
-                args.Append(JsonHelper.SerializeObject(data.Headers));
-                LogRecorderX.MonitorTrace(args.ToString());
-                LogRecorderX.MonitorTrace($"Method：{data.HttpMethod}");
-                LogRecorderX.MonitorTrace($"RequestId：{GlobalContext.RequestInfo.RequestId }");
-                LogRecorderX.MonitorTrace($"Command:{data.ApiHost}/{data.ApiName}");
+                LogRecorderX.MonitorTrace($"Token     ：{GlobalContext.RequestInfo.Token}");
+                LogRecorderX.MonitorTrace($"RequestId ：{GlobalContext.RequestInfo.RequestId }");
+                LogRecorderX.MonitorTrace($"Method    ：{data.HttpMethod}");
+                LogRecorderX.MonitorTrace($"Command   ：{data.ApiHost}/{data.ApiName}");
+                if (data.Headers.Count > 0)
+                    LogRecorderX.MonitorTrace($"Headers   ：{JsonHelper.SerializeObject(data.Headers)}");
                 if (data.Arguments.Count > 0)
-                    LogRecorderX.MonitorTrace($"Arguments：{JsonHelper.SerializeObject(data.Arguments)}");
+                    LogRecorderX.MonitorTrace($"Arguments ：{JsonHelper.SerializeObject(data.Arguments)}");
                 if (!string.IsNullOrWhiteSpace(data.HttpContext))
-                    LogRecorderX.MonitorTrace("Context:" + data.HttpContext);
+                    LogRecorderX.MonitorTrace($"Context   ：{data.HttpContext}");
             }
             catch (Exception e)
             {
@@ -103,19 +102,20 @@ namespace MicroZero.Http.Gateway
         #endregion
 
         #region ZeroTrace
-
+        /*
 
         /// <summary>
         ///     订阅时的标准网络数据说明
         /// </summary>
         private static readonly byte[] Description =
         {
-            6,
+            8,
             (byte)ZeroByteCommand.General,
-            ZeroFrameType.Command,
+            ZeroFrameType.PubTitle,
             ZeroFrameType.TextContent,
-            ZeroFrameType.RequestId,
             ZeroFrameType.Station,
+            ZeroFrameType.CallId,
+            ZeroFrameType.RequestId,
             ZeroFrameType.Requester,
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End,
@@ -125,7 +125,10 @@ namespace MicroZero.Http.Gateway
         private static readonly byte[] WebNameBytes = "WebClient".ToZeroBytes();
 
 
-        
+        private static readonly byte[] HttpBytes = "Http".ToZeroBytes();
+
+
+
 
         /// <summary>
         /// 发送广播
@@ -133,18 +136,11 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void BeginZeroTrace(RouteData data)
         {
-            var result = ZeroPublisher.Publish("TraceDispatcher", "Http".ToZeroBytes(), Description,
-                $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
-                data.ToZeroBytes(),
-                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                ZeroCommandExtend.AppNameBytes,
-                WebNameBytes,
-                ZeroCommandExtend.ServiceKeyBytes);
+            var result = ZeroPublisher.Send("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data);
             if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
             {
                 GlobalContext.Current.Request.LocalGlobalId = result.GlobalId;
             }
-
         }
 
         /// <summary>
@@ -153,38 +149,10 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void EndZeroTrace(RouteData data)
         {
-            var desc = new byte[]
-            {
-                9,
-                (byte)data.ZeroState,
-                ZeroFrameType.Command,
-                ZeroFrameType.TextContent,
-                ZeroFrameType.TextContent,
-                ZeroFrameType.Station,
-                ZeroFrameType.Requester,
-                ZeroFrameType.RequestId,
-                ZeroFrameType.GlobalId,
-                ZeroFrameType.CallId,
-                ZeroFrameType.SerivceKey,
-                3
-            };
-            var result = data.ResultMessage;
-            data.ResultMessage = null;//拒绝重复传输
-            data.Headers = null;//拒绝重复传输
-            ZeroPublisher.Publish("TraceDispatcher", "Http".ToZeroBytes(),
-                desc,
-                $"{data.ApiHost}/{data.ApiName}".ToZeroBytes(),
-                result.ToZeroBytes(),
-                data.ToZeroBytes(),
-                ZeroCommandExtend.AppNameBytes,
-                WebNameBytes,
-                GlobalContext.RequestInfo.RequestId.ToZeroBytes(),
-                GlobalContext.RequestInfo.LocalGlobalId.ToZeroBytes(),
-                GlobalContext.RequestInfo.CallGlobalId.ToZeroBytes(),
-                ZeroCommandExtend.ServiceKeyBytes);
+            ZeroPublisher.Publish("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data.ResultMessage);
         }
-        #endregion
 
+        
         //private static int count, error, success;
         /// <summary>
         ///     开始计数
@@ -205,6 +173,7 @@ namespace MicroZero.Http.Gateway
                 Requester = $"http_route={GlobalContext.RequestInfo.Ip}:{GlobalContext.RequestInfo.Port}"
             });
             //ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
-        }
+        }*/
+        #endregion
     }
 }

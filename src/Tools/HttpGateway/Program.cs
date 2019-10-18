@@ -18,7 +18,7 @@ namespace MicroZero.Http.Gateway
         {
             return WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
-                .UseKestrel(RouteApp.Options)
+                .UseKestrel(RouteApp.Options)//HTTPS∂Àø⁄≈‰÷√
                 .UseStartup<GatewayStartup>()
                 .Build();
         }

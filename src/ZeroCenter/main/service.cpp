@@ -69,9 +69,9 @@ namespace agebull
 			}
 			strcpy(global_config::root_path, path.c_str());
 			// 初始化日志
-			var log = log_init();
+			//var log = log_init();
 			log_msg3("ØMQ version:%d.%d.%d", major, minor, patch);
-			log_msg3("folder\nexec:%s\nroot:%s\nlog:%s", curpath.c_str(), global_config::root_path, log.c_str());
+			//log_msg3("folder\nexec:%s\nroot:%s\nlog:%s", curpath.c_str(), global_config::root_path, log.c_str());
 			//本机IP信息
 			acl::string host;
 			vector<acl::string> ips;

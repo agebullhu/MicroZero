@@ -213,7 +213,7 @@ namespace agebull
 				case 0:
 					state = zmq_socket_state::empty; break;
 				case ETERM:
-					state = zmq_socket_state::intr; break;
+					state = zmq_socket_state::term; break;
 				case ENOTSOCK:
 					state = zmq_socket_state::not_socket; break;
 				case EINTR:

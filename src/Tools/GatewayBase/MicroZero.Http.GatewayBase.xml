@@ -32,29 +32,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="F:MicroZero.Http.Gateway.IoHandler.Description">
-            <summary>
-                订阅时的标准网络数据说明
-            </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginZeroTrace(MicroZero.Http.Gateway.RouteData)">
-            <summary>
-            发送广播
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.IoHandler.EndZeroTrace(MicroZero.Http.Gateway.RouteData)">
-            <summary>
-            发送广播
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.IoHandler.CountApi(MicroZero.Http.Gateway.RouteData)">
-            <summary>
-                开始计数
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:MicroZero.Http.Gateway.IRouter">
             <summary>
                 调用映射核心类
@@ -356,7 +333,7 @@
                 刷新
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteCache.LoadCache(System.Uri,System.String,MicroZero.Http.Gateway.CacheOption@,System.String@,System.String@)">
+        <member name="M:MicroZero.Http.Gateway.RouteCache.LoadCache(MicroZero.Http.Gateway.RouteData)">
             <summary>
                 检查缓存
             </summary>

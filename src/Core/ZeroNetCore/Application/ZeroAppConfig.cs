@@ -655,10 +655,10 @@ namespace Agebull.MicroZero
             if (sec == null)
                 throw new Exception("无法找到主配置节点,路径为Zero,在zero.json或appsettings.json中设置");
 
-
-            if (ZSocket.Option == null)
+            var option = sec.Child<SocketOption>("socketOption");
+            if (option != null)
             {
-                ZSocket.Option = sec.Child<SocketOption>("socketOption") ?? new SocketOption();
+                ZSocket.Option = option;
             }
 
             Config = sec.Child<ZeroAppConfig>(AppName) ?? new ZeroAppConfig();

@@ -59,6 +59,11 @@ namespace agebull
 			{
 				return last_id_;
 			}
+
+			/**
+			 * \brief 准备存储
+			 */
+			bool prepare(shared_ptr<station_config>& config);
 			/**
 			 * \brief 准备存储
 			 */

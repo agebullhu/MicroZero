@@ -337,7 +337,7 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         Socket = socket,
                         Messages = message
-                    }, TaskCreationOptions.PreferFairness);
+                    }, TaskCreationOptions.PreferFairness | TaskCreationOptions.DenyChildAttach);
                 }
                 else
                 {

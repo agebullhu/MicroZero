@@ -46,7 +46,11 @@ namespace RpcTest
             Host = sec["HttpRouteAddress"];
             Qps = sec.GetInt("Qps", 100);
         }
-
+        public static Tester Instance;
+        protected Tester()
+        {
+            Instance = this;
+        }
         public abstract bool Init();
 
         public static void OnZeroEvent(object sender, ZeroNetEventArgument e)
@@ -72,7 +76,8 @@ namespace RpcTest
             if (!Init())
                 return;
             Cancel = new CancellationTokenSource();
-            new Thread(Test).Start();
+            Test();
+            //new Thread(Test).Start();
             //Start = DateTime.Now;
             //var option = ZeroApplication.GetClientOption(Station);
             //switch (option.SpeedLimitModel)
@@ -102,7 +107,7 @@ namespace RpcTest
             using (IocScope.CreateScope())
             {
                 DateTime s = DateTime.Now;
-                DoAsync();
+                DoTest();
 
                 Interlocked.Decrement(ref WaitCount);
 
@@ -116,11 +121,10 @@ namespace RpcTest
                 if (sp.TotalMilliseconds > 1000)
                     Interlocked.Increment(ref TmError);
 
-                if ((Interlocked.Increment(ref ExCount) % 100) == 0)
-                    Count();
+                Count();
             }
         }
-        protected abstract void DoAsync();
+        protected abstract void DoTest();
 
         private int testerCount;
 
@@ -134,6 +138,7 @@ namespace RpcTest
         {
             Interlocked.Increment(ref testerCount);
         }
+
         void OnTestEnd()
         {
             if (Interlocked.Decrement(ref testerCount) == 0)
@@ -148,25 +153,43 @@ namespace RpcTest
             ZeroTrace.SystemLog("RpcTest", "Test is runing");
             int sleep = 1000 / Qps;
             TaskScheduler s = TaskScheduler.Default;
-            
+
             Start = DateTime.Now;
             while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
-                if(WaitCount >= Qps)
+                if (WaitCount >= Qps)
                 {
                     Thread.Sleep(1000);
                     continue;
                 }
                 for (int i = 0; i < Qps; i++)
                 {
-                    Thread.Sleep(sleep);
                     Interlocked.Increment(ref WaitCount);
-                    var task = new Task(Async, TaskCreationOptions.PreferFairness);
-                    task.Start(s);
+                    Task.Run(Async);
+                    Thread.Sleep(sleep);
                 }
                 Count();
             }
         }
+
+        public void Count()
+        {
+            if ((Interlocked.Increment(ref ExCount) % Qps) > 0)
+                return;
+            TimeSpan ts = TimeSpan.FromTicks(RunTime);
+            var to = ts.TotalMilliseconds / ExCount;
+            if (to < 0.0001F)
+                to = double.NaN;
+            var avg = ExCount / (DateTime.Now - Start).TotalSeconds;
+            if (avg < 0.0001F)
+                avg = double.NaN;
+            GC.Collect();
+            ZeroTrace.SystemLog(
+                $"[Count] {ExCount} [Wait] {ApiProxy.Instance?.WaitCount}/{WaitCount} Last:{Last:F3}ms | Max:{Max:F3}ms - Min:{Min:F3}ms | {to:F3}ms/qps | {avg:F3} /s",
+                $"[Error] net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BugError:D8}");
+        }
+
+        #region old
 
         public void TestSync()
         {
@@ -186,23 +209,6 @@ namespace RpcTest
             Count();
             OnTestEnd();
         }
-
-        public void Count()
-        {
-            TimeSpan ts = TimeSpan.FromTicks(RunTime);
-            var to = ts.TotalMilliseconds / ExCount;
-            if (to < 0.0001F)
-                to = double.NaN;
-            var avg = ExCount / (DateTime.Now - Start).TotalSeconds;
-            if (avg < 0.0001F)
-                avg = double.NaN;
-            GC.Collect();
-            ZeroTrace.SystemLog(
-                $"[Count] {ExCount} [Wait] {ApiProxy.Instance?.WaitCount}/{WaitCount} Last:{Last:F3}ms | Max:{Max:F3}ms - Min:{Min:F3}ms | {to:F3}ms/qps | {avg:F3} /s",
-                $"[Error] net:{NetError:D8} | worker:{WkError:D8} | time out:{TmError:D8} | bug:{BugError:D8}");
-        }
-
-        #region old
 
         public void Test1()
         {

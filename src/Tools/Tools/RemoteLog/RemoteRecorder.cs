@@ -79,11 +79,7 @@ namespace Agebull.MicroZero.Log
             var array = infos.ToArray();
             infos.Clear();
 
-            _socket.SendTo(
-                LogDescription, 
-                _logsByte,
-                JsonHelper.SerializeObject(array).ToZeroBytes(),
-                ZeroCommandExtend.ServiceKeyBytes);
+            _socket.SendTo(LogDescription, _logsByte, JsonHelper.SerializeObject(array).ToZeroBytes(), ZeroCommandExtend.ServiceKeyBytes);
             //int idx = 0;
             //while (idx <= array.Length)
             //{
@@ -243,29 +239,25 @@ namespace Agebull.MicroZero.Log
         {
             using (OnceScope.CreateScope(this, OnRun, OnStop))
             {
-                var pool = ZmqPool.CreateZmqPool();
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
-                using (pool)
+                using (var pool = ZmqPool.CreateZmqPool())
                 {
-                    _socket = ZSocket.CreateClientSocketByInproc("inproc://RemoteLog.req", ZSocketType.PAIR);
-                    var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName));
-                    while (CanRun)
-                    {
-                        if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                    pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
+                    using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
+                    using (var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
+                        while (CanRun)
                         {
-                            continue;
-                        }
-                        using (message)
-                        {
-                            using (var copy = message.Duplicate())
+                            if (!pool.Poll() || !pool.CheckIn(0, out var message))
                             {
-                                send.Send(copy);
+                                continue;
+                            }
+                            using (message)
+                            {
+                                using (var copy = message.Duplicate())
+                                {
+                                    send.Send(copy);
+                                }
                             }
                         }
-                    }
-
-                    send.Dispose();
-                    _socket.Dispose();
                     _socket = null;
                 }
             }

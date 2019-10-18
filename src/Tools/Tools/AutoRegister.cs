@@ -2,6 +2,7 @@ using System.ComponentModel.Composition;
 using Agebull.Common.Configuration;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
+using Agebull.MicroZero.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Agebull.MicroZero.Log

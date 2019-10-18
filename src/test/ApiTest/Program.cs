@@ -26,11 +26,10 @@ namespace ApiTest
         static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            ZeroApplication.Discove(Assembly.GetExecutingAssembly());
+            //ZeroApplication.Discove(Assembly.GetExecutingAssembly());
             ZeroApplication.Initialize();
-                        ZeroApplication.Run();
+            ZeroApplication.Run();
 
-            SystemManager.Instance.LoadDocument("Hpc", out var doc);
             Console.ReadKey();
         }
 
