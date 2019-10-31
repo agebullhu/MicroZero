@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway

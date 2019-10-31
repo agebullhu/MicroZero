@@ -7,7 +7,6 @@ namespace ZeroMQ
     /// </summary>
     public class ZPollBase : MemoryCheck
     {
-
         /// <summary>
         /// 对应的Socket集合
         /// </summary>
@@ -17,11 +16,11 @@ namespace ZeroMQ
         /// Sockt数量
         /// </summary>
         public int Size { get; set; }
-
+                
         /// <summary>
         /// 超时
         /// </summary>
-        public int TimeoutMs => ZSocket.Option.PoolTimeOut;
+        public readonly int TimeoutMs = ZSocket.Option.PoolTimeOut <= 100 ? 1000 : ZSocket.Option.PoolTimeOut;
 
         /// <summary>
         /// 错误对象

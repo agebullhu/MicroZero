@@ -1,11 +1,10 @@
 {
   "zero": {
+    "master": "192.168.123.129",
     "base_tcp_port": "7999",
-    "use_ipc_protocol": "false",
     "worker_sound_ivl": 2000,
     "pool_timeout": 500,
-    "api_route_mode": 0,
-    "monitor_socket": 0,
+    "monitor_socket": false,
     "service_key": "agebull"
   },
   "redis": {
@@ -38,10 +37,10 @@
     "RECONNECT_IVL": -1,
     "CONNECT_TIMEOUT": -1,
     "RECONNECT_IVL_MAX": -1,
-    "TCP_KEEPALIVE": 1,
+    "TCP_KEEPALIVE": 0,
     "TCP_KEEPALIVE_IDLE": 120,
     "TCP_KEEPALIVE_INTVL": 3,
-    "HEARTBEAT_IVL": 1,
+    "HEARTBEAT_IVL": 0,
     "HEARTBEAT_TIMEOUT": 1000,
     "HEARTBEAT_TTL": 10000
   }

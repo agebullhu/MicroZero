@@ -356,38 +356,38 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:MicroZero.Http.Gateway.ContextRouter">
+        <member name="T:MicroZero.Http.Gateway.ContentRouter">
             <summary>
                 调用映射核心类
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.ContextRouter.HttpContext">
+        <member name="P:MicroZero.Http.Gateway.ContentRouter.HttpContext">
             <summary>
                 Http上下文
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.ContextRouter.Request">
+        <member name="P:MicroZero.Http.Gateway.ContentRouter.Request">
             <summary>
                 Http请求
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.ContextRouter.Response">
+        <member name="P:MicroZero.Http.Gateway.ContentRouter.Response">
             <summary>
                 Http返回
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.ContextRouter.#ctor(Microsoft.AspNetCore.Http.HttpContext)">
+        <member name="M:MicroZero.Http.Gateway.ContentRouter.#ctor(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
                 内部构架
             </summary>
             <param name="context"></param>
         </member>
-        <member name="M:MicroZero.Http.Gateway.ContextRouter.WriteContext(System.String[],System.String)">
+        <member name="M:MicroZero.Http.Gateway.ContentRouter.WriteContent(System.String[],System.String)">
             <summary>
                 调用
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.ContextRouter.FormatResponse(System.String)">
+        <member name="M:MicroZero.Http.Gateway.ContentRouter.FormatResponse(System.String)">
             <summary>
                 跨域支持
             </summary>
@@ -1126,6 +1126,18 @@
                 内容页地址
             </summary>
         </member>
+        <member name="T:MicroZero.Http.Gateway.ResultChecker">
+            <summary>
+                返回值检查
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.ResultChecker.DoCheck(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                检查返回值是否合理
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
         <member name="T:MicroZero.Http.Gateway.SecurityChecker">
             <summary>
                 安全检查员
@@ -1204,13 +1216,6 @@
             <summary>
             当前API
             </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.SecurityChecker.CheckResult(MicroZero.Http.Gateway.RouteData)">
-            <summary>
-                检查返回值是否合理
-            </summary>
-            <param name="data"></param>
-            <returns></returns>
         </member>
         <member name="T:MicroZero.Http.Gateway.GatewayStartup">
             <summary>

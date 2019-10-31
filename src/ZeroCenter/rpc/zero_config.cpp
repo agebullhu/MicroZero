@@ -9,54 +9,54 @@ namespace agebull
 	{
 		int station_config::check_worker(station_worker& worker)
 		{
-			if (worker.state == 5)
+			if (worker.worker_state == 5)
 				return -1;
-			var ms = boost::posix_time::microsec_clock::local_time() - worker.pre_time;
+			var ms = boost::posix_time::microsec_clock::local_time() - worker.worker_last;
 			var tm = ms.total_milliseconds() / global_config::worker_sound_ivl;
 			
 
 			if (tm <= 1)
 			{
-				worker.state = 1;
-				return worker.level = 5;
+				worker.worker_state = 1;
+				return worker.worker_health = 5;
 			}
 			if (tm <= 2)
 			{
-				worker.state = 2;
-				return worker.level = 4;
+				worker.worker_state = 2;
+				return worker.worker_health = 4;
 			}
 			if (tm <= 4)
 			{
-				worker.state = 2;
-				return worker.level = 3;
+				worker.worker_state = 2;
+				return worker.worker_health = 3;
 			}
-			worker.state = 3;
+			worker.worker_state = 3;
 			if (tm <= 8)
 			{
-				return worker.level = 2;
+				return worker.worker_health = 2;
 			}
 			if (tm <= 16)
 			{
-				return worker.level = 1;
+				return worker.worker_health = 1;
 			}
 			if (tm <= 32)
 			{
-				return worker.level = 0;
+				return worker.worker_health = 0;
 			}
-			return worker.level = -1;
+			return worker.worker_health = -1;
 		}
 
 
-		void station_config::worker_join(const char* identity, const char* ip)
+		void station_config::worker_join(const char* worker_name, const char* ip)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
 			bool hase = false;
 			for (station_worker& iter : workers)
 			{
-				if (strcmp(iter.identity, identity) == 0)
+				if (strcmp(iter.worker_name, worker_name) == 0)
 				{
-					if (iter.state > 2)//曾经失联
-						log("worker_join*reincarnation ", identity);
+					if (iter.worker_state > 2)//曾经失联
+						log("worker_join*reincarnation ", worker_name);
 					iter.active();
 					hase = true;
 					break;
@@ -65,27 +65,27 @@ namespace agebull
 			if (!hase)
 			{
 				station_worker wk;
-				memset(wk.identity, 0, sizeof(wk.identity));
-				strcpy(wk.identity, identity);
-				wk.state = 1;
-				wk.level = 5;
+				memset(wk.worker_name, 0, sizeof(wk.worker_name));
+				strcpy(wk.worker_name, worker_name);
+				wk.worker_state = 1;
+				wk.worker_health = 5;
 				wk.active();
 				workers.push_back(wk);
 				++ready_works_;
-				log("worker_join", identity);
+				log("worker_join", worker_name);
 			}
 		}
 
 
-		void station_config::worker_heartbeat(const char* identity)
+		void station_config::worker_heartbeat(const char* worker_name)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
 			for (station_worker& iter : workers)
 			{
-				if (strstr(iter.identity, identity) != nullptr)
+				if (strstr(iter.worker_name, worker_name) != nullptr)
 				{
-					//if (iter.state > 2)//曾经失联
-					//	log("worker_ready*reincarnation ", iter.identity);
+					//if (iter.worker_state > 2)//曾经失联
+					//	log("worker_ready*reincarnation ", iter.worker_name);
 					iter.active();
 				}
 				else
@@ -94,16 +94,16 @@ namespace agebull
 				}
 			}
 		}
-		void station_config::worker_ready(const char* identity)
+		void station_config::worker_ready(const char* worker_name)
 		{
 			boost::lock_guard<boost::mutex> guard(mutex);
 			bool hase = false;
 			for (station_worker& iter : workers)
 			{
-				if (strcmp(iter.identity, identity) == 0)
+				if (strcmp(iter.worker_name, worker_name) == 0)
 				{
-					if (iter.state > 2)//曾经失联
-						log("worker_ready*reincarnation ", identity);
+					if (iter.worker_state > 2)//曾经失联
+						log("worker_ready*reincarnation ", worker_name);
 					iter.active();
 					hase = true;
 					break;
@@ -113,10 +113,10 @@ namespace agebull
 			{
 				station_worker wk;
 				memset(&wk, 0, sizeof(wk));
-				strcpy(wk.identity, identity);
+				strcpy(wk.worker_name, worker_name);
 				wk.active();
 				workers.push_back(wk);
-				log("worker_ready", identity);
+				log("worker_ready", worker_name);
 			}
 		}
 
@@ -136,7 +136,7 @@ namespace agebull
 				if (size == 1)
 				{
 					worker_idx_ = 0;
-					if (workers[0].state < 5)
+					if (workers[0].worker_state < 5)
 						return &workers[0];
 					workers.erase(workers.begin());
 					return nullptr;
@@ -145,13 +145,13 @@ namespace agebull
 				{
 					worker_idx_ = 0;
 				}
-				if (workers[worker_idx_].state < 5)
+				if (workers[worker_idx_].worker_state < 5)
 					return &workers[worker_idx_];
 				workers.erase(workers.begin() + worker_idx_);
 			}
 			return get_workers();
 		}
-		void station_config::worker_left(const char* identity)
+		void station_config::worker_left(const char* worker_name)
 		{
 			if (workers.size() == 0)
 				return;
@@ -160,10 +160,10 @@ namespace agebull
 			vector<station_worker> array = workers;
 			for (int i = static_cast<int>(array.size()) - 1; i >= 0; --i)
 			{
-				if (strstr(array[i].identity, identity) != nullptr)
+				if (strstr(array[i].worker_name, worker_name) != nullptr)
 				{
 					workers.erase(workers.begin() + i);
-					log("worker_left", array[i].identity);
+					log("worker_left", array[i].worker_name);
 				}
 			}
 		}
@@ -178,13 +178,13 @@ namespace agebull
 			for (int i = static_cast<int>(array.size()) - 1; i >= 0; --i)
 			{
 				check_worker(workers[i]);
-				if (workers[i].state <= 2)
+				if (workers[i].worker_state <= 2)
 				{
 					++ready_works_;
 				}
-				else if (workers[i].level < 1)
+				else if (workers[i].worker_health < 1)
 				{
-					log("station_worker failed", array[i].identity);
+					log("station_worker failed", array[i].worker_name);
 					workers.erase(workers.begin() + i);
 				}
 			}
@@ -336,6 +336,7 @@ namespace agebull
 			if (type != 2)
 			{
 				json_add_num(node, "station_type", station_type);
+				json_add_str(node, "station_address", station_address);
 				json_add_num(node, "request_port", request_port);
 				json_add_num(node, "worker_in_port", worker_in_port);
 				json_add_num(node, "worker_out_port", worker_out_port);
@@ -372,11 +373,11 @@ namespace agebull
 				for (auto& station_worker : workers)
 				{
 					acl::json_node& work = json.create_node();
-					json_add_chr(work, "real_name", station_worker.identity);
-					json_add_num(work, "level", station_worker.level);
-					json_add_num(work, "state", station_worker.state);
-					json_add_num(work, "pre_time", to_time_t(station_worker.pre_time));
-					json_add_str(work, "ip_address", station_worker.ip_address);
+					json_add_chr(work, "worker_name", station_worker.worker_name);
+					json_add_num(work, "worker_health", station_worker.worker_health);
+					json_add_num(work, "worker_state", station_worker.worker_state);
+					json_add_num(work, "worker_last", to_time_t(station_worker.worker_last));
+					json_add_str(work, "worker_ip", station_worker.worker_ip);
 					array.add_child(work);
 				}
 				node.add_child("workers", array);

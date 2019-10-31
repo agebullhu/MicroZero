@@ -167,8 +167,7 @@ namespace MicroZero.Http.Gateway
                 return;
             }
             // 5 结果检查
-            if (RouteOption.Option.SystemConfig.CheckResult)
-                SecurityChecker.CheckResult(Data);
+            ResultChecker.DoCheck(Data);
 
             RouteCache.CacheResult(Data);
         }

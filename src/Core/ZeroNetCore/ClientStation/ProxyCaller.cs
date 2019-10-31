@@ -110,8 +110,8 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             }
 
-            socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
+            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
+            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
             using (socket)
             {
                 CallApi(socket);
@@ -139,8 +139,8 @@ namespace Agebull.MicroZero.ZeroApis
                 State = ZeroOperatorStateType.LocalZmqError;
                 return;
             }
-            socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
+            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
+            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
             using (socket)
             {
                 CallPlan(socket, plan);

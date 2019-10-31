@@ -1,7 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Agebull.Common.Context;
 using Agebull.Common.Ioc;
+using Agebull.EntityModel.Common;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
@@ -14,13 +16,13 @@ namespace RpcTest
         private static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
+            //IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
             //IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
             //ZeroApplication.Discove(typeof(Program).Assembly);
             ZeroApplication.Initialize();
-            
-            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
-            //ZeroApplication.ZeroNetEvent += OnZeroEvent;
+
+            //ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
+            ZeroApplication.ZeroNetEvent += OnZeroEvent;
             ZeroApplication.RunAwaite();
         }
 
@@ -37,21 +39,22 @@ namespace RpcTest
 
         static void Test()
         {
-            ////定时过期
-            //ApiClient.ApiPlan<Argument<long>, string>("PayCallback", "v1/order/timeout",
-            //    new Argument<long> { Value = 10 },
-            //    plan_date_type.minute,
-            //    100,
-            //    "订单超时处理");
+            while(true)
+            {
+                Console.WriteLine("按键开始");
+                Console.ReadKey();
+                var res = ZeroPublisher.Publish("UserMessage", GlobalContext.RequestInfo.Token, "Importer",
+                       new ApiResult
+                       {
+                           Status = new OperatorStatus
+                           {
+                               GuideCode = "5",
+                               ClientMessage = "11,22"
+                           }
+                       });
 
-            ApiClient.CallApi("MarkPoint", "v1/mk", "{}");
-            //while (true)
-            //{
-            //    Console.ReadKey();
-
-            //    var re= ZeroPublisher.DoPublish("UserMessage", "#", "{}");
-            //    Console.WriteLine(re);
-            //}
+                Console.WriteLine(res);
+            }
         }
     }
 

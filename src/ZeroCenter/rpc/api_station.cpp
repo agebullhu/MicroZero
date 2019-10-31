@@ -66,12 +66,12 @@ namespace agebull
 						send_request_status_by_trace(socket, list, description, zero_def::status::not_worker, true);
 						return;
 					}
-					list.insert(list.begin(), wk->identity);
+					list.insert(list.begin(), wk->worker_name);
 					state = send_response(list, true);
 					list.erase(list.begin());
 					if (state == zmq_socket_state::host_un_reach)
 					{
-						wk->state = 5;
+						wk->worker_state = 5;
 						THREAD_SLEEP(5);
 					}
 				} while (state == zmq_socket_state::host_un_reach);

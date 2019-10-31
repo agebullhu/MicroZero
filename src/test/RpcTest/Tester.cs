@@ -76,7 +76,15 @@ namespace RpcTest
             if (!Init())
                 return;
             Cancel = new CancellationTokenSource();
-            Test();
+            int max = (int)(Environment.ProcessorCount * ZeroApplication.Config.TaskCpuMultiple);
+            if (max < 1)
+                max = 1;
+            for (int idx = 0; idx < max; idx++)
+            {
+                new Thread(Test).Start();
+            }
+
+            //Test();
             //new Thread(Test).Start();
             //Start = DateTime.Now;
             //var option = ZeroApplication.GetClientOption(Station);
@@ -157,18 +165,19 @@ namespace RpcTest
             Start = DateTime.Now;
             while (!Token.IsCancellationRequested && ZeroApplication.CanDo)
             {
-                if (WaitCount >= Qps)
-                {
-                    Thread.Sleep(1000);
-                    continue;
-                }
-                for (int i = 0; i < Qps; i++)
-                {
-                    Interlocked.Increment(ref WaitCount);
-                    Task.Run(Async);
-                    Thread.Sleep(sleep);
-                }
-                Count();
+                Async();
+                //if (WaitCount >= Qps)
+                //{
+                //    Thread.Sleep(1000);
+                //    continue;
+                //}
+                //for (int i = 0; i < Qps; i++)
+                //{
+                //    Interlocked.Increment(ref WaitCount);
+                //    Task.Run(Async);
+                //    Thread.Sleep(sleep);
+                //}
+                //Count();
             }
         }
 

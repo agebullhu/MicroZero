@@ -236,8 +236,8 @@ namespace agebull
 				return zero_def::net_state::failed;
 			if (start_plan_dispatcher() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
-			if (start_trace_dispatcher() == zero_def::net_state::failed)
-				return zero_def::net_state::failed;
+			//if (start_trace_dispatcher() == zero_def::net_state::failed)
+			//	return zero_def::net_state::failed;
 			if (start_proxy_dispatcher() == zero_def::net_state::failed)
 				return zero_def::net_state::failed;
 

@@ -84,9 +84,9 @@ namespace MicroZero.Http.Gateway
                 return;
             try
             {
-                LogRecorderX.MonitorTrace($"UserState : {data.UserState}");
-                LogRecorderX.MonitorTrace($"ZeroState : {data.ZeroState}");
-                LogRecorderX.MonitorTrace($"Result：{data.ResultMessage}");
+                LogRecorderX.MonitorTrace($"UserState ：{data.UserState}");
+                LogRecorderX.MonitorTrace($"ZeroState ：{data.ZeroState}");
+                LogRecorderX.MonitorTrace($"Result    ：{data.ResultMessage}");
             }
             catch (Exception e)
             {

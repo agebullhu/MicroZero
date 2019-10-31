@@ -142,8 +142,8 @@ namespace MicroZero.Http.Gateway
                 {
                     if (!RouteOption.Option.UrlMap.TryGetValue(ext, out map))
                     {
-                        var cr = new ContextRouter(context);
-                        cr.WriteContext(folders, ext);
+                        var cr = new ContentRouter(context);
+                        cr.WriteContent(folders, ext);
                         return;
                     }
                 }

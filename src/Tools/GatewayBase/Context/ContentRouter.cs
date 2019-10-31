@@ -12,7 +12,7 @@ namespace MicroZero.Http.Gateway
     /// <summary>
     ///     调用映射核心类
     /// </summary>
-    internal class ContextRouter
+    internal class ContentRouter
     {
         #region 变量
 
@@ -39,7 +39,7 @@ namespace MicroZero.Http.Gateway
         ///     内部构架
         /// </summary>
         /// <param name="context"></param>
-        internal ContextRouter(HttpContext context)
+        internal ContentRouter(HttpContext context)
         {
             HttpContext = context;
             Request = context.Request;
@@ -49,7 +49,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     调用
         /// </summary>
-        internal async void WriteContext(string[] path,string ext)
+        internal async void WriteContent(string[] path,string ext)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace MicroZero.Http.Gateway
                 if (File.Exists(file))
                 {
                     LogRecorderX.MonitorTrace($"Success:{file}");
-                    var bytes = File.ReadAllBytes(file);
+                    var bytes = await File.ReadAllBytesAsync(file);
                     await Response.Body.WriteAsync(bytes);
                 }
                 else

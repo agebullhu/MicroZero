@@ -20,7 +20,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero基础工具</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.4.20</Version>
+    <Version>1.4.10.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">

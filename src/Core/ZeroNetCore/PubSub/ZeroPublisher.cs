@@ -288,12 +288,13 @@ namespace Agebull.MicroZero.PubSub
                     {
                         new ZFrame(GlobalContext.CurrentNoLazy?.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes()),
-                        new ZFrame(socket.Identity),
+                        new ZFrame(GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes()),
                         new ZFrame(socket.Identity),
                         new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
                     })
                     {
-                        message.Insert(0,new ZFrame(station.ToZeroBytes()));
+                        //message.Insert(0, new ZFrame(title.ToZeroBytes()));
+                        message.Insert(0, new ZFrame(station.ToZeroBytes()));
                         if (socket.Send(message, out err))
                             return socket.ReceiveString();
                     }

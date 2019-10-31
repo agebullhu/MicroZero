@@ -22,36 +22,36 @@ namespace agebull
 			/**
 			* \brief 实名
 			*/
-			char identity[256];
+			char worker_name[256];
 			/**
 			* \brief 上报的IP地址
 			*/
-			string ip_address;
+			string worker_ip;
 
 			/**
 			* \brief 上次心跳的时间
 			*/
-			boost::posix_time::ptime pre_time;
+			boost::posix_time::ptime worker_last;
 
 			/**
 			* \brief 健康等级（5级 5.2 | 4.4 | 3.8 | 2.16 | 1.32 | 0.64 | -1.> 64）
 			*/
-			int level;
+			int worker_health;
 
 			/**
 			* \brief 状态 0 准备 1 就绪 2 缓慢 3 失联 4 无法发送 5 退出
 			*/
-			int state;
+			int worker_state;
 
 			/**
 			 * \brief 构造
 			 */
 			station_worker()
-				: pre_time(boost::posix_time::microsec_clock::local_time())
-				, level(5)
-				, state(0)
+				: worker_last(boost::posix_time::microsec_clock::local_time())
+				, worker_health(5)
+				, worker_state(0)
 			{
-				identity[0] = 0;
+				worker_name[0] = 0;
 			}
 
 			/**
@@ -59,9 +59,9 @@ namespace agebull
 			*/
 			void active()
 			{
-				pre_time = boost::posix_time::microsec_clock::local_time();
-				level = 5;
-				state = 1;
+				worker_last = boost::posix_time::microsec_clock::local_time();
+				worker_health = 5;
+				worker_state = 1;
 			}
 		};
 
@@ -138,17 +138,22 @@ namespace agebull
 			int station_type;
 
 			/**
-			* \brief 外部地址
+			* \brief 地址
 			*/
-			int request_port;
+			string station_address;
 
 			/**
-			* \brief 工作出站地址
+			* \brief 外部端口
+			*/
+			int request_port;
+			
+			/**
+			* \brief 工作请求端口
 			*/
 			int worker_out_port;
 
 			/**
-			* \brief 工作返回地址
+			* \brief 工作返回端口
 			*/
 			int worker_in_port;
 
@@ -241,22 +246,22 @@ namespace agebull
 			/**
 			* \brief 工作站点加入
 			*/
-			void worker_join(const char* identity, const char* ip);
+			void worker_join(const char* worker_name, const char* ip);
 
 			/**
 			* \brief 工作站点就绪
 			*/
-			void worker_ready(const char* identity);
+			void worker_ready(const char* worker_name);
 
 			/**
 			* \brief 心跳
 			*/
-			void worker_heartbeat(const char* identity);
+			void worker_heartbeat(const char* worker_name);
 
 			/**
 			* \brief 心跳
 			*/
-			void worker_left(const char* identity);
+			void worker_left(const char* worker_name);
 
 			/**
 			* \brief 检查工作对象
@@ -380,9 +385,9 @@ namespace agebull
 				return zero_def::station_type::is_general_station(station_type);
 			}
 
-			bool is_state(station_state state) const
+			bool is_state(station_state worker_state) const
 			{
-				return station_state_ == state;
+				return station_state_ == worker_state;
 			}
 
 			bool is_run() const
@@ -400,66 +405,66 @@ namespace agebull
 				return config_state_;
 			}
 
-			void config_state(station_state state)
+			void config_state(station_state worker_state)
 			{
-				config_state_ = state;
+				config_state_ = worker_state;
 			}
 
-			void set_state(station_state state)
+			void set_state(station_state worker_state)
 			{
 				switch (station_state_)
 				{
 				case station_state::none:
-					log("state : none");
+					log("worker_state : none");
 					break;
 				case station_state::re_start:
 					if (config_state_ == station_state::closed)
 						return;
-					log("state : re_start");
+					log("worker_state : re_start");
 					break;
 				case station_state::start:
 					if (config_state_ == station_state::closed)
 						return;
-					log("state : start");
+					log("worker_state : start");
 					break;
 				case station_state::run:
 					if (config_state_ == station_state::closed)
 						return;
-					log("state : run");
+					log("worker_state : run");
 					break;
 				case station_state::pause:
 					if (config_state_ == station_state::closed)
 						return;
-					log("state : pause");
+					log("worker_state : pause");
 					break;
 				case station_state::failed:
-					log("state : failed");
+					log("worker_state : failed");
 					break;
 				case station_state::closing:
-					log("state : closing");
+					log("worker_state : closing");
 					break;
 				case station_state::closed:
-					log("state : closed");
+					log("worker_state : closed");
 					break;
 				case station_state::destroy:
-					log("state : destroy");
+					log("worker_state : destroy");
 					break;
 				case station_state::stop:
-					log("state : stop");
+					log("worker_state : stop");
 					break;
 				case station_state::unknow:
-					log("state : unknow");
+					log("worker_state : unknow");
 					break;
 				default: ;
 				}
-				station_state_ = state;
+				station_state_ = worker_state;
 			}
 
-			bool runtime_state(station_state state)
+			bool runtime_state(station_state worker_state)
 			{
 				if (station_state_ >= station_state::destroy)
 					return false;
-				set_state(state);
+				set_state(worker_state);
 				return true;
 			}
 
@@ -522,9 +527,9 @@ namespace agebull
 			/**
 			* \brief 日志
 			*/
-			void start_log(const char* state)
+			void start_log(const char* worker_state)
 			{
-				log_msg3("[%s] > %s \n%s", station_name.c_str(), state, to_info_json().c_str());
+				log_msg3("[%s] > %s \n%s", station_name.c_str(), worker_state, to_info_json().c_str());
 			}
 
 			/**

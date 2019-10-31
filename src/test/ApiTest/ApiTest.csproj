@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -21,22 +21,11 @@
     <Compile Remove="MachineEventArg.cs" />
     <Compile Remove="MachineEventStation.cs" />
     <Compile Remove="TemplateMessage_PaySuccessNotice.cs" />
+    <Compile Remove="WeixinConfig.cs" />
+    <Compile Remove="WeixinController.cs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Senparc.Weixin.MP" Version="16.7.17" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Caching.Memory">
-      <HintPath>C:\Users\DELL\.nuget\packages\microsoft.extensions.caching.memory\2.0.0\lib\netstandard2.0\Microsoft.Extensions.Caching.Memory.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

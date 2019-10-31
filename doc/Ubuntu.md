@@ -44,7 +44,7 @@ ln -s /usr/local/include/boost /usr/include/boost
 
 wget https://github.com/agebullhu/libzmq/archive/v4.2.5.tar.gz
 mkdir libzmq
-tar zxf v4.2.5.tar.gz -C /root/libzmq
+tar zxf v4.3.2.tar.gz -C /root/libzmq
 cd libzmq/libzmq-4.2.5/builds
 
 cmake ..

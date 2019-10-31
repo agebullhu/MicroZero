@@ -918,7 +918,7 @@
             Sockt数量
             </summary>
         </member>
-        <member name="P:ZeroMQ.ZPollBase.TimeoutMs">
+        <member name="F:ZeroMQ.ZPollBase.TimeoutMs">
             <summary>
             超时
             </summary>

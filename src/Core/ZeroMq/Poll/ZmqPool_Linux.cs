@@ -7,6 +7,8 @@ namespace ZeroMQ
     /// </summary>
     public unsafe class LinuxZPoll : ZPollBase, IZmqPool
     {
+        int IZmqPool.TimeoutMs => TimeoutMs;
+
         /// <summary>
         /// 准备
         /// </summary>
