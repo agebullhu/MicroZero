@@ -108,11 +108,18 @@ namespace Agebull.MicroZero
         public int RequestPort { get; set; }
 
         /// <summary>
+        /// 地址
+        /// </summary>
+        [DataMember]
+        [JsonProperty("address")]
+        public string Address { get; set; }
+
+        /// <summary>
         ///     入站地址
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string RequestAddress => ZeroIdentityHelper.GetRequestAddress(StationName, RequestPort);
+        public string RequestAddress => GetAddress(StationName, RequestPort);
 
         /// <summary>
         ///     入站端口
@@ -133,21 +140,21 @@ namespace Agebull.MicroZero
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string WorkerResultAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerResultPort);
+        public string WorkerResultAddress => GetAddress(StationName, WorkerResultPort);
 
         /// <summary>
         ///     出站地址
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string WorkerCallAddress => ZeroIdentityHelper.GetWorkerAddress(StationName, WorkerCallPort);
+        public string WorkerCallAddress => GetAddress(StationName, WorkerCallPort);
 
         /// <summary>
         ///     出站地址
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string SubAddress => ZeroIdentityHelper.GetSubscriberAddress(StationName, WorkerCallPort);
+        public string SubAddress => GetAddress(StationName, WorkerCallPort);
 
         /// <summary>
         ///     运行状态
@@ -220,6 +227,19 @@ namespace Agebull.MicroZero
                 default:
                     return "err";
             }
+        }
+
+        /// <summary>
+        /// 格式化地址
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="port"></param>
+        /// <returns></returns>
+        string GetAddress(string station, int port)
+        {
+            return string.IsNullOrWhiteSpace(Address) 
+                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}"
+                : $"tcp://{Address}:{port}";
         }
     }
 }

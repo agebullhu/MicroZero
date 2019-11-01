@@ -740,16 +740,22 @@ namespace Agebull.MicroZero
 
             if (WorkModel == ZeroWorkModel.Bridge)
                 return;
+
             if (string.IsNullOrWhiteSpace(Config.ZeroAddress))
                 Config.ZeroAddress = "127.0.0.1";
+
             if (Config.ZeroManagePort <= 1024 || Config.ZeroManagePort >= 65000)
                 Config.ZeroManagePort = 8000;
+
             if (Config.ZeroMonitorPort <= 1024 || Config.ZeroMonitorPort >= 65000)
                 Config.ZeroMonitorPort = 8001;
+
             if (Config.PoolSize > 4096 || Config.PoolSize < 10)
                 Config.PoolSize = 100;
-            Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
-            Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
+
+            Config.ZeroManageAddress = $"tcp://{Config.ZeroAddress}:{Config.ZeroManagePort}";
+            Config.ZeroMonitorAddress = $"tcp://{Config.ZeroAddress}:{Config.ZeroMonitorPort}"; 
+
             #endregion
         }
 
