@@ -1,22 +1,30 @@
 {
   "zero": {
-    "base_tcp_port": "7999",
-    "use_ipc_protocol": "false",
+    "base_tcp_port": "13999",
+    "use_ipc_protocol": false,
     "worker_sound_ivl": 2000,
-    "plan_exec_timeout": 300,
     "pool_timeout": 500,
-    "plan_cache_size": 1024,
-    "api_route_mode": 0,
-    "monitor_socket": 0,
-    "trace_net": "true",
-    "service_key": "agebull"
+    "api_route_mode": false,
+    "monitor_socket": false,
+    "service_key": "20180410"
   },
   "redis": {
     "addr": "127.0.0.1:6379",
-    "defdb": "20"
+    "defdb": "8",
+    "plandb": "7"
+  },
+  "link_trace": {
+    "open": false,
+    "storage": false
+  },
+  "plan": {
+    "redis_db": "7",
+    "exec_timeout": 300,
+    "cache_size": 1024,
+    "auto_remove": 259200
   },
   "ZMQ": {
-    "MAX_SOCKETS": -1,
+    "MAX_SOCKETS": 8192,
     "IO_THREADS": -1,
     "MAX_MSGSZ": -1,
     "IMMEDIATE": 1,
@@ -31,11 +39,11 @@
     "RECONNECT_IVL": -1,
     "CONNECT_TIMEOUT": -1,
     "RECONNECT_IVL_MAX": -1,
-    "TCP_KEEPALIVE": 1,
-    "TCP_KEEPALIVE_IDLE": 120,
-    "TCP_KEEPALIVE_INTVL": 3,
-    "HEARTBEAT_IVL": 1,
+    "TCP_KEEPALIVE": 0,
+    "TCP_KEEPALIVE_IDLE": 7200,
+    "TCP_KEEPALIVE_INTVL": 75,
+    "HEARTBEAT_IVL": 10000,
     "HEARTBEAT_TIMEOUT": 1000,
-    "HEARTBEAT_TTL": 10000
+    "HEARTBEAT_TTL": 0
   }
 }

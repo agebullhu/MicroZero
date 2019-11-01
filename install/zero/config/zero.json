@@ -6,31 +6,57 @@
       /*ZeroCenter主机IP地址*/
       "ZeroAddress": "127.0.0.1",
       /*ZeroCenter管理端口号*/
-      "ZeroManagePort": 8000,
+      "ZeroManagePort": 14000,
       /*ZeroCenter监测端口号*/
-      "ZeroMonitorPort": 8001,
-      "ServiceKey": "agebull"
+      "ZeroMonitorPort": 14001,
+      "ServiceKey": "20180410",
+	  "StationIsolate":false,
+	  "ServiceName":"ZeroCenter",
+      /*ZeroApplication是否发出与ZeroCenter相关的同步事件,工具扩展应用使用*/
+      "CanRaiseEvent": true,
+      /*限速模式（Single 单线程 ThreadCount 按线程数限制 WaitCount 按等待数限制）*/
+      "SpeedLimitModel": "WaitCount",
+      /*最大等待数*/
+      "MaxWait": 10000,
+      /*最大Thread与Cpu核心数的倍数关系*/
+      "TaskCpuMultiple": 0.6,
     },
     "socketOption": {
+	  "PoolTimeOut":1000,
       "Backlog": 50000, //连接队列数量
       "ConnectTimeout": 500, // 连接失败时长
-      "HeartbeatIvl": 0, //心跳间隔时长
-      "HeartbeatTimeout": 200, //心跳超时时长
-      "HeartbeatTtl": 200, //心跳TTL
       "Linger": 200, //自动关闭时长
       "ReconnectIvl": 100, // 重新连接时间间隔
       "ReconnectIvlMax": 500, //重新连接失败时长
-      "RecvTimeout": 30000, //接收超时时长
-      "SendTimeout": 30000, //发送超时时长
-      "TcpKeepalive": 1, //启用Keeplive
+      "RecvTimeout": 300000, //接收超时时长
+      "SendTimeout": 300000, //发送超时时长
+      "HeartbeatIvl": 0, //心跳间隔时长
+      "HeartbeatTimeout": 200, //心跳超时时长
+      "HeartbeatTtl": 200, //心跳TTL
+      "TcpKeepalive": 0, //启用Keeplive
       "TcpKeepaliveIdle": 4096, //TCP发送keepalive消息的频度,单位秒
       "TcpKeepaliveIntvl": 4096 //当TcpKeepalive探测没有确认时，重新发送探测的频度,单位秒
     }
   },
+  "ConnectionStrings": {
+    "Redis": "127.0.0.1",
+	
+    "UserCenter":    "Data Source=127.0.0.1;User Id=root;Password=123456;Database=db_zero_base; SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;Connection Lifetime=0;",
+    "UserCenterDb":  "Data Source=127.0.0.1;User Id=root;Password=123456;Database=db_zero_base; SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;Connection Lifetime=0;",
+    "ZeroTrace":     "Data Source=127.0.0.1;User Id=root;Password=123456;Database=db_zero_trace;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;Connection Lifetime=0;",
+	"AnnexDb":       "Data Source=127.0.0.1;User Id=root;Password=123456;Database=db_zero_base; SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;Connection Lifetime=0;"
+  },
   "LogRecorder": {
     /*是否记录跟踪日志*/
+    "sql": false,
     "monitor": true,
     "level": "Debug",
 	"console":true
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogLevel": {
+      "Default": "Warning"
+    }
   }
 }

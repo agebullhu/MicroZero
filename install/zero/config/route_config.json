@@ -1,0 +1,53 @@
+{
+  /*系统设置*/
+  "sysConfig": {
+    /*是否开启ZeroNet网络*/
+    "FireZero": true,
+    /*是否开启返回值检查*/
+    "CheckResult": false,
+    /*是否开启API预检：即检查API是否存在、是否需要令牌、是否可公开访问*/
+    "CheckApiItem": false,
+    /*HTTP调用超时*/
+    "HttpTimeOut": 30000,
+    /*短信超时报警的时长(毫秒)*/
+    "WaringTime": 2000,
+    /*内容页地址*/
+    "ContextHost": "http://agebull/",
+    /*内容页地址*/
+    "ContextAddr": "/usr/zero/gateway/wwwroot"
+  },
+  "hostPath": {
+    "zero.yizuanbao.cn": 0,
+    "zero": 1
+  },
+  /*HTTP路由信息，缺省地址为找不到时使用的地址*/
+  "route": {
+    /*缺省地址* /
+    "Default": {
+      "hosts": [ "Http://127.0.0.1:8080/" ]
+    },
+    /*User对应的地址* /
+    "User": {
+      "hosts": [ "Http://127.0.0.1:8081/" ]
+    }*/
+  },
+  /*安全配置*/
+  "security": {
+    /*是否校验Auth*/
+    "fireBearer": true,
+    "auth2": true,
+    "authStation": "Authority",
+    "didApi": "v1/verify/did",
+    "atApi": "v1/verify/at",
+    "tokenApi": "v2/verify/token",
+    /*黑洞地址（字母有错，不要介意）*/
+    "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
+    /*拒绝使用的令牌，Key Value一样*/
+    "denyTokens": [],
+  },
+  /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
+  "cache": [{
+   "Api": "/Hpc/hpc/organization/v1/edit/details",
+   "OnlyName": false
+  }]
+}
