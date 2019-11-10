@@ -16,13 +16,13 @@ namespace RpcTest
         private static void Main(string[] args)
         {
             ZeroApplication.CheckOption();
-            //IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
+            IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();
             //IocHelper.ServiceCollection.AddSingleton<Tester, ZeroTester>();
             //ZeroApplication.Discove(typeof(Program).Assembly);
             ZeroApplication.Initialize();
 
-            //ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
-            ZeroApplication.ZeroNetEvent += OnZeroEvent;
+            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
+            //ZeroApplication.ZeroNetEvent += OnZeroEvent;
             ZeroApplication.RunAwaite();
         }
 

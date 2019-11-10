@@ -77,6 +77,12 @@ namespace Agebull.MicroZero
         public decimal TaskCpuMultiple { get; set; }
 
         /// <summary>
+        ///     API最大执行超时时间(单位秒)
+        /// </summary>
+        [DataMember]
+        public int ApiTimeout { get; set; }
+
+        /// <summary>
         /// 复制
         /// </summary>
         /// <param name="option"></param>
@@ -88,6 +94,8 @@ namespace Agebull.MicroZero
                 TaskCpuMultiple = option.TaskCpuMultiple;
             if (MaxWait <= 0)
                 MaxWait = option.MaxWait;
+            if (ApiTimeout <= 0)
+                ApiTimeout = option.ApiTimeout;
         }
     }
 
@@ -224,6 +232,9 @@ namespace Agebull.MicroZero
             if (option.CanRaiseEvent != null)
                 CanRaiseEvent = option.CanRaiseEvent;
 
+            if (option.ApiTimeout > 0)
+                ApiTimeout = option.ApiTimeout;
+
             /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;
             BridgeResultAddress = option.BridgeResultAddress;*/
@@ -247,7 +258,7 @@ namespace Agebull.MicroZero
                 ZeroAddress = option.ZeroAddress;
             if (ZeroMonitorPort <= 0)
                 ZeroMonitorPort = option.ZeroMonitorPort;
-            
+
             if (ZeroManagePort <= 0)
                 ZeroManagePort = option.ZeroManagePort;
             if (string.IsNullOrWhiteSpace(StationName))
@@ -273,6 +284,8 @@ namespace Agebull.MicroZero
 
             if (CanRaiseEvent == null)
                 CanRaiseEvent = option.CanRaiseEvent;
+            if (ApiTimeout <= 0)
+                ApiTimeout = option.ApiTimeout;
 
             /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;
@@ -619,7 +632,7 @@ namespace Agebull.MicroZero
             var name = ConfigurationManager.Root["AppName"];
             if (name != null)
                 AppName = name;
-            if(string.IsNullOrWhiteSpace(AppName))
+            if (string.IsNullOrWhiteSpace(AppName))
                 throw new Exception("无法找到配置[AppName],请在appsettings.json或代码中设置");
 
             var curPath = Environment.CurrentDirectory;
@@ -683,6 +696,8 @@ namespace Agebull.MicroZero
 
                 Config.CopyByEmpty(global);
             }
+            if (Config.ApiTimeout <= 0)
+                Config.ApiTimeout = 60;
             #endregion
 
             #region ServiceName
@@ -809,6 +824,8 @@ namespace Agebull.MicroZero
             var sec = ConfigurationManager.Get("Zero");
             var option = sec.Child<ZeroStationOption>(station) ?? new ZeroStationOption();
             option.Copy(Config);
+            if (option.ApiTimeout <= 1)
+                option.ApiTimeout = 60;
 
             if (option.SpeedLimitModel < SpeedLimitType.Single || option.SpeedLimitModel > SpeedLimitType.WaitCount)
                 option.SpeedLimitModel = SpeedLimitType.None;

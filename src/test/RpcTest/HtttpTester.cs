@@ -15,6 +15,7 @@ namespace RpcTest
     {
         public override bool Init()
         {
+            GetToken();
             return true;
         }
 
@@ -24,8 +25,8 @@ namespace RpcTest
         string _token/* = "#CSLQXNM8WUYA"*/;
         protected override void DoTest()
         {
-            new LoginTester().LoginTest();
-            //LoadTest();
+            //new LoginTester().LoginTest();
+            LoadTest();
             //SettTest();
         }
 
@@ -68,9 +69,7 @@ namespace RpcTest
         }
         void LoadTest()
         {
-            if (string.IsNullOrEmpty(_token))
-                GetToken();
-            Call("eShop/v1/active/all", null, _token, p =>
+            Call("eShop/v2/order/list", "{\"PageIndex\":1,\"PageSize\":20}", _token, p =>
              {
                  var result = (JObject)JsonConvert.DeserializeObject(p);
                  if (!result.TryGetValue("success", out var val) || !val.Value<bool>())
@@ -80,6 +79,7 @@ namespace RpcTest
              });
         }
         #endregion
+
         #region Function
 
         internal static bool Call(string api, string arg, string token = null, Action<string> action = null)
@@ -121,7 +121,7 @@ namespace RpcTest
             //});
             var random = new Random();
             var idx = random.Next(0, Users.Count);
-            string token=null;
+            string token = null;
             HttpTester.Call("Authority/v1/login/hpc", $"{{\"MobilePhone\":\"{Users[idx].Key}\",\"UserPassword\":\"{Users[idx].Value}\"}}", null, p =>
             {
                 var result = (JObject)JsonConvert.DeserializeObject(p);
@@ -192,7 +192,7 @@ namespace RpcTest
         public static readonly List<KeyValuePair<string, string>> Users = new Dictionary<string, string>
         {
             {"18175466613","123456"},
-            {"18321968817","123456"},
+            {"15618965007","123456"},
             {"18294884427","123456"},
             {"18208245547","123456"},
             {"13636606174","123456"},

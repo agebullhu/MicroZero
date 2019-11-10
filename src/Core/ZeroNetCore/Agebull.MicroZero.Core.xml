@@ -1070,12 +1070,27 @@
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiExecuter">
             <summary>
-                Api调用
+                Api调用器
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecuteAsync">
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.Station">
             <summary>
-            调用 
+            当前站点
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.Socket">
+            <summary>
+            当前连接
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.Item">
+            <summary>
+            调用的内容
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.ScopeResource">
+            <summary>
+            范围资源
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute">
@@ -1117,52 +1132,6 @@
                 Api站点
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnNofindConfig">
-            <summary>
-            初始化
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.GetApiOption">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
-            <summary>
-            构造Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <param name="state"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.CallCount">
             <summary>
             调用计数
@@ -1198,6 +1167,27 @@
             调用计数
             </summary>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnNofindConfig">
+            <summary>
+            初始化
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.GetApiOption">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
+            <summary>
+            构造Pool
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.Loop">
             <summary>
             轮询
@@ -1223,6 +1213,24 @@
             <summary>
             轮询
             </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">
+            <summary>
+            检查超时任务
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CloseTask">
+            <summary>
+            空转
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.KillTask(Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem)">
+            <summary>
+            杀死任务
+            </summary>
+            <param name="item"></param>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareExecute(Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
@@ -1324,6 +1332,31 @@
             <summary>
                 注册处理器
             </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="item"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="message"></param>
+            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.IApiHandler">
             <summary>
@@ -2618,6 +2651,11 @@
         <member name="P:Agebull.MicroZero.ZeroStationOption.TaskCpuMultiple">
             <summary>
                 最大Task与Cpu核心数的倍数关系(0-128)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroStationOption.ApiTimeout">
+            <summary>
+                API最大执行超时时间(单位秒)
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroStationOption.Copy(Agebull.MicroZero.ZeroStationOption)">

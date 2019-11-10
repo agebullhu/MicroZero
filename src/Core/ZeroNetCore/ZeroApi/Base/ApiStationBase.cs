@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
@@ -14,7 +16,13 @@ namespace Agebull.MicroZero.ZeroApis
     /// </summary>
     public abstract class ApiStationBase : ZeroStation
     {
-        #region 流程
+
+        #region 主循环
+
+        /// <summary>
+        /// 调用计数
+        /// </summary>
+        public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError, WaitCount;
 
         private readonly string _typeName;
         /// <summary>
@@ -51,137 +59,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected abstract IZmqPool PrepareLoop(byte[] identity, out ZSocket socket);
 
-        /// <summary>
-        /// 发送返回值 
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="item"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        internal virtual bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
-        {
-            int i = 0;
-            var des = new byte[10 + item.Originals.Count];
-            des[i++] = (byte)(item.Originals.Count + (item.EndTag == ZeroFrameType.ResultFileEnd ? 7 : 6));
-            des[i++] = (byte)state;
-            des[i++] = ZeroFrameType.Requester;
-            des[i++] = ZeroFrameType.RequestId;
-            des[i++] = ZeroFrameType.CallId;
-            des[i++] = ZeroFrameType.GlobalId;
-            des[i++] = ZeroFrameType.ResultText;
-            var msg = new List<byte[]>
-            {
-                item.Caller,
-                des,
-                item.Requester.ToZeroBytes(),
-                item.RequestId.ToZeroBytes(),
-                item.CallId.ToZeroBytes(),
-                item.GlobalId.ToZeroBytes(),
-                item.Result.ToZeroBytes()
-            };
-            if (item.EndTag == ZeroFrameType.ResultFileEnd)
-            {
-                des[i++] = ZeroFrameType.BinaryContent;
-                msg.Add(item.Binary);
-            }
-            foreach (var org in item.Originals)
-            {
-                des[i++] = org.Key;
-                msg.Add((org.Value));
-            }
-            des[i++] = ZeroFrameType.SerivceKey;
-            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
-            des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
-            return SendResult(socket, new ZMessage(msg));
-        }
-
-        private static readonly byte[] LayoutErrorFrame = new byte[]
-        {
-            2,
-            (byte) ZeroOperatorStateType.FrameInvalid,
-            ZeroFrameType.Requester,
-            ZeroFrameType.SerivceKey,
-            ZeroFrameType.ResultEnd
-        };
-
-        /// <summary>
-        /// 发送返回值 
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        internal virtual void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
-        {
-            //if (!CanLoop)
-            //{
-            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
-            //    return;
-            //}
-            if (item == null)
-                return;
-            SendResult(socket, new ZMessage
-            {
-                new ZFrame(item.Caller),
-                new ZFrame(LayoutErrorFrame),
-                new ZFrame(item.Requester),
-                new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
-            });
-        }
-
-        /// <summary>
-        /// 发送返回值 
-        /// </summary>
-        /// <param name="socket"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        protected bool SendResult(ZSocket socket, ZMessage message)
-        {
-            //if (!CanLoop)
-            //{
-            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
-            //    LogRecorderX.MonitorTrace($"{StationName} : Can`t send result,station is closed");
-            //    return false;
-            //}
-
-            try
-            {
-                ZError error;
-                lock (socket)
-                {
-                    using (message)
-                    {
-                        if (socket.Send(message, out error))
-                            return true;
-                    }
-                }
-
-                ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                LogRecorderX.MonitorTrace($"{StationName}({error.Name}) : {error.Text}");
-            }
-            catch (Exception e)
-            {
-                LogRecorderX.Exception(e, "ApiStation.SendResult");
-                LogRecorderX.MonitorTrace(e.Message);
-            }
-#if UNMANAGE_MONEY_CHECK
-            finally
-            {
-                LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
-            }
-#endif
-            Interlocked.Increment(ref SendError);
-            return false;
-        }
-        #endregion
-
-        #region 主循环
-
-        /// <summary>
-        /// 调用计数
-        /// </summary>
-        public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError, WaitCount;
-
-
+        ZeroStationOption option;
         /// <summary>
         /// 轮询
         /// </summary>
@@ -189,7 +67,7 @@ namespace Agebull.MicroZero.ZeroApis
         protected sealed override bool Loop(/*CancellationToken token*/)
         {
             WaitCount = 0;
-            var option = GetApiOption();
+            option = GetApiOption();
             int max = 1;
             switch (option.SpeedLimitModel)
             {
@@ -297,12 +175,16 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     Console.WriteLine($"处理堆积任务{e.Message}");
                 }
-                while(WaitCount > 0)
+
+                int cnt = 0;
+                while (WaitCount > 0 && ++cnt < 100)
                     Thread.Sleep(10);
+                CloseTask();
             }
             ZeroTrace.SystemLog(StationName, "Task", "end", realName);
             _processSemaphore?.Release();
         }
+
 
         private bool DoPollMessage(bool checkWait, IZmqPool pool, ZSocket socket)
         {
@@ -310,6 +192,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 if (!pool.Poll())
                 {
+                    CheckTask();
                     //cnt += pool.TimeoutMs;
                     OnLoopIdle();
                     //if (CanLoop && cnt >= 2000)
@@ -319,7 +202,8 @@ namespace Agebull.MicroZero.ZeroApis
                     //}
                     return false;
                 }
-
+                if (WaitCount % 512 == 511)
+                    CheckTask();
                 if (pool.CheckIn(1, out var message)) //对Result端口的返回的丢弃处理
                 {
                     message.Dispose();
@@ -331,18 +215,7 @@ namespace Agebull.MicroZero.ZeroApis
                     return false;
                 }
                 Interlocked.Increment(ref RecvCount);
-                if (checkWait)
-                {
-                    Task.Factory.StartNew(ExecuteAsync, new TaskArg
-                    {
-                        Socket = socket,
-                        Messages = message
-                    }, TaskCreationOptions.PreferFairness | TaskCreationOptions.DenyChildAttach);
-                }
-                else
-                {
-                    Execute(socket, message);
-                }
+                OnCall(checkWait, socket, message);
             }
             catch (Exception e)
             {
@@ -352,81 +225,190 @@ namespace Agebull.MicroZero.ZeroApis
             return true;
         }
 
+
+        class ApiTaskItem
+        {
+            public long TaskId { get; set; }
+
+            public ApiExecuter Executer { get; set; }
+
+            public Thread Thread { get; set; }
+
+            public ZSocket Socket { get; set; }
+
+            public ApiCallItem Api { get; set; }
+
+            public Task Task { get; set; }
+
+            public DateTime Start { get; set; }
+        }
+
+        private readonly Dictionary<long, ApiTaskItem> _tasks = new Dictionary<long, ApiTaskItem>();
+
+        /// <summary>
+        /// 检查超时任务
+        /// </summary>
+        /// <returns></returns>
+        private void CheckTask()
+        {
+            if (_tasks.Count == 0)
+                return;
+            LogRecorderX.SystemLog($"【CheckTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
+            foreach (var item in _tasks.Values.ToArray())
+            {
+                try
+                {
+                    if (item.Task.IsCanceled || item.Task.IsCompleted || item.Task.IsFaulted)
+                    {
+                        _tasks.Remove(item.TaskId);
+                    }
+                    else if ((DateTime.Now - item.Start).TotalSeconds >= option.ApiTimeout)
+                    {
+                        KillTask(item);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    _tasks.Remove(item.TaskId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 空转
+        /// </summary>
+        /// <returns></returns>
+        private void CloseTask()
+        {
+            LogRecorderX.SystemLog($"【CloseTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
+            foreach (var item in _tasks.Values.ToArray())
+            {
+                try
+                {
+                    //强行中断线程
+                    if (!item.Task.IsCanceled && !item.Task.IsCompleted && !item.Task.IsFaulted)
+                        KillTask(item);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            _tasks.Clear();
+        }
+
+        /// <summary>
+        /// 杀死任务
+        /// </summary>
+        /// <param name="item"></param>
+        private void KillTask(ApiTaskItem item)
+        {
+            var info = new StringBuilder();
+            info.Append($@"【KillTask|{StationName}】 ({item.Start}|{DateTime.Now})
+{item.Api.ApiName}
+{item.Api.Argument}
+{item.Api.Content}
+{item.Api.Context}");
+            try
+            {
+                _tasks.Remove(item.TaskId);
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+                info.Append($"Remove : {e.Message}");
+            }
+            try
+            {
+                //强行中断线程
+                item.Thread.Interrupt();
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+                info.Append($"Interrupt : {e.Message}");
+            }
+
+            try
+            {
+                item.Executer?.ScopeResource?.Dispose();
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+                info.Append($"Dispose : {e.Message}");
+            }
+            LogRecorderX.Error(info.ToString());
+            Interlocked.Decrement(ref WaitCount);
+
+        }
+
         #endregion
 
         #region 方法
 
-        #region 调用
+        #region 方法调用
 
-        class TaskArg
-        {
-            public ZSocket Socket;
-            public ZMessage Messages;
-        }
-
-        private void ExecuteAsync(object arg)
-        {
-            var targ = (TaskArg)arg;
-            Interlocked.Increment(ref CallCount);
-            if (!ApiCallItem.Unpack(targ.Messages, out var item))
-            {
-                SendLayoutErrorResult(targ.Socket, item);
-                return;
-            }
-            if (WaitCount > ZeroApplication.Config.MaxWait)
-            {
-                item.Result = ApiResultIoc.UnavailableJson;
-                OnExecuestEnd(targ.Socket, item, ZeroOperatorStateType.Unavailable);
-                return;
-            }
-            ExecuteAsync(targ.Socket, item);
-        }
-
-        private void ExecuteAsync(ZSocket socket, ApiCallItem item)
-        {
-            Interlocked.Increment(ref WaitCount);
-            try
-            {
-                if (!PrepareExecute(item))
-                    return;
-                var executer = new ApiExecuter
-                {
-                    Station = this,
-                    Item = item,
-                    Socket = socket
-                };
-                executer.ExecuteAsync();
-            }
-            finally
-            {
-                Interlocked.Decrement(ref WaitCount);
-            }
-        }
-
-        private void Execute(ZSocket socket, ZMessage message)
+        private void OnCall(bool checkWait, ZSocket socket, ZMessage message)
         {
             Interlocked.Increment(ref CallCount);
             if (!ApiCallItem.Unpack(message, out var item))
             {
                 SendLayoutErrorResult(socket, item);
+            }
+
+            var arg = new ApiTaskItem
+            {
+                Socket = socket,
+                Api = item,
+                Start = DateTime.Now
+            };
+            if (!checkWait)
+            {
+                Execute(arg);
                 return;
             }
+
+            if (WaitCount > ZeroApplication.Config.MaxWait)
+            {
+                item.Result = ApiResultIoc.UnavailableJson;
+                OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
+                return;
+            }
+
+            arg.Task = new Task(ExecuteAsync, arg, TaskCreationOptions.PreferFairness | TaskCreationOptions.DenyChildAttach);
+            arg.TaskId = arg.Task.Id;
+            _tasks.Add(arg.Task.Id, arg);
+            arg.Task.Start();
+        }
+
+        private void ExecuteAsync(object arg)
+        {
+            Execute((ApiTaskItem)arg);
+        }
+
+        private void Execute(ApiTaskItem arg)
+        {
             Interlocked.Increment(ref WaitCount);
+            arg.Thread = Thread.CurrentThread;
             try
             {
-                if (!PrepareExecute(item))
+                if (!PrepareExecute(arg.Api))
                     return;
-                var executer = new ApiExecuter
+                arg.Executer = new ApiExecuter
                 {
                     Station = this,
-                    Item = item,
-                    Socket = socket
+                    Item = arg.Api,
+                    Socket = arg.Socket
                 };
-                executer.Execute();
+                arg.Executer.Execute();
             }
             finally
             {
                 Interlocked.Decrement(ref WaitCount);
+                if (arg.TaskId > 0)
+                    _tasks.Remove(arg.TaskId);
             }
         }
 
@@ -441,7 +423,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         #endregion
 
-        #region 注册方法
+        #region 方法注册
 
         internal readonly Dictionary<string, ApiAction> ApiActions = new Dictionary<string, ApiAction>(StringComparer.OrdinalIgnoreCase);
 
@@ -629,7 +611,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         #endregion
 
-        #region 扩展
+        #region 方法扩展
 
         /// <summary>
         /// 处理器
@@ -664,6 +646,139 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
 
 
+        #endregion
+
+        #region 返回
+
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="item"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        internal virtual bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        {
+            int i = 0;
+            var des = new byte[10 + item.Originals.Count];
+            des[i++] = (byte)(item.Originals.Count + (item.EndTag == ZeroFrameType.ResultFileEnd ? 7 : 6));
+            des[i++] = (byte)state;
+            des[i++] = ZeroFrameType.Requester;
+            des[i++] = ZeroFrameType.RequestId;
+            des[i++] = ZeroFrameType.CallId;
+            des[i++] = ZeroFrameType.GlobalId;
+            des[i++] = ZeroFrameType.ResultText;
+            var msg = new List<byte[]>
+            {
+                item.Caller,
+                des,
+                item.Requester.ToZeroBytes(),
+                item.RequestId.ToZeroBytes(),
+                item.CallId.ToZeroBytes(),
+                item.GlobalId.ToZeroBytes(),
+                item.Result.ToZeroBytes()
+            };
+            if (item.EndTag == ZeroFrameType.ResultFileEnd)
+            {
+                des[i++] = ZeroFrameType.BinaryContent;
+                msg.Add(item.Binary);
+            }
+            foreach (var org in item.Originals)
+            {
+                des[i++] = org.Key;
+                msg.Add((org.Value));
+            }
+            des[i++] = ZeroFrameType.SerivceKey;
+            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
+            des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
+            return SendResult(socket, new ZMessage(msg));
+        }
+
+        private static readonly byte[] LayoutErrorFrame = new byte[]
+        {
+            2,
+            (byte) ZeroOperatorStateType.FrameInvalid,
+            ZeroFrameType.Requester,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.ResultEnd
+        };
+
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        internal virtual void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
+        {
+            //if (!CanLoop)
+            //{
+            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+            //    return;
+            //}
+            if (item == null)
+            {
+                Interlocked.Increment(ref SendCount);
+                Interlocked.Increment(ref SendError);
+                return;
+            }
+            SendResult(socket, new ZMessage
+            {
+                new ZFrame(item.Caller),
+                new ZFrame(LayoutErrorFrame),
+                new ZFrame(item.Requester),
+                new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+            });
+        }
+
+        /// <summary>
+        /// 发送返回值 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        protected bool SendResult(ZSocket socket, ZMessage message)
+        {
+            //if (!CanLoop)
+            //{
+            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
+            //    LogRecorderX.MonitorTrace($"{StationName} : Can`t send result,station is closed");
+            //    return false;
+            //}
+
+            Interlocked.Increment(ref SendCount);
+            try
+            {
+                ZError error;
+                lock (socket)
+                {
+                    using (message)
+                    {
+                        if (socket.Send(message, out error))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                LogRecorderX.MonitorTrace($"{StationName}({error.Name}) : {error.Text}");
+
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e, "ApiStation.SendResult");
+                LogRecorderX.MonitorTrace(e.Message);
+            }
+#if UNMANAGE_MONEY_CHECK
+            finally
+            {
+                LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
+            }
+#endif
+            Interlocked.Increment(ref SendError);
+            return false;
+        }
         #endregion
     }
 }

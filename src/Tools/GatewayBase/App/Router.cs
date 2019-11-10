@@ -86,7 +86,7 @@ namespace MicroZero.Http.Gateway
         {
             if (map == null)
                 return;
-            var aPath= Request.GetUri().AbsolutePath;
+            var aPath = Request.GetUri().AbsolutePath;
             foreach (var model in map.Models)
             {
                 foreach (var path in model.Paths)
@@ -235,6 +235,8 @@ namespace MicroZero.Http.Gateway
             //// 缓存
             //RouteCache.CacheResult(Data);
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //if (!string.IsNullOrWhiteSpace(Data.CacheKey))
+            //    Response.Headers.Add("Etag", Data.CacheKey);
             if (!Data.IsFile || Data.ResultBinary == null || Data.ResultBinary.Length == 0)
             {
                 Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
@@ -247,6 +249,7 @@ namespace MicroZero.Http.Gateway
             Response.Headers.Add("Content-Disposition", $"attachment;filename={file.FileName}");
             Response.Body.Write(Data.ResultBinary);
         }
+
         /// <summary>
         ///     结束
         /// </summary>

@@ -4,7 +4,6 @@ using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -142,7 +141,7 @@ namespace Agebull.MicroZero.PubSub
             }
         }
         string _fileName;
-        string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
+        private string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
         /// <summary>
         ///     发起一次请求
