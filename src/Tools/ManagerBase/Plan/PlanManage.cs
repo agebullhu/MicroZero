@@ -17,22 +17,14 @@ namespace MicroZero.Http.Route
     public class PlanManage : ZSimpleCommand
     {
         #region 实例
-        /// <summary>
-        /// 地址错误的情况
-        /// </summary>
-        /// <returns></returns>
-        protected sealed override string GetAddress()
-        {
-            return ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
-        }
-
 
         /// <summary>
         /// 构造路由计数器
         /// </summary>
         public PlanManage()
         {
-            ManageAddress = GetAddress();
+            ManageAddress = ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
+            ServiceKey = ZeroApplication.Config.Master.ServiceKey.ToZeroBytes();
             FlushList();
         }
 
@@ -42,6 +34,8 @@ namespace MicroZero.Http.Route
 
         public static void OnPlanEvent(ZeroNetEventType eventType, ZeroPlan plan)
         {
+            if (plan == null)
+                return;
             switch (eventType)
             {
                 case ZeroNetEventType.PlanAdd:
@@ -57,6 +51,7 @@ namespace MicroZero.Http.Route
         }
         public static void RemovePlan(ZeroPlan plan)
         {
+
             if (!Plans.TryGetValue(plan.plan_id, out _)) return;
             Plans.Remove(plan.plan_id);
             plan.plan_state = plan_message_state.remove;
@@ -221,7 +216,17 @@ namespace MicroZero.Http.Route
                 Plans.Clear();
                 foreach (var plan in list)
                 {
-                    SyncPlan(plan);
+                    if (plan.command != null)
+                    {
+                        SyncPlan(plan);
+                        continue;
+                    }
+
+                    var res = CallCommand("remove", plan.name);
+                    if (res.State != ZeroOperatorStateType.Ok)
+                    {
+                        ApiResult.Error(ErrorCode.LogicalError, "参数错误");
+                    }
                 }
                 return ApiResult.Succees();
             }
@@ -328,21 +333,19 @@ namespace MicroZero.Http.Route
                 {
                     case ZeroStationType.Api:
                     case ZeroStationType.Vote:
-                        success = socket.SendTo(_planApiDescription,
+                        success = socket.SendByServiceKey(_planApiDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
-                            clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            clientPlan.argument.ToZeroBytes());
                         break;
                     //Manage
                     case ZeroStationType.Notify:
-                        success = socket.SendTo(_planPubDescription,
+                        success = socket.SendByServiceKey(_planPubDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
-                            clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            clientPlan.argument.ToZeroBytes());
                         break;
                     default:
                         clientPlan.command = clientPlan.command.ToLower();
@@ -354,27 +357,28 @@ namespace MicroZero.Http.Route
                         if (config.IsSystem)
                             return ApiResult.Error(ErrorCode.LogicalError, "不允许对内置站点设置计划");
 
-                        success = socket.SendTo(commandDescription,
+                        success = socket.SendByServiceKey(commandDescription,
                             plan.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
-                            clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            clientPlan.argument.ToZeroBytes());
                         break;
                 }
                 if (!success)
                 {
-                    ZeroTrace.SystemLog("NewPlan", "Send", socket.GetLastError());
+                    ZeroTrace.SystemLog("NewPlan", "Send", socket.LastError);
 
-                    return ApiResult.Error(ErrorCode.NetworkError, socket.GetLastError().Text);
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.LastError?.Text);
                 }
                 if (!socket.Recv(out var message))
                 {
                     ZeroTrace.SystemLog("NewPlan", "Recv", socket.LastError);
-                    return ApiResult.Error(ErrorCode.NetworkError, socket.GetLastError().Text);
+                    return ApiResult.Error(ErrorCode.NetworkError, socket.LastError?.Text);
                 }
 
                 PlanItem.UnpackResult(message, out var item);
-                return item.State == ZeroOperatorStateType.Plan ? ApiResult.Succees() : ApiResult.Error(ErrorCode.LogicalError, item.State.Text());
+                return item.State == ZeroOperatorStateType.Plan
+                    ? ApiResult.Succees()
+                    : ApiResult.Error(ErrorCode.LogicalError, item.State.Text());
 
             }
 

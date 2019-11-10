@@ -300,7 +300,7 @@ namespace MicroZero.Http.Gateway
                         return;
                     if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
-                        UpdateApiItems(host as ZeroHost);
+                        UpdateApiItems(e.EventConfig,host as ZeroHost);
                     }
                     break;
                 case ZeroNetEventType.CenterStationJoin:
@@ -378,7 +378,7 @@ namespace MicroZero.Http.Gateway
             zeroHost.Failed = false;
             zeroHost.Station = station.StationName;
 
-            UpdateApiItems(zeroHost);
+            UpdateApiItems(station,zeroHost);
 
             if (!string.IsNullOrWhiteSpace(station.ShortName))
             {
@@ -396,9 +396,10 @@ namespace MicroZero.Http.Gateway
                     RouteOption.RouteMap.Add(alia, zeroHost);
         }
 
-        private static void UpdateApiItems(ZeroHost zeroHost)
+        private static void UpdateApiItems(StationConfig cfg, ZeroHost zeroHost)
         {
-            if (!SystemManager.Instance.LoadDocument(zeroHost.Station, out var doc))
+            var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == cfg.Group);
+            if (!new ConfigManager(center).LoadDocument(zeroHost.Station, out var doc))
             {
                 zeroHost.Apis = null;
                 return;
@@ -407,6 +408,7 @@ namespace MicroZero.Http.Gateway
             if (zeroHost.Apis == null)
                 zeroHost.Apis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
             foreach (var api in doc.Aips.Values)
+            {
                 if (zeroHost.Apis.TryGetValue(api.RouteName, out var item))
                 {
                     item.App = zeroHost.AppName;
@@ -416,11 +418,12 @@ namespace MicroZero.Http.Gateway
                 {
                     zeroHost.Apis.Add(api.RouteName, new ApiItem
                     {
-                        Name = api.RouteName,
                         App = zeroHost.AppName,
+                        Name = api.RouteName,
                         Access = api.AccessOption
                     });
                 }
+            }
         }
 
         #endregion

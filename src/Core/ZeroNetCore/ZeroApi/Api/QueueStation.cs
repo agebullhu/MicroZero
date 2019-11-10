@@ -4,7 +4,6 @@ using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -37,10 +36,10 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
         {
-            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
+            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
 
             var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
+            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Config.ServiceKey, identity, Subscribe), socket);
 
             Task.Factory.StartNew(Reload);
 
@@ -92,8 +91,7 @@ namespace Agebull.MicroZero.PubSub
                 item.Caller,
                 des,
                 item.Requester.ToZeroBytes(),
-                item.LocalId.ToZeroBytes(),
-                ZeroCommandExtend.ServiceKeyBytes
+                item.LocalId.ToZeroBytes()
             };
             return SendResult(socket, new ZMessage(msg));
         }
@@ -124,9 +122,9 @@ namespace Agebull.MicroZero.PubSub
 
         #region 已处理集合
 
-        private readonly object localObj = new object();
+        private readonly object _localObj = new object();
 
-        private QueueData data = new QueueData();
+        private QueueData _data = new QueueData();
 
 
 
@@ -134,13 +132,14 @@ namespace Agebull.MicroZero.PubSub
         {
             try
             {
-                File.WriteAllText(FileName, JsonHelper.SerializeObject(data));
+                File.WriteAllText(FileName, JsonHelper.SerializeObject(_data));
             }
             catch (Exception ex)
             {
                 LogRecorderX.Exception(ex);
             }
         }
+
         string _fileName;
         string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
@@ -172,23 +171,23 @@ namespace Agebull.MicroZero.PubSub
             {
                 return;
             }
-            long[] ids = null;
-            lock (localObj)
+            long[] ids;
+            lock (_localObj)
             {
-                data = queueData;
-                if(data.FailedIds.Count == 0)
-                    data.FailedIds = data.FailedIds.Distinct().ToList();
-                ids = data.FailedIds.ToArray();
+                _data = queueData;
+                if(_data.FailedIds.Count == 0)
+                    _data.FailedIds = _data.FailedIds.Distinct().ToList();
+                ids = _data.FailedIds.ToArray();
             }
             using (var cmd = new QueueCommand())
             {
-                if (!cmd.Prepare(Config.RequestAddress, StationName))
+                if (!cmd.Prepare(Config.RequestAddress, Config.ServiceKey, StationName))
                     return;
                 foreach (var id in ids)
                 {
                     cmd.CallCommand(id, id);
                 }
-                cmd.CallCommand(data.Max, 0);
+                cmd.CallCommand(_data.Max, 0);
             }
         }
 
@@ -198,27 +197,27 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         protected override bool PrepareExecute(ApiCallItem item)
         {
-            lock (localObj)
+            lock (_localObj)
             {
-                if (data.Max == 0)
+                if (_data.Max == 0)
                     return true;
                 var nowId = long.Parse(item.LocalId);
-                return data.Max < nowId || data.FailedIds.Contains(nowId);
+                return _data.Max < nowId || _data.FailedIds.Contains(nowId);
             }
         }
 
 
         bool CacheProcess(long nowId, bool success)
         {
-            lock (localObj)
+            lock (_localObj)
             {
                 if (!success)
-                    data.FailedIds.Add(nowId);
+                    _data.FailedIds.Add(nowId);
                 else
                 {
-                    if (data.Max < nowId)
-                        data.Max = nowId;
-                    data.FailedIds.Remove(nowId);
+                    if (_data.Max < nowId)
+                        _data.Max = nowId;
+                    _data.FailedIds.Remove(nowId);
                 }
             }
             SaveIds();
@@ -255,13 +254,13 @@ namespace Agebull.MicroZero.PubSub
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
-        public bool Prepare(string address, string stationName)
+        public bool Prepare(string address,byte[] serviceKey, string stationName)
         {
             if (socket != null)
                 return true;
             try
             {
-                socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(false, stationName));
+                socket = ZSocket.CreateOnceSocket(address, serviceKey, ZSocket.CreateIdentity(false, stationName));
                 return true;
             }
             catch (Exception e)
@@ -278,7 +277,7 @@ namespace Agebull.MicroZero.PubSub
         {
             try
             {
-                var result = ZSimpleCommand.SendTo(socket, description, start.ToString(), end.ToString());
+                var result = new ZSimpleCommand().SendTo(socket, description, start.ToString(), end.ToString());
                 return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }
             catch (Exception e)

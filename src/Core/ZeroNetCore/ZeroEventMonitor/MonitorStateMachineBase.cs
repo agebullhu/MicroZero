@@ -29,7 +29,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             }
             else
             {
-                SystemManager.Instance.LoadAllConfig();
+                ConfigManager.LoadAllConfig();
             }
         }
 
@@ -101,7 +101,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
         internal static void station_update(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_update", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, name, content, config);
@@ -111,7 +111,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
         internal static void station_install(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_install", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, name, content, config);
@@ -123,7 +123,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
         internal static void station_join(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_join", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, name, content, config);
@@ -179,8 +179,6 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             ZeroTrace.SystemLog(name,"station_stop");
             ChangeStationState(name, ZeroCenterState.Stop, ZeroNetEventType.CenterStationStop);
         }
-
-
 
         internal static void station_document(string name, string content)
         {

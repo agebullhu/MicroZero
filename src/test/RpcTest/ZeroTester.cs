@@ -1,6 +1,5 @@
 using System.Threading;
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
 
 namespace RpcTest
@@ -9,7 +8,7 @@ namespace RpcTest
     {
         public override bool Init()
         {
-            return SystemManager.Instance.TryInstall(Station, "api");
+            return true;
         }
 
         protected override void DoTest()

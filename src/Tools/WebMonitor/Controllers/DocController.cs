@@ -24,22 +24,23 @@ namespace WebMonitor.Controllers
 
         StationDocument GetDoc(string station)
         {
-
+            if (string.IsNullOrWhiteSpace((station)))
+            {
+                return GlobalValue.Documents.Values.LastOrDefault();
+            }
             if (GlobalValue.Documents.TryGetValue(station, out var doc))
                 return doc;
-            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
-            {
-                config = ZeroApplication.Config.Stations.FirstOrDefault(p => p.StationType == ZeroStationType.Api);
-            }
-
-            if (config == null)
+            if (!ZeroApplication.Config.TryGetConfig(station, out var config) || config == null)
             {
                 doc = new StationDocument
                 {
                     Name = station
                 };
+                GlobalValue.Documents.TryAdd(station, doc);
+                return doc;
             }
-            else if (!SystemManager.Instance.LoadDocument(config.StationName, out doc))
+            var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == config.Group);
+            if (!new ConfigManager(center).LoadDocument(config.StationName, out doc))
             {
                 doc = new StationDocument
                 {
@@ -48,7 +49,6 @@ namespace WebMonitor.Controllers
                     Description = config.Description
                 };
             }
-
             GlobalValue.Documents.TryAdd(station, doc);
             return doc;
         }
@@ -62,8 +62,6 @@ namespace WebMonitor.Controllers
             GlobalValue.Documents.Clear();
             return Redirect("/Doc/Index/" + id);
         }
-
-
 
         /// <summary>
         /// 

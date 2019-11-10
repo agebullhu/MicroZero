@@ -16,6 +16,22 @@ namespace Agebull.MicroZero
     public class StationConfig : AnnotationsConfig
     {
         /// <summary>
+        ///     所在组
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public string Group
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        ///     站点名称
+        /// </summary>
+        [IgnoreDataMember, JsonIgnore]
+        public byte[] ServiceKey { get; set; }
+
+        /// <summary>
         ///     站点名称
         /// </summary>
         [IgnoreDataMember, JsonIgnore]
@@ -119,7 +135,7 @@ namespace Agebull.MicroZero
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string RequestAddress => GetAddress(StationName, RequestPort);
+        public string RequestAddress => $"tcp://{Address}:{RequestPort}";
 
         /// <summary>
         ///     入站端口
@@ -140,21 +156,21 @@ namespace Agebull.MicroZero
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string WorkerResultAddress => GetAddress(StationName, WorkerResultPort);
+        public string WorkerResultAddress => $"tcp://{Address}:{WorkerResultPort}";
 
         /// <summary>
         ///     出站地址
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string WorkerCallAddress => GetAddress(StationName, WorkerCallPort);
+        public string WorkerCallAddress => $"tcp://{Address}:{WorkerCallPort}";
 
         /// <summary>
         ///     出站地址
         /// </summary>
         [DataMember]
         [JsonProperty]
-        public string SubAddress => GetAddress(StationName, WorkerCallPort);
+        public string SubAddress => $"tcp://{Address}:{WorkerCallPort}";
 
         /// <summary>
         ///     运行状态
@@ -229,17 +245,5 @@ namespace Agebull.MicroZero
             }
         }
 
-        /// <summary>
-        /// 格式化地址
-        /// </summary>
-        /// <param name="station"></param>
-        /// <param name="port"></param>
-        /// <returns></returns>
-        string GetAddress(string station, int port)
-        {
-            return string.IsNullOrWhiteSpace(Address) 
-                ? $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}"
-                : $"tcp://{Address}:{port}";
-        }
     }
 }

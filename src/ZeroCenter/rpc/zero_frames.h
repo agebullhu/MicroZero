@@ -19,26 +19,22 @@ namespace agebull
 		{
 			shared_char empty_;
 		public:
-			bool local;
-			vector<shared_char> frames;
-			shared_char local_caller;
-			size_t rqid_index, glid_index, rqer_index, cmd_index;
+			vector<shared_char>& frames;
+			shared_char& description;
+			size_t rqid_index, glid_index, rqer_index, pub_title_index, cmd_index;
 
-			zero_frames(bool is_local) : local(is_local), rqid_index(0), glid_index(0), rqer_index(0), cmd_index(0)
+			zero_frames(vector<shared_char>& list, shared_char& des) : frames(list), description(des), rqid_index(0), glid_index(0), rqer_index(0), pub_title_index(0), cmd_index(0)
 			{
 			}
 
-			int size()
+			size_t size() const
 			{
-				return static_cast<int>(frames.size());
+				return frames.size();
 			}
+			
 			bool is_zmtp_ping()
 			{
-				return strcmp(*frames[1], "\004PING") == 0;
-			}
-			shared_char& description()
-			{
-				return frames[1];
+				return strcmp(*description, "\004PING") == 0;
 			}
 
 			shared_char& request_id()
@@ -54,27 +50,28 @@ namespace agebull
 				return rqer_index <= 0 ? empty_ : frames[rqer_index];
 			}
 
-			shared_char descript_copy()
+			shared_char copy_description()
 			{
-				return shared_char(frames[1].get_buffer(), frames[1].size());
+				return shared_char(description.get_buffer(), description.size());
 			}
 
 			void check_global_id()
 			{
 				if (glid_index > 0)
 					return;
-				frames[1].append_frame(zero_def::frame::global_id);
+				description.append_frame(zero_def::frame::global_id);
+				glid_index = frames.size();
 				shared_char global_id;
 				global_id.set_int64(station_warehouse::get_glogal_id());
 				frames.push_back(global_id);
-				glid_index = frames.size() - 1;
+				glid_index = frames.size();
 			}
 
 			void check_in_frames_for_plan()
 			{
-				const char* buf = *frames[1];
-				vector<shared_char> arg;
-				const auto desc_size = frames[1].desc_size();
+				const char* buf = *description;
+
+				const auto desc_size = description.desc_size();
 				for (size_t idx = 2; idx <= desc_size; idx++)
 				{
 					switch (buf[idx])
@@ -88,11 +85,11 @@ namespace agebull
 					case zero_def::frame::requester:
 						rqer_index = idx;
 						break;
-					case zero_def::frame::arg:
-						arg.emplace_back(frames[idx]);
-						break;
 					case zero_def::frame::global_id:
 						glid_index = idx;
+						break;
+					case zero_def::frame::pub_title:
+						pub_title_index = idx;
 						break;
 					}
 				}
@@ -101,14 +98,8 @@ namespace agebull
 
 			void check_in_frames()
 			{
-				if(local)
-				{
-					local_caller = frames[0];
-					frames.erase(frames.begin());
-				}
-				const char* buf = *frames[1];
-				vector<shared_char> arg;
-				const auto desc_size = frames[1].desc_size();
+				const char* buf = *description;
+				const auto desc_size = description.desc_size();
 				for (size_t idx = 2; idx <= desc_size; idx++)
 				{
 					switch (buf[idx])
@@ -122,11 +113,11 @@ namespace agebull
 					case zero_def::frame::requester:
 						rqer_index = idx;
 						break;
-					case zero_def::frame::arg:
-						arg.emplace_back(frames[idx]);
-						break;
 					case zero_def::frame::global_id:
 						glid_index = idx;
+						break;
+					case zero_def::frame::pub_title:
+						pub_title_index = idx;
 						break;
 					}
 				}

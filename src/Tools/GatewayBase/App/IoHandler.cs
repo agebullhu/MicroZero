@@ -60,8 +60,8 @@ namespace MicroZero.Http.Gateway
                     LogRecorderX.MonitorTrace($"Headers   ：{JsonHelper.SerializeObject(data.Headers)}");
                 if (data.Arguments.Count > 0)
                     LogRecorderX.MonitorTrace($"Arguments ：{JsonHelper.SerializeObject(data.Arguments)}");
-                if (!string.IsNullOrWhiteSpace(data.HttpContext))
-                    LogRecorderX.MonitorTrace($"Context   ：{data.HttpContext}");
+                if (!string.IsNullOrWhiteSpace(data.HttpContent))
+                    LogRecorderX.MonitorTrace($"Context   ：{data.HttpContent}");
             }
             catch (Exception e)
             {

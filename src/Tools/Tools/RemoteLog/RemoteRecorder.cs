@@ -79,7 +79,7 @@ namespace Agebull.MicroZero.Log
             var array = infos.ToArray();
             infos.Clear();
 
-            _socket.SendTo(LogDescription, _logsByte, JsonHelper.SerializeObject(array).ToZeroBytes(), ZeroCommandExtend.ServiceKeyBytes);
+            _socket.SendByServiceKey(LogDescription, _logsByte, JsonHelper.SerializeObject(array).ToZeroBytes());
             //int idx = 0;
             //while (idx <= array.Length)
             //{
@@ -122,7 +122,7 @@ namespace Agebull.MicroZero.Log
                     RecordInfoTson.ToTson(serializer, info);
                     buf = serializer.Close();
                 }
-                if (_socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes))
+                if (_socket.SendByServiceKey(LogDescription, _logsByte, buf))
                     return;
             }
             LogRecorderX.BaseRecorder.RecordLog(info);
@@ -241,9 +241,9 @@ namespace Agebull.MicroZero.Log
             {
                 using (var pool = ZmqPool.CreateZmqPool())
                 {
-                    pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
-                    using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
-                    using (var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
+                    pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", Config.ServiceKey, ZSocketType.PAIR));
+                    using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", Config.ServiceKey, null, ZSocketType.PAIR))
+                    using (var send = ZSocket.CreateClientSocket(Config.RequestAddress, Config.ServiceKey, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
                         while (CanRun)
                         {
                             if (!pool.Poll() || !pool.CheckIn(0, out var message))

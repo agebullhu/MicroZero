@@ -50,7 +50,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     请求的内容
         /// </summary>
-        [DataMember] [JsonProperty("context")] public string HttpContext { get; private set; }
+        [DataMember] [JsonProperty("context")] public string HttpContent { get; private set; }
 
         /// <summary>
         ///     请求的表单
@@ -296,16 +296,14 @@ namespace MicroZero.Http.Gateway
                             Files.Add(file.Name, bytes);
                         }
                     }
-
                 }
 
                 if (request.ContentLength == null)
                     return true;
                 using (var texter = new StreamReader(request.Body))
                 {
-                    HttpContext = texter.ReadToEnd();
-                    if (string.IsNullOrEmpty(HttpContext))
-                        HttpContext = null;
+                    HttpContent = texter.ReadToEnd();
+                    HttpContent = string.IsNullOrEmpty(HttpContent) ? null : HttpContent.Trim();
                     texter.Close();
                 }
                 return true;

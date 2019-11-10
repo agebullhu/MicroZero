@@ -95,12 +95,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         internal void Call()
         {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                Result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
-                return;
-            }
+            //if (!ZeroApplication.ZerCenterIsRun)
+            //{
+            //    Result = ApiResultIoc.NoReadyJson;
+            //    State = ZeroOperatorStateType.LocalNoReady;
+            //    return;
+            //}
 
             var socket = ApiProxy.GetSocket(Station, Name);
             if (socket == null)
@@ -110,8 +110,6 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             }
 
-            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
             using (socket)
             {
                 CallApi(socket);
@@ -139,8 +137,7 @@ namespace Agebull.MicroZero.ZeroApis
                 State = ZeroOperatorStateType.LocalZmqError;
                 return;
             }
-            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
+
             using (socket)
             {
                 CallPlan(socket, plan);
@@ -468,10 +465,9 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         message.Add(new ZFrame(arg));
                     }
-                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
 
                 }
-                if (!socket.SendTo(message))
+                if (!socket.SendByServiceKey(message))
                 {
                     return new ZeroResult
                     {

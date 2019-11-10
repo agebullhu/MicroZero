@@ -22,10 +22,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
         {
-            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
+            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
             var pSocket = ZeroApplication.Config.ApiRouterModel
-                    ? ZSocket.CreatePoolSocket(Config.WorkerCallAddress, ZSocketType.DEALER, identity)
-                    : ZSocket.CreatePoolSocket(Config.WorkerCallAddress, ZSocketType.PULL, identity);
+                    ? ZSocket.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.DEALER, identity)
+                    : ZSocket.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.PULL, identity);
 
             var pool = ZmqPool.CreateZmqPool();
             pool.Prepare(ZPollEvent.In, pSocket, socket);

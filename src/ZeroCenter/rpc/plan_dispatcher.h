@@ -50,7 +50,7 @@ namespace agebull
 			*/
 			~plan_dispatcher() override
 			{
-				cout << "queue_station destory" << endl;
+				cout << "plan_dispatcher destory" << endl;
 			}
 			/**
 			* \brief 运行一个通知线程

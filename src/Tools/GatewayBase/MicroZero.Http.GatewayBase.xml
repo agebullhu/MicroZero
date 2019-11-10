@@ -749,7 +749,7 @@
                 HTTP method
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteData.HttpContext">
+        <member name="P:MicroZero.Http.Gateway.RouteData.HttpContent">
             <summary>
                 请求的内容
             </summary>

@@ -114,7 +114,7 @@ namespace Agebull.MicroZero.PubSub
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribes));
+                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Config.ServiceKey, Identity, Subscribes));
                 RealState = StationState.Run;
                 while (CanLoop)
                 {
@@ -258,7 +258,8 @@ namespace Agebull.MicroZero.PubSub
 
             if (args.Content != null)
                 return JsonConvert.DeserializeObject<TData>(args.Content);
-            if (args.Buffer == null) return default(TData);
+            if (args.Buffer == null) 
+                return default;
             using (var ms = new MemoryStream(args.Buffer))
             {
                 var js = new DataContractJsonSerializer(typeof(TData));

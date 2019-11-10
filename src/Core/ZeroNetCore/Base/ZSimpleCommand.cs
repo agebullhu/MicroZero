@@ -1,5 +1,4 @@
 using System;
-using Agebull.Common.Context;
 using ZeroMQ;
 
 namespace Agebull.MicroZero
@@ -7,24 +6,23 @@ namespace Agebull.MicroZero
     /// <summary>
     /// 管理命令
     /// </summary>
-    public abstract class ZSimpleCommand
+    public class ZSimpleCommand
     {
-
-        /// <summary>
-        /// 是否内部
-        /// </summary>
-        public bool IsInner { get; set; }
-
-        /// <summary>
+        /*// <summary>
         /// 地址错误的情况
         /// </summary>
         /// <returns></returns>
-        protected virtual string GetAddress() => ManageAddress;
+        protected virtual string GetAddress() => ManageAddress;*/
 
         /// <summary>
         /// 管理站点地址
         /// </summary>
-        public string ManageAddress { get; set; }
+        public string ManageAddress { get; protected set; }
+
+        /// <summary>
+        /// 服务令牌字节内容
+        /// </summary>
+        public byte[] ServiceKey { get; protected internal set; }
 
         /// <summary>
         ///     发起一次请求
@@ -67,12 +65,7 @@ namespace Agebull.MicroZero
             description[idx] = ZeroFrameType.ExtendEnd;
             return CallCommand(description, args).InteractiveSuccess;
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        public ZSocket Socket { private get; set; }
 
-        private readonly object _lockObj = new object();
 
         /// <summary>
         ///     发起一次请求
@@ -82,59 +75,31 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         protected ZeroResult CallCommand(byte[] description, params string[] args)
         {
-            return IsInner ? CallCommandInner2(description, args) : CallCommandInner(description, args);
-        }
-
-        /// <summary>
-        ///     发起一次请求
-        /// </summary>
-        /// <param name="description"></param>
-        /// <param name="args">请求参数</param>
-        /// <returns></returns>
-        protected ZeroResult CallCommandInner(byte[] description, params string[] args)
-        {
-            lock (_lockObj)
-            {
-                if (Socket == null)
+            //if (ManageAddress == null)
+            //    ManageAddress = GetAddress();
+            if (ManageAddress == null)
+                return new ZeroResult
                 {
-                    if (ManageAddress == null)
-                        ManageAddress = GetAddress();
-                    if (ManageAddress == null)
-                        return new ZeroResult
-                        {
-                            InteractiveSuccess = false,
-                            ErrorMessage = "地址无效"
-                        };
+                    InteractiveSuccess = false,
+                    ErrorMessage = "地址无效"
+                };
 
-                    Socket = ZSocket.CreateOnceSocket(ManageAddress, ZSocket.CreateIdentity(false, "Dispatcher"));
-                }
-                if (Socket == null)
-                    return new ZeroResult
-                    {
-                        InteractiveSuccess = false,
-                        State = ZeroOperatorStateType.NetError
-                    };
+            var socket = ZSocket.CreateOnceSocket(ManageAddress, ServiceKey, ZSocket.CreateIdentity(false, "Dispatcher"));
+            if (socket == null)
+                return new ZeroResult
+                {
+                    InteractiveSuccess = false,
+                    State = ZeroOperatorStateType.NetError
+                };
+            using (socket)
+            {
                 try
                 {
-                    var result = SendTo(Socket, description, args);
-                    if (!result.InteractiveSuccess)
-                    {
-                        Socket.TryClose();
-                        Socket = null;
-                        return result;
-                    }
-
-                    result = Socket.ReceiveString();
-                    if (result.InteractiveSuccess)
-                        return result;
-                    Socket.TryClose();
-                    Socket = null;
-                    return result;
+                    var result = SendTo(socket, description, args);
+                    return !result.InteractiveSuccess ? result : socket.ReceiveString();
                 }
                 catch (Exception e)
                 {
-                    Socket?.TryClose();
-                    Socket = null;
                     return new ZeroResult
                     {
                         InteractiveSuccess = false,
@@ -145,41 +110,13 @@ namespace Agebull.MicroZero
         }
 
         /// <summary>
-        ///     发起一次请求
-        /// </summary>
-        /// <param name="description"></param>
-        /// <param name="args">请求参数</param>
-        /// <returns></returns>
-        protected ZeroResult CallCommandInner2(byte[] description, params string[] args)
-        {
-            try
-            {
-                var result = SendTo(Socket, description, args);
-                if (!result.InteractiveSuccess)
-                {
-                    return result;
-                }
-
-                result = Socket.ReceiveString();
-                return result;
-            }
-            catch (Exception e)
-            {
-                return new ZeroResult
-                {
-                    InteractiveSuccess = false,
-                    Exception = e
-                };
-            }
-        }
-        /// <summary>
         ///     一次请求
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="desicription"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static ZeroResult SendTo(ZSocket socket, byte[] desicription, params string[] args)
+        public ZeroResult SendTo(ZSocket socket, byte[] desicription, params string[] args)
         {
             var message = new ZMessage
             {
@@ -191,29 +128,22 @@ namespace Agebull.MicroZero
                 {
                     message.Add(new ZFrame(arg.ToZeroBytes()));
                 }
-                message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                //message.Add(new ZFrame(ServiceKey ?? ZeroCommandExtend.ServiceKeyBytes));
             }
             using (message)
-                if (socket.SendTo(message))
+            {
+                if (socket.SendByServiceKey(message))
                     return new ZeroResult
                     {
                         State = ZeroOperatorStateType.Ok,
                         InteractiveSuccess = true
                     };
+            }
             return new ZeroResult
             {
                 State = ZeroOperatorStateType.LocalRecvError,
                 ZmqError = socket.LastError
             };
-        }
-
-        /// <summary>
-        /// 关闭仅有的一个连接
-        /// </summary>
-        public void Destroy()
-        {
-            Socket?.Dispose();
-            Socket = null;
         }
     }
 }

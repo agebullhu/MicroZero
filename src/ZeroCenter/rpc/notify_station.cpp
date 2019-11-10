@@ -5,6 +5,7 @@
 #include "../stdafx.h"
 #include "station_warehouse.h"
 #include "notify_station.h"
+#include "zero_frames.h"
 
 namespace agebull
 {
@@ -24,37 +25,19 @@ namespace agebull
 				send_request_status(socket, *list[0], zero_def::status::pause, true, true);
 				return;
 			}
-			shared_char caller = list[0];
+			const shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
-			var description = list[1];
-			size_t request_id = 0, global_id = 0, pub_title = 0, requester = 0;
-			for (size_t idx = 2; idx <= description.desc_size() && idx < list.size(); idx++)
+			zero_frames frames(list, list[1]);
+			frames.check_in_frames();
+			if (frames.pub_title_index == 0)
 			{
-				switch (description[idx])
-				{
-				case zero_def::frame::request_id:
-					request_id = idx;
-					break;
-				case zero_def::frame::requester:
-					requester = idx;
-					break;
-				case zero_def::frame::global_id:
-					global_id = idx;
-					break;
-				case zero_def::frame::pub_title:
-					pub_title = idx;
-					break;
-				}
-			}
-			if (pub_title == 0)
-			{
-				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, global_id, request_id,requester );
+				send_request_status_by_trace(socket, *caller, zero_def::status::frame_invalid, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
 				return;
 			}
-			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, global_id,request_id , requester);
-			list[0] = list[pub_title];
-			list[1].sync(description);
+			send_request_status_by_trace(socket, *caller, zero_def::status::ok, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
+			list[0] = list[frames.pub_title_index];
+			list[1].sync(frames.description);
 			send_response(list, true);
 		}
 

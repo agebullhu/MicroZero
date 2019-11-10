@@ -241,7 +241,7 @@ namespace Agebull.MicroZero.PubSub
                             return socket.ReceiveString();
                     }
                 }
-                ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint);
+                ZeroTrace.WriteError("Pub", socket.Endpoint, socket.LastError?.Text);
                 return new ZeroResult
                 {
                     State = ZeroOperatorStateType.NetError,
@@ -281,7 +281,7 @@ namespace Agebull.MicroZero.PubSub
                         ErrorMessage = "站点不存在"
                     };
                 }
-                ZError err;
+
                 using (socket)
                 {
                     using (var message = new ZMessage(frames)
@@ -289,21 +289,20 @@ namespace Agebull.MicroZero.PubSub
                         new ZFrame(GlobalContext.CurrentNoLazy?.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes()),
-                        new ZFrame(socket.Identity),
-                        new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                        new ZFrame(socket.Identity)
                     })
                     {
                         //message.Insert(0, new ZFrame(title.ToZeroBytes()));
                         message.Insert(0, new ZFrame(station.ToZeroBytes()));
-                        if (socket.Send(message, out err))
+                        if (socket.SendByServiceKey(message))
                             return socket.ReceiveString();
                     }
                 }
-                ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
+                ZeroTrace.WriteError("Pub", title, socket.Endpoint, socket.LastError?.Text);
                 return new ZeroResult
                 {
                     State = ZeroOperatorStateType.NetError,
-                    ErrorMessage = err.Text
+                    ErrorMessage = socket.LastError?.Text
                 };
             }
             catch (Exception e)

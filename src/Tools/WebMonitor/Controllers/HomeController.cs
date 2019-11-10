@@ -17,7 +17,7 @@ namespace WebMonitor.Controler
         {
             if (id == null)
                 id = "api";
-            SystemManager.Instance.LoadAllConfig();
+            ConfigManager.LoadAllConfig();
             return View(new AnnotationsConfig { Name = id });
         }
 

@@ -47,7 +47,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!StationProxy.TryGetValue(station, out var item) || item.Config.State != ZeroCenterState.Run)
                 return null;
-            return ZSocket.CreateOnceSocket(InprocAddress, name.ToZeroBytes(), ZSocketType.PAIR);
+            return ZSocket.CreateOnceSocket(InprocAddress,item.Config.ServiceKey, name.ToZeroBytes(), ZSocketType.PAIR);
         }
 
         /// <summary>
@@ -163,12 +163,12 @@ namespace Agebull.MicroZero.ZeroApis
                 LogRecorderX.Exception(e, "ApiStation.SendResult");
                 LogRecorderX.MonitorTrace(e.Message);
             }
+#if UNMANAGE_MONEY_CHECK
             finally
             {
-#if UNMANAGE_MONEY_CHECK
                 LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
-#endif
             }
+#endif
         }
 
         #endregion
@@ -281,7 +281,7 @@ namespace Agebull.MicroZero.ZeroApis
             });
             if(result.State != ZeroOperatorStateType.Runing)
                 Interlocked.Decrement(ref WaitCount);
-            message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
+            message2.Prepend(new ZFrame(result.Requester));
             SendResult(message2);
         }
 
@@ -309,10 +309,10 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     Config = config,
                     Open = DateTime.Now,
-                    Socket = ZSocket.CreateLongLink(config.RequestAddress, ZSocketType.DEALER, identity)
+                    Socket = ZSocket.CreateLongLink(config.RequestAddress, config.ServiceKey, ZSocketType.DEALER, identity)
                 });
             }
-            _proxyServiceSocket = ZSocket.CreateServiceSocket(InprocAddress, ZSocketType.ROUTER);
+            _proxyServiceSocket = ZSocket.CreateServiceSocket(InprocAddress,null, ZSocketType.ROUTER);
             ZeroTrace.SystemLog("ApiProxy", "Run", $"{RealName} : {Config.RequestAddress}");
             RealState = StationState.Run;
             ZeroApplication.OnObjectActive(this);
@@ -354,7 +354,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 var item = alive[idx];
                 if (item.Socket == null)
-                    item.Socket = ZSocket.CreatePoolSocket(item.Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
+                    item.Socket = ZSocket.CreatePoolSocket(item.Config.RequestAddress,item.Config.ServiceKey, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
                 list[idx + 1] = item.Socket;
             }
             if (_zmqPool == null)

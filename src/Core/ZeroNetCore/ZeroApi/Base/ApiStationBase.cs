@@ -30,9 +30,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected sealed override StationConfig OnNofindConfig()
         {
-            if (!SystemManager.Instance.TryInstall(StationName, _typeName))
+            var cm = new ConfigManager(ZeroApplication.Config.Master);
+            if (!cm.TryInstall(StationName, _typeName))
                 return null;
-            var config = SystemManager.Instance.LoadConfig(StationName);
+            var config = cm.LoadConfig(StationName);
             if (config == null)
                 return null;
             config.State = ZeroCenterState.Run;
@@ -90,7 +91,6 @@ namespace Agebull.MicroZero.ZeroApis
                 msg.Add((org.Value));
             }
             des[i++] = ZeroFrameType.SerivceKey;
-            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
             des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
             return SendResult(socket, new ZMessage(msg));
         }
@@ -123,8 +123,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 new ZFrame(item.Caller),
                 new ZFrame(LayoutErrorFrame),
-                new ZFrame(item.Requester),
-                new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                new ZFrame(item.Requester)
             });
         }
 
@@ -150,11 +149,11 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     using (message)
                     {
-                        if (socket.Send(message, out error))
+                        if (socket.SendByServiceKey(message))
                             return true;
                     }
+                    error = socket.GetLastError();
                 }
-
                 ZeroTrace.WriteError(StationName, error.Text, error.Name);
                 LogRecorderX.MonitorTrace($"{StationName}({error.Name}) : {error.Text}");
             }

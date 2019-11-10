@@ -6,20 +6,22 @@ namespace RpcTest
 {
     internal class Tester
     {
-        static string address = "tcp://192.168.123.129:8000";
+        const string address = "tcp://192.168.123.129:8000";
+
+        static readonly byte[] serviceKey = "agebull".ToZeroBytes();
         public static void StartTest()
         {
             //address = "tcp://192.168.240.132:8000";
             TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid);
             TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[0]);
             TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, "".ToZeroBytes());
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 }, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 0 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 1 });
+            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1 });
+            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1 });
+            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1 }, new byte[] { 1 });
+            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[] { 0 });
+            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[] { 1 });
             //TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[0]);
-            TestFrame("²ÎÊı´íÎóÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[1] { 1 });
+            TestFrame("²ÎÊı´íÎóÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[] { 1 });
             //×´Ì¬·¢ËÍ
             for (byte state = 1; state < byte.MaxValue; state++)
             {
@@ -46,10 +48,10 @@ namespace RpcTest
         }
         static void TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
         {
-            using (var socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(), ZSocketType.DEALER))
+            using (var socket = ZSocket.CreateOnceSocket(address, serviceKey, ZSocket.CreateIdentity()))
             {
                 socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-                if (!socket.SendTo(frames,new byte[][] { }))
+                if (!socket.SendByServiceKey(frames))
                 {
                     Console.Error.Write(" : Send Error");
                     return;

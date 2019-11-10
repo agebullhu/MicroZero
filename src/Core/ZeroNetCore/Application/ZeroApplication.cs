@@ -157,7 +157,7 @@ namespace Agebull.MicroZero
             CheckConfig();
             InitializeDependency();
             ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
-            ZeroCommandExtend.ServiceKeyBytes = GlobalContext.ServiceKey.ToZeroBytes();
+            //ZeroCommandExtend.ServiceKeyBytes = Config.Master.ServiceKey.ToZeroBytes();
             ShowOptionInfo();
         }
 
@@ -167,7 +167,6 @@ namespace Agebull.MicroZero
         /// </summary>
         private static void InitializeDependency()
         {
-            GlobalContext.ServiceKey = Config.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
@@ -301,7 +300,7 @@ namespace Agebull.MicroZero
                 return false;
             ApplicationState = StationState.BeginRun;
             ZeroCenterState = ZeroCenterState.Start;
-            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.ZeroManageAddress})...");
+            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.Master?.ManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
                 SetFailed();
@@ -317,7 +316,7 @@ namespace Agebull.MicroZero
             }
 
             Config.ClearConfig();
-            if (!SystemManager.Instance.LoadAllConfig())
+            if (!ConfigManager.LoadAllConfig())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "station configs can`t loaded.");
@@ -326,7 +325,8 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", "be connected successfully,start local stations.");
             if (WorkModel == ZeroWorkModel.Service)
             {
-                SystemManager.Instance.UploadDocument();
+                var cm = new ConfigManager(Config.Master);
+                cm.UploadDocument();
                 Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
             }
             //else if (WorkModel == ZeroWorkModel.Client)
@@ -361,17 +361,16 @@ namespace Agebull.MicroZero
                     break;
             }
             ApplicationState = StationState.Destroy;
-            if (WorkModel != ZeroWorkModel.Bridge)
+            if (WorkModel == ZeroWorkModel.Bridge)
+            {
+                Thread.Sleep(1000);
+            }
+            else
             {
                 if (GlobalObjects.Count > 0)
                     GlobalSemaphore.Wait();
                 OnZeroDestory();
-                SystemManager.Instance.Destroy();
                 SystemMonitor.WaitMe();
-            }
-            else
-            {
-                Thread.Sleep(1000);
             }
             ZeroTrace.SystemLog("Application shutdown ,see you late.");
             GC.Collect();

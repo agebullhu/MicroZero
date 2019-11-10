@@ -23,6 +23,11 @@ namespace ZeroMQ
         #region Const
 
 
+        /// <summary>
+        /// 服务令牌字节内容
+        /// </summary>
+        public byte[] ServiceKey { get; set; }
+
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
         // From options.hpp: unsigned char identity [256];
         private const int MaxBinaryOptionSize = 256;
@@ -41,7 +46,7 @@ namespace ZeroMQ
         protected override string TypeName => nameof(ZSocket);
 #endif
 
-        public ZContext Context { get; private set; }
+        public ZContext Context { get; }
 
         public IntPtr SocketPtr { get; private set; }
 
@@ -119,9 +124,10 @@ namespace ZeroMQ
         /// 构建套接字
         /// </summary>
         /// <param name="address">远程地址</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="type">类型</param>
         /// <returns></returns>
-        public static ZSocket CreateServiceSocket(string address, ZSocketType type)
+        public static ZSocket CreateServiceSocket(string address, byte[] serviceKey, ZSocketType type)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -132,6 +138,7 @@ namespace ZeroMQ
                 return null;
             }
             ConfigSocket(socket, null, true, false);
+            socket.ServiceKey = serviceKey;
             if (socket.Bind(address, out error))
                 return socket;
             LogRecorderX.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
@@ -143,13 +150,14 @@ namespace ZeroMQ
         /// 构建套接字
         /// </summary>
         /// <param name="address">远程地址</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="type">类型</param>
         /// <param name="identity">身份标签</param>
         /// <param name="longLink">是否保持长连接</param>
         /// <returns></returns>
-        public static ZSocket CreateClientSocket(string address, ZSocketType type, byte[] identity, bool longLink)
+        public static ZSocket CreateClientSocket(string address, byte[] serviceKey, ZSocketType type, byte[] identity, bool longLink)
         {
-            return CreateClientSocketInner(address, type, identity, longLink);
+            return CreateClientSocketInner(address, serviceKey, type, identity, longLink);
         }
 
         /// <summary>
@@ -157,11 +165,12 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="type">类型</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="identity">身份标签</param>
         /// <returns></returns>
-        public static ZSocket CreatePoolSocket(string address, ZSocketType type, byte[] identity)
+        public static ZSocket CreatePoolSocket(string address, byte[] serviceKey, ZSocketType type, byte[] identity)
         {
-            return CreateClientSocketInner(address, type, identity, false);
+            return CreateClientSocketInner(address, serviceKey, type, identity, false);
         }
 
         /// <summary>
@@ -169,9 +178,10 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="type">类型</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="identity">身份标签</param>
         /// <returns></returns>
-        public static ZSocket CreateLongLink(string address, ZSocketType type, byte[] identity)
+        public static ZSocket CreateLongLink(string address,byte[] serviceKey, ZSocketType type, byte[] identity)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -182,6 +192,7 @@ namespace ZeroMQ
                 return null;
             }
             ConfigSocket(socket, identity, false, true);
+            socket.ServiceKey = serviceKey;
             if (socket.Connect(address, out error))
                 return socket;
             LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
@@ -194,11 +205,12 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="identity">身份标签</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="type">类型</param>
         /// <returns></returns>
-        public static ZSocket CreateOnceSocket(string address, byte[] identity, ZSocketType type = ZSocketType.DEALER)
+        public static ZSocket CreateOnceSocket(string address, byte[] serviceKey, byte[] identity, ZSocketType type = ZSocketType.DEALER)
         {
-            return CreateClientSocketInner(address, type, identity, false);
+            return CreateClientSocketInner(address, serviceKey, type, identity, false);
         }
 
         /// <summary>
@@ -206,11 +218,12 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="subscribe">订阅内容</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="identity">身份标签</param>
         /// <returns></returns>
-        public static ZSocket CreateSubSocket(string address, byte[] identity, string subscribe)
+        public static ZSocket CreateSubSocket(string address, byte[] serviceKey, byte[] identity, string subscribe)
         {
-            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity, true);
+            var socket = CreateClientSocketInner(address, serviceKey, ZSocketType.SUB, identity, true);
             if (string.IsNullOrEmpty(subscribe))
                 socket.SubscribeAll();
             else
@@ -223,11 +236,12 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="subscribes">订阅内容</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="identity">身份标签</param>
         /// <returns></returns>
-        public static ZSocket CreateSubSocket(string address, byte[] identity, ICollection<string> subscribes)
+        public static ZSocket CreateSubSocket(string address, byte[] serviceKey, byte[] identity, ICollection<string> subscribes)
         {
-            var socket = CreateClientSocketInner(address, ZSocketType.SUB, identity, true);
+            var socket = CreateClientSocketInner(address, serviceKey, ZSocketType.SUB, identity, true);
             if (subscribes == null || subscribes.Count == 0)
                 socket.SubscribeAll();
             else
@@ -241,10 +255,11 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="address">远程地址</param>
         /// <param name="type">套接字类型</param>
+        /// <param name="serviceKey">服务令牌</param>
         /// <param name="identity">身份标签</param>
         /// <param name="longLink">是否保持长连接</param>
         /// <returns></returns>
-        private static ZSocket CreateClientSocketInner(string address, ZSocketType type, byte[] identity, bool longLink)
+        private static ZSocket CreateClientSocketInner(string address, byte[] serviceKey, ZSocketType type, byte[] identity, bool longLink)
         {
             if (!ZContext.IsAlive)
                 return null;
@@ -255,6 +270,7 @@ namespace ZeroMQ
                 return null;
             }
 
+            socket.ServiceKey = serviceKey;
             ConfigSocket(socket, identity, false, longLink);
 
             if (socket.Connect(address, out error))
@@ -591,6 +607,8 @@ namespace ZeroMQ
             return SendMessage(msg, out error);
         } // just Send*
 
+        /*
+         
         public void Send(ZMessage msg, ZSocketFlags flags)
         {
             SendMessage(msg, flags);
@@ -624,11 +642,6 @@ namespace ZeroMQ
         public bool Send(IEnumerable<ZFrame> frames, ref int sent, ZSocketFlags flags, out ZError error)
         {
             return SendFrames(frames, ref sent, flags, out error);
-        } // just Send*
-
-        public void Send(ZFrame frame)
-        {
-            SendFrame(frame);
         } // just Send*
 
         public bool Send(ZFrame msg, out ZError error)
@@ -666,6 +679,54 @@ namespace ZeroMQ
             return SendFrame(frame, flags, out error);
         } // just Send*
 
+        public void SendFrames(IEnumerable<ZFrame> frames)
+        {
+            SendFrames(frames, ZSocketFlags.None);
+        }
+
+        public bool SendFrames(IEnumerable<ZFrame> frames, out ZError error)
+        {
+            return SendFrames(frames, ZSocketFlags.DontWait, out error);
+        }
+        
+        public bool SendFrame(ZFrame msg, out ZError error)
+        {
+            return SendFrame(msg, ZSocketFlags.None, out error);
+        }
+
+        public void SendFrameMore(ZFrame frame)
+        {
+            SendFrame(frame, ZSocketFlags.More);
+        }
+
+        public bool SendFrameMore(ZFrame msg, out ZError error)
+        {
+            return SendFrame(msg, ZSocketFlags.More, out error);
+        }
+
+        public void SendFrameMore(ZFrame frame, ZSocketFlags flags)
+        {
+            SendFrame(frame, flags | ZSocketFlags.More);
+        }
+
+        public bool SendFrameMore(ZFrame msg, ZSocketFlags flags, out ZError error)
+        {
+            return SendFrame(msg, flags | ZSocketFlags.More, out error);
+        }
+        
+
+        public void SendFrames(IEnumerable<ZFrame> frames, ZSocketFlags flags)
+        {
+            var sent = 0;
+            if (!SendFrames(frames, ref sent, flags, out _error)) throw new ZException(_error);
+        }
+
+        */
+        public void Send(ZFrame frame)
+        {
+            SendFrame(frame);
+        } // just Send*
+
         public void SendMessage(ZMessage msg)
         {
             SendMessage(msg, ZSocketFlags.DontWait);
@@ -686,30 +747,14 @@ namespace ZeroMQ
             return SendFrames(msg, flags, out error);
         }
 
-        public void SendFrames(IEnumerable<ZFrame> frames)
-        {
-            SendFrames(frames, ZSocketFlags.None);
-        }
-
-        public bool SendFrames(IEnumerable<ZFrame> frames, out ZError error)
-        {
-            return SendFrames(frames, ZSocketFlags.DontWait, out error);
-        }
-
-        public void SendFrames(IEnumerable<ZFrame> frames, ZSocketFlags flags)
-        {
-            var sent = 0;
-            if (!SendFrames(frames, ref sent, flags, out _error)) throw new ZException(_error);
-        }
-
-        public bool SendFrames(IEnumerable<ZFrame> frames, ZSocketFlags flags, out ZError error)
+        private bool SendFrames(IEnumerable<ZFrame> frames, ZSocketFlags flags, out ZError error)
         {
             var sent = 0;
             if (!SendFrames(frames, ref sent, flags, out error)) return false;
             return true;
         }
 
-        public bool SendFrames(IEnumerable<ZFrame> frames, ref int sent, ZSocketFlags flags, out ZError error)
+        private bool SendFrames(IEnumerable<ZFrame> frames, ref int sent, ZSocketFlags flags, out ZError error)
         {
             //EnsureNotDisposed();
 
@@ -748,30 +793,6 @@ namespace ZeroMQ
             SendFrame(frame, ZSocketFlags.None);
         }
 
-        public bool SendFrame(ZFrame msg, out ZError error)
-        {
-            return SendFrame(msg, ZSocketFlags.None, out error);
-        }
-
-        public void SendFrameMore(ZFrame frame)
-        {
-            SendFrame(frame, ZSocketFlags.More);
-        }
-
-        public bool SendFrameMore(ZFrame msg, out ZError error)
-        {
-            return SendFrame(msg, ZSocketFlags.More, out error);
-        }
-
-        public void SendFrameMore(ZFrame frame, ZSocketFlags flags)
-        {
-            SendFrame(frame, flags | ZSocketFlags.More);
-        }
-
-        public bool SendFrameMore(ZFrame msg, ZSocketFlags flags, out ZError error)
-        {
-            return SendFrame(msg, flags | ZSocketFlags.More, out error);
-        }
 
         public void SendFrame(ZFrame frame, ZSocketFlags flags)
         {
@@ -857,44 +878,17 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="message">消息</param>
         /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        public bool SendTo(ZMessage message)
+        public bool SendByServiceKey(ZMessage message)
         {
             if (message == null || message.Count == 0)
                 return false;
             _error = null;
-            var i = 0;
-            for (; i < message.Count - 1; ++i)
+            foreach (var frame in message)
             {
-                if (!SendFrame(message[i], FlagsSndmore))
+                if (!SendFrame(frame, FlagsSndmore))
                     return false;
             }
-            return SendFrame(message[i], FlagsDontwait);
-        }
-
-        /// <summary>
-        /// 发送
-        /// </summary>
-        /// <param name="des"></param>
-        /// <param name="array">消息</param>
-        /// <returns>是否发送成功</returns>
-        public bool SendTo(byte[] des, params string[] array)
-        {
-            using (var f = new ZFrame(des))
-                if (!SendFrame(f, FlagsSndmore))
-                    return false;
-            if (array == null || array.Length == 0)
-            {
-                return true;
-            }
-            _error = null;
-            var i = 0;
-            for (; i < array.Length - 1; ++i)
-            {
-                using (var f = new ZFrame(array[i]))
-                    if (!SendFrame(f, FlagsSndmore))
-                        return false;
-            }
-            using (var f = new ZFrame(array[i]))
+            using (var f = new ZFrame(ServiceKey))
                 return SendFrame(f, FlagsDontwait);
         }
 
@@ -903,22 +897,20 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="array">消息</param>
         /// <returns>是否发送成功</returns>
-        public bool SendTo(params byte[][] array)
+        public bool SendByServiceKey(params byte[][] array)
         {
             if (array == null || array.Length == 0)
                 return false;
             _error = null;
-            var i = 0;
-            for (; i < array.Length - 1; ++i)
+            foreach (var data in array)
             {
-                using (var f = new ZFrame(array[i]))
-                    if (!SendFrame(f, FlagsSndmore))
+                using (var frame = new ZFrame(data))
+                    if (!SendFrame(frame, FlagsSndmore))
                         return false;
             }
-            using (var f = new ZFrame(array[i]))
+            using (var f = new ZFrame(ServiceKey))
                 return SendFrame(f, FlagsDontwait);
         }
-
 
         /// <summary>
         /// 发送
@@ -926,42 +918,23 @@ namespace ZeroMQ
         /// <param name="array">消息</param>
         /// <param name="extend"></param>
         /// <returns>是否发送成功</returns>
-        public bool SendTo(byte[][] array, params byte[][] extend)
+        public bool SendByServiceKey(byte[][] array, params byte[][] extend)
         {
             _error = null;
-            int i;
-            for (i = 0; i < array.Length; ++i)
+            foreach (var data in array)
             {
-                using (var f = new ZFrame(array[i]))
-                    if (!SendFrame(f, FlagsSndmore))
+                using (var frame = new ZFrame(data))
+                    if (!SendFrame(frame, FlagsSndmore))
                         return false;
             }
-            for (i = 0; i < extend.Length - 1; ++i)
+            foreach (var data in extend)
             {
-                using (var f = new ZFrame(extend[i]))
-                    if (!SendFrame(f, FlagsSndmore))
+                using (var frame = new ZFrame(data))
+                    if (!SendFrame(frame, FlagsSndmore))
                         return false;
             }
-            using (var f = new ZFrame(extend[i]))
+            using (var f = new ZFrame(ServiceKey))
                 return SendFrame(f, FlagsDontwait);
-        }
-        /// <summary>
-        /// 发送
-        /// </summary>
-        /// <param name="array">消息</param>
-        /// <returns>是否发送成功</returns>
-        public bool SendTo(params ZFrame[] array)
-        {
-            if (array == null || array.Length == 0)
-                return false;
-            _error = null;
-            var i = 0;
-            for (; i < array.Length - 1; ++i)
-            {
-                if (!SendFrame(array[i], FlagsSndmore))
-                    return false;
-            }
-            return SendFrame(array[i], FlagsDontwait);
         }
 
         /// <summary>
@@ -985,7 +958,52 @@ namespace ZeroMQ
 
             return message.Count > 0;
         }
+        /*
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="array">消息</param>
+        /// <returns>是否发送成功</returns>
+        public bool SendTo(params ZFrame[] array)
+        {
+            if (array == null || array.Length == 0)
+                return false;
+            _error = null;
+            foreach (var frame in array)
+            {
+                if (!SendFrame(frame, FlagsSndmore))
+                    return false;
+            }
+            using (var f = new ZFrame(ServiceKey))
+                return SendFrame(f, FlagsDontwait);
+        }
 
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="des"></param>
+        /// <param name="array">消息</param>
+        /// <returns>是否发送成功</returns>
+        public bool SendTo(byte[] des, params string[] array)
+        {
+            using (var f = new ZFrame(des))
+                if (!SendFrame(f, FlagsSndmore))
+                    return false;
+            if (array == null || array.Length == 0)
+            {
+                return true;
+            }
+            _error = null;
+            foreach (var data in array)
+            {
+                using (var frame = new ZFrame(data))
+                    if (!SendFrame(frame, FlagsSndmore))
+                        return false;
+            }
+            using (var f = new ZFrame(ServiceKey))
+                return SendFrame(f, FlagsDontwait);
+        }*/
         #endregion
 
         #region Subscribe
@@ -1593,12 +1611,12 @@ namespace ZeroMQ
 
         public uint GetOptionUInt32(ZSocketOption option)
         {
-            return GetOption(option, out uint result) ? result : default(uint);
+            return GetOption(option, out uint result) ? result : default;
         }
 
         public bool GetOption(ZSocketOption option, out long value)
         {
-            value = default(long);
+            value = default;
 
             var optionLength = Marshal.SizeOf(typeof(long));
             using (var optionValue = DispoIntPtr.Alloc(optionLength))
@@ -1613,7 +1631,7 @@ namespace ZeroMQ
         public long GetOptionInt64(ZSocketOption option)
         {
             if (GetOption(option, out long result)) return result;
-            return default(long);
+            return default;
         }
 
         public bool GetOption(ZSocketOption option, out ulong value)
@@ -1626,7 +1644,7 @@ namespace ZeroMQ
         public ulong GetOptionUInt64(ZSocketOption option)
         {
             if (GetOption(option, out ulong result)) return result;
-            return default(ulong);
+            return default;
         }
 
 

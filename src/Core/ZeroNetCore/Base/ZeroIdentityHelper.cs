@@ -41,7 +41,7 @@ namespace Agebull.MicroZero
         public static string GetWorkerAddress(string station, int port)
         {
             return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
-        }*/
+        }
 
         /// <summary>
         /// 格式化地址
@@ -57,6 +57,6 @@ namespace Agebull.MicroZero
             if (string.IsNullOrWhiteSpace(cfg.Address))
                 return $"tcp://{ZeroApplication.Config.ZeroAddress}:{port}";
             return $"tcp://{cfg.Address}:{port}";
-        }
+        }*/
     }
 }

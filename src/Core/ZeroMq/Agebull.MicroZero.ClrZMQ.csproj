@@ -19,7 +19,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ClrZmq的MicroZero专用版本</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.2-alpha</Version>
+    <Version>1.4.10.3-alpha</Version>
     <!--<Version>1.3.0-alpha</Version>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -1,6 +1,7 @@
 #include "../stdafx.h"
 #include "api_station.h"
 #include "inner_socket.h"
+#include "zero_frames.h"
 
 namespace agebull
 {
@@ -46,7 +47,7 @@ namespace agebull
 		inline void api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
 		{
 			trace(1, list, nullptr);
-			shared_char caller = list[0];
+			const shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
@@ -82,11 +83,15 @@ namespace agebull
 			}
 			if (state != zmq_socket_state::succeed)
 			{
-				send_request_status_by_trace(socket, *caller, zero_def::status::not_worker, list, 0, 0, 0);
+				zero_frames frames(list, list[1]);
+				frames.check_in_frames();
+				send_request_status_by_trace(socket, *caller, zero_def::status::not_worker, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
 			}
 			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				send_request_status_by_trace(socket, *caller, zero_def::status::runing, list,  0,0,0);
+				zero_frames frames(list, list[1]);
+				frames.check_in_frames();
+				send_request_status_by_trace(socket, *caller, zero_def::status::runing, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
 			}
 		}
 

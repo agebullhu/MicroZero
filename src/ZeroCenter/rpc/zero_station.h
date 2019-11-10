@@ -178,10 +178,6 @@ namespace agebull
 			/**
 			* \brief 发送请求结果到调用者
 			*/
-			inline void send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state, bool is_request);
-			/**
-			* \brief 发送请求结果到调用者
-			*/
 			inline bool send_request_result(zmq_handler socket, vector<shared_char>& list, bool trace, bool is_request);
 			/**
 			* \brief 发送请求结果到调用者
@@ -191,6 +187,10 @@ namespace agebull
 			* \brief 发送请求结果到调用者
 			*/
 			inline bool send_request_status(zmq_handler socket, const char* addr, uchar state, vector<shared_char>& ls, size_t glbid_idx, size_t reqid_idx, size_t reqer_idx, const char* msg = nullptr);
+			/**
+			* \brief 发送请求结果到调用者
+			*/
+			inline void send_request_status_by_trace(zmq_handler socket, vector<shared_char>& list, shared_char& description, uchar state, bool is_request);
 			/**
 			* \brief 发送请求结果到调用者
 			*/
@@ -452,6 +452,7 @@ namespace agebull
 			descirpt.tag(zero_def::frame::result_end);
 			send_request_result(socket, ls, true, is_request);
 		}
+
 		/**
 		* \brief 发送请求结果到调用者
 		*/

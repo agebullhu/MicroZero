@@ -105,7 +105,6 @@ namespace Agebull.MicroZero.ZeroManagemant
         private bool MonitorInner()
         {
             List<string> subs = new List<string>();
-            long cnt = 0;
             DateTime failed = DateTime.MinValue;
             using (var poll = ZmqPool.CreateZmqPool())
             {
@@ -114,7 +113,10 @@ namespace Agebull.MicroZero.ZeroManagemant
                     subs.Add("system");
                     subs.Add("station");
                 }
-                var socket = ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZSocket.CreateIdentity(false, "Monitor"), subs);
+                var socket = ZSocket.CreateSubSocket(ZeroApplication.Config.Master.MonitorAddress,
+                    ZeroApplication.Config.Master.ServiceKey.ToZeroBytes(),
+                    ZSocket.CreateIdentity(false, "Monitor"),
+                    subs);
                 
                 poll.Prepare(ZPollEvent.In, socket);
                 while (ZeroApplication.IsAlive)
@@ -136,7 +138,6 @@ namespace Agebull.MicroZero.ZeroManagemant
                     {
                         StateMachine?.OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
                     }
-                    cnt++;
                 }
             }
             return true;

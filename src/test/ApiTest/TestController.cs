@@ -6,7 +6,7 @@ namespace ApiTest
 
     public class TestItem
     {
-        public IEnumerable<long> Test { get; set; }
+        public long Id{ get; set; }
     }
 
     public class TestItems
@@ -39,12 +39,12 @@ namespace ApiTest
         /// </summary>
         /// <returns></returns>
         [Route("v1/test")]
-        public ApiResult<TestItems> OnTextRequest()
+        public ApiResult<TestItem> OnTestRequest()
         {
-            return new ApiResult<TestItems>
+            return ApiResult.Succees(new TestItem
             {
-                Success = true
-            };
+                Id=999
+            });
         }
     }
 }

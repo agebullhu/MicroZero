@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Agebull.MicroZero.ZeroApis;
 
@@ -45,9 +46,14 @@ namespace MicroZero.Http.Gateway
             }
             if (data.CacheSetting.Feature.HasFlag(CacheFeature.QueryString))
             {
-                foreach (var kv in data.Arguments)
+                foreach (var kv in data.Arguments.OrderBy(p => p.Key))
                 {
                     kb.Append($"&{kv.Key}={kv.Value}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(data.HttpContent))
+                {
+                    kb.Append(data.HttpContent);
                 }
             }
             data.CacheKey = kb.ToString();
@@ -68,7 +74,7 @@ namespace MicroZero.Http.Gateway
         /// <param name="data"></param>
         internal static void CacheResult(RouteData data)
         {
-            if (data.CacheSetting == null || !data.IsSucceed)
+            if (data.CacheSetting == null || !data.IsSucceed || data.CacheKey == null)
                 return;
             CacheData cacheData;
             if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) &&

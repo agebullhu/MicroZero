@@ -135,17 +135,17 @@ namespace agebull
 		*/
 		bool plan_message::check_month()
 		{
-			ptime now = second_clock::universal_time();
+			const ptime now = second_clock::universal_time();
 			int day;
-			ushort max = boost::gregorian::gregorian_calendar::end_of_month_day(now.date().year(), now.date().month());
+			const ushort max = boost::gregorian::gregorian_calendar::end_of_month_day(now.date().year(), now.date().month());
 			if (plan_value > 0) //几号
 				day = plan_value > max ? max : plan_value;
 			else
 			{
-				int vl = 0 - plan_value;
+				const int vl = 0 - plan_value;
 				day = vl <= max ? 1 : max - vl;
 			}
-			auto time = from_time_t(plan_time).time_of_day();
+			const auto time = from_time_t(plan_time).time_of_day();
 			ptime next;
 			if (day > now.date().day())
 			{
@@ -170,12 +170,12 @@ namespace agebull
 		*/
 		bool plan_message::check_week()
 		{
-			ptime now = second_clock::universal_time();
-			auto time = from_time_t(plan_time).time_of_day();
-			int wk = now.date().day_of_week();
+			const ptime now = second_clock::universal_time();
+			const auto time = from_time_t(plan_time).time_of_day();
+			const int wk = now.date().day_of_week();
 			if (wk == plan_value) //当天
 			{
-				ptime timeTemp = ptime(now.date(), time);
+				const ptime timeTemp = ptime(now.date(), time);
 				if (timeTemp < now) //时间未过
 					plan_time = to_time_t(ptime(now.date() + boost::gregorian::days(7), time));
 				else
@@ -202,7 +202,7 @@ namespace agebull
 			{
 				return false;
 			}
-			ptime now = second_clock::universal_time();
+			const ptime now = second_clock::universal_time();
 			if (plan_time <= 0)
 			{
 				join_queue(to_time_t(now + delay));
@@ -242,11 +242,8 @@ namespace agebull
 			else
 				plan_state = plan_message_state::skip;
 			plan_time = time;
-
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			map<acl::string, double> value;
-			value.insert(make_pair(key, static_cast<double>(time)));
+			value.insert(make_pair(name.c_str(), static_cast<double>(time)));
 			redis_live_scope scope(global_config::plan_redis_db);
 			scope->zadd("plan:time:set", value);
 			save_message(false, false, true, false, false, false);
@@ -257,12 +254,10 @@ namespace agebull
 		*/
 		bool plan_message::error()
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::error;
 			redis_live_scope scope(global_config::plan_redis_db);
 			save_message(false, false, false, false, false, true);
-			scope->zrem("plan:time:set", key);
+			scope->zrem("plan:time:set", name.c_str());
 			return true;
 		}
 
@@ -271,11 +266,9 @@ namespace agebull
 		*/
 		bool plan_message::reset()
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::none;
-			redis_live_scope scope(global_config::plan_redis_db);
-			scope.redis()->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
+			const redis_live_scope scope(global_config::plan_redis_db);
+			scope.redis()->set_hash_val(name.c_str(), "plan_state", static_cast<int>(plan_state));
 			join_queue(plan_time);
 			return true;
 		}
@@ -285,12 +278,10 @@ namespace agebull
 		*/
 		bool plan_message::pause()
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::pause;
 			redis_live_scope scope(global_config::plan_redis_db);
-			scope.redis()->set_hash_val(key, "plan_state", static_cast<int>(plan_state));
-			scope->zrem("plan:time:set", key);
+			scope.redis()->set_hash_val(name.c_str(), "plan_state", static_cast<int>(plan_state));
+			scope->zrem("plan:time:set", name.c_str());
 			plan_dispatcher::instance->zero_event(zero_net_event::event_plan_pause, this);
 			return true;
 		}
@@ -300,13 +291,11 @@ namespace agebull
 		*/
 		bool plan_message::close()
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			plan_state = plan_message_state::close;
 			redis_live_scope scope(global_config::plan_redis_db);
-			scope->zrem("plan:time:set", key);
+			scope->zrem("plan:time:set", name.c_str());
 			save_message(false, false, false, false, false, true);
-			scope->expireat(key, time(nullptr) + global_config::plan_auto_remove);//自动过期
+			scope->expireat(name.c_str(), time(nullptr) + global_config::plan_auto_remove);//自动过期
 			return true;
 		}
 		/**
@@ -314,11 +303,9 @@ namespace agebull
 		*/
 		bool plan_message::remove()
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
 			redis_live_scope scope(global_config::plan_redis_db);
-			scope->del(key);
-			scope->zrem("plan:time:set", key);
+			scope->del(name.c_str());
+			scope->zrem("plan:time:set", name.c_str());
 			plan_dispatcher::instance->zero_event(zero_net_event::event_plan_remove, this);
 			return true;
 		}
@@ -428,9 +415,8 @@ namespace agebull
 		*/
 		bool plan_message::save_message(bool full, bool exec, bool plan, bool res, bool skip, bool close)
 		{
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
-			redis_live_scope scope(global_config::plan_redis_db);
+			char* key= name.c_str();
+			const redis_live_scope scope(global_config::plan_redis_db);
 			trans_redis* redis = scope.redis();
 			if (add_time == 0)
 			{
@@ -505,8 +491,7 @@ namespace agebull
 			if (station_type != zero_def::station_type::vote)
 				return false;
 			redis_live_scope scope(global_config::plan_redis_db);
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
+			char *key = name.c_str();
 			char skey[64];
 			for (auto iter : workers)
 			{
@@ -528,8 +513,7 @@ namespace agebull
 			{
 				redis_live_scope scope(global_config::plan_redis_db);
 				trans_redis* redis = scope.redis();
-				char key[256];
-				sprintf(key, "msg:%s:%llx", *station, plan_id);
+				char* key = name.c_str();
 				char skey[64];
 				sprintf(skey, "wroks:%s:size", worker);
 				const size_t size = redis->get_hash_num(key, skey);
@@ -572,10 +556,9 @@ namespace agebull
 			vector<shared_char> result;
 			if (station_type != zero_def::station_type::vote)
 				return result;
-			redis_live_scope scope(global_config::plan_redis_db);
+			const redis_live_scope scope(global_config::plan_redis_db);
 			trans_redis* redis = scope.redis();
-			char key[256];
-			sprintf(key, "msg:%s:%llx", *station, plan_id);
+			char* key = name.c_str();
 			char skey[64];
 			sprintf(skey, "wroks:%s:size", worker);
 			const size_t size = redis->get_hash_num(key, skey);
@@ -597,13 +580,12 @@ namespace agebull
 			trans_redis* redis = scope.redis();
 			map<acl::string, vector<shared_char>> results;
 			char skey[256];
-			char key[256];
 			int cursor = 0;
 			do
 			{
 				map<acl::string, acl::string> values;
-				sprintf(key, "msg:%s:%llx", *station, plan_id);
-				cursor = scope->hscan(key, cursor, values, "wroks:*:size");
+
+				cursor = scope->hscan(name.c_str(), cursor, values, "wroks:*:size");
 				for (pair<const acl::string, acl::string>& iter : values)
 				{
 					vector<shared_char> result;
@@ -614,7 +596,7 @@ namespace agebull
 					for (size_t idx = 1; idx <= size; idx++)
 					{
 						sprintf(skey, "wroks:%s:%d", worker.c_str(), idx);
-						result.emplace_back(redis->get_hash_ptr(key, skey));
+						result.emplace_back(redis->get_hash_ptr(name.c_str(), skey));
 					}
 					results.insert(make_pair(worker, result));
 				}
