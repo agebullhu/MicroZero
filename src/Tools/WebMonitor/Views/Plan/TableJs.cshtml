@@ -62,16 +62,16 @@
     });
     extend_methods({
         plan_remove(plan) {
-            do_sync_get(`/Plan/Remove/${plan.plan_id}` , `删除计划任务:${plan.description}`);
+            do_sync_get(`/Plan/Remove/${plan.name}` , `删除计划任务:${plan.description}`);
         },
         plan_reset(plan) {
-            do_sync_get(`/Plan/Reset/${plan.plan_id}` , `恢复计划任务:${plan.description}`);
+            do_sync_get(`/Plan/Reset/${plan.name}` , `恢复计划任务:${plan.description}`);
         },
         plan_pause(plan) {
-            do_sync_get(`/Plan/Pause/${plan.plan_id}` , `暂停计划任务:${plan.description}`);
+            do_sync_get(`/Plan/Pause/${plan.name}` , `暂停计划任务:${plan.description}`);
         },
         plan_close(plan) {
-            do_sync_get(`/Plan/Close/${plan.plan_id}` , `关闭计划任务:${plan.description}`);
+            do_sync_get(`/Plan/Close/${plan.name}` , `关闭计划任务:${plan.description}`);
         },
         format_frame(frames) {
             if (!frames || frames.length === 0)
@@ -107,7 +107,7 @@
         onmessage: function (item) {
             for (var idx = 0; idx < plans.length; idx++) {
                 var old = plans[idx];
-                if (old.plan_id === item.plan_id) {
+                if (old.name === item.name) {
                     if (item.plan_state === 8) {
                         vm.$notify({
                             title: "消息推送",

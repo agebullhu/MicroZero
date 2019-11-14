@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 调用计数
         /// </summary>
-        public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError, WaitCount;
+        public int CallCount, ErrorCount, SuccessCount, RecvCount, SendCount, SendError;
+
+
 
         private readonly string _typeName;
         /// <summary>
@@ -66,7 +69,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns>返回False表明需要重启</returns>
         protected sealed override bool Loop(/*CancellationToken token*/)
         {
-            WaitCount = 0;
+            _tasks.Clear();
             option = GetApiOption();
             int max = 1;
             switch (option.SpeedLimitModel)
@@ -192,7 +195,7 @@ namespace Agebull.MicroZero.ZeroApis
             {
                 if (!pool.Poll())
                 {
-                    CheckTask();
+                    Task.Factory.StartNew(CheckTask);
                     //cnt += pool.TimeoutMs;
                     OnLoopIdle();
                     //if (CanLoop && cnt >= 2000)
@@ -202,8 +205,9 @@ namespace Agebull.MicroZero.ZeroApis
                     //}
                     return false;
                 }
+
                 if (WaitCount % 512 == 511)
-                    CheckTask();
+                    Task.Factory.StartNew(CheckTask);
                 if (pool.CheckIn(1, out var message)) //对Result端口的返回的丢弃处理
                 {
                     message.Dispose();
@@ -242,36 +246,61 @@ namespace Agebull.MicroZero.ZeroApis
 
             public DateTime Start { get; set; }
         }
+        /// <summary>
+        /// 当前活跃任务
+        /// </summary>
+        private readonly ConcurrentDictionary<long, ApiTaskItem> _tasks = new ConcurrentDictionary<long, ApiTaskItem>();
+        /// <summary>
+        /// 总等待数
+        /// </summary>
+        public int WaitCount => _tasks.Count;
 
-        private readonly Dictionary<long, ApiTaskItem> _tasks = new Dictionary<long, ApiTaskItem>();
-
+        /// <summary>
+        /// 检查异常任务的守卫
+        /// </summary>
+        private int _inCheckTask;
         /// <summary>
         /// 检查超时任务
         /// </summary>
         /// <returns></returns>
         private void CheckTask()
         {
-            if (_tasks.Count == 0)
-                return;
-            LogRecorderX.SystemLog($"【CheckTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
-            foreach (var item in _tasks.Values.ToArray())
+            try
             {
-                try
+                if (_tasks.Count == 0)
+                    return;
+                if (Interlocked.Increment(ref _inCheckTask) != 0)
+                    return;
+                var array = _tasks.Values.ToArray();
+                LogRecorderX.SystemLog(
+                    $"【CheckTask|{StationName}({array.Length})】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{SuccessCount},RecvCount:{RecvCount},SendCount:{SendCount},SendError:{SendError},WaitCount:{WaitCount}");
+                foreach (var item in array)
                 {
-                    if (item.Task.IsCanceled || item.Task.IsCompleted || item.Task.IsFaulted)
+                    try
                     {
-                        _tasks.Remove(item.TaskId);
+                        if (item.Task.IsCanceled || item.Task.IsCompleted || item.Task.IsFaulted)
+                        {
+                            _tasks.TryRemove(item.TaskId, out _);
+                        }
+                        else if ((DateTime.Now - item.Start).TotalSeconds >= option.ApiTimeout)
+                        {
+                            KillTask(item);
+                        }
                     }
-                    else if ((DateTime.Now - item.Start).TotalSeconds >= option.ApiTimeout)
+                    catch (Exception e)
                     {
-                        KillTask(item);
+                        Console.WriteLine($"CheckTask|{item.TaskId}:\r\n{e}");
+                        _tasks.TryRemove(item.TaskId, out _);
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    _tasks.Remove(item.TaskId);
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"CheckTask:\r\n{ex}");
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _inCheckTask);
             }
         }
 
@@ -281,21 +310,33 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         private void CloseTask()
         {
-            LogRecorderX.SystemLog($"【CloseTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
-            foreach (var item in _tasks.Values.ToArray())
+            if (_tasks.Count == 0)
+                return;
+            try
             {
-                try
+                LogRecorderX.SystemLog($"【CloseTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
+                foreach (var item in _tasks.Values.ToArray())
                 {
-                    //强行中断线程
-                    if (!item.Task.IsCanceled && !item.Task.IsCompleted && !item.Task.IsFaulted)
-                        KillTask(item);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
+                    try
+                    {
+                        //强行中断线程
+                        if (!item.Task.IsCanceled && !item.Task.IsCompleted && !item.Task.IsFaulted)
+                            KillTask(item);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"CloseTask Item:{e}");
+                    }
                 }
             }
-            _tasks.Clear();
+            catch (Exception e)
+            {
+                Console.WriteLine($"CloseTask:{e}");
+            }
+            finally
+            {
+                _tasks.Clear();
+            }
         }
 
         /// <summary>
@@ -312,11 +353,11 @@ namespace Agebull.MicroZero.ZeroApis
 {item.Api.Context}");
             try
             {
-                _tasks.Remove(item.TaskId);
+                _tasks.TryRemove(item.TaskId, out _);
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorderX.Exception(e, "KillTask Remove");
                 info.Append($"Remove : {e.Message}");
             }
             try
@@ -326,7 +367,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorderX.Exception(e, "KillTask Interrupt");
                 info.Append($"Interrupt : {e.Message}");
             }
 
@@ -336,13 +377,37 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorderX.Exception(e, "KillTask Dispose");
                 info.Append($"Dispose : {e.Message}");
             }
             LogRecorderX.Error(info.ToString());
-            Interlocked.Decrement(ref WaitCount);
-
+            try
+            {
+                SendResult(item.Socket, new ZMessage
+                {
+                    new ZFrame(item.Api.Caller),
+                    new ZFrame(TimeOutKillFrame),
+                    new ZFrame(item.Api.Requester),
+                    new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                });
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e, "KillTask SendResult");
+                info.Append($"SendResult : {e.Message}");
+            }
+            Console.WriteLine(info);
+            LogRecorderX.Error(info.ToString());
         }
+
+        private static readonly byte[] TimeOutKillFrame = new byte[]
+        {
+            2,
+            (byte) ZeroOperatorStateType.TimeOut,
+            ZeroFrameType.Requester,
+            ZeroFrameType.SerivceKey,
+            ZeroFrameType.ResultEnd
+        };
 
         #endregion
 
@@ -372,14 +437,18 @@ namespace Agebull.MicroZero.ZeroApis
 
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
+                LogRecorderX.SystemLog("Unavailable");
                 item.Result = ApiResultIoc.UnavailableJson;
                 OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
                 return;
             }
 
+            //if (WaitCount == ZeroApplication.Config.MaxWait)
+            //    LogRecorderX.SystemLog("Unavailable");
+
             arg.Task = new Task(ExecuteAsync, arg, TaskCreationOptions.PreferFairness | TaskCreationOptions.DenyChildAttach);
             arg.TaskId = arg.Task.Id;
-            _tasks.Add(arg.Task.Id, arg);
+            _tasks.TryAdd(arg.Task.Id, arg);
             arg.Task.Start();
         }
 
@@ -390,7 +459,6 @@ namespace Agebull.MicroZero.ZeroApis
 
         private void Execute(ApiTaskItem arg)
         {
-            Interlocked.Increment(ref WaitCount);
             arg.Thread = Thread.CurrentThread;
             try
             {
@@ -406,9 +474,8 @@ namespace Agebull.MicroZero.ZeroApis
             }
             finally
             {
-                Interlocked.Decrement(ref WaitCount);
                 if (arg.TaskId > 0)
-                    _tasks.Remove(arg.TaskId);
+                    _tasks.TryRemove(arg.TaskId, out _);
             }
         }
 
@@ -730,6 +797,7 @@ namespace Agebull.MicroZero.ZeroApis
                 new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
             });
         }
+
 
         /// <summary>
         /// 发送返回值 

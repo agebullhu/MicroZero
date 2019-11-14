@@ -1,6 +1,5 @@
 #include "../stdafx.h"
 #include "api_station.h"
-#include "inner_socket.h"
 
 namespace agebull
 {
@@ -43,10 +42,10 @@ namespace agebull
 		/**
 		* \brief 工作开始 : 处理请求数据
 		*/
-		inline void api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
+		inline void api_station::job_start(const zmq_handler socket, vector<shared_char>& list, const bool inner, const bool old)
 		{
 			trace(1, list, nullptr);
-			shared_char caller = list[0];
+			const shared_char caller = list[0];
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];
@@ -170,7 +169,7 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			auto caller = list[0];
+			const auto caller = list[0];
 			list.erase(list.begin());
 			if (list[0][0] == zero_def::name::head::plan && station_type_ != zero_def::station_type::plan)
 			{
@@ -183,7 +182,7 @@ namespace agebull
 			else
 			{
 				list.push_back(caller);
-				uchar tag = list[1].tag();
+				const uchar tag = list[1].tag();
 				list[1].append_frame(zero_def::frame::responser);
 				list[1].tag(tag);
 				if (list[0][0] == zero_def::name::head::inproc)

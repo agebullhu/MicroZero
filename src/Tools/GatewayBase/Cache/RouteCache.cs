@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroApis;
 
 namespace MicroZero.Http.Gateway
@@ -16,17 +18,14 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     缓存数据
         /// </summary>
-        internal static Dictionary<string, CacheData> Cache = new Dictionary<string, CacheData>(StringComparer.OrdinalIgnoreCase);
+        internal static ConcurrentDictionary<string, CacheData> Cache = new ConcurrentDictionary<string, CacheData>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         ///     刷新
         /// </summary>
         internal static void Flush()
         {
-            lock (Cache)
-            {
-                Cache.Clear();
-            }
+            Cache.Clear();
         }
 
         /// <summary>
@@ -57,31 +56,29 @@ namespace MicroZero.Http.Gateway
                     kb.Append(data.HttpContext);
                 }
             }
-            CacheData cacheData;
+
             data.CacheKey = kb.ToString();
-            lock (Cache)
+            if (!Cache.TryGetValue(data.CacheKey, out var cacheData))
             {
-                if (!Cache.TryGetValue(data.CacheKey, out cacheData))
+                Cache.TryAdd(data.CacheKey, new CacheData
                 {
-                    Cache.Add(data.CacheKey, new CacheData
-                    {
-                        IsLoading = 1,
-                        Content = ApiResultIoc.NoReadyJson
-                    });
-                    return false;
-                }
+                    IsLoading = 1,
+                    Content = ApiResultIoc.NoReadyJson
+                });
+                LogRecorderX.MonitorTrace($"Cache Load {data.CacheKey}");
+                return false;
             }
-            if (cacheData.Success)
+            if (cacheData.Success && (cacheData.UpdateTime > DateTime.Now || cacheData.IsLoading > 0))
             {
-                if (cacheData.UpdateTime > DateTime.Now)
-                {
-                    data.ResultMessage = cacheData.Content;
-                    return true;
-                }
+                data.ResultMessage = cacheData.Content;
+                LogRecorderX.MonitorTrace($"Cache by {data.CacheKey}");
+                return true;
             }
             //一个载入，其它的等待调用成功
             if (Interlocked.Increment(ref cacheData.IsLoading) == 0)
             {
+                LogRecorderX.MonitorTrace($"Cache update {data.CacheKey}");
+                data.CacheKey = null;
                 return false;
             }
 
@@ -90,14 +87,14 @@ namespace MicroZero.Http.Gateway
             while (++cnt < 10)
             {
                 Thread.Sleep(50);
-                lock (Cache)
-                {
-                    if (!Cache.TryGetValue(data.CacheKey, out var newData) || cacheData == newData)
-                        continue;
-                }
+                if (!Cache.TryGetValue(data.CacheKey, out var newData) || cacheData == newData)
+                    continue;
+                LogRecorderX.MonitorTrace($"Cache wait {data.CacheKey}");
                 data.ResultMessage = cacheData.Content;
                 return true;
             }
+            LogRecorderX.MonitorTrace($"Cache Failed {data.CacheKey}");
+            data.CacheKey = null;
             return false;
         }
 
@@ -109,20 +106,16 @@ namespace MicroZero.Http.Gateway
         {
             if (data.CacheSetting == null || data.CacheKey == null)
                 return;
-            if (!data.IsSucceed && !data.CacheSetting.Feature.HasFlag(CacheFeature.NetError))
+            if (data.IsSucceed || data.CacheSetting.Feature.HasFlag(CacheFeature.NetError))
             {
-                return;
-            }
-            CacheData cacheData = new CacheData
-            {
-                Content = data.ResultMessage,
-                Success = data.IsSucceed,
-                UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
-            };
-
-            lock (Cache)
-            {
-                Cache[data.CacheKey] = cacheData;
+                Cache[data.CacheKey]= new CacheData
+                {
+                    Content = data.ResultMessage,
+                    Success = data.IsSucceed,
+                    IsLoading = 0,
+                    UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
+                };
+                LogRecorderX.MonitorTrace($"Cache succeed {data.CacheKey}");
             }
         }
 

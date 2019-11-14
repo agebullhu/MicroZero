@@ -173,29 +173,23 @@ namespace MicroZero.Http.Gateway
                 Token = Token,
                 RequestType = RequestType.Http,
                 ArgumentType = ArgumentType.Json,
-                Ip = context.Connection.RemoteIpAddress?.ToString(),
-                Port = context.Connection.RemotePort.ToString(),
+                Ip = request.Headers["X-Forwarded-For"].FirstOrDefault() ?? request.Headers["X-Real-IP"].FirstOrDefault() ?? context.Connection.RemoteIpAddress?.ToString(),
+                Port = request.Headers["X-Real-Port"].FirstOrDefault() ?? context.Connection.RemotePort.ToString(),
             });
             return ok && Read(context);
         }
 
         private string CheckHeaders(HttpContext context, HttpRequest request)
         {
-            var auth = request.Headers["AUTHORIZATION"];
-            if (auth.Count == 0)
+            Token = request.Headers["AUTHORIZATION"].LastOrDefault()?
+                .Trim()
+                .Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                .Last()
+                ?? context.Request.Query["token"];
+            if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
             {
-                Token = context.Request.Query["token"];
+                Token = null;
             }
-            else
-            {
-                var words = auth[auth.Count - 1].Split(new[] {' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-                Token = words.Length == 1 ? words[0] : words[1];
-                if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
-                {
-                    Token = context.Request.Query["token"];
-                }
-            }
-
             return null;
             //string userAgent = null;
             //foreach (var head in request.Headers)

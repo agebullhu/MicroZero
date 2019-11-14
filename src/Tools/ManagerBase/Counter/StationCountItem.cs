@@ -147,6 +147,18 @@ namespace MicroZero.Http.Route
         [JsonProperty] public long MinQps { get; set; }
 
         /// <summary>
+        ///     请求入
+        /// </summary>
+        [DataMember]
+        public long TpsHungry { get; set; }
+
+        /// <summary>
+        ///     请求入
+        /// </summary>
+        [DataMember]
+        public long QpsHungry { get; set; }
+
+        /// <summary>
         ///     设置计数值
         /// </summary>
         public void CheckValue(StationCountItem src)

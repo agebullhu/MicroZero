@@ -1162,11 +1162,6 @@
             调用计数
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
-            <summary>
-            调用计数
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
             <summary>
             构造
@@ -1212,6 +1207,21 @@
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.DoPoll(System.String,System.Byte[],System.Boolean)">
             <summary>
             轮询
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase._tasks">
+            <summary>
+            当前活跃任务
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
+            <summary>
+            总等待数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase._inCheckTask">
+            <summary>
+            检查异常任务的守卫
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">

@@ -38,7 +38,7 @@ namespace MicroZero.Http.Route
 
         #endregion
 
-        public static Dictionary<long, ZeroPlan> Plans = new Dictionary<long, ZeroPlan>();
+        public static Dictionary<string, ZeroPlan> Plans = new Dictionary<string, ZeroPlan>();
 
         public static void OnPlanEvent(ZeroNetEventType eventType, ZeroPlan plan)
         {
@@ -57,14 +57,14 @@ namespace MicroZero.Http.Route
         }
         public static void RemovePlan(ZeroPlan plan)
         {
-            if (!Plans.TryGetValue(plan.plan_id, out _)) return;
-            Plans.Remove(plan.plan_id);
+            if (!Plans.TryGetValue(plan.name, out _)) return;
+            Plans.Remove(plan.name);
             plan.plan_state = plan_message_state.remove;
             WebSocketNotify.Publish("plan_notify", "remove", JsonHelper.SerializeObject(plan));
         }
         public static void UpdatePlan(ZeroPlan plan)
         {
-            if (!Plans.TryGetValue(plan.plan_id, out var old)) return;
+            if (!Plans.TryGetValue(plan.name, out var old)) return;
             old.exec_time = plan.exec_time;
             old.exec_state = plan.exec_state;
             old.plan_state = plan.plan_state;
@@ -77,13 +77,13 @@ namespace MicroZero.Http.Route
 
         public static void SyncPlan(ZeroPlan plan)
         {
-            if (Plans.ContainsKey(plan.plan_id))
+            if (Plans.ContainsKey(plan.name))
             {
-                Plans[plan.plan_id] = plan;
+                Plans[plan.name] = plan;
             }
             else
             {
-                Plans.Add(plan.plan_id, plan);
+                Plans.Add(plan.name, plan);
             }
 
             WebSocketNotify.Publish("plan_notify", "add", JsonHelper.SerializeObject(plan));
@@ -92,26 +92,18 @@ namespace MicroZero.Http.Route
 
         public ApiResult Pause(string id)
         {
-            if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
+            if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = CallCommand("pause", $"msg:{plan.station}:{plan.plan_id:x}");
-            if (result.State != ZeroOperatorStateType.Ok)
-            {
-                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            }
-            return ApiResult.Succees();
+            var result = CallCommand("pause", id);
+            return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
         public ApiResult Reset(string id)
         {
-            if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
+            if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = CallCommand("reset", $"msg:{plan.station}:{plan.plan_id:x}");
-            if (result.State != ZeroOperatorStateType.Ok)
-            {
-                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            }
-            return ApiResult.Succees();
+            var result = CallCommand("reset", id);
+            return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
 
@@ -137,27 +129,19 @@ namespace MicroZero.Http.Route
 
         public ApiResult Remove(string id)
         {
-            if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
+            if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = CallCommand("remove", $"msg:{plan.station}:{plan.plan_id:x}");
-            if (result.State != ZeroOperatorStateType.Ok)
-            {
-                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            }
-            return ApiResult.Succees();
+            var result = CallCommand("remove", id);
+            return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
 
         public ApiResult Close(string id)
         {
-            if (!long.TryParse(id, out var pid) || !Plans.TryGetValue(pid, out var plan))
+            if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = CallCommand("close", $"msg:{plan.station}:{plan.plan_id:x}");
-            if (result.State != ZeroOperatorStateType.Ok)
-            {
-                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            }
-            return ApiResult.Succees();
+            var result = CallCommand("close", id);
+            return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
         public IApiResult History()
         {
@@ -328,7 +312,8 @@ namespace MicroZero.Http.Route
                 {
                     case ZeroStationType.Api:
                     case ZeroStationType.Vote:
-                        success = socket.SendTo(_planApiDescription,
+                        success = socket.SendTo(clientPlan.station.ToZeroBytes(),
+                            _planApiDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
@@ -337,7 +322,8 @@ namespace MicroZero.Http.Route
                         break;
                     //Manage
                     case ZeroStationType.Notify:
-                        success = socket.SendTo(_planPubDescription,
+                        success = socket.SendTo(clientPlan.station.ToZeroBytes(),
+                            _planPubDescription,
                             plan.ToZeroBytes(),
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
@@ -354,7 +340,8 @@ namespace MicroZero.Http.Route
                         if (config.IsSystem)
                             return ApiResult.Error(ErrorCode.LogicalError, "不允许对内置站点设置计划");
 
-                        success = socket.SendTo(commandDescription,
+                        success = socket.SendTo(clientPlan.station.ToZeroBytes(),
+                            commandDescription,
                             plan.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),

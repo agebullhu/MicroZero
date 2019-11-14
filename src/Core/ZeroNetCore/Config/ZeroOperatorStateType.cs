@@ -72,10 +72,12 @@ namespace Agebull.MicroZero
         /// 逻辑BUG
         /// </summary>
         Bug = 0xD0,
+
         /// <summary>
         /// 数据帧错误
         /// </summary>
         FrameInvalid = 0xD1,
+
         /// <summary>
         /// 参数错误
         /// </summary>
