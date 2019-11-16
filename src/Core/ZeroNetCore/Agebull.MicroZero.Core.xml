@@ -1088,6 +1088,11 @@
             调用的内容
             </summary>
         </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.CancellationToken">
+            <summary>
+            取消停牌
+            </summary>
+        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.ScopeResource">
             <summary>
             范围资源
@@ -1217,11 +1222,6 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
             <summary>
             总等待数
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase._inCheckTask">
-            <summary>
-            检查异常任务的守卫
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">
@@ -2035,6 +2035,203 @@
             <param name="message"></param>
             <returns></returns>
         </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.ApiChecker">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ApiChecker.RunCheck">
+            <summary>
+            执行检查
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.SystemManager">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.CreateInstance">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.GetAddress">
+            <summary>
+            地址错误的情况
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.SystemManager.Instance">
+            <summary>
+            单例
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.PingCenter">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartLeft">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartReady">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartJoin">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.Heartbeat">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryInstall(System.String,System.String)">
+            <summary>
+            尝试安装站点
+            </summary>
+            <param name="station"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryStart(System.String)">
+            <summary>
+            尝试安装站点
+            </summary>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.UploadDocument">
+            <summary>
+                上传文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadDocument(System.String,Agebull.MicroZero.ApiDocuments.StationDocument@)">
+            <summary>
+                下载文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadAllConfig">
+            <summary>
+                读取配置
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadConfig(System.String)">
+            <summary>
+                读取配置
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.IsDisposed">
+            <summary>
+            是否已析构
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.worker_sound_off">
+            <summary>
+            站点心跳
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.station_trends(System.String,System.String)">
+            <summary>
+            站点动态
+            </summary>
+            <param name="name"></param>
+            <param name="content"></param>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.IsDisposed">
+            <summary>
+            是否已析构
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.WaitMe">
+            <summary>
+            等待正常结束
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.Monitor">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.StateMachine">
+            <summary>
+            状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.OnApplicationStateChanged">
+            <summary>
+            状态变更同步状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
         <member name="T:Agebull.MicroZero.IZeroObject">
             <summary>
             站点连接池
@@ -2421,193 +2618,6 @@
         <member name="F:Agebull.MicroZero.SpeedLimitType.WaitCount">
             <summary>
             按等待数限制
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.SystemManager">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.CreateInstance">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.GetAddress">
-            <summary>
-            地址错误的情况
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.SystemManager.Instance">
-            <summary>
-            单例
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.PingCenter">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartLeft">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartReady">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartJoin">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.Heartbeat">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryInstall(System.String,System.String)">
-            <summary>
-            尝试安装站点
-            </summary>
-            <param name="station"></param>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryStart(System.String)">
-            <summary>
-            尝试安装站点
-            </summary>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.UploadDocument">
-            <summary>
-                上传文档
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadDocument(System.String,Agebull.MicroZero.ApiDocuments.StationDocument@)">
-            <summary>
-                下载文档
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadAllConfig">
-            <summary>
-                读取配置
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadConfig(System.String)">
-            <summary>
-                读取配置
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.IsDisposed">
-            <summary>
-            是否已析构
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.worker_sound_off">
-            <summary>
-            站点心跳
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.station_trends(System.String,System.String)">
-            <summary>
-            站点动态
-            </summary>
-            <param name="name"></param>
-            <param name="content"></param>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.IsDisposed">
-            <summary>
-            是否已析构
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.WaitMe">
-            <summary>
-            等待正常结束
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.Monitor">
-            <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.StateMachine">
-            <summary>
-            状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.OnApplicationStateChanged">
-            <summary>
-            状态变更同步状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
-            <summary>
-                进入系统侦听
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroWorkModel">

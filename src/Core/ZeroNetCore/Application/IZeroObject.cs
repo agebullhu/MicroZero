@@ -29,7 +29,7 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     配置状态
         /// </summary>
-        StationStateType ConfigState { get;}
+        StationStateType ConfigState { get; }
 
         /// <summary>
         /// 系统初始化时调用
@@ -83,7 +83,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 已注册的对象
         /// </summary>
-        private static readonly Dictionary<string, IZeroObject> ZeroObjects = new Dictionary<string, IZeroObject>();
+        internal static readonly Dictionary<string, IZeroObject> ZeroObjects = new Dictionary<string, IZeroObject>();
 
         /// <summary>
         ///     注册单例对象
@@ -111,7 +111,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 活动对象(执行中)
         /// </summary>
-        private static readonly List<IZeroObject> ActiveObjects = new List<IZeroObject>();
+        internal static readonly List<IZeroObject> ActiveObjects = new List<IZeroObject>();
 
         /// <summary>
         /// 活动对象(执行中)
@@ -277,7 +277,7 @@ namespace Agebull.MicroZero
                 {
                     ZeroDiscover discover = new ZeroDiscover
                     {
-                        StationName= obj.StationName
+                        StationName = obj.StationName
                     };
                     discover.FindApies(obj.GetType());
                     //ZeroDiscover.DiscoverApiDocument(obj.GetType());
@@ -365,7 +365,7 @@ namespace Agebull.MicroZero
                 return;//系统太忙，跳过处理
             using (scope)
             {
-                foreach (var obj in ZeroObjects.Values.Where(p=>p.StationName == config.StationName).ToArray())
+                foreach (var obj in ZeroObjects.Values.Where(p => p.StationName == config.StationName).ToArray())
                 {
                     try
                     {

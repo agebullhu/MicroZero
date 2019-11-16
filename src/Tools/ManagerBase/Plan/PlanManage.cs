@@ -7,6 +7,7 @@ using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using WebMonitor;
 using Agebull.MicroZero.ZeroApis;
+using System.Text;
 
 namespace MicroZero.Http.Route
 {
@@ -109,16 +110,16 @@ namespace MicroZero.Http.Route
 
         public ApiResult Clear()
         {
-            int cnt = 0;
+            StringBuilder keys = new StringBuilder();
             foreach (var plan in Plans.Where(p => p.Value.plan_state == plan_message_state.close).ToArray())
             {
-                var result = CallCommand("remove", $"msg:{plan.Value.station}:{plan.Value.plan_id:x}");
+                var result = CallCommand("remove", plan.Value.name);
                 if (result.State != ZeroOperatorStateType.Ok)
                     continue;
                 Plans.Remove(plan.Key);
-                cnt++;
+                keys.AppendLine(plan.Value.name);
             }
-            return ApiResult.Succees(cnt);
+            return ApiResult.Succees(keys.ToString());
         }
 
 

@@ -32,6 +32,29 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="F:MicroZero.Http.Gateway.IoHandler.Description">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.EndZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.ApiCollect(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+                开始计数
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:MicroZero.Http.Gateway.IRouter">
             <summary>
                 调用映射核心类
@@ -1134,6 +1157,16 @@
         <member name="P:MicroZero.Http.Gateway.SystemConfig.ContextAddr">
             <summary>
                 内容页地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableLinkTrace">
+            <summary>
+            开启链路跟踪
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableApiCollect">
+            <summary>
+            开启API统计
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.ResultChecker">

@@ -205,7 +205,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 能不能循环处理
         /// </summary>
-        protected bool CanLoop => ZeroApplication.CanDo && 
+        internal protected bool CanLoop => ZeroApplication.CanDo && 
                                   ConfigState == StationStateType.Run &&
                                   (RealState == StationState.BeginRun || RealState == StationState.Run) &&
                                   RunTaskCancel != null && !RunTaskCancel.IsCancellationRequested;

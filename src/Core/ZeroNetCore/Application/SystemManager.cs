@@ -2,10 +2,12 @@ using Agebull.MicroZero.ApiDocuments;
 using Newtonsoft.Json;
 using System;
 using Agebull.Common.Context;
-
+using System.Linq;
+using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero.ZeroManagemant
 {
+
     /// <summary>
     /// 系统侦听器
     /// </summary>
@@ -248,7 +250,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 return null;
             }
 
-            if (result.TryGetString(ZeroFrameType.Status,out var json) || json[0] != '{')
+            if (result.TryGetString(ZeroFrameType.Status, out var json) || json[0] != '{')
             {
                 ZeroTrace.WriteError("LoadConfig", stationName, "not a json", json);
                 return null;

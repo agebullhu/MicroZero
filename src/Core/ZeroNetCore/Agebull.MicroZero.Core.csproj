@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.21</Version>
+    <Version>1.4.10.25</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

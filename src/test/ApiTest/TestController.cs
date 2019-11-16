@@ -1,5 +1,6 @@
 ﻿using Agebull.MicroZero.ZeroApis;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ApiTest
 {
@@ -41,6 +42,7 @@ namespace ApiTest
         [Route("v1/test")]
         public ApiResult<TestItems> OnTextRequest()
         {
+            Thread.Sleep(61000);
             return new ApiResult<TestItems>
             {
                 Success = true

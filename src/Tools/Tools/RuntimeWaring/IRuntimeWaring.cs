@@ -10,7 +10,8 @@ namespace Agebull.MicroZero.Helpers
         /// </summary>
         /// <param name="host"></param>
         /// <param name="api"></param>
+        /// <param name="arg"></param>
         /// <param name="message"></param>
-        void Waring(string host, string api, string message);
+        void Waring(string host, string api, string arg, string message);
     }
 }

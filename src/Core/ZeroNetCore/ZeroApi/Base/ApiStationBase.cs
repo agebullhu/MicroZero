@@ -74,6 +74,15 @@ namespace Agebull.MicroZero.ZeroApis
             int max = 1;
             switch (option.SpeedLimitModel)
             {
+                case SpeedLimitType.WaitCount:
+                    _processSemaphore = new SemaphoreSlim(0, max);
+                    ZeroTrace.SystemLog(StationName, "WaitCount", ZeroApplication.Config.MaxWait);
+                    new Thread(RunWaitCount)
+                    {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Highest
+                    }.Start();
+                    break;
                 case SpeedLimitType.ThreadCount:
                     max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
                     if (max < 1)
@@ -86,15 +95,6 @@ namespace Agebull.MicroZero.ZeroApis
                             IsBackground = true,
                             Priority = ThreadPriority.Highest
                         }.Start(idx);
-                    break;
-                case SpeedLimitType.WaitCount:
-                    _processSemaphore = new SemaphoreSlim(0, max);
-                    ZeroTrace.SystemLog(StationName, "WaitCount", ZeroApplication.Config.MaxWait);
-                    new Thread(RunWaitCount)
-                    {
-                        IsBackground = true,
-                        Priority = ThreadPriority.Highest
-                    }.Start();
                     break;
                 default:
                     _processSemaphore = new SemaphoreSlim(0, max);
@@ -188,14 +188,12 @@ namespace Agebull.MicroZero.ZeroApis
             _processSemaphore?.Release();
         }
 
-
         private bool DoPollMessage(bool checkWait, IZmqPool pool, ZSocket socket)
         {
             try
             {
                 if (!pool.Poll())
                 {
-                    Task.Factory.StartNew(CheckTask);
                     //cnt += pool.TimeoutMs;
                     OnLoopIdle();
                     //if (CanLoop && cnt >= 2000)
@@ -206,8 +204,6 @@ namespace Agebull.MicroZero.ZeroApis
                     return false;
                 }
 
-                if (WaitCount % 512 == 511)
-                    Task.Factory.StartNew(CheckTask);
                 if (pool.CheckIn(1, out var message)) //对Result端口的返回的丢弃处理
                 {
                     message.Dispose();
@@ -246,34 +242,29 @@ namespace Agebull.MicroZero.ZeroApis
 
             public DateTime Start { get; set; }
         }
+
         /// <summary>
         /// 当前活跃任务
         /// </summary>
         private readonly ConcurrentDictionary<long, ApiTaskItem> _tasks = new ConcurrentDictionary<long, ApiTaskItem>();
+
         /// <summary>
         /// 总等待数
         /// </summary>
         public int WaitCount => _tasks.Count;
 
         /// <summary>
-        /// 检查异常任务的守卫
-        /// </summary>
-        private int _inCheckTask;
-        /// <summary>
         /// 检查超时任务
         /// </summary>
         /// <returns></returns>
-        private void CheckTask()
+        internal void CheckTask()
         {
             try
             {
                 if (_tasks.Count == 0)
                     return;
-                if (Interlocked.Increment(ref _inCheckTask) != 0)
-                    return;
                 var array = _tasks.Values.ToArray();
-                LogRecorderX.SystemLog(
-                    $"【CheckTask|{StationName}({array.Length})】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{SuccessCount},RecvCount:{RecvCount},SendCount:{SendCount},SendError:{SendError},WaitCount:{WaitCount}");
+                LogRecorderX.SystemLog($"【CheckTask|{StationName}({array.Length})】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{SuccessCount},RecvCount:{RecvCount},SendCount:{SendCount},SendError:{SendError},WaitCount:{WaitCount}");
                 foreach (var item in array)
                 {
                     try
@@ -297,10 +288,6 @@ namespace Agebull.MicroZero.ZeroApis
             catch (Exception ex)
             {
                 Console.WriteLine($"CheckTask:\r\n{ex}");
-            }
-            finally
-            {
-                Interlocked.Decrement(ref _inCheckTask);
             }
         }
 
@@ -345,6 +332,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="item"></param>
         private void KillTask(ApiTaskItem item)
         {
+            if (item.Executer?.CancellationToken == null)
+                return;
+            item.Executer.CancellationToken.Cancel(false);
             var info = new StringBuilder();
             info.Append($@"【KillTask|{StationName}】 ({item.Start}|{DateTime.Now})
 {item.Api.ApiName}
@@ -373,7 +363,7 @@ namespace Agebull.MicroZero.ZeroApis
 
             try
             {
-                item.Executer?.ScopeResource?.Dispose();
+                item.Executer.ScopeResource?.Dispose();
             }
             catch (Exception e)
             {
@@ -383,7 +373,8 @@ namespace Agebull.MicroZero.ZeroApis
             LogRecorderX.Error(info.ToString());
             try
             {
-                SendResult(item.Socket, new ZMessage
+                if (item.Executer?.CancellationToken != null)
+                    SendResult(item.Socket, new ZMessage
                 {
                     new ZFrame(item.Api.Caller),
                     new ZFrame(TimeOutKillFrame),
@@ -447,9 +438,11 @@ namespace Agebull.MicroZero.ZeroApis
             //    LogRecorderX.SystemLog("Unavailable");
 
             arg.Task = new Task(ExecuteAsync, arg, TaskCreationOptions.PreferFairness | TaskCreationOptions.DenyChildAttach);
+
             arg.TaskId = arg.Task.Id;
             _tasks.TryAdd(arg.Task.Id, arg);
             arg.Task.Start();
+
         }
 
         private void ExecuteAsync(object arg)

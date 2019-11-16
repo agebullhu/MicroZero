@@ -154,13 +154,19 @@ namespace Agebull.MicroZero
             var testContext = IocHelper.Create<GlobalContext>();
             if (testContext == null)
                 IocHelper.AddScoped<GlobalContext, GlobalContext>();
+
+            ThreadPool.GetMaxThreads(out var worker, out var io);
+            ThreadPool.SetMaxThreads(worker, 4096);
+            //ThreadPool.GetAvailableThreads(out worker, out io);
+            ZeroTrace.SystemLog($"   Worker threads: {worker:N0}Asynchronous I / O threads: { io:N0}");
+
             CheckConfig();
             InitializeDependency();
             ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
             ZeroCommandExtend.ServiceKeyBytes = GlobalContext.ServiceKey.ToZeroBytes();
             ShowOptionInfo();
         }
-
+        
 
         /// <summary>
         ///     设置LogRecorderX的依赖属性(内部使用)
@@ -282,11 +288,19 @@ namespace Agebull.MicroZero
                 ApplicationState = StationState.Start;
                 success = JoinCenter();
                 if (WorkModel == ZeroWorkModel.Service)
+                {
                     new Thread(SystemMonitor.Monitor)
                     {
                         IsBackground = true,
                         Priority = ThreadPriority.Lowest
                     }.Start();
+
+                    new Thread(ApiChecker.RunCheck)
+                    {
+                        IsBackground = true,
+                        Priority = ThreadPriority.Lowest
+                    }.Start();
+                }
             }
             SystemMonitor.WaitMe();
             return success;

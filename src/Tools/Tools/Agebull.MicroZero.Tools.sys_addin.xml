@@ -206,11 +206,6 @@
             性能计数器
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IApiCounter.IsEnable">
-            <summary>
-            是否启用
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.IApiCounter.Count(Agebull.MicroZero.ZeroApis.CountData)">
             <summary>
             统计
@@ -272,12 +267,13 @@
             运行时警告
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.Helpers.IRuntimeWaring.Waring(System.String,System.String,System.String)">
+        <member name="M:Agebull.MicroZero.Helpers.IRuntimeWaring.Waring(System.String,System.String,System.String,System.String)">
             <summary>
             运行时警告
             </summary>
             <param name="host"></param>
             <param name="api"></param>
+            <param name="arg"></param>
             <param name="message"></param>
         </member>
         <member name="T:Agebull.MicroZero.Helpers.WaringItem">

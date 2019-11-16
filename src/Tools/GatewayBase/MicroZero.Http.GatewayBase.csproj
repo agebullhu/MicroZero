@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <Description>MicroZero的HttpGateway基础库,以便打包及扩展</Description>
@@ -25,7 +26,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
     <Product>MicroZero.Http.GatewayBase</Product>
-    <Version>1.4.10.27</Version>
+    <Version>1.4.10.28</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>MicroZero.Http.GatewayBase.xml</DocumentationFile>

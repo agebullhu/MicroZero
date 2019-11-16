@@ -64,5 +64,19 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [JsonProperty]
         public string ContextAddr { get; set; }
+
+
+
+        /// <summary>
+        /// 开启链路跟踪
+        /// </summary>
+        [JsonProperty]
+        public bool EnableLinkTrace { get; set; }
+
+        /// <summary>
+        /// 开启API统计
+        /// </summary>
+        [JsonProperty]
+        public bool EnableApiCollect { get; set; }
     }
 }

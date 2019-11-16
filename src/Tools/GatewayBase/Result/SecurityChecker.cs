@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Linq;
+using Agebull.MicroZero.Helpers;
 
 namespace MicroZero.Http.Gateway
 {
@@ -36,7 +37,7 @@ namespace MicroZero.Http.Gateway
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
             {
-                //IocHelper.Create<IRuntimeWaring>().Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                 data.UserState = UserOperatorStateType.FormalError;
                 data.ZeroState = ZeroOperatorStateType.FrameInvalid;
                 return false;

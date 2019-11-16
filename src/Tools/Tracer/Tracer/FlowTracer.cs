@@ -26,8 +26,8 @@ namespace MicroZero.Http.Route
         /// </summary>
         public FlowTracer()
         {
-            Name = "FlowTracer";
             StationName = "TraceDispatcher";
+            Name = "FlowTracer";
             IsRealModel = true;
             _timer = new Timer(1000)
             {
@@ -41,11 +41,15 @@ namespace MicroZero.Http.Route
 
         #region 数据处理
 
-
+        /// <summary>
+        /// 流程
+        /// </summary>
         private readonly Dictionary<string, FlowRoot> _flows = new Dictionary<string, FlowRoot>();
 
-
-        private readonly SortedDictionary<long, List<string>> _flow2 = new SortedDictionary<long, List<string>>();
+        /// <summary>
+        /// 单位时间内的请求ID，用于过期删除
+        /// </summary>
+        private readonly SortedDictionary<long, List<string>> _timeRequestIds = new SortedDictionary<long, List<string>>();
 
         /// <summary>
         /// 执行命令
@@ -65,12 +69,17 @@ namespace MicroZero.Http.Route
                 if (doc != null && doc.Aips.TryGetValue(title, out var api))
                     title = api.Caption;
                 //Console.WriteLine($"{args.RequestId}({args.CallId}>{args.GlobalId}) : {args.Tag}/{args.State} : {args.Station}/{args.CommandOrSubTitle}");
-                if (!_flows.TryGetValue(args.RequestId, out var root))
+                if (_flows.TryGetValue(args.RequestId, out var root))
+                {
+                    Handle(args, root);
+                    SendToWebSocket(root);
+                }
+                else
                 {
                     _flows.Add(args.RequestId, root = new FlowRoot
                     {
                         RequestId = args.RequestId,
-                        Start = new FlowStep
+                        First = new FlowStep
                         {
                             Item = args,
                             GlobalId = args.GlobalId,
@@ -85,14 +94,9 @@ namespace MicroZero.Http.Route
                     });
                     Handle(args, root);
                     var tk = DateTime.Now.Ticks;
-                    if(_flow2.TryGetValue(tk,out var ids))
+                    if (_timeRequestIds.TryGetValue(tk, out var ids))
                         ids.Add(args.RequestId);
-                    else _flow2.Add(tk, new List<string> { args.RequestId });
-                }
-                else
-                {
-                    Handle(args, root);
-                    SendToWebSocket(root);
+                    else _timeRequestIds.Add(tk, new List<string> { args.RequestId });
                 }
             }
             catch (Exception e)
@@ -115,7 +119,7 @@ namespace MicroZero.Http.Route
                 FlowStep par;
                 if (args.CallId == "0")
                 {
-                    par = root.Start;
+                    par = root.First;
                 }
                 else if (!root.Items.TryGetValue(args.CallId, out par))
                 {
@@ -126,7 +130,7 @@ namespace MicroZero.Http.Route
                     par.Child.Add(step);
                     step.Parent = par;
                 }
-                if (step == root.Start && step.Station != args.Requester)
+                if (step == root.First && step.Station != args.Requester)
                 {
                     par.Child.Add(step = new FlowStep
                     {
@@ -169,7 +173,7 @@ namespace MicroZero.Http.Route
                 FlowStep par;
                 if (args.CallId == "0")
                 {
-                    par = root.Start;
+                    par = root.First;
                 }
                 else if (!root.Items.TryGetValue(args.CallId, out par))
                 {
@@ -208,14 +212,14 @@ namespace MicroZero.Http.Route
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            var max = DateTime.Now.AddMinutes(-5).Ticks;
-            foreach (var k in _flow2.Keys.Where(p=>p <= max).ToArray())
+            var min = DateTime.Now.AddMinutes(-5).Ticks;
+            foreach (var k in _timeRequestIds.Keys.Where(p=>p <= min).ToArray())
             {
-                foreach (var id in _flow2[k])
+                foreach (var id in _timeRequestIds[k])
                 {
                     _flows.Remove(id);
                 }
-                _flow2.Remove(k);
+                _timeRequestIds.Remove(k);
             }
 
             List<FlowRoot> datas;
@@ -246,8 +250,8 @@ namespace MicroZero.Http.Route
                     access.Insert(new FlowLogData
                     {
                         RequestId = root.RequestId,
-                        RootStation = root.Start.Station,
-                        RootCommand = root.Start.Command,
+                        RootStation = root.First.Station,
+                        RootCommand = root.First.Command,
                         RecordDate = DateTime.Now,
                         FlowJson = json
                     });
