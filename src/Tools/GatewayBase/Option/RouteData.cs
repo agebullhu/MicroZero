@@ -186,7 +186,7 @@ namespace MicroZero.Http.Gateway
                 .Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)
                 .Last()
                 ?? context.Request.Query["token"];
-            if (Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
+            if (string.IsNullOrWhiteSpace(Token) || Token.Equals("null") || Token.Equals("undefined") || Token.Equals("Bearer"))
             {
                 Token = null;
             }

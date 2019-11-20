@@ -165,7 +165,7 @@ namespace ZeroMQ
 
                 if (error.Number != ZError.Code.EINTR)
                     return false;
-                error = default(ZError);
+                error = null;
             }
             return true;
         }
@@ -228,7 +228,7 @@ namespace ZeroMQ
 
                 if (error.IsError(ZError.Code.EINTR))
                 {
-                    error = default(ZError);
+                    error = null;
                     continue;
                 }
                 return false;
@@ -316,7 +316,7 @@ namespace ZeroMQ
         /// </summary>
         public bool Shutdown(out ZError error)
         {
-            error = default(ZError);
+            error = null;
 
             if (_contextPtr == IntPtr.Zero)
                 return true;
@@ -365,8 +365,10 @@ namespace ZeroMQ
             var ptr = _contextPtr;
             _contextPtr = IntPtr.Zero;
             ZSocket[] array;
+
             lock (AliveSockets)
                 array = AliveSockets.Where(p => p != null && !p.IsDisposed).ToArray();
+
             foreach (var alive in array)
             {
                 LogRecorderX.SystemLog($"Endpoint : {alive.Endpoint}");

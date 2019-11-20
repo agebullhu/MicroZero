@@ -49,8 +49,8 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         public static OnceScope CreateScope(object lockObj, Action open = null, Action close = null)
         {
-            if (!Monitor.TryEnter(lockObj, 30000))
-                throw new ArgumentException("参数{lockObj}已锁死（10S）");
+            if (!Monitor.TryEnter(lockObj, 1000))
+                throw new ArgumentException("参数{lockObj}已锁死（1000ms）");
             return new OnceScope(lockObj, open, close);
         }
 

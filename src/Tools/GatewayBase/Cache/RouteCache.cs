@@ -75,10 +75,9 @@ namespace MicroZero.Http.Gateway
                 return true;
             }
             //一个载入，其它的等待调用成功
-            if (Interlocked.Increment(ref cacheData.IsLoading) == 0)
+            if (Interlocked.Increment(ref cacheData.IsLoading) == 1)
             {
                 LogRecorderX.MonitorTrace($"Cache update {data.CacheKey}");
-                data.CacheKey = null;
                 return false;
             }
 
@@ -106,17 +105,16 @@ namespace MicroZero.Http.Gateway
         {
             if (data.CacheSetting == null || data.CacheKey == null)
                 return;
-            if (data.IsSucceed || data.CacheSetting.Feature.HasFlag(CacheFeature.NetError))
+            if (!data.IsSucceed && !data.CacheSetting.Feature.HasFlag(CacheFeature.NetError)) 
+                return;
+            Cache[data.CacheKey]= new CacheData
             {
-                Cache[data.CacheKey]= new CacheData
-                {
-                    Content = data.ResultMessage,
-                    Success = data.IsSucceed,
-                    IsLoading = 0,
-                    UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
-                };
-                LogRecorderX.MonitorTrace($"Cache succeed {data.CacheKey}");
-            }
+                Content = data.ResultMessage,
+                Success = data.IsSucceed,
+                IsLoading = 0,
+                UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
+            };
+            LogRecorderX.MonitorTrace($"Cache succeed {data.CacheKey}");
         }
 
         #endregion

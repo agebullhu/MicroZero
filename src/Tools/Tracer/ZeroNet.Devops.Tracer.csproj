@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.MySql" Version="2.4.10.12" />
+    <PackageReference Include="Agebull.EntityModel.MySql" Version="2.4.10.18" />
   </ItemGroup>
 
   <ItemGroup>

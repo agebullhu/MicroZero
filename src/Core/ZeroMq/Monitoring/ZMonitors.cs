@@ -76,7 +76,7 @@ namespace ZeroMQ.Monitoring
 
 					if (error.IsError(ZError.Code.EINTR))
                     {
-						error = default(ZError);
+						error = null;
 						continue;
 					}
 

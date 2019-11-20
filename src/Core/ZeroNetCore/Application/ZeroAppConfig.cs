@@ -426,7 +426,8 @@ namespace Agebull.MicroZero
                 _configMap.Remove(station.ShortName);
                 if (station.StationAlias == null)
                     return;
-                foreach (var ali in station.StationAlias) _configMap.Remove(ali);
+                foreach (var ali in station.StationAlias)
+                    _configMap.Remove(ali);
             }
         }
 

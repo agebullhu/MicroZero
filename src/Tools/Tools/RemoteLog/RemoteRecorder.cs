@@ -174,7 +174,10 @@ namespace Agebull.MicroZero.Log
 
         public bool Start()
         {
-            using (OnceScope.CreateScope(this))
+            var once = OnceScope.TryCreateScope(this, 1);
+            if (once == null)
+                return false;
+            using (once)
             {
                 if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
                 {
@@ -237,27 +240,34 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         private void RunWaite()
         {
-            using (OnceScope.CreateScope(this, OnRun, OnStop))
+            var once = OnceScope.TryCreateScope(this, 1, OnRun, OnStop);
+            if (once == null)
+                return;
+            using (once)
             {
                 using (var pool = ZmqPool.CreateZmqPool())
                 {
                     pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
                     using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
-                    using (var send = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
-                        while (CanRun)
+                    {
+                        using (var sendSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
                         {
-                            if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                            while (CanRun)
                             {
-                                continue;
-                            }
-                            using (message)
-                            {
-                                using (var copy = message.Duplicate())
+                                if (!pool.Poll() || !pool.CheckIn(0, out var message))
                                 {
-                                    send.Send(copy);
+                                    continue;
+                                }
+                                using (message)
+                                {
+                                    using (var copy = message.Duplicate())
+                                    {
+                                        sendSocket.Send(copy);
+                                    }
                                 }
                             }
                         }
+                    }
                     _socket = null;
                 }
             }

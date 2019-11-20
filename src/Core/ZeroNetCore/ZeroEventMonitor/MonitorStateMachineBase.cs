@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
@@ -25,11 +26,11 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             ZeroTrace.SystemLog("ZeroCenter", "center_start", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState >= ZeroCenterState.Failed)
             {
-                ZeroApplication.JoinCenter();
+                Task.Factory.StartNew(ZeroApplication.JoinCenter);
             }
             else
             {
-                SystemManager.Instance.LoadAllConfig();
+                Task.Factory.StartNew(SystemManager.Instance.LoadAllConfig);
             }
         }
 
@@ -43,10 +44,7 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             ZeroTrace.SystemLog("ZeroCenter", "center_closing", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
-                ZeroApplication.ZeroCenterState = ZeroCenterState.Closing;
-                ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
-                ZeroApplication.OnZeroEnd();
-                ZeroApplication.ApplicationState = StationState.Failed;
+                Task.Factory.StartNew(center_closing);
             }
         }
 
@@ -60,13 +58,24 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             ZeroTrace.SystemLog("ZeroCenter", "center_stop", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
-                ZeroApplication.ZeroCenterState = ZeroCenterState.Closed;
-                ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemStop);
-                ZeroApplication.OnZeroEnd();
-                ZeroApplication.ApplicationState = StationState.Failed;
+                Task.Factory.StartNew(center_stop);
             }
         }
 
+        internal static void center_closing()
+        {
+            ZeroApplication.ZeroCenterState = ZeroCenterState.Closing;
+            ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemClosing);
+            ZeroApplication.OnZeroEnd();
+            ZeroApplication.ApplicationState = StationState.Failed;
+        }
+        internal static void center_stop()
+        {
+            ZeroApplication.ZeroCenterState = ZeroCenterState.Closed;
+            ZeroApplication.RaiseEvent(ZeroNetEventType.CenterSystemStop);
+            ZeroApplication.OnZeroEnd();
+            ZeroApplication.ApplicationState = StationState.Failed;
+        }
         #endregion
 
         #region StationEvent
@@ -118,7 +127,6 @@ namespace Agebull.MicroZero.ZeroManagemant.StateMachine
             }
             ApiProxy.IsChanged = true;
         }
-
 
         internal static void station_join(string name, string content)
         {

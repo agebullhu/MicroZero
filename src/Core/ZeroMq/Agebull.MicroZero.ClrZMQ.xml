@@ -413,28 +413,18 @@
         </member>
         <member name="M:ZeroMQ.ZDevice.#ctor(ZeroMQ.ZSocketType,ZeroMQ.ZSocketType)">
             <summary>
-            Initializes a new instance of the <see cref="T:ZeroMQ.ZDevice"/> class.
-            You are using ZContext.Current!
+            
             </summary>
-            <param name="frontendSocket">
-            A <see cref="T:ZeroMQ.ZSocket"/> that will pass incoming messages to <paramref name="backendSocket"/>.
-            </param>
-            <param name="backendSocket">
-            A <see cref="T:ZeroMQ.ZSocket"/> that will receive messages from (and optionally send replies to) <paramref name="frontendSocket"/>.
-            </param>
-            <param name="mode">The <see cref="!:DeviceMode"/> for the current device.</param>
+            <param name="frontendType"></param>
+            <param name="backendType"></param>
         </member>
         <member name="M:ZeroMQ.ZDevice.#ctor(ZeroMQ.ZContext,ZeroMQ.ZSocketType,ZeroMQ.ZSocketType)">
             <summary>
-            Initializes a new instance of the <see cref="T:ZeroMQ.ZDevice"/> class.
+            
             </summary>
-            <param name="frontendSocket">
-            A <see cref="T:ZeroMQ.ZSocket"/> that will pass incoming messages to <paramref name="backendSocket"/>.
-            </param>
-            <param name="backendSocket">
-            A <see cref="T:ZeroMQ.ZSocket"/> that will receive messages from (and optionally send replies to) <paramref name="frontendSocket"/>.
-            </param>
-            <param name="mode">The <see cref="!:DeviceMode"/> for the current device.</param>
+            <param name="context"></param>
+            <param name="frontendType"></param>
+            <param name="backendType"></param>
         </member>
         <member name="P:ZeroMQ.ZDevice.BackendSetup">
             <summary>
@@ -459,15 +449,21 @@
         </member>
         <member name="M:ZeroMQ.ZDevice.FrontendHandler(ZeroMQ.ZSocket,ZeroMQ.ZMessage@,ZeroMQ.ZError@)">
             <summary>
-            Invoked when a message has been received by the frontend socket.
+            
             </summary>
-            <param name="args">A <see cref="!:SocketEventArgs"/> object containing the poll event args.</param>
+            <param name="socket"></param>
+            <param name="message"></param>
+            <param name="error"></param>
+            <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZDevice.BackendHandler(ZeroMQ.ZSocket,ZeroMQ.ZMessage@,ZeroMQ.ZError@)">
             <summary>
-            Invoked when a message has been received by the backend socket.
+            
             </summary>
-            <param name="args">A <see cref="!:SocketEventArgs"/> object containing the poll event args.</param>
+            <param name="args"></param>
+            <param name="message"></param>
+            <param name="error"></param>
+            <returns></returns>
         </member>
         <member name="M:ZeroMQ.ZDevice.Dispose(System.Boolean)">
             <summary>
@@ -1122,6 +1118,12 @@
             </summary>
         </member>
         <member name="M:ZeroMQ.ZMessage.#ctor(System.Byte[],System.String[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:ZeroMQ.ZMessage"/> class.
+            Creates an empty message.
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZMessage.#ctor(System.Byte[],System.Byte[][])">
             <summary>
             Initializes a new instance of the <see cref="T:ZeroMQ.ZMessage"/> class.
             Creates an empty message.

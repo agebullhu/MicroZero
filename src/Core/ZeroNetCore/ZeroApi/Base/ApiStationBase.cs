@@ -62,7 +62,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected abstract IZmqPool PrepareLoop(byte[] identity, out ZSocket socket);
 
-        ZeroStationOption option;
+        ZeroStationOption _option;
         /// <summary>
         /// 轮询
         /// </summary>
@@ -70,9 +70,9 @@ namespace Agebull.MicroZero.ZeroApis
         protected sealed override bool Loop(/*CancellationToken token*/)
         {
             _tasks.Clear();
-            option = GetApiOption();
+            _option = GetApiOption();
             int max = 1;
-            switch (option.SpeedLimitModel)
+            switch (_option.SpeedLimitModel)
             {
                 case SpeedLimitType.WaitCount:
                     _processSemaphore = new SemaphoreSlim(0, max);
@@ -84,7 +84,7 @@ namespace Agebull.MicroZero.ZeroApis
                     }.Start();
                     break;
                 case SpeedLimitType.ThreadCount:
-                    max = (int)(Environment.ProcessorCount * option.TaskCpuMultiple);
+                    max = (int)(Environment.ProcessorCount * _option.TaskCpuMultiple);
                     if (max < 1)
                         max = 1;
                     _processSemaphore = new SemaphoreSlim(0, max);
@@ -226,7 +226,7 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
 
-        class ApiTaskItem
+        public class ApiTaskItem
         {
             public long TaskId { get; set; }
 
@@ -254,6 +254,11 @@ namespace Agebull.MicroZero.ZeroApis
         public int WaitCount => _tasks.Count;
 
         /// <summary>
+        /// 总等待数
+        /// </summary>
+        public ApiTaskItem[] WaitTaskItems => _tasks.Values.ToArray();
+
+        /// <summary>
         /// 检查超时任务
         /// </summary>
         /// <returns></returns>
@@ -273,7 +278,7 @@ namespace Agebull.MicroZero.ZeroApis
                         {
                             _tasks.TryRemove(item.TaskId, out _);
                         }
-                        else if ((DateTime.Now - item.Start).TotalSeconds >= option.ApiTimeout)
+                        else if ((DateTime.Now - item.Start).TotalSeconds >= _option.ApiTimeout)
                         {
                             KillTask(item);
                         }
@@ -409,9 +414,15 @@ namespace Agebull.MicroZero.ZeroApis
         private void OnCall(bool checkWait, ZSocket socket, ZMessage message)
         {
             Interlocked.Increment(ref CallCount);
-            if (!ApiCallItem.Unpack(message, out var item))
+            if (!ApiCallItem.Unpack(message, out var item) || string.IsNullOrWhiteSpace(item.ApiName))
             {
                 SendLayoutErrorResult(socket, item);
+            }
+            if (item.ApiName == "@")
+            {
+                item.Result = ApiResult.SucceesJson;
+                OnExecuestEnd(socket, item, ZeroOperatorStateType.Ok);
+                return;
             }
 
             var arg = new ApiTaskItem
@@ -455,6 +466,18 @@ namespace Agebull.MicroZero.ZeroApis
             arg.Thread = Thread.CurrentThread;
             try
             {
+                switch (arg.Api.ApiName[0])
+                {
+                    case '$':
+                        arg.Api.Result = ApiResult.SucceesJson;
+                        OnExecuestEnd(arg.Socket, arg.Api, ZeroOperatorStateType.Ok);
+                        return;
+                    case '*':
+                        arg.Api.Result = ZeroApplication.TestFunc();
+                        OnExecuestEnd(arg.Socket, arg.Api, ZeroOperatorStateType.Ok);
+                        return;
+                }
+
                 if (!PrepareExecute(arg.Api))
                     return;
                 arg.Executer = new ApiExecuter

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -156,7 +157,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     缓存图
         /// </summary>
-        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
+        public static ConcurrentDictionary<string, RouteHost> RouteMap { get; internal set; }
 
         /// <summary>
         ///     初始化路由
@@ -164,7 +165,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private void CheckRouteMap()
         {
-            RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
+            RouteMap = new ConcurrentDictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
             if (RouteConfig == null)
                 return;
 
@@ -181,7 +182,7 @@ namespace MicroZero.Http.Gateway
                     continue;
                 //Http负载
                 if (!RouteMap.ContainsKey(kv.Key))
-                    RouteMap.Add(kv.Key, host);
+                    RouteMap.TryAdd(kv.Key, host);
                 else
                     RouteMap[kv.Key] = host;
                 //别名
@@ -189,7 +190,7 @@ namespace MicroZero.Http.Gateway
                     continue;
                 foreach (var name in kv.Value.Alias)
                     if (!RouteMap.ContainsKey(name))
-                        RouteMap.Add(name, host);
+                        RouteMap.TryAdd(name, host);
                     else
                         RouteMap[name] = host;
             }

@@ -1,6 +1,7 @@
 ﻿using Agebull.MicroZero.ZeroApis;
 using System.Collections.Generic;
 using System.Threading;
+using Agebull.MicroZero;
 
 namespace ApiTest
 {
@@ -39,10 +40,9 @@ namespace ApiTest
         /// 处理文字请求
         /// </summary>
         /// <returns></returns>
-        [Route("v1/test")]
+        [Route("v1/test"),ApiAccessOptionFilter(ApiAccessOption.Anymouse| ApiAccessOption.Public)]
         public ApiResult<TestItems> OnTextRequest()
         {
-            Thread.Sleep(61000);
             return new ApiResult<TestItems>
             {
                 Success = true

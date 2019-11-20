@@ -11,7 +11,9 @@
             var one = ZSymbol.None;
         }
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
         public static class Code
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
         {
             static Code()
             {
@@ -23,107 +25,221 @@
             private const int HAUSNUMERO = 156384712;
 
             // ENOTSUP
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENOTSUP = HAUSNUMERO + 1;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EPROTONOSUPPORT
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EPROTONOSUPPORT = HAUSNUMERO + 2;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENOBUFS
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENOBUFS = HAUSNUMERO + 3;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENETDOWN
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENETDOWN = HAUSNUMERO + 4;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EADDRINUSE
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EADDRINUSE = HAUSNUMERO + 5;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EADDRNOTAVAIL
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EADDRNOTAVAIL = HAUSNUMERO + 6;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ECONNREFUSED
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ECONNREFUSED = HAUSNUMERO + 7;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EINPROGRESS
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EINPROGRESS = HAUSNUMERO + 8;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENOTSOCK
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENOTSOCK = HAUSNUMERO + 9;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EMSGSIZE
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EMSGSIZE = HAUSNUMERO + 10;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EAFNOSUPPORT
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EAFNOSUPPORT = HAUSNUMERO + 11;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENETUNREACH
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENETUNREACH = HAUSNUMERO + 12;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ECONNABORTED
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ECONNABORTED = HAUSNUMERO + 13;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ECONNRESET
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ECONNRESET = HAUSNUMERO + 14;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENOTCONN
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENOTCONN = HAUSNUMERO + 15;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ETIMEDOUT
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ETIMEDOUT = HAUSNUMERO + 16;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // EHOSTUNREACH
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EHOSTUNREACH = HAUSNUMERO + 17;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             // ENETRESET
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENETRESET = HAUSNUMERO + 18;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 
             /*  Native 0MQ error codes.*/
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EFSM = HAUSNUMERO + 51;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ENOCOMPATPROTO = HAUSNUMERO + 52;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int ETERM = HAUSNUMERO + 53;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int EMTHREAD = HAUSNUMERO + 54;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 
             // NOSUPPORT(AGEBULL)
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
             public const int NOSUPPORT = HAUSNUMERO + 255;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
             #endregion
 
             #region Windows && Linux
             public const int
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EPERM = 1,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOENT = 2,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ESRCH = 3,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EINTR = 4,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EIO = 5,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENXIO = 6,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 E2BIG = 7,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOEXEC = 8,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EBADF = 9,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ECHILD = 10,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EAGAIN = 11,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOMEM = 12,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EACCES = 13,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EFAULT = 14,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOTBLK = 15,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EBUSY = 16,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EEXIST = 17,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EXDEV = 18,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENODEV = 19,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOTDIR = 20,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EISDIR = 21,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EINVAL = 22,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENFILE = 23,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EMFILE = 24,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOTTY = 25,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ETXTBSY = 26,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EFBIG = 27,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ENOSPC = 28,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ESPIPE = 29,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EROFS = 30,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EMLINK = 31,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EPIPE = 32,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 EDOM = 33,
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
                 ERANGE = 34;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
             #endregion
 
@@ -194,7 +310,7 @@
         /// <summary>
         /// 空
         /// </summary>
-        public new static ZError None => default(ZError);
+        public new static ZError None => null;
 
     }
     /// <summary>

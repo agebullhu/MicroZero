@@ -1224,6 +1224,11 @@
             总等待数
             </summary>
         </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitTaskItems">
+            <summary>
+            总等待数
+            </summary>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">
             <summary>
             检查超时任务
@@ -2318,11 +2323,6 @@
                 注册单例对象
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.HaseActiveObject">
-            <summary>
-                是否存在活动对象
-            </summary>
-        </member>
         <member name="F:Agebull.MicroZero.ZeroApplication.ActiveObjects">
             <summary>
             活动对象(执行中)
@@ -2346,11 +2346,6 @@
         <member name="F:Agebull.MicroZero.ZeroApplication.GlobalSemaphore">
             <summary>
                 对象活动状态记录器锁定
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.ResetObjectActive">
-            <summary>
-                重置当前活动数量
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalStart(Agebull.MicroZero.IZeroObject)">
@@ -2458,6 +2453,11 @@
                 配置校验
             </summary>
         </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.TestFunc">
+            <summary>
+            测试程序，用于系统检查注入
+            </summary>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.CommandConsole">
             <summary>
                 命令行方式管理
@@ -2548,14 +2548,9 @@
                 执行并等待
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.WaitToken">
+        <member name="F:Agebull.MicroZero.ZeroApplication._waitToken">
             <summary>
                 应用程序等待结果的信号量对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitTask">
-            <summary>
-                执行直到连接成功
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.Start">
@@ -2578,16 +2573,17 @@
             站点事件发生
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig)">
+        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig,System.Boolean)">
             <summary>
             发出事件
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType)">
+        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType,System.Boolean)">
             <summary>
             发出事件
             </summary>
-            <param name="centerEvent"></param>
+            <param name="event"></param>
+            <param name="sync">是否为同步操作</param>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object)">
             <summary>
@@ -2985,54 +2981,6 @@
         <member name="M:Agebull.MicroZero.OnceScope.OnDispose">
             <inheritdoc />
         </member>
-        <member name="T:Agebull.MicroZero.SyncBatchQueue`1">
-            <summary>
-            多生产者单消费者的同步列表（线程安全）
-            </summary>
-            <typeparam name="TData">泛型对象</typeparam>
-            <remarks>
-            1 内部使用信号量
-            2 用于多生产者单消费者的场景
-            3 使用双队列，以防止错误时无法还原
-            </remarks>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line1">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line2">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Push(`0)">
-            <summary>
-            加入队列
-            </summary>
-            <param name="t"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Switch">
-            <summary>
-            开始处理队列内容
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Save(System.String)">
-            <summary>
-            保存以备下次启动时使用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Load(System.String)">
-            <summary>
-            载入保存的内容
-            </summary>
-            <returns>队列对象</returns>
-        </member>
         <member name="T:Agebull.MicroZero.ZeroCommandExtend">
             <summary>
                 Zmq帮助类
@@ -3210,11 +3158,6 @@
             管理命令
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.IsInner">
-            <summary>
-            是否内部
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.GetAddress">
             <summary>
             地址错误的情况
@@ -3241,11 +3184,6 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.Socket">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommand(System.Byte[],System.String[])">
             <summary>
                 发起一次请求
@@ -3261,28 +3199,6 @@
             <param name="description"></param>
             <param name="args">请求参数</param>
             <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommandInner2(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.Destroy">
-            <summary>
-            关闭仅有的一个连接
-            </summary>
         </member>
         <member name="T:Agebull.MicroZero.IZeroState">
             <summary>

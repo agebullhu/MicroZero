@@ -205,7 +205,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 能不能循环处理
         /// </summary>
-        internal protected bool CanLoop => ZeroApplication.CanDo && 
+        internal protected bool CanLoop => ZeroApplication.CanDo &&
                                   ConfigState == StationStateType.Run &&
                                   (RealState == StationState.BeginRun || RealState == StationState.Run) &&
                                   RunTaskCancel != null && !RunTaskCancel.IsCancellationRequested;
@@ -260,12 +260,15 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         private bool DoStart()
         {
-            if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
+            var once = OnceScope.TryCreateScope(this, 1);
+            if (once == null)
                 return false;
-            ConfigState = StationStateType.Run;
-
-            using (OnceScope.CreateScope(this))
+            using (once)
             {
+                if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
+                    return false;
+                ConfigState = StationStateType.Run;
+
                 RealState = StationState.Start;
                 if (!CheckConfig())
                 {
@@ -306,7 +309,14 @@ namespace Agebull.MicroZero
             bool success;
             try
             {
-                using (OnceScope.CreateScope(this, LoopBegin, LoopComplete))
+                var once = OnceScope.TryCreateScope(this, 1, LoopBegin, LoopComplete);
+                if (once == null)
+                {
+                    if (RealState < StationState.BeginRun || ConfigState > StationStateType.Run)
+                        ConfigState = !ZeroApplication.CanDo ? StationStateType.Closed : StationStateType.Failed;
+                    return;
+                }
+                using (once)
                 {
                     success = Loop( /*RunTaskCancel.Token*/);
                 }
@@ -369,19 +379,16 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         private void LoopBegin()
         {
-            lock (this)
+            RealState = StationState.BeginRun;
+            if (ConfigState == StationStateType.Run)
             {
-                RealState = StationState.BeginRun;
-                if (ConfigState == StationStateType.Run)
-                {
-                    ZeroApplication.OnObjectActive(this);
-                }
-                else
-                {
-                    ZeroApplication.OnObjectFailed(this);
-                }
-                OnLoopBegin();
+                ZeroApplication.OnObjectActive(this);
             }
+            else
+            {
+                ZeroApplication.OnObjectFailed(this);
+            }
+            OnLoopBegin();
             _waitToken.Release();
         }
 
@@ -397,16 +404,13 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         private void LoopComplete()
         {
-            lock (this)
-            {
-                if (RunTaskCancel == null)
-                    return;
-                OnLoopComplete();
-                RunTaskCancel.Dispose();
-                RunTaskCancel = null;
-                RealState = StationState.Closed;
-                ZeroApplication.OnObjectClose(this);
-            }
+            if (RunTaskCancel == null)
+                return;
+            OnLoopComplete();
+            RunTaskCancel.Dispose();
+            RunTaskCancel = null;
+            RealState = StationState.Closed;
+            ZeroApplication.OnObjectClose(this);
             Hearter.HeartLeft(StationName, RealName);
         }
 

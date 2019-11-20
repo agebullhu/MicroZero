@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
+using System.Collections.Concurrent;
 
 namespace Agebull.MicroZero
 {
@@ -83,7 +84,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 已注册的对象
         /// </summary>
-        internal static readonly Dictionary<string, IZeroObject> ZeroObjects = new Dictionary<string, IZeroObject>();
+        internal static readonly ConcurrentDictionary<string, IZeroObject> ZeroObjects = new ConcurrentDictionary<string, IZeroObject>();
 
         /// <summary>
         ///     注册单例对象
@@ -92,22 +93,7 @@ namespace Agebull.MicroZero
         {
             return RegistZeroObject(new TZeroObject());
         }
-
-        /// <summary>
-        ///     是否存在活动对象
-        /// </summary>
-        public static bool HaseActiveObject
-        {
-            get
-            {
-                lock (ActiveObjects)
-                {
-                    return ActiveObjects.Count > 0;
-                }
-            }
-        }
-
-
+        
         /// <summary>
         /// 活动对象(执行中)
         /// </summary>
@@ -134,20 +120,6 @@ namespace Agebull.MicroZero
         private static readonly SemaphoreSlim GlobalSemaphore = new SemaphoreSlim(0, short.MaxValue);
 
         /// <summary>
-        ///     重置当前活动数量
-        /// </summary>
-        public static void ResetObjectActive()
-        {
-            lock (ActiveObjects)
-            {
-                ActiveObjects.Clear();
-                FailedObjects.Clear();
-            }
-            while (ActiveSemaphore.CurrentCount > 0)
-                ActiveSemaphore.Wait();
-        }
-
-        /// <summary>
         ///     对象活动时登记
         /// </summary>
         public static void OnGlobalStart(IZeroObject obj)
@@ -164,16 +136,44 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void OnGlobalEnd(IZeroObject obj)
         {
+            ZeroTrace.SystemLog(obj.StationName, "GlobalEnd");
             bool can;
             lock (GlobalObjects)
             {
                 GlobalObjects.Remove(obj);
-                ZeroTrace.SystemLog(obj.StationName, "GlobalEnd");
                 can = GlobalObjects.Count == 0;
             }
             if (can)
                 GlobalSemaphore.Release();
         }
+
+        /*// <summary>
+        ///     重置当前活动数量
+        /// </summary>
+        public static void ResetObjectActive()
+        {
+            lock (ActiveObjects)
+            {
+                ActiveObjects.Clear();
+                FailedObjects.Clear();
+            }
+            while (ActiveSemaphore.CurrentCount > 0)
+                ActiveSemaphore.Wait();
+        }
+
+        /// <summary>
+        ///     是否存在活动对象
+        /// </summary>
+        public static bool HaseActiveObject
+        {
+            get
+            {
+                lock (ActiveObjects)
+                {
+                    return ActiveObjects.Count > 0;
+                }
+            }
+        }*/
 
         /// <summary>
         ///     对象活动时登记
@@ -181,10 +181,10 @@ namespace Agebull.MicroZero
         public static void OnObjectActive(IZeroObject obj)
         {
             bool can;
+            ZeroTrace.SystemLog(obj.StationName, "OnObjectActive");
             lock (ActiveObjects)
             {
                 ActiveObjects.Add(obj);
-                ZeroTrace.SystemLog(obj.StationName, "OnObjectActive");
                 can = ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count;
             }
             if (can)
@@ -196,11 +196,11 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void OnObjectFailed(IZeroObject obj)
         {
+            ZeroTrace.WriteError(obj.StationName, "OnObjectFailed");
             bool can;
             lock (ActiveObjects)
             {
                 FailedObjects.Add(obj);
-                ZeroTrace.WriteError(obj.StationName, "OnObjectFailed");
                 can = ActiveObjects.Count + FailedObjects.Count == ZeroObjects.Count;
             }
             if (can)
@@ -212,11 +212,11 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void OnObjectClose(IZeroObject obj)
         {
+            ZeroTrace.SystemLog(obj.StationName, "OnObjectClose");
             bool can;
             lock (ActiveObjects)
             {
                 ActiveObjects.Remove(obj);
-                ZeroTrace.SystemLog(obj.StationName, "OnObjectClose");
                 can = ActiveObjects.Count == 0;
             }
             if (can)
@@ -254,48 +254,44 @@ namespace Agebull.MicroZero
         /// </summary>
         public static bool RegistZeroObject(IZeroObject obj)
         {
-            using (OnceScope.CreateScope(ZeroObjects))
+            if (!ZeroObjects.TryAdd(obj.StationName, obj))
+                return false;
+            ZeroTrace.SystemLog(obj.StationName, "RegistZeroObject");
+
+            if (ApplicationState >= StationState.Initialized)
             {
-                if (ZeroObjects.ContainsKey(obj.StationName))
-                    return false;
-                ZeroTrace.SystemLog(obj.StationName, "RegistZeroObject");
-                ZeroObjects.Add(obj.StationName, obj);
-                if (ApplicationState >= StationState.Initialized)
-                {
-                    try
-                    {
-                        obj.OnZeroInitialize();
-                        ZeroTrace.SystemLog(obj.StationName, "Initialize");
-                    }
-                    catch (Exception e)
-                    {
-                        ZeroTrace.WriteException(obj.StationName, e, "Initialize");
-                    }
-                }
-
-                if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
-                {
-                    ZeroDiscover discover = new ZeroDiscover
-                    {
-                        StationName = obj.StationName
-                    };
-                    discover.FindApies(obj.GetType());
-                    //ZeroDiscover.DiscoverApiDocument(obj.GetType());
-                }
-
-                if (ApplicationState != StationState.Run || !ZerCenterIsRun)
-                    return true;
                 try
                 {
-                    ZeroTrace.SystemLog(obj.StationName, "Start");
-                    obj.OnZeroStart();
+                    obj.OnZeroInitialize();
+                    ZeroTrace.SystemLog(obj.StationName, "Initialize");
                 }
                 catch (Exception e)
                 {
-                    ZeroTrace.WriteException(obj.StationName, e, "Start");
+                    ZeroTrace.WriteException(obj.StationName, e, "Initialize");
                 }
             }
 
+            if (obj.GetType().IsSubclassOf(typeof(ApiStationBase)))
+            {
+                ZeroDiscover discover = new ZeroDiscover
+                {
+                    StationName = obj.StationName
+                };
+                discover.FindApies(obj.GetType());
+                //ZeroDiscover.DiscoverApiDocument(obj.GetType());
+            }
+
+            if (ApplicationState != StationState.Run || !ZerCenterIsRun)
+                return true;
+            try
+            {
+                ZeroTrace.SystemLog(obj.StationName, "Start");
+                obj.OnZeroStart();
+            }
+            catch (Exception e)
+            {
+                ZeroTrace.WriteException(obj.StationName, e, "Start");
+            }
             return true;
         }
 
@@ -305,7 +301,7 @@ namespace Agebull.MicroZero
         internal static void OnZeroInitialize()
         {
             ZeroTrace.SystemLog("Application", "[OnZeroInitialize>>");
-            using (OnceScope.CreateScope(ZeroObjects))
+            //using (OnceScope.CreateScope(ZeroObjects))
             {
                 foreach (var obj in ZeroObjects.Values.ToArray())
                 {
@@ -328,11 +324,12 @@ namespace Agebull.MicroZero
         /// </summary>
         internal static void OnZeroStart()
         {
+            SystemManager.Instance.UploadDocument();
             if (WorkModel != ZeroWorkModel.Service)
                 return;
             //Debug.Assert(!HaseActiveObject);
             ZeroTrace.SystemLog("Application", "[OnZeroStart>>");
-            using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
+            //using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
             {
                 foreach (var obj in ZeroObjects.Values.ToArray())
                 {
@@ -350,7 +347,7 @@ namespace Agebull.MicroZero
             }
             SystemManager.Instance.HeartReady();
             ApplicationState = StationState.Run;
-            RaiseEvent(ZeroNetEventType.AppRun);
+            RaiseEvent(ZeroNetEventType.AppRun, true);
             ZeroTrace.SystemLog("Application", "<<OnZeroStart]");
         }
 
@@ -390,9 +387,9 @@ namespace Agebull.MicroZero
                 return;
             ZeroTrace.SystemLog(StationState.Text(ApplicationState), "[OnZeroEnd>>");
             ApplicationState = StationState.Closing;
-            RaiseEvent(ZeroNetEventType.AppStop);
+            RaiseEvent(ZeroNetEventType.AppStop, true);
             SystemManager.Instance.HeartLeft();
-            using (OnceScope.CreateScope(ZeroObjects))
+            //using (OnceScope.CreateScope(ZeroObjects))
             {
                 IZeroObject[] array;
                 lock (ActiveObjects)
@@ -422,9 +419,9 @@ namespace Agebull.MicroZero
         internal static void OnZeroDestory()
         {
             ZeroTrace.SystemLog("Application", "[OnZeroDestory>>");
-            using (OnceScope.CreateScope(ZeroObjects))
+            //using (OnceScope.CreateScope(ZeroObjects))
             {
-                RaiseEvent(ZeroNetEventType.AppEnd);
+                RaiseEvent(ZeroNetEventType.AppEnd, true);
                 var array = ZeroObjects.Values.ToArray();
                 ZeroObjects.Clear();
                 foreach (var obj in array)

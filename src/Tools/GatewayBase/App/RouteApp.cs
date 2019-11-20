@@ -123,7 +123,7 @@ namespace MicroZero.Http.Gateway
             if (uri.AbsolutePath == "/")
             {
                 //response.Redirect("/index.html");
-                context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
+                context.Response.WriteAsync("Wecome MicroZero http gateway!", Encoding.UTF8);
                 return;
             }
 
@@ -134,7 +134,7 @@ namespace MicroZero.Http.Gateway
                 if (folders.Length == 0)
                 {
                     //response.Redirect("/index.html");
-                    context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
+                    context.Response.WriteAsync("Wecome MicroZero http gateway!", Encoding.UTF8);
                     return;
                 }
                 var ext = Path.GetExtension(folders[folders.Length - 1]);
@@ -368,10 +368,7 @@ namespace MicroZero.Http.Gateway
             }
             else
             {
-                lock (RouteOption.RouteMap)
-                {
-                    RouteOption.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
-                }
+                RouteOption.RouteMap.TryAdd(station.StationName, zeroHost = new ZeroHost());
             }
             zeroHost.Description = null;
             zeroHost.ByZero = true;
@@ -385,7 +382,7 @@ namespace MicroZero.Http.Gateway
                 if (RouteOption.RouteMap.ContainsKey(station.ShortName))
                     RouteOption.RouteMap[station.ShortName] = zeroHost;
                 else
-                    RouteOption.RouteMap.Add(station.ShortName, zeroHost);
+                    RouteOption.RouteMap.TryAdd(station.ShortName, zeroHost);
             }
             if (station.StationAlias == null)
                 return;
@@ -393,7 +390,7 @@ namespace MicroZero.Http.Gateway
                 if (RouteOption.RouteMap.ContainsKey(alia))
                     RouteOption.RouteMap[alia] = zeroHost;
                 else
-                    RouteOption.RouteMap.Add(alia, zeroHost);
+                    RouteOption.RouteMap.TryAdd(alia, zeroHost);
         }
 
         private static void UpdateApiItems(ZeroHost zeroHost)

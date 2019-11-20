@@ -187,7 +187,10 @@ namespace Agebull.MicroZero.PubSub
                 {
                     cmd.CallCommand(id, id);
                 }
-                cmd.CallCommand(data.Max, 0);
+                lock (localObj)
+                {
+                    cmd.CallCommand(data.Max, 0);
+                }
             }
         }
 
@@ -277,7 +280,23 @@ namespace Agebull.MicroZero.PubSub
         {
             try
             {
-                var result = ZSimpleCommand.SendTo(socket, description, start.ToString(), end.ToString());
+                ZeroResult result;
+                using (var message = new ZMessage(description, start.ToString(), end.ToString()))
+                {
+                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    if (socket.SendTo(message))
+                        result= new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.Ok,
+                            InteractiveSuccess = true
+                        };
+                    else
+                        result = new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.LocalRecvError,
+                            ZmqError = socket.LastError
+                        };
+                }
                 return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }
             catch (Exception e)
