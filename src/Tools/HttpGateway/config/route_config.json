@@ -1,6 +1,7 @@
 {
   /*系统设置*/
   "sysConfig": {
+    "IsTest": true,
     /*是否开启MicroZero网络*/
     "FireZero": true,
     /*是否开启返回值检查*/

@@ -57,7 +57,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [DataMember]
         [JsonProperty("hostPath")]
-        public Dictionary<string,int> HostPath{ get; set; }
+        public Dictionary<string, int> HostPath { get; set; }
 
         /// <summary>
         ///     系统配置
@@ -95,13 +95,12 @@ namespace MicroZero.Http.Gateway
         {
             ConfigFileName = Path.Combine(ZeroApplication.Config.ConfigFolder, "route_config.json");
             ZeroTrace.SystemLog("HttpGateway", ConfigFileName);
-
             if (!File.Exists(ConfigFileName))
                 throw new Exception($"路由配置文件{ConfigFileName}不存在");
             try
             {
                 Option = JsonConvert.DeserializeObject<RouteOption>(File.ReadAllText(ConfigFileName));
-                
+
             }
             catch (Exception e)
             {
@@ -111,6 +110,8 @@ namespace MicroZero.Http.Gateway
             if (Option == null)
                 throw new Exception($"路由配置文件{ConfigFileName}内容错误");
 
+            if (string.IsNullOrWhiteSpace(Option.SystemConfig.ContentType))
+                Option.SystemConfig.ContentType = "text/plain; charset=UTF-8";
             Option.CheckUrlMap();
             Option.CheckRouteMap();
             Option.CheckSecurity();
@@ -153,7 +154,7 @@ namespace MicroZero.Http.Gateway
                 foreach (var apiItem in Option.Security.denyTokens)
                     Option.Security.DenyTokens.Add(apiItem, apiItem);
         }
-        
+
         /// <summary>
         ///     缓存图
         /// </summary>
@@ -207,7 +208,7 @@ namespace MicroZero.Http.Gateway
                 return;
             foreach (var kv in UrlMaps)
             {
-                UrlMap.Add(kv.Key,kv.Value );
+                UrlMap.Add(kv.Key, kv.Value);
             }
         }
 

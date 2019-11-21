@@ -504,14 +504,24 @@
             <param name="message2"></param>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.Cros(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="T:MicroZero.Http.Gateway.HttpProtocol">
+            <summary>
+            HTTP协议相关的支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosOption(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosCall(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                返回类型
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.MapModelConfig">
@@ -1119,6 +1129,16 @@
         <member name="P:MicroZero.Http.Gateway.SystemConfig.FireZero">
             <summary>
                 是否加入MicroZero
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.IsTest">
+            <summary>
+                是否测试环境
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.ContentType">
+            <summary>
+                返回的上下文类型
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.SystemConfig.CheckResult">

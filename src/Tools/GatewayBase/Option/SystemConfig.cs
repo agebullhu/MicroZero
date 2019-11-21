@@ -19,6 +19,19 @@ namespace MicroZero.Http.Gateway
         public bool FireZero { get; set; }
 
         /// <summary>
+        ///     是否测试环境
+        /// </summary>
+        [JsonProperty]
+        public bool IsTest { get; set; }
+
+        
+        /// <summary>
+        ///     返回的上下文类型
+        /// </summary>
+        [JsonProperty]
+        public string ContentType { get; set; }
+
+        /// <summary>
         ///     是否检查返回值
         /// </summary>
         [JsonProperty]

@@ -235,7 +235,6 @@ namespace MicroZero.Http.Gateway
             //    return;
             //// 缓存
             //RouteCache.CacheResult(Data);
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
             //if (!string.IsNullOrWhiteSpace(Data.CacheKey))
             //    Response.Headers.Add("Etag", Data.CacheKey);
             if (!Data.IsFile || Data.ResultBinary == null || Data.ResultBinary.Length == 0)
