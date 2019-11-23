@@ -1,13 +1,103 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Text;
+using Agebull.Common;
 using Agebull.MicroZero.ApiDocuments;
+using Agebull.Common.Configuration;
+using Agebull.Common.Logging;
 
 using Newtonsoft.Json;
+using ZeroMQ;
+using Agebull.Common.Context;
 
 namespace Agebull.MicroZero
 {
+    /// <summary>
+    /// 工作模式
+    /// </summary>
+    public enum ZeroWorkModel
+    {
+        /// <summary>
+        /// 服务模式（默认）
+        /// </summary>
+        Service,
+        /// <summary>
+        /// 客户模式，仅可调用
+        /// </summary>
+        Client,
+        /// <summary>
+        /// 反向桥接模式
+        /// </summary>
+        Bridge
+    }
+
+    /// <summary>
+    ///     本地站点配置
+    /// </summary>
+    [Serializable]
+    public class ZeroStationOption
+    {
+        /// <summary>
+        ///   API使用路由模式（而非默认的Push/Pull)
+        /// </summary>
+        [IgnoreDataMember]
+        public bool ApiRouterModel { get; set; }
+
+
+        /// <summary>
+        ///     ApiClient与ApiStation限速模式
+        /// </summary>
+        /// <remarks>
+        ///     Single：单线程无等待
+        ///     ThreadCount:按线程数限制,线程内无等待
+        ///     线程数计算公式 : 机器CPU数量 X TaskCpuMultiple 最小为1,请合理设置并测试
+        ///     WaitCount: 单线程,每个请求起一个新Task,直到最高未完成数量达MaxWait时,
+        ///     ApiClient休眠直到等待数量 低于 MaxWait
+        ///     ApiStation返回服务器忙(熔断)
+        /// </remarks>
+        [DataMember]
+        public SpeedLimitType SpeedLimitModel { get; set; }
+
+        /// <summary>
+        ///     最大等待数(0xFF-0xFFFFF)
+        /// </summary>
+        [DataMember]
+        public int MaxWait { get; set; }
+
+
+        /// <summary>
+        ///     最大Task与Cpu核心数的倍数关系(0-128)
+        /// </summary>
+        [DataMember]
+        public decimal TaskCpuMultiple { get; set; }
+
+        /// <summary>
+        ///     API最大执行超时时间(单位秒)
+        /// </summary>
+        [DataMember]
+        public int ApiTimeout { get; set; }
+
+        /// <summary>
+        /// 复制
+        /// </summary>
+        /// <param name="option"></param>
+        public void Copy(ZeroStationOption option)
+        {
+            if (SpeedLimitModel == SpeedLimitType.None)
+                SpeedLimitModel = option.SpeedLimitModel;
+            if (TaskCpuMultiple <= 0)
+                TaskCpuMultiple = option.TaskCpuMultiple;
+            if (MaxWait <= 0)
+                MaxWait = option.MaxWait;
+            if (ApiTimeout <= 0)
+                ApiTimeout = option.ApiTimeout;
+        }
+    }
 
     /// <summary>
     ///     本地站点配置
@@ -16,19 +106,6 @@ namespace Agebull.MicroZero
     [DataContract]
     public class ZeroAppConfig : ZeroStationOption
     {
-        /// <summary>
-        ///   服务小心组，第一个为主
-        /// </summary>
-        [DataMember]
-        public List<ZeroItem> ZeroGroup { get; set; }
-
-
-        /// <summary>
-        ///   主服务中心
-        /// </summary>
-        [DataMember]
-        public ZeroItem Master { get; set; }
-
         /// <summary>
         ///   是否需要发出事件
         /// </summary>
@@ -47,6 +124,11 @@ namespace Agebull.MicroZero
         [DataMember]
         public string ServiceName { get; set; }
 
+        /// <summary>
+        ///     服务器唯一标识
+        /// </summary>
+        [DataMember]
+        public string ServiceKey { get; set; }
 
         /// <summary>
         ///     短名称
@@ -59,6 +141,24 @@ namespace Agebull.MicroZero
         /// </summary>
         [DataMember]
         public string StationName { get; set; }
+
+        /// <summary>
+        ///     ZeroCenter主机IP地址
+        /// </summary>
+        [DataMember]
+        public string ZeroAddress { get; set; }
+
+        /// <summary>
+        ///     ZeroCenter监测端口号
+        /// </summary>
+        [DataMember]
+        public int ZeroMonitorPort { get; set; }
+
+        /// <summary>
+        ///     ZeroCenter管理端口号
+        /// </summary>
+        [DataMember]
+        public int ZeroManagePort { get; set; }
 
         /// <summary>
         ///     本地数据文件夹
@@ -104,12 +204,20 @@ namespace Agebull.MicroZero
                 LogFolder = option.LogFolder;
             if (!string.IsNullOrWhiteSpace(option.DataFolder))
                 DataFolder = option.DataFolder;
+            if (!string.IsNullOrWhiteSpace(option.ZeroAddress))
+                ZeroAddress = option.ZeroAddress;
+            if (option.ZeroMonitorPort > 0)
+                ZeroMonitorPort = option.ZeroMonitorPort;
+            if (option.ZeroManagePort > 0)
+                ZeroManagePort = option.ZeroManagePort;
             if (!string.IsNullOrWhiteSpace(option.StationName))
                 StationName = option.StationName;
             if (!string.IsNullOrWhiteSpace(option.ShortName))
                 ShortName = option.ShortName;
             if (!string.IsNullOrWhiteSpace(option.ServiceName))
                 ServiceName = option.ServiceName;
+            if (!string.IsNullOrWhiteSpace(option.ServiceKey))
+                ServiceKey = option.ServiceKey;
             if (option.StationIsolate != null)
                 StationIsolate = option.StationIsolate;
 
@@ -119,25 +227,17 @@ namespace Agebull.MicroZero
                 TaskCpuMultiple = option.TaskCpuMultiple;
             if (option.MaxWait > 0)
                 MaxWait = option.MaxWait;
+            if (option.PoolSize > 0)
+                PoolSize = option.PoolSize;
             if (option.CanRaiseEvent != null)
                 CanRaiseEvent = option.CanRaiseEvent;
 
-            /*
-            if (option.PoolSize > 0)
-                PoolSize = option.PoolSize;
-            if (!string.IsNullOrWhiteSpace(option.ZeroAddress))
-                ZeroAddress = option.ZeroAddress;
-            if (option.ZeroMonitorPort > 0)
-                ZeroMonitorPort = option.ZeroMonitorPort;
-            if (option.ZeroManagePort > 0)
-                ZeroManagePort = option.ZeroManagePort;
-            if (!string.IsNullOrWhiteSpace(option.ServiceKey))
-                ServiceKey = option.ServiceKey;
+            if (option.ApiTimeout > 0)
+                ApiTimeout = option.ApiTimeout;
 
-            BridgeLocalAddress = option.BridgeLocalAddress;
+            /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;
-            BridgeResultAddress = option.BridgeResultAddress;
-            */
+            BridgeResultAddress = option.BridgeResultAddress;*/
         }
 
         /// <summary>
@@ -154,12 +254,21 @@ namespace Agebull.MicroZero
                 LogFolder = option.LogFolder;
             if (string.IsNullOrWhiteSpace(DataFolder))
                 DataFolder = option.DataFolder;
+            if (string.IsNullOrWhiteSpace(ZeroAddress))
+                ZeroAddress = option.ZeroAddress;
+            if (ZeroMonitorPort <= 0)
+                ZeroMonitorPort = option.ZeroMonitorPort;
+
+            if (ZeroManagePort <= 0)
+                ZeroManagePort = option.ZeroManagePort;
             if (string.IsNullOrWhiteSpace(StationName))
                 StationName = option.StationName;
             if (string.IsNullOrWhiteSpace(ShortName))
                 ShortName = option.ShortName;
             if (string.IsNullOrWhiteSpace(ServiceName))
                 ServiceName = option.ServiceName;
+            if (string.IsNullOrWhiteSpace(ServiceKey))
+                ServiceKey = option.ServiceKey;
             if (StationIsolate == null)
                 StationIsolate = option.StationIsolate;
 
@@ -170,25 +279,15 @@ namespace Agebull.MicroZero
             if (MaxWait == 0)
                 MaxWait = option.MaxWait;
 
-            if (CanRaiseEvent == null)
-                CanRaiseEvent = option.CanRaiseEvent;
-
-            if (ZeroGroup == null)
-                ZeroGroup = option.ZeroGroup;
-            /*
-
             if (PoolSize <= 0)
                 PoolSize = option.PoolSize;
-            if (string.IsNullOrWhiteSpace(ZeroAddress))
-                ZeroAddress = option.ZeroAddress;
-            if (ZeroMonitorPort <= 0)
-                ZeroMonitorPort = option.ZeroMonitorPort;
-            
-            if (ZeroManagePort <= 0)
-                ZeroManagePort = option.ZeroManagePort;
-            if (string.IsNullOrWhiteSpace(ServiceKey))
-                ServiceKey = option.ServiceKey;
-            BridgeLocalAddress = option.BridgeLocalAddress;
+
+            if (CanRaiseEvent == null)
+                CanRaiseEvent = option.CanRaiseEvent;
+            if (ApiTimeout <= 0)
+                ApiTimeout = option.ApiTimeout;
+
+            /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;
             BridgeResultAddress = option.BridgeResultAddress;*/
         }
@@ -205,21 +304,33 @@ namespace Agebull.MicroZero
         public string LocalIpAddress { get; set; }
 
         /// <summary>
+        ///     监测中心广播地址
+        /// </summary>
+        [IgnoreDataMember]
+        public string ZeroMonitorAddress { get; set; }
+
+        /// <summary>
+        ///     监测中心管理地址
+        /// </summary>
+        [IgnoreDataMember]
+        public string ZeroManageAddress { get; set; }
+
+        /// <summary>
         ///     是否在Linux黑环境下
         /// </summary>
         [IgnoreDataMember]
         public bool IsLinux { get; set; }
 
-        #region 桥接
-
-        /*
-        
         /// <summary>
         ///    连接池大小
         /// </summary>
         [IgnoreDataMember]
         public int PoolSize { get; set; }
 
+        #region 桥接
+
+        /*
+        
         /// <summary>
         ///     ZeroCenter桥接地址
         /// </summary>
@@ -439,12 +550,11 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     试着取配置
         /// </summary>
-        /// <param name="item"></param>
         /// <param name="stationName"></param>
         /// <param name="json"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public bool UpdateConfig(ZeroItem item, string stationName, string json, out StationConfig config)
+        public bool UpdateConfig(string stationName, string json, out StationConfig config)
         {
             if (stationName == null || string.IsNullOrEmpty(json) || json[0] != '{')
             {
@@ -456,9 +566,6 @@ namespace Agebull.MicroZero
             try
             {
                 config = JsonConvert.DeserializeObject<StationConfig>(json);
-                config.Group = item.Name;
-                config.Address = item.Address;
-                config.ServiceKey = item.ServiceKey.ToZeroBytes();
                 AddStation(config);
                 return true;
             }
@@ -473,36 +580,15 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     刷新配置
         /// </summary>
-        /// <param name="item">服务中心组</param>
         /// <param name="json"></param>
-        public bool FlushConfigs(ZeroItem item, string json)
+        public bool FlushConfigs(string json)
         {
             try
             {
-                lock (_configs)
-                {
-                    if (item == null)
-                        return false;
-                    var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
-                    foreach (var config in configs)
-                    {
-                        if (item != Master && (config.IsBaseStation || config.IsSystem))
-                            continue;
-
-                        //Console.WriteLine("lock (_configs)");
-
-                        if (_configs.TryGetValue(config.Name, out var old))
-                        {
-                            if (old.Name != item.Name)
-                                continue;
-                        }
-
-                        config.Group = item.Name;
-                        config.Address = item.Address;
-                        config.ServiceKey = item.ServiceKey.ToZeroBytes();
-                        AddStation(config);
-                    }
-                }
+                var configs = JsonConvert.DeserializeObject<List<StationConfig>>(json);
+                foreach (var config in configs)
+                    AddStation(config);
+                ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
                 return true;
             }
             catch (Exception e)
@@ -513,5 +599,281 @@ namespace Agebull.MicroZero
         }
 
         #endregion
+    }
+
+    /// <summary>
+    ///     站点应用
+    /// </summary>
+    partial class ZeroApplication
+    {
+        /// <summary>
+        ///     当前应用名称
+        /// </summary>
+        public static string AppName { get; set; }
+
+        /// <summary>
+        ///     站点配置
+        /// </summary>
+        public static ZeroAppConfig Config { get; set; }
+
+        /// <summary>
+        /// 工作模式
+        /// </summary>
+        public static ZeroWorkModel WorkModel { get; set; }
+
+
+        /// <summary>
+        ///     配置校验
+        /// </summary>
+        private static void CheckConfig()
+        {
+            #region 配置组合
+
+            var name = ConfigurationManager.Root["AppName"];
+            if (name != null)
+                AppName = name;
+            if (string.IsNullOrWhiteSpace(AppName))
+                throw new Exception("无法找到配置[AppName],请在appsettings.json或代码中设置");
+
+            var curPath = Environment.CurrentDirectory;
+            string rootPath;
+            ZeroAppConfig baseConfig = null;
+            if (ConfigurationManager.Root["ASPNETCORE_ENVIRONMENT_"] == "Development")
+            {
+                rootPath = curPath;
+            }
+            else
+            {
+                rootPath = Path.GetDirectoryName(curPath);
+                var s = ConfigurationManager.Get("Zero");
+                if (s != null)
+                {
+                    baseConfig = s.Child<ZeroAppConfig>("Global");
+                    var so = s.Child<SocketOption>("socketOption");
+                    if (so != null)
+                        ZSocket.Option = so;
+                }
+
+                // ReSharper disable once AssignNullToNotNullAttribute
+                var file = Path.Combine(rootPath, "config", "zero.json");
+                if (File.Exists(file))
+                    ConfigurationManager.Load(file);
+                file = Path.Combine(rootPath, "config", $"{AppName}.json");
+                if (File.Exists(file))
+                    ConfigurationManager.Load(file);
+            }
+            ConfigurationManager.BasePath = ConfigurationManager.Root["rootPath"] = rootPath;
+
+            var sec = ConfigurationManager.Get("Zero");
+            if (sec == null)
+                throw new Exception("无法找到主配置节点,路径为Zero,在zero.json或appsettings.json中设置");
+
+            var option = sec.Child<SocketOption>("socketOption");
+            if (option != null)
+            {
+                ZSocket.Option = option;
+            }
+
+            Config = sec.Child<ZeroAppConfig>(AppName) ?? new ZeroAppConfig();
+            if (string.IsNullOrWhiteSpace(Config.StationName))
+                Config.StationName = AppName;
+
+            Config.BinPath = curPath;
+            Config.RootPath = rootPath;
+            Config.IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            if (baseConfig != null)
+            {
+                Config.CopyByHase(baseConfig);
+            }
+            {
+                var global = sec.Child<ZeroAppConfig>("Global");
+
+                if (global == null)
+                    if (WorkModel == ZeroWorkModel.Bridge)
+                        global = new ZeroAppConfig();
+                    else
+                        throw new Exception("无法找到主配置节点,路径为Zero.Global,在zero.json或appsettings.json中设置");
+
+                Config.CopyByEmpty(global);
+            }
+            if (Config.ApiTimeout <= 0)
+                Config.ApiTimeout = 60;
+            #endregion
+
+            #region ServiceName
+
+            if (string.IsNullOrWhiteSpace(Config.LocalIpAddress))
+                Config.LocalIpAddress = GetHostIps();
+
+            Config.ShortName = string.IsNullOrWhiteSpace(Config.ShortName)
+                ? Config.StationName
+                : Config.ShortName.Trim();
+
+            if (string.IsNullOrWhiteSpace(Config.ServiceName))
+            {
+                try
+                {
+                    Config.ServiceName = Dns.GetHostName();
+                }
+                catch (Exception e)
+                {
+                    LogRecorderX.Exception(e);
+                    Config.ServiceName = Config.StationName;
+                }
+            }
+
+            #endregion
+
+            #region Folder
+
+            if (Config.StationIsolate == true)
+            {
+                if (string.IsNullOrWhiteSpace(Config.DataFolder))
+                    Config.DataFolder = IOHelper.CheckPath(rootPath, "datas", AppName);
+
+                if (string.IsNullOrWhiteSpace(Config.LogFolder))
+                    Config.LogFolder = IOHelper.CheckPath(rootPath, "logs", AppName);
+
+                if (string.IsNullOrWhiteSpace(Config.ConfigFolder))
+                    Config.ConfigFolder = IOHelper.CheckPath(rootPath, "config", AppName);
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(Config.DataFolder))
+                    Config.DataFolder = IOHelper.CheckPath(rootPath, "datas");
+
+                if (string.IsNullOrWhiteSpace(Config.LogFolder))
+                    Config.LogFolder = IOHelper.CheckPath(rootPath, "logs");
+
+                if (string.IsNullOrWhiteSpace(Config.ConfigFolder))
+                    Config.ConfigFolder = IOHelper.CheckPath(rootPath, "config");
+            }
+
+            #endregion
+
+            #region ZeroCenter
+
+            if (WorkModel == ZeroWorkModel.Bridge)
+                return;
+            if (string.IsNullOrWhiteSpace(Config.ZeroAddress))
+                Config.ZeroAddress = "127.0.0.1";
+            if (Config.ZeroManagePort <= 1024 || Config.ZeroManagePort >= 65000)
+                Config.ZeroManagePort = 8000;
+            if (Config.ZeroMonitorPort <= 1024 || Config.ZeroMonitorPort >= 65000)
+                Config.ZeroMonitorPort = 8001;
+            if (Config.PoolSize > 4096 || Config.PoolSize < 10)
+                Config.PoolSize = 100;
+            Config.ZeroManageAddress = ZeroIdentityHelper.GetRequestAddress("SystemManage", Config.ZeroManagePort);
+            Config.ZeroMonitorAddress = ZeroIdentityHelper.GetWorkerAddress("SystemMonitor", Config.ZeroMonitorPort);
+            #endregion
+        }
+
+        private static string GetHostIps()
+        {
+            var ips = new StringBuilder();
+            try
+            {
+                var first = true;
+                string hostName = Dns.GetHostName();
+                Console.WriteLine(hostName);
+                foreach (var address in Dns.GetHostAddresses(hostName))
+                {
+                    if (address.IsIPv4MappedToIPv6 || address.IsIPv6LinkLocal || address.IsIPv6Multicast ||
+                        address.IsIPv6SiteLocal || address.IsIPv6Teredo)
+                        continue;
+                    var ip = address.ToString();
+                    if (ip == "127.0.0.1" || ip == "127.0.1.1" || ip == "::1" || ip == "-1")
+                        continue;
+                    if (first)
+                        first = false;
+                    else
+                        ips.Append(" , ");
+                    ips.Append(ip);
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+            }
+
+            return ips.ToString();
+        }
+
+        /// <summary>
+        ///     配置校验
+        /// </summary>
+        public static ZeroStationOption GetApiOption(string station)
+        {
+            return GetStationOption(station);
+        }
+
+
+        /// <summary>
+        ///     配置校验
+        /// </summary>
+        public static ZeroStationOption GetClientOption(string station)
+        {
+            return GetStationOption(station);
+        }
+
+        /// <summary>
+        ///     配置校验
+        /// </summary>
+        private static ZeroStationOption GetStationOption(string station)
+        {
+            var sec = ConfigurationManager.Get("Zero");
+            var option = sec.Child<ZeroStationOption>(station) ?? new ZeroStationOption();
+            option.Copy(Config);
+            if (option.ApiTimeout <= 1)
+                option.ApiTimeout = 60;
+
+            if (option.SpeedLimitModel < SpeedLimitType.Single || option.SpeedLimitModel > SpeedLimitType.WaitCount)
+                option.SpeedLimitModel = SpeedLimitType.None;
+
+            if (option.TaskCpuMultiple <= 0)
+                option.TaskCpuMultiple = 1;
+            else if (option.TaskCpuMultiple > 128)
+                option.TaskCpuMultiple = 128;
+
+            if (option.MaxWait < 0xFF)
+                option.MaxWait = 0xFF;
+            else if (option.MaxWait > 0xFFFFF)
+                option.MaxWait = 0xFFFFF;
+
+            return option;
+        }
+
+        private static void ShowOptionInfo()
+        {
+            ZeroTrace.SystemLog("OS", RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Linux" : "Windows");
+            ZeroTrace.SystemLog("RunModel", Config.CanRaiseEvent == true ? "Service" : "Monitor", ConfigurationManager.Root["ASPNETCORE_ENVIRONMENT_"]);
+
+            ZeroTrace.SystemLog("RootPath", Config.RootPath);
+            ZeroTrace.SystemLog("LogPath", LogRecorderX.LogPath);
+            ZeroTrace.SystemLog("ZeroCenter", Config.ZeroAddress, Config.ZeroManagePort, Config.ZeroMonitorPort);
+            ZeroTrace.SystemLog("Name", Config.StationName, GlobalContext.ServiceName, GlobalContext.ServiceRealName, Config.LocalIpAddress);
+
+            ZeroTrace.SystemLog("PoolSize", Config.PoolSize);
+
+            string model;
+            switch (Config.SpeedLimitModel)
+            {
+                default:
+                    model = "单线程:线程(1) 等待(0)";
+                    break;
+                case SpeedLimitType.ThreadCount:
+                    var max = (int)(Environment.ProcessorCount * Config.TaskCpuMultiple);
+                    if (max < 1)
+                        max = 1;
+                    model =
+                        $"按线程数限制:线程({Environment.ProcessorCount}×{Config.TaskCpuMultiple}={max}) 等待({Config.MaxWait})";
+                    break;
+                case SpeedLimitType.WaitCount:
+                    model = $"按等待数限制:线程(1) 等待({Config.MaxWait})";
+                    break;
+            }
+
+            ZeroTrace.SystemLog("SpeedLimitModel", model);
+        }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Agebull.MicroZero.ZeroApis;
 
 namespace MicroZero.Http.Gateway
@@ -11,6 +12,8 @@ namespace MicroZero.Http.Gateway
     /// </summary>
     internal class RouteCache
     {
+        #region 数据
+
         /// <summary>
         ///     缓存数据
         /// </summary>
@@ -50,22 +53,53 @@ namespace MicroZero.Http.Gateway
                 {
                     kb.Append($"&{kv.Key}={kv.Value}");
                 }
-
-                if (!string.IsNullOrWhiteSpace(data.HttpContent))
+                if (!string.IsNullOrWhiteSpace(data.HttpContext))
                 {
-                    kb.Append(data.HttpContent);
+                    kb.Append(data.HttpContext);
                 }
             }
+            CacheData cacheData;
             data.CacheKey = kb.ToString();
-            if (!Cache.TryGetValue(data.CacheKey, out var cacheData))
-                return false;
-            if (cacheData.UpdateTime <= DateTime.Now)
+            lock (Cache)
             {
-                Cache.Remove(data.CacheKey);
+                if (!Cache.TryGetValue(data.CacheKey, out cacheData))
+                {
+                    Cache.Add(data.CacheKey, new CacheData
+                    {
+                        IsLoading = 1,
+                        Content = ApiResultIoc.NoReadyJson
+                    });
+                    return false;
+                }
+            }
+            if (cacheData.Success)
+            {
+                if (cacheData.UpdateTime > DateTime.Now)
+                {
+                    data.ResultMessage = cacheData.Content;
+                    return true;
+                }
+            }
+            //一个载入，其它的等待调用成功
+            if (Interlocked.Increment(ref cacheData.IsLoading) == 0)
+            {
                 return false;
             }
-            data.ResultMessage = cacheData.Content;
-            return true;
+
+            //等待调用成功
+            int cnt = 0;
+            while (++cnt < 10)
+            {
+                Thread.Sleep(50);
+                lock (Cache)
+                {
+                    if (!Cache.TryGetValue(data.CacheKey, out var newData) || cacheData == newData)
+                        continue;
+                }
+                data.ResultMessage = cacheData.Content;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -76,31 +110,26 @@ namespace MicroZero.Http.Gateway
         {
             if (data.CacheSetting == null || !data.IsSucceed || data.CacheKey == null)
                 return;
-            CacheData cacheData;
-            if (data.CacheSetting.Feature.HasFlag(CacheFeature.NetError) &&
-                data.UserState == UserOperatorStateType.RemoteError)
-                cacheData = new CacheData
-                {
-                    Content = data.ResultMessage,
-                    UpdateTime = DateTime.Now.AddSeconds(30)
-                };
-            else
-                cacheData = new CacheData
-                {
-                    Content = data.ResultMessage,
-                    UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
-                };
-
-            lock (data.CacheSetting)
+            if (!data.IsSucceed && !data.CacheSetting.Feature.HasFlag(CacheFeature.NetError))
             {
-                if (!Cache.ContainsKey(data.CacheKey))
-                    Cache.Add(data.CacheKey, cacheData);
-                else
-                    Cache[data.CacheKey] = cacheData;
+                return;
+            }
+            CacheData cacheData = new CacheData
+            {
+                Content = data.ResultMessage,
+                Success = data.IsSucceed,
+                UpdateTime = DateTime.Now.AddSeconds(data.CacheSetting.FlushSecond)
+            };
+
+            lock (Cache)
+            {
+                Cache[data.CacheKey] = cacheData;
             }
         }
 
-        #region 数据
+        #endregion
+
+        #region 配置
 
         /// <summary>
         ///     路由配置

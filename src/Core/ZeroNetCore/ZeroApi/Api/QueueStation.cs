@@ -141,7 +141,7 @@ namespace Agebull.MicroZero.PubSub
         }
 
         string _fileName;
-        string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
+        private string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
         /// <summary>
         ///     发起一次请求

@@ -238,14 +238,24 @@
                 缓存数据
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.CacheData.UpdateTime">
+        <member name="F:MicroZero.Http.Gateway.CacheData.IsLoading">
             <summary>
-                下次更新时间
+            是否正在载入，如果是，等待即可
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.CacheData.Content">
             <summary>
                 缓存内容
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.Success">
+            <summary>
+                是否正确
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.UpdateTime">
+            <summary>
+                下次更新时间
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.CacheFeature">

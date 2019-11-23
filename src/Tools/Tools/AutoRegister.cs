@@ -19,7 +19,7 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
-            if (!ConfigurationManager.Get("LogRecorder").GetBool("local", false))
+            if (!ConfigurationManager.Get("LogRecorder").GetBool("remote", false))
             {
                 ZeroTrace.SystemLog("RemoteLogRecorder", "IAutoRegister.Initialize");
                 IocHelper.ServiceCollection.AddTransient<ILogRecorder>(provider => RemoteLogRecorder.Instance);

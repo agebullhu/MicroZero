@@ -105,7 +105,7 @@ namespace agebull
 					results.erase(results.begin());
 				}
 			}*/
-			auto caller = list[0];
+			const auto caller = list[0];
 			list.erase(list.begin());
 			if (list[0][0] == zero_def::name::head::plan && station_type_ != zero_def::station_type::plan)
 			{
@@ -123,11 +123,11 @@ namespace agebull
 				list[1].tag(tag);
 				if (list[0][0] == zero_def::name::head::inproc)
 				{
-					send_request_result(request_socket_inproc_, list, true, true);
+					send_request_result(request_socket_inproc_, list[1].state(), list, true, true);
 				}
 				else
 				{
-					send_request_result(request_scoket_tcp_, list, true, true);
+					send_request_result(request_scoket_tcp_, list[1].state(), list, true, true);
 				}
 			}
 		}

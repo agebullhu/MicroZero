@@ -502,7 +502,7 @@ namespace agebull
 				}
 			}
 			descirpt.tag(zero_def::frame::result_end);
-			send_request_result(socket, ls, false, false);
+			send_request_result(socket, description.state(), ls, false, false);
 		}
 
 		/**
@@ -522,8 +522,9 @@ namespace agebull
 			vector<shared_char> result;
 			if (socket_ex::recv(plan_socket_inproc_, result) == zmq_socket_state::succeed)
 			{
-				result.insert(result.begin(), list[0]);
-				send_request_result(socket, result, true, true);
+				const auto desc = result.begin();
+				result.insert(desc, list[0]);
+				send_request_result(socket, desc[0].state(), result, true, true);
 			}
 			else
 			{
