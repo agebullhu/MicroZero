@@ -35,7 +35,7 @@ namespace MicroZero.Http.Gateway
         {
             data.End = DateTime.Now;
             EndMonitor(data);
-            ApiCollect(data);
+            //ApiCollect(data);
             EndZeroTrace(data);
         }
 
@@ -158,7 +158,7 @@ namespace MicroZero.Http.Gateway
         }
 
 
-        //private static int count, error, success;
+        /*/private static int count, error, success;
         /// <summary>
         ///     开始计数
         /// </summary>
@@ -180,7 +180,7 @@ namespace MicroZero.Http.Gateway
                 Requester = $"http_route={GlobalContext.RequestInfo.Ip}:{GlobalContext.RequestInfo.Port}"
             });
             //ZeroTrace.WriteLoop("Run", $"count:{count} success{success} error{error}");
-        }
+        }*/
         #endregion
     }
 }

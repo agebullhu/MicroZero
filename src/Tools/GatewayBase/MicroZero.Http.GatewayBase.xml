@@ -49,12 +49,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.IoHandler.ApiCollect(MicroZero.Http.Gateway.RouteData)">
-            <summary>
-                开始计数
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:MicroZero.Http.Gateway.IRouter">
             <summary>
                 调用映射核心类
