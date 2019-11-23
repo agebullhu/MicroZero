@@ -1,7 +1,5 @@
 #include "../stdafx.h"
 #include "api_station.h"
-#include "inner_socket.h"
-#include "zero_frames.h"
 
 namespace agebull
 {
@@ -44,7 +42,7 @@ namespace agebull
 		/**
 		* \brief 工作开始 : 处理请求数据
 		*/
-		inline void api_station::job_start(zmq_handler socket, vector<shared_char>& list, bool inner, bool old)
+		inline void api_station::job_start(const zmq_handler socket, vector<shared_char>& list, const bool inner, const bool old)
 		{
 			trace(1, list, nullptr);
 			const shared_char caller = list[0];
@@ -83,15 +81,11 @@ namespace agebull
 			}
 			if (state != zmq_socket_state::succeed)
 			{
-				zero_frames frames(list, list[1]);
-				frames.check_in_frames();
-				send_request_status_by_trace(socket, *caller, zero_def::status::not_worker, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
+				send_request_status_by_trace(socket, *caller, zero_def::status::not_worker, list, 0, 0, 0);
 			}
 			else if (!old || description.command() == zero_def::command::proxy)//必须返回信息到代理
 			{
-				zero_frames frames(list, list[1]);
-				frames.check_in_frames();
-				send_request_status_by_trace(socket, *caller, zero_def::status::runing, list, frames.glid_index, frames.rqid_index, frames.rqer_index);
+				send_request_status_by_trace(socket, *caller, zero_def::status::runing, list,  0,0,0);
 			}
 		}
 
@@ -193,11 +187,11 @@ namespace agebull
 				list[1].tag(tag);
 				if (list[0][0] == zero_def::name::head::inproc)
 				{
-					send_request_result(request_socket_inproc_, list[1].state(), list, true, true);
+					send_request_result(request_socket_inproc_, list, true, true);
 				}
 				else
 				{
-					send_request_result(request_scoket_tcp_, list[1].state(), list, true, true);
+					send_request_result(request_scoket_tcp_, list, true, true);
 				}
 			}
 		}

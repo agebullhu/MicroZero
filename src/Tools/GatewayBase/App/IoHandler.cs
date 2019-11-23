@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using Agebull.Common.Ioc;
+using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 
 using Agebull.MicroZero;
@@ -8,6 +8,7 @@ using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Agebull.Common.Context;
+using Agebull.Common.Ioc;
 
 namespace MicroZero.Http.Gateway
 {
@@ -23,7 +24,7 @@ namespace MicroZero.Http.Gateway
         public static void OnBegin(RouteData data)
         {
             data.Start = DateTime.Now;
-            //BeginZeroTrace(data);
+            BeginZeroTrace(data);
             BeginMonitor(data);
         }
 
@@ -34,8 +35,8 @@ namespace MicroZero.Http.Gateway
         {
             data.End = DateTime.Now;
             EndMonitor(data);
-            //CountApi(data);
-            //EndZeroTrace(data);
+            //ApiCollect(data);
+            EndZeroTrace(data);
         }
 
         #region LogMonitor
@@ -102,7 +103,7 @@ namespace MicroZero.Http.Gateway
         #endregion
 
         #region ZeroTrace
-        /*
+
 
         /// <summary>
         ///     订阅时的标准网络数据说明
@@ -136,6 +137,8 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void BeginZeroTrace(RouteData data)
         {
+            if (!RouteOption.Option.SystemConfig.EnableLinkTrace)
+                return;
             var result = ZeroPublisher.Send("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data);
             if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
             {
@@ -149,19 +152,23 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void EndZeroTrace(RouteData data)
         {
+            if (!RouteOption.Option.SystemConfig.EnableLinkTrace)
+                return;
             ZeroPublisher.Publish("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data.ResultMessage);
         }
 
-        
-        //private static int count, error, success;
+
+        /*/private static int count, error, success;
         /// <summary>
         ///     开始计数
         /// </summary>
         /// <returns></returns>
-        private static void CountApi(RouteData data)
+        private static void ApiCollect(RouteData data)
         {
+            if (!RouteOption.Option.SystemConfig.EnableApiCollect)
+                return;
             var counter = IocHelper.Create<IApiCounter>();
-            if (counter == null || !counter.IsEnable)
+            if (counter == null)
                 return;
             counter.Count(new CountData
             {

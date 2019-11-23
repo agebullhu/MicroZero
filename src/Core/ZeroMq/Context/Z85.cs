@@ -5,9 +5,13 @@ using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 	public static class Z85
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 	{
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static void CurveKeypair(out byte[] publicKey, out byte[] secretKey)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			const int destLen = 40;
 			using (var publicKeyData = DispoIntPtr.Alloc(destLen + 1))
@@ -26,7 +30,9 @@ namespace ZeroMQ
 			}
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] Encode(byte[] decoded)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var dataLen = decoded.Length;
 			if (dataLen % 4 > 0)
@@ -55,55 +61,75 @@ namespace ZeroMQ
 			}
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85Encoded(this byte[] decoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Encode(decoded);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string ToZ85Encoded(this string decoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Encode(decoded, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string ToZ85Encoded(this string decoded, Encoding encoding) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Encode(decoded, encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85EncodedBytes(this string decoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return EncodeBytes(decoded, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85EncodedBytes(this string decoded, Encoding encoding) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return EncodeBytes(decoded, encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string Encode(string strg)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Encode(strg, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string Encode(string strg, Encoding encoding)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var encoded = EncodeBytes(strg, encoding);
 			return encoding.GetString(encoded);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] EncodeBytes(string strg)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return EncodeBytes(strg, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] EncodeBytes(string strg, Encoding encoding)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var bytes = encoding.GetBytes(strg);
 			return Encode(bytes);
 		}
 
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] Decode(byte[] encoded)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var dataLen = encoded.Length;
 			if (dataLen % 5 > 0)
@@ -131,43 +157,59 @@ namespace ZeroMQ
 			}
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85Decoded(this byte[] encoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Decode(encoded);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string ToZ85Decoded(this string encoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Decode(encoded, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string ToZ85Decoded(this string encoded, Encoding encoding) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Decode(encoded, encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85DecodedBytes(this string encoded) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return DecodeBytes(encoded, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] ToZ85DecodedBytes(this string encoded, Encoding encoding) 
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return DecodeBytes(encoded, encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string Decode(string strg)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Decode(strg, ZContext.Encoding);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static string Decode(string strg, Encoding encoding)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var encoded = DecodeBytes(strg, encoding);
 			return encoding.GetString(encoded);
 		}
 		
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static byte[] DecodeBytes(string strg, Encoding encoding)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			var bytes = encoding.GetBytes(strg);
 			return Decode(bytes);

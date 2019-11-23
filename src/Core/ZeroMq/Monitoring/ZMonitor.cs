@@ -22,11 +22,15 @@ namespace ZeroMQ.Monitoring
 
 		private readonly Dictionary<ZMonitorEvents, Action<ZMonitorEventData>> _eventHandler;
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		protected ZMonitor(ZSocket socket, string endpoint)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 			: this(ZContext.Current, socket, endpoint) 
 		{ }
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		protected ZMonitor(ZContext context, ZSocket socket, string endpoint)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
             // TODO: remove socket argument and create socket within Run?
 			_socket = socket;
@@ -48,12 +52,16 @@ namespace ZeroMQ.Monitoring
 			};
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static ZMonitor Create(string endpoint)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Create(ZContext.Current, endpoint);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static ZMonitor Create(ZContext context, string endpoint)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
             ZMonitor monitor;
             if (null == (monitor = Create(context, endpoint, out var error)))
@@ -89,7 +97,9 @@ namespace ZeroMQ.Monitoring
 			return new ZMonitor(context, socket, endpoint);
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public event EventHandler<ZMonitorEventArgs> AllEvents;
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 		/// <summary>
 		/// Occurs when a new connection is established.

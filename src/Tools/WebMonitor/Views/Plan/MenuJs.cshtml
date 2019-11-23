@@ -7,6 +7,7 @@
                     return;
                 case "operator-flush":
                     do_sync_get("/Plan/Flush", "刷新数据");
+                    vue_option.data.plans = plans = [];
                     return;
                 case "type-once":
                     do_sync_get("/Plan/Filter/none", "单次任务", res => {
@@ -23,6 +24,7 @@
                         vue_option.data.plans = plans = res.data;
                     });
                     return;
+
                 case "type-week":
                     do_sync_get("/Plan/Filter/week", "每周任务", res => {
                         vue_option.data.plans = plans = res.data;

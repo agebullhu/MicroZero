@@ -30,6 +30,11 @@ namespace Agebull.MicroZero.ZeroApis
         internal ApiCallItem Item;
 
         /// <summary>
+        /// 取消停牌
+        /// </summary>
+        internal CancellationTokenSource CancellationToken = new CancellationTokenSource();
+
+        /// <summary>
         /// 范围资源
         /// </summary>
         internal IDisposable ScopeResource { get; set; }
@@ -43,6 +48,8 @@ namespace Agebull.MicroZero.ZeroApis
         {
             using (ScopeResource = IocScope.CreateScope())
             {
+                if (CancellationToken.IsCancellationRequested)
+                    return;
                 GlobalContext.Current.DependencyObjects.Annex(Item);
                 try
                 {
@@ -149,6 +156,8 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             foreach (var p in Item.Handlers)
             {
+                if (CancellationToken.IsCancellationRequested)
+                    return;
                 try
                 {
                     p.Prepare(Station, Item);
@@ -189,6 +198,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             try
             {
+                GlobalContext.Current.DependencyObjects.Annex(CancellationToken);
                 if (!string.IsNullOrWhiteSpace(Item.Context))
                 {
                     GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(Item.Context));//BUG:数据不能全覆盖
@@ -313,11 +323,13 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         private object CommandExec(bool monitor, ApiAction action)
         {
-
+            if (CancellationToken.IsCancellationRequested)
+                return ZeroOperatorStateType.Unavailable;
             //4 方法执行
             try
             {
                 GlobalContext.Current.DependencyObjects.Annex(action);
+                GlobalContext.Current.DependencyObjects.Annex(this);
                 return action.Execute();
             }
             catch (Exception e)
@@ -329,6 +341,11 @@ namespace Agebull.MicroZero.ZeroApis
                 Item.Result = ApiResultIoc.LocalExceptionJson;
                 Item.Status = UserOperatorStateType.LocalException;
                 return ZeroOperatorStateType.LocalException;
+            }
+            finally
+            {
+                CancellationToken.Dispose();
+                CancellationToken = null;
             }
         }
 

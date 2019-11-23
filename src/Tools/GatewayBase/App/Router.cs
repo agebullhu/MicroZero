@@ -126,6 +126,15 @@ namespace MicroZero.Http.Gateway
                 return;
             }
 
+            // 3 缓存快速处理
+            if (RouteCache.LoadCache(Data))
+            {
+                //找到并返回缓存
+                Data.UserState = UserOperatorStateType.Success;
+                Data.ZeroState = ZeroOperatorStateType.Ok;
+                return;
+            }
+
             // 1 初始化路由信息
             if (!FindHost())
             {
@@ -143,14 +152,6 @@ namespace MicroZero.Http.Gateway
                 Data.ZeroState = ZeroOperatorStateType.DenyAccess;
                 if (Data.ResultMessage == null)
                     Data.ResultMessage = ApiResultIoc.DenyAccessJson;
-                return;
-            }
-            // 3 缓存快速处理
-            if (RouteCache.LoadCache(Data))
-            {
-                //找到并返回缓存
-                Data.UserState = UserOperatorStateType.Success;
-                Data.ZeroState = ZeroOperatorStateType.Ok;
                 return;
             }
 
@@ -234,7 +235,6 @@ namespace MicroZero.Http.Gateway
             //    return;
             //// 缓存
             //RouteCache.CacheResult(Data);
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
             //if (!string.IsNullOrWhiteSpace(Data.CacheKey))
             //    Response.Headers.Add("Etag", Data.CacheKey);
             if (!Data.IsFile || Data.ResultBinary == null || Data.ResultBinary.Length == 0)

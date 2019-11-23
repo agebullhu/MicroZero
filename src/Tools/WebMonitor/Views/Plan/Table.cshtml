@@ -7,7 +7,7 @@
             <template slot-scope="scope">
                 <el-form label-position="left" inline class="demo-table-expand" label-width="100px">
                     <el-form-item label="计划标识">
-                        <span>{{ scope.row.plan_id | formatHex}}</span>
+                        <span>{{ scope.row.name}}({{ scope.row.plan_id | formatHex}})</span>
                     </el-form-item>
                     <el-form-item label="原始请求者">
                         <span>{{ scope.row.caller }}</span>

@@ -36,10 +36,10 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
         {
-            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
+            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
 
             var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Config.ServiceKey, identity, Subscribe), socket);
+            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
 
             Task.Factory.StartNew(Reload);
 
@@ -91,7 +91,8 @@ namespace Agebull.MicroZero.PubSub
                 item.Caller,
                 des,
                 item.Requester.ToZeroBytes(),
-                item.LocalId.ToZeroBytes()
+                item.LocalId.ToZeroBytes(),
+                ZeroCommandExtend.ServiceKeyBytes
             };
             return SendResult(socket, new ZMessage(msg));
         }
@@ -122,9 +123,9 @@ namespace Agebull.MicroZero.PubSub
 
         #region 已处理集合
 
-        private readonly object _localObj = new object();
+        private readonly object localObj = new object();
 
-        private QueueData _data = new QueueData();
+        private QueueData data = new QueueData();
 
 
 
@@ -132,14 +133,13 @@ namespace Agebull.MicroZero.PubSub
         {
             try
             {
-                File.WriteAllText(FileName, JsonHelper.SerializeObject(_data));
+                File.WriteAllText(FileName, JsonHelper.SerializeObject(data));
             }
             catch (Exception ex)
             {
                 LogRecorderX.Exception(ex);
             }
         }
-
         string _fileName;
         private string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
@@ -171,23 +171,26 @@ namespace Agebull.MicroZero.PubSub
             {
                 return;
             }
-            long[] ids;
-            lock (_localObj)
+            long[] ids = null;
+            lock (localObj)
             {
-                _data = queueData;
-                if(_data.FailedIds.Count == 0)
-                    _data.FailedIds = _data.FailedIds.Distinct().ToList();
-                ids = _data.FailedIds.ToArray();
+                data = queueData;
+                if(data.FailedIds.Count == 0)
+                    data.FailedIds = data.FailedIds.Distinct().ToList();
+                ids = data.FailedIds.ToArray();
             }
             using (var cmd = new QueueCommand())
             {
-                if (!cmd.Prepare(Config.RequestAddress, Config.ServiceKey, StationName))
+                if (!cmd.Prepare(Config.RequestAddress, StationName))
                     return;
                 foreach (var id in ids)
                 {
                     cmd.CallCommand(id, id);
                 }
-                cmd.CallCommand(_data.Max, 0);
+                lock (localObj)
+                {
+                    cmd.CallCommand(data.Max, 0);
+                }
             }
         }
 
@@ -197,27 +200,27 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         protected override bool PrepareExecute(ApiCallItem item)
         {
-            lock (_localObj)
+            lock (localObj)
             {
-                if (_data.Max == 0)
+                if (data.Max == 0)
                     return true;
                 var nowId = long.Parse(item.LocalId);
-                return _data.Max < nowId || _data.FailedIds.Contains(nowId);
+                return data.Max < nowId || data.FailedIds.Contains(nowId);
             }
         }
 
 
         bool CacheProcess(long nowId, bool success)
         {
-            lock (_localObj)
+            lock (localObj)
             {
                 if (!success)
-                    _data.FailedIds.Add(nowId);
+                    data.FailedIds.Add(nowId);
                 else
                 {
-                    if (_data.Max < nowId)
-                        _data.Max = nowId;
-                    _data.FailedIds.Remove(nowId);
+                    if (data.Max < nowId)
+                        data.Max = nowId;
+                    data.FailedIds.Remove(nowId);
                 }
             }
             SaveIds();
@@ -254,13 +257,13 @@ namespace Agebull.MicroZero.PubSub
             ZeroFrameType.SerivceKey,
             ZeroFrameType.End
         };
-        public bool Prepare(string address,byte[] serviceKey, string stationName)
+        public bool Prepare(string address, string stationName)
         {
             if (socket != null)
                 return true;
             try
             {
-                socket = ZSocket.CreateOnceSocket(address, serviceKey, ZSocket.CreateIdentity(false, stationName));
+                socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(false, stationName));
                 return true;
             }
             catch (Exception e)
@@ -277,7 +280,23 @@ namespace Agebull.MicroZero.PubSub
         {
             try
             {
-                var result = new ZSimpleCommand().SendTo(socket, description, start.ToString(), end.ToString());
+                ZeroResult result;
+                using (var message = new ZMessage(description, start.ToString(), end.ToString()))
+                {
+                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    if (socket.SendTo(message))
+                        result= new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.Ok,
+                            InteractiveSuccess = true
+                        };
+                    else
+                        result = new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.LocalRecvError,
+                            ZmqError = socket.LastError
+                        };
+                }
                 return !result.InteractiveSuccess ? result : socket.ReceiveString();
             }
             catch (Exception e)

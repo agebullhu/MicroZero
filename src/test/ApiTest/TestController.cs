@@ -1,12 +1,14 @@
 ﻿using Agebull.MicroZero.ZeroApis;
 using System.Collections.Generic;
+using System.Threading;
+using Agebull.MicroZero;
 
 namespace ApiTest
 {
 
     public class TestItem
     {
-        public long Id{ get; set; }
+        public IEnumerable<long> Test { get; set; }
     }
 
     public class TestItems
@@ -38,13 +40,13 @@ namespace ApiTest
         /// 处理文字请求
         /// </summary>
         /// <returns></returns>
-        [Route("v1/test")]
-        public ApiResult<TestItem> OnTestRequest()
+        [Route("v1/test"),ApiAccessOptionFilter(ApiAccessOption.Anymouse| ApiAccessOption.Public)]
+        public ApiResult<TestItems> OnTextRequest()
         {
-            return ApiResult.Succees(new TestItem
+            return new ApiResult<TestItems>
             {
-                Id=999
-            });
+                Success = true
+            };
         }
     }
 }

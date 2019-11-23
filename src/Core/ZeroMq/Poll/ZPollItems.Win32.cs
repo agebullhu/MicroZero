@@ -17,7 +17,7 @@
 				IEnumerable<ZPollItem> items, ZPollEvent pollEvents, 
 				out ZError error, TimeSpan? timeout = null)
 			{
-				error = default(ZError);
+				error = null;
 				var result = false;
 				var count = items.Count();
 				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
@@ -65,7 +65,7 @@
 				ZPollItem item, ZPollEvent pollEvents,
 				out ZError error, TimeSpan? timeout = null)
 			{
-				error = default(ZError);
+				error = null;
 				var result = false;
 				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
 

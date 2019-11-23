@@ -32,6 +32,23 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="F:MicroZero.Http.Gateway.IoHandler.Description">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.EndZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:MicroZero.Http.Gateway.IRouter">
             <summary>
                 调用映射核心类
@@ -481,14 +498,24 @@
             <param name="message2"></param>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.Cros(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="T:MicroZero.Http.Gateway.HttpProtocol">
+            <summary>
+            HTTP协议相关的支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosOption(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosCall(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                返回类型
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.MapModelConfig">
@@ -1098,6 +1125,16 @@
                 是否加入MicroZero
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.IsTest">
+            <summary>
+                是否测试环境
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.ContentType">
+            <summary>
+                返回的上下文类型
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.SystemConfig.CheckResult">
             <summary>
                 是否检查返回值
@@ -1134,6 +1171,16 @@
         <member name="P:MicroZero.Http.Gateway.SystemConfig.ContextAddr">
             <summary>
                 内容页地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableLinkTrace">
+            <summary>
+            开启链路跟踪
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableApiCollect">
+            <summary>
+            开启API统计
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.ResultChecker">

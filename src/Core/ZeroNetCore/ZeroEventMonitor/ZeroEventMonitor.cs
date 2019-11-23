@@ -32,9 +32,6 @@ namespace Agebull.MicroZero.ZeroManagemant
         {
             if (ZeroApplication.WorkModel != ZeroWorkModel.Service)
                 return;
-            using (OnceScope.CreateScope(ZeroApplication.Config))
-            {
-            }
             TaskEndSem.Release();
             ZeroTrace.SystemLog("Zero center in monitor...");
             while (ZeroApplication.IsAlive)

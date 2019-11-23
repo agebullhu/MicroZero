@@ -1088,6 +1088,11 @@
             调用的内容
             </summary>
         </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.CancellationToken">
+            <summary>
+            取消停牌
+            </summary>
+        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.ScopeResource">
             <summary>
             范围资源
@@ -1162,11 +1167,6 @@
             调用计数
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
-            <summary>
-            调用计数
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
             <summary>
             构造
@@ -1212,6 +1212,21 @@
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.DoPoll(System.String,System.Byte[],System.Boolean)">
             <summary>
             轮询
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase._tasks">
+            <summary>
+            当前活跃任务
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
+            <summary>
+            总等待数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitTaskItems">
+            <summary>
+            总等待数
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">
@@ -2025,392 +2040,14 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="T:Agebull.MicroZero.IZeroObject">
+        <member name="T:Agebull.MicroZero.ZeroManagemant.ApiChecker">
             <summary>
-            站点连接池
+            系统侦听器
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.IZeroObject.Name">
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ApiChecker.RunCheck">
             <summary>
-            名称
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.IZeroObject.StationName">
-            <summary>
-            名称
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.IZeroObject.RealState">
-            <summary>
-                运行状态
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.IZeroObject.ConfigState">
-            <summary>
-                配置状态
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroInitialize">
-            <summary>
-            系统初始化时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroStart">
-            <summary>
-            系统启动时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnHeartbeat">
-            <summary>
-                要求心跳
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroEnd">
-            <summary>
-            系统关闭时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroDestory">
-            <summary>
-            注销时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.Start">
-            <summary>
-            开启
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.Close">
-            <summary>
-            关闭
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.IZeroObject.OnStationStateChanged(Agebull.MicroZero.StationConfig)">
-            <summary>
-            站点状态变更时调用
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApplication">
-            <summary>
-                站点应用
-            </summary>
-            <summary>
-                站点应用
-            </summary>
-            <summary>
-                站点应用
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.ZeroObjects">
-            <summary>
-            已注册的对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RegistZeroObject``1">
-            <summary>
-                注册单例对象
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.HaseActiveObject">
-            <summary>
-                是否存在活动对象
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.ActiveObjects">
-            <summary>
-            活动对象(执行中)
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.FailedObjects">
-            <summary>
-            活动对象(执行中)
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.GlobalObjects">
-            <summary>
-            全局执行对象(内部的Task)
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.ActiveSemaphore">
-            <summary>
-                对象活动状态记录器锁定
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.GlobalSemaphore">
-            <summary>
-                对象活动状态记录器锁定
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.ResetObjectActive">
-            <summary>
-                重置当前活动数量
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalStart(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                对象活动时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalEnd(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                对象活动时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectActive(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                对象活动时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectFailed(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                对象关闭时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectClose(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                对象关闭时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeOpen">
-            <summary>
-                等待所有对象信号(全开或全关)
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeClose">
-            <summary>
-                等待所有对象信号(全开或全关)
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.TryGetZeroObject(System.String)">
-            <summary>
-                取已注册对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RegistZeroObject(Agebull.MicroZero.IZeroObject)">
-            <summary>
-                注册对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroInitialize">
-            <summary>
-                系统启动时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroStart">
-            <summary>
-                系统启动时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnStationStateChanged(Agebull.MicroZero.StationConfig)">
-            <summary>
-                系统启动时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroEnd">
-            <summary>
-                系统关闭时调用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroDestory">
-            <summary>
-                注销时调用
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.AppName">
-            <summary>
-                当前应用名称
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.Config">
-            <summary>
-                站点配置
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.WorkModel">
-            <summary>
-            工作模式
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.CheckConfig">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.GetApiOption(System.String)">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.GetClientOption(System.String)">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.GetStationOption(System.String)">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.CommandConsole">
-            <summary>
-                命令行方式管理
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.SystemMonitor">
-            <summary>
-            中心事件监控对象
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.ZeroCenterState">
-            <summary>
-                应用中心状态
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication._appState">
-            <summary>
-                运行状态
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.ApplicationState">
-            <summary>
-                状态
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.SetFailed">
-            <summary>
-            设置ZeroCenter与Application状态都为Failed
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.ZerCenterIsRun">
-            <summary>
-                应用中心是否正在运行
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.ApplicationIsRun">
-            <summary>
-                本地应用是否正在运行
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.CanDo">
-            <summary>
-                运行状态（本地与服务器均正常）
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.IsAlive">
-            <summary>
-                运行状态（本地未关闭）
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.IsDisposed">
-            <summary>
-                已关闭
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.IsClosed">
-            <summary>
-                已关闭
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.CheckOption">
-            <summary>
-                配置校验,作为第一步
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InitializeDependency">
-            <summary>
-                设置LogRecorderX的依赖属性(内部使用)
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.Discove(System.Reflection.Assembly,System.String)">
-            <summary>
-                发现
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.Initialize">
-            <summary>
-                初始化
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.Run">
-            <summary>
-                运行
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RunAwaite">
-            <summary>
-                执行并等待
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApplication.WaitToken">
-            <summary>
-                应用程序等待结果的信号量对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitTask">
-            <summary>
-                执行直到连接成功
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.Start">
-            <summary>
-                启动
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.JoinCenter">
-            <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.Shutdown">
-            <summary>
-                关闭
-            </summary>
-        </member>
-        <member name="E:Agebull.MicroZero.ZeroApplication.ZeroNetEvent">
-            <summary>
-            站点事件发生
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig)">
-            <summary>
-            发出事件
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType)">
-            <summary>
-            发出事件
-            </summary>
-            <param name="centerEvent"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object)">
-            <summary>
-            发出事件
-            </summary>
-            <param name="args"></param>
-        </member>
-        <member name="T:Agebull.MicroZero.SpeedLimitType">
-            <summary>
-            限速模式（0 按线程数限制 1 按等待数限制）
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SpeedLimitType.None">
-            <summary>
-            未设置
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SpeedLimitType.Single">
-            <summary>
-            单线程数处理
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SpeedLimitType.ThreadCount">
-            <summary>
-            按线程数限制
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SpeedLimitType.WaitCount">
-            <summary>
-            按等待数限制
+            执行检查
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroManagemant.SystemManager">
@@ -2598,6 +2235,385 @@
         <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
             <summary>
                 进入系统侦听
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.IZeroObject">
+            <summary>
+            站点连接池
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.IZeroObject.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.IZeroObject.StationName">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.IZeroObject.RealState">
+            <summary>
+                运行状态
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.IZeroObject.ConfigState">
+            <summary>
+                配置状态
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroInitialize">
+            <summary>
+            系统初始化时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroStart">
+            <summary>
+            系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnHeartbeat">
+            <summary>
+                要求心跳
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroEnd">
+            <summary>
+            系统关闭时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnZeroDestory">
+            <summary>
+            注销时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.Start">
+            <summary>
+            开启
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.Close">
+            <summary>
+            关闭
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroObject.OnStationStateChanged(Agebull.MicroZero.StationConfig)">
+            <summary>
+            站点状态变更时调用
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApplication">
+            <summary>
+                站点应用
+            </summary>
+            <summary>
+                站点应用
+            </summary>
+            <summary>
+                站点应用
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.ZeroObjects">
+            <summary>
+            已注册的对象
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RegistZeroObject``1">
+            <summary>
+                注册单例对象
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.ActiveObjects">
+            <summary>
+            活动对象(执行中)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.FailedObjects">
+            <summary>
+            活动对象(执行中)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.GlobalObjects">
+            <summary>
+            全局执行对象(内部的Task)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.ActiveSemaphore">
+            <summary>
+                对象活动状态记录器锁定
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.GlobalSemaphore">
+            <summary>
+                对象活动状态记录器锁定
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalStart(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                对象活动时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalEnd(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                对象活动时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectActive(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                对象活动时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectFailed(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                对象关闭时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectClose(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                对象关闭时登记
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeOpen">
+            <summary>
+                等待所有对象信号(全开或全关)
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeClose">
+            <summary>
+                等待所有对象信号(全开或全关)
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.TryGetZeroObject(System.String)">
+            <summary>
+                取已注册对象
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RegistZeroObject(Agebull.MicroZero.IZeroObject)">
+            <summary>
+                注册对象
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroInitialize">
+            <summary>
+                系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroStart">
+            <summary>
+                系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnStationStateChanged(Agebull.MicroZero.StationConfig)">
+            <summary>
+                系统启动时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroEnd">
+            <summary>
+                系统关闭时调用
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroDestory">
+            <summary>
+                注销时调用
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.AppName">
+            <summary>
+                当前应用名称
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.Config">
+            <summary>
+                站点配置
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.WorkModel">
+            <summary>
+            工作模式
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.CheckConfig">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.GetApiOption(System.String)">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.GetClientOption(System.String)">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.GetStationOption(System.String)">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.TestFunc">
+            <summary>
+            测试程序，用于系统检查注入
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.CommandConsole">
+            <summary>
+                命令行方式管理
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication.SystemMonitor">
+            <summary>
+            中心事件监控对象
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.ZeroCenterState">
+            <summary>
+                应用中心状态
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication._appState">
+            <summary>
+                运行状态
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.ApplicationState">
+            <summary>
+                状态
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.SetFailed">
+            <summary>
+            设置ZeroCenter与Application状态都为Failed
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.ZerCenterIsRun">
+            <summary>
+                应用中心是否正在运行
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.ApplicationIsRun">
+            <summary>
+                本地应用是否正在运行
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.CanDo">
+            <summary>
+                运行状态（本地与服务器均正常）
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.IsAlive">
+            <summary>
+                运行状态（本地未关闭）
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.IsDisposed">
+            <summary>
+                已关闭
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.IsClosed">
+            <summary>
+                已关闭
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.CheckOption">
+            <summary>
+                配置校验,作为第一步
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.InitializeDependency">
+            <summary>
+                设置LogRecorderX的依赖属性(内部使用)
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.Discove(System.Reflection.Assembly,System.String)">
+            <summary>
+                发现
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.Initialize">
+            <summary>
+                初始化
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.Run">
+            <summary>
+                运行
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RunAwaite">
+            <summary>
+                执行并等待
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApplication._waitToken">
+            <summary>
+                应用程序等待结果的信号量对象
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.Start">
+            <summary>
+                启动
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.JoinCenter">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.Shutdown">
+            <summary>
+                关闭
+            </summary>
+        </member>
+        <member name="E:Agebull.MicroZero.ZeroApplication.ZeroNetEvent">
+            <summary>
+            站点事件发生
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig,System.Boolean)">
+            <summary>
+            发出事件
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType,System.Boolean)">
+            <summary>
+            发出事件
+            </summary>
+            <param name="event"></param>
+            <param name="sync">是否为同步操作</param>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object)">
+            <summary>
+            发出事件
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="T:Agebull.MicroZero.SpeedLimitType">
+            <summary>
+            限速模式（0 按线程数限制 1 按等待数限制）
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.SpeedLimitType.None">
+            <summary>
+            未设置
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.SpeedLimitType.Single">
+            <summary>
+            单线程数处理
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.SpeedLimitType.ThreadCount">
+            <summary>
+            按线程数限制
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.SpeedLimitType.WaitCount">
+            <summary>
+            按等待数限制
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroWorkModel">
@@ -2965,54 +2981,6 @@
         <member name="M:Agebull.MicroZero.OnceScope.OnDispose">
             <inheritdoc />
         </member>
-        <member name="T:Agebull.MicroZero.SyncBatchQueue`1">
-            <summary>
-            多生产者单消费者的同步列表（线程安全）
-            </summary>
-            <typeparam name="TData">泛型对象</typeparam>
-            <remarks>
-            1 内部使用信号量
-            2 用于多生产者单消费者的场景
-            3 使用双队列，以防止错误时无法还原
-            </remarks>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line1">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line2">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Push(`0)">
-            <summary>
-            加入队列
-            </summary>
-            <param name="t"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Switch">
-            <summary>
-            开始处理队列内容
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Save(System.String)">
-            <summary>
-            保存以备下次启动时使用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Load(System.String)">
-            <summary>
-            载入保存的内容
-            </summary>
-            <returns>队列对象</returns>
-        </member>
         <member name="T:Agebull.MicroZero.ZeroCommandExtend">
             <summary>
                 Zmq帮助类
@@ -3190,11 +3158,6 @@
             管理命令
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.IsInner">
-            <summary>
-            是否内部
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.GetAddress">
             <summary>
             地址错误的情况
@@ -3221,11 +3184,6 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.Socket">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommand(System.Byte[],System.String[])">
             <summary>
                 发起一次请求
@@ -3241,28 +3199,6 @@
             <param name="description"></param>
             <param name="args">请求参数</param>
             <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommandInner2(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.Destroy">
-            <summary>
-            关闭仅有的一个连接
-            </summary>
         </member>
         <member name="T:Agebull.MicroZero.IZeroState">
             <summary>

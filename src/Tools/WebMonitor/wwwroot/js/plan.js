@@ -33,17 +33,17 @@ extend_data({
         },
         rules: {
             'description': [
-                { required: true, message: '请输入计划说明', trigger: 'blur' }
+                { required: true, message: "请输入计划说明", trigger: "blur" }
             ],
             'station': [
-                { required: true, message: '请输入站点', trigger: 'blur' }
+                { required: true, message: "请输入站点", trigger: "blur" }
             ],
             'command': [
-                { required: true, message: '请输入调用的API', trigger: 'blur' }
+                { required: true, message: "请输入调用的API", trigger: "blur" }
             ],
             'plan_type': [
-                { required: true, message: '请输入调用的API', trigger: 'blur' },
-                { min: 1, max: 7, message: '请选择正确计划类型', trigger: 'blur' }
+                { required: true, message: "请输入调用的API", trigger: "blur" },
+                { min: 1, max: 7, message: "请选择正确计划类型", trigger: "blur" }
             ]
         }
     }
@@ -54,41 +54,41 @@ extend_filter({
     format_plan_date_type(type) {
         switch (type) {
             default:
-                return 'none';
+                return "none";
             case 1:
-                return 'time';
+                return "time";
             case 2:
-                return 'second';
+                return "second";
             case 3:
-                return 'minute';
+                return "minute";
             case 4:
-                return 'hour';
+                return "hour";
             case 5:
-                return 'day';
+                return "day";
             case 6:
-                return 'week';
+                return "week";
             case 7:
-                return 'month';
+                return "month";
         }
     },
     format_plan_state(state) {
         switch (state) {
             default:
-                return 'none';
+                return "none";
             case 1:
-                return 'queue';
+                return "queue";
             case 2:
-                return 'execute';
+                return "execute";
             case 3:
-                return 'retry';
+                return "retry";
             case 4:
-                return 'skip';
+                return "skip";
             case 5:
-                return 'pause';
+                return "pause";
             case 6:
-                return 'error';
+                return "error";
             case 7:
-                return 'close';
+                return "close";
         }
     },
     format_exec_state(state) {
@@ -152,54 +152,54 @@ extend_methods({
     save_zeroPlan() {
         var that = this;
         var data = vue_option.data.zeroPlan;
-        if (format_plan(data.form) === '错误' || !data.form.command) {
-            that.$message.error('内容不合理');
+        if (format_plan(data.form) === "错误" || !data.form.command) {
+            that.$message.error("内容不合理");
             return false;
         }
-        this.$refs['zeroPlanForm'].validate((valid) => {
+        this.$refs["zeroPlanForm"].validate((valid) => {
             if (!valid) {
-                that.$message.error('内容不合理');
+                that.$message.error("内容不合理");
                 return false;
             }
             data.loading = true;
             data.form.plan_time1 = formatDate(data.form.plan_time);
-            $.post('Plan/Add', data.form, function (result) {
+            $.post("Plan/Add", data.form, function (result) {
                 data.loading = false;
                 if (result.success) {
                     that.$message({
-                        message: '操作成功',
-                        type: 'success'
+                        message: "操作成功",
+                        type: "success"
                     });
                     data.visible = false;
                 }
                 else {
-                    that.$message.error('操作失败:' + result.status.msg);
+                    that.$message.error("操作失败:" + result.status.msg);
                 }
                 data.loading = false;
             }).error(function () {
                 data.loading = false;
                 data.visible = false;
-                that.$message.error('更新失败');
+                that.$message.error("更新失败");
             });
             return true;
         });
         return true;
     },
     plan_remove(plan) {
-        do_sync_get(`/Plan/Remove/${plan.plan_id}`, `删除计划任务:${plan.description}`);
+        do_sync_get(`/Plan/Remove/${plan.name}`, `删除计划任务:${plan.description}`);
     },
     plan_reset(plan) {
-        do_sync_get(`/Plan/Reset/${plan.plan_id}`, `恢复计划任务:${plan.description}`);
+        do_sync_get(`/Plan/Reset/${plan.name}`, `恢复计划任务:${plan.description}`);
     },
     plan_pause(plan) {
-        do_sync_get(`/Plan/Pause/${plan.plan_id}`, `暂停计划任务:${plan.description}`);
+        do_sync_get(`/Plan/Pause/${plan.name}`, `暂停计划任务:${plan.description}`);
     },
     plan_close(plan) {
-        do_sync_get(`/Plan/Close/${plan.plan_id}`, `关闭计划任务:${plan.description}`);
+        do_sync_get(`/Plan/Close/${plan.name}`, `关闭计划任务:${plan.description}`);
     },
     format_frame(frames) {
         if (!frames || frames.length === 0)
-            return '*';
+            return "*";
         if (frames.length === 1)
             return frames[0];
         var desc = eval(`(${frames[1]})`);
@@ -288,9 +288,9 @@ function format_plan(plan) {
             return "立即执行一次，不重复";
         date = new Date(plan.plan_time);
         if (plan.no_skip)
-            return "在" + formatDate(date, 'MM-dd hh:mm:ss') + "执行，如果时间已过则立即执行，不重复";
+            return "在" + formatDate(date, "MM-dd hh:mm:ss") + "执行，如果时间已过则立即执行，不重复";
         else
-            return "仅在" + formatDate(date, 'MM-dd hh:mm:ss') + "没有过去的情况下执行一次，不重复";
+            return "仅在" + formatDate(date, "MM-dd hh:mm:ss") + "没有过去的情况下执行一次，不重复";
     }
     var value = plan.plan_value ? parseInt(plan.plan_value) : 0;
     var skip = plan.skip_set ? parseInt(plan.skip_set) : 0;
@@ -308,7 +308,7 @@ function format_plan(plan) {
         else {
 
             date = new Date(plan.plan_time);
-            txt += formatDate(date, 'MM-dd hh:mm:ss') + "起";
+            txt += formatDate(date, "MM-dd hh:mm:ss") + "起";
         }
         if (skip > 0) {
             txt += "，跳过" + (skip * value);
@@ -361,7 +361,7 @@ function format_plan(plan) {
             txt += "零点";
         else {
             date = new Date(plan.plan_time);
-            txt += "的" + formatDate(date, 'hh:mm:ss');
+            txt += "的" + formatDate(date, "hh:mm:ss");
         }
         sk = "不计算过去的时间。";
     }
@@ -378,7 +378,7 @@ function format_plan(plan) {
             txt += "零点";
         else {
             date = new Date(plan.plan_time);
-            txt += formatDate(date, 'hh:mm:ss');
+            txt += formatDate(date, "hh:mm:ss");
         }
         sk = "不计算过去的时间。";
     }
@@ -397,13 +397,13 @@ var socket_status = new ws({
         var plans = vue_option.data.plans;
         for (var idx = 0; idx < plans.length; idx++) {
             var old = plans[idx];
-            if (old.plan_id === item.plan_id) {
+            if (old.name === item.name) {
                 if (item.plan_state === 8) {
                     vm.$notify({
                         title: "消息推送",
-                        message: old.description + '已删除',
-                        type: 'warning',
-                        position: 'bottom-left',
+                        message: old.description + "已删除",
+                        type: "warning",
+                        position: "bottom-left",
                         duration: 2000
                     });
                     Vue.delete(plans, idx);
@@ -429,19 +429,19 @@ var socket_status = new ws({
 function close_open() {
     vue_option.data.isCollapse = !vue_option.data.isCollapse;
     if (vue_option.data.isCollapse)
-        $('#main_menu').width('auto');
+        $("#main_menu").width("auto");
     else
-        $('#main_menu').width(vue_option.data.menu_wid);
+        $("#main_menu").width(vue_option.data.menu_wid);
 }
 
 function start() {
     if (!vue_option.data.menu_wid)
-        vue_option.data.menu_wid = '300px';
+        vue_option.data.menu_wid = "300px";
     vue_obj = new Vue(vue_option);
     if (vue_option.data.isCollapse)
-        $('#main_menu').width('auto');
+        $("#main_menu").width("auto");
     else
-        $('#main_menu').width(vue_option.data.menu_wid);
+        $("#main_menu").width(vue_option.data.menu_wid);
 
     socket_status.open();
 }

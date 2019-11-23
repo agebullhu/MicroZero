@@ -6,11 +6,6 @@ namespace Agebull.MicroZero.ZeroApis
     public interface IApiCounter
     {
         /// <summary>
-        /// 是否启用
-        /// </summary>
-        bool IsEnable { get; }
-
-        /// <summary>
         /// 统计
         /// </summary>
         /// <param name="data"></param>

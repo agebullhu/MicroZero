@@ -19,6 +19,19 @@ namespace MicroZero.Http.Gateway
         public bool FireZero { get; set; }
 
         /// <summary>
+        ///     是否测试环境
+        /// </summary>
+        [JsonProperty]
+        public bool IsTest { get; set; }
+
+        
+        /// <summary>
+        ///     返回的上下文类型
+        /// </summary>
+        [JsonProperty]
+        public string ContentType { get; set; }
+
+        /// <summary>
         ///     是否检查返回值
         /// </summary>
         [JsonProperty]
@@ -64,5 +77,19 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [JsonProperty]
         public string ContextAddr { get; set; }
+
+
+
+        /// <summary>
+        /// 开启链路跟踪
+        /// </summary>
+        [JsonProperty]
+        public bool EnableLinkTrace { get; set; }
+
+        /// <summary>
+        /// 开启API统计
+        /// </summary>
+        [JsonProperty]
+        public bool EnableApiCollect { get; set; }
     }
 }

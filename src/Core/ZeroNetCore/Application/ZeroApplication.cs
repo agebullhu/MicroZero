@@ -24,6 +24,11 @@ namespace Agebull.MicroZero
         #region Console
 
         /// <summary>
+        /// 测试程序，用于系统检查注入
+        /// </summary>
+        public static Func<string> TestFunc { get; set; } = () => ApiResult.SucceesJson;
+
+        /// <summary>
         ///     命令行方式管理
         /// </summary>
         public static void CommandConsole()
@@ -104,6 +109,7 @@ namespace Agebull.MicroZero
             ApplicationState = StationState.Failed;
             ZeroCenterState = ZeroCenterState.Failed;
         }
+
         /// <summary>
         ///     应用中心是否正在运行
         /// </summary>
@@ -113,7 +119,6 @@ namespace Agebull.MicroZero
         ///     本地应用是否正在运行
         /// </summary>
         public static bool ApplicationIsRun => ApplicationState == StationState.BeginRun || ApplicationState == StationState.Run;
-
 
         /// <summary>
         ///     运行状态（本地与服务器均正常）
@@ -154,10 +159,16 @@ namespace Agebull.MicroZero
             var testContext = IocHelper.Create<GlobalContext>();
             if (testContext == null)
                 IocHelper.AddScoped<GlobalContext, GlobalContext>();
+
+            ThreadPool.GetMaxThreads(out var worker, out var io);
+            ThreadPool.SetMaxThreads(worker, 4096);
+            //ThreadPool.GetAvailableThreads(out worker, out io);
+            ZeroTrace.SystemLog($"   Worker threads: {worker:N0}Asynchronous I / O threads: { io:N0}");
+
             CheckConfig();
             InitializeDependency();
             ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
-            //ZeroCommandExtend.ServiceKeyBytes = Config.Master.ServiceKey.ToZeroBytes();
+            ZeroCommandExtend.ServiceKeyBytes = GlobalContext.ServiceKey.ToZeroBytes();
             ShowOptionInfo();
         }
 
@@ -167,6 +178,7 @@ namespace Agebull.MicroZero
         /// </summary>
         private static void InitializeDependency()
         {
+            GlobalContext.ServiceKey = Config.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
@@ -177,7 +189,7 @@ namespace Agebull.MicroZero
             LogRecorderX.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
             LogRecorderX.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
             LogRecorderX.Initialize();
-            
+
             //插件
             AddInImporter.Importe();
             AddInImporter.Instance.Initialize();
@@ -243,49 +255,43 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void RunAwaite()
         {
+            Start();
             Console.CancelKeyPress += (s, e) =>
             {
                 Shutdown();
             };
-            WaitToken = new SemaphoreSlim(0, 1);
-            Start();
-            Task.Factory.StartNew(WaitTask, TaskCreationOptions.LongRunning).Wait();
+            _waitToken = new SemaphoreSlim(0, 1);
+            ZeroTrace.SystemLog("MicroZero services is runing. Press Ctrl+C to shutdown.");
+            _waitToken.Wait();
+
         }
 
         /// <summary>
         ///     应用程序等待结果的信号量对象
         /// </summary>
-        private static SemaphoreSlim WaitToken;
-
-        /// <summary>
-        ///     执行直到连接成功
-        /// </summary>
-        private static void WaitTask()
-        {
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("Zeronet application runing. Press Ctrl+C to shutdown.");
-            Console.ForegroundColor = ConsoleColor.White;
-            WaitToken.Wait();
-        }
-
+        private static SemaphoreSlim _waitToken;
 
         /// <summary>
         ///     启动
         /// </summary>
         private static bool Start()
         {
-            bool success;
-            using (OnceScope.CreateScope(Config))
+            ZeroCenterState = ZeroCenterState.None;
+            ApplicationState = StationState.Start;
+            var success = JoinCenter();
+            if (WorkModel == ZeroWorkModel.Service)
             {
-                ZeroCenterState = ZeroCenterState.None;
-                ApplicationState = StationState.Start;
-                success = JoinCenter();
-                if (WorkModel == ZeroWorkModel.Service)
-                    new Thread(SystemMonitor.Monitor)
-                    {
-                        IsBackground = true,
-                        Priority = ThreadPriority.Lowest
-                    }.Start();
+                new Thread(SystemMonitor.Monitor)
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest
+                }.Start();
+
+                new Thread(ApiChecker.RunCheck)
+                {
+                    IsBackground = true,
+                    Priority = ThreadPriority.Lowest
+                }.Start();
             }
             SystemMonitor.WaitMe();
             return success;
@@ -300,7 +306,7 @@ namespace Agebull.MicroZero
                 return false;
             ApplicationState = StationState.BeginRun;
             ZeroCenterState = ZeroCenterState.Start;
-            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.Master?.ManageAddress})...");
+            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.ZeroManageAddress})...");
             if (!SystemManager.Instance.PingCenter())
             {
                 SetFailed();
@@ -316,7 +322,7 @@ namespace Agebull.MicroZero
             }
 
             Config.ClearConfig();
-            if (!ConfigManager.LoadAllConfig())
+            if (!SystemManager.Instance.LoadAllConfig())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "station configs can`t loaded.");
@@ -325,9 +331,9 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", "be connected successfully,start local stations.");
             if (WorkModel == ZeroWorkModel.Service)
             {
-                var cm = new ConfigManager(Config.Master);
-                cm.UploadDocument();
-                Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
+                SystemManager.Instance.UploadDocument();
+                OnZeroStart();
+                //Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
             }
             //else if (WorkModel == ZeroWorkModel.Client)
             //{
@@ -361,22 +367,22 @@ namespace Agebull.MicroZero
                     break;
             }
             ApplicationState = StationState.Destroy;
-            if (WorkModel == ZeroWorkModel.Bridge)
-            {
-                Thread.Sleep(1000);
-            }
-            else
+            if (WorkModel != ZeroWorkModel.Bridge)
             {
                 if (GlobalObjects.Count > 0)
                     GlobalSemaphore.Wait();
                 OnZeroDestory();
                 SystemMonitor.WaitMe();
             }
+            else
+            {
+                Thread.Sleep(1000);
+            }
             ZeroTrace.SystemLog("Application shutdown ,see you late.");
             GC.Collect();
             ZContext.Destroy();
             ApplicationState = StationState.Disposed;
-            WaitToken?.Release();
+            _waitToken?.Release();
             LogRecorderX.Shutdown();
         }
 
@@ -394,20 +400,31 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 发出事件
         /// </summary>
-        public static void InvokeEvent(ZeroNetEventType centerEvent, string name, string context, StationConfig config)
+        public static void InvokeEvent(ZeroNetEventType centerEvent, string name, string context, StationConfig config, bool sync = false)
         {
-            if (Config.CanRaiseEvent == true)
-                Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, name, context, config));
+            if (Config.CanRaiseEvent != true)
+                return;
+            var args = new ZeroNetEventArgument(centerEvent, name, context, config);
+            if (sync)
+                InvokeEvent(args);
+            else
+                Task.Factory.StartNew(InvokeEvent, args);
         }
 
         /// <summary>
         /// 发出事件
         /// </summary>
-        /// <param name="centerEvent"></param>
-        internal static void RaiseEvent(ZeroNetEventType centerEvent)
+        /// <param name="event"></param>
+        /// <param name="sync">是否为同步操作</param>
+        internal static void RaiseEvent(ZeroNetEventType @event, bool sync = false)
         {
-            if (Config.CanRaiseEvent == true)
-                Task.Factory.StartNew(InvokeEvent, new ZeroNetEventArgument(centerEvent, null, null, null));
+            if (Config.CanRaiseEvent != true)
+                return;
+            var args = new ZeroNetEventArgument(@event, null, null, null);
+            if (sync)
+                InvokeEvent(args);
+            else
+                Task.Factory.StartNew(InvokeEvent, args);
         }
 
         /// <summary>

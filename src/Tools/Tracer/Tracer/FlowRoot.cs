@@ -8,11 +8,14 @@ namespace MicroZero.Http.Route
     [JsonObject(MemberSerialization.OptIn), DataContract, Serializable]
     public class FlowRoot : FlowBase
     {
-        [JsonProperty("rid")]
+        [JsonProperty("r")]
         public string RequestId { get; set; }
 
-        [JsonProperty("start")]
-        public FlowStep Start { get; set; }
+        [JsonProperty("s")]
+        public DateTime StartTime { get; set; }
+
+        [JsonProperty("f")]
+        public FlowStep First { get; set; }
 
         [JsonIgnore]
         public Dictionary<string, FlowStep> Items = new Dictionary<string, FlowStep>();

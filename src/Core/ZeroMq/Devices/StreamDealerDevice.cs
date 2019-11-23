@@ -54,7 +54,7 @@
 		/// </summary>
 		protected override bool FrontendHandler(ZSocket sock, out ZMessage message, out ZError error)
 		{
-			error = default(ZError);
+			error = null;
 			message = null;
 
 			// receiving scope
@@ -111,7 +111,7 @@
 
 					if (error.IsError(ZError.Code.EINTR))
                     {
-						error = default(ZError);
+						error = null;
 						continue;
 					}
 
@@ -130,7 +130,7 @@
 					if (default == (address = frame.GetOption("Peer-Address", out error)))
 					{
 						// just ignore
-						error = default(ZError);
+						error = null;
 						address = string.Empty;
 					}
 				}
@@ -146,7 +146,7 @@
 		/// </summary>
 		protected override bool BackendHandler(ZSocket sock, out ZMessage message, out ZError error)
 		{
-			error = default(ZError);
+			error = null;
 			message = null;
 
 			// receiving scope
@@ -196,12 +196,12 @@
 
 					if (error.IsError(ZError.Code.EINTR))
                     {
-						error = default(ZError);
+						error = null;
 						continue;
 					}
 					/* if (error.IsError(ZError.Code.EAGAIN)
 					{
-						error = default(ZError);
+						error = null;
 						Thread.Sleep(1);
 
 						continue;

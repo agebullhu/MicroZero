@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.15</Version>
+    <Version>1.4.10.31</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Base\SyncBatchQueue.cs" />
     <Compile Remove="ClientStation\ApiCaller.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />
     <Compile Remove="Discover\ApiActionInfo.cs" />

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Threading;
 
 namespace ConsoleApp1
 {
@@ -7,12 +8,14 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            var dir = new System.Collections.Generic.Dictionary<string, int>
-            {
-                {"a",1 },
-                {"b",1 }
-            };
-            Console.WriteLine(JsonConvert.SerializeObject(dir));
+            int _inCheckTask = 0;
+
+            Console.WriteLine(Interlocked.Increment(ref _inCheckTask));
+            Console.WriteLine(Interlocked.Increment(ref _inCheckTask));
+            Console.WriteLine(Interlocked.Increment(ref _inCheckTask));
+            Console.WriteLine(Interlocked.Decrement(ref _inCheckTask));
+            Console.WriteLine(Interlocked.Decrement(ref _inCheckTask));
+            Console.WriteLine(Interlocked.Decrement(ref _inCheckTask));
             Console.ReadKey();
         }
     }
