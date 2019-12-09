@@ -41,7 +41,18 @@ namespace Agebull.MicroZero.PubSub
             var pool = ZmqPool.CreateZmqPool();
             pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
 
-            Task.Factory.StartNew(Reload);
+            var queueData = LoadData() ?? new QueueData();
+            long[] ids;
+            lock (data)
+            {
+                data.Max= queueData.Max;
+                data.FailedIds = queueData.FailedIds;
+                if (data.FailedIds.Count == 0)
+                    data.FailedIds = data.FailedIds.Distinct().ToList();
+                ids = data.FailedIds.ToArray();
+            }
+
+            Task.Factory.StartNew(() => ReNotify(ids));
 
             return pool;
         }
@@ -62,7 +73,12 @@ namespace Agebull.MicroZero.PubSub
         /// <inheritdoc />
         protected override void OnLoopComplete()
         {
-            SaveIds();
+            string json;
+            lock (data)
+            {
+                json = JsonHelper.SerializeObject(data);
+            }
+            SaveIds(json);
         }
 
         /// <summary>
@@ -74,8 +90,8 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         internal override bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (!string.IsNullOrEmpty(item.LocalId))
-                CacheProcess(long.Parse(item.LocalId), state == ZeroOperatorStateType.Ok);
+            if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
+                Ack(id, state == ZeroOperatorStateType.Ok);
 
             var des = new byte[]
             {
@@ -105,9 +121,8 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         internal override void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
         {
-            if (string.IsNullOrEmpty(item.LocalId))
-                return;
-            CacheProcess(long.Parse(item.LocalId), false);
+            if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
+                Ack(id, false);
         }
 
         ///// <summary>
@@ -123,62 +138,37 @@ namespace Agebull.MicroZero.PubSub
 
         #region 已处理集合
 
-        private readonly object localObj = new object();
 
-        private QueueData data = new QueueData();
-
+        private readonly QueueData data = new QueueData();
 
 
-        void SaveIds()
+
+        void SaveIds(string json)
         {
-            try
+            lock (data)
             {
-                File.WriteAllText(FileName, JsonHelper.SerializeObject(data));
-            }
-            catch (Exception ex)
-            {
-                LogRecorderX.Exception(ex);
+                try
+                {
+                    File.WriteAllText(FileName, json);
+                }
+                catch (Exception ex)
+                {
+                    LogRecorderX.Exception(ex);
+                }
             }
         }
-        string _fileName;
-        private string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
+
+        private string _fileName;
+        private string FileName => _fileName ?? (_fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        private void Reload()
+        private void ReNotify(long[] ids)
         {
             Thread.Sleep(1000);
-            QueueData queueData = null;
-            try
-            {
-                if (File.Exists(FileName))
-                {
-                    var json = File.ReadAllText(FileName);
-                    if (string.IsNullOrEmpty(json))
-                    {
-                        return;
-                    }
-                    queueData = JsonConvert.DeserializeObject<QueueData>(json);
-                }
-            }
-            catch //(Exception e)
-            {
-                return;
-            }
-            if (queueData == null)
-            {
-                return;
-            }
-            long[] ids = null;
-            lock (localObj)
-            {
-                data = queueData;
-                if(data.FailedIds.Count == 0)
-                    data.FailedIds = data.FailedIds.Distinct().ToList();
-                ids = data.FailedIds.ToArray();
-            }
+
             using (var cmd = new QueueCommand())
             {
                 if (!cmd.Prepare(Config.RequestAddress, StationName))
@@ -187,20 +177,39 @@ namespace Agebull.MicroZero.PubSub
                 {
                     cmd.CallCommand(id, id);
                 }
-                lock (localObj)
+                long max;
+                lock (data)
                 {
-                    cmd.CallCommand(data.Max, 0);
+                    max = data.Max;
                 }
+                cmd.CallCommand(max, 0);
             }
         }
 
+        QueueData LoadData()
+        {
+            try
+            {
+                if (File.Exists(FileName))
+                {
+                    var json = File.ReadAllText(FileName);
+                    if (!string.IsNullOrEmpty(json))
+                        return JsonConvert.DeserializeObject<QueueData>(json);
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+            }
+            return null;
+        }
         /// <summary>
         /// 准备执行
         /// </summary>
         /// <returns></returns>
         protected override bool PrepareExecute(ApiCallItem item)
         {
-            lock (localObj)
+            lock (data)
             {
                 if (data.Max == 0)
                     return true;
@@ -209,22 +218,40 @@ namespace Agebull.MicroZero.PubSub
             }
         }
 
-
-        bool CacheProcess(long nowId, bool success)
+        /// <summary>
+        /// 空转
+        /// </summary>
+        /// <returns></returns>
+        protected override void OnLoopIdle()
         {
-            lock (localObj)
+            using (var cmd = new QueueCommand())
+            {
+                if (!cmd.Prepare(Config.RequestAddress, StationName))
+                    return;
+                long max;
+                lock (data)
+                {
+                    max = data.Max;
+                }
+                cmd.CallCommand(max, 0);
+            }
+        }
+
+        void Ack(long nowId, bool success)
+        {
+            string json;
+            lock (data)
             {
                 if (!success)
                     data.FailedIds.Add(nowId);
                 else
-                {
-                    if (data.Max < nowId)
-                        data.Max = nowId;
                     data.FailedIds.Remove(nowId);
-                }
+
+                if (data.Max < nowId)
+                    data.Max = nowId;
+                json = JsonHelper.SerializeObject(data);
             }
-            SaveIds();
-            return true;
+            SaveIds(json);
         }
         #endregion
     }
@@ -285,7 +312,7 @@ namespace Agebull.MicroZero.PubSub
                 {
                     message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
                     if (socket.SendTo(message))
-                        result= new ZeroResult
+                        result = new ZeroResult
                         {
                             State = ZeroOperatorStateType.Ok,
                             InteractiveSuccess = true

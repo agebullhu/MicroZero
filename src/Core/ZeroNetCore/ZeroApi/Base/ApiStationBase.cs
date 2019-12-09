@@ -71,101 +71,29 @@ namespace Agebull.MicroZero.ZeroApis
         {
             _tasks.Clear();
             _option = GetApiOption();
-            int max = 1;
+            bool checkWait;
             switch (_option.SpeedLimitModel)
             {
-                case SpeedLimitType.WaitCount:
-                    _processSemaphore = new SemaphoreSlim(0, max);
-                    ZeroTrace.SystemLog(StationName, "WaitCount", ZeroApplication.Config.MaxWait);
-                    new Thread(RunWaitCount)
-                    {
-                        IsBackground = true,
-                        Priority = ThreadPriority.Highest
-                    }.Start();
-                    break;
-                case SpeedLimitType.ThreadCount:
-                    max = (int)(Environment.ProcessorCount * _option.TaskCpuMultiple);
-                    if (max < 1)
-                        max = 1;
-                    _processSemaphore = new SemaphoreSlim(0, max);
-                    ZeroTrace.SystemLog(StationName, "ThreadCount", max);
-                    for (int idx = 1; idx <= max; idx++)
-                        new Thread(RunThread)
-                        {
-                            IsBackground = true,
-                            Priority = ThreadPriority.Highest
-                        }.Start(idx);
-                    break;
                 default:
-                    _processSemaphore = new SemaphoreSlim(0, max);
+                    ZeroTrace.SystemLog(StationName, "WaitCount", ZeroApplication.Config.MaxWait);
+                    checkWait = true;
+                    break;
+                case SpeedLimitType.Single:
                     ZeroTrace.SystemLog(StationName, "Single");
-                    new Thread(RunSingle)
-                    {
-                        IsBackground = true,
-                        Priority = ThreadPriority.Highest
-                    }.Start();
+                    checkWait = false;
                     break;
             }
-            RealState = StationState.BeginRun;
-            //第一次全部运行
-            for (int idx = 0; idx < max; idx++)
-                _processSemaphore.Wait();
-            RealState = StationState.Run;
-            //第二次全部关闭
-            for (int idx = 0; idx < max; idx++)
-                _processSemaphore.Wait();
-            return true;
-        }
-
-        private SemaphoreSlim _processSemaphore;
-
-        /// <summary>
-        /// 轮询
-        /// </summary>
-        private void RunSingle(object arg)
-        {
-            DoPoll(RealName, Identity, false);
-        }
-        /// <summary>
-        /// 轮询
-        /// </summary>
-        private void RunWaitCount(object arg)
-        {
-            DoPoll(RealName, Identity, true);
-        }
-        /// <summary>
-        /// 轮询
-        /// </summary>
-        private void RunThread(object arg)
-        {
-            var idx = (int)arg;
-            var realName = $"{RealName}-{idx:D2}";
-            DoPoll(realName, realName.ToAsciiBytes(), false);
-        }
-
-        /// <summary>
-        /// 轮询
-        /// </summary>
-        private void DoPoll(string realName, byte[] identity, bool checkWait)
-        {
-            //var executer = checkWait
-            //    ? null
-            //    : new ApiExecuter
-            //    {
-            //        Station = this
-            //    };
-            ZeroTrace.SystemLog(StationName, "Task", "start", realName);
-            using (var pool = PrepareLoop(identity, out var socket))
+            ZeroTrace.SystemLog(StationName, "Task", "start", RealName);
+            using (var pool = PrepareLoop(Identity, out var socket))
             {
-                Hearter.HeartReady(StationName, realName);
-                _processSemaphore?.Release();
-                //int cnt = 0;
+                Hearter.HeartReady(StationName, RealName);
+                RealState = StationState.Run;
                 while (CanLoop)
                 {
                     DoPollMessage(checkWait, pool, socket);
                 }
                 pool.Sockets[0].Disconnect(Config.WorkerCallAddress);
-                Hearter.HeartLeft(StationName, realName);
+                Hearter.HeartLeft(StationName, RealName);
                 ZeroTrace.SystemLog(StationName, "closing");
                 try
                 {
@@ -176,7 +104,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"处理堆积任务{e.Message}");
+                    Console.WriteLine($"处理堆积任务出错{e.Message}");
                 }
 
                 int cnt = 0;
@@ -184,8 +112,8 @@ namespace Agebull.MicroZero.ZeroApis
                     Thread.Sleep(10);
                 CloseTask();
             }
-            ZeroTrace.SystemLog(StationName, "Task", "end", realName);
-            _processSemaphore?.Release();
+            ZeroTrace.SystemLog(StationName, "Task", "end", RealName);
+            return true;
         }
 
         private bool DoPollMessage(bool checkWait, IZmqPool pool, ZSocket socket)
@@ -226,20 +154,43 @@ namespace Agebull.MicroZero.ZeroApis
         }
 
 
+        /// <summary>
+        /// Api调用时的Task节点信息
+        /// </summary>
         public class ApiTaskItem
         {
+            /// <summary>
+            /// TaskId
+            /// </summary>
             public long TaskId { get; set; }
-
+            /// <summary>
+            /// 执行器
+            /// </summary>
             public ApiExecuter Executer { get; set; }
-
+            /// <summary>
+            /// 所在线程（注意可能失效）
+            /// </summary>
             public Thread Thread { get; set; }
 
+            /// <summary>
+            /// 同步状态的信号量
+            /// </summary>
+            public SemaphoreSlim Semaphore { get; set; }
+            /// <summary>
+            /// Socket句柄
+            /// </summary>
             public ZSocket Socket { get; set; }
-
+            /// <summary>
+            /// API调用的信息
+            /// </summary>
             public ApiCallItem Api { get; set; }
-
+            /// <summary>
+            /// 任务
+            /// </summary>
             public Task Task { get; set; }
-
+            /// <summary>
+            /// 开始时间（用于超时检查）
+            /// </summary>
             public DateTime Start { get; set; }
         }
 

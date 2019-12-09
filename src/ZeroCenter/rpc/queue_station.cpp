@@ -23,7 +23,8 @@ namespace agebull
 				if (min > 0 && max == min)
 					replay(socket, min);
 				else
-					boost::thread(async_replay, this, min, max);
+					async_replay(this, min, max);
+					//boost::thread(async_replay, this, min, max);
 				return true;
 			}
 			return zero_station::simple_command(socket, list, description, inner);
@@ -65,6 +66,7 @@ namespace agebull
 				{
 					queue->send_response(data, false);
 				});
+			
 			//make_inproc_address(address, queue->station_name_.c_str());
 			//socket_ex::close_req_socket(socket, address);
 		}
