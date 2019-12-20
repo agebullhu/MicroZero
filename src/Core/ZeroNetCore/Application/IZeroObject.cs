@@ -343,7 +343,7 @@ namespace Agebull.MicroZero
                 //等待所有对象信号(全开或全关)
                 await ActiveSemaphore.WaitAsync();
             }
-            await SystemManager.Instance.HeartReady();
+            await ZeroCenterProxy.Master.HeartReady();
             ApplicationState = StationState.Run;
             RaiseEvent(ZeroNetEventType.AppRun, true);
             ZeroTrace.SystemLog("Application", "<<OnZeroStart]");

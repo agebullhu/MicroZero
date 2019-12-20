@@ -1134,7 +1134,14 @@ namespace ZeroMQ
         #endregion
 
         #region Option
-
+        /// <summary>
+        /// 服务令牌
+        /// </summary>
+        public byte[] ServiceKey
+        {
+            get;
+            set;
+        }
         /// <summary>
         ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
         /// </summary>

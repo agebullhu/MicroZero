@@ -86,10 +86,10 @@
   },
   /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
   "cache": [
-    {
+    /*{
       "Api": "/ApiTest/v1/test",
       "OnlyName": true,
       "FlushSecond": 30
-    }
+    }*/
   ]
 }

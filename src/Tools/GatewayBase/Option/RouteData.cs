@@ -296,9 +296,9 @@ namespace MicroZero.Http.Gateway
                     return true;
                 using (var texter = new StreamReader(request.Body))
                 {
-                    HttpContext = await texter.ReadToEndAsync();
-                    if (string.IsNullOrEmpty(HttpContext))
-                        HttpContext = null;
+                    HttpContent = await texter.ReadToEndAsync();
+                    if (string.IsNullOrEmpty(HttpContent))
+                        HttpContent = null;
                     texter.Close();
                 }
                 return true;

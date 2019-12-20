@@ -394,7 +394,8 @@ namespace MicroZero.Http.Gateway
 
         private static async Task UpdateApiItems(ZeroHost zeroHost)
         {
-            var doc = await SystemManager.Instance.LoadDocument(zeroHost.Station);
+            var mg = new ConfigManager(ZeroApplication.Config.Master);
+            var doc = await mg.LoadDocument(zeroHost.Station);
             if (doc == null)
             {
                 zeroHost.Apis = null;

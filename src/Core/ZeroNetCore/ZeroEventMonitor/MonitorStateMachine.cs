@@ -78,7 +78,7 @@ namespace Agebull.MicroZero.ZeroManagemant
             }
             else
             {
-                await SystemManager.Instance.LoadAllConfig();
+                await ConfigManager.LoadAllConfig();
             }
         }
 
@@ -135,7 +135,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         {
             if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
                 return;
-            await SystemManager.Instance.Heartbeat();
+            await ZeroCenterProxy.Master.Heartbeat();
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         internal static void station_update(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_update", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, name, content, config);
@@ -168,7 +168,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         internal static void station_install(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_install", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, name, content, config);
@@ -179,7 +179,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         internal static void station_join(string name, string content)
         {
             ZeroTrace.SystemLog(name, "station_join", content);
-            if (ZeroApplication.Config.UpdateConfig(name, content, out var config))
+            if (ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, name, content, out var config))
             {
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, name, content, config);

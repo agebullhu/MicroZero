@@ -68,7 +68,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                     subs.Add("system");
                     subs.Add("station");
                 }
-                var socket = ZSocket.CreateSubSocket(ZeroApplication.Config.ZeroMonitorAddress, ZSocket.CreateIdentity(false, "Monitor"), subs);
+                var socket = ZSocket.CreateSubSocket(ZeroApplication.Config.Master.MonitorAddress, ZSocket.CreateIdentity(false, "Monitor"), subs);
 
                 poll.Prepare(ZPollEvent.In, socket);
                 while (ZeroApplication.IsAlive)

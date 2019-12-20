@@ -22,7 +22,7 @@ namespace Agebull.MicroZero.PubSub
         /// </summary>
         protected SubStation() : base(ZeroStationType.Notify, true)
         {
-            //Hearter = SystemManager.Instance;
+            //Hearter = ZeroCenterProxy.Master;
         }
         /// <summary>
         /// 订阅主题

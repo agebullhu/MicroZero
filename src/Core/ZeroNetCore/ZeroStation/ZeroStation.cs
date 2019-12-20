@@ -26,12 +26,12 @@ namespace Agebull.MicroZero
             IsService = isService;
             Name = GetType().Name;
             ConfigState = StationStateType.None;
-            //Hearter = SystemManager.Instance;
+            //Hearter = ZeroCenterProxy.Master;
         }
         /// <summary>
         /// 心跳器
         /// </summary>
-        protected HeartManager Hearter => SystemManager.Instance;
+        protected HeartManager Hearter => ZeroCenterProxy.Master;
 
         /// <summary>
         /// 是否服务

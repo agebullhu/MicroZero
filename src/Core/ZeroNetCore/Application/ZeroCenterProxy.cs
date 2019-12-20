@@ -1,50 +1,85 @@
-﻿using Agebull.MicroZero.ApiDocuments;
-using Newtonsoft.Json;
-using System;
 using System.Threading.Tasks;
-
+using Agebull.Common.Context;
 
 namespace Agebull.MicroZero.ZeroManagemant
 {
     /// <summary>
-    /// 系统侦听器
+    /// 服务中心代理
     /// </summary>
-    public class ConfigManager : ZSimpleCommand
+    public class ZeroCenterProxy : HeartManager
     {
         #region 实例
 
         /// <summary>
         /// 构造
         /// </summary>
-        public ConfigManager(ZeroItem center)
+        public ZeroCenterProxy(ZeroItem item)
         {
-            Center = center;
-            ManageAddress = center.ManageAddress;
-            ServiceKey = center.ServiceKey.ToZeroBytes();
+            ManageAddress = item.ManageAddress;
+            ServiceKey = item.ServiceKey.ToZeroBytes();
         }
 
         /// <summary>
-        ///   服务中心
+        /// 单例
         /// </summary>
-        public ZeroItem Center { get; }
+        public static ZeroCenterProxy Master { get;internal set; }
 
         #endregion
 
         #region 系统支持
 
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public Task<bool> PingCenter()
+        {
+            return ByteCommand(ZeroByteCommand.Ping);
+        }
 
         /// <summary>
+        ///     连接到
+        /// </summary>
+        public Task<bool> HeartLeft()
+        {
+            return HeartLeft("SystemManage", GlobalContext.ServiceRealName);
+        }
+
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public Task<bool> HeartReady()
+        {
+            return HeartReady("SystemManage", GlobalContext.ServiceRealName);
+        }
+
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public Task<bool> HeartJoin()
+        {
+            return HeartJoin("SystemManage", GlobalContext.ServiceRealName);
+        }
+
+        /// <summary>
+        ///     连接到
+        /// </summary>
+        public Task<bool> Heartbeat()
+        {
+            return Heartbeat("SystemManage", GlobalContext.ServiceRealName);
+        }
+
+        /*// <summary>
         /// 尝试安装站点
         /// </summary>
         /// <param name="station"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public async Task<bool> TryInstall(string station, string type)
+        public bool TryInstall(string station, string type)
         {
             if (ZeroApplication.Config.TryGetConfig(station, out _))
                 return true;
             ZeroTrace.SystemLog(station, "No find,try install ...");
-            var r = await CallCommand("install", type, station, station, station);
+            var r = CallCommand("install", type, station, station, station);
             if (!r.InteractiveSuccess)
             {
                 ZeroTrace.WriteError(station, "Install failed.");
@@ -57,7 +92,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 return false;
             }
             ZeroTrace.SystemLog(station, "Install successfully,try start it ...");
-            r = await CallCommand("start", station);
+            r = CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
                 ZeroTrace.WriteError(station, "Can't start station");
@@ -72,12 +107,12 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// </summary>
         /// <param name="station"></param>
         /// <returns></returns>
-        public async Task<bool> TryStart(string station)
+        public bool TryStart(string station)
         {
             if (!ZeroApplication.Config.TryGetConfig(station, out _))
                 return false;
             ZeroTrace.SystemLog(station, "Try start it ...");
-            var r = await CallCommand("start", station);
+            var r = CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
                 ZeroTrace.WriteError(station, "Can't start station");
@@ -87,23 +122,29 @@ namespace Agebull.MicroZero.ZeroManagemant
             return true;
         }
 
+        //上传文档是否已执行过
+        private bool _documentIsUpload;
         /// <summary>
         ///     上传文档
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> UploadDocument()
+        public bool UploadDocument()
         {
+            if (_documentIsUpload)
+                return true;
             bool success = true;
             foreach (var doc in ZeroApplication.Config.Documents.Values)
             {
                 if (!doc.IsLocal)
                     continue;
-                var result = await CallCommand("doc", doc.Name, JsonHelper.SerializeObject(doc));
-                if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
-                    continue;
-                ZeroTrace.WriteError("UploadDocument", result);
-                success = false;
+                var result = CallCommand("doc", doc.Name, JsonHelper.SerializeObject(doc));
+                if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
+                {
+                    ZeroTrace.WriteError("UploadDocument", result);
+                    success = false;
+                }
             }
+            _documentIsUpload = success;
             return success;
         }
 
@@ -111,37 +152,42 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     下载文档
         /// </summary>
         /// <returns></returns>
-        public async Task<StationDocument> LoadDocument(string name)
+        public bool LoadDocument(string name, out StationDocument doc)
         {
             ZeroResult result;
             try
             {
-                result = await CallCommand("doc", name);
+                result = CallCommand("doc", name);
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("LoadDocument", e, name);
-                return null;
+                doc = null;
+                return false;
             }
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadDocument", name, result.State);
-                return null;
+                doc = null;
+                return false;
             }
             if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("LoadDocument", name, "Empty");
-                return null;
+                doc = null;
+                return false;
             }
             try
             {
-                return JsonConvert.DeserializeObject<StationDocument>(json);
+                doc = JsonConvert.DeserializeObject<StationDocument>(json);
                 //ZeroTrace.SystemLog("LoadDocument", name,"success");
+                return true;
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("LoadDocument", e, name, json);
-                return null;
+                doc = null;
+                return false;
             }
         }
 
@@ -149,52 +195,21 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public static async Task<bool> LoadAllConfig()
+        public bool LoadAllConfig()
         {
-            var item = ZeroApplication.Config.Master;
-            var cm = new ConfigManager(item);
-            var json =await cm.LoadGroupConfig();
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return false;
-            }
-            if (!ZeroApplication.Config.FlushConfigs(ZeroApplication.Config.Master, json))
-            {
-                return false;
-            }
-            for (int i = 1; i < ZeroApplication.Config.ZeroGroup.Count; i++)
-            {
-                item = ZeroApplication.Config.ZeroGroup[i];
-                cm = new ConfigManager(item);
-                json =await cm.LoadGroupConfig();
-                if (!string.IsNullOrWhiteSpace(json))
-                {
-                    ZeroApplication.Config.FlushConfigs(item, json);
-                }
-            }
-            ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
-            return true;
-        }
-
-        /// <summary>
-        ///     读取配置
-        /// </summary>
-        /// <returns></returns>
-        public async Task<string> LoadGroupConfig()
-        {
-            var result =await CallCommand("host", "*");
+            var result = CallCommand("host", "*");
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadConfig", result);
-                return null;
+                return false;
             }
             if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("LoadAllConfig", "Empty");
-                return null;
+                return false;
             }
-            ZeroTrace.SystemLog("LoadAllConfig", ManageAddress, json);
-            return json;
+            ZeroTrace.SystemLog("LoadAllConfig", json);
+            return ZeroApplication.Config.FlushConfigs(ZeroApplication.Config.Master, json);
         }
 
 
@@ -202,28 +217,29 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public async Task<StationConfig> LoadConfig(string stationName)
+        public StationConfig LoadConfig(string stationName)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
                 ZeroTrace.WriteError("LoadConfig", "No ready");
                 return null;
             }
-            var result =await CallCommand("host", stationName);
+            var result = CallCommand("host", stationName);
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadConfig", result);
                 return null;
             }
 
-            if (result.TryGetString(ZeroFrameType.Status, out var json) || json[0] != '{')
-            {
-                ZeroTrace.WriteError("LoadConfig", stationName, "not a json", json);
-                return null;
-            }
+            if (!result.TryGetString(ZeroFrameType.Status, out var json) && json[0] == '{')
+                return !ZeroApplication.Config.UpdateConfig(ZeroApplication.Config.Master, stationName, json,out var config)
+                    ? null
+                    : config;
 
-            return !ZeroApplication.Config.UpdateConfig(Center, stationName, json, out var config) ? null : config;
-        }
+            ZeroTrace.WriteError("LoadConfig", stationName, "not a json", json);
+            return null;
+
+        }*/
 
 
         #endregion

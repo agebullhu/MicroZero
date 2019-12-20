@@ -10,10 +10,9 @@ namespace Agebull.MicroZero
     public abstract class ZSimpleCommand
     {
         /// <summary>
-        /// 地址错误的情况
+        /// 管理站点地址
         /// </summary>
-        /// <returns></returns>
-        protected virtual string GetAddress() => ManageAddress;
+        public byte[] ServiceKey { get; set; }
 
         /// <summary>
         /// 管理站点地址
@@ -72,8 +71,6 @@ namespace Agebull.MicroZero
         protected async Task<ZeroResult> CallCommand(byte[] description, params string[] args)
         {
             if (ManageAddress == null)
-                ManageAddress = GetAddress();
-            if (ManageAddress == null)
                 return new ZeroResult
                 {
                     InteractiveSuccess = false,
@@ -93,7 +90,7 @@ namespace Agebull.MicroZero
                 {
                     using (var message = new ZMessage(description, args))
                     {
-                        message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                        message.Add(new ZFrame(ServiceKey));
                         if (!await socket.SendAsync(message))
                             return new ZeroResult
                             {

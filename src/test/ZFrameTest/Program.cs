@@ -7,10 +7,10 @@ namespace ZFrameTest
 {
     class Program
     {
-        static async Task Main()
+        static void Main()
         {
             ZContext.Initialize();
-            await Tester.StartTest();
+            Tester.StartTest();
             ZContext.Destroy();
 
             //ZeroApplication.CheckOption();

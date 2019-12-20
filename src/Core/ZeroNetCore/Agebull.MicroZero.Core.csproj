@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\SystemManager.cs" />
     <Compile Remove="Base\SyncBatchQueue.cs" />
     <Compile Remove="ClientStation\ApiCaller.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />

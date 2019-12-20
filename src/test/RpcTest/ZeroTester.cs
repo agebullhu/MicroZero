@@ -29,7 +29,7 @@ namespace RpcTest
             {
                 Interlocked.Increment(ref BugError);
             }
-            else if (client.State < ZeroOperatorStateType.TimeOut)
+            else if (client.State < ZeroOperatorStateType.NetTimeOut)
             {
                 Interlocked.Increment(ref WkError);
             }

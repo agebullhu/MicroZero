@@ -107,7 +107,7 @@ namespace Agebull.MicroZero.PubSub
                 des,
                 item.Requester.ToZeroBytes(),
                 item.LocalId.ToZeroBytes(),
-                ZeroCommandExtend.ServiceKeyBytes
+                Config.ServiceKey
             };
             return await SendResult(socket, new ZMessage(msg));
         }
@@ -282,11 +282,13 @@ namespace Agebull.MicroZero.PubSub
         };
         public bool Prepare(string address, string stationName)
         {
-            if (socket != null)
+            if (socket != null || !ZeroApplication.Config.TryGetConfig(stationName,out var cfg))
                 return true;
+            
             try
             {
                 socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(false, stationName));
+                socket.ServiceKey = cfg.ServiceKey;
                 return true;
             }
             catch (Exception e)
@@ -306,7 +308,7 @@ namespace Agebull.MicroZero.PubSub
                 ZeroResult result;
                 using (var message = new ZMessage(description, start.ToString(), end.ToString()))
                 {
-                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    message.Add(new ZFrame(socket.ServiceKey));
                     if (socket.SendTo(message))
                         result = new ZeroResult
                         {

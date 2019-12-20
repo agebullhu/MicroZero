@@ -48,7 +48,9 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!StationProxy.TryGetValue(station, out var item))// || item.Config.State != ZeroCenterState.Run
                 return null;
-            return GetProxySocket(name);
+            var socket = ZSocket.CreateOnceSocket(InprocAddress, name.ToZeroBytes(), ZSocketType.PAIR);
+            socket.ServiceKey = item.Config.ServiceKey;
+            return socket;
         }
 
         /// <summary>

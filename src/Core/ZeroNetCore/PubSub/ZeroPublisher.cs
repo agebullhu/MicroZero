@@ -309,7 +309,7 @@ namespace Agebull.MicroZero.PubSub
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes()),
                         new ZFrame(socket.Identity),
-                        new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                        new ZFrame(socket.ServiceKey)
                     })
                     {
                         //message.Insert(0, new ZFrame(title.ToZeroBytes()));

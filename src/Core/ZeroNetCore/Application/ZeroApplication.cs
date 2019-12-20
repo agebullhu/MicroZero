@@ -56,7 +56,7 @@ namespace Agebull.MicroZero
                     continue;
                 }
 
-                var result = await SystemManager.Instance.CallCommand(words);
+                var result = await ZeroCenterProxy.Master.CallCommand(words);
                 if (result.InteractiveSuccess)
                     ZeroTrace.SystemLog("Console", result.TryGetString(ZeroFrameType.Status, out var value)
                         ? value
@@ -171,7 +171,6 @@ namespace Agebull.MicroZero
             CheckConfig();
             InitializeDependency();
             ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
-            ZeroCommandExtend.ServiceKeyBytes = GlobalContext.ServiceKey.ToZeroBytes();
             ShowOptionInfo();
         }
 
@@ -181,7 +180,7 @@ namespace Agebull.MicroZero
         /// </summary>
         private static void InitializeDependency()
         {
-            GlobalContext.ServiceKey = Config.ServiceKey;
+            GlobalContext.ServiceKey = Config.Master.ServiceKey;
             GlobalContext.ServiceName = Config.ServiceName;
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
@@ -234,7 +233,7 @@ namespace Agebull.MicroZero
             AddInImporter.Instance.AutoRegist();
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
-            SystemManager.Instance = SystemManager.CreateInstance();
+            ZeroCenterProxy.Master =new ZeroCenterProxy(Config.Master);
             IocHelper.Update();
         }
 
@@ -327,15 +326,15 @@ namespace Agebull.MicroZero
                 return false;
             ZeroCenterState = ZeroCenterState.Start;
             ApplicationState = StationState.BeginRun;
-            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.ZeroManageAddress})...");
-            if (!await SystemManager.Instance.PingCenter())
+            ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", $"try connect zero center ({Config.Master.ManageAddress})...");
+            if (!await ZeroCenterProxy.Master.PingCenter())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "zero center can`t connection.");
                 return false;
             }
             ZeroCenterState = ZeroCenterState.Run;
-            if (WorkModel == ZeroWorkModel.Service && !await SystemManager.Instance.HeartJoin())
+            if (WorkModel == ZeroWorkModel.Service && !await ZeroCenterProxy.Master.HeartJoin())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "zero center can`t join.");
@@ -343,7 +342,7 @@ namespace Agebull.MicroZero
             }
 
             Config.ClearConfig();
-            if (!await SystemManager.Instance.LoadAllConfig())
+            if (!await ConfigManager.LoadAllConfig())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "station configs can`t loaded.");
@@ -352,7 +351,8 @@ namespace Agebull.MicroZero
             ZeroTrace.SystemLog("ZeroCenter", "JoinCenter", "be connected successfully,start local stations.");
             if (WorkModel == ZeroWorkModel.Service)
             {
-                var task1 = SystemManager.Instance.UploadDocument();
+                var m = new ConfigManager(Config.Master);
+                var task1 = m.UploadDocument();
                 var task2 = OnZeroStart();
                 Task.WaitAll(task1, task2);
                 //Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
@@ -382,12 +382,12 @@ namespace Agebull.MicroZero
                 case StationState.BeginRun:
                 case StationState.Run:
                     if (WorkModel == ZeroWorkModel.Service)
-                        await SystemManager.Instance.HeartLeft();
+                        await ZeroCenterProxy.Master.HeartLeft();
                     await OnZeroEnd(false);
                     break;
                 case StationState.Failed:
                     if (WorkModel == ZeroWorkModel.Service)
-                        await SystemManager.Instance.HeartLeft();
+                        await ZeroCenterProxy.Master.HeartLeft();
                     break;
             }
             ApplicationState = StationState.Destroy;

@@ -51,7 +51,7 @@ namespace MicroZero.Http.Gateway
                 _data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return;
             }
-            var value = await SystemManager.Instance.CallCommand(_words);
+            var value = await ZeroCenterProxy.Master.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {
                 _result = ApiResultIoc.Ioc.NetworkError;

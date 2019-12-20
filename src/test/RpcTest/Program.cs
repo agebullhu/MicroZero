@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using Agebull.Common.Context;
+using Agebull.Common.Ioc;
 using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RpcTest
 {

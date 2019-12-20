@@ -406,10 +406,13 @@ namespace Agebull.MicroZero.ZeroApis
                     Item.Result = JsonHelper.SerializeObject(result);
                     Item.Status = result.Success ? UserOperatorStateType.Success : UserOperatorStateType.LogicalError;
                     return result.Success ? ZeroOperatorStateType.Ok : ZeroOperatorStateType.Failed;
+                case Task task:
+                    task.Wait();
+                    dynamic tresd = task;
+                    return CheckCommandResult(tresd.Result);
             }
-
-
-            if (res?.GetType().ToString().IndexOf("System.Runtime.CompilerServices.AsyncTaskMethodBuilder", StringComparison.Ordinal) == 0)
+            var name = res?.GetType().ToString();
+            if (name?.IndexOf("System.Runtime.CompilerServices.AsyncTaskMethodBuilder", StringComparison.Ordinal) == 0)
             {
                 dynamic resd = res;
                 return CheckCommandResult(resd.Result);

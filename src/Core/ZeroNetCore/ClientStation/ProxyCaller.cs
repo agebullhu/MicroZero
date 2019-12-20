@@ -20,6 +20,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         internal Dictionary<string, byte[]> Files;
 
+        internal StationConfig Config;
         /// <summary>
         ///     调用时使用的名称
         /// </summary>
@@ -246,7 +247,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return false;
             }
 
-            if (!ZeroApplication.Config.TryGetConfig(Station, out var item))
+            if (!ZeroApplication.Config.TryGetConfig(Station, out Config))
             {
                 Result = ApiResultIoc.NoFindJson;
                 State = ZeroOperatorStateType.NotFind;
@@ -254,7 +255,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return false;
             }
 
-            if (item.State == ZeroCenterState.None || item.State == ZeroCenterState.Pause)
+            if (Config.State == ZeroCenterState.None || Config.State == ZeroCenterState.Pause)
             {
                 Result = ApiResultIoc.PauseJson;
                 State = ZeroOperatorStateType.Pause;
@@ -262,7 +263,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return false;
             }
 
-            if (item.State != ZeroCenterState.Run)
+            if (Config.State != ZeroCenterState.Run)
             {
                 Result = ApiResultIoc.NotSupportJson;
                 State = ZeroOperatorStateType.Pause;
@@ -272,8 +273,10 @@ namespace Agebull.MicroZero.ZeroApis
 
             State = ZeroOperatorStateType.None;
             socket = ApiProxy.GetProxySocket(Name);
+            socket.ServiceKey = Config.ServiceKey;
             return true;
         }
+
         /// <summary>
         ///     请求格式说明
         /// </summary>
@@ -518,7 +521,7 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         message.Add(new ZFrame(arg));
                     }
-                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    message.Add(new ZFrame(Config.ServiceKey));
 
                 }
 

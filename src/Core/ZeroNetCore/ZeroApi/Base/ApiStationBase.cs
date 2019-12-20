@@ -41,9 +41,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected sealed override async Task<StationConfig> OnNofindConfig()
         {
-            if (!await SystemManager.Instance.TryInstall(StationName, _typeName))
+            var mg = new ConfigManager(ZeroApplication.Config.Master);
+            if (!await mg.TryInstall(StationName, _typeName))
                 return null;
-            var config = await SystemManager.Instance.LoadConfig(StationName);
+            var config = await mg.LoadConfig(StationName);
             if (config == null)
                 return null;
             config.State = ZeroCenterState.Run;
@@ -333,7 +334,7 @@ namespace Agebull.MicroZero.ZeroApis
                         new ZFrame(item.Api.Caller),
                         new ZFrame(TimeOutKillFrame),
                         new ZFrame(item.Api.Requester),
-                        new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                        new ZFrame(Config.ServiceKey)
                     });
             }
             catch (Exception e)
@@ -755,7 +756,7 @@ namespace Agebull.MicroZero.ZeroApis
                 msg.Add((org.Value));
             }
             des[i++] = ZeroFrameType.SerivceKey;
-            msg.Add(ZeroCommandExtend.ServiceKeyBytes);
+            msg.Add(Config.ServiceKey);
             des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
             return await SendResult(socket, new ZMessage(msg));
         }
@@ -793,7 +794,7 @@ namespace Agebull.MicroZero.ZeroApis
                 new ZFrame(item.Caller),
                 new ZFrame(LayoutErrorFrame),
                 new ZFrame(item.Requester),
-                new ZFrame(ZeroCommandExtend.ServiceKeyBytes)
+                new ZFrame(Config.ServiceKey)
             });
         }
 

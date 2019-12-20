@@ -1584,6 +1584,11 @@
             </remarks>
             <param name="prefix">Prefix for subscribed messages.</param>
         </member>
+        <member name="P:ZeroMQ.ZSocket.ServiceKey">
+            <summary>
+            服务令牌
+            </summary>
+        </member>
         <member name="P:ZeroMQ.ZSocket.ReceiveMore">
             <summary>
                 Gets a value indicating whether the multi-part message currently being read has more message parts to follow.

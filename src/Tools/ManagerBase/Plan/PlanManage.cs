@@ -20,22 +20,13 @@ namespace MicroZero.Http.Route
     public class PlanManage : ZSimpleCommand
     {
         #region 实例
-        /// <summary>
-        /// 地址错误的情况
-        /// </summary>
-        /// <returns></returns>
-        protected sealed override string GetAddress()
-        {
-            return ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
-        }
-
-
+        
         /// <summary>
         /// 构造路由计数器
         /// </summary>
         public PlanManage()
         {
-            ManageAddress = GetAddress();
+            ManageAddress= ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
             FlushList().Wait();
         }
 
@@ -322,7 +313,7 @@ namespace MicroZero.Http.Route
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            ServiceKey);
                         break;
                     //Manage
                     case ZeroStationType.Notify:
@@ -332,7 +323,7 @@ namespace MicroZero.Http.Route
                             clientPlan.context.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            ServiceKey);
                         break;
                     default:
                         clientPlan.command = clientPlan.command.ToLower();
@@ -348,7 +339,7 @@ namespace MicroZero.Http.Route
                             plan.ToZeroBytes(),
                             clientPlan.command.ToZeroBytes(),
                             clientPlan.argument.ToZeroBytes(),
-                            ZeroCommandExtend.ServiceKeyBytes);
+                            ServiceKey);
                         break;
                 }
                 using (message)

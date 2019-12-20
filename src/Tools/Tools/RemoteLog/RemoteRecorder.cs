@@ -79,7 +79,7 @@ namespace Agebull.MicroZero.Log
             var array = infos.ToArray();
             infos.Clear();
 
-            _socket.SendTo(LogDescription, _logsByte, JsonHelper.SerializeObject(array).ToZeroBytes(), ZeroCommandExtend.ServiceKeyBytes);
+            _socket.SendTo(LogDescription, _logsByte, JsonHelper.SerializeObject(array).ToZeroBytes(), Config.ServiceKey);
             //int idx = 0;
             //while (idx <= array.Length)
             //{
@@ -122,7 +122,7 @@ namespace Agebull.MicroZero.Log
                     RecordInfoTson.ToTson(serializer, info);
                     buf = serializer.Close();
                 }
-                if (_socket.SendTo(LogDescription, _logsByte, buf, ZeroCommandExtend.ServiceKeyBytes))
+                if (_socket.SendTo(LogDescription, _logsByte, buf, Config.ServiceKey))
                     return;
             }
             LogRecorderX.BaseRecorder.RecordLog(info);
@@ -287,8 +287,8 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void IZeroObject.OnHeartbeat()
         {
-            if (RealState == StationState.Run)
-                SystemManager.Instance.Heartbeat("RemoteLogRecorder", RealName);
+            //if (RealState == StationState.Run)
+            //    ZeroCenterProxy.Master.Heartbeat("RemoteLogRecorder", RealName);
         }
 
         void IZeroObject.OnZeroInitialize()
@@ -320,7 +320,7 @@ namespace Agebull.MicroZero.Log
                 if (config.State < ZeroCenterState.Run && ZeroApplication.CanDo)
                 {
                     ZeroTrace.SystemLog(Name, "Start by config state changed");
-                    Start();
+                    Start().Wait();
                 }
             }
             else

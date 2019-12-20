@@ -51,9 +51,9 @@ namespace MicroZero.Http.Gateway
                 {
                     kb.Append($"&{kv.Key}={kv.Value}");
                 }
-                if (!string.IsNullOrWhiteSpace(data.HttpContext))
+                if (!string.IsNullOrWhiteSpace(data.HttpContent))
                 {
-                    kb.Append(data.HttpContext);
+                    kb.Append(data.HttpContent);
                 }
             }
 

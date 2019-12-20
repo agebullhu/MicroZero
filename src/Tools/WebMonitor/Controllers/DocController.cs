@@ -38,15 +38,13 @@ namespace WebMonitor.Controllers
                 return doc;
             }
             var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == config.Group);
-            if (!new ConfigManager(center).LoadDocument(config.StationName, out doc))
+            var mg = new ConfigManager(center);
+            doc = await mg.LoadDocument(config.StationName) ?? new StationDocument
             {
-                doc = await SystemManager.Instance.LoadDocument(config.StationName) ?? new StationDocument
-                {
-                    Name = config.Name,
-                    Caption = config.Caption,
-                    Description = config.Description
-                };
-            }
+                Name = config.Name,
+                Caption = config.Caption,
+                Description = config.Description
+            };
             GlobalValue.Documents.TryAdd(station, doc);
             return doc;
         }
