@@ -44,10 +44,22 @@ namespace Agebull.MicroZero
         public decimal TaskCpuMultiple { get; set; }
 
         /// <summary>
+        ///     API最大执行超时时间(单位秒)
+        /// </summary>
+        [DataMember]
+        public int ApiTimeout { get; set; }
+
+        /// <summary>
+        ///     检测到API执行超时是否强行清除资源
+        /// </summary>
+        [DataMember]
+        public bool ApiTimeoutKill { get; set; }
+
+        /// <summary>
         /// 复制
         /// </summary>
         /// <param name="option"></param>
-        public void Copy(ZeroStationOption option)
+        public void CopyByEmpty(ZeroStationOption option)
         {
             if (SpeedLimitModel == SpeedLimitType.None)
                 SpeedLimitModel = option.SpeedLimitModel;
@@ -55,6 +67,31 @@ namespace Agebull.MicroZero
                 TaskCpuMultiple = option.TaskCpuMultiple;
             if (MaxWait <= 0)
                 MaxWait = option.MaxWait;
+            if (ApiTimeout <= 0)
+                ApiTimeout = option.ApiTimeout;
+            if (!ApiTimeoutKill)
+                ApiTimeoutKill = option.ApiTimeoutKill;
         }
+
+        /// <summary>
+        /// 复制
+        /// </summary>
+        /// <param name="option"></param>
+        public void CopyByHase(ZeroStationOption option)
+        {
+            if (option.SpeedLimitModel > SpeedLimitType.None)
+                SpeedLimitModel = option.SpeedLimitModel;
+            if (option.TaskCpuMultiple > 0)
+                TaskCpuMultiple = option.TaskCpuMultiple;
+            if (option.MaxWait > 0)
+                MaxWait = option.MaxWait;
+            if (option.ApiTimeout > 0)
+                ApiTimeout = option.ApiTimeout;
+            if (option.ApiTimeoutKill)
+                ApiTimeoutKill = option.ApiTimeoutKill;
+            if (option.ApiTimeoutKill)
+                ApiTimeoutKill = true;
+        }
+
     }
 }

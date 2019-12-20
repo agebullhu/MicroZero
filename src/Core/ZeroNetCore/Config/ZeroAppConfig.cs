@@ -19,95 +19,200 @@ using Agebull.Common.Context;
 namespace Agebull.MicroZero
 {
     /// <summary>
-    /// 工作模式
-    /// </summary>
-    public enum ZeroWorkModel
-    {
-        /// <summary>
-        /// 服务模式（默认）
-        /// </summary>
-        Service,
-        /// <summary>
-        /// 客户模式，仅可调用
-        /// </summary>
-        Client,
-        /// <summary>
-        /// 反向桥接模式
-        /// </summary>
-        Bridge
-    }
-
-    /// <summary>
     ///     本地站点配置
     /// </summary>
     [Serializable]
-    public class ZeroStationOption
+    [DataContract]
+    public class ZeroAppConfig : ZeroStationOption
     {
         /// <summary>
-        ///   API使用路由模式（而非默认的Push/Pull)
-        /// </summary>
-        [IgnoreDataMember]
-        public bool ApiRouterModel { get; set; }
-
-
-        /// <summary>
-        ///     ApiClient与ApiStation限速模式
-        /// </summary>
-        /// <remarks>
-        ///     Single：单线程无等待
-        ///     ThreadCount:按线程数限制,线程内无等待
-        ///     线程数计算公式 : 机器CPU数量 X TaskCpuMultiple 最小为1,请合理设置并测试
-        ///     WaitCount: 单线程,每个请求起一个新Task,直到最高未完成数量达MaxWait时,
-        ///     ApiClient休眠直到等待数量 低于 MaxWait
-        ///     ApiStation返回服务器忙(熔断)
-        /// </remarks>
-        [DataMember]
-        public SpeedLimitType SpeedLimitModel { get; set; }
-
-        /// <summary>
-        ///     最大等待数(0xFF-0xFFFFF)
+        ///   服务中心组，第一个为主
         /// </summary>
         [DataMember]
-        public int MaxWait { get; set; }
+        public List<ZeroItem> ZeroGroup { get; set; }
 
 
         /// <summary>
-        ///     最大Task与Cpu核心数的倍数关系(0-128)
+        ///   线程池最大工作线程数
+        /// </summary>
+        [DataMember] public int MaxWorkThreads;
+
+        /// <summary>
+        ///   线程池最大IO线程数
+        /// </summary>
+        [DataMember] public int MaxIOThreads;
+
+        /// <summary>
+        ///   是否需要发出事件
         /// </summary>
         [DataMember]
-        public decimal TaskCpuMultiple { get; set; }
+        public bool? CanRaiseEvent { get; set; }
 
         /// <summary>
-        ///     API最大执行超时时间(单位秒)
+        ///     站点孤立
         /// </summary>
         [DataMember]
-        public int ApiTimeout { get; set; }
+        public bool? StationIsolate { get; set; }
 
         /// <summary>
-        ///     检测到API执行超时是否强行清除资源
+        ///     服务名称
         /// </summary>
         [DataMember]
-        public bool ApiTimeoutKill { get; set; }
+        public string ServiceName { get; set; }
+
 
         /// <summary>
-        /// 复制
+        ///     短名称
+        /// </summary>
+        [DataMember]
+        public string ShortName { get; set; }
+
+        /// <summary>
+        ///     站点名称，注意唯一性
+        /// </summary>
+        [DataMember]
+        public string StationName { get; set; }
+
+        /// <summary>
+        ///     本地数据文件夹
+        /// </summary>
+        [DataMember]
+        public string DataFolder { get; set; }
+
+        /// <summary>
+        ///     本地日志文件夹
+        /// </summary>
+        [DataMember]
+        public string LogFolder { get; set; }
+
+        /// <summary>
+        ///     本地配置文件夹
+        /// </summary>
+        [DataMember]
+        public string ConfigFolder { get; set; }
+
+        /// <summary>
+        ///     应用所在的顶级目录
+        /// </summary>
+        [DataMember]
+        public string RootPath { get; set; }
+
+        /// <summary>
+        ///     插件地址,如为空则与运行目录相同
+        /// </summary>
+        [DataMember]
+        public string AddInPath { get; set; }
+
+        /// <summary>
+        /// 如果目标配置存在,则复制之
         /// </summary>
         /// <param name="option"></param>
-        public void Copy(ZeroStationOption option)
+        internal void CopyByHase(ZeroAppConfig option)
         {
+            base.CopyByHase(option);
+            if (!string.IsNullOrWhiteSpace(option.AddInPath))
+                AddInPath = option.AddInPath;
+            if (!string.IsNullOrWhiteSpace(option.AddInPath))
+                ConfigFolder = option.ConfigFolder;
+            if (!string.IsNullOrWhiteSpace(option.LogFolder))
+                LogFolder = option.LogFolder;
+            if (!string.IsNullOrWhiteSpace(option.DataFolder))
+                DataFolder = option.DataFolder;
+            if (!string.IsNullOrWhiteSpace(option.StationName))
+                StationName = option.StationName;
+            if (!string.IsNullOrWhiteSpace(option.ShortName))
+                ShortName = option.ShortName;
+            if (!string.IsNullOrWhiteSpace(option.ServiceName))
+                ServiceName = option.ServiceName;
+            if (option.StationIsolate != null)
+                StationIsolate = option.StationIsolate;
+
+            if (option.SpeedLimitModel > SpeedLimitType.None)
+                SpeedLimitModel = option.SpeedLimitModel;
+            //if (option.TaskCpuMultiple > 0)
+            //    TaskCpuMultiple = option.TaskCpuMultiple;
+            if (option.MaxWait > 0)
+                MaxWait = option.MaxWait;
+            if (option.CanRaiseEvent != null)
+                CanRaiseEvent = option.CanRaiseEvent;
+
+            if (ZeroGroup == null || option.ZeroGroup == null)
+                ZeroGroup = option.ZeroGroup;
+            else if (option.ZeroGroup.Count > 0)
+            {
+                foreach (var item in option.ZeroGroup)
+                {
+                    if (ZeroGroup.Any(p => p.Address == item.Address))
+                        continue;
+                    ZeroGroup.Add(item);
+                }
+            }
+            /*
+            if (option.PoolSize > 0)
+                PoolSize = option.PoolSize;
+            if (!string.IsNullOrWhiteSpace(option.ZeroAddress))
+                ZeroAddress = option.ZeroAddress;
+            if (option.ZeroMonitorPort > 0)
+                ZeroMonitorPort = option.ZeroMonitorPort;
+            if (option.ZeroManagePort > 0)
+                ZeroManagePort = option.ZeroManagePort;
+            if (!string.IsNullOrWhiteSpace(option.ServiceKey))
+                ServiceKey = option.ServiceKey;
+
+            BridgeLocalAddress = option.BridgeLocalAddress;
+            BridgeCallAddress = option.BridgeCallAddress;
+            BridgeResultAddress = option.BridgeResultAddress;
+            */
+        }
+
+        /// <summary>
+        /// 如果本配置内容为空则用目标配置补全
+        /// </summary>
+        /// <param name="option"></param>
+        public void CopyByEmpty(ZeroAppConfig option)
+        {
+            base.CopyByEmpty(option);
+            if (string.IsNullOrWhiteSpace(AddInPath))
+                AddInPath = option.AddInPath;
+            if (string.IsNullOrWhiteSpace(ConfigFolder))
+                ConfigFolder = option.ConfigFolder;
+            if (string.IsNullOrWhiteSpace(LogFolder))
+                LogFolder = option.LogFolder;
+            if (string.IsNullOrWhiteSpace(DataFolder))
+                DataFolder = option.DataFolder;
+            if (string.IsNullOrWhiteSpace(StationName))
+                StationName = option.StationName;
+            if (string.IsNullOrWhiteSpace(ShortName))
+                ShortName = option.ShortName;
+            if (string.IsNullOrWhiteSpace(ServiceName))
+                ServiceName = option.ServiceName;
+            if (StationIsolate == null)
+                StationIsolate = option.StationIsolate;
+
             if (SpeedLimitModel == SpeedLimitType.None)
                 SpeedLimitModel = option.SpeedLimitModel;
-            if (TaskCpuMultiple <= 0)
-                TaskCpuMultiple = option.TaskCpuMultiple;
-            if (MaxWait <= 0)
+            //if (TaskCpuMultiple == 0)
+            //    TaskCpuMultiple = option.TaskCpuMultiple;
+            if (MaxWait == 0)
                 MaxWait = option.MaxWait;
-            if (ApiTimeout <= 0)
-                ApiTimeout = option.ApiTimeout;
-            ApiTimeoutKill = option.ApiTimeoutKill;
+
+            if (CanRaiseEvent == null)
+                CanRaiseEvent = option.CanRaiseEvent;
+
+            if (ZeroGroup == null || option.ZeroGroup == null)
+                ZeroGroup = option.ZeroGroup;
+            else if (option.ZeroGroup.Count > 0)
+            {
+                foreach (var item in option.ZeroGroup)
+                {
+                    if (ZeroGroup.Any(p => p.Address == item.Address))
+                        continue;
+                    ZeroGroup.Add(item);
+                }
+            }
         }
     }
-
-    /// <summary>
+    /*// <summary>
     ///     本地站点配置
     /// </summary>
     [Serializable]
@@ -245,9 +350,9 @@ namespace Agebull.MicroZero
             if (option.ApiTimeoutKill)
                 ApiTimeoutKill = option.ApiTimeoutKill;
 
-            /*BridgeLocalAddress = option.BridgeLocalAddress;
-            BridgeCallAddress = option.BridgeCallAddress;
-            BridgeResultAddress = option.BridgeResultAddress;*/
+            //BridgeLocalAddress = option.BridgeLocalAddress;
+            //BridgeCallAddress = option.BridgeCallAddress;
+            //BridgeResultAddress = option.BridgeResultAddress;
         }
 
         /// <summary>
@@ -299,9 +404,9 @@ namespace Agebull.MicroZero
             if (!ApiTimeoutKill)
                 ApiTimeoutKill = option.ApiTimeoutKill;
 
-            /*BridgeLocalAddress = option.BridgeLocalAddress;
-            BridgeCallAddress = option.BridgeCallAddress;
-            BridgeResultAddress = option.BridgeResultAddress;*/
+            //BridgeLocalAddress = option.BridgeLocalAddress;
+            //BridgeCallAddress = option.BridgeCallAddress;
+            //BridgeResultAddress = option.BridgeResultAddress;
         }
         /// <summary>
         ///     程序所在地址
@@ -361,7 +466,7 @@ namespace Agebull.MicroZero
         [DataMember]
         public string BridgeLocalAddress { get; set; }
 
-         */
+         * /
 
         #endregion
 
@@ -888,5 +993,5 @@ namespace Agebull.MicroZero
 
             ZeroTrace.SystemLog("SpeedLimitModel", model);
         }
-    }
+    }*/
 }

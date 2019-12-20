@@ -24,7 +24,7 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     站点配置
         /// </summary>
-        public static ZeroAppConfig Config { get; set; }
+        public static ZeroAppConfigRuntime Config { get; set; }
 
         /// <summary>
         /// 工作模式
@@ -80,13 +80,20 @@ namespace Agebull.MicroZero
             if (opt != null)
                 ZSocket.Option = opt;
 
-            Config = sec.Child<ZeroAppConfig>(AppName) ?? sec.Child<ZeroAppConfig>("default") ?? new ZeroAppConfig();
+            Config = new ZeroAppConfigRuntime
+            {
+                BinPath = curPath,
+                RootPath = rootPath,
+                IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+            };
+            var cfg = sec.Child<ZeroAppConfig>(AppName);
+            if (cfg != null)
+                Config.CopyByEmpty(cfg);
+            cfg = sec.Child<ZeroAppConfig>("default");
+            if (cfg != null)
+                Config.CopyByEmpty(cfg);
             if (string.IsNullOrWhiteSpace(Config.StationName))
                 Config.StationName = AppName;
-
-            Config.BinPath = curPath;
-            Config.RootPath = rootPath;
-            Config.IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
             var glc = sec.Child<ZeroAppConfig>("Global");
             if (glc != null)
@@ -147,9 +154,13 @@ namespace Agebull.MicroZero
 
             #region ZeroCenter
 
-            if (WorkModel == ZeroWorkModel.Bridge)
-                return;
+            ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
+
             Config.Master = Config.ZeroGroup[0];
+            if (Config.ApiTimeout <= 1)
+                Config.ApiTimeout = 60;
+            //if (WorkModel == ZeroWorkModel.Bridge)
+            //    return;
 
             //if (string.IsNullOrWhiteSpace(Config.ZeroAddress))
             //    Config.ZeroAddress = "127.0.0.1";
@@ -224,15 +235,17 @@ namespace Agebull.MicroZero
         {
             var sec = ConfigurationManager.Get("Zero");
             var option = sec.Child<ZeroStationOption>(station) ?? new ZeroStationOption();
-            option.Copy(Config);
+            option.CopyByEmpty(Config);
+            if (option.ApiTimeout <= 1)
+                option.ApiTimeout = 60;
 
-            if (option.SpeedLimitModel < SpeedLimitType.Single || option.SpeedLimitModel > SpeedLimitType.WaitCount)
-                option.SpeedLimitModel = SpeedLimitType.None;
+            if (option.SpeedLimitModel != SpeedLimitType.WaitCount)
+                option.SpeedLimitModel = SpeedLimitType.Single;
 
-            if (option.TaskCpuMultiple <= 0)
-                option.TaskCpuMultiple = 1;
-            else if (option.TaskCpuMultiple > 128)
-                option.TaskCpuMultiple = 128;
+            //if (option.TaskCpuMultiple <= 0)
+            //    option.TaskCpuMultiple = 1;
+            //else if (option.TaskCpuMultiple > 128)
+            //    option.TaskCpuMultiple = 128;
 
             if (option.MaxWait < 0xFF)
                 option.MaxWait = 0xFF;
@@ -264,12 +277,12 @@ namespace Agebull.MicroZero
             string model;
             switch (Config.SpeedLimitModel)
             {
-                case SpeedLimitType.ThreadCount:
-                    var max = (int)(Environment.ProcessorCount * Config.TaskCpuMultiple);
-                    if (max < 1)
-                        max = 1;
-                    model = $"按线程数限制:线程({Environment.ProcessorCount}×{Config.TaskCpuMultiple}={max}) 等待({Config.MaxWait})";
-                    break;
+                //case SpeedLimitType.ThreadCount:
+                //    var max = (int)(Environment.ProcessorCount * Config.TaskCpuMultiple);
+                //    if (max < 1)
+                //        max = 1;
+                //    model = $"按线程数限制:线程({Environment.ProcessorCount}×{Config.TaskCpuMultiple}={max}) 等待({Config.MaxWait})";
+                //    break;
                 case SpeedLimitType.WaitCount:
                     model = $"按等待数限制:线程(1) 等待({Config.MaxWait})";
                     break;

@@ -116,7 +116,7 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     应用中心是否正在运行
         /// </summary>
-        public static bool ZerCenterIsRun => WorkModel != ZeroWorkModel.Service || ZeroCenterState == ZeroCenterState.Run;
+        public static bool ZerCenterIsRun => ZeroCenterState == ZeroCenterState.Run;
 
         /// <summary>
         ///     本地应用是否正在运行
@@ -311,11 +311,8 @@ namespace Agebull.MicroZero
             ZeroCenterState = ZeroCenterState.None;
             ApplicationState = StationState.Start;
             var success = await JoinCenter();
-            if (WorkModel == ZeroWorkModel.Service)
-            {
-                _ = SystemMonitor.Monitor();
-                _ = ApiChecker.RunCheck();
-            }
+            _ = SystemMonitor.Monitor();
+            _ = ApiChecker.RunCheck();
             //await SystemMonitor.WaitMe();
             return success;
         }
