@@ -66,19 +66,7 @@
         /// 连接队列数量
         /// </summary>
         public int Backlog { get; set; }  //  50000;
-        /// <summary>
-        /// 心跳间隔时长
-        /// </summary>
-        public int HeartbeatIvl { get; set; }  //  -1;
-        /// <summary>
-        /// 心跳超时时长
-        /// </summary>
-        public int HeartbeatTimeout { get; set; }  //  200;
-        /// <summary>
-        /// 心跳TTL
-        /// </summary>
-        public int HeartbeatTtl { get; set; }  //  200;
-
+        
         /// <summary>
         /// 启用Keeplive
         /// </summary>
@@ -91,5 +79,20 @@
         ///当探测没有确认时，重新发送探测的频度,单位秒
         /// </summary>
         public int TcpKeepaliveIntvl { get; set; }  //  72;
+
+        /*
+        /// <summary>
+        /// 心跳间隔时长
+        /// </summary>
+        public int HeartbeatIvl { get; set; }  //  -1;
+
+        /// <summary>
+        /// 心跳超时时长
+        /// </summary>
+        public int HeartbeatTimeout { get; set; }  //  200;
+        /// <summary>
+        /// 心跳TTL
+        /// </summary>
+        public int HeartbeatTtl { get; set; }  //  200;*/
     }
 }

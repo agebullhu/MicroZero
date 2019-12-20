@@ -94,14 +94,15 @@ namespace Agebull.MicroZero.ZeroApis
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        internal void Call()
+        internal bool Call()
         {
             if (!CreateSocket(out var socket))
-                return;
+                return false;
             using (socket)
             {
                 var task = CallApi(socket);
                 task.Wait();
+                return task.Result;
             }
         }
 
@@ -110,13 +111,13 @@ namespace Agebull.MicroZero.ZeroApis
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        internal async Task CallAsync()
+        internal async Task<bool> CallAsync()
         {
             if (!CreateSocket(out var socket))
-                return;
+                return false;
             using (socket)
             {
-                await CallApi(socket);
+                return await CallApi(socket);
             }
         }
 
@@ -125,14 +126,15 @@ namespace Agebull.MicroZero.ZeroApis
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        internal void Plan(ZeroPlanInfo plan)
+        internal bool Plan(ZeroPlanInfo plan)
         {
             if (!CreateSocket(out var socket))
-                return;
+                return false;
             using (socket)
             {
                 var task = CallPlan(socket, plan);
                 task.Wait();
+                return task.Result;
             }
         }
 
@@ -140,13 +142,13 @@ namespace Agebull.MicroZero.ZeroApis
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        internal async Task PlanAsync(ZeroPlanInfo plan)
+        internal async Task<bool> PlanAsync(ZeroPlanInfo plan)
         {
             if (!CreateSocket(out var socket))
-                return;
+                return false;
             using (socket)
             {
-                await CallPlan(socket, plan);
+                return await CallPlan(socket, plan);
             }
         }
         /// <summary>
@@ -237,7 +239,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region Socket
 
-        private bool CreateSocket(out ZSocket socket)
+        private bool CreateSocket(out ZSocketEx socket)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -297,7 +299,7 @@ namespace Agebull.MicroZero.ZeroApis
         };
 
 
-        private async Task CallApi(ZSocket socket)
+        private async Task<bool> CallApi(ZSocket socket)
         {
             if (Files == null || Files.Count <= 0)
                 LastResult = await CallNoFileApi(socket);
@@ -308,10 +310,10 @@ namespace Agebull.MicroZero.ZeroApis
             {
 
                 State = LastResult.State;
-                return;
+                return false;
             }
 
-            await CallEnd(socket);
+            return await CallEnd(socket);
         }
         private async Task<ZeroResult> CallNoFileApi(ZSocket socket)
         {
@@ -387,7 +389,7 @@ namespace Agebull.MicroZero.ZeroApis
             ZeroFrameType.End
         };
 
-        private async Task CallPlan(ZSocket socket, ZeroPlanInfo plan)
+        private async Task<bool> CallPlan(ZSocket socket, ZeroPlanInfo plan)
         {
             LastResult = await Send(socket,
                 PlanDescription,
@@ -405,9 +407,9 @@ namespace Agebull.MicroZero.ZeroApis
             {
 
                 State = LastResult.State;
-                return;
+                return false;
             }
-            await CallEnd(socket);
+            return await CallEnd(socket);
 
         }
         async Task<bool> CallEnd(ZSocket socket)

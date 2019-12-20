@@ -926,7 +926,7 @@
             构造
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
             <summary>
             构造Pool
             </summary>
@@ -1224,7 +1224,7 @@
                 配置校验
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
             <summary>
             构造Pool
             </summary>
@@ -5472,7 +5472,7 @@
             构造
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
             <summary>
             构造Pool
             </summary>

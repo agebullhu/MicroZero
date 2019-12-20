@@ -237,7 +237,7 @@ namespace Agebull.MicroZero.Log
         private bool CanRun => RunTaskCancel != null && !RunTaskCancel.Token.IsCancellationRequested &&
                                ZeroApplication.CanDo && RealState == StationState.Run;
 
-        private ZSocket _socket;
+        private ZSocketEx _socket;
         /// <summary>
         /// 轮询
         /// </summary>
@@ -246,10 +246,10 @@ namespace Agebull.MicroZero.Log
             await Task.Yield();
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
-                using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
+                pool.Prepare(ZPollEvent.In, ZSocketEx.CreateServiceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR));
+                using (_socket = ZSocketEx.CreateOnceSocket("inproc://RemoteLog.req", null, null, ZSocketType.PAIR))
                 {
-                    using (var sendSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER,
+                    using (var sendSocket = ZSocketEx.CreateClientSocket(Config.RequestAddress, Config.ServiceKey, ZSocketType.DEALER,
                         ZSocket.CreateIdentity(false, StationName), true))
                     {
                         while (CanRun)

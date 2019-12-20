@@ -61,7 +61,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected abstract IZmqPool PrepareLoop(byte[] identity, out ZSocket socket);
+        protected abstract IZmqPool PrepareLoop(byte[] identity, out ZSocketEx socket);
 
         ZeroStationOption _option;
         /// <summary>

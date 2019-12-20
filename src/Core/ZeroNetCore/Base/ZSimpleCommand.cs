@@ -77,7 +77,7 @@ namespace Agebull.MicroZero
                     ErrorMessage = "地址无效"
                 };
 
-            var socket = ZSocket.CreateOnceSocket(ManageAddress, ZSocket.CreateIdentity(false, "Dispatcher"));
+            var socket = ZSocketEx.CreateOnceSocket(ManageAddress, ServiceKey, ZSocket.CreateIdentity(false, "Dispatcher"));
             if (socket == null)
                 return new ZeroResult
                 {
@@ -88,16 +88,12 @@ namespace Agebull.MicroZero
             {
                 using (socket)
                 {
-                    using (var message = new ZMessage(description, args))
-                    {
-                        message.Add(new ZFrame(ServiceKey));
-                        if (!await socket.SendAsync(message))
-                            return new ZeroResult
-                            {
-                                State = ZeroOperatorStateType.LocalRecvError,
-                                ZmqError = socket.LastError
-                            };
-                    }
+                    if (!await socket.SendByServiceKey(description, args))
+                        return new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.LocalRecvError,
+                            ZmqError = socket.LastError
+                        };
                     return await socket.Receive<ZeroResult>();
                 }
             }

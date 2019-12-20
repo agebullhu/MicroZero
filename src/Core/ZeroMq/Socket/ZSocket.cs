@@ -19,7 +19,7 @@ namespace ZeroMQ
     /// <summary>
     ///     Sends and receives messages, single frames and byte frames across ZeroMQ.
     /// </summary>
-    public sealed class ZSocket : MemoryCheck
+    public class ZSocket : MemoryCheck
     {
         #region Const
 
@@ -62,7 +62,7 @@ namespace ZeroMQ
         /// <returns>
         ///     实例
         /// </returns>
-        private ZSocket(ZContext context, ZSocketType socketType, out ZError error)
+        internal ZSocket(ZContext context, ZSocketType socketType, out ZError error)
         {
             Context = context;
             SocketType = socketType;
@@ -77,10 +77,11 @@ namespace ZeroMQ
         /// <returns>
         ///     实例
         /// </returns>
-        public static ZSocket Create(ZContext context, ZSocketType socketType)
+        internal static ZSocket Create(ZContext context, ZSocketType socketType)
         {
             return new ZSocket(context, socketType, out _);
         }
+
 
 
         /// <summary>
@@ -89,7 +90,18 @@ namespace ZeroMQ
         /// <returns>
         ///     实例
         /// </returns>
-        public static ZSocket Create(ZSocketType socketType)
+        internal static ZSocket Create(ZContext context, ZSocketType socketType, out ZError error)
+        {
+            return new ZSocket(context, socketType, out error);
+        }
+        /*
+        /// <summary>
+        ///     构造
+        /// </summary>
+        /// <returns>
+        ///     实例
+        /// </returns>
+        internal static ZSocket Create(ZSocketType socketType)
         {
             return new ZSocket(ZContext.Current, socketType, out _);
         }
@@ -100,22 +112,10 @@ namespace ZeroMQ
         /// <returns>
         ///     实例
         /// </returns>
-        public static ZSocket Create(ZSocketType socketType, out ZError error)
+        internal static ZSocket Create(ZSocketType socketType, out ZError error)
         {
             return new ZSocket(ZContext.Current, socketType, out error);
         }
-
-        /// <summary>
-        ///     构造
-        /// </summary>
-        /// <returns>
-        ///     实例
-        /// </returns>
-        public static ZSocket Create(ZContext context, ZSocketType socketType, out ZError error)
-        {
-            return new ZSocket(context, socketType, out error);
-        }
-
         /// <summary>
         /// 构建套接字
         /// </summary>
@@ -263,7 +263,7 @@ namespace ZeroMQ
             LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
-        }
+        }*/
         #endregion
 
         #region Close
@@ -813,6 +813,27 @@ namespace ZeroMQ
             return true;
         }
 
+        public async Task<bool> SendFrameAsync(ZFrame frame, int flags)
+        {
+            //EnsureNotDisposed();
+
+            if (frame.IsDismissed)
+                throw new ObjectDisposedException("frame");
+
+            _error = null;
+            while (-1 == await Task.Run(() => zmq.msg_send(frame.Ptr, SocketPtr, (int)flags)))
+            {
+                _error = ZError.GetLastErr();
+
+                if (!_error.IsError(ZError.Code.EINTR))
+                    return false;
+                _error = null;
+            }
+            // Tell IDisposable to not unallocate zmq_msg
+            frame.Close();
+            return true;
+        }
+
         /// <summary>
         /// 转发
         /// </summary>
@@ -1134,14 +1155,7 @@ namespace ZeroMQ
         #endregion
 
         #region Option
-        /// <summary>
-        /// 服务令牌
-        /// </summary>
-        public byte[] ServiceKey
-        {
-            get;
-            set;
-        }
+
         /// <summary>
         ///     Gets a value indicating whether the multi-part message currently being read has more message parts to follow.
         /// </summary>
@@ -1717,7 +1731,8 @@ namespace ZeroMQ
         {
             if (value == null) return SetOptionNull(option);
 
-            var optionLength = /* Marshal.SizeOf(typeof(byte)) * */ value.Length;
+            var optionLength = /* Marshal.SizeOf(typeof(byte)) * */
+        value.Length;
             using (var optionValue = DispoIntPtr.Alloc(optionLength))
             {
                 Marshal.Copy(value, 0, optionValue.Ptr, optionLength);
@@ -1868,12 +1883,13 @@ namespace ZeroMQ
         /// <summary>
         /// 最后错误
         /// </summary>
-        private ZError _error;
+        protected ZError _error;
 
         /// <summary>
         /// 最后错误
         /// </summary>
         public ZError LastError => _error;
+
         /// <summary>
         /// 最后错误
         /// </summary>
@@ -1881,50 +1897,6 @@ namespace ZeroMQ
         public ZError GetLastError()
         {
             return _error = ZError.GetLastErr();
-        }
-
-        /// <summary>
-        /// 状态
-        /// </summary>
-        [Flags]
-        public enum SocketState
-        {
-            /// <summary>
-            /// 未确定
-            /// </summary>
-            None = 0x0,
-            /// <summary>
-            /// 对象已生成
-            /// </summary>
-            Create = 0x1,
-            /// <summary>
-            /// 连接
-            /// </summary>
-            Connection = 0x2,
-            /// <summary>
-            /// 绑定
-            /// </summary>
-            Binding = 0x4,
-            /// <summary>
-            /// 连接方式开启
-            /// </summary>
-            Open = 0x8,
-            /// <summary>
-            /// 对象正常但因暂停而不可用
-            /// </summary>
-            Pause = 0x10,
-            /// <summary>
-            /// 正常关闭
-            /// </summary>
-            Close = 0x20,
-            /// <summary>
-            /// 对象已释放
-            /// </summary>
-            Free = 0x40,
-            /// <summary>
-            /// 损坏
-            /// </summary>
-            Failed = 0x1000
         }
 
         #endregion

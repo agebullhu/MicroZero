@@ -116,7 +116,7 @@ namespace Agebull.MicroZero.PubSub
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, Identity, Subscribes));
+                pool.Prepare(ZPollEvent.In, ZSocketEx.CreateSubSocket(Config.WorkerCallAddress, Config.ServiceKey, Identity, Subscribes));
                 RealState = StationState.Run;
                 while (CanLoop)
                 {

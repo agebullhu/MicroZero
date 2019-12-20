@@ -300,29 +300,23 @@ namespace Agebull.MicroZero.PubSub
                         ErrorMessage = "站点不存在"
                     };
                 }
-                ZError err;
                 using (socket)
                 {
-                    using (var message = new ZMessage(frames)
+                    var message = new ZMessage(station.ToZeroBytes(), frames)
                     {
                         new ZFrame(GlobalContext.CurrentNoLazy?.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.LocalGlobalId.ToZeroBytes()),
                         new ZFrame(GlobalContext.CurrentNoLazy?.Request.RequestId.ToZeroBytes()),
-                        new ZFrame(socket.Identity),
-                        new ZFrame(socket.ServiceKey)
-                    })
-                    {
-                        //message.Insert(0, new ZFrame(title.ToZeroBytes()));
-                        message.Insert(0, new ZFrame(station.ToZeroBytes()));
-                        if (socket.Send(message, out err))
-                            return await socket.Receive<ZeroResult>();
-                    }
+                        new ZFrame(socket.Identity)
+                    };
+                    if (await socket.SendByServiceKey(message))
+                        return await socket.Receive<ZeroResult>();
                 }
                 ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
                 return new ZeroResult
                 {
                     State = ZeroOperatorStateType.NetError,
-                    ErrorMessage = err.Text
+                    ErrorMessage = socket.LastError.Text
                 };
             }
             catch (Exception e)

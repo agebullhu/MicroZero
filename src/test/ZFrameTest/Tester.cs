@@ -48,24 +48,29 @@ namespace RpcTest
         }
         static void TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
         {
-            using (var socket = ZSocket.CreateOnceSocket(address,ZSocket.CreateIdentity()))
+            using (var socket = ZSocketEx.CreateOnceSocket(address, serviceKey, ZSocket.CreateIdentity()))
             {
-                //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-                //if (!socket.SendByServiceKey(frames))
-                //{
-                //    Console.Error.Write(" : Send Error");
-                //    return;
-                //}
-                //var result = socket.Receive<ZeroResult>();
-                //if (!result.InteractiveSuccess)
-                //    Console.Error.WriteLine(" : Receive Error");
-                //if (result.State != state)
-                //    Console.Error.Write($"(bad) : {result.State}");
-                //else
-                //{
-                //    Console.ForegroundColor = ConsoleColor.Blue;
-                //    Console.Write($"(success) : {state}");
-                //}
+                socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
+                var task = socket.SendByServiceKey(frames);
+                task.Wait();
+                if (!task.Result)
+                {
+                    Console.Error.Write(" : Send Error");
+                    return;
+                }
+
+               var  task2 = socket.Receive<ZeroResult>();
+               task2.Wait();
+                var result = task2.Result;
+                if (!result.InteractiveSuccess)
+                    Console.Error.WriteLine(" : Receive Error");
+                if (result.State != state)
+                    Console.Error.Write($"(bad) : {result.State}");
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.Write($"(success) : {state}");
+                }
             }
         }
     }

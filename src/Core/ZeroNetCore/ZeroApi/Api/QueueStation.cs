@@ -34,12 +34,12 @@ namespace Agebull.MicroZero.PubSub
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocket socket)
+        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocketEx socket)
         {
-            socket = ZSocket.CreatePoolSocket(Config.WorkerResultAddress, ZSocketType.DEALER, identity);
+            socket = ZSocketEx.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
 
             var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
+            pool.Prepare(ZPollEvent.In, ZSocketEx.CreateSubSocket(Config.WorkerCallAddress,Config.ServiceKey, identity, Subscribe), socket);
 
             var queueData = LoadData() ?? new QueueData();
             long[] ids;
@@ -51,7 +51,7 @@ namespace Agebull.MicroZero.PubSub
                     data.FailedIds = data.FailedIds.Distinct().ToList();
                 ids = data.FailedIds.ToArray();
             }
-            var task = ReNotify(ids);
+            _= ReNotify(ids);
 
             return pool;
         }
@@ -269,7 +269,7 @@ namespace Agebull.MicroZero.PubSub
     /// </summary>
     internal class QueueCommand : ScopeBase
     {
-        ZSocket socket;
+        ZSocketEx socket;
 
         static readonly byte[] description =
         {
@@ -287,8 +287,7 @@ namespace Agebull.MicroZero.PubSub
             
             try
             {
-                socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(false, stationName));
-                socket.ServiceKey = cfg.ServiceKey;
+                socket = ZSocketEx.CreateOnceSocket(address, cfg.ServiceKey, ZSocket.CreateIdentity(false, stationName));
                 return true;
             }
             catch (Exception e)
@@ -306,22 +305,18 @@ namespace Agebull.MicroZero.PubSub
             try
             {
                 ZeroResult result;
-                using (var message = new ZMessage(description, start.ToString(), end.ToString()))
-                {
-                    message.Add(new ZFrame(socket.ServiceKey));
-                    if (socket.SendTo(message))
-                        result = new ZeroResult
-                        {
-                            State = ZeroOperatorStateType.Ok,
-                            InteractiveSuccess = true
-                        };
-                    else
-                        result = new ZeroResult
-                        {
-                            State = ZeroOperatorStateType.LocalRecvError,
-                            ZmqError = socket.LastError
-                        };
-                }
+                if (await socket.SendByServiceKey(description, start.ToString(), end.ToString()))
+                    result = new ZeroResult
+                    {
+                        State = ZeroOperatorStateType.Ok,
+                        InteractiveSuccess = true
+                    };
+                else
+                    result = new ZeroResult
+                    {
+                        State = ZeroOperatorStateType.LocalRecvError,
+                        ZmqError = socket.LastError
+                    };
                 return !result.InteractiveSuccess ? result : await socket.Receive<ZeroResult>();
             }
             catch (Exception e)
