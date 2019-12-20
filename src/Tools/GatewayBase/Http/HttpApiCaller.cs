@@ -110,10 +110,10 @@ namespace MicroZero.Http.Gateway
             }
             else if (localRequest.ContentLength != null)
             {
-                if (string.IsNullOrWhiteSpace(data.HttpContext))
+                if (string.IsNullOrWhiteSpace(data.HttpContent))
                     return;
                 RemoteRequest.ContentType = "application/json;charset=utf-8";
-                var buffer = data.HttpContext.ToUtf8Bytes();
+                var buffer = data.HttpContent.ToUtf8Bytes();
                 using (var rs = RemoteRequest.GetRequestStream())
                 {
                     rs.Write(buffer, 0, buffer.Length);

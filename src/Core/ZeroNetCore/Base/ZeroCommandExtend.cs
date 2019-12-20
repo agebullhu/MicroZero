@@ -77,10 +77,10 @@ namespace Agebull.MicroZero
         /// </summary>
         public static byte[] AppNameBytes { get; internal set; }
 
-        /// <summary>
+        /*// <summary>
         /// 服务令牌字节内容
         /// </summary>
-        public static byte[] ServiceKeyBytes { get; internal set; }
+        public static byte[] ServiceKeyBytes { get; internal set; }*/
 
 
     }

@@ -355,6 +355,9 @@ namespace agebull
 			message->plan_id = atoll(*global_id);
 			message->frames[1].sync(description);
 
+			message->name.alloc(256);
+			sprintf(message->name.c_str(), "msg:%s:%llx", *message->station, message->plan_id);
+			
 			if (pid == 0)
 			{
 				sprintf(frame_head.c_str(), "*:msg:%s:%llx", *message->station, message->plan_id); //计划特殊的请求者(虚拟)

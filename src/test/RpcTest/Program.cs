@@ -1,13 +1,10 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Context;
-using Agebull.Common.Ioc;
-using Agebull.EntityModel.Common;
+using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using Agebull.MicroZero.ZeroApis;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace RpcTest
 {
@@ -39,23 +36,39 @@ namespace RpcTest
 
         static void Test()
         {
-            while(true)
+            GlobalContext.SetUser(new LoginUserInfo {UserId =1});
+            while (true)
             {
                 Console.WriteLine("按键开始");
-                Console.ReadKey();
-                var res = ZeroPublisher.Publish("UserMessage", GlobalContext.RequestInfo.Token, "Importer",
-                       new ApiResult
-                       {
-                           Status = new OperatorStatus
-                           {
-                               GuideCode = "5",
-                               ClientMessage = "11,22"
-                           }
-                       });
+                var key =Console.ReadKey();
+                if(key.Key == ConsoleKey.Q)
+                    return;
+                //var res = ApiClient.CallApi("eShop", "v1/active/all");
 
-                Console.WriteLine(res);
+                var res = ZeroPublisher.Publish("UserMessage", "test");
+                Console.WriteLine(JsonHelper.SerializeObject(res));
             }
         }
+
+        //static void Test()
+        //{
+        //    while(true)
+        //    {
+        //        Console.WriteLine("按键开始");
+        //        Console.ReadKey();
+        //        var res = ZeroPublisher.Publish("UserMessage", GlobalContext.RequestInfo.Token, "Importer",
+        //               new ApiResult
+        //               {
+        //                   Status = new OperatorStatus
+        //                   {
+        //                       GuideCode = "5",
+        //                       ClientMessage = "11,22"
+        //                   }
+        //               });
+
+        //        Console.WriteLine(res);
+        //    }
+        //}
     }
 
 }

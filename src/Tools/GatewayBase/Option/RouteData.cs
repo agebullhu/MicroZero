@@ -50,7 +50,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     请求的内容
         /// </summary>
-        [DataMember] [JsonProperty("context")] public string HttpContext { get; private set; }
+        [DataMember] [JsonProperty("context")] public string HttpContent { get; private set; }
 
         /// <summary>
         ///     请求的表单
@@ -290,7 +290,6 @@ namespace MicroZero.Http.Gateway
                             Files.Add(file.Name, bytes);
                         }
                     }
-
                 }
 
                 if (request.ContentLength == null)

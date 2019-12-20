@@ -30,7 +30,7 @@ namespace MicroZero.Http.Gateway
                 {
                     Station = host.Station,
                     Commmand = Data.ApiName,
-                    Argument = Data.HttpContext ?? form,
+                    Argument = Data.HttpContent ?? form,
                     ExtendArgument = form,
                     Files = Data.Files,
                     ContextJson = Data.GlobalContextJson

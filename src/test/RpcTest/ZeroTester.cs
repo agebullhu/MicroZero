@@ -1,6 +1,5 @@
 using System.Threading;
 using Agebull.MicroZero;
-using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
 
 namespace RpcTest
@@ -9,9 +8,7 @@ namespace RpcTest
     {
         public override bool Init()
         {
-            var task = SystemManager.Instance.TryInstall(Station, "api");
-            task.Wait();
-            return task.Result;
+            return true;
         }
 
         protected override void DoTest()
@@ -32,7 +29,7 @@ namespace RpcTest
             {
                 Interlocked.Increment(ref BugError);
             }
-            else if (client.State < ZeroOperatorStateType.NetTimeOut)
+            else if (client.State < ZeroOperatorStateType.TimeOut)
             {
                 Interlocked.Increment(ref WkError);
             }
