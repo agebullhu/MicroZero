@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
 using ZeroMQ;
@@ -20,23 +21,23 @@ namespace MicroZero.Http.Route
             IsRealModel = true;
         }
 
-        /// <summary>
-        /// 空转
-        /// </summary>
-        /// <returns></returns>
-        protected override void OnLoopIdle()
-        {
-            //DoPublish();
-        }
+        ///// <summary>
+        ///// 空转
+        ///// </summary>
+        ///// <returns></returns>
+        //protected override void OnLoopIdle()
+        //{
+        //    //DoPublish();
+        //}
 
         /// <summary>
         /// 执行命令
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override void Handle(PlanItem args)
+        public override Task Handle(PlanItem args)
         {
-            PlanManage.OnPlanEvent(args.ZeroEvent,args.Plan);
+            return PlanManage.OnPlanEvent(args.ZeroEvent, args.Plan);
         }
 
         /// <summary>

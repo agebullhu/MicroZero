@@ -436,7 +436,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (!Arguments.TryGetValue(name, out var str))
             {
-                value = default(T);
+                value = default;
                 return false;
             }
 
@@ -447,7 +447,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch
             {
-                value = default(T);
+                value = default;
                 return false;
             }
         }

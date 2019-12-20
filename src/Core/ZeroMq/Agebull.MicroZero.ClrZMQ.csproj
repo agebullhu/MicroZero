@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>ClrZmq的MicroZero专用版本</Description>
     <!--monoandroid60;xamarinios10-->
-    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <DebugType>portable</DebugType>
     
     <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
@@ -19,7 +19,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>ClrZmq的MicroZero专用版本</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.2-alpha</Version>
+    <Version>1.4.10.37</Version>
     <!--<Version>1.3.0-alpha</Version>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -82,7 +82,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Agebull.EntityModel.Core" Version="2.4.10.1" />
+    <PackageReference Include="Agebull.Common.LogRecorder" Version="2.4.10.21" />
+    <PackageReference Include="Agebull.EntityModel.Core" Version="2.4.10.18" />
   </ItemGroup>
 
   <ItemGroup>

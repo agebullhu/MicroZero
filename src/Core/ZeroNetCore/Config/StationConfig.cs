@@ -190,16 +190,14 @@ namespace Agebull.MicroZero
         /// <param name="src"></param>
         public void Copy(StationConfig src)
         {
+            State = src.State;
+            IsBaseStation = src.IsBaseStation;
             StationName = src.StationName;
             StationAlias = src.StationAlias;
             StationType = src.StationType;
             RequestPort = src.RequestPort;
             WorkerCallPort = src.WorkerCallPort;
             WorkerResultPort = src.WorkerResultPort;
-            State = src.State;
-            IsBaseStation = src.IsBaseStation;
-            StationName = src.StationName;
-            StationAlias = src.StationAlias;
         }
 
         /// <summary>

@@ -8,7 +8,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>微服务框架MicroZero的核心程序集</Description>
-    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageId></PackageId>
     
@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.2-alpha</Version>
+    <Version>1.4.10.37</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -76,6 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Base\SyncBatchQueue.cs" />
     <Compile Remove="ClientStation\ApiCaller.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />
     <Compile Remove="Discover\ApiActionInfo.cs" />
@@ -100,7 +101,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -53,7 +53,7 @@
 			}
 		}
 
-		public static readonly ZSymbol None = default(ZSymbol);
+		public static readonly ZSymbol None = default;
 
 		static ZSymbol()
 		{

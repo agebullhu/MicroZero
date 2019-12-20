@@ -8,14 +8,16 @@
 
     public static partial class ZPollItems // : IDisposable, IList<ZmqPollItem>
 	{
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public static class Posix
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			internal static unsafe bool PollMany(
 				IEnumerable<ZSocket> sockets, 
 				IEnumerable<ZPollItem> items, ZPollEvent pollEvents, 
 				out ZError error, TimeSpan? timeout = null)
 			{
-				error = default(ZError);
+				error = null;
 				var result = false;
 				var count = items.Count();
 				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
@@ -40,7 +42,7 @@
 
 					if (error.IsError(ZError.Code.EINTR))
                     {
-						error = default(ZError);
+						error = null;
 						continue;
 					}
 					break;
@@ -63,7 +65,7 @@
 				ZPollItem item, ZPollEvent pollEvents,
 				out ZError error, TimeSpan? timeout = null)
 			{
-				error = default(ZError);
+				error = null;
 				var result = false;
 				var timeoutMs = !timeout.HasValue ? -1 : (int)timeout.Value.TotalMilliseconds;
 
@@ -80,7 +82,7 @@
 
 					if (error.IsError(ZError.Code.EINTR))
                     {
-						error = default(ZError);
+						error = null;
 						continue;
 					}
 					break;

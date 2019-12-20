@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
+using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.Common.Tson;
 using Newtonsoft.Json;
@@ -72,21 +73,21 @@ namespace Agebull.MicroZero.PubSub
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public abstract void Handle(TPublishItem args);
+        public abstract Task Handle(TPublishItem args);
 
         /// <summary>
         /// 执行命令
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        void DoHandle(TPublishItem args)
+        async Task DoHandle(TPublishItem args)
         {
             using (IocScope.CreateScope())
             {
                 args.RestoryContext(StationName);
                 try
                 {
-                    Handle(args);
+                    await Handle(args);
                 }
                 catch (Exception e)
                 {
@@ -108,9 +109,10 @@ namespace Agebull.MicroZero.PubSub
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected override bool Loop(/*CancellationToken token*/)
+        protected override async Task<bool> Loop(/*CancellationToken token*/)
         {
-            Hearter.HeartReady(StationName, RealName);
+            //await Task.Yield();
+            await Hearter.HeartReady(StationName, RealName);
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
@@ -118,19 +120,22 @@ namespace Agebull.MicroZero.PubSub
                 RealState = StationState.Run;
                 while (CanLoop)
                 {
-                    if (!pool.Poll())
+                    if (!await pool.PollAsync())
                     {
-                        OnLoopIdle();
+                       await OnLoopIdle();
                     }
-                    else if (CanLoop && pool.CheckIn(0, out var message))
-                    {
-                        if (Unpack(message, out var item))
-                        {
-                            DoHandle(item);
-                        }
+                    else if (!CanLoop)
+                        continue;
 
-                        //socket.SendTo(message);
+                    var message = await pool.CheckInAsync(0);
+                    if (message == null)
+                        continue;
+                    if (Unpack(message, out var item))
+                    {
+                        await DoHandle(item);
                     }
+
+                    //socket.SendTo(message);
                 }
             }
             return true;
@@ -147,10 +152,10 @@ namespace Agebull.MicroZero.PubSub
             return PublishItem.Unpack2(msgs, out item);
         }
 
-        /// <summary>
+        /*// <summary>
         /// 命令处理任务
         /// </summary>
-        protected virtual void HandleTask()
+        protected virtual Task HandleTask()
         {
             ZeroApplication.OnGlobalStart(this);
             //using (var pool = ZmqPool.CreateZmqPool())
@@ -170,7 +175,8 @@ namespace Agebull.MicroZero.PubSub
             //    }
             //}
             ZeroApplication.OnGlobalEnd(this);
-        }
+
+        }*/
 
 
         /// <summary>
@@ -258,7 +264,7 @@ namespace Agebull.MicroZero.PubSub
 
             if (args.Content != null)
                 return JsonConvert.DeserializeObject<TData>(args.Content);
-            if (args.Buffer == null) return default(TData);
+            if (args.Buffer == null) return default;
             using (var ms = new MemoryStream(args.Buffer))
             {
                 var js = new DataContractJsonSerializer(typeof(TData));

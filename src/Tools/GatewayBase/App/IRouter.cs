@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace MicroZero.Http.Gateway
@@ -12,29 +13,29 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     开始
         /// </summary>
-        bool Prepare(HttpContext context);
+        Task<bool> Prepare(HttpContext context);
 
         /// <summary>
         ///     调用
         /// </summary>
-        void Call();
+        Task Call();
 
         /// <summary>
         ///     写入返回
         /// </summary>
-        void WriteResult();
-
-        /// <summary>
-        ///     结束
-        /// </summary>
-        void End();
+        Task WriteResult();
 
         /// <summary>
         /// 异常处理
         /// </summary>
         /// <param name="e"></param>
         /// <param name="context"></param>
-        void OnError(Exception e, HttpContext context);
+        Task OnError(Exception e, HttpContext context);
+
+        /// <summary>
+        ///     结束
+        /// </summary>
+        void End();
 
         /// <summary>
         /// 检查并重新映射（如果可以的话）

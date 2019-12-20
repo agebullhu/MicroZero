@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -56,7 +57,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [DataMember]
         [JsonProperty("hostPath")]
-        public Dictionary<string,int> HostPath{ get; set; }
+        public Dictionary<string, int> HostPath { get; set; }
 
         /// <summary>
         ///     系统配置
@@ -94,13 +95,12 @@ namespace MicroZero.Http.Gateway
         {
             ConfigFileName = Path.Combine(ZeroApplication.Config.ConfigFolder, "route_config.json");
             ZeroTrace.SystemLog("HttpGateway", ConfigFileName);
-
             if (!File.Exists(ConfigFileName))
                 throw new Exception($"路由配置文件{ConfigFileName}不存在");
             try
             {
                 Option = JsonConvert.DeserializeObject<RouteOption>(File.ReadAllText(ConfigFileName));
-                
+
             }
             catch (Exception e)
             {
@@ -110,6 +110,8 @@ namespace MicroZero.Http.Gateway
             if (Option == null)
                 throw new Exception($"路由配置文件{ConfigFileName}内容错误");
 
+            if (string.IsNullOrWhiteSpace(Option.SystemConfig.ContentType))
+                Option.SystemConfig.ContentType = "text/plain; charset=UTF-8";
             Option.CheckUrlMap();
             Option.CheckRouteMap();
             Option.CheckSecurity();
@@ -152,11 +154,11 @@ namespace MicroZero.Http.Gateway
                 foreach (var apiItem in Option.Security.denyTokens)
                     Option.Security.DenyTokens.Add(apiItem, apiItem);
         }
-        
+
         /// <summary>
         ///     缓存图
         /// </summary>
-        public static Dictionary<string, RouteHost> RouteMap { get; internal set; }
+        public static ConcurrentDictionary<string, RouteHost> RouteMap { get; internal set; }
 
         /// <summary>
         ///     初始化路由
@@ -164,7 +166,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private void CheckRouteMap()
         {
-            RouteMap = new Dictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
+            RouteMap = new ConcurrentDictionary<string, RouteHost>(StringComparer.OrdinalIgnoreCase);
             if (RouteConfig == null)
                 return;
 
@@ -181,7 +183,7 @@ namespace MicroZero.Http.Gateway
                     continue;
                 //Http负载
                 if (!RouteMap.ContainsKey(kv.Key))
-                    RouteMap.Add(kv.Key, host);
+                    RouteMap.TryAdd(kv.Key, host);
                 else
                     RouteMap[kv.Key] = host;
                 //别名
@@ -189,7 +191,7 @@ namespace MicroZero.Http.Gateway
                     continue;
                 foreach (var name in kv.Value.Alias)
                     if (!RouteMap.ContainsKey(name))
-                        RouteMap.Add(name, host);
+                        RouteMap.TryAdd(name, host);
                     else
                         RouteMap[name] = host;
             }
@@ -206,7 +208,7 @@ namespace MicroZero.Http.Gateway
                 return;
             foreach (var kv in UrlMaps)
             {
-                UrlMap.Add(kv.Key,kv.Value );
+                UrlMap.Add(kv.Key, kv.Value);
             }
         }
 

@@ -23,7 +23,7 @@ namespace RpcTest
                 GlobalContext.Current.Request.RequestId = RandomOperate.Generate(8);
                 try
                 {
-                    bool re = ZeroPublisher.DoPublish("WeixinMessage", "test", "test", "{}");
+                    bool re = ZeroPublisher.Publish("WeixinMessage", "test", "test", "{}");
                     Interlocked.Increment(ref ExCount);
                     if (!re)
                         Interlocked.Increment(ref NetError);

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Reflection;
 using Agebull.EntityModel.Common;
@@ -135,6 +136,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
             }
         }
+
         /// <summary>
         /// 查找API
         /// </summary>
@@ -145,7 +147,7 @@ namespace Agebull.MicroZero.ZeroApis
             if (type.IsAbstract)
                 return;
 
-            var xdoc = XmlMember.Find(type) ?? new XmlMember
+            var docx = XmlMember.Find(type) ?? new XmlMember
             {
                 Name = type.Name
             };
@@ -159,7 +161,7 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         Name = sa.Name
                     });
-                    station.Copy(xdoc);
+                    station.Copy(docx);
                 }
             }
             else
@@ -168,7 +170,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             string routeHead = type.GetCustomAttribute<RoutePrefixAttribute>()?.Name.SafeTrim(' ', '\t', '\r', '\n', '/');
             if (routeHead != null)
-                routeHead = routeHead + "/";
+                routeHead += "/";
             else if (type.IsSubclassOf(typeof(ActionController)))
             {
                 routeHead = type.Name + "/";
@@ -220,7 +222,7 @@ namespace Agebull.MicroZero.ZeroApis
                     Name = method.Name,
                     ApiName = name,
                     RouteName = name,
-                    Category = category ?? defCategory ?? xdoc?.Caption ?? xdoc?.Name,
+                    Category = category ?? defCategory ?? docx?.Caption ?? docx?.Name,
                     AccessOption = option,
                     ResultInfo = ReadEntity(method.ReturnType, "result"),
                     PageUrl = page ?? defPage
@@ -456,6 +458,7 @@ namespace Agebull.MicroZero.ZeroApis
             ilGenerator.Emit(OpCodes.Ret);
             return dynamicMethod.CreateDelegate(typeof(Func<string>)) as Func<string>;
         }
+
         /// <summary>生成动态匿名调用内部方法（无参，调用返回值转为TRes）</summary>
         /// <param name="callInfo">调用对象类型</param>
         /// <param name="resInfo">原始返回值类型</param>

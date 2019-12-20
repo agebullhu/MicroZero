@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+
 namespace Agebull.MicroZero.ZeroServices.StateMachine
 {
     /// <summary>
@@ -15,11 +17,11 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// 是否已析构
         /// </summary>
         bool IsDisposed { get; }
-        
+
         /// <summary>
         ///     开始的处理
         /// </summary>
-        bool Start();
+        Task<bool> Start();
 
         /// <summary>
         ///     关闭的处理
@@ -29,7 +31,7 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// <summary>
         ///     结束的处理
         /// </summary>
-        bool End();
+        Task<bool> End();
 
     }
 }

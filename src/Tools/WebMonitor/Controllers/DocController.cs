@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using WebMonitor.Models;
 
 namespace WebMonitor.Controllers
@@ -17,12 +15,12 @@ namespace WebMonitor.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IActionResult Index(string id)
+        public async Task<IActionResult> Index(string id)
         {
-            return View(GetDoc(id));
+            return View(await GetDoc(id));
         }
 
-        StationDocument GetDoc(string station)
+        async Task<StationDocument> GetDoc(string station)
         {
 
             if (GlobalValue.Documents.TryGetValue(station, out var doc))
@@ -39,9 +37,9 @@ namespace WebMonitor.Controllers
                     Name = station
                 };
             }
-            else if (!SystemManager.Instance.LoadDocument(config.StationName, out doc))
+            else
             {
-                doc = new StationDocument
+                doc = await SystemManager.Instance.LoadDocument(config.StationName) ?? new StationDocument
                 {
                     Name = config.Name,
                     Caption = config.Caption,
@@ -70,13 +68,13 @@ namespace WebMonitor.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public JsonResult Postman(string id)
+        public async Task<JsonResult> Postman(string id)
         {
-            var doc = GetDoc(id);
+            var doc = await GetDoc(id);
             var postMan = new PostmanScript();
             postMan.Info.Name = doc.Caption ?? doc.Name;
             postMan.Info.Description = doc.Description;
-            foreach (var apis in doc.Aips.Values.GroupBy(p=>p.Category ?? "未分类"))
+            foreach (var apis in doc.Aips.Values.GroupBy(p => p.Category ?? "未分类"))
             {
                 var folder = new PostmanFolder
                 {

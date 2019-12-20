@@ -1,5 +1,7 @@
 using System;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
@@ -49,14 +51,14 @@ namespace MicroZero.Http.Gateway
         ///     调用
         /// </summary>
         /// <param name="context"></param>
-        bool IRouter.Prepare(HttpContext context)
+        async Task<bool> IRouter.Prepare(HttpContext context)
         {
             LogRecorderX.MonitorTrace("ApiRouter");
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
             Data = new RouteData();
-            var success = Data.Prepare(HttpContext);
+            var success = await Data.Prepare(HttpContext);
             IoHandler.OnBegin(Data);
             if (!success)
             {
@@ -86,7 +88,7 @@ namespace MicroZero.Http.Gateway
         {
             if (map == null)
                 return;
-            var aPath= Request.GetUri().AbsolutePath;
+            var aPath = Request.GetUri().AbsolutePath;
             foreach (var model in map.Models)
             {
                 foreach (var path in model.Paths)
@@ -110,6 +112,7 @@ namespace MicroZero.Http.Gateway
                     }
                     Data.ApiName = $"{name}{Data.Arguments[map.ActionName]}";
                     Data.ApiHost = model.Station;
+                    return;
                 }
             }
         }
@@ -117,12 +120,12 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     调用
         /// </summary>
-        async void IRouter.Call()
+        async Task IRouter.Call()
         {
             if (Data.ApiHost.Equals("Zero", StringComparison.OrdinalIgnoreCase))
             {
                 var manager = new ZeroManager();
-                manager.Command(Data);
+                await manager.Command(Data);
                 return;
             }
 
@@ -135,17 +138,16 @@ namespace MicroZero.Http.Gateway
 
                 return;
             }
-
-            // 2 安全检查
-            if (!TokenCheck())
+            //超限熔断
+            if (Data.RouteHost.WaitCount > ZeroApplication.Config.MaxWait)
             {
-                Data.UserState = UserOperatorStateType.DenyAccess;
-                Data.ZeroState = ZeroOperatorStateType.DenyAccess;
-                if (Data.ResultMessage == null)
-                    Data.ResultMessage = ApiResultIoc.DenyAccessJson;
+                Data.UserState = UserOperatorStateType.Unavailable;
+                Data.ZeroState = ZeroOperatorStateType.Unavailable;
+                Data.ResultMessage = ApiResultIoc.UnavailableJson;
                 return;
             }
-            // 3 缓存快速处理
+
+            // 2 缓存快速处理
             if (RouteCache.LoadCache(Data))
             {
                 //找到并返回缓存
@@ -154,21 +156,38 @@ namespace MicroZero.Http.Gateway
                 return;
             }
 
-            // 4 远程调用
-            if (!Data.RouteHost.ByZero)
-                Data.ResultMessage = await CallHttp();
-            else if (ZeroApplication.ZerCenterIsRun)
-                Data.ResultMessage = CallZero();
-            else
+            try
             {
-                Data.UserState = UserOperatorStateType.NotFind;
-                Data.ZeroState = ZeroOperatorStateType.NotFind;
-                Data.ResultMessage = ApiResultIoc.NoFindJson;
-                return;
+                // 3 安全检查
+                Interlocked.Increment(ref Data.RouteHost.WaitCount);
+                if (!TokenCheck())
+                {
+                    Data.UserState = UserOperatorStateType.DenyAccess;
+                    Data.ZeroState = ZeroOperatorStateType.DenyAccess;
+                    if (Data.ResultMessage == null)
+                        Data.ResultMessage = ApiResultIoc.DenyAccessJson;
+                    return;
+                }
+
+                // 4 远程调用
+                if (!Data.RouteHost.ByZero)
+                    Data.ResultMessage = await CallHttp();
+                else if (ZeroApplication.ZerCenterIsRun)
+                    Data.ResultMessage = await CallZero();
+                else
+                {
+                    Data.UserState = UserOperatorStateType.NotFind;
+                    Data.ZeroState = ZeroOperatorStateType.NotFind;
+                    Data.ResultMessage = ApiResultIoc.NoFindJson;
+                    return;
+                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref Data.RouteHost.WaitCount);
             }
             // 5 结果检查
             ResultChecker.DoCheck(Data);
-
             RouteCache.CacheResult(Data);
         }
 
@@ -220,24 +239,25 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     写入返回
         /// </summary>
-        void IRouter.WriteResult()
+        async Task IRouter.WriteResult()
         {
-            WriteResult();
+            await WriteResult();
         }
 
         /// <summary>
         ///     写入返回
         /// </summary>
-        protected virtual void WriteResult()
+        protected virtual async Task WriteResult()
         {
             //if (Data.Redirect)
             //    return;
             //// 缓存
             //RouteCache.CacheResult(Data);
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //if (!string.IsNullOrWhiteSpace(Data.CacheKey))
+            //    Response.Headers.Add("Etag", Data.CacheKey);
             if (!Data.IsFile || Data.ResultBinary == null || Data.ResultBinary.Length == 0)
             {
-                Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
+                await Response.WriteAsync(Data.ResultMessage ?? (Data.ResultMessage = ApiResultIoc.RemoteEmptyErrorJson), Encoding.UTF8);
                 return;
             }
 
@@ -245,8 +265,9 @@ namespace MicroZero.Http.Gateway
             Response.Headers.ContentLength = Data.ResultBinary.Length;
             Response.ContentType = file.Mime;
             Response.Headers.Add("Content-Disposition", $"attachment;filename={file.FileName}");
-            Response.Body.Write(Data.ResultBinary);
+            await Response.Body.WriteAsync(Data.ResultBinary);
         }
+
         /// <summary>
         ///     结束
         /// </summary>
@@ -257,7 +278,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="e"></param>
         /// <param name="context"></param>
-        void IRouter.OnError(Exception e, HttpContext context)
+        async Task IRouter.OnError(Exception e, HttpContext context)
         {
             try
             {
@@ -266,7 +287,7 @@ namespace MicroZero.Http.Gateway
                 Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
                 ////IocHelper.Create<IRuntimeWaring>()?.Waring("Route", Data.Uri.LocalPath, e.Message);
-                context.Response.WriteAsync(ApiResultIoc.LocalErrorJson, Encoding.UTF8);
+                await context.Response.WriteAsync(ApiResultIoc.LocalErrorJson, Encoding.UTF8);
             }
             catch (Exception exception)
             {

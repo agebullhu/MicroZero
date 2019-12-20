@@ -1,4 +1,5 @@
-﻿using Agebull.MicroZero;
+﻿using System.Threading.Tasks;
+using Agebull.MicroZero;
 using RpcTest;
 using ZeroMQ;
 
@@ -6,10 +7,10 @@ namespace ZFrameTest
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main()
         {
             ZContext.Initialize();
-            Tester.StartTest();
+            await Tester.StartTest();
             ZContext.Destroy();
 
             //ZeroApplication.CheckOption();

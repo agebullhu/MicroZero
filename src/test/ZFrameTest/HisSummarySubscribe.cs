@@ -1,6 +1,7 @@
 ﻿using Agebull.Common.Logging;
 using Agebull.MicroZero.PubSub;
 using System;
+using System.Threading.Tasks;
 
 namespace ZFrameTest
 {
@@ -23,16 +24,17 @@ namespace ZFrameTest
         /// <summary>执行命令</summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public override void Handle(PublishItem item)
+        public override Task Handle(PublishItem item)
         {
-            try
-            {
-                //WebSocketNotify.Publish("mq", item.Title, item.SubTitle, item.Content);
-            }
-            catch (Exception ex)
-            {
-                LogRecorderX.Exception(ex);
-            }
+            return Task.CompletedTask;
+            //try
+            //{
+            //    WebSocketNotify.Publish("mq", item.Title, item.SubTitle, item.Content);
+            //}
+            //catch (Exception ex)
+            //{
+            //    LogRecorderX.Exception(ex);
+            //}
         }
     }
 }

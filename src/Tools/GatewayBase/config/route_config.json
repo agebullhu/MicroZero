@@ -1,6 +1,7 @@
 {
   /*系统设置*/
   "sysConfig": {
+    "IsTest": true,
     /*是否开启MicroZero网络*/
     "FireZero": true,
     /*是否开启返回值检查*/
@@ -14,7 +15,7 @@
     /*启用管理命令*/
     "EnableInnerCommand": false,
     /*启用内容页*/
-    "EnableContext": true,
+    "EnableContext": false,
     /*内容页地址*/
     "ContextAddr": ""
   },

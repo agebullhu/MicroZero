@@ -1,4 +1,6 @@
-﻿namespace Agebull.MicroZero.ZeroServices.StateMachine
+﻿using System.Threading.Tasks;
+
+namespace Agebull.MicroZero.ZeroServices.StateMachine
 {
     /// <summary>
     /// 监控状态机
@@ -8,7 +10,7 @@
         /// <summary>
         ///     开始的处理
         /// </summary>
-        bool IStationStateMachine.Start()
+        async Task<bool> IStationStateMachine.Start()
         {
             if (IsDisposed)
             {
@@ -16,7 +18,7 @@
                 return false;
             }
             IsDisposed = true;
-            return Station.Start();
+            return await Station.Start();
         }
 
         /// <summary>
@@ -31,9 +33,9 @@
         /// <summary>
         ///     结束的处理
         /// </summary>
-        bool IStationStateMachine.End()
+        Task<bool> IStationStateMachine.End()
         {
-            return false;
+            return Task.FromResult(false);
         }
     }
 }

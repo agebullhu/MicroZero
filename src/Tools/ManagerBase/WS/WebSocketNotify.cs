@@ -101,28 +101,22 @@ namespace WebMonitor
         #region ¹ã²¥¹ÜÀí
 
 
-        public static void Publish(string classify, string title, string value)
+        public static async Task Publish(string classify, string title, string value)
         {
             if (string.IsNullOrEmpty(value))
                 return;
             if (!Handlers.TryGetValue(classify, out var list))
                 return;
-            var array = list.ToArray();
-            Task.Factory.StartNew(() => PublishAsync(array, title, value));
-        }
-
-        private static void PublishAsync(WebSocketClient[] list, string title, string value)
-        {
             var empty = string.IsNullOrWhiteSpace(title);
             var tbuffer = title.ToUtf8Bytes();
             var title_a = new ArraySegment<byte>(tbuffer, 0, tbuffer.Length);
             var buffer = value.ToUtf8Bytes();
             var value_a = new ArraySegment<byte>(buffer, 0, buffer.Length);
-            foreach (var handler in list)
+            foreach (var handler in list.ToArray())
             {
                 if (empty || handler.Subscriber.Count == 0)
                 {
-                    handler.Send(title_a, value_a);
+                    await handler.Send(title_a, value_a);
                     continue;
                 }
 
@@ -130,7 +124,7 @@ namespace WebMonitor
                 {
                     if (title.IndexOf(sub, StringComparison.Ordinal) != 0)
                         continue;
-                    handler.Send(title_a, value_a);
+                    await handler.Send(title_a, value_a);
                     break;
                 }
             }

@@ -93,16 +93,16 @@ namespace MicroZero.Http.Route
         {
             Task.Factory.StartNew(() => StationEvent(e), TaskCreationOptions.None);
         }
-        private void PublishConfig(StationConfig config)
+        private Task PublishConfig(StationConfig config)
         {
             if (config == null)
-                return;
+                return Task.CompletedTask;
             var info = new StationInfo(config);
             if (StationCountItems.TryGetValue(config.Name, out var status))
                 info.Status = status;
-            WebSocketNotify.Publish("config", config.Name, JsonConvert.SerializeObject(info));
+            return WebSocketNotify.Publish("config", config.Name, JsonConvert.SerializeObject(info));
         }
-        private void StationEvent(ZeroNetEventArgument e)
+        private async Task StationEvent(ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
@@ -115,14 +115,14 @@ namespace MicroZero.Http.Route
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationRemove:
                 case ZeroNetEventType.CenterStationUpdate:
-                    PublishConfig(e.EventConfig);
+                    await PublishConfig(e.EventConfig);
                     return;
                 case ZeroNetEventType.AppStop:
                 case ZeroNetEventType.AppRun:
                     NewBaseTime();
-                    ZeroApplication.Config.Foreach(cfg =>
+                    foreach (var cfg in ZeroApplication.Config.GetConfigs())
                     {
-                        PublishConfig(cfg);
+                        await PublishConfig(cfg);
                         if (!KLines.ContainsKey(cfg.StationName))
                             KLines.Add(cfg.StationName, new List<KLine>());
                         var nLine = new KLine
@@ -133,7 +133,7 @@ namespace MicroZero.Http.Route
                             minuteLine[cfg.StationName] = nLine;
                         else
                             minuteLine.Add(cfg.StationName, nLine);
-                    });
+                    }
                     return;
                 case ZeroNetEventType.AppEnd:
                     File.WriteAllText(Path.Combine(ZeroApplication.Config.DataFolder, "kline_station.json"),
@@ -142,7 +142,7 @@ namespace MicroZero.Http.Route
                 case ZeroNetEventType.CenterStationTrends:
                     if (e.Context == null)
                         return;
-                    Collect(e.Name, e.Context);
+                    await Collect(e.Name, e.Context);
                     return;
             }
         }
@@ -160,20 +160,20 @@ namespace MicroZero.Http.Route
             var now = DateTime.Now;
             BaseLine = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
         }
-
+        
+        LockData isRun = new LockData();
         /// <summary>
         ///     执行命令
         /// </summary>
         /// <returns></returns>
-        private void Collect(string name, string json)
+        private async Task Collect(string name, string json)
         {
-            var scope = OnceScope.TryCreateScope(minuteLine, 100);
-            if (scope == null)
-                return;//系统太忙，跳过处理
-            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                return;
-            using (scope)
+            using (var scope = OnceScope.TryCreateScope(isRun))
             {
+                if (!scope.IsEntry)
+                    return;
+                if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                    return;
                 var now = JsonConvert.DeserializeObject<StationCountItem>(json);
                 now.Station = name;
                 if (!StationCountItems.TryGetValue(now.Station, out var item))
@@ -185,7 +185,7 @@ namespace MicroZero.Http.Route
                 item.State = config.State;
                 item.CheckValue(now);
 
-                WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
+                await WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
                 long value = config.StationType == ZeroStationType.Api ||
                              config.StationType == ZeroStationType.Vote
                     ? item.LastTps
@@ -246,7 +246,7 @@ namespace MicroZero.Http.Route
                 while (KLines[key].Count > 240)
                     KLines[key].RemoveAt(0);
                 KLines[key].Add(line);
-                WebSocketNotify.Publish("kline", key, JsonConvert.SerializeObject(line));
+                await WebSocketNotify.Publish("kline", key, JsonConvert.SerializeObject(line));
                 var nLine = new KLine
                 {
                     Time = GetTime(BaseLine)

@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroServices.StateMachine;
@@ -73,10 +74,10 @@ namespace Agebull.MicroZero
         /// 配置检查
         /// </summary>
         /// <returns></returns>
-        protected virtual bool CheckConfig()
+        protected virtual async Task<bool> CheckConfig()
         {
             //取配置
-            Config = ZeroApplication.Config[StationName] ?? OnNofindConfig();
+            Config = ZeroApplication.Config[StationName] ?? await OnNofindConfig();
             if (Config == null)
             {
                 ZeroTrace.WriteError(StationName, "Station no find");
@@ -112,7 +113,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 初始化
         /// </summary>
-        protected virtual StationConfig OnNofindConfig()
+        protected virtual Task<StationConfig> OnNofindConfig()
         {
             return null;
         }
@@ -205,7 +206,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 能不能循环处理
         /// </summary>
-        protected bool CanLoop => ZeroApplication.CanDo && 
+        protected internal bool CanLoop => ZeroApplication.CanDo &&
                                   ConfigState == StationStateType.Run &&
                                   (RealState == StationState.BeginRun || RealState == StationState.Run) &&
                                   RunTaskCancel != null && !RunTaskCancel.IsCancellationRequested;
@@ -236,92 +237,98 @@ namespace Agebull.MicroZero
         /// 开始
         /// </summary>
         /// <returns></returns>
-        public bool Start()
+        public async Task<bool> Start()
         {
-            while (_waitToken.CurrentCount > 0)
-                _waitToken.Wait();
-            try
-            {
-                if (DoStart())
-                    return true;
-            }
-            catch (Exception e)
-            {
-                LogRecorderX.Exception(e);
-            }
+            if (await DoStart())
+                return true;
             RealState = StationState.Failed;
             ZeroApplication.OnObjectFailed(this);
             return false;
         }
 
+        private readonly LockData _runLock = new LockData();
+        private readonly LockData _startLock = new LockData();
         /// <summary>
         /// 开始
         /// </summary>
         /// <returns></returns>
-        private bool DoStart()
+        private async Task<bool> DoStart()
         {
-            if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
-                return false;
-            ConfigState = StationStateType.Run;
-
-            using (OnceScope.CreateScope(this))
+            await Task.Yield();
+            try
             {
-                RealState = StationState.Start;
-                if (!CheckConfig())
+                using (var scope = OnceScope.TryCreateScope(_startLock))
                 {
-                    return false;
+                    if (!scope.IsEntry)
+                        return false;
+                    while (_waitToken.CurrentCount > 0)
+                        await _waitToken.WaitAsync();
+                    if (ConfigState == StationStateType.None || ConfigState >= StationStateType.Stop || !ZeroApplication.CanDo)
+                        return false;
+                    ConfigState = StationStateType.Run;
+
+                    RealState = StationState.Start;
+                    if (!await CheckConfig())
+                    {
+                        return false;
+                    }
+                    //名称初始化
+                    RealName = Config.StationName == ZeroApplication.Config.StationName
+                        ? ZSocket.CreateRealName(false)
+                        : ZSocket.CreateRealName(false, Config.StationName);
+                    Identity = RealName.ToAsciiBytes();
+                    ZeroTrace.SystemLog(StationName, Name, StationType, RealName, Config.WorkerCallAddress);
+                    //扩展动作
+                    if (!Prepare())
+                    {
+                        return false;
+                    }
                 }
-                //名称初始化
-                RealName = Config.StationName == ZeroApplication.Config.StationName
-                    ? ZSocket.CreateRealName(false)
-                    : ZSocket.CreateRealName(false, Config.StationName);
-                Identity = RealName.ToAsciiBytes();
-                ZeroTrace.SystemLog(StationName, Name, StationType, RealName, Config.WorkerCallAddress);
-                //扩展动作
-                if (!Prepare())
-                {
-                    return false;
-                }
+                //可执行
+                //Hearter.HeartJoin(Config.StationName, RealName);
+                //执行主任务
+                RunTaskCancel = new CancellationTokenSource();
+                _ = Run();
+                //保证Run真正执行后再完成本方法调用.
+                await _waitToken.WaitAsync();
+                return true;
             }
-            //可执行
-            //Hearter.HeartJoin(Config.StationName, RealName);
-            //执行主任务
-            RunTaskCancel = new CancellationTokenSource();
-            new Thread(Run)
+            catch (Exception e)
             {
-                IsBackground = true
-            }.Start();
-            //保证Run真正执行后再完成本方法调用.
-            _waitToken.Wait();
-            return true;
+                LogRecorderX.Exception(e);
+                return false;
+            }
         }
-
 
         /// <summary>
         /// 命令轮询
         /// </summary>
         /// <returns></returns>
-        private void Run()
+        private async Task Run()
         {
+            await Task.Yield();
             bool success;
-            try
+            using (var scope = OnceScope.TryCreateScope(_runLock, LoopBegin, async () => await LoopComplete()))
             {
-                using (OnceScope.CreateScope(this, LoopBegin, LoopComplete))
+                if (!scope.IsEntry)
+                    return;
+                try
                 {
-                    success = Loop( /*RunTaskCancel.Token*/);
+                    success = await Loop( /*RunTaskCancel.Token*/);
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException(StationName, e, "Run");
+                    RealState = StationState.Failed;
+                    success = false;
                 }
             }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException(StationName, e, "Run");
-                RealState = StationState.Failed;
-                success = false;
-            }
+
             if (ConfigState < StationStateType.Stop)
                 ConfigState = !ZeroApplication.CanDo || success ? StationStateType.Closed : StationStateType.Failed;
             GC.Collect();
             //#if UseStateMachine
-            StateMachine.End();
+            await StateMachine.End();
             //#endif
         }
 
@@ -369,19 +376,16 @@ namespace Agebull.MicroZero
         /// <returns></returns>
         private void LoopBegin()
         {
-            lock (this)
+            RealState = StationState.BeginRun;
+            if (ConfigState == StationStateType.Run)
             {
-                RealState = StationState.BeginRun;
-                if (ConfigState == StationStateType.Run)
-                {
-                    ZeroApplication.OnObjectActive(this);
-                }
-                else
-                {
-                    ZeroApplication.OnObjectFailed(this);
-                }
-                OnLoopBegin();
+                ZeroApplication.OnObjectActive(this);
             }
+            else
+            {
+                ZeroApplication.OnObjectFailed(this);
+            }
+            OnLoopBegin();
             _waitToken.Release();
         }
 
@@ -389,33 +393,31 @@ namespace Agebull.MicroZero
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected abstract bool Loop(/*CancellationToken token*/);
+        protected abstract Task<bool> Loop(/*CancellationToken token*/);
 
         /// <summary>
         /// 同步关闭状态
         /// </summary>
         /// <returns></returns>
-        private void LoopComplete()
+        private async Task LoopComplete()
         {
-            lock (this)
-            {
-                if (RunTaskCancel == null)
-                    return;
-                OnLoopComplete();
-                RunTaskCancel.Dispose();
-                RunTaskCancel = null;
-                RealState = StationState.Closed;
-                ZeroApplication.OnObjectClose(this);
-            }
-            Hearter.HeartLeft(StationName, RealName);
+            if (RunTaskCancel == null)
+                return;
+            await OnLoopComplete();
+            RunTaskCancel.Dispose();
+            RunTaskCancel = null;
+            RealState = StationState.Closed;
+            ZeroApplication.OnObjectClose(this);
+            await Hearter.HeartLeft(StationName, RealName);
         }
 
         /// <summary>
         /// 空转
         /// </summary>
         /// <returns></returns>
-        protected virtual void OnLoopIdle()
+        protected virtual Task OnLoopIdle()
         {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -431,8 +433,9 @@ namespace Agebull.MicroZero
         /// 关闭时的处理
         /// </summary>
         /// <returns></returns>
-        protected virtual void OnLoopComplete()
+        protected virtual Task OnLoopComplete()
         {
+            return Task.CompletedTask;
         }
 
 
@@ -469,17 +472,9 @@ namespace Agebull.MicroZero
             Initialize();
         }
 
-        bool IZeroObject.OnZeroStart()
+        async Task<bool> IZeroObject.OnZeroStart()
         {
-            //#if UseStateMachine
-            return StateMachine.Start();
-            //#else
-            //            if (RealState >= StationState.Start && RealState <= StationState.Closing)
-            //            {
-            //                return true;
-            //            }
-            //            return Start();
-            //#endif
+            return await StateMachine.Start();
         }
 
         /// <summary>
@@ -540,7 +535,7 @@ namespace Agebull.MicroZero
             else
                 ConfigState = StationStateType.Initialized;
             //同步启动它
-            Start();
+            _ = Start();
             //#else
             //            ConfigState = config.State;
             //            if (RealState < StationState.Start || RealState > StationState.Closing)

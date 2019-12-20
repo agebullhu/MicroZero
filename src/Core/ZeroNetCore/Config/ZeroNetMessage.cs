@@ -381,11 +381,11 @@ namespace Agebull.MicroZero
         {
             if (_frames == null || _frames.Count == 0)
             {
-                value = default(TValue);
+                value = default;
                 return false;
             }
             var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            value = vl == null || vl.Data.Length == 0 ? default(TValue) : parse(vl.Data);
+            value = vl == null || vl.Data.Length == 0 ? default : parse(vl.Data);
             return vl != null;
         }
 
@@ -398,9 +398,9 @@ namespace Agebull.MicroZero
         public TValue GetValue<TValue>(byte name, Func<byte[], TValue> parse)
         {
             if (_frames == null || _frames.Count == 0)
-                return default(TValue);
+                return default;
             var vl = _frames.Values.FirstOrDefault(p => p.Type == name);
-            return vl == null || vl.Data.Length == 0 ? default(TValue) : parse(vl.Data);
+            return vl == null || vl.Data.Length == 0 ? default : parse(vl.Data);
         }
     }
 

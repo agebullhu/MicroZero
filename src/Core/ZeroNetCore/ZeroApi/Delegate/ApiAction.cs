@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 
@@ -71,6 +72,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         /// <returns></returns>
         public abstract object Execute();
+
 
     }
 
@@ -162,6 +164,107 @@ namespace Agebull.MicroZero.ZeroApis
         }
     }
 
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiTaskAction<TResult> : ApiAction
+        where TResult : IApiResult
+    {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => null;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<Task<TResult>> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            return true;
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            message = null;
+            return true;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            var res= Action();
+
+            return res.Result;
+        }
+    }
+
+    /// <summary>
+    ///     Api动作
+    /// </summary>
+    public sealed class ApiTaskAction2<TResult> : ApiAction
+        where TResult : IApiResult
+    {
+        /// <summary>
+        ///     参数
+        /// </summary>
+        private IApiArgument _argument;
+
+        /// <summary>
+        ///     参数
+        /// </summary>
+        public override object Argument => _argument;
+
+        /// <summary>
+        ///     执行行为
+        /// </summary>
+        public Func<object,Task<TResult>> Action { get; set; }
+
+        /// <summary>
+        ///     还原参数
+        /// </summary>
+        public override bool RestoreArgument(string argument)
+        {
+            if (ArgumenType == null)
+                return true;
+            _argument = JsonConvert.DeserializeObject(argument, ArgumenType) as IApiArgument;
+            return true;
+        }
+
+        /// <summary>
+        ///     参数校验
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool Validate(out string message)
+        {
+            message = null;
+            return true;
+        }
+
+        /// <summary>
+        ///     执行
+        /// </summary>
+        /// <returns></returns>
+        public override object Execute()
+        {
+            var res = Action(Argument);
+
+            return res.Result;
+        }
+    }
     /// <summary>
     ///     Api动作
     /// </summary>

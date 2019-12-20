@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
@@ -61,7 +62,7 @@ namespace MicroZero.LogService
                 var sec = ConfigurationManager.Get("ZeroLog");
                 if (sec != null)
                 {
-                    LogPath = sec["path"]; 
+                    LogPath = sec["path"];
                     SplitNumber = sec.GetInt("split", 10) * 1024 * 1024;
                     DayFolder = sec.GetBool("dayFolder", true);
                     MinFreeSize = sec.GetInt("minFreeSize", 1024);
@@ -106,12 +107,12 @@ MinFreeSize : {MinFreeSize}");
         /// <summary>
         /// 通过计数减少取磁盘大小的频率
         /// </summary>
-        int cnt = 0;
+        int cnt;
         /// <summary>
         ///     记录日志
         /// </summary>
         /// <param name="infos"> 日志消息 </param>
-        public void RecordLog(List<RecordInfo> infos)
+        public async Task RecordLog(List<RecordInfo> infos)
         {
             bool onlySystem = false;
             if (++cnt >= 100)
@@ -122,14 +123,14 @@ MinFreeSize : {MinFreeSize}");
                     onlySystem = true;
             }
             foreach (var info in infos)
-                Write(info, onlySystem);
+                await Write(info, onlySystem);
         }
 
         /// <summary>
         ///     记录日志
         /// </summary>
         /// <param name="info"> 日志消息 </param>
-        public void RecordLog(RecordInfo info)
+        public async Task RecordLog(RecordInfo info)
         {
             bool onlySystem = false;
             if (++cnt >= 100)
@@ -139,7 +140,7 @@ MinFreeSize : {MinFreeSize}");
                 if (size.AvailableSize < MinFreeSize)
                     onlySystem = true;
             }
-            Write(info, onlySystem);
+            await Write(info, onlySystem);
         }
         #endregion
 
@@ -150,7 +151,7 @@ MinFreeSize : {MinFreeSize}");
         /// </summary>
         /// <param name="info"> 日志消息 </param>
         /// <param name="onlySystem">仅系统</param>
-        private void Write(RecordInfo info, bool onlySystem)
+        private async Task Write(RecordInfo info, bool onlySystem)
         {
             List<string> names = new List<string>();
             string log;
@@ -205,13 +206,14 @@ MinFreeSize : {MinFreeSize}");
 
             foreach (var name in names)
             {
-                WriteFile(log, name);
+                await WriteFile(log, name);
             }
         }
+
         /// <summary>
         ///     记录日志
         /// </summary>
-        private void WriteFile(string log, string type)
+        private async Task WriteFile(string log, string type)
         {
             var writer = GetWriter(type);
             if (writer == null)
@@ -219,7 +221,7 @@ MinFreeSize : {MinFreeSize}");
             try
             {
                 writer.Size += log.Length;
-                writer.Stream.WriteLine(log);
+                await writer.Stream.WriteLineAsync(log);
             }
             catch (Exception ex)
             {

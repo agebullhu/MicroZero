@@ -1,6 +1,7 @@
 {
   /*系统设置*/
   "sysConfig": {
+    "IsTest": true,
     /*是否开启MicroZero网络*/
     "FireZero": true,
     /*是否开启返回值检查*/
@@ -86,9 +87,9 @@
   /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
   "cache": [
     {
-      "Api": "/Authority/v2/token/info",
+      "Api": "/ApiTest/v1/test",
       "OnlyName": true,
-      "Bear": true
+      "FlushSecond": 30
     }
   ]
 }

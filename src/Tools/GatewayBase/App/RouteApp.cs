@@ -35,7 +35,7 @@ namespace MicroZero.Http.Gateway
         {
             ZeroApplication.Initialize();
             RouteCache.InitCache();
-            ZeroApplication.ZeroNetEvent += OnZeroNetEvent;
+            ZeroApplication.ZeroNetEvent += async (sender, e) => await OnZeroNetEvent(sender, e);
             ZeroApplication.Run();
         }
 
@@ -53,8 +53,9 @@ namespace MicroZero.Http.Gateway
         /// <param name="options"></param>
         public static void Options(KestrelServerOptions options)
         {
-            options.AddServerHeader = false;
-
+            options.AddServerHeader = true;
+            //将此选项设置为 null 表示不应强制执行最低数据速率。
+            options.Limits.MinResponseDataRate = null;
             var httpOptions = ConfigurationManager.Root.GetSection("http").Get<HttpOption[]>();
             foreach (var option in httpOptions)
             {
@@ -83,14 +84,22 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         public static Task Call(HttpContext context)
         {
-            /*
-            在ASP.Net Core的机制中，当接收到http的头为 application/x-www-form-urlencoded 或者 multipart/form-data 时，
-            netcore会通过 FormReader 预先解析 Request.Body 的 Form 的内容，经过 Reader 读取后 Request.Body 就会变 null，
-            这样我们在代码中需要再次使用 Request.Body 时就会报空异常。
-            */
-            //context.Request.EnableRewind();
+            //跨域支持
+            if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.Factory.StartNew(() => HttpProtocol.CrosOption(context.Response));
+            }
+            else
+            {
+                /*
+                在ASP.Net Core的机制中，当接收到http的头为 application/x-www-form-urlencoded 或者 multipart/form-data 时，
+                netcore会通过 FormReader 预先解析 Request.Body 的 Form 的内容，经过 Reader 读取后 Request.Body 就会变 null，
+                这样我们在代码中需要再次使用 Request.Body 时就会报空异常。
+                */
+                //context.Request.EnableRewind();
 
-            return Task.Factory.StartNew(CallTask, context);
+                return CallTask(context);
+            }
         }
 
         /// <summary>
@@ -106,27 +115,20 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     调用
         /// </summary>
-        /// <param name="arg"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private static void CallTask(object arg)
+        private static async Task CallTask(HttpContext context)
         {
-            var context = (HttpContext)arg;
-
-            //跨域支持
-            if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
-            {
-                HttpProtocol.Cros(context.Response);
-                return;
-            }
-            HttpProtocol.FormatResponse(context.Response);
+            HttpProtocol.CrosCall(context.Response);
             var uri = context.Request.GetUri();
             if (uri.AbsolutePath == "/")
             {
                 //response.Redirect("/index.html");
-                context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
+                await context.Response.WriteAsync("Wecome MicroZero!", Encoding.UTF8);
                 return;
             }
 
+            HttpProtocol.FormatResponse(context.Request, context.Response);
             AshxMapConfig map = null;
             if (RouteOption.Option.SystemConfig.EnableContext)
             {
@@ -134,7 +136,7 @@ namespace MicroZero.Http.Gateway
                 if (folders.Length == 0)
                 {
                     //response.Redirect("/index.html");
-                    context.Response.WriteAsync("Wecome MicroZero Http Router!", Encoding.UTF8);
+                    await context.Response.WriteAsync("Wecome MicroZero!", Encoding.UTF8);
                     return;
                 }
                 var ext = Path.GetExtension(folders[folders.Length - 1]);
@@ -143,7 +145,7 @@ namespace MicroZero.Http.Gateway
                     if (!RouteOption.Option.UrlMap.TryGetValue(ext, out map))
                     {
                         var cr = new ContentRouter(context);
-                        cr.WriteContent(folders, ext);
+                        await cr.WriteContent(folders, ext);
                         return;
                     }
                 }
@@ -161,19 +163,19 @@ namespace MicroZero.Http.Gateway
                 try
                 {
                     //开始调用
-                    if (router.Prepare(context))
+                    if (await router.Prepare(context))
                     {
                         if (map != null)
                             router.CheckMap(map);
                         // 正常调用
-                       router.Call();
+                        await router.Call();
                     }
                     // 写入返回
-                    router.WriteResult();
+                    await router.WriteResult();
                 }
                 catch (Exception e)
                 {
-                    router.OnError(e, context);
+                    await router.OnError(e, context);
                 }
                 finally
                 {
@@ -247,7 +249,7 @@ namespace MicroZero.Http.Gateway
             switch (url)
             {
                 case "/_1_clear_1_":
-                    HttpProtocol.FormatResponse(response);
+                    HttpProtocol.FormatResponse(request, response);
                     RouteCache.Flush();
                     response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
                         Encoding.UTF8);
@@ -260,12 +262,12 @@ namespace MicroZero.Http.Gateway
                 //    response.WriteAsync(JsonConvert.SerializeObject(RouteCounter.Station, Formatting.Indented), Encoding.UTF8);
                 //    return true;
                 case "/_1_config_1_":
-                    HttpProtocol.FormatResponse(response);
+                    HttpProtocol.FormatResponse(request, response);
                     response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
                         Encoding.UTF8);
                     return true;
                 case "/publish":
-                    HttpProtocol.FormatResponse(response);
+                    HttpProtocol.FormatResponse(request, response);
                     var suc = ZeroPublisher.Publish(request.Form["Host"], request.Form["Title"], request.Form["Sub"], request.Form["Arg"]);
                     response.WriteAsync(suc ? ApiResultIoc.SucceesJson : ApiResultIoc.NetworkErrorJson, Encoding.UTF8);
                     return true;
@@ -284,13 +286,13 @@ namespace MicroZero.Http.Gateway
 
         #region OnZeroNetEvent
 
-        private static void OnZeroNetEvent(object sender, ZeroNetEventArgument e)
+        private static async Task OnZeroNetEvent(object sender, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
                 case ZeroNetEventType.AppRun:
                 case ZeroNetEventType.ConfigUpdate:
-                    OnZeroNetRuning();
+                    await OnZeroNetRuning();
                     return;
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
@@ -300,7 +302,7 @@ namespace MicroZero.Http.Gateway
                         return;
                     if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
-                        UpdateApiItems(host as ZeroHost);
+                        await UpdateApiItems(host as ZeroHost);
                     }
                     break;
                 case ZeroNetEventType.CenterStationJoin:
@@ -309,7 +311,7 @@ namespace MicroZero.Http.Gateway
                 case ZeroNetEventType.CenterStationUpdate:
                     if (!e.EventConfig.IsApi)
                         return;
-                    StationJoin(e.EventConfig);
+                    await StationJoin(e.EventConfig);
                     break;
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
@@ -328,13 +330,12 @@ namespace MicroZero.Http.Gateway
             //OnZeroNetRuning();
         }
 
-        private static void OnZeroNetRuning()
+        private static async Task OnZeroNetRuning()
         {
-            ZeroApplication.Config.Foreach(config =>
-            {
-                if (config.IsApi)
-                    StationJoin(config);
-            });
+            //Console.WriteLine("lock (_configs)");
+            var cfgs = ZeroApplication.Config.GetConfigs(p => p.IsApi && !string.IsNullOrWhiteSpace(p.StationName));
+            foreach (var config in cfgs)
+                await StationJoin(config);
         }
 
         private static void OnZeroNetClose()
@@ -356,10 +357,8 @@ namespace MicroZero.Http.Gateway
         }
 
 
-        private static void StationJoin(StationConfig station)
+        private static async Task StationJoin(StationConfig station)
         {
-            if (string.IsNullOrWhiteSpace(station.StationName))
-                return;
             ZeroHost zeroHost;
             if (RouteOption.RouteMap.TryGetValue(station.StationName, out var h))
             {
@@ -368,24 +367,21 @@ namespace MicroZero.Http.Gateway
             }
             else
             {
-                lock (RouteOption.RouteMap)
-                {
-                    RouteOption.RouteMap.Add(station.StationName, zeroHost = new ZeroHost());
-                }
+                RouteOption.RouteMap.TryAdd(station.StationName, zeroHost = new ZeroHost());
             }
             zeroHost.Description = null;
             zeroHost.ByZero = true;
             zeroHost.Failed = false;
             zeroHost.Station = station.StationName;
 
-            UpdateApiItems(zeroHost);
+            await UpdateApiItems(zeroHost);
 
             if (!string.IsNullOrWhiteSpace(station.ShortName))
             {
                 if (RouteOption.RouteMap.ContainsKey(station.ShortName))
                     RouteOption.RouteMap[station.ShortName] = zeroHost;
                 else
-                    RouteOption.RouteMap.Add(station.ShortName, zeroHost);
+                    RouteOption.RouteMap.TryAdd(station.ShortName, zeroHost);
             }
             if (station.StationAlias == null)
                 return;
@@ -393,12 +389,13 @@ namespace MicroZero.Http.Gateway
                 if (RouteOption.RouteMap.ContainsKey(alia))
                     RouteOption.RouteMap[alia] = zeroHost;
                 else
-                    RouteOption.RouteMap.Add(alia, zeroHost);
+                    RouteOption.RouteMap.TryAdd(alia, zeroHost);
         }
 
-        private static void UpdateApiItems(ZeroHost zeroHost)
+        private static async Task UpdateApiItems(ZeroHost zeroHost)
         {
-            if (!SystemManager.Instance.LoadDocument(zeroHost.Station, out var doc))
+            var doc = await SystemManager.Instance.LoadDocument(zeroHost.Station);
+            if (doc == null)
             {
                 zeroHost.Apis = null;
                 return;

@@ -274,7 +274,7 @@
                             series: [
                                 {
                                     name: 'Speed',
-                                    data: [@(config.Type == "Api" ? item.RequestIn - item.RequestOut : 0)]
+                                    data: [@(config.Type == "Api" ? item.TpsHungry : 0)]
                                 }
                             ]
                         }));
@@ -288,7 +288,7 @@
                             series: [
                                 {
                                     name: 'Speed',
-                                    data: [@(config.Type == "Api" ? item.WorkerOut - item.WorkerIn : 0)]
+                                    data: [@(config.Type == "Api" ? item.QpsHungry : 0)]
                                 }
                             ]
                         }));
@@ -463,8 +463,8 @@
                     update_chart(chart_t_late, item.LastTps);
                     update_chart(chart_t_avg, item.AvgTps);
                     update_chart(chart_t_max, item.MaxTps);
-                    update_chart(chart_q_hungry, item.request_in - item.request_out);
-                    update_chart(chart_t_hungry, item.worker_out - item.worker_in);
+                    update_chart(chart_q_hungry, item.qps_hungry);
+                    update_chart(chart_t_hungry, item.tps_hungry);
                     chart_t_container.series[0].addPoint({ x: time, y: Number(item.LastTps) }, true, true);
                 </text>
             }

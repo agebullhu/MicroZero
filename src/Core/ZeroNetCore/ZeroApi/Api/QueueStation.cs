@@ -4,7 +4,6 @@ using Agebull.MicroZero.ZeroApis;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -42,7 +41,17 @@ namespace Agebull.MicroZero.PubSub
             var pool = ZmqPool.CreateZmqPool();
             pool.Prepare(ZPollEvent.In, ZSocket.CreateSubSocket(Config.WorkerCallAddress, identity, Subscribe), socket);
 
-            Task.Factory.StartNew(Reload);
+            var queueData = LoadData() ?? new QueueData();
+            long[] ids;
+            lock (data)
+            {
+                data.Max = queueData.Max;
+                data.FailedIds = queueData.FailedIds;
+                if (data.FailedIds.Count == 0)
+                    data.FailedIds = data.FailedIds.Distinct().ToList();
+                ids = data.FailedIds.ToArray();
+            }
+            var task = ReNotify(ids);
 
             return pool;
         }
@@ -61,9 +70,14 @@ namespace Agebull.MicroZero.PubSub
         }
 
         /// <inheritdoc />
-        protected override void OnLoopComplete()
+        protected override async Task OnLoopComplete()
         {
-            SaveIds();
+            string json;
+            lock (data)
+            {
+                json = JsonHelper.SerializeObject(data);
+            }
+            await SaveIds(json);
         }
 
         /// <summary>
@@ -73,10 +87,10 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal override bool OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal override async Task<bool> OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
         {
-            if (!string.IsNullOrEmpty(item.LocalId))
-                CacheProcess(long.Parse(item.LocalId), state == ZeroOperatorStateType.Ok);
+            if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
+                await Ack(id, state == ZeroOperatorStateType.Ok);
 
             var des = new byte[]
             {
@@ -95,7 +109,7 @@ namespace Agebull.MicroZero.PubSub
                 item.LocalId.ToZeroBytes(),
                 ZeroCommandExtend.ServiceKeyBytes
             };
-            return SendResult(socket, new ZMessage(msg));
+            return await SendResult(socket, new ZMessage(msg));
         }
 
         /// <summary>
@@ -104,11 +118,10 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal override void SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
+        internal override async Task SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
         {
-            if (string.IsNullOrEmpty(item.LocalId))
-                return;
-            CacheProcess(long.Parse(item.LocalId), false);
+            if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
+                await Ack(id, false);
         }
 
         ///// <summary>
@@ -124,81 +137,75 @@ namespace Agebull.MicroZero.PubSub
 
         #region 已处理集合
 
-        private readonly object localObj = new object();
 
-        private QueueData data = new QueueData();
-
+        private readonly QueueData data = new QueueData();
 
 
-        void SaveIds()
+
+        async Task SaveIds(string json)
         {
             try
             {
-                File.WriteAllText(FileName, JsonHelper.SerializeObject(data));
+                await File.WriteAllTextAsync(FileName, json);
             }
             catch (Exception ex)
             {
                 LogRecorderX.Exception(ex);
             }
         }
-        string _fileName;
-        string FileName => _fileName ?? (Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
+
+        private string _fileName;
+        private string FileName => _fileName ?? (_fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
 
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        private void Reload()
+        private async Task ReNotify(long[] ids)
         {
             Thread.Sleep(1000);
-            QueueData queueData = null;
-            try
-            {
-                if (File.Exists(FileName))
-                {
-                    var json = File.ReadAllText(FileName);
-                    if (string.IsNullOrEmpty(json))
-                    {
-                        return;
-                    }
-                    queueData = JsonConvert.DeserializeObject<QueueData>(json);
-                }
-            }
-            catch //(Exception e)
-            {
-                return;
-            }
-            if (queueData == null)
-            {
-                return;
-            }
-            long[] ids = null;
-            lock (localObj)
-            {
-                data = queueData;
-                if(data.FailedIds.Count == 0)
-                    data.FailedIds = data.FailedIds.Distinct().ToList();
-                ids = data.FailedIds.ToArray();
-            }
+
             using (var cmd = new QueueCommand())
             {
                 if (!cmd.Prepare(Config.RequestAddress, StationName))
                     return;
                 foreach (var id in ids)
                 {
-                    cmd.CallCommand(id, id);
+                    await cmd.CallCommand(id, id);
                 }
-                cmd.CallCommand(data.Max, 0);
+                long max;
+                lock (data)
+                {
+                    max = data.Max;
+                }
+                await cmd.CallCommand(max, 0);
             }
         }
 
+        QueueData LoadData()
+        {
+            try
+            {
+                if (File.Exists(FileName))
+                {
+                    var json = File.ReadAllText(FileName);
+                    if (!string.IsNullOrEmpty(json))
+                        return JsonConvert.DeserializeObject<QueueData>(json);
+                }
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+            }
+            return null;
+        }
         /// <summary>
         /// 准备执行
         /// </summary>
         /// <returns></returns>
         protected override bool PrepareExecute(ApiCallItem item)
         {
-            lock (localObj)
+            lock (data)
             {
                 if (data.Max == 0)
                     return true;
@@ -207,22 +214,40 @@ namespace Agebull.MicroZero.PubSub
             }
         }
 
-
-        bool CacheProcess(long nowId, bool success)
+        /// <summary>
+        /// 空转
+        /// </summary>
+        /// <returns></returns>
+        protected override async Task OnLoopIdle()
         {
-            lock (localObj)
+            using (var cmd = new QueueCommand())
+            {
+                if (!cmd.Prepare(Config.RequestAddress, StationName))
+                    return;
+                long max;
+                lock (data)
+                {
+                    max = data.Max;
+                }
+                await cmd.CallCommand(max, 0);
+            }
+        }
+
+        async Task Ack(long nowId, bool success)
+        {
+            string json;
+            lock (data)
             {
                 if (!success)
                     data.FailedIds.Add(nowId);
                 else
-                {
-                    if (data.Max < nowId)
-                        data.Max = nowId;
                     data.FailedIds.Remove(nowId);
-                }
+
+                if (data.Max < nowId)
+                    data.Max = nowId;
+                json = JsonHelper.SerializeObject(data);
             }
-            SaveIds();
-            return true;
+            await SaveIds(json);
         }
         #endregion
     }
@@ -274,12 +299,28 @@ namespace Agebull.MicroZero.PubSub
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        public ZeroResult CallCommand(long start, long end)
+        public async Task<ZeroResult> CallCommand(long start, long end)
         {
             try
             {
-                var result = ZSimpleCommand.SendTo(socket, description, start.ToString(), end.ToString());
-                return !result.InteractiveSuccess ? result : socket.ReceiveString();
+                ZeroResult result;
+                using (var message = new ZMessage(description, start.ToString(), end.ToString()))
+                {
+                    message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
+                    if (socket.SendTo(message))
+                        result = new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.Ok,
+                            InteractiveSuccess = true
+                        };
+                    else
+                        result = new ZeroResult
+                        {
+                            State = ZeroOperatorStateType.LocalRecvError,
+                            ZmqError = socket.LastError
+                        };
+                }
+                return !result.InteractiveSuccess ? result : await socket.Receive<ZeroResult>();
             }
             catch (Exception e)
             {

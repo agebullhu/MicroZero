@@ -1,28 +1,33 @@
-﻿namespace Agebull.MicroZero.ZeroManagemant.StateMachine
+﻿using System.Threading.Tasks;
+
+namespace Agebull.MicroZero.ZeroManagemant
 {
-    /// <summary>
-    /// 监控状态机
-    /// </summary>
-    public class FailedStateMachine : MonitorStateMachineBase, IMonitorStateMachine
+    internal partial class MonitorStateMachine
     {
         /// <summary>
-        ///     收到信息的处理
+        /// 监控状态机
         /// </summary>
-        void IMonitorStateMachine.OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content)
+        class FailedStateMachine : IMonitorStateMachine
         {
-            if (IsDisposed)
-                return;
-            switch (zeroNetEvent)
+            /// <summary>
+            ///     收到信息的处理
+            /// </summary>
+            async Task IMonitorStateMachine.OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content)
             {
-                case ZeroNetEventType.CenterSystemStart:
-                    IsDisposed = true;
-                    center_start(station, content);
-                    return;
-                case ZeroNetEventType.CenterWorkerSoundOff:
-                    IsDisposed = true;
-                    ZeroTrace.SystemLog("Restart");
-                    ZeroApplication.JoinCenter();
-                    return;
+                switch (zeroNetEvent)
+                {
+                    case ZeroNetEventType.CenterSystemStart:
+                        //StateMachine = new RuningStateMachine();
+                        //await center_start(station, content);
+                        //return;
+                    case ZeroNetEventType.CenterWorkerSoundOff:
+                        //StateMachine = new RuningStateMachine();
+                        //ZeroTrace.SystemLog("Restart");
+                        //await ZeroApplication.JoinCenter();
+                        StateMachine = new EmptyStateMachine();
+                        await center_start(station, content);
+                        return;
+                }
             }
         }
     }

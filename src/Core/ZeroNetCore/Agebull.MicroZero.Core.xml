@@ -62,6 +62,12 @@
             <param name="message">错误消息</param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResultDefault.ErrorBuilder(System.Int32,System.String)">
+            <summary>生成一个包含错误码的标准返回</summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiResultDefault.Error(System.Int32,System.String,System.String)">
             <summary>生成一个包含错误码的标准返回</summary>
             <param name="errCode">错误码</param>
@@ -185,9 +191,13 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiResultDefault.UnknowError">
             <summary>未知错误</summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiResultDefault.TimeOut">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResultDefault.NetTimeOut">
             <summary>网络超时</summary>
             <remarks>调用其它Api时时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResultDefault.ExecTimeOut">
+            <summary>执行超时</summary>
+            <remarks>Api执行超时</remarks>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiResultDefault.InnerError">
             <summary>内部错误</summary>
@@ -252,6 +262,10 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiResultIoc.TimeOutJson">
             <summary>网络超时的Json字符串</summary>
             <remarks>调用其它Api时时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResultIoc.ExecTimeOut">
+            <summary>执行超时</summary>
+            <remarks>Api执行超时</remarks>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiResultIoc.InnerErrorJson">
             <summary>内部错误的Json字符串</summary>
@@ -413,9 +427,13 @@
         <member name="P:Agebull.MicroZero.ZeroApis.IApiResultDefault.UnknowError">
             <summary>未知错误</summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.IApiResultDefault.TimeOut">
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResultDefault.NetTimeOut">
             <summary>网络超时</summary>
             <remarks>调用其它Api时时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResultDefault.ExecTimeOut">
+            <summary>执行超时</summary>
+            <remarks>Api执行超时</remarks>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.IApiResultDefault.InnerError">
             <summary>内部错误</summary>
@@ -451,6 +469,13 @@
             取得连接器
             </summary>
             <param name="station"></param>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.GetProxySocket(System.String)">
+            <summary>
+            取得连接器
+            </summary>
             <param name="name"></param>
             <returns></returns>
         </member>
@@ -650,7 +675,19 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.CallAsync">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Plan(Agebull.MicroZero.ZeroPlanInfo)">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.PlanAsync(Agebull.MicroZero.ZeroPlanInfo)">
             <summary>
                 远程调用
             </summary>
@@ -1070,12 +1107,37 @@
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiExecuter">
             <summary>
-                Api调用
+                Api调用器
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecuteAsync">
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.TaskItem">
             <summary>
-            调用 
+            当前站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.Station">
+            <summary>
+            当前站点
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.Socket">
+            <summary>
+            当前连接
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.Item">
+            <summary>
+            调用的内容
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.CancellationToken">
+            <summary>
+            取消停牌
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.ScopeResource">
+            <summary>
+            范围资源
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute">
@@ -1117,52 +1179,6 @@
                 Api站点
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnNofindConfig">
-            <summary>
-            初始化
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.GetApiOption">
-            <summary>
-                配置校验
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
-            <summary>
-            构造Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <param name="state"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="item"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
-            <summary>
-            发送返回值 
-            </summary>
-            <param name="socket"></param>
-            <param name="message"></param>
-            <returns></returns>
-        </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.CallCount">
             <summary>
             调用计数
@@ -1193,10 +1209,26 @@
             调用计数
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.#ctor(Agebull.MicroZero.ZeroStationType,System.Boolean)">
             <summary>
-            调用计数
+            构造
             </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnNofindConfig">
+            <summary>
+            初始化
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.GetApiOption">
+            <summary>
+                配置校验
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocket@)">
+            <summary>
+            构造Pool
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.Loop">
             <summary>
@@ -1204,25 +1236,73 @@
             </summary>
             <returns>返回False表明需要重启</returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RunSingle(System.Object)">
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem">
             <summary>
-            轮询
+            Api调用时的Task节点信息
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RunWaitCount(System.Object)">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.TaskId">
             <summary>
-            轮询
+            TaskId
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RunThread(System.Object)">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Executer">
             <summary>
-            轮询
+            执行器
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.DoPoll(System.String,System.Byte[],System.Boolean)">
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Thread">
             <summary>
-            轮询
+            所在线程（注意可能失效）
             </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Socket">
+            <summary>
+            Socket句柄
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Api">
+            <summary>
+            API调用的信息
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Task">
+            <summary>
+            任务
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Start">
+            <summary>
+            开始时间（用于超时检查）
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.Tasks">
+            <summary>
+            当前活跃任务
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.WaitCount">
+            <summary>
+            总等待数
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CheckTask">
+            <summary>
+            检查超时任务
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.CloseTask">
+            <summary>
+            空转
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.KillTask(Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem)">
+            <summary>
+            杀死任务
+            </summary>
+            <param name="item"></param>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareExecute(Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
@@ -1234,15 +1314,33 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="info">反射信息</param>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RegistAction(System.String,System.Func{System.Threading.Tasks.Task{Agebull.MicroZero.ZeroApis.IApiResult}},Agebull.MicroZero.ApiAccessOption,Agebull.MicroZero.ApiDocuments.ApiActionInfo)">
+            <summary>
+                注册方法
+            </summary>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
+            <param name="action">动作</param>
+            <param name="info">反射信息</param>
+            <param name="access">访问设置</param>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RegistAction(System.String,System.Func{System.Object,System.Threading.Tasks.Task{Agebull.MicroZero.ZeroApis.IApiResult}},Agebull.MicroZero.ApiAccessOption,Agebull.MicroZero.ApiDocuments.ApiActionInfo)">
+            <summary>
+                注册方法
+            </summary>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
+            <param name="action">动作</param>
+            <param name="info">反射信息</param>
+            <param name="access">访问设置</param>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.RegistAction(System.String,System.Func{Agebull.MicroZero.ZeroApis.IApiResult},Agebull.MicroZero.ApiAccessOption,Agebull.MicroZero.ApiDocuments.ApiActionInfo)">
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="info">反射信息</param>
             <param name="access">访问设置</param>
@@ -1251,7 +1349,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1260,7 +1358,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1269,7 +1367,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1278,7 +1376,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1287,7 +1385,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1296,7 +1394,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1305,7 +1403,7 @@
             <summary>
                 注册方法
             </summary>
-            <param name="name">方法外部方法名称，如 v1\auto\getdid </param>
+            <param name="name">方法外部方法名称，如 v1/auto/getdid </param>
             <param name="action">动作</param>
             <param name="access">访问设置</param>
             <param name="info">反射信息</param>
@@ -1324,6 +1422,31 @@
             <summary>
                 注册处理器
             </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="item"></param>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
+            <summary>
+            发送返回值 
+            </summary>
+            <param name="socket"></param>
+            <param name="message"></param>
+            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.IApiHandler">
             <summary>
@@ -1442,25 +1565,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallSync(System.String,System.String,System.String)">
-            <summary>
-                远程调用
-            </summary>
-            <param name="station"></param>
-            <param name="commmand"></param>
-            <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallTask(System.String,System.String,System.String)">
-            <summary>
-                远程调用
-            </summary>
-            <param name="station"></param>
-            <param name="commmand"></param>
-            <param name="argument"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.Call(System.String,System.String,System.String)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallAsync(System.String,System.String,System.String)">
             <summary>
                 远程调用
             </summary>
@@ -1560,6 +1665,64 @@
             <param name="api">api名称</param>
             <returns></returns>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallApiAsync``2(System.String,System.String,``0)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallApiAsync``1(System.String,System.String,``0)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallApiAsync``1(System.String,System.String)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TResult">参数类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallApiAsync(System.String,System.String)">
+            <summary>
+            调用远程方法
+            </summary>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallAsync``2(System.String,System.String,``0)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.CallAsync``1(System.String,System.String)">
+            <summary>
+            调用远程方法
+            </summary>
+            <typeparam name="TResult">参数类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <returns></returns>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``1(System.String,System.String,System.DateTime,System.String)">
             <summary>
             计划调用(一次)
@@ -1597,6 +1760,56 @@
             <returns></returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlan``2(System.String,System.String,``0,Agebull.MicroZero.plan_date_type,System.Int16,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <param name="type">类型(除none time之外,基准时间为现在)</param>
+            <param name="num">计划值</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlanAsync``1(System.String,System.String,System.DateTime,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="time">计划时间</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlanAsync``1(System.String,System.String,Agebull.MicroZero.plan_date_type,System.Int16,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="type">类型(除none time之外,基准时间为现在)</param>
+            <param name="num">计划值</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlanAsync``2(System.String,System.String,``0,System.DateTime,System.String)">
+            <summary>
+            计划调用(一次)
+            </summary>
+            <typeparam name="TArgument">参数类型</typeparam>
+            <typeparam name="TResult">返回值类型</typeparam>
+            <param name="station">站点</param>
+            <param name="api">api名称</param>
+            <param name="arg">参数</param>
+            <param name="time">计划时间</param>
+            <param name="description">计划说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiClient.ApiPlanAsync``2(System.String,System.String,``0,Agebull.MicroZero.plan_date_type,System.Int16,System.String)">
             <summary>
             计划调用(一次)
             </summary>
@@ -1789,6 +2002,77 @@
             <returns></returns>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiAction`1.Execute">
+            <summary>
+                执行
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiTaskAction`1">
+            <summary>
+                Api动作
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiTaskAction`1.Argument">
+            <summary>
+                参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiTaskAction`1.Action">
+            <summary>
+                执行行为
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction`1.RestoreArgument(System.String)">
+            <summary>
+                还原参数
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction`1.Validate(System.String@)">
+            <summary>
+                参数校验
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction`1.Execute">
+            <summary>
+                执行
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1">
+            <summary>
+                Api动作
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1._argument">
+            <summary>
+                参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1.Argument">
+            <summary>
+                参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1.Action">
+            <summary>
+                执行行为
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1.RestoreArgument(System.String)">
+            <summary>
+                还原参数
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1.Validate(System.String@)">
+            <summary>
+                参数校验
+            </summary>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiTaskAction2`1.Execute">
             <summary>
                 执行
             </summary>
@@ -1992,6 +2276,193 @@
             <param name="message"></param>
             <returns></returns>
         </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.ApiChecker">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ApiChecker.RunCheck">
+            <summary>
+            执行检查
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.SystemManager">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.CreateInstance">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.GetAddress">
+            <summary>
+            地址错误的情况
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.SystemManager.Instance">
+            <summary>
+            单例
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.PingCenter">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartLeft">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartReady">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartJoin">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.Heartbeat">
+            <summary>
+                连接到
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryInstall(System.String,System.String)">
+            <summary>
+            尝试安装站点
+            </summary>
+            <param name="station"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryStart(System.String)">
+            <summary>
+            尝试安装站点
+            </summary>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.UploadDocument">
+            <summary>
+                上传文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadDocument(System.String)">
+            <summary>
+                下载文档
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadAllConfig">
+            <summary>
+                读取配置
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadConfig(System.String)">
+            <summary>
+                读取配置
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine">
+            <summary>
+            系统侦听器状态机
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.EmptyStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.EmptyStateMachine.Agebull#MicroZero#ZeroManagemant#MonitorStateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.FailedStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.FailedStateMachine.Agebull#MicroZero#ZeroManagemant#MonitorStateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.IMonitorStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.IMonitorStateMachine.OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.StateMachine">
+            <summary>
+            状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.SyncAppState">
+            <summary>
+            状态变更同步状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.worker_sound_off">
+            <summary>
+            站点心跳
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.station_trends(System.String,System.String)">
+            <summary>
+            站点动态
+            </summary>
+            <param name="name"></param>
+            <param name="content"></param>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.RuningStateMachine">
+            <summary>
+            监控状态机
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.MonitorStateMachine.RuningStateMachine.Agebull#MicroZero#ZeroManagemant#MonitorStateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
+            <summary>
+                收到信息的处理
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor">
+            <summary>
+            系统侦听器
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.WaitMe">
+            <summary>
+            等待正常结束
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.Monitor">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
+            <summary>
+                进入系统侦听
+            </summary>
+        </member>
         <member name="T:Agebull.MicroZero.IZeroObject">
             <summary>
             站点连接池
@@ -2078,11 +2549,6 @@
                 注册单例对象
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApplication.HaseActiveObject">
-            <summary>
-                是否存在活动对象
-            </summary>
-        </member>
         <member name="F:Agebull.MicroZero.ZeroApplication.ActiveObjects">
             <summary>
             活动对象(执行中)
@@ -2108,11 +2574,6 @@
                 对象活动状态记录器锁定
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.ResetObjectActive">
-            <summary>
-                重置当前活动数量
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.OnGlobalStart(Agebull.MicroZero.IZeroObject)">
             <summary>
                 对象活动时登记
@@ -2136,11 +2597,6 @@
         <member name="M:Agebull.MicroZero.ZeroApplication.OnObjectClose(Agebull.MicroZero.IZeroObject)">
             <summary>
                 对象关闭时登记
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeOpen">
-            <summary>
-                等待所有对象信号(全开或全关)
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.WaitAllObjectSafeClose">
@@ -2173,7 +2629,7 @@
                 系统启动时调用
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroEnd">
+        <member name="M:Agebull.MicroZero.ZeroApplication.OnZeroEnd(System.Boolean)">
             <summary>
                 系统关闭时调用
             </summary>
@@ -2216,6 +2672,11 @@
         <member name="M:Agebull.MicroZero.ZeroApplication.GetStationOption(System.String)">
             <summary>
                 配置校验
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApplication.TestFunc">
+            <summary>
+            测试程序，用于系统检查注入
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.CommandConsole">
@@ -2303,7 +2764,17 @@
                 运行
             </summary>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RunAsync">
+            <summary>
+                运行
+            </summary>
+        </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.RunAwaite">
+            <summary>
+                执行并等待
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApplication.RunAwaiteAsync">
             <summary>
                 执行并等待
             </summary>
@@ -2311,11 +2782,6 @@
         <member name="F:Agebull.MicroZero.ZeroApplication.WaitToken">
             <summary>
                 应用程序等待结果的信号量对象
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.WaitTask">
-            <summary>
-                执行直到连接成功
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.Start">
@@ -2338,16 +2804,17 @@
             站点事件发生
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig)">
+        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(Agebull.MicroZero.ZeroNetEventType,System.String,System.String,Agebull.MicroZero.StationConfig,System.Boolean)">
             <summary>
             发出事件
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType)">
+        <member name="M:Agebull.MicroZero.ZeroApplication.RaiseEvent(Agebull.MicroZero.ZeroNetEventType,System.Boolean)">
             <summary>
             发出事件
             </summary>
-            <param name="centerEvent"></param>
+            <param name="event"></param>
+            <param name="sync">是否为同步操作</param>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object)">
             <summary>
@@ -2378,193 +2845,6 @@
         <member name="F:Agebull.MicroZero.SpeedLimitType.WaitCount">
             <summary>
             按等待数限制
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.SystemManager">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.CreateInstance">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.GetAddress">
-            <summary>
-            地址错误的情况
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.SystemManager.Instance">
-            <summary>
-            单例
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.PingCenter">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartLeft">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartReady">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.HeartJoin">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.Heartbeat">
-            <summary>
-                连接到
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryInstall(System.String,System.String)">
-            <summary>
-            尝试安装站点
-            </summary>
-            <param name="station"></param>
-            <param name="type"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.TryStart(System.String)">
-            <summary>
-            尝试安装站点
-            </summary>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.UploadDocument">
-            <summary>
-                上传文档
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadDocument(System.String,Agebull.MicroZero.ApiDocuments.StationDocument@)">
-            <summary>
-                下载文档
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadAllConfig">
-            <summary>
-                读取配置
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.SystemManager.LoadConfig(System.String)">
-            <summary>
-                读取配置
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.EmptyStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.FailedStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.IsDisposed">
-            <summary>
-            是否已析构
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.IMonitorStateMachine.OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.worker_sound_off">
-            <summary>
-            站点心跳
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.station_trends(System.String,System.String)">
-            <summary>
-            站点动态
-            </summary>
-            <param name="name"></param>
-            <param name="content"></param>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.StateMachine.MonitorStateMachineBase.IsDisposed">
-            <summary>
-            是否已析构
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine">
-            <summary>
-            监控状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.StateMachine.RuningStateMachine.Agebull#MicroZero#ZeroManagemant#StateMachine#IMonitorStateMachine#OnMessagePush(Agebull.MicroZero.ZeroNetEventType,System.String,System.String)">
-            <summary>
-                收到信息的处理
-            </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor">
-            <summary>
-            系统侦听器
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.WaitMe">
-            <summary>
-            等待正常结束
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.Monitor">
-            <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.StateMachine">
-            <summary>
-            状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.OnApplicationStateChanged">
-            <summary>
-            状态变更同步状态机
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
-            <summary>
-                进入系统侦听
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroWorkModel">
@@ -2618,6 +2898,16 @@
         <member name="P:Agebull.MicroZero.ZeroStationOption.TaskCpuMultiple">
             <summary>
                 最大Task与Cpu核心数的倍数关系(0-128)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroStationOption.ApiTimeout">
+            <summary>
+                API最大执行超时时间(单位秒)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroStationOption.ApiTimeoutKill">
+            <summary>
+                检测到API执行超时是否强行清除资源
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroStationOption.Copy(Agebull.MicroZero.ZeroStationOption)">
@@ -2882,6 +3172,16 @@
                 连接到
             </summary>
         </member>
+        <member name="T:Agebull.MicroZero.LockData">
+            <summary>
+            锁定数据
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.LockData.LockObj">
+            <summary>
+            锁定对象
+            </summary>
+        </member>
         <member name="T:Agebull.MicroZero.OnceScope">
             <summary>
             保证独立操作的范围(让启动的Task中使用相同范围时会在在此范围完成后顺序执行)
@@ -2897,7 +3197,12 @@
             锁定对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.OnceScope.#ctor(System.Object,System.Action,System.Action)">
+        <member name="P:Agebull.MicroZero.OnceScope.IsEntry">
+            <summary>
+            是否进入
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.OnceScope.#ctor(Agebull.MicroZero.LockData,System.Action,System.Action)">
             <summary>
             内部构造
             </summary>
@@ -2905,75 +3210,17 @@
             <param name="open"></param>
             <param name="close"></param>
         </member>
-        <member name="M:Agebull.MicroZero.OnceScope.CreateScope(System.Object,System.Action,System.Action)">
+        <member name="M:Agebull.MicroZero.OnceScope.TryCreateScope(Agebull.MicroZero.LockData,System.Action,System.Action)">
             <summary>
             构造范围
             </summary>
             <param name="lockObj">锁定对象</param>
-            <param name="open">进入时执行的动作</param>
-            <param name="close">离开时必须执行的动作</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.OnceScope.TryCreateScope(System.Object,System.Int32,System.Action,System.Action)">
-            <summary>
-            构造范围
-            </summary>
-            <param name="lockObj">锁定对象</param>
-            <param name="timeOut">超时时长</param>
             <param name="open">进入时执行的动作</param>
             <param name="close">离开时必须执行的动作</param>
             <returns>如果超时，则返回空。正常进入返回对象</returns>
         </member>
         <member name="M:Agebull.MicroZero.OnceScope.OnDispose">
             <inheritdoc />
-        </member>
-        <member name="T:Agebull.MicroZero.SyncBatchQueue`1">
-            <summary>
-            多生产者单消费者的同步列表（线程安全）
-            </summary>
-            <typeparam name="TData">泛型对象</typeparam>
-            <remarks>
-            1 内部使用信号量
-            2 用于多生产者单消费者的场景
-            3 使用双队列，以防止错误时无法还原
-            </remarks>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line1">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.SyncBatchQueue`1.Line2">
-            <summary>
-            内部队列
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Push(`0)">
-            <summary>
-            加入队列
-            </summary>
-            <param name="t"></param>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Switch">
-            <summary>
-            开始处理队列内容
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Save(System.String)">
-            <summary>
-            保存以备下次启动时使用
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.SyncBatchQueue`1.Load(System.String)">
-            <summary>
-            载入保存的内容
-            </summary>
-            <returns>队列对象</returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroCommandExtend">
             <summary>
@@ -3152,11 +3399,6 @@
             管理命令
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.IsInner">
-            <summary>
-            是否内部
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.GetAddress">
             <summary>
             地址错误的情况
@@ -3179,14 +3421,9 @@
             <summary>
                 执行管理命令(快捷命令，命令在说明符号的第二个字节中)
             </summary>
-            <param name="commmand"></param>
+            <param name="cmd"></param>
             <param name="args"></param>
             <returns></returns>
-        </member>
-        <member name="P:Agebull.MicroZero.ZSimpleCommand.Socket">
-            <summary>
-            
-            </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommand(System.Byte[],System.String[])">
             <summary>
@@ -3195,36 +3432,6 @@
             <param name="description"></param>
             <param name="args">请求参数</param>
             <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommandInner(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.CallCommandInner2(System.Byte[],System.String[])">
-            <summary>
-                发起一次请求
-            </summary>
-            <param name="description"></param>
-            <param name="args">请求参数</param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.SendTo(ZeroMQ.ZSocket,System.Byte[],System.String[])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="desicription"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZSimpleCommand.Destroy">
-            <summary>
-            关闭仅有的一个连接
-            </summary>
         </member>
         <member name="T:Agebull.MicroZero.IZeroState">
             <summary>
@@ -4276,6 +4483,11 @@
             站点被暂停
             </summary>
         </member>
+        <member name="F:Agebull.MicroZero.ZeroOperatorStateType.ExecTimeOut">
+            <summary>
+            执行超时
+            </summary>
+        </member>
         <member name="F:Agebull.MicroZero.ZeroOperatorStateType.Bug">
             <summary>
             逻辑BUG
@@ -4311,7 +4523,7 @@
             不支持的操作
             </summary>
         </member>
-        <member name="F:Agebull.MicroZero.ZeroOperatorStateType.TimeOut">
+        <member name="F:Agebull.MicroZero.ZeroOperatorStateType.NetTimeOut">
             <summary>
             超时失败
             </summary>
@@ -4923,11 +5135,6 @@
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.SubStation`1.HandleTask">
-            <summary>
-            命令处理任务
-            </summary>
-        </member>
         <member name="M:Agebull.MicroZero.PubSub.SubStation`1.OnInitialize">
             <summary>
             初始化
@@ -5133,6 +5340,81 @@
                 订阅时的标准网络数据说明
             </summary>
         </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync``1(System.String,System.String,System.String,``0)">
+            <summary>
+            发送广播
+            </summary>
+            <param name="station"></param>
+            <param name="title"></param>
+            <param name="sub"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync``1(System.String,System.String,``0)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="content"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,Agebull.MicroZero.PubSub.PublishItem)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="item"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String,System.String)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="content"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String,System.String,System.String)">
+            <summary>
+                发送广播
+            </summary>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.Byte[],System.String,System.String,System.Byte[])">
+            <summary>
+                发送广播
+            </summary>
+            <param name="description"></param>
+            <param name="title"></param>
+            <param name="subTitle"></param>
+            <param name="content"></param>
+            <param name="station"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.SendAsync``1(System.String,System.String,System.String,``0)">
+            <summary>
+            发送广播
+            </summary>
+            <param name="station"></param>
+            <param name="title"></param>
+            <param name="sub"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
         <member name="T:Agebull.MicroZero.PubSub.ZPublisher">
             <summary>
                 消息发布
@@ -5194,7 +5476,7 @@
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.Reload">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.ReNotify(System.Int64[])">
             <summary>
                 发起一次请求
             </summary>
@@ -5203,6 +5485,12 @@
         <member name="M:Agebull.MicroZero.PubSub.QueueStation.PrepareExecute(Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
             准备执行
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnLoopIdle">
+            <summary>
+            空转
             </summary>
             <returns></returns>
         </member>

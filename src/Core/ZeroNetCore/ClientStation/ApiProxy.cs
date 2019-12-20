@@ -4,6 +4,7 @@ using Agebull.Common.Logging;
 using ZeroMQ;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.EntityModel.Common;
 
@@ -45,8 +46,18 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public static ZSocket GetSocket(string station, string name)
         {
-            if (!StationProxy.TryGetValue(station, out var item) || item.Config.State != ZeroCenterState.Run)
+            if (!StationProxy.TryGetValue(station, out var item))// || item.Config.State != ZeroCenterState.Run
                 return null;
+            return GetProxySocket(name);
+        }
+
+        /// <summary>
+        /// 取得连接器
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static ZSocket GetProxySocket(string name=null)
+        {
             return ZSocket.CreateOnceSocket(InprocAddress, name.ToZeroBytes(), ZSocketType.PAIR);
         }
 
@@ -81,7 +92,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override bool CheckConfig()
+        protected sealed override Task<bool> CheckConfig()
         {
             Config = new StationConfig
             {
@@ -89,7 +100,7 @@ namespace Agebull.MicroZero.ZeroApis
                 Caption = "API客户端代理",
                 IsBaseStation = true
             };
-            return true;
+            return Task.FromResult(true);
         }
 
         private static readonly byte[] LayoutErrorFrame = new byte[]
@@ -163,12 +174,12 @@ namespace Agebull.MicroZero.ZeroApis
                 LogRecorderX.Exception(e, "ApiStation.SendResult");
                 LogRecorderX.MonitorTrace(e.Message);
             }
+#if UNMANAGE_MONEY_CHECK
             finally
             {
-#if UNMANAGE_MONEY_CHECK
                 LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
-#endif
             }
+#endif
         }
 
         #endregion
@@ -183,8 +194,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override bool Loop(/*CancellationToken token*/)
+        protected sealed override async Task<bool> Loop(/*CancellationToken token*/)
         {
+            //await Task.Yield();
             IsChanged = true;
             while (CanLoopEx)
             {
@@ -195,19 +207,21 @@ namespace Agebull.MicroZero.ZeroApis
                         _zmqPool = CreatePool();
                         IsChanged = false;
                     }
-                    if (!_zmqPool.Poll())
+                    if (!await _zmqPool.PollAsync())
                     {
                         continue;
                     }
 
-                    if (_zmqPool.CheckIn(0, out var message))
+                    var message =await  _zmqPool.CheckInAsync(0);
+                    if (message != null)
                     {
                         OnLocalCall(message);
                     }
 
                     for (int idx = 1; idx < _zmqPool.Size; idx++)
                     {
-                        if (_zmqPool.CheckIn(idx, out message))
+                        message = await _zmqPool.CheckInAsync(idx);
+                        if (message != null)
                         {
                             OnRemoteResult(message);
                         }
@@ -279,7 +293,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 return false;
             });
-            if(result.State != ZeroOperatorStateType.Runing)
+            if (result.State != ZeroOperatorStateType.Runing)
                 Interlocked.Decrement(ref WaitCount);
             message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
             SendResult(message2);
@@ -294,7 +308,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 所有代理
         /// </summary>
-        private static readonly Dictionary<string, StationProxyItem> StationProxy = new Dictionary<string, StationProxyItem>(StringComparer.OrdinalIgnoreCase);
+        internal static readonly Dictionary<string, StationProxyItem> StationProxy = new Dictionary<string, StationProxyItem>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 开始执行的处理
@@ -323,7 +337,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 关闭时的处理
         /// </summary>
         /// <returns></returns>
-        protected override void OnLoopComplete()
+        protected override Task OnLoopComplete()
         {
             _proxyServiceSocket.Dispose();
             RealState = StationState.Closed;
@@ -334,6 +348,7 @@ namespace Agebull.MicroZero.ZeroApis
                 proxyItem.Socket?.Dispose();
             }
             StationProxy.Clear();
+            return Task.CompletedTask;
         }
 
         /// <summary>

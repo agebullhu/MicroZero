@@ -32,11 +32,11 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         public static bool DoCheck(RouteData data)
         {
-            if (data.UserState != UserOperatorStateType.Success || data.ApiHost == null)
+            if (!RouteOption.Option.SystemConfig.CheckResult || data.UserState != UserOperatorStateType.Success || data.ApiHost == null)
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
             {
-                //IocHelper.Create<IRuntimeWaring>().Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
+                //IocHelper.Create<IRuntimeWaring>()?.Waring(data.ApiHost, data.ApiName, "返回值非法(空内容)");
                 data.UserState = UserOperatorStateType.FormalError;
                 data.ZeroState = ZeroOperatorStateType.FrameInvalid;
                 return false;

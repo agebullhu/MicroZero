@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
-using Agebull.Common.Ioc;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
@@ -45,7 +45,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     内部构架
         /// </summary>
-        bool IRouter.Prepare(HttpContext context)
+        async Task<bool> IRouter.Prepare(HttpContext context)
         {
             LogRecorderX.BeginMonitor("Weixin");
             HttpContext = context;
@@ -74,7 +74,7 @@ namespace MicroZero.Http.Gateway
                 {
                     using (var texter = new StreamReader(Request.Body))
                     {
-                        Data.Context = texter.ReadToEnd();
+                        Data.Context = await texter.ReadToEndAsync();
                         if (string.IsNullOrEmpty(Data.Context))
                             Data.Context = null;
                         else
@@ -97,7 +97,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     调用
         /// </summary>
-        void IRouter.Call()
+        async Task IRouter.Call()
         {
             if (!CheckSignature.Check(Data["Signature"], Data["Timestamp"], Data["Nonce"], WechatProcesser.Option.Token))
             {
@@ -109,17 +109,16 @@ namespace MicroZero.Http.Gateway
                 Data.ResultMessage = Data["echostr"]; //返回随机字符串则表示验证通过
                 return;
             }
-            
-            WechatProcesser.CallZero(Data);
+            await WechatProcesser.CallZero(Data);
         }
         string ContentType = "text/plain; charset=utf-8";
         /// <summary>
         ///     写入返回
         /// </summary>
-        void IRouter.WriteResult()
+        async Task IRouter.WriteResult()
         {
             Response.ContentType = ContentType;
-            Response.WriteAsync(Data.ResultMessage ?? "");
+            await Response.WriteAsync(Data.ResultMessage ?? "");
         }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace MicroZero.Http.Gateway
         }
         #endregion
 
-        void IRouter.OnError(Exception e, HttpContext context)
+        Task IRouter.OnError(Exception e, HttpContext context)
         {
             try
             {
@@ -166,6 +165,7 @@ namespace MicroZero.Http.Gateway
             {
                 LogRecorderX.Exception(exception);
             }
+            return Task.CompletedTask;
         }
 
         void IRouter.CheckMap(AshxMapConfig map)

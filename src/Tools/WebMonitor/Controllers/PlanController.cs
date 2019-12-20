@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 
 using Agebull.MicroZero;
@@ -55,6 +56,69 @@ namespace WebMonitor.Controllers
             return new JsonResult(result);
         }
         
+        [HttpPost]
+        public IActionResult Add()
+        {
+            try
+            {
+                var result = IocHelper.Create<PlanManage>().NewPlan(new ClientPlan
+                {
+                    plan_type = (plan_date_type)GetIntArg("plan_type"),
+                    plan_value = GetShortArg("plan_value"),
+                    plan_repet = GetIntArg("plan_repet"),
+                    description = GetArg("description"),
+                    command = GetArg("command"),
+                    station = GetArg("station"),
+                    context = GetArg("context"),
+                    argument = GetArg("argument"),
+                    no_skip = GetBoolArg("no_skip"),
+                    plan_time = GetDateArg2("plan_time1"),
+                    skip_set = GetIntArg("skip_set")
+                });
+                return new JsonResult(result);
+
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(ApiResult.Error(ErrorCode.LocalException, ex.Message));
+            }
+        }
+
+        [HttpGet]
+        public IActionResult Flush()
+        {
+            var result = IocHelper.Create<PlanManage>().FlushList();
+            return new JsonResult(result);
+        }
+
+        [HttpGet]
+        public IActionResult Pause(string id)
+        {
+            var result = IocHelper.Create<PlanManage>().Pause(id);
+            return new JsonResult(result);
+        }
+        [HttpGet]
+        public IActionResult Reset(string id)
+        {
+            var result = IocHelper.Create<PlanManage>().Reset(id);
+            return new JsonResult(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Remove(string id)
+        {
+            var result = await IocHelper.Create<PlanManage>().Remove(id);
+            return new JsonResult(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Close(string id)
+        {
+            var result =await IocHelper.Create<PlanManage>().Close(id);
+            return new JsonResult(result);
+        }
+
+
         #region 参数解析
 
 
@@ -193,7 +257,7 @@ namespace WebMonitor.Controllers
         protected DateTime GetDateArg2(string name)
         {
             var value = GetArgValue(name);
-            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value,out var date))
+            if (string.IsNullOrEmpty(value) || value == "-" || value == "undefined" || value == "null" || !DateTime.TryParse(value, out var date))
             {
                 return DateTime.MinValue;
             }
@@ -322,66 +386,5 @@ namespace WebMonitor.Controllers
         }
 
         #endregion
-        [HttpPost]
-        public IActionResult Add()
-        {
-            try
-            {
-                var result = IocHelper.Create<PlanManage>().NewPlan(new ClientPlan
-                {
-                    plan_type = (plan_date_type)GetIntArg("plan_type"),
-                    plan_value = GetShortArg("plan_value"),
-                    plan_repet = GetIntArg("plan_repet"),
-                    description = GetArg("description"),
-                    command = GetArg("command"),
-                    station = GetArg("station"),
-                    context = GetArg("context"),
-                    argument = GetArg("argument"),
-                    no_skip = GetBoolArg("no_skip"),
-                    plan_time = GetDateArg2("plan_time1"),
-                    skip_set = GetIntArg("skip_set")
-                });
-                return new JsonResult(result);
-
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(ApiResult.Error(ErrorCode.LocalException, ex.Message));
-            }
-        }
-
-        [HttpGet]
-        public IActionResult Flush()
-        {
-            var result = IocHelper.Create<PlanManage>().FlushList();
-            return new JsonResult(result);
-        }
-
-        [HttpGet]
-        public IActionResult Pause(string id)
-        {
-            var result = IocHelper.Create<PlanManage>().Pause(id);
-            return new JsonResult(result);
-        }
-        [HttpGet]
-        public IActionResult Reset(string id)
-        {
-            var result = IocHelper.Create<PlanManage>().Reset(id);
-            return new JsonResult(result);
-        }
-
-        [HttpGet]
-        public IActionResult Remove(string id)
-        {
-            var result = IocHelper.Create<PlanManage>().Remove(id);
-            return new JsonResult(result);
-        }
-
-        [HttpGet]
-        public IActionResult Close(string id)
-        {
-            var result = IocHelper.Create<PlanManage>().Close(id);
-            return new JsonResult(result);
-        }
     }
 }

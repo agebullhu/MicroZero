@@ -1,4 +1,5 @@
-﻿using ZeroMQ.lib;
+﻿using System.Threading.Tasks;
+using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
@@ -71,6 +72,26 @@ namespace ZeroMQ
             return state > 0;
         }
 
+
+        /// <summary>
+        /// 一次Pool
+        /// </summary>
+        /// <returns></returns>
+        public Task<bool> PollAsync()
+        {
+            return Task.FromResult(Poll());
+        }
+
+
+        /// <summary>
+        /// 一次Pool
+        /// </summary>
+        /// <returns></returns>
+        public Task<ZMessage> CheckInAsync(int index)
+        {
+            var res = CheckIn(index, out var message);
+            return Task.FromResult(res ? message : null);
+        }
         /// <summary>
         /// 检查下标是否有数据
         /// </summary>
@@ -95,6 +116,7 @@ namespace ZeroMQ
             message = null;
             return false;
         }
+
 
         /// <summary>
         /// 检查下标是否有数据

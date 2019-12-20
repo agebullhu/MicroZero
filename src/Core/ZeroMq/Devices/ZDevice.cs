@@ -1,4 +1,5 @@
-﻿namespace ZeroMQ
+﻿#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+namespace ZeroMQ
 {
     using System;
     using System.Threading;
@@ -40,36 +41,26 @@
 			: this (ZContext.Current)
 		{ }
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		protected ZDevice(ZContext context)
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			Context = context;
 		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ZDevice"/> class.
-		/// You are using ZContext.Current!
-		/// </summary>
-		/// <param name="frontendSocket">
-		/// A <see cref="ZSocket"/> that will pass incoming messages to <paramref name="backendSocket"/>.
-		/// </param>
-		/// <param name="backendSocket">
-		/// A <see cref="ZSocket"/> that will receive messages from (and optionally send replies to) <paramref name="frontendSocket"/>.
-		/// </param>
-		/// <param name="mode">The <see cref="DeviceMode"/> for the current device.</param>
-		protected ZDevice(ZSocketType frontendType, ZSocketType backendType)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frontendType"></param>
+        /// <param name="backendType"></param>
+        protected ZDevice(ZSocketType frontendType, ZSocketType backendType)
 			: this (ZContext.Current, frontendType, backendType)
 		{ }
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ZDevice"/> class.
-		/// </summary>
-		/// <param name="frontendSocket">
-		/// A <see cref="ZSocket"/> that will pass incoming messages to <paramref name="backendSocket"/>.
-		/// </param>
-		/// <param name="backendSocket">
-		/// A <see cref="ZSocket"/> that will receive messages from (and optionally send replies to) <paramref name="frontendSocket"/>.
-		/// </param>
-		/// <param name="mode">The <see cref="DeviceMode"/> for the current device.</param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="frontendType"></param>
+        /// <param name="backendType"></param>
 		protected ZDevice(ZContext context, ZSocketType frontendType, ZSocketType backendType)
 		{
 			Context = context;
@@ -79,10 +70,16 @@
                 throw new ZException(error);
             }
         }
-
-		protected virtual bool Initialize(ZSocketType frontendType, ZSocketType backendType, out ZError error)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frontendType"></param>
+        /// <param name="backendType"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+		protected bool Initialize(ZSocketType frontendType, ZSocketType backendType, out ZError error)
 		{
-			error = default(ZError);
+			error = null;
 
 			/* if (frontendType == ZSocketType.None && backendType == ZSocketType.None)
 			{
@@ -158,30 +155,30 @@
 			ZPollItem[] polls;
 			if (FrontendSocket != null && BackendSocket != null)
 			{
-				sockets = new ZSocket[] {
+				sockets = new[] {
 					FrontendSocket,
 					BackendSocket
 				};
-				polls = new ZPollItem[] {
+				polls = new[] {
 					ZPollItem.Create(FrontendHandler),
 					ZPollItem.Create(BackendHandler)
 				};
 			}
 			else if (FrontendSocket != null)
 			{
-				sockets = new ZSocket[] {
+				sockets = new[] {
 					FrontendSocket
 				}; 
-				polls = new ZPollItem[] {
+				polls = new[] {
 					ZPollItem.Create(FrontendHandler)
 				};
 			}
 			else
 			{
-				sockets = new ZSocket[] {
+				sockets = new[] {
 					BackendSocket
 				};
-				polls = new ZPollItem[] {
+				polls = new[] {
 					ZPollItem.Create(BackendHandler)
 				};
 			}
@@ -219,32 +216,29 @@
 			// Because of using ZmqSocket.Forward, this field will always be null
 			ZMessage[] lastMessageFrames = null;
 
-			if (FrontendSetup != null) FrontendSetup.BindConnect();
-			if (BackendSetup != null) BackendSetup.BindConnect();
+            FrontendSetup?.BindConnect();
+            BackendSetup?.BindConnect();
 
-			var error = default(ZError);
+            ZError error = null;
 			try
 			{
 				while (!Cancellor.IsCancellationRequested)
 				{
+                    if (sockets.Poll(polls, ZPollEvent.In, ref lastMessageFrames, out error, PollingInterval)) 
+                        continue;
+                    if (error.IsError(ZError.Code.EAGAIN))
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
+                    if (error.IsError(ZError.Code.ETERM))
+                    {
+                        break;
+                    }
 
-					if (!(sockets.Poll(polls, ZPollEvent.In, ref lastMessageFrames, out error, PollingInterval)))
-					{
-
-						if (error.IsError(ZError.Code.EAGAIN))
-                        {
-							Thread.Sleep(1);
-							continue;
-						}
-						if (error.IsError(ZError.Code.ETERM))
-                        {
-							break;
-						}
-
-						// EFAULT
-						throw new ZException(error);
-					}
-				}
+                    // EFAULT
+                    throw new ZException(error);
+                }
 			}
 			catch (ZException)
 			{
@@ -263,17 +257,22 @@
 				Close();
 			}
 		}
-
-		/// <summary>
-		/// Invoked when a message has been received by the frontend socket.
-		/// </summary>
-		/// <param name="args">A <see cref="SocketEventArgs"/> object containing the poll event args.</param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="message"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
 		protected abstract bool FrontendHandler(ZSocket socket, out ZMessage message, out ZError error);
 
 		/// <summary>
-		/// Invoked when a message has been received by the backend socket.
-		/// </summary>
-		/// <param name="args">A <see cref="SocketEventArgs"/> object containing the poll event args.</param>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="message"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
 		protected abstract bool BackendHandler(ZSocket args, out ZMessage message, out ZError error);
 
 		/// <summary>
@@ -284,12 +283,14 @@
 		{
 			if (disposing)
 			{
-				if (FrontendSocket != null) FrontendSocket.Dispose();
-				if (BackendSocket != null) BackendSocket.Dispose();
-			}
+                FrontendSocket?.Dispose();
+                BackendSocket?.Dispose();
+            }
 
 			base.Dispose(disposing);
 		}
 
 	}
 }
+
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
@@ -14,23 +16,12 @@ namespace MicroZero.Http.Gateway
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        private Task<string> CallZeroTask()
-        {
-            return Task.Factory.StartNew(CallZero);
-        }
-
-        /// <summary>
-        ///     远程调用
-        /// </summary>
-        /// <returns></returns>
-        private string CallZero()
+        private async Task<string> CallZero()
         {
             if (!(Data.RouteHost is ZeroHost host))
             {
-                LogRecorderX.MonitorTrace("Host Type Failed");
-                return Data.ResultMessage;
+                return ApiResultIoc.NoFindJson;
             }
-
             // 远程调用
             using (MonitorScope.CreateScope("CallZero"))
             {
@@ -45,7 +36,7 @@ namespace MicroZero.Http.Gateway
                     ContextJson = Data.GlobalContextJson
                 };
 
-                caller.CallCommand();
+                await caller.CallCommandAsync();
 
                 Data.ZeroState = caller.State;
                 Data.UserState = caller.State.ToOperatorStatus(true);

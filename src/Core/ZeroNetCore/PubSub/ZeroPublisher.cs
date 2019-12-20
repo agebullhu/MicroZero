@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
@@ -90,9 +91,11 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish<T>(string station, string title, T content) where T : class
         {
-            return content == null
-                ? Publish(station, title)
-                : PublishInner(station, PubDescriptionJson, title, content.ToZeroBytes());
+            if (content == null)
+                return Publish(station, title);
+            Task<bool> task = PublishInner(station, PubDescriptionJson, title, content.ToZeroBytes());
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>
@@ -103,15 +106,21 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish(string station, PublishItem item)
         {
+            Task<bool> task;
             if (item.Tson != null)
             {
-                return PublishInner(station, PubDescriptionTson, item.Title, item.SubTitle, item.Tson);
+                task = PublishInner(station, PubDescriptionTson, item.Title, item.SubTitle, item.Tson);
             }
-            if (item.Buffer != null)
+            else if (item.Buffer != null)
             {
-                return PublishInner(station, PubDescriptionBin, item.Title, item.SubTitle, item.Buffer);
+                task = PublishInner(station, PubDescriptionBin, item.Title, item.SubTitle, item.Buffer);
             }
-            return PublishInner(station, PubDescriptionJson, item.Title, item.SubTitle, item.Content.ToZeroBytes());
+            else
+            {
+                task = PublishInner(station, PubDescriptionJson, item.Title, item.SubTitle, item.Content.ToZeroBytes());
+            }
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>
@@ -122,7 +131,9 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish(string station, string title)
         {
-            return PublishInner(station, PubDescriptionJson, title, null, null);
+            var task = PublishInner(station, PubDescriptionJson, title, null, null);
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>
@@ -134,7 +145,9 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish(string station, string title,string content)
         {
-            return PublishInner(station, PubDescriptionJson, title, null, content.ToZeroBytes());
+            var task = PublishInner(station, PubDescriptionJson, title, null, content.ToZeroBytes());
+            task.Wait();
+            return task.Result;
         }
 
 
@@ -148,7 +161,9 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish(string station, string title, string subTitle, string content)
         {
-            return PublishInner(station, PubDescriptionJson, title, subTitle, content.ToZeroBytes());
+            var task = PublishInner(station, PubDescriptionJson, title, subTitle, content.ToZeroBytes());
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>
@@ -162,8 +177,9 @@ namespace Agebull.MicroZero.PubSub
         /// <returns></returns>
         public static bool Publish(string station, byte[] description, string title, string subTitle, byte[] content)
         {
-            var result = PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
-            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
+            var task = PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
+            task.Wait();
+            return task.Result.InteractiveSuccess && task.Result.State == ZeroOperatorStateType.Ok;
         }
 
 
@@ -178,7 +194,10 @@ namespace Agebull.MicroZero.PubSub
         public static ZeroResult Send<T>(string station, string title, string sub, T value)
             where T : class
         {
-            return PublishInner(station, title, PubDescriptionJson, title.ToZeroBytes(), sub.ToZeroBytes(), value.ToZeroBytes());
+            var task = PublishInner(station, title, PubDescriptionJson, title.ToZeroBytes(), sub.ToZeroBytes(),
+                value.ToZeroBytes());
+            task.Wait();
+            return task.Result;
         }
         #region Frames
 
@@ -191,9 +210,9 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="content"></param>
         /// <param name="station"></param>
         /// <returns></returns>
-        private static bool PublishInner(string station, byte[] description, string title, string subTitle, byte[] content)
+        private static async Task<bool> PublishInner(string station, byte[] description, string title, string subTitle, byte[] content)
         {
-            var result = PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
+            var result =await PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
             return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
@@ -205,9 +224,9 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="content"></param>
         /// <param name="station"></param>
         /// <returns></returns>
-        private static bool PublishInner(string station, byte[] description, string title, byte[] content)
+        private static async Task<bool> PublishInner(string station, byte[] description, string title, byte[] content)
         {
-            var result = PublishInner(station, title, description, title.ToZeroBytes(), content);
+            var result =await PublishInner(station, title, description, title.ToZeroBytes(), content);
             return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
         }
 
@@ -218,7 +237,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="station"></param>
         /// <param name="frames"></param>
         /// <returns></returns>
-        public static ZeroResult Publish(string station, params byte[][] frames)
+        public static async Task<ZeroResult> Publish(string station, params byte[][] frames)
         {
             try
             {
@@ -238,7 +257,7 @@ namespace Agebull.MicroZero.PubSub
                     {
                         message.Insert(0, new ZFrame(station.ToZeroBytes()));
                         if (socket.Send(message, out err))
-                            return socket.ReceiveString();
+                            return await socket.Receive<ZeroResult>();
                     }
                 }
                 ZeroTrace.WriteError("Pub", socket.LastError.Text, socket.Endpoint);
@@ -268,7 +287,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="title"></param>
         /// <param name="frames"></param>
         /// <returns></returns>
-        private static ZeroResult PublishInner(string station, string title, params byte[][] frames)
+        private static async Task<ZeroResult> PublishInner(string station, string title, params byte[][] frames)
         {
             try
             {
@@ -296,7 +315,7 @@ namespace Agebull.MicroZero.PubSub
                         //message.Insert(0, new ZFrame(title.ToZeroBytes()));
                         message.Insert(0, new ZFrame(station.ToZeroBytes()));
                         if (socket.Send(message, out err))
-                            return socket.ReceiveString();
+                            return await socket.Receive<ZeroResult>();
                     }
                 }
                 ZeroTrace.WriteError("Pub", title, socket.LastError.Text, socket.Endpoint);
@@ -371,6 +390,123 @@ namespace Agebull.MicroZero.PubSub
             ZeroFrameType.End
         };
 
+        #endregion
+        #region Async
+
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync<T>(string station, string title, string sub, T value)
+            where T : class
+        {
+            return PublishAsync(station, title, sub, value == default(T) ? "{}" : JsonHelper.SerializeObject(value));
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync<T>(string station, string title, T content) where T : class
+        {
+            return content == null 
+                ? PublishAsync(station, title)
+                : PublishInner(station, PubDescriptionJson, title, content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync(string station, PublishItem item)
+        {
+            if (item.Tson != null)
+            {
+                return PublishInner(station, PubDescriptionTson, item.Title, item.SubTitle, item.Tson);
+            }
+            if (item.Buffer != null)
+            {
+                return PublishInner(station, PubDescriptionBin, item.Title, item.SubTitle, item.Buffer);
+            }
+            return PublishInner(station, PubDescriptionJson, item.Title, item.SubTitle, item.Content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync(string station, string title)
+        {
+            return PublishInner(station, PubDescriptionJson, title, null, null);
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync(string station, string title, string content)
+        {
+           return PublishInner(station, PubDescriptionJson, title, null, content.ToZeroBytes());
+        }
+
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static Task<bool> PublishAsync(string station, string title, string subTitle, string content)
+        {
+            return PublishInner(station, PubDescriptionJson, title, subTitle, content.ToZeroBytes());
+        }
+
+        /// <summary>
+        ///     发送广播
+        /// </summary>
+        /// <param name="description"></param>
+        /// <param name="title"></param>
+        /// <param name="subTitle"></param>
+        /// <param name="content"></param>
+        /// <param name="station"></param>
+        /// <returns></returns>
+        public static async Task<bool> PublishAsync(string station, byte[] description, string title, string subTitle, byte[] content)
+        {
+            var result =await PublishInner(station, title, description, title.ToZeroBytes(), subTitle.ToZeroBytes(), content);
+            return result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok;
+        }
+
+
+        /// <summary>
+        /// 发送广播
+        /// </summary>
+        /// <param name="station"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Task<ZeroResult> SendAsync<T>(string station, string title, string sub, T value)
+            where T : class
+        {
+            return PublishInner(station, title, PubDescriptionJson, title.ToZeroBytes(), sub.ToZeroBytes(),
+                value.ToZeroBytes());
+        }
         #endregion
     }
 }

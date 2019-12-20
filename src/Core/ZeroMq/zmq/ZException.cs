@@ -42,7 +42,7 @@
         /// </summary>
         /// <param name="errorSymbol">The error code returned by the ZeroMQ library call.</param>
         public ZException(ZError errorSymbol)
-			: this(errorSymbol, default(string), default(Exception))
+			: this(errorSymbol, default, default)
 		{ }
 
 	    /// <summary>
@@ -51,7 +51,7 @@
 	    /// <param name="errorSymbol">The error code returned by the ZeroMQ library call.</param>
 	    /// <param name="message"></param>
 	    public ZException(ZError errorSymbol, string message)
-			: this(errorSymbol, message, default(Exception))
+			: this(errorSymbol, message, default)
 		{ }
 
 	    /// <inheritdoc />
@@ -70,7 +70,9 @@
 		        : additionalMessage;
 		}
 
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 	    public override string ToString()
+#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			return Message;
 		}
