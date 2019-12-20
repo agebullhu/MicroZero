@@ -11,10 +11,22 @@ namespace MicroZero.Http.Gateway
     public class RouteHost
     {
         /// <summary>
+        /// 等待数
+        /// </summary>
+        [IgnoreDataMember]
+        public int WaitCount;
+
+        /*// <summary>
+        /// 等待数
+        /// </summary>
+        [DataMember]
+        public int MaxWait { get; set; }*/
+
+        /// <summary>
         ///     使用MicroZero通讯吗
         /// </summary>
         public bool ByZero { get; set; }
-
+        
         /// <summary>
         ///     是否异常
         /// </summary>
@@ -26,8 +38,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [IgnoreDataMember]
         [JsonIgnore] public string Description { get; set; }
-
-
+        
         /// <summary>
         ///     别名
         /// </summary>
@@ -67,10 +78,15 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         public static HttpHost DefaultHost;
 
+        /// <summary>
+        /// 构造
+        /// </summary>
+        /// <param name="config"></param>
         public HttpHost(HostConfig config)
         {
             ByZero = false;
             Hosts = config.Hosts;
+            Alias = config.Alias;
             Alias = config.Alias;
         }
 
@@ -84,6 +100,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         public string[] Hosts { get; set; }
     }
+
     /// <summary>
     ///     路由主机
     /// </summary>

@@ -61,8 +61,12 @@ namespace Agebull.MicroZero.ZeroApis
 
         /// <summary>网络超时的Json字符串</summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public static string TimeOutJson => JsonHelper.SerializeObject(Ioc.TimeOut);
+        public static string TimeOutJson => JsonHelper.SerializeObject(Ioc.NetTimeOut);
 
+        /// <summary>执行超时</summary>
+        /// <remarks>Api执行超时</remarks>
+        public static string ExecTimeOut => JsonHelper.SerializeObject(Ioc.ExecTimeOut);
+        
         /// <summary>内部错误的Json字符串</summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
         public static string InnerErrorJson => JsonHelper.SerializeObject(Ioc.InnerError);

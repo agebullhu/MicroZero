@@ -5,6 +5,7 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
@@ -591,6 +592,18 @@ namespace ZeroMQ
             return SendMessage(msg, out error);
         } // just Send*
 
+        public Task<bool> SendAsync(ZMessage msg)
+        {
+            try
+            {
+                return Task.FromResult(SendMessage(msg, out _error));
+            }
+            catch (Exception e)
+            {
+                return Task.FromException<bool>(e);
+            }
+        }
+
         public void Send(ZMessage msg, ZSocketFlags flags)
         {
             SendMessage(msg, flags);
@@ -857,6 +870,25 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="message">消息</param>
         /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
+        public Task<bool> SendToAsync(ZMessage message)
+        {
+            try
+            {
+                var res = SendTo(message);
+                return Task.FromResult(res);
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e);
+                return Task.FromException<bool>(e);
+            }
+        }
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="message">消息</param>
+        /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
         public bool SendTo(ZMessage message)
         {
             if (message == null || message.Count == 0)
@@ -973,9 +1005,9 @@ namespace ZeroMQ
         public bool Recv(out ZMessage message, int flags = FlagsNone)
         {
             message = new ZMessage();
+            _error = null;
             do
             {
-                _error = null;
                 if (!RecvFrame(out var frame, flags))
                 {
                     break;
@@ -986,6 +1018,44 @@ namespace ZeroMQ
             return message.Count > 0;
         }
 
+        /// <summary>
+        /// 接收数据
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public Task<ZMessage> RecvAsync(int flags = FlagsNone)
+        {
+            var message = new ZMessage();
+            _error = null;
+            do
+            {
+                if (!RecvFrame(out var frame, flags))
+                {
+                    break;
+                }
+                message.Add(frame);
+            } while (ReceiveMore);
+
+            return Task.FromResult(message.Count == 0 ? null : message);
+        }
+
+        /// <summary>
+        /// 接收数据
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        private async Task<ZFrame> RecvFrameAsync(int flags)
+        {
+            _error = null;
+            var frame = ZFrame.CreateEmpty();
+            var res = await Task.Run(() => zmq.msg_recv(frame.Ptr, SocketPtr, flags));
+            if (res != -1)
+                return frame;
+            _error = ZError.GetLastErr();
+            frame.Dispose();
+            LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
+            return null;
+        }
         #endregion
 
         #region Subscribe
@@ -1593,12 +1663,12 @@ namespace ZeroMQ
 
         public uint GetOptionUInt32(ZSocketOption option)
         {
-            return GetOption(option, out uint result) ? result : default(uint);
+            return GetOption(option, out uint result) ? result : default;
         }
 
         public bool GetOption(ZSocketOption option, out long value)
         {
-            value = default(long);
+            value = default;
 
             var optionLength = Marshal.SizeOf(typeof(long));
             using (var optionValue = DispoIntPtr.Alloc(optionLength))
@@ -1613,7 +1683,7 @@ namespace ZeroMQ
         public long GetOptionInt64(ZSocketOption option)
         {
             if (GetOption(option, out long result)) return result;
-            return default(long);
+            return default;
         }
 
         public bool GetOption(ZSocketOption option, out ulong value)
@@ -1626,7 +1696,7 @@ namespace ZeroMQ
         public ulong GetOptionUInt64(ZSocketOption option)
         {
             if (GetOption(option, out ulong result)) return result;
-            return default(ulong);
+            return default;
         }
 
 
@@ -1901,7 +1971,6 @@ namespace ZeroMQ
         /// <returns></returns>
         private bool RecvFrame(out ZFrame frame, int flags)
         {
-            _error = null;
             frame = ZFrame.CreateEmpty();
             if (zmq.msg_recv(frame.Ptr, SocketPtr, flags) != -1)
                 return true;

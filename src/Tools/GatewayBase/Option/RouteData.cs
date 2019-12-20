@@ -158,7 +158,7 @@ namespace MicroZero.Http.Gateway
         ///     准备
         /// </summary>
         /// <param name="context"></param>
-        public bool Prepare(HttpContext context)
+        public async Task<bool> Prepare(HttpContext context)
         {
             var request = context.Request;
             Uri = request.GetUri();
@@ -176,7 +176,7 @@ namespace MicroZero.Http.Gateway
                 Ip = request.Headers["X-Forwarded-For"].FirstOrDefault() ?? request.Headers["X-Real-IP"].FirstOrDefault() ?? context.Connection.RemoteIpAddress?.ToString(),
                 Port = request.Headers["X-Real-Port"].FirstOrDefault() ?? context.Connection.RemotePort.ToString(),
             });
-            return ok && Read(context);
+            return ok && await Read(context);
         }
 
         private string CheckHeaders(HttpContext context, HttpRequest request)
@@ -254,7 +254,7 @@ namespace MicroZero.Http.Gateway
             return true;
         }
 
-        private bool Read(HttpContext context)
+        private async Task<bool> Read(HttpContext context)
         {
             var request = context.Request;
             try
@@ -285,7 +285,7 @@ namespace MicroZero.Http.Gateway
                             var bytes = new byte[file.Length];
                             using (var stream = file.OpenReadStream())
                             {
-                                stream.Read(bytes, 0, (int)file.Length);
+                               await stream.ReadAsync(bytes, 0, (int)file.Length);
                             }
                             Files.Add(file.Name, bytes);
                         }
@@ -297,7 +297,7 @@ namespace MicroZero.Http.Gateway
                     return true;
                 using (var texter = new StreamReader(request.Body))
                 {
-                    HttpContext = texter.ReadToEnd();
+                    HttpContext = await texter.ReadToEndAsync();
                     if (string.IsNullOrEmpty(HttpContext))
                         HttpContext = null;
                     texter.Close();

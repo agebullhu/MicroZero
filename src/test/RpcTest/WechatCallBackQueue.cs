@@ -1,4 +1,5 @@
 ﻿
+using System.Threading.Tasks;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
@@ -30,7 +31,6 @@ namespace ApiTest
             option.SpeedLimitModel = SpeedLimitType.Single;
             return option;
         }
-
 
         /// <summary>
         /// 微信支付回调

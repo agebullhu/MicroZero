@@ -9,7 +9,9 @@ namespace RpcTest
     {
         public override bool Init()
         {
-            return SystemManager.Instance.TryInstall(Station, "api");
+            var task = SystemManager.Instance.TryInstall(Station, "api");
+            task.Wait();
+            return task.Result;
         }
 
         protected override void DoTest()
@@ -30,7 +32,7 @@ namespace RpcTest
             {
                 Interlocked.Increment(ref BugError);
             }
-            else if (client.State < ZeroOperatorStateType.TimeOut)
+            else if (client.State < ZeroOperatorStateType.NetTimeOut)
             {
                 Interlocked.Increment(ref WkError);
             }

@@ -9,7 +9,7 @@ namespace Agebull.MicroZero.PubSub
     {
         bool IZeroPublisher.Publish(string station, string title, string sub, string arg)
         {
-            return ZeroPublisher.DoPublish(station, title, sub, arg);
+            return ZeroPublisher.Publish(station, title, sub, arg);
         }
     }
 }

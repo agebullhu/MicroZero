@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 using Agebull.MicroZero.PubSub;
@@ -34,11 +35,11 @@ namespace Agebull.MicroZero.LogService
             base.OnLoopBegin();
         }
 
-        protected override void OnLoopComplete()
+        protected override Task OnLoopComplete()
         {
             _recorder.Shutdown();
             _recorder = null;
-            base.OnLoopComplete();
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -47,18 +48,14 @@ namespace Agebull.MicroZero.LogService
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override void Handle(PublishItem args)
+        public override async Task Handle(PublishItem args)
         {
             try
             {
                 if (args.Content != null)
                 {
                     var infos = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
-                    _recorder.RecordLog(infos);
-                    foreach (var info in infos)
-                    {
-                        Console.WriteLine(info.Message );
-                    }
+                    await _recorder.RecordLog(infos);
                     return;
                 }
 
@@ -75,7 +72,7 @@ namespace Agebull.MicroZero.LogService
                         case TsonDataType.Object:
                             RecordInfo info = new RecordInfo();
                             RecordInfoTson.FromTson(serializer, info);
-                            _recorder.RecordLog(info);
+                            await _recorder.RecordLog(info);
                             break;
                         case TsonDataType.Array:
                             serializer.ReadType();
@@ -89,7 +86,7 @@ namespace Agebull.MicroZero.LogService
                                 serializer.End();
                                 infos.Add(info);
                             }
-                            _recorder.RecordLog(infos);
+                            await _recorder.RecordLog(infos);
                             break;
                     }
                 }

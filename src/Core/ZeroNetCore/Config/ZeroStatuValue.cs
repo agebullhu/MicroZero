@@ -176,7 +176,7 @@ namespace Agebull.MicroZero
                     return ZeroCommandNoSupport;
                 case ZeroOperatorStateType.FrameInvalid:
                     return ZeroCommandInvalid;
-                case ZeroOperatorStateType.TimeOut:
+                case ZeroOperatorStateType.NetTimeOut:
                     return ZeroCommandTimeout;
                 case ZeroOperatorStateType.NetError:
                     return ZeroCommandNetError;
@@ -233,7 +233,7 @@ namespace Agebull.MicroZero
                 return UserOperatorStateType.Unavailable;
             if (state == ZeroOperatorStateType.LocalException)
                 return remote ? UserOperatorStateType.RemoteException : UserOperatorStateType.LocalException;
-            if (state >= ZeroOperatorStateType.LocalNoReady || state == ZeroOperatorStateType.TimeOut)
+            if (state >= ZeroOperatorStateType.LocalNoReady || state == ZeroOperatorStateType.NetTimeOut)
                 return remote ? UserOperatorStateType.RemoteError : UserOperatorStateType.LocalError;
             return UserOperatorStateType.RemoteError;
         }

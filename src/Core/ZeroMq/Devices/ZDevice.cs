@@ -70,7 +70,13 @@ namespace ZeroMQ
                 throw new ZException(error);
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frontendType"></param>
+        /// <param name="backendType"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
 		protected bool Initialize(ZSocketType frontendType, ZSocketType backendType, out ZError error)
 		{
 			error = null;

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Configuration;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
@@ -50,7 +51,7 @@ namespace MicroZero.Http.Gateway
         ///     远程调用
         /// </summary>
         /// <returns></returns>
-        internal static void CallZero(WechatData data)
+        internal static async Task CallZero(WechatData data)
         {
             var msg = CustomMessageHandler.GetRequestEntity(data.Context, new PostModel
             {
@@ -75,7 +76,7 @@ namespace MicroZero.Http.Gateway
                 int cnt = 0;
                 while (++cnt < 3)
                 {
-                    caller.CallCommand();
+                    await caller.CallCommandAsync();
                     LogRecorderX.MonitorTrace($"{caller.State } : {caller.Result}");
                     if (caller.State == ZeroOperatorStateType.Ok)
                         return;
@@ -102,7 +103,7 @@ namespace MicroZero.Http.Gateway
                 });
                 //自定义MessageHandler，对微信请求的详细判断操作都在这里面。
                 var handler = new CustomMessageHandler();
-                var res =handler.Handler(msg);
+                var res = handler.Handler(msg);
                 LogRecorderX.MonitorTrace($"Success : {res}");
             }
             catch (Exception ex)

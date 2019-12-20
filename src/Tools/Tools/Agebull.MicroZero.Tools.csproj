@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>MicroZero基础工具</Description>
-    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <AssemblyName>Agebull.MicroZero.Tools.sys_addin</AssemblyName>
     <DebugType>portable</DebugType>
     <PackageId>Agebull.MicroZero.Tools</PackageId>

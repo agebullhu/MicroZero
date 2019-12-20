@@ -1,20 +1,24 @@
 ﻿using System;
+using System.Threading.Tasks;
 
-namespace Agebull.MicroZero.ZeroManagemant.StateMachine
+namespace Agebull.MicroZero.ZeroManagemant
 {
-    /// <summary>
-    /// 监控状态机
-    /// </summary>
-    public interface IMonitorStateMachine: IDisposable
-    { 
+    internal partial class MonitorStateMachine
+    {
         /// <summary>
-        /// 是否已析构
+        /// 监控状态机
         /// </summary>
-        bool IsDisposed { get; }
+        public interface IMonitorStateMachine //: IDisposable
+        {
+            /*// <summary>
+            /// 是否已析构
+            /// </summary>
+            bool IsDisposed { get; }*/
 
-        /// <summary>
-        ///     收到信息的处理
-        /// </summary>
-        void OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content);
+            /// <summary>
+            ///     收到信息的处理
+            /// </summary>
+            Task OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content);
+        }
     }
 }

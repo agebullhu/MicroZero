@@ -59,10 +59,10 @@ namespace agebull
 			boost::lock_guard<boost::mutex> guard(mutex);
 			char name[64];
 			sprintf(name, "%ld", time(nullptr));
-			queue_storage storage;
-			storage.prepare_storage(queue->config_);
+			//queue_storage storage;
+			//storage_.prepare_storage(queue->config_);
 			//zmq_handler socket = socket_ex::create_req_socket_inproc(queue->station_name_.c_str(), name);
-			storage.load(min, max, [queue](vector<shared_char>& data)
+			storage_.load(min, max, [queue](vector<shared_char>& data)
 				{
 					queue->send_response(data, false);
 				});

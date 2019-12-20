@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 using Agebull.MicroZero;
@@ -40,15 +41,16 @@ namespace MicroZero.Http.Route
             base.DoDestory();
         }
 
-        /// <summary>
-        /// 空转
-        /// </summary>
-        /// <returns></returns>
-        protected override void OnLoopIdle()
-        {
-            //DoPublish();
-        }
-        void DoPublish()
+        ///// <summary>
+        ///// 空转
+        ///// </summary>
+        ///// <returns></returns>
+        //protected override Task OnLoopIdle()
+        //{
+        //    //DoPublish();
+        //    return Task.CompletedTask;
+        //}
+        async Task DoPublish()
         {
             if ((DateTime.Now - preSend).TotalSeconds < 1 || Root.UnitCount == 0)
                 return;
@@ -57,7 +59,7 @@ namespace MicroZero.Http.Route
             var json = JsonConvert.SerializeObject(Root);
             Root.Start();
             preSend = DateTime.Now;
-            WebSocketNotify.Publish("api", "root", json);
+            await WebSocketNotify.Publish("api", "root", json);
         }
 
 
@@ -66,7 +68,7 @@ namespace MicroZero.Http.Route
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override void Handle(PublishItem args)
+        public override async Task Handle(PublishItem args)
         {
             try
             {
@@ -75,7 +77,7 @@ namespace MicroZero.Http.Route
                     return;
                 foreach (var data in datas)
                     Handle(data);
-                DoPublish();
+                await DoPublish();
             }
             catch (Exception e)
             {

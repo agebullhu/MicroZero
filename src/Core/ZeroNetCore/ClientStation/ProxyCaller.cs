@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 using Agebull.EntityModel.Common;
@@ -95,26 +95,27 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         internal void Call()
         {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                Result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
+            if (!CreateSocket(out var socket))
                 return;
-            }
-
-            var socket = ApiProxy.GetSocket(Station, Name);
-            if (socket == null)
-            {
-                Result = ApiResultIoc.NetworkErrorJson;
-                State = ZeroOperatorStateType.LocalZmqError;
-                return;
-            }
-
-            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
             using (socket)
             {
-                CallApi(socket);
+                var task = CallApi(socket);
+                task.Wait();
+            }
+        }
+
+
+        /// <summary>
+        ///     远程调用
+        /// </summary>
+        /// <returns></returns>
+        internal async Task CallAsync()
+        {
+            if (!CreateSocket(out var socket))
+                return;
+            using (socket)
+            {
+                await CallApi(socket);
             }
         }
 
@@ -125,28 +126,28 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         internal void Plan(ZeroPlanInfo plan)
         {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                Result = ApiResultIoc.NoReadyJson;
-                State = ZeroOperatorStateType.LocalNoReady;
+            if (!CreateSocket(out var socket))
                 return;
-            }
-
-            var socket = ApiProxy.GetSocket(Station, Name);
-            if (socket == null)
-            {
-                Result = ApiResultIoc.NetworkErrorJson;
-                State = ZeroOperatorStateType.LocalZmqError;
-                return;
-            }
-            //socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-            //socket.SetOption(ZSocketOption.SNDTIMEO, 30000);
             using (socket)
             {
-                CallPlan(socket, plan);
+                var task = CallPlan(socket, plan);
+                task.Wait();
             }
         }
 
+        /// <summary>
+        ///     远程调用
+        /// </summary>
+        /// <returns></returns>
+        internal async Task PlanAsync(ZeroPlanInfo plan)
+        {
+            if (!CreateSocket(out var socket))
+                return;
+            using (socket)
+            {
+                await CallPlan(socket, plan);
+            }
+        }
         /// <summary>
         ///     检查在非成功状态下的返回值
         /// </summary>
@@ -195,11 +196,13 @@ namespace Agebull.MicroZero.ZeroApis
                 case ZeroOperatorStateType.ArgumentInvalid:
                     apiResult = ApiResultIoc.Ioc.ArgumentError;
                     break;
-                case ZeroOperatorStateType.TimeOut:
-                    apiResult = ApiResultIoc.Ioc.TimeOut;
+                case ZeroOperatorStateType.NetTimeOut:
+                    apiResult = ApiResultIoc.Ioc.NetTimeOut;
+                    break;
+                case ZeroOperatorStateType.ExecTimeOut:
+                    apiResult = ApiResultIoc.Ioc.ExecTimeOut;
                     break;
                 case ZeroOperatorStateType.FrameInvalid:
-
                     apiResult = ApiResultIoc.Ioc.NetworkError;
                     break;
                 case ZeroOperatorStateType.NetError:
@@ -233,6 +236,44 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region Socket
 
+        private bool CreateSocket(out ZSocket socket)
+        {
+            if (!ZeroApplication.ZerCenterIsRun)
+            {
+                Result = ApiResultIoc.NoReadyJson;
+                State = ZeroOperatorStateType.LocalNoReady;
+                socket = null;
+                return false;
+            }
+
+            if (!ZeroApplication.Config.TryGetConfig(Station, out var item))
+            {
+                Result = ApiResultIoc.NoFindJson;
+                State = ZeroOperatorStateType.NotFind;
+                socket = null;
+                return false;
+            }
+
+            if (item.State == ZeroCenterState.None || item.State == ZeroCenterState.Pause)
+            {
+                Result = ApiResultIoc.PauseJson;
+                State = ZeroOperatorStateType.Pause;
+                socket = null;
+                return false;
+            }
+
+            if (item.State != ZeroCenterState.Run)
+            {
+                Result = ApiResultIoc.NotSupportJson;
+                State = ZeroOperatorStateType.Pause;
+                socket = null;
+                return false;
+            }
+
+            State = ZeroOperatorStateType.None;
+            socket = ApiProxy.GetProxySocket(Name);
+            return true;
+        }
         /// <summary>
         ///     请求格式说明
         /// </summary>
@@ -252,12 +293,13 @@ namespace Agebull.MicroZero.ZeroApis
             ZeroFrameType.End
         };
 
-        private void CallApi(ZSocket socket)
+
+        private async Task CallApi(ZSocket socket)
         {
             if (Files == null || Files.Count <= 0)
-                LastResult = CallNoFileApi(socket);
+                LastResult = await CallNoFileApi(socket);
             else
-                LastResult = CallByFileApi(socket);
+                LastResult = await CallByFileApi(socket);
 
             if (!LastResult.InteractiveSuccess)
             {
@@ -265,12 +307,12 @@ namespace Agebull.MicroZero.ZeroApis
                 State = LastResult.State;
                 return;
             }
-            CallEnd(socket);
-        }
 
-        private ZeroResult CallNoFileApi(ZSocket socket)
+            await CallEnd(socket);
+        }
+        private async Task<ZeroResult> CallNoFileApi(ZSocket socket)
         {
-            return Send(socket,
+            return await Send(socket,
                  CallDescription,
                  Commmand.ToZeroBytes(),
                  Argument.ToZeroBytes(),
@@ -282,7 +324,7 @@ namespace Agebull.MicroZero.ZeroApis
                  (ContextJson ?? (GlobalContext.CurrentNoLazy == null ? null : JsonHelper.SerializeObject(GlobalContext.CurrentNoLazy))).ToZeroBytes());
         }
 
-        private ZeroResult CallByFileApi(ZSocket socket)
+        private async Task<ZeroResult> CallByFileApi(ZSocket socket)
         {
             var frames = new List<byte[]>
             {
@@ -319,7 +361,7 @@ namespace Agebull.MicroZero.ZeroApis
             description[i++] = ZeroFrameType.SerivceKey;
             description[i] = ZeroFrameType.End;
 
-            return SendToZero(socket, description, frames);
+            return await SendToZero(socket, description, frames);
         }
 
         /// <summary>
@@ -342,9 +384,9 @@ namespace Agebull.MicroZero.ZeroApis
             ZeroFrameType.End
         };
 
-        private void CallPlan(ZSocket socket, ZeroPlanInfo plan)
+        private async Task CallPlan(ZSocket socket, ZeroPlanInfo plan)
         {
-            LastResult = Send(socket,
+            LastResult = await Send(socket,
                 PlanDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),
@@ -362,32 +404,39 @@ namespace Agebull.MicroZero.ZeroApis
                 State = LastResult.State;
                 return;
             }
+            await CallEnd(socket);
 
-            using (MonitorScope.CreateScope("CallEnd"))
-                CallEnd(socket);
         }
-
-        void CallEnd(ZSocket socket)
+        async Task<bool> CallEnd(ZSocket socket)
         {
-
-            LastResult = Receive(socket);
-            if (!LastResult.InteractiveSuccess)
+            int cnt = 0;
+            while (cnt < 5)
             {
+                LastResult = await Receive(socket);
                 State = LastResult.State;
-                return;
+                if (!LastResult.InteractiveSuccess)
+                {
+                    LogRecorderX.MonitorTrace($"failed {State}");
+                    return false;
+                }
+                if (LastResult.State == ZeroOperatorStateType.Runing)
+                {
+                    LogRecorderX.MonitorTrace($"delay {cnt}");
+                    await Task.Delay(cnt * 100);
+                    cnt++;
+                    continue;
+                }
+
+                Result = LastResult.Result;
+                Binary = LastResult.Binary;
+                ResultType = LastResult.ResultType;
+                LogRecorderX.MonitorTrace($"result:{Result}");
+                return true;
             }
 
-            if (LastResult.State == ZeroOperatorStateType.Runing)
-            {
-                CallEnd(socket);
-                return;
-            }
-
-            Result = LastResult.Result;
-            Binary = LastResult.Binary;
-            ResultType = LastResult.ResultType;
-            LogRecorderX.MonitorTrace($"Remote result:{Result}");
-            State = LastResult.State;
+            LogRecorderX.MonitorTrace("time out");
+            State = ZeroOperatorStateType.NetTimeOut;
+            return false;
         }
 
         /// <summary>
@@ -395,11 +444,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        internal ZeroResult Receive(ZSocket socket)
+        internal async Task<ZeroResult> Receive(ZSocket socket)
         {
             using (MonitorScope.CreateScope("Recv"))
             {
-                if (!socket.Recv(out var frames))
+                var frames = await socket.RecvAsync();
+                if (frames == null)
                 {
                     return new ZeroResult
                     {
@@ -442,9 +492,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="description"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        internal ZeroResult Send(ZSocket socket, byte[] description, params byte[][] args)
+        internal async Task<ZeroResult> Send(ZSocket socket, byte[] description, params byte[][] args)
         {
-            return SendToZero(socket, description, args);
+            return await SendToZero(socket, description, args);
         }
 
 
@@ -455,9 +505,9 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="description"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        private ZeroResult SendToZero(ZSocket socket, byte[] description, IEnumerable<byte[]> args)
+        private async Task<ZeroResult> SendToZero(ZSocket socket, byte[] description, IEnumerable<byte[]> args)
         {
-            using(MonitorScope.CreateScope("SendToZero"))
+            using (MonitorScope.CreateScope("SendToZero"))
             using (var message = new ZMessage())
             {
                 message.Add(new ZFrame(Station));
@@ -471,7 +521,9 @@ namespace Agebull.MicroZero.ZeroApis
                     message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
 
                 }
-                if (!socket.SendTo(message))
+
+                var res = await socket.SendToAsync(message);
+                if (!res)
                 {
                     return new ZeroResult
                     {

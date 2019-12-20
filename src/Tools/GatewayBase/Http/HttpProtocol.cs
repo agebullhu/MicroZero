@@ -15,8 +15,7 @@ namespace MicroZero.Http.Gateway
         internal static void CrosOption(HttpResponse response)
         {
             response.Headers.Add("Access-Control-Allow-Methods", new[] { "GET", "POST" });
-            response.Headers.Add("Access-Control-Allow-Headers",
-                new[] { "x-requested-with", "content-type", "authorization", "*" });
+            response.Headers.Add("Access-Control-Allow-Headers", new[] { "x-requested-with", "content-type", "authorization", "*" });
             response.Headers.Add("Access-Control-Allow-Origin", "*");
         }
 

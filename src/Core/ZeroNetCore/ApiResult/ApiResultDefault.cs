@@ -17,7 +17,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public IApiResult DeserializeObject(string json)
         {
-            return JsonConvert.DeserializeObject< ApiResult>(json);
+            return JsonConvert.DeserializeObject<ApiResult>(json);
         }
 
         /// <summary>
@@ -52,6 +52,15 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public IApiResult Error(int errCode, string message)
         {
+            return ErrorBuilder(errCode, message);
+        }
+
+        /// <summary>生成一个包含错误码的标准返回</summary>
+        /// <param name="errCode">错误码</param>
+        /// <param name="message">错误消息</param>
+        /// <returns></returns>
+        public static IApiResult ErrorBuilder(int errCode, string message = null)
+        {
             return new ApiResult
             {
                 Success = errCode == 0,
@@ -62,7 +71,6 @@ namespace Agebull.MicroZero.ZeroApis
                 }
             };
         }
-
         /// <summary>生成一个包含错误码的标准返回</summary>
         /// <param name="errCode">错误码</param>
         /// <param name="message">错误消息</param>
@@ -287,53 +295,57 @@ namespace Agebull.MicroZero.ZeroApis
 
         /// <summary>成功</summary>
         /// <remarks>成功</remarks>
-        public IApiResult Ok => Succees();
+        public IApiResult Ok => ErrorBuilder(ErrorCode.Success);
 
         /// <summary>页面不存在</summary>
-        public IApiResult NoFind => Error(404, "*页面不存在*");
+        public IApiResult NoFind => ErrorBuilder(ErrorCode.NoFind, "*页面不存在*");
 
         /// <summary>不支持的操作</summary>
-        public IApiResult NotSupport => Error(404, "*页面不存在*");
+        public IApiResult NotSupport => ErrorBuilder(ErrorCode.NoFind, "*页面不存在*");
 
         /// <summary>参数错误字符串</summary>
-        public IApiResult ArgumentError => Error(-2, "参数错误");
+        public IApiResult ArgumentError => ErrorBuilder(ErrorCode.ArgumentError, "参数错误");
 
         /// <summary>逻辑错误字符串</summary>
-        public IApiResult LogicalError => Error(-2, "逻辑错误");
+        public IApiResult LogicalError => ErrorBuilder(ErrorCode.LogicalError, "逻辑错误");
 
         /// <summary>拒绝访问</summary>
-        public IApiResult DenyAccess => Error(-13);
+        public IApiResult DenyAccess => ErrorBuilder(ErrorCode.DenyAccess);
 
         /// <summary>服务器无返回值的字符串</summary>
-        public IApiResult RemoteEmptyError => Error(-3, "*服务器无返回值*");
+        public IApiResult RemoteEmptyError => ErrorBuilder(ErrorCode.RemoteError, "*服务器无返回值*");
 
         /// <summary>服务器访问异常</summary>
-        public IApiResult NetworkError => Error(-5);
+        public IApiResult NetworkError => ErrorBuilder(ErrorCode.NetworkError);
 
         /// <summary>本地错误</summary>
-        public IApiResult LocalError => Error(-4);
+        public IApiResult LocalError => ErrorBuilder(ErrorCode.LocalError);
 
         /// <summary>本地访问异常</summary>
-        public IApiResult LocalException => Error(-1);
+        public IApiResult LocalException => ErrorBuilder(ErrorCode.LocalException );
 
         /// <summary>系统未就绪</summary>
-        public IApiResult NoReady => Error(-10);
+        public IApiResult NoReady => ErrorBuilder(ErrorCode.NoReady);
 
         /// <summary>暂停服务</summary>
-        public IApiResult Pause => Error(-10, "暂停服务");
+        public IApiResult Pause => ErrorBuilder(ErrorCode.NoReady, "暂停服务");
 
         /// <summary>未知错误</summary>
-        public IApiResult UnknowError => Error(-4, "未知错误");
+        public IApiResult UnknowError => ErrorBuilder(ErrorCode.LocalError, "未知错误");
 
         /// <summary>网络超时</summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        public IApiResult TimeOut => Error(-5, "网络超时");
+        public IApiResult NetTimeOut => ErrorBuilder(ErrorCode.NetworkError, "网络超时");
+
+        /// <summary>执行超时</summary>
+        /// <remarks>Api执行超时</remarks>
+        public IApiResult ExecTimeOut => ErrorBuilder(ErrorCode.RemoteError, "执行超时");
 
         /// <summary>内部错误</summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>
-        public IApiResult InnerError => Error(-4, "内部错误");
+        public IApiResult InnerError => ErrorBuilder(ErrorCode.LocalError, "内部错误");
 
         /// <summary>服务不可用</summary>
-        public IApiResult Unavailable => Error(503, "服务不可用");
+        public IApiResult Unavailable => ErrorBuilder(ErrorCode.Unavailable, "服务不可用");
     }
 }

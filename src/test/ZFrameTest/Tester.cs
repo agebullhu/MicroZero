@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Agebull.MicroZero;
 using ZeroMQ;
 
@@ -7,25 +8,25 @@ namespace RpcTest
     internal class Tester
     {
         static string address = "tcp://192.168.123.129:8000";
-        public static void StartTest()
+        public static async Task StartTest()
         {
             //address = "tcp://192.168.240.132:8000";
-            TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid);
-            TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[0]);
-            TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, "".ToZeroBytes());
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 }, new byte[1] { 1 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 0 });
-            TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 1 });
+            await TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid);
+            await TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[0]);
+            await TestFrame("¿ÕÖ¡", ZeroOperatorStateType.FrameInvalid, "".ToZeroBytes());
+            await TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
+            await TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 });
+            await TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[1] { 1 }, new byte[1] { 1 });
+            await TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 0 });
+            await TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[1] { 1 });
             //TestFrame("´íÎóÖ¡", ZeroOperatorStateType.FrameInvalid, new byte[] { 1, 1 }, new byte[0]);
-            TestFrame("²ÎÊı´íÎóÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[1] { 1 });
+            await TestFrame("²ÎÊı´íÎóÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[1] { 1 });
             //×´Ì¬·¢ËÍ
             for (byte state = 1; state < byte.MaxValue; state++)
             {
-                TestFrame($"×´Ì¬Ö¡({(ZeroByteCommand)state})", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 0, state, 0 });
+                await TestFrame($"×´Ì¬Ö¡({(ZeroByteCommand)state})", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 0, state, 0 });
             }
-            TestFrame("¾ŞÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[0]);
+            await TestFrame("¾ŞÖ¡", ZeroOperatorStateType.ArgumentInvalid, new byte[] { 1, 1, (byte)'c', 0 }, new byte[0]);
 
             //address = "tcp://192.168.123.129:8010";
             ////×´Ì¬·¢ËÍ
@@ -35,26 +36,26 @@ namespace RpcTest
             //}
             Console.ReadLine();
         }
-        static void TestFrame(string title, ZeroOperatorStateType state, params byte[][] frames)
+        static async Task TestFrame(string title, ZeroOperatorStateType state, params byte[][] frames)
         {
             Console.Error.Write(title);
             Console.ForegroundColor = ConsoleColor.Red;
-            TestFrameInner(state, frames);
+            await TestFrameInner(state, frames);
             Console.Error.WriteLine();
             Console.Error.WriteLine("**----**");
             Console.ResetColor();
         }
-        static void TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
+        static async Task TestFrameInner(ZeroOperatorStateType state, byte[][] frames)
         {
             using (var socket = ZSocket.CreateOnceSocket(address, ZSocket.CreateIdentity(), ZSocketType.DEALER))
             {
                 socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-                if (!socket.SendTo(frames,new byte[][] { }))
+                if (!socket.SendTo(frames, new byte[][] { }))
                 {
                     Console.Error.Write(" : Send Error");
                     return;
                 }
-                var result = socket.Receive<ZeroResult>();
+                var result = await socket.Receive<ZeroResult>();
                 if (!result.InteractiveSuccess)
                     Console.Error.WriteLine(" : Receive Error");
                 if (result.State != state)

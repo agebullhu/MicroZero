@@ -157,7 +157,11 @@ namespace Agebull.MicroZero.ZeroApis
 
         /// <summary>网络超时</summary>
         /// <remarks>调用其它Api时时抛出未处理异常</remarks>
-        IApiResult TimeOut { get; }
+        IApiResult NetTimeOut { get; }
+
+        /// <summary>执行超时</summary>
+        /// <remarks>Api执行超时</remarks>
+        IApiResult ExecTimeOut { get; }
 
         /// <summary>内部错误</summary>
         /// <remarks>执行方法时抛出未处理异常</remarks>

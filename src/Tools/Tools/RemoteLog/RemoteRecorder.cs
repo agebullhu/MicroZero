@@ -172,13 +172,15 @@ namespace Agebull.MicroZero.Log
         }
         private CancellationTokenSource RunTaskCancel;
 
-        public bool Start()
+        private readonly LockData _runLock = new LockData();
+
+        public async Task<bool> Start()
         {
-            var once = OnceScope.TryCreateScope(this, 1);
-            if (once == null)
-                return false;
-            using (once)
+            await Task.Yield();
+            using (var scope = OnceScope.TryCreateScope(_runLock))
             {
+                if (!scope.IsEntry)
+                    return false;
                 if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
                 {
                     ZeroTrace.WriteError("RemoteLogRecorder", "No config");
@@ -186,14 +188,15 @@ namespace Agebull.MicroZero.Log
                     ZeroApplication.OnObjectFailed(this);
                     return false;
                 }
+
                 RealName = ZSocket.CreateRealName(false, Config.StationName);
                 Identity = RealName.ToAsciiBytes();
                 RunTaskCancel = new CancellationTokenSource();
-                //Task.Factory.StartNew(SendTask, RunTaskCancel.Token);
-                Task.Factory.StartNew(RunWaite, TaskCreationOptions.LongRunning);
+                Task.Factory.StartNew(RunWaite);
                 return true;
             }
         }
+
         /// <summary>
         /// 应用程序等待结果的信号量对象
         /// </summary>
@@ -238,38 +241,36 @@ namespace Agebull.MicroZero.Log
         /// <summary>
         /// 轮询
         /// </summary>
-        private void RunWaite()
+        private async Task RunWaite()
         {
-            var once = OnceScope.TryCreateScope(this, 1, OnRun, OnStop);
-            if (once == null)
-                return;
-            using (once)
+            await Task.Yield();
+            using (var pool = ZmqPool.CreateZmqPool())
             {
-                using (var pool = ZmqPool.CreateZmqPool())
+                pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
+                using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
                 {
-                    pool.Prepare(ZPollEvent.In, ZSocket.CreateServiceSocket("inproc://RemoteLog.req", ZSocketType.PAIR));
-                    using (_socket = ZSocket.CreateOnceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR))
+                    using (var sendSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER,
+                        ZSocket.CreateIdentity(false, StationName), true))
                     {
-                        using (var sendSocket = ZSocket.CreateClientSocket(Config.RequestAddress, ZSocketType.DEALER, ZSocket.CreateIdentity(false, StationName), true))
+                        while (CanRun)
                         {
-                            while (CanRun)
+                            if (!pool.Poll() || !pool.CheckIn(0, out var message))
                             {
-                                if (!pool.Poll() || !pool.CheckIn(0, out var message))
+                                continue;
+                            }
+
+                            using (message)
+                            {
+                                using (var copy = message.Duplicate())
                                 {
-                                    continue;
-                                }
-                                using (message)
-                                {
-                                    using (var copy = message.Duplicate())
-                                    {
-                                        sendSocket.Send(copy);
-                                    }
+                                    sendSocket.Send(copy);
                                 }
                             }
                         }
                     }
-                    _socket = null;
                 }
+
+                _socket = null;
             }
         }
         #endregion
@@ -295,7 +296,7 @@ namespace Agebull.MicroZero.Log
             RealState = StationState.Initialized;
         }
 
-        bool IZeroObject.OnZeroStart()
+        Task<bool> IZeroObject.OnZeroStart()
         {
             return Start();
         }

@@ -20,19 +20,14 @@
 
 		public ZSocketSetup(ZSocket socket)
 		{
-			if (socket == null)
-			{
-				throw new ArgumentNullException(nameof(socket));
-			}
-
-			_socket = socket;
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
 			_socketInitializers = new List<Action<ZSocket>>();
 			_bindings = new List<string>();
 			_connections = new List<string>();
 		}
 
 		/// <summary>
-		/// Configure the socket to bind to a given endpoint. See <see cref="ZSocket.Bind"/> for details.
+		/// Configure the socket to bind to a given endpoint. 
 		/// </summary>
 		/// <param name="endpoint">A string representing the endpoint to which the socket will bind.</param>
 		/// <returns>The current <see cref="ZSocketSetup"/> object.</returns>
@@ -69,9 +64,9 @@
 		{
 			PropertyInfo propertyInfo;
 
-			if (property.Body is MemberExpression)
+			if (property.Body is MemberExpression expression)
 			{
-				propertyInfo = ((MemberExpression)property.Body).Member as PropertyInfo;
+				propertyInfo = expression.Member as PropertyInfo;
 			}
 			else
 			{
@@ -91,7 +86,7 @@
 		private byte[] _subscription;
 
 		/// <summary>
-		/// Configure the socket to subscribe to a specific prefix. See <see cref="ZSocket.Subscribe"/> for details.
+		/// Configure the socket to subscribe to a specific prefix. 
 		/// </summary>
 		/// <param name="prefix">A byte array containing the prefix to which the socket will subscribe.</param>
 		/// <returns>The current <see cref="ZSocketSetup"/> object.</returns>
@@ -107,7 +102,7 @@
 		/// <returns>The current <see cref="ZSocketSetup"/> object.</returns>
 		public ZSocketSetup SubscribeAll()
 		{
-			_subscription = new byte[2] { 0x01, 0x00 };
+			_subscription = new byte[] { 0x01, 0x00 };
 			return this;
 		}
 
@@ -157,16 +152,14 @@
 					_socket.Unsubscribe(_subscription);
 			} */
 
-			ZError error;
-
-			foreach (var endpoint in _bindings)
+            foreach (var endpoint in _bindings)
 			{
-				_socket.Unbind(endpoint, out error);
+				_socket.Unbind(endpoint, out _);
 			}
 
 			foreach (var endpoint in _connections)
 			{
-				_socket.Disconnect(endpoint, out error);
+				_socket.Disconnect(endpoint, out _);
 			}
 		}
 	}

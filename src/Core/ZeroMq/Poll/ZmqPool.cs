@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using ZeroMQ.lib;
 
 namespace ZeroMQ
@@ -62,6 +63,7 @@ namespace ZeroMQ
         /// <param name="index"></param>
         /// <param name="message"></param>
         bool CheckIn(int index, out ZMessage message);
+
         /// <summary>
         /// 检查下标是否有数据
         /// </summary>
@@ -69,6 +71,18 @@ namespace ZeroMQ
         /// <param name="message"></param>
         /// <returns></returns>
         bool CheckOut(int index, out ZMessage message);
+
+        /// <summary>
+        /// 一次Pool
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> PollAsync();
+
+        /// <summary>
+        /// 检查下标是否有数据
+        /// </summary>
+        /// <param name="index"></param>
+        Task<ZMessage> CheckInAsync(int index);
     }
 
     /// <summary>

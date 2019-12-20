@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -12,19 +13,19 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         /// 执行检查
         /// </summary>
-        public static void RunCheck()
+        public static async Task RunCheck()
         {
+            await Task.Yield();
             while (ZeroApplication.IsAlive)
             {
-                Thread.Sleep(1500);
+                await Task.Delay(1000);
                 foreach (var api in ZeroApplication.ActiveObjects.OfType<ApiStationBase>().ToArray())
                 {
-                    if (api.CanLoop)
-                        api.CheckTask();
+                    await api.CheckTask();
                 }
                 if (!ZeroApplication.IsAlive)
                     return;
-                Thread.Sleep(1500);
+                await Task.Delay(1000);
             }
         }
     }

@@ -69,17 +69,17 @@
                 写入返回
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.IRouter.End">
-            <summary>
-                结束
-            </summary>
-        </member>
         <member name="M:MicroZero.Http.Gateway.IRouter.OnError(System.Exception,Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
             异常处理
             </summary>
             <param name="e"></param>
             <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.End">
+            <summary>
+                结束
+            </summary>
         </member>
         <member name="M:MicroZero.Http.Gateway.IRouter.CheckMap(MicroZero.Http.Gateway.AshxMapConfig)">
             <summary>
@@ -125,11 +125,11 @@
             特殊路径使用的路由器
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(System.Object)">
+        <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
                 调用
             </summary>
-            <param name="arg"></param>
+            <param name="context"></param>
             <returns></returns>
         </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.InnerCommand(System.String,Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
@@ -233,12 +233,6 @@
             <param name="context"></param>
         </member>
         <member name="M:MicroZero.Http.Gateway.Router.CallHttp">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.Router.CallZeroTask">
             <summary>
                 远程调用
             </summary>
@@ -651,6 +645,11 @@
                 路由主机
             </summary>
         </member>
+        <member name="F:MicroZero.Http.Gateway.RouteHost.WaitCount">
+            <summary>
+            等待数
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.RouteHost.ByZero">
             <summary>
                 使用MicroZero通讯吗
@@ -700,6 +699,12 @@
             <summary>
                 默认主机
             </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpHost.#ctor(MicroZero.Http.Gateway.HostConfig)">
+            <summary>
+            构造
+            </summary>
+            <param name="config"></param>
         </member>
         <member name="P:MicroZero.Http.Gateway.HttpHost.Next">
             <summary>
@@ -1083,6 +1088,11 @@
         <member name="P:MicroZero.Http.Gateway.ApiItem.NeedLogin">
             <summary>
                 需要登录
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.Access">
+            <summary>
+            访问权限
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.ApiItem.Os">

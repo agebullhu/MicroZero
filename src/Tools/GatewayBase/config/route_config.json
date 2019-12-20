@@ -15,7 +15,7 @@
     /*启用管理命令*/
     "EnableInnerCommand": false,
     /*启用内容页*/
-    "EnableContext": true,
+    "EnableContext": false,
     /*内容页地址*/
     "ContextAddr": ""
   },

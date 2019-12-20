@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 using Agebull.Common;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Configuration;
@@ -83,6 +84,12 @@ namespace Agebull.MicroZero
         public int ApiTimeout { get; set; }
 
         /// <summary>
+        ///     检测到API执行超时是否强行清除资源
+        /// </summary>
+        [DataMember]
+        public bool ApiTimeoutKill { get; set; }
+
+        /// <summary>
         /// 复制
         /// </summary>
         /// <param name="option"></param>
@@ -96,6 +103,7 @@ namespace Agebull.MicroZero
                 MaxWait = option.MaxWait;
             if (ApiTimeout <= 0)
                 ApiTimeout = option.ApiTimeout;
+            ApiTimeoutKill = option.ApiTimeoutKill;
         }
     }
 
@@ -234,6 +242,8 @@ namespace Agebull.MicroZero
 
             if (option.ApiTimeout > 0)
                 ApiTimeout = option.ApiTimeout;
+            if (option.ApiTimeoutKill)
+                ApiTimeoutKill = option.ApiTimeoutKill;
 
             /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;
@@ -286,6 +296,8 @@ namespace Agebull.MicroZero
                 CanRaiseEvent = option.CanRaiseEvent;
             if (ApiTimeout <= 0)
                 ApiTimeout = option.ApiTimeout;
+            if (!ApiTimeoutKill)
+                ApiTimeoutKill = option.ApiTimeoutKill;
 
             /*BridgeLocalAddress = option.BridgeLocalAddress;
             BridgeCallAddress = option.BridgeCallAddress;

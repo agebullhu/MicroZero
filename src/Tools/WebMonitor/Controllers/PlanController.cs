@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 
 using Agebull.MicroZero;
@@ -104,16 +105,16 @@ namespace WebMonitor.Controllers
         }
 
         [HttpGet]
-        public IActionResult Remove(string id)
+        public async Task<IActionResult> Remove(string id)
         {
-            var result = IocHelper.Create<PlanManage>().Remove(id);
+            var result = await IocHelper.Create<PlanManage>().Remove(id);
             return new JsonResult(result);
         }
 
         [HttpGet]
-        public IActionResult Close(string id)
+        public async Task<IActionResult> Close(string id)
         {
-            var result = IocHelper.Create<PlanManage>().Close(id);
+            var result =await IocHelper.Create<PlanManage>().Close(id);
             return new JsonResult(result);
         }
 

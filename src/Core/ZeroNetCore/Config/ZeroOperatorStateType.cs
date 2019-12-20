@@ -69,6 +69,11 @@ namespace Agebull.MicroZero
         Pause = 0x81,
 
         /// <summary>
+        /// 执行超时
+        /// </summary>
+        ExecTimeOut = 0x82,
+
+        /// <summary>
         /// 逻辑BUG
         /// </summary>
         Bug = 0xD0,
@@ -102,7 +107,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 超时失败
         /// </summary>
-        TimeOut = 0xF4,
+        NetTimeOut = 0xF4,
         /// <summary>
         /// 网络错误
         /// </summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ZeroMQ;
 
 namespace Agebull.MicroZero
@@ -24,7 +25,7 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="args">请求参数,第一个必须为命令名称</param>
         /// <returns></returns>
-        public ZeroResult CallCommand(params string[] args)
+        public async Task<ZeroResult> CallCommand(params string[] args)
         {
             byte[] description = new byte[5 + args.Length];
             description[0] = (byte)(args.Length + 1);
@@ -37,20 +38,20 @@ namespace Agebull.MicroZero
             }
             description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.ExtendEnd;
-            return CallCommand(description, args);
+            return await CallCommand(description, args);
         }
 
         /// <summary>
         ///     执行管理命令(快捷命令，命令在说明符号的第二个字节中)
         /// </summary>
-        /// <param name="commmand"></param>
+        /// <param name="cmd"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        protected bool ByteCommand(ZeroByteCommand commmand, params string[] args)
+        protected async Task<bool> ByteCommand(ZeroByteCommand cmd, params string[] args)
         {
             byte[] description = new byte[4 + args.Length];
             description[0] = (byte)(args.Length + 1);
-            description[1] = (byte)commmand;
+            description[1] = (byte)cmd;
             int idx = 2;
             for (var index = 0; index < args.Length; index++)
             {
@@ -58,7 +59,8 @@ namespace Agebull.MicroZero
             }
             description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.ExtendEnd;
-            return CallCommand(description, args).InteractiveSuccess;
+            var res = await CallCommand(description, args);
+            return res.InteractiveSuccess;
         }
 
         /// <summary>
@@ -67,18 +69,7 @@ namespace Agebull.MicroZero
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        protected ZeroResult CallCommand(byte[] description, params string[] args)
-        {
-            return CallCommandInner(description, args);
-        }
-
-        /// <summary>
-        ///     发起一次请求
-        /// </summary>
-        /// <param name="description"></param>
-        /// <param name="args">请求参数</param>
-        /// <returns></returns>
-        protected ZeroResult CallCommandInner(byte[] description, params string[] args)
+        protected async Task<ZeroResult> CallCommand(byte[] description, params string[] args)
         {
             if (ManageAddress == null)
                 ManageAddress = GetAddress();
@@ -103,14 +94,14 @@ namespace Agebull.MicroZero
                     using (var message = new ZMessage(description, args))
                     {
                         message.Add(new ZFrame(ZeroCommandExtend.ServiceKeyBytes));
-                        if (!socket.SendTo(message))
+                        if (!await socket.SendAsync(message))
                             return new ZeroResult
                             {
                                 State = ZeroOperatorStateType.LocalRecvError,
                                 ZmqError = socket.LastError
                             };
                     }
-                    return socket.ReceiveString();
+                    return await socket.Receive<ZeroResult>();
                 }
             }
             catch (Exception e)

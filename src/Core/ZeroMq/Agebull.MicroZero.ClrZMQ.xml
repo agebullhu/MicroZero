@@ -426,6 +426,15 @@
             <param name="frontendType"></param>
             <param name="backendType"></param>
         </member>
+        <member name="M:ZeroMQ.ZDevice.Initialize(ZeroMQ.ZSocketType,ZeroMQ.ZSocketType,ZeroMQ.ZError@)">
+            <summary>
+            
+            </summary>
+            <param name="frontendType"></param>
+            <param name="backendType"></param>
+            <param name="error"></param>
+            <returns></returns>
+        </member>
         <member name="P:ZeroMQ.ZDevice.BackendSetup">
             <summary>
             Gets a <see cref="T:ZeroMQ.ZSocketSetup"/> for configuring the frontend socket.
@@ -485,22 +494,15 @@
             <summary>
             Create a socket with the current context and the specified socket type.
             </summary>
-            <param name="socketType">A <see cref="T:ZeroMQ.ZSocketType"/> value for the socket.</param>
-            <returns>A <see cref="T:ZeroMQ.ZSocket"/> instance with the current context and the specified socket type.</returns>
         </member>
         <member name="M:ZeroMQ.Monitoring.ZMonitor.Create(ZeroMQ.ZContext,System.String,ZeroMQ.ZError@)">
             <summary>
             Create a socket with the current context and the specified socket type.
             </summary>
-            <param name="socketType">A <see cref="T:ZeroMQ.ZSocketType"/> value for the socket.</param>
-            <returns>A <see cref="T:ZeroMQ.ZSocket"/> instance with the current context and the specified socket type.</returns>
         </member>
         <member name="E:ZeroMQ.Monitoring.ZMonitor.Connected">
             <summary>
             Occurs when a new connection is established.
-            NOTE: Do not rely on the <see cref="!:ZMonitorEventArgs.Address"/> value for
-            'Connected' messages, as the memory address contained in the message may no longer
-            point to the correct value.
             </summary>
         </member>
         <member name="E:ZeroMQ.Monitoring.ZMonitor.ConnectDelayed">
@@ -536,9 +538,6 @@
         <member name="E:ZeroMQ.Monitoring.ZMonitor.Closed">
             <summary>
             Occurs when a connection was closed.
-            NOTE: Do not rely on the <see cref="!:ZMonitorEventArgs.Address"/> value for
-            'Closed' messages, as the memory address contained in the message may no longer
-            point to the correct value.
             </summary>
         </member>
         <member name="E:ZeroMQ.Monitoring.ZMonitor.CloseFailed">
@@ -780,6 +779,18 @@
             <param name="message"></param>
             <returns></returns>
         </member>
+        <member name="M:ZeroMQ.IZmqPool.PollAsync">
+            <summary>
+            一次Pool
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.IZmqPool.CheckInAsync(System.Int32)">
+            <summary>
+            检查下标是否有数据
+            </summary>
+            <param name="index"></param>
+        </member>
         <member name="T:ZeroMQ.ZmqPool">
             <summary>
             pool对象
@@ -837,6 +848,18 @@
             <param name="message"></param>
             <returns></returns>
         </member>
+        <member name="M:ZeroMQ.LinuxZPoll.PollAsync">
+            <summary>
+            一次Pool
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.LinuxZPoll.CheckInAsync(System.Int32)">
+            <summary>
+            一次Pool
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:ZeroMQ.WinZPoll">
             <summary>
             pool对象
@@ -863,6 +886,18 @@
             <param name="events"></param>
         </member>
         <member name="M:ZeroMQ.WinZPoll.Poll">
+            <summary>
+            一次Pool
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.WinZPoll.PollAsync">
+            <summary>
+            一次Pool
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.WinZPoll.CheckInAsync(System.Int32)">
             <summary>
             一次Pool
             </summary>
@@ -1431,6 +1466,13 @@
             <param name="error"></param>
             <returns></returns>
         </member>
+        <member name="M:ZeroMQ.ZSocket.SendToAsync(ZeroMQ.ZMessage)">
+            <summary>
+            发送
+            </summary>
+            <param name="message">消息</param>
+            <returns>1 发送成功 0 发送失败 -1部分发送</returns>
+        </member>
         <member name="M:ZeroMQ.ZSocket.SendTo(ZeroMQ.ZMessage)">
             <summary>
             发送
@@ -1473,6 +1515,20 @@
             接收数据
             </summary>
             <param name="message"></param>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.RecvAsync(System.Int32)">
+            <summary>
+            接收数据
+            </summary>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocket.RecvFrameAsync(System.Int32)">
+            <summary>
+            接收数据
+            </summary>
             <param name="flags"></param>
             <returns></returns>
         </member>
@@ -1898,7 +1954,7 @@
         </member>
         <member name="M:ZeroMQ.ZSocketSetup.Bind(System.String)">
             <summary>
-            Configure the socket to bind to a given endpoint. See <see cref="M:ZeroMQ.ZSocket.Bind(System.String)"/> for details.
+            Configure the socket to bind to a given endpoint. 
             </summary>
             <param name="endpoint">A string representing the endpoint to which the socket will bind.</param>
             <returns>The current <see cref="T:ZeroMQ.ZSocketSetup"/> object.</returns>
@@ -1912,7 +1968,7 @@
         </member>
         <member name="M:ZeroMQ.ZSocketSetup.Subscribe(System.Byte[])">
             <summary>
-            Configure the socket to subscribe to a specific prefix. See <see cref="M:ZeroMQ.ZSocket.Subscribe(System.Byte[])"/> for details.
+            Configure the socket to subscribe to a specific prefix. 
             </summary>
             <param name="prefix">A byte array containing the prefix to which the socket will subscribe.</param>
             <returns>The current <see cref="T:ZeroMQ.ZSocketSetup"/> object.</returns>

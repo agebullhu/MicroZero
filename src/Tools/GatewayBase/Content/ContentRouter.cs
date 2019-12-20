@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Microsoft.AspNetCore.Http;
@@ -49,7 +50,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     调用
         /// </summary>
-        internal async void WriteContent(string[] path,string ext)
+        internal async Task WriteContent(string[] path, string ext)
         {
             try
             {
@@ -88,9 +89,9 @@ namespace MicroZero.Http.Gateway
                 mime = "text/plain";
             }
             Response.Headers["Content-Type"] = Response.ContentType = $"{mime}; charset=utf-8";
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //Response.Headers.TryAdd("Access-Control-Allow-Origin", "*");
         }
-        public static Dictionary<string, string> MimeDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        public static readonly Dictionary<string, string> MimeDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             {".323","text/h323"},
             {".3gp","video/3gpp"},
@@ -236,6 +237,7 @@ namespace MicroZero.Http.Gateway
             {".jpg","image/jpeg"},
             {".jpz","image/jpeg"},
             {".js","application/x-javascript"},
+            {".json","application/json"},
             {".jwc","application/jwc"},
             {".kjx","application/x-kjx"},
             {".lak","x-lml/x-lak"},
@@ -559,7 +561,7 @@ namespace MicroZero.Http.Gateway
             {".xlw","application/vnd.ms-excel"},
             {".xm","audio/x-mod"},
             {".xml","text/plain;application/xml"},
-            { ".xmz","audio/x-mod"},
+            {".xmz","audio/x-mod"},
             {".xof","x-world/x-vrml"},
             {".xpi","application/x-xpinstall"},
             {".xpm","image/x-xpixmap"},
@@ -571,8 +573,7 @@ namespace MicroZero.Http.Gateway
             {".yz1","application/x-yz1"},
             {".z","application/x-compress"},
             {".zac","application/x-zaurus-zac"},
-            {".zip","application/zip"},
-            {".json","application/json"}
+            {".zip","application/zip"}
         };
 
         #endregion

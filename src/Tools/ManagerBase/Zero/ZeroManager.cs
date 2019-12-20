@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.EntityModel.Common;
@@ -14,7 +14,7 @@ namespace WebMonitor.Models
     /// </summary>
     public class ZeroManager
     {
-        public static ApiResult Command(params string[] commands)
+        public static async Task<ApiResult> Command(params string[] commands)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -24,7 +24,7 @@ namespace WebMonitor.Models
             {
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
             }
-            var value = SystemManager.Instance.CallCommand(commands.ToArray());
+            var value = await SystemManager.Instance.CallCommand(commands.ToArray());
             if (!value.InteractiveSuccess)
             {
                 return ApiResult.Error(ErrorCode.NetworkError);
@@ -47,16 +47,16 @@ namespace WebMonitor.Models
             }
         }
 
-        public static ApiResult Update(StationConfig option)
+        public static async Task<ApiResult> Update(StationConfig option)
         {
-            if (!ZeroApplication.Config.TryGetConfig(option.Name, out var config))
+            if (!ZeroApplication.Config.TryGetConfig(option.Name, out _))
             {
                 return ApiResult.Error(ErrorCode.NetworkError, "站点不存在");
             }
 
             try
             {
-                var result = SystemManager.Instance.CallCommand("update", JsonHelper.SerializeObject(option));
+                var result =await SystemManager.Instance.CallCommand("update", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");
@@ -81,7 +81,7 @@ namespace WebMonitor.Models
             }
         }
 
-        public static ApiResult Install(StationConfig option)
+        public static async Task<ApiResult> Install(StationConfig option)
         {
             if (ZeroApplication.Config.TryGetConfig(option.Name, out var config))
             {
@@ -96,7 +96,7 @@ namespace WebMonitor.Models
 
             try
             {
-                var result = SystemManager.Instance.CallCommand("install", JsonHelper.SerializeObject(option));
+                var result =await SystemManager.Instance.CallCommand("install", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");

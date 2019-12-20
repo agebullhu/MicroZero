@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
@@ -15,7 +16,7 @@ namespace MicroZero.Http.Gateway
         private RouteData _data;
         private string[] _words;
         private IApiResult _result;
-        public void Command(RouteData data)
+        public async Task Command(RouteData data)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -32,11 +33,11 @@ namespace MicroZero.Http.Gateway
                 return;
             }
 
-            Call();
+            await Call();
             _data.ResultMessage = JsonHelper.SerializeObject(_result);
         }
 
-        private void Call()
+        private async Task Call()
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -49,8 +50,8 @@ namespace MicroZero.Http.Gateway
                 _data.ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                 _data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return;
-            }            
-            var value = SystemManager.Instance.CallCommand(_words);
+            }
+            var value = await SystemManager.Instance.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {
                 _result = ApiResultIoc.Ioc.NetworkError;
@@ -66,7 +67,7 @@ namespace MicroZero.Http.Gateway
                     _result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
                     return;
                 default:
-                    _result = ApiResultIoc.Ioc.Error(ErrorCode.LogicalError, value.ErrorMessage,value.ToString());
+                    _result = ApiResultIoc.Ioc.Error(ErrorCode.LogicalError, value.ErrorMessage, value.ToString());
                     return;
             }
         }

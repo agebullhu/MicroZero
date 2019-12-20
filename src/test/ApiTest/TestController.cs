@@ -1,19 +1,16 @@
-﻿using Agebull.MicroZero.ZeroApis;
+﻿using System;
+using Agebull.MicroZero.ZeroApis;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Agebull.MicroZero;
 
 namespace ApiTest
 {
 
-    public class TestItem
-    {
-        public IEnumerable<long> Test { get; set; }
-    }
-
     public class TestItems
     {
-        IEnumerable<TestItem> Items { get; set; }
+        public string Items { get; set; }
     }
     //static void Weixin()
     //{
@@ -41,12 +38,23 @@ namespace ApiTest
         /// </summary>
         /// <returns></returns>
         [Route("v1/test"),ApiAccessOptionFilter(ApiAccessOption.Anymouse| ApiAccessOption.Public)]
-        public ApiResult<TestItems> OnTextRequest()
+        public async Task<ApiResult<TestItems>> OnTextRequest()
         {
-            return new ApiResult<TestItems>
-            {
-                Success = true
-            };
+            return await OnTextRequestA();
+        }
+
+
+        /// <summary>
+        /// 处理文字请求
+        /// </summary>
+        /// <returns></returns>
+        //[Route("v1/test"), ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public Task<ApiResult<TestItems>> OnTextRequestA()
+        {
+            
+            //await Task.Delay(210000);
+            //throw new Exception();
+            return Task.FromResult(ApiResult<TestItems>.Succees(new TestItems()));
         }
     }
 }

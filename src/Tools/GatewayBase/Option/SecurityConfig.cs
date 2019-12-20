@@ -153,6 +153,9 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         public bool NeedLogin => (((int)Access) & 0xFFF0) > 0;
 
+        /// <summary>
+        /// 访问权限
+        /// </summary>
         [JsonProperty]
         public ApiAccessOption Access { get; set; }
 

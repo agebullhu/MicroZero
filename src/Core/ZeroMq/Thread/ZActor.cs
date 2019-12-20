@@ -43,7 +43,7 @@
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		public ZActor(ZContext context, ZAction action, params object[] args)
 #pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
-			: this(context, default(string), action, args)
+			: this(context, default, action, args)
 		{
 			var rnd0 = new byte[8];
 			using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider()) rng.GetNonZeroBytes(rnd0);
@@ -65,7 +65,7 @@
 		/// You are using ZContext.Current!
 		/// </summary>
 		public ZActor(ZAction0 action, params object[] args)
-			: this(default(string), action, args)
+			: this(default, action, args)
 		{
 			var rnd0 = new byte[8];
 			using (var rng = new System.Security.Cryptography.RNGCryptoServiceProvider()) rng.GetNonZeroBytes(rnd0);

@@ -79,14 +79,14 @@ namespace WebMonitor
             }
             Dispose();
         }
-        internal void Send(ArraySegment<byte> title, ArraySegment<byte> array)
+        internal async Task Send(ArraySegment<byte> title, ArraySegment<byte> array)
         {
             if (_isDisposed)
                 return;
             try
             {
                 //await this.socket.SendAsync(title, WebSocketMessageType.Text, true, CancellationToken.None);
-                _socket.SendAsync(array, WebSocketMessageType.Text, true, CancellationToken.None);
+                await _socket.SendAsync(array, WebSocketMessageType.Text, true, CancellationToken.None);
             }
             catch
             {

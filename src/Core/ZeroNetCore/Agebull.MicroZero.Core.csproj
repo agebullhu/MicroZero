@@ -8,7 +8,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>微服务框架MicroZero的核心程序集</Description>
-    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageId></PackageId>
     

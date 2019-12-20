@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
@@ -13,11 +14,11 @@ namespace WebMonitor.Controler
 {
     public class HomeController : Controller
     {
-        public IActionResult Index(string id)
+        public async Task<IActionResult> Index(string id)
         {
             if (id == null)
                 id = "api";
-            SystemManager.Instance.LoadAllConfig();
+            await SystemManager.Instance.LoadAllConfig();
             return View(new AnnotationsConfig { Name = id });
         }
 
@@ -44,7 +45,7 @@ namespace WebMonitor.Controler
         }
 
         [HttpPost]
-        public IActionResult Install([FromForm] StationInfo info)
+        public async Task<IActionResult> Install([FromForm] StationInfo info)
         {
             if (string.IsNullOrWhiteSpace(info.Name) || string.IsNullOrWhiteSpace(info.Type))
                 return Json(ApiResult.Error(ErrorCode.LogicalError, "参数错误"));
@@ -79,36 +80,36 @@ namespace WebMonitor.Controler
                     ? new List<string>()
                     : info.Alias.Trim().Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).ToList()
             };
-            return Json(!ZeroApplication.Config.Check(config, config) ? ApiResult.Error(ErrorCode.LogicalError, "名称存在重复") : ZeroManager.Install(config));
+            return Json(!ZeroApplication.Config.Check(config, config) ? ApiResult.Error(ErrorCode.LogicalError, "名称存在重复") : await ZeroManager.Install(config));
         }
 
         [HttpGet]
-        public IActionResult Pause(string id)
+        public async Task<IActionResult> Pause(string id)
         {
-            return Json(ZeroManager.Command("pause", id));
+            return Json(await ZeroManager.Command("pause", id));
         }
         [HttpGet]
-        public IActionResult Remove(string id)
+        public async Task<IActionResult> Remove(string id)
         {
-            return Json(ZeroManager.Command("remove", id));
-        }
-
-        [HttpGet]
-        public IActionResult Resume(string id)
-        {
-            return Json(ZeroManager.Command("resume", id));
+            return Json(await ZeroManager.Command("remove", id));
         }
 
         [HttpGet]
-        public IActionResult Stop(string id)
+        public async Task<IActionResult> Resume(string id)
         {
-            return Json(ZeroManager.Command("stop", id));
+            return Json(await ZeroManager.Command("resume", id));
         }
 
         [HttpGet]
-        public IActionResult Recover(string id)
+        public async Task<IActionResult> Stop(string id)
         {
-            return Json(ZeroManager.Command("recover", id));
+            return Json(await ZeroManager.Command("stop", id));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Recover(string id)
+        {
+            return Json(await ZeroManager.Command("recover", id));
         }
 
     }

@@ -1,16 +1,22 @@
-﻿namespace Agebull.MicroZero.ZeroManagemant.StateMachine
+﻿using System.Threading.Tasks;
+
+namespace Agebull.MicroZero.ZeroManagemant
 {
-    /// <summary>
-    /// 监控状态机
-    /// </summary>
-    public class EmptyStateMachine : MonitorStateMachineBase, IMonitorStateMachine
+    internal partial class MonitorStateMachine
     {
         /// <summary>
-        ///     收到信息的处理
+        /// 监控状态机
         /// </summary>
-        void IMonitorStateMachine.OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content)
+        class EmptyStateMachine : IMonitorStateMachine
         {
-            //启动中，什么也不做
+            /// <summary>
+            ///     收到信息的处理
+            /// </summary>
+            Task IMonitorStateMachine.OnMessagePush(ZeroNetEventType zeroNetEvent, string station, string content)
+            {
+                //启动中，什么也不做
+                return Task.CompletedTask;
+            }
         }
     }
 }

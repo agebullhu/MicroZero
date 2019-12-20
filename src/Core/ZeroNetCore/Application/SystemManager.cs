@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using Agebull.Common.Context;
 using System.Linq;
+using System.Threading.Tasks;
 using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -51,41 +52,41 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public bool PingCenter()
+        public async Task<bool> PingCenter()
         {
-            return ByteCommand(ZeroByteCommand.Ping);
+            return await ByteCommand(ZeroByteCommand.Ping);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public bool HeartLeft()
+        public async Task<bool> HeartLeft()
         {
-            return HeartLeft("SystemManage", GlobalContext.ServiceRealName);
+            return await HeartLeft("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public bool HeartReady()
+        public async Task<bool> HeartReady()
         {
-            return HeartReady("SystemManage", GlobalContext.ServiceRealName);
+            return await HeartReady("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public bool HeartJoin()
+        public async Task<bool> HeartJoin()
         {
-            return HeartJoin("SystemManage", GlobalContext.ServiceRealName);
+            return await HeartJoin("SystemManage", GlobalContext.ServiceRealName);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public bool Heartbeat()
+        public async Task<bool> Heartbeat()
         {
-            return Heartbeat("SystemManage", GlobalContext.ServiceRealName);
+            return await Heartbeat("SystemManage", GlobalContext.ServiceRealName);
         }
         /// <summary>
         /// 尝试安装站点
@@ -93,12 +94,12 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <param name="station"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public bool TryInstall(string station, string type)
+        public async Task<bool> TryInstall(string station, string type)
         {
             if (ZeroApplication.Config.TryGetConfig(station, out _))
                 return true;
             ZeroTrace.SystemLog(station, "No find,try install ...");
-            var r = CallCommand("install", type, station, station, station);
+            var r =await CallCommand("install", type, station, station, station);
             if (!r.InteractiveSuccess)
             {
                 ZeroTrace.WriteError(station, "Install failed.");
@@ -111,7 +112,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                 return false;
             }
             ZeroTrace.SystemLog(station, "Install successfully,try start it ...");
-            r = CallCommand("start", station);
+            r = await CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
                 ZeroTrace.WriteError(station, "Can't start station");
@@ -126,12 +127,12 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// </summary>
         /// <param name="station"></param>
         /// <returns></returns>
-        public bool TryStart(string station)
+        public async Task<bool> TryStart(string station)
         {
-            if (!ZeroApplication.Config.TryGetConfig(station, out var config))
+            if (!ZeroApplication.Config.TryGetConfig(station, out _))
                 return false;
             ZeroTrace.SystemLog(station, "Try start it ...");
-            var r = CallCommand("start", station);
+            var r =await CallCommand("start", station);
             if (!r.InteractiveSuccess && r.State != ZeroOperatorStateType.Ok && r.State != ZeroOperatorStateType.Runing)
             {
                 ZeroTrace.WriteError(station, "Can't start station");
@@ -147,7 +148,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     上传文档
         /// </summary>
         /// <returns></returns>
-        public bool UploadDocument()
+        public async Task<bool> UploadDocument()
         {
             if (_documentIsUpload)
                 return true;
@@ -156,7 +157,7 @@ namespace Agebull.MicroZero.ZeroManagemant
             {
                 if (!doc.IsLocal)
                     continue;
-                var result = CallCommand("doc", doc.Name, JsonHelper.SerializeObject(doc));
+                var result =await CallCommand("doc", doc.Name, JsonHelper.SerializeObject(doc));
                 if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
                 {
                     ZeroTrace.WriteError("UploadDocument", result);
@@ -171,42 +172,36 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     下载文档
         /// </summary>
         /// <returns></returns>
-        public bool LoadDocument(string name, out StationDocument doc)
+        public async Task<StationDocument> LoadDocument(string name)
         {
             ZeroResult result;
             try
             {
-                result = CallCommand("doc", name);
+                result =await CallCommand("doc", name);
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("LoadDocument", e, name);
-                doc = null;
-                return false;
+                return null;
             }
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadDocument", name, result.State);
-                doc = null;
-                return false;
+                return null;
             }
             if (!result.TryGetString(ZeroFrameType.Status, out var json))
             {
                 ZeroTrace.WriteError("LoadDocument", name, "Empty");
-                doc = null;
-                return false;
+                return null;
             }
             try
             {
-                doc = JsonConvert.DeserializeObject<StationDocument>(json);
-                //ZeroTrace.SystemLog("LoadDocument", name,"success");
-                return true;
+                return JsonConvert.DeserializeObject<StationDocument>(json);
             }
             catch (Exception e)
             {
                 ZeroTrace.WriteException("LoadDocument", e, name, json);
-                doc = null;
-                return false;
+                return null;
             }
         }
 
@@ -214,9 +209,9 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public bool LoadAllConfig()
+        public async Task<bool> LoadAllConfig()
         {
-            var result = CallCommand("host", "*");
+            var result = await CallCommand("host", "*");
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadConfig", result);
@@ -236,14 +231,14 @@ namespace Agebull.MicroZero.ZeroManagemant
         ///     读取配置
         /// </summary>
         /// <returns></returns>
-        public StationConfig LoadConfig(string stationName)
+        public async Task<StationConfig> LoadConfig(string stationName)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
                 ZeroTrace.WriteError("LoadConfig", "No ready");
                 return null;
             }
-            var result = CallCommand("host", stationName);
+            var result =await CallCommand("host", stationName);
             if (!result.InteractiveSuccess || result.State != ZeroOperatorStateType.Ok)
             {
                 ZeroTrace.WriteError("LoadConfig", result);
