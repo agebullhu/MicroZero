@@ -29,13 +29,13 @@ namespace ZeroMQ
         /// <summary>
         /// 非托管句柄
         /// </summary>
-        DispoIntPtr Ptr { get; }
+        MarshalPtr Ptr { get; }
 
         /// <summary>
         /// 准备
         /// </summary>
         /// <param name="events"></param>
-        DispoIntPtr RePrepare(ZPollEvent events);
+        void RePrepare(ZPollEvent events);
 
         /// <summary>
         /// 准备

@@ -20,7 +20,7 @@ namespace ZeroMQ
             Sockets = sockets;
             error = null;
             Size = sockets.Length;
-            Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_windows_t) * sockets.Length);
+            Ptr = MarshalPtr.Alloc(sizeof(zmq_pollitem_windows_t) * sockets.Length);
             var natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
             for (var i = 0; i < Size; ++i)
             {
@@ -44,11 +44,11 @@ namespace ZeroMQ
         /// 准备
         /// </summary>
         /// <param name="events"></param>
-        public DispoIntPtr RePrepare(ZPollEvent events)
+        public void RePrepare(ZPollEvent events)
         {
-            var old = Ptr;
+            Ptr?.Dispose();
             Size = Sockets.Length;
-            Ptr = DispoIntPtr.Alloc(sizeof(zmq_pollitem_windows_t) * Sockets.Length);
+            Ptr = MarshalPtr.Alloc(sizeof(zmq_pollitem_windows_t) * Sockets.Length);
             var natives = (zmq_pollitem_windows_t*)Ptr.Ptr;
             for (var i = 0; i < Size; ++i)
             {
@@ -57,7 +57,6 @@ namespace ZeroMQ
                 native->Events = (short)(events);
                 native->ReadyEvents = (short)ZPollEvent.None;
             }
-            return old;
         }
 
         /// <summary>

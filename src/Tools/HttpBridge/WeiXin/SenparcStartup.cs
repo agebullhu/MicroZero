@@ -39,7 +39,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        protected override void DoConfigure(IApplicationBuilder app, IHostingEnvironment env)
+        protected override void DoConfigure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             var senparcSetting = ConfigurationManager.Root.GetSection("SenparcSetting")?.Get<SenparcSetting>();
             var senparcWeixinSetting = ConfigurationManager.Root.GetSection("SenparcWeixinSetting")?.Get<SenparcWeixinSetting>();

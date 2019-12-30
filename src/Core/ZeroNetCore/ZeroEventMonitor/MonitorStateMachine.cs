@@ -51,9 +51,11 @@ namespace Agebull.MicroZero.ZeroManagemant
                     StateMachine = new EmptyStateMachine();
                     return;
                 case StationState.Failed: // 错误状态
+                    ZeroMachineState = 3;
                     StateMachine = new FailedStateMachine();
                     return;
                 case StationState.Run: // 正在运行
+                    ZeroMachineState = 1;
                     StateMachine = new RuningStateMachine();
                     return;
             }
@@ -63,15 +65,14 @@ namespace Agebull.MicroZero.ZeroManagemant
 
         #region CenterEvent
 
-        internal static string ZeroCenterIdentity;
+        static int ZeroMachineState;
 
         internal static async Task center_start(string identity, string content)
         {
-            if (identity == ZeroCenterIdentity)
+            if (ZeroMachineState == 1)
                 return;
-            ApiProxy.IsChanged = true;
-            ZeroCenterIdentity = identity;
-            ZeroTrace.SystemLog("ZeroCenter", "center_start", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            ZeroMachineState = 1;
+            ZeroTrace.SystemLog("ZeroCenter", "center_start", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroMachineState}");
             if (ZeroApplication.ZeroCenterState >= ZeroCenterState.Failed || ZeroApplication.ZeroCenterState < ZeroCenterState.Start)
             {
                 await ZeroApplication.JoinCenter();
@@ -84,12 +85,10 @@ namespace Agebull.MicroZero.ZeroManagemant
 
         internal static async Task center_closing(string identity, string content)
         {
-            var id = $"*{identity}";
-            if (id == ZeroCenterIdentity)
+            if (ZeroMachineState >= 2)
                 return;
-            ZeroCenterIdentity = id;
-            ApiProxy.IsChanged = true;
-            ZeroTrace.SystemLog("ZeroCenter", "center_closing", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            ZeroMachineState = 2;
+            ZeroTrace.SystemLog("ZeroCenter", "center_closing", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroMachineState}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
                 await center_closing();
@@ -98,12 +97,10 @@ namespace Agebull.MicroZero.ZeroManagemant
 
         internal static async Task center_stop(string identity, string content)
         {
-            var id = $"#{identity}";
-            if (id == ZeroCenterIdentity)
+            if (ZeroMachineState == 3)
                 return;
-            ZeroCenterIdentity = id;
-            ApiProxy.IsChanged = true;
-            ZeroTrace.SystemLog("ZeroCenter", "center_stop", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroCenterIdentity}");
+            ZeroMachineState = 3;
+            ZeroTrace.SystemLog("ZeroCenter", "center_stop", $"{identity}:{ZeroApplication.ZeroCenterState}:{ZeroMachineState}");
             if (ZeroApplication.ZeroCenterState < ZeroCenterState.Closing)
             {
                 await center_stop();
@@ -163,7 +160,6 @@ namespace Agebull.MicroZero.ZeroManagemant
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, name, content, config);
             }
-            ApiProxy.IsChanged = true;
         }
         internal static void station_install(string name, string content)
         {
@@ -173,7 +169,6 @@ namespace Agebull.MicroZero.ZeroManagemant
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationInstall, name, content, config);
             }
-            ApiProxy.IsChanged = true;
         }
 
         internal static void station_join(string name, string content)
@@ -184,13 +179,11 @@ namespace Agebull.MicroZero.ZeroManagemant
                 ZeroApplication.OnStationStateChanged(config);
                 ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationJoin, name, content, config);
             }
-            ApiProxy.IsChanged = true;
         }
         internal static void ChangeStationState(string name, ZeroCenterState state, ZeroNetEventType eventType)
         {
             if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
                 return;
-            ApiProxy.IsChanged = true;
             if (!ZeroApplication.Config.TryGetConfig(name, out var config) || !config.ChangedState(state))
                 return;
             ZeroApplication.OnStationStateChanged(config);

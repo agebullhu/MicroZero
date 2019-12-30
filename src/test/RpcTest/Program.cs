@@ -20,7 +20,7 @@ namespace RpcTest
             //ZeroApplication.Discove(typeof(Program).Assembly);
             ZeroApplication.Initialize();
 
-            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
+            ZeroApplication.ZeroNetEvents.Add(Tester.OnZeroEvent);
             //ZeroApplication.ZeroNetEvent += OnZeroEvent;
             ZeroApplication.RunAwaite();
         }

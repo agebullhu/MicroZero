@@ -1613,7 +1613,7 @@ namespace ZeroMQ
             value = null;
 
             var optionLength = size;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 if (!GetOptionInner(option, optionValue, ref optionLength, out _))
                     return false;
@@ -1635,7 +1635,7 @@ namespace ZeroMQ
             value = null;
 
             var optionLength = MaxBinaryOptionSize;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 if (GetOptionInner(option, optionValue, ref optionLength, out _))
                 {
@@ -1658,7 +1658,7 @@ namespace ZeroMQ
             value = 0;
 
             var optionLength = Marshal.SizeOf(typeof(int));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 if (GetOptionInner(option, optionValue.Ptr, ref optionLength, out _))
                 {
@@ -1692,7 +1692,7 @@ namespace ZeroMQ
             value = default;
 
             var optionLength = Marshal.SizeOf(typeof(long));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 if (!GetOptionInner(option, optionValue.Ptr, ref optionLength, out _))
                     return false;
@@ -1733,7 +1733,7 @@ namespace ZeroMQ
 
             var optionLength = /* Marshal.SizeOf(typeof(byte)) * */
         value.Length;
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 Marshal.Copy(value, 0, optionValue.Ptr, optionLength);
 
@@ -1745,7 +1745,7 @@ namespace ZeroMQ
         {
             if (value == null) return SetOptionNull(option);
 
-            using (var optionValue = DispoIntPtr.AllocString(value, out var optionLength))
+            using (var optionValue = MarshalPtr.AllocString(value, out var optionLength))
             {
                 return SetOptionInner(option, optionValue, optionLength);
             }
@@ -1754,7 +1754,7 @@ namespace ZeroMQ
         public bool SetOption(ZSocketOption option, int value)
         {
             var optionLength = Marshal.SizeOf(typeof(int));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 Marshal.WriteInt32(optionValue, value);
 
@@ -1770,7 +1770,7 @@ namespace ZeroMQ
         public bool SetOption(ZSocketOption option, long value)
         {
             var optionLength = Marshal.SizeOf(typeof(long));
-            using (var optionValue = DispoIntPtr.Alloc(optionLength))
+            using (var optionValue = MarshalPtr.Alloc(optionLength))
             {
                 Marshal.WriteInt64(optionValue, value);
 
@@ -2069,7 +2069,7 @@ namespace ZeroMQ
                 if (string.IsNullOrWhiteSpace(endpoint))
                     throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
-                using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
+                using (var endpointPtr = MarshalPtr.AllocString(endpoint))
                 {
                     if (-1 == zmq.connect(SocketPtr, endpointPtr))
                     {
@@ -2109,7 +2109,7 @@ namespace ZeroMQ
 
                 if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
-                using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
+                using (var endpointPtr = MarshalPtr.AllocString(endpoint))
                 {
                     try
                     {
@@ -2153,7 +2153,7 @@ namespace ZeroMQ
                 return false;
             if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
-            using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
+            using (var endpointPtr = MarshalPtr.AllocString(endpoint))
             {
                 if (-1 == zmq.bind(SocketPtr, endpointPtr))
                 {
@@ -2183,7 +2183,7 @@ namespace ZeroMQ
                 return false;
             if (string.IsNullOrWhiteSpace(endpoint)) throw new ArgumentException("IsNullOrWhiteSpace", nameof(endpoint));
 
-            using (var endpointPtr = DispoIntPtr.AllocString(endpoint))
+            using (var endpointPtr = MarshalPtr.AllocString(endpoint))
             {
                 if (-1 == zmq.unbind(SocketPtr, endpointPtr))
                 {
@@ -2209,7 +2209,7 @@ namespace ZeroMQ
         }
         private bool GetOptionInner(ZSocketOption option, IntPtr optionValue, ref int optionLength, out ZError error)
         {
-            using (var optionLengthP = DispoIntPtr.Alloc(IntPtr.Size))
+            using (var optionLengthP = MarshalPtr.Alloc(IntPtr.Size))
             {
                 switch (IntPtr.Size)
                 {

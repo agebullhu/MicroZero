@@ -12,10 +12,6 @@
         /// <summary>
         /// 客户模式，仅可调用
         /// </summary>
-        Client,
-        /// <summary>
-        /// 反向桥接模式
-        /// </summary>
-        Bridge
+        Client
     }
 }

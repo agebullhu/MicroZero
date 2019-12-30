@@ -24,8 +24,8 @@ namespace Agebull.MicroZero.ZeroManagemant
                         //StateMachine = new RuningStateMachine();
                         //ZeroTrace.SystemLog("Restart");
                         //await ZeroApplication.JoinCenter();
-                        StateMachine = new EmptyStateMachine();
-                        await center_start(station, content);
+                        //StateMachine = new EmptyStateMachine();
+                        await center_start(ZeroApplication.Config.ServiceName, content);
                         return;
                 }
             }

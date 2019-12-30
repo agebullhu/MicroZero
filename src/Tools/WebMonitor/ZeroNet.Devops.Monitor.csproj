@@ -1,44 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="datas\**" />
     <Compile Remove="Debug\**" />
     <Compile Remove="logs\**" />
     <Compile Remove="Pages\**" />
+    <Compile Remove="Views\Monitor\**" />
     <Compile Remove="WebSocket\**" />
     <Content Remove="datas\**" />
     <Content Remove="Debug\**" />
     <Content Remove="logs\**" />
     <Content Remove="Pages\**" />
+    <Content Remove="Views\Monitor\**" />
     <Content Remove="WebSocket\**" />
     <EmbeddedResource Remove="datas\**" />
     <EmbeddedResource Remove="Debug\**" />
     <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="Pages\**" />
+    <EmbeddedResource Remove="Views\Monitor\**" />
     <EmbeddedResource Remove="WebSocket\**" />
     <None Remove="datas\**" />
     <None Remove="Debug\**" />
     <None Remove="logs\**" />
     <None Remove="Pages\**" />
+    <None Remove="Views\Monitor\**" />
     <None Remove="WebSocket\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Controllers\FLowController - 复制.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="appsettings.json" />
-    <Content Remove="Controllers\科室.json" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tracer\ZeroNet.Devops.Tracer.csproj" />

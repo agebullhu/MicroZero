@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MicroZero.Devops.ZeroTracer.DataAccess;
 using MicroZero.Http.Route;
 
@@ -35,19 +36,19 @@ namespace WebMonitor
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            services.AddMvc();
-            IocHelper.SetServiceCollection(services);
 
+            services.AddControllersWithViews();
+
+            IocHelper.SetServiceCollection(services);
             IocHelper.AddSingleton<PlanManage>();
             IocHelper.AddScoped<ZeroTracerDb, ZeroTracerDb>();
             //ZeroApplication.RegistZeroObject<FlowTracer>();//ApiCounter
             ZeroApplication.RegistZeroObject<PlanSubscribe>();
             ZeroApplication.Initialize();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
         
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             Task.Factory.StartNew(ZeroApplication.Run,TaskCreationOptions.LongRunning);
             WebSocketNotify.Binding(app);
@@ -64,15 +65,17 @@ namespace WebMonitor
 
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            app.UseMvc(routes =>
+            app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "api",
-                    template: "{controller}/{action}/{station}");
+                    pattern: "{controller}/{action}/{station}");
             });
         }
     }

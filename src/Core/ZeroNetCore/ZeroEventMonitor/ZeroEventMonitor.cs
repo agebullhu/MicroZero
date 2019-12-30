@@ -12,8 +12,6 @@ namespace Agebull.MicroZero.ZeroManagemant
     /// </summary>
     public class ZeroEventMonitor
     {
-        #region 网络处理
-
         internal readonly SemaphoreSlim TaskEndSem = new SemaphoreSlim(0);
 
         /// <summary>
@@ -26,75 +24,55 @@ namespace Agebull.MicroZero.ZeroManagemant
         }
 
         /// <summary>
-        ///     进入系统侦听
+        ///     进入系统分布式消息侦听处理
         /// </summary>
         internal async Task Monitor()
         {
-            if (ZeroApplication.WorkModel != ZeroWorkModel.Service)
-                return;
-            //TaskEndSem.Release();
-            await Task.Yield();
             ZeroTrace.SystemLog("Zero center in monitor...");
+            await Task.Yield();
+            List<string> subs = new List<string>();
+            if (ZeroApplication.Config.CanRaiseEvent != true)
+            {
+                subs.Add("system");
+                subs.Add("station");
+            }
             while (ZeroApplication.IsAlive)
             {
-                if (await MonitorInner())
-                    continue;
-                ZeroTrace.WriteError("Zero center monitor failed", "There was no message for a long time");
-                ZeroApplication.ZeroCenterState = ZeroCenterState.Failed;
-                await ZeroApplication.OnZeroEnd();
-                Thread.Sleep(500);
-                if (ZeroApplication.ApplicationState != StationState.Failed)
-                    ZeroApplication.ApplicationState = StationState.Failed;
-            }
-            ZeroTrace.SystemLog("Zero center monitor stoped!");
-            TaskEndSem.Release();
-        }
-
-        #endregion
-
-
-        /// <summary>
-        ///     进入系统侦听
-        /// </summary>
-        private async Task<bool> MonitorInner()
-        {
-           await Task.Yield();
-            List<string> subs = new List<string>();
-            DateTime failed = DateTime.MinValue;
-            using (var poll = ZmqPool.CreateZmqPool())
-            {
-                if (ZeroApplication.Config.CanRaiseEvent != true)
-                {
-                    subs.Add("system");
-                    subs.Add("station");
-                }
+                DateTime failed = DateTime.MinValue;
+                using var poll = ZmqPool.CreateZmqPool();
                 var socket = ZSocketEx.CreateSubSocket(ZeroApplication.Config.Master.MonitorAddress, ZeroApplication.Config.Master.ServiceKey.ToZeroBytes(), ZSocket.CreateIdentity(false, "Monitor"), subs);
 
                 poll.Prepare(ZPollEvent.In, socket);
                 while (ZeroApplication.IsAlive)
                 {
-                    if (!await poll.PollAsync())
+                    if (await poll.PollAsync())
                     {
-                        if (failed == DateTime.MinValue)
-                            failed = DateTime.Now;
-                        else if ((DateTime.Now - failed).TotalMinutes > 1)
-                            return false;
-                        continue;
+                        var message = await poll.CheckInAsync(0);
+                        if (message == null)
+                            continue;
+                        failed = DateTime.MinValue;
+                        if (PublishItem.Unpack(message, out var item) && MonitorStateMachine.StateMachine != null)
+                        {
+                            await MonitorStateMachine.StateMachine.OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
+                        }
                     }
-
-                    var message = await poll.CheckInAsync(0);
-                    if (message == null)
+                    else if (failed == DateTime.MinValue)
+                        failed = DateTime.Now;
+                    else if ((DateTime.Now - failed).TotalMinutes > 1)
                     {
-                        continue;
-                    }
-                    failed = DateTime.MinValue;
-                    if (PublishItem.Unpack(message, out var item) && MonitorStateMachine.StateMachine != null)
-                    {
-                        await MonitorStateMachine.StateMachine.OnMessagePush(item.ZeroEvent, item.SubTitle, item.Content);
+                        //超时，连接重置
+                        ZeroTrace.WriteError("Zero center event monitor failed,there was no message for a long time");
+                        ZeroApplication.ZeroCenterState = ZeroCenterState.Failed;
+                        await ZeroApplication.OnZeroEnd();
+                        if (ZeroApplication.ApplicationState != StationState.Failed)
+                            ZeroApplication.ApplicationState = StationState.Failed;
+                        Thread.Sleep(500);
+                        break;
                     }
                 }
             }
-            return true;
+            ZeroTrace.SystemLog("Zero center monitor stoped!");
+            TaskEndSem.Release();
         }
     }
 }

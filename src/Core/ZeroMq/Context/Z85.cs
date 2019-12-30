@@ -14,8 +14,8 @@ namespace ZeroMQ
 #pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 		{
 			const int destLen = 40;
-			using (var publicKeyData = DispoIntPtr.Alloc(destLen + 1))
-			using (var secretKeyData = DispoIntPtr.Alloc(destLen + 1))
+			using (var publicKeyData = MarshalPtr.Alloc(destLen + 1))
+			using (var secretKeyData = MarshalPtr.Alloc(destLen + 1))
 			{
 				if (0 != zmq.curve_keypair(publicKeyData, secretKeyData))
 				{
@@ -44,7 +44,7 @@ namespace ZeroMQ
 			var data = GCHandle.Alloc(decoded, GCHandleType.Pinned);
 
             // the buffer dest must be one byte larger than destLen to accomodate the null termination character
-			using (var dest = DispoIntPtr.Alloc(destLen + 1))
+			using (var dest = MarshalPtr.Alloc(destLen + 1))
 			{
 				if (IntPtr.Zero == zmq.z85_encode(dest, data.AddrOfPinnedObject(), dataLen))
 				{
@@ -140,7 +140,7 @@ namespace ZeroMQ
 
 			var data = GCHandle.Alloc(encoded, GCHandleType.Pinned);
 
-			using (var dest = DispoIntPtr.Alloc(destLen))
+			using (var dest = MarshalPtr.Alloc(destLen))
 			{
 				if (IntPtr.Zero == zmq.z85_decode(dest, data.AddrOfPinnedObject()))
 				{

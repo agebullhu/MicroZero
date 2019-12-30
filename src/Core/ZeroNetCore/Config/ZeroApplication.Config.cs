@@ -79,7 +79,7 @@ namespace Agebull.MicroZero
                 opt = sec.Child<SocketOption>("socketOption");
             if (opt != null)
                 ZSocket.Option = opt;
-
+            ZSocket.Option.CheckOption();
             Config = new ZeroAppConfigRuntime
             {
                 BinPath = curPath,

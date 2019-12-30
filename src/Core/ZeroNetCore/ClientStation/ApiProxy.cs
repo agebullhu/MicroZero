@@ -64,7 +64,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 站点是否已修改
         /// </summary>
-        internal static bool IsChanged { get; set; }
+        private static bool _isChanged;
 
         #endregion
 
@@ -197,15 +197,14 @@ namespace Agebull.MicroZero.ZeroApis
         protected sealed override async Task<bool> Loop(/*CancellationToken token*/)
         {
             //await Task.Yield();
-            IsChanged = true;
+            _isChanged = true;
             while (CanLoopEx)
             {
                 try
                 {
-                    if (IsChanged)
+                    if (_isChanged)
                     {
                         _zmqPool = CreatePool();
-                        IsChanged = false;
                     }
                     if (!await _zmqPool.PollAsync())
                     {
@@ -316,6 +315,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected override void OnLoopBegin()
         {
+            ZeroApplication.ZeroNetEvents.Add(OnZeroNetEvent);
             var identity = GlobalContext.ServiceRealName.ToZeroBytes();
             foreach (var config in ZeroApplication.Config.GetConfigs())
             {
@@ -339,6 +339,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         protected override Task OnLoopComplete()
         {
+            ZeroApplication.ZeroNetEvents.Remove(OnZeroNetEvent);
             _proxyServiceSocket.Dispose();
             RealState = StationState.Closed;
             _zmqPool?.Dispose();
@@ -348,6 +349,28 @@ namespace Agebull.MicroZero.ZeroApis
                 proxyItem.Socket?.Dispose();
             }
             StationProxy.Clear();
+            return Task.CompletedTask;
+        }
+
+        private Task OnZeroNetEvent(ZeroAppConfigRuntime config, ZeroNetEventArgument e)
+        {
+            switch (e.Event)
+            {
+                case ZeroNetEventType.ConfigUpdate:
+                case ZeroNetEventType.CenterStationDocument:
+                case ZeroNetEventType.CenterStationJoin:
+                case ZeroNetEventType.CenterStationInstall:
+                case ZeroNetEventType.CenterStationResume:
+                case ZeroNetEventType.CenterStationUpdate:
+                case ZeroNetEventType.CenterStationLeft:
+                case ZeroNetEventType.CenterStationPause:
+                case ZeroNetEventType.CenterStationClosing:
+                case ZeroNetEventType.CenterStationRemove:
+                case ZeroNetEventType.CenterStationStop:
+                    _isChanged = true;
+                    break;
+            }
+
             return Task.CompletedTask;
         }
 
@@ -361,6 +384,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         public IZmqPool CreatePool()
         {
+            _isChanged = false;
             //var added = StationProxy.Values.Where(p => p.Config.State > ZeroCenterState.Pause).Select(p => p.Socket).ToArray();
             var alive = StationProxy.Values.ToArray();
             var list = new ZSocket[alive.Length + 1];
@@ -368,16 +392,15 @@ namespace Agebull.MicroZero.ZeroApis
             for (int idx = 0; idx < alive.Length; idx++)
             {
                 var item = alive[idx];
+                Console.WriteLine($"{item.Config.Name}:{item.Config.RequestAddress}");
                 if (item.Socket == null)
                     item.Socket = ZSocketEx.CreatePoolSocket(item.Config.RequestAddress, item.Config.ServiceKey, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
                 list[idx + 1] = item.Socket;
             }
-            if (_zmqPool == null)
-                _zmqPool = ZmqPool.CreateZmqPool();
+            _zmqPool = ZmqPool.CreateZmqPool();
 
             _zmqPool.Sockets = list;
-            var oldPtr = _zmqPool.RePrepare(ZPollEvent.In);
-            oldPtr?.Dispose();
+            _zmqPool.RePrepare(ZPollEvent.In);
             return _zmqPool;
         }
 

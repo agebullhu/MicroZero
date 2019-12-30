@@ -680,6 +680,11 @@
                 站点
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.ZeroHost.Config">
+            <summary>
+                站点
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.ZeroHost.AppName">
             <summary>
                 适用于的App的名称组合，全适合则为null，部分适用为用逗号分隔的App名称
@@ -1312,14 +1317,14 @@
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
             <summary>
              This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
             </summary>
             <param name="app"></param>
             <param name="env"></param>
         </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
             <summary>
             应用配置
             </summary>

@@ -177,24 +177,22 @@ namespace Agebull.MicroZero.Log
         public async Task<bool> Start()
         {
             await Task.Yield();
-            using (var scope = OnceScope.TryCreateScope(_runLock))
+            using var scope = OnceScope.TryCreateScope(_runLock);
+            if (!scope.IsEntry)
+                return false;
+            if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
             {
-                if (!scope.IsEntry)
-                    return false;
-                if (!ZeroApplication.Config.TryGetConfig("RemoteLog", out Config))
-                {
-                    ZeroTrace.WriteError("RemoteLogRecorder", "No config");
-                    RealState = StationState.ConfigError;
-                    ZeroApplication.OnObjectFailed(this);
-                    return false;
-                }
-
-                RealName = ZSocket.CreateRealName(false, Config.StationName);
-                Identity = RealName.ToAsciiBytes();
-                RunTaskCancel = new CancellationTokenSource();
-                Task.Factory.StartNew(RunWaite);
-                return true;
+                ZeroTrace.WriteError("RemoteLogRecorder", "No config");
+                RealState = StationState.ConfigError;
+                ZeroApplication.OnObjectFailed(this);
+                return false;
             }
+
+            RealName = ZSocket.CreateRealName(false, Config.StationName);
+            Identity = RealName.ToAsciiBytes();
+            RunTaskCancel = new CancellationTokenSource();
+            Task.Factory.StartNew(RunWaite);
+            return true;
         }
 
         /// <summary>

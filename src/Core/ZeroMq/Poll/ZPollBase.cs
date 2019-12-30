@@ -30,20 +30,29 @@ namespace ZeroMQ
         /// <summary>
         /// 错误对象
         /// </summary>
-        public ZError ZError => error ?? (error = ZError.GetLastErr());
+        public ZError ZError => error ??= ZError.GetLastErr();
 
         /// <summary>
         /// 非托管句柄
         /// </summary>
-        public DispoIntPtr Ptr { get; protected set; }
+        public MarshalPtr Ptr { get; protected set; }
 
         /// <summary>
         /// 析构
         /// </summary>
         protected override void DoDispose()
         {
+            Free();
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        internal void Free()
+        {
             Ptr?.Dispose();
-            if (Sockets == null) return;
+            if (Sockets == null)
+                return;
             foreach (var socket in Sockets)
             {
                 socket.Dispose();

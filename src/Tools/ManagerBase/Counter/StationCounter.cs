@@ -86,14 +86,10 @@ namespace MicroZero.Http.Route
                     ZeroTrace.WriteError("Restore station k_line data to be exception,delete it.", e, file);
                 }
             }
-            ZeroApplication.ZeroNetEvent += new StationCounter().SystemMonitor_StationEvent;
+            ZeroApplication.ZeroNetEvents.Add(StationEvent);
         }
 
-        private void SystemMonitor_StationEvent(object sender, ZeroNetEventArgument e)
-        {
-            Task.Factory.StartNew(() => StationEvent(e), TaskCreationOptions.None);
-        }
-        private Task PublishConfig(StationConfig config)
+        private static Task PublishConfig(StationConfig config)
         {
             if (config == null)
                 return Task.CompletedTask;
@@ -102,7 +98,7 @@ namespace MicroZero.Http.Route
                 info.Status = status;
             return WebSocketNotify.Publish("config", config.Name, JsonConvert.SerializeObject(info));
         }
-        private async Task StationEvent(ZeroNetEventArgument e)
+        private static async Task StationEvent(ZeroAppConfigRuntime _, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
@@ -155,78 +151,74 @@ namespace MicroZero.Http.Route
         {
             return (time.ToUniversalTime().Ticks - 621355968000000000) / 10000;
         }
-        void NewBaseTime()
+        static void NewBaseTime()
         {
             var now = DateTime.Now;
             BaseLine = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
         }
-        
-        LockData isRun = new LockData();
+
+
         /// <summary>
         ///     执行命令
         /// </summary>
         /// <returns></returns>
-        private async Task Collect(string name, string json)
+        private static async Task Collect(string name, string json)
         {
-            using (var scope = OnceScope.TryCreateScope(isRun))
+            if (!ZeroApplication.Config.TryGetConfig(name, out var config))
+                return;
+            var now = JsonConvert.DeserializeObject<StationCountItem>(json);
+            now.Station = name;
+            if (!StationCountItems.TryGetValue(now.Station, out var item))
             {
-                if (!scope.IsEntry)
-                    return;
-                if (!ZeroApplication.Config.TryGetConfig(name, out var config))
-                    return;
-                var now = JsonConvert.DeserializeObject<StationCountItem>(json);
-                now.Station = name;
-                if (!StationCountItems.TryGetValue(now.Station, out var item))
-                {
-                    now.Count = 1;
-                    StationCountItems.Add(now.Station, now);
-                    return;
-                }
-                item.State = config.State;
-                item.CheckValue(now);
+                now.Count = 1;
+                StationCountItems.Add(now.Station, now);
+                return;
+            }
 
-                await WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
-                long value = config.StationType == ZeroStationType.Api ||
-                             config.StationType == ZeroStationType.Vote
-                    ? item.LastTps
-                    : item.LastQps;
-                if (minuteLine.TryGetValue(now.Station, out var kLine))
-                {
-                    if (kLine.Count == 0)
-                    {
-                        kLine.Total = value;
-                        kLine.Open = value;
-                        kLine.Close = value;
-                        kLine.Max = value;
-                        kLine.Min = value;
-                    }
-                    else
-                    {
-                        kLine.Total += value;
-                        kLine.Close = value;
-                        if (kLine.Max < value)
-                            kLine.Max = value;
-                        if (kLine.Min > value)
-                            kLine.Min = value;
-                    }
+            item.State = config.State;
+            item.CheckValue(now);
 
-                    kLine.Count++;
+            await WebSocketNotify.Publish("status", now.Station, JsonConvert.SerializeObject(item));
+            long value = config.StationType == ZeroStationType.Api ||
+                         config.StationType == ZeroStationType.Vote
+                ? item.LastTps
+                : item.LastQps;
+            if (minuteLine.TryGetValue(now.Station, out var kLine))
+            {
+                if (kLine.Count == 0)
+                {
+                    kLine.Total = value;
+                    kLine.Open = value;
+                    kLine.Close = value;
+                    kLine.Max = value;
+                    kLine.Min = value;
                 }
                 else
                 {
-                    minuteLine.Add(now.Station, kLine = new KLine
-                    {
-                        Time = GetTime(BaseLine),
-                        Count = 1,
-                        Total = value,
-                        Open = value,
-                        Close = value,
-                        Max = value,
-                        Min = value,
-                        Avg = value
-                    });
-                    KLines.Add(now.Station, new List<KLine> { kLine });
+                    kLine.Total += value;
+                    kLine.Close = value;
+                    if (kLine.Max < value)
+                        kLine.Max = value;
+                    if (kLine.Min > value)
+                        kLine.Min = value;
                 }
+
+                kLine.Count++;
+            }
+            else
+            {
+                minuteLine.Add(now.Station, kLine = new KLine
+                {
+                    Time = GetTime(BaseLine),
+                    Count = 1,
+                    Total = value,
+                    Open = value,
+                    Close = value,
+                    Max = value,
+                    Min = value,
+                    Avg = value
+                });
+                KLines.Add(now.Station, new List<KLine> {kLine});
             }
 
             if ((DateTime.Now - BaseLine).TotalMinutes < 1)

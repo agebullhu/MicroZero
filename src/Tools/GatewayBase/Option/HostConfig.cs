@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Agebull.MicroZero;
 using Newtonsoft.Json;
 
 namespace MicroZero.Http.Gateway
@@ -54,6 +55,12 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         [IgnoreDataMember]
         public string Station { get; set; }
+
+        /// <summary>
+        ///     站点
+        /// </summary>
+        [IgnoreDataMember]
+        public StationConfig Config { get; set; }
 
         /// <summary>
         ///     适用于的App的名称组合，全适合则为null，部分适用为用逗号分隔的App名称

@@ -1,9 +1,11 @@
-﻿using Senparc.NeuChar.Context;
+﻿using System.Xml.Linq;
+using Senparc.NeuChar;
+using Senparc.NeuChar.Context;
 using Senparc.NeuChar.Entities;
 
 namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
 {
-    public class CustomMessageContext : MessageContext<IRequestMessageBase, IResponseMessageBase>
+    public sealed class CustomMessageContext : MessageContext<IRequestMessageBase, IResponseMessageBase>
     {
         public CustomMessageContext()
         {
@@ -31,6 +33,16 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
 
             //Log.InfoFormat("{0}的消息上下文已过期",e.OpenId);
             //api.SendMessage(e.OpenId, "由于长时间未搭理客服，您的客服状态已退出！");
+        }
+
+        public override IRequestMessageBase GetRequestEntityMappingResult(RequestMsgType requestMsgType, XDocument doc)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override IResponseMessageBase GetResponseEntityMappingResult(ResponseMsgType responseMsgType, XDocument doc)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

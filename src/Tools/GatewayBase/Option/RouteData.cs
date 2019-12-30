@@ -283,7 +283,7 @@ namespace MicroZero.Http.Gateway
                             }
 
                             var bytes = new byte[file.Length];
-                            using (var stream = file.OpenReadStream())
+                            await using (var stream = file.OpenReadStream())
                             {
                                await stream.ReadAsync(bytes, 0, (int)file.Length);
                             }

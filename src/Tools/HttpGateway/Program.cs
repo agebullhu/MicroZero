@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Agebull.Common.Configuration;
 using Agebull.MicroZero;
 using Microsoft.AspNetCore;
@@ -8,12 +9,12 @@ namespace MicroZero.Http.Gateway
     public class Program
     {
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             BuildWebHost(args).Run();
-            ZeroApplication.Shutdown();
+            await ZeroApplication.Shutdown();
         }
-        
+
         public static IWebHost BuildWebHost(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)

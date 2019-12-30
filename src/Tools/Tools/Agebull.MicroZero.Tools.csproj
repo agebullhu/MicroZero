@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>MicroZero基础工具</Description>
-    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <AssemblyName>Agebull.MicroZero.Tools.sys_addin</AssemblyName>
     <DebugType>portable</DebugType>
     <PackageId>Agebull.MicroZero.Tools</PackageId>
@@ -20,10 +20,10 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero基础工具</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.37</Version>
+    <Version>1.5.0.0-bate</Version>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
     <DocumentationFile>Agebull.MicroZero.Tools.sys_addin.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>

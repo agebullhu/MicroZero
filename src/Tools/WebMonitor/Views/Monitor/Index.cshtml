@@ -12,26 +12,26 @@
         {
             case ZeroStationType.Api:
             case ZeroStationType.RouteApi:
-            {
-                return "el-icon-star-on";
-            }
+                {
+                    return "el-icon-star-on";
+                }
             case ZeroStationType.Vote:
-            {
-                return "el-icon-star-off";
-            }
+                {
+                    return "el-icon-star-off";
+                }
             case ZeroStationType.Notify:
             case ZeroStationType.Queue:
-            {
-                return "el-icon-share";
-            }
+                {
+                    return "el-icon-share";
+                }
             case ZeroStationType.Plan:
-            {
-                return "el-icon-time";
-            }
+                {
+                    return "el-icon-time";
+                }
             default:
-            {
-                return "el-icon-setting";
-            }
+                {
+                    return "el-icon-setting";
+                }
         }
     }
 
@@ -72,7 +72,7 @@
     }
     if (max == 0)
     {
-        max = (long) (item.MaxQps * 1.5);
+        max = (long)(item.MaxQps * 1.5);
         if (item.AvgQps > 0 && max / item.AvgQps > 4)
         {
             max = item.AvgQps * 4;
@@ -94,6 +94,7 @@
             padding: 0;
             margin: 0;
         }
+
         .chart_parent2 {
             display: inline-block;
             width: 49%;
@@ -101,7 +102,7 @@
             padding: 0;
             margin: 0;
         }
-        
+
         .chart_block {
             height: 220px;
             margin: 0;
@@ -305,8 +306,7 @@
                                 },
                             </text>
                         }
-                        series: [
-                            {
+                        series: [{
                                 name: 'TPS',
                                 data: (function() {
                                     // 生成随机值
@@ -320,8 +320,7 @@
                                     }
                                     return data;
                                 }())
-                            }
-                        ]
+                            }]
                     }));
             </text>
         }
@@ -380,7 +379,7 @@
             return avg;
         }
 
-        
+
         var klines = @Html.Raw(lines);
         var kavgs = [];
         var idx = 0;

@@ -139,10 +139,11 @@ namespace Agebull.MicroZero
                 _configs.Remove(station.Name);
                 _configMap.Remove(station.Name);
                 _configMap.Remove(station.ShortName);
-                if (station.StationAlias == null)
-                    return;
-                foreach (var ali in station.StationAlias) _configMap.Remove(ali);
+                if (station.StationAlias != null)
+                    foreach (var ali in station.StationAlias)
+                        _configMap.Remove(ali);
             }
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationRemove,station.Group,null,station, true);
         }
 
         private void AddStation(StationConfig station)
@@ -159,13 +160,13 @@ namespace Agebull.MicroZero
                     _configMap.Add(station.Name, config);
                 else
                     _configMap[station.Name] = config;
-                if (string.IsNullOrWhiteSpace(station.ShortName) || station.ShortName == station.Name)
-                    return;
-                if (!_configMap.ContainsKey(station.ShortName))
-                    _configMap.Add(station.ShortName, config);
-                else
-                    _configMap[station.ShortName] = config;
-
+                if (!string.IsNullOrWhiteSpace(station.ShortName) && station.ShortName != station.Name)
+                {
+                    if (!_configMap.ContainsKey(station.ShortName))
+                        _configMap.Add(station.ShortName, config);
+                    else
+                        _configMap[station.ShortName] = config;
+                }
                 //if (station.StationAlias == null)
                 //    return;
                 //foreach (var ali in station.StationAlias)
@@ -174,6 +175,7 @@ namespace Agebull.MicroZero
                 //    else
                 //        _configMap[ali] = config;
             }
+            ZeroApplication.InvokeEvent(ZeroNetEventType.CenterStationUpdate, station.Group, null, station, true);
         }
 
         /// <summary>

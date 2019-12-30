@@ -582,7 +582,7 @@
             Initializes a new instance of the <see cref="T:ZeroMQ.Monitoring.ZMonitorEventArgs"/> class.
             </summary>
             <param name="monitor">The <see cref="T:ZeroMQ.Monitoring.ZMonitor"/> that triggered the event.</param>
-            <param name="address">The peer address.</param>
+            <param name="ed">The peer address.</param>
         </member>
         <member name="P:ZeroMQ.Monitoring.ZMonitorEventArgs.Monitor">
             <summary>
@@ -918,20 +918,20 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="T:ZeroMQ.lib.DispoIntPtr">
+        <member name="T:ZeroMQ.lib.MarshalPtr">
             <summary>
             非托管内存的管理类
             </summary>
         </member>
-        <member name="M:ZeroMQ.lib.DispoIntPtr.#ctor(System.IntPtr)">
+        <member name="M:ZeroMQ.lib.MarshalPtr.#ctor(System.IntPtr)">
             <summary>
             自管理构造
             </summary>
         </member>
-        <member name="M:ZeroMQ.lib.DispoIntPtr.Finalize">
+        <member name="M:ZeroMQ.lib.MarshalPtr.Finalize">
             <inheritdoc />
         </member>
-        <member name="M:ZeroMQ.lib.DispoIntPtr.DoDispose">
+        <member name="M:ZeroMQ.lib.MarshalPtr.DoDispose">
             <inheritdoc />
         </member>
         <member name="T:ZeroMQ.ZPollBase">
@@ -972,6 +972,11 @@
         <member name="M:ZeroMQ.ZPollBase.DoDispose">
             <summary>
             析构
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.ZPollBase.Free">
+            <summary>
+            释放资源
             </summary>
         </member>
         <member name="T:ZeroMQ.ZPollEvent">
@@ -1037,6 +1042,11 @@
             </summary>
         </member>
         <member name="M:ZeroMQ.SocketOption.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.SocketOption.CheckOption">
             <summary>
             构造
             </summary>

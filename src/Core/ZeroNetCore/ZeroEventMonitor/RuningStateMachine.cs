@@ -20,11 +20,11 @@ namespace Agebull.MicroZero.ZeroManagemant
                         return;
                     case ZeroNetEventType.CenterSystemClosing:
                         StateMachine = new EmptyStateMachine();
-                        await center_closing(station, content);
+                        await center_closing(ZeroApplication.Config.ServiceName, content);
                         return;
                     case ZeroNetEventType.CenterSystemStop:
                         StateMachine = new EmptyStateMachine();
-                        await center_stop(station, content);
+                        await center_stop(ZeroApplication.Config.ServiceName, content);
                         return;
                     case ZeroNetEventType.CenterWorkerSoundOff:
                         await worker_sound_off();

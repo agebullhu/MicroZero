@@ -479,7 +479,7 @@
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiProxy.IsChanged">
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiProxy._isChanged">
             <summary>
             站点是否已修改
             </summary>
@@ -1908,11 +1908,6 @@
                 是否公开接口
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiAction.HaseUser">
-            <summary>
-                是否可能存在用户信息
-            </summary>
-        </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiAction.ArgumenType">
             <summary>
                 参数类型
@@ -2465,12 +2460,7 @@
         </member>
         <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.Monitor">
             <summary>
-                进入系统侦听
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroManagemant.ZeroEventMonitor.MonitorInner">
-            <summary>
-                进入系统侦听
+                进入系统分布式消息侦听处理
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.IZeroObject">
@@ -2774,7 +2764,7 @@
                 关闭
             </summary>
         </member>
-        <member name="E:Agebull.MicroZero.ZeroApplication.ZeroNetEvent">
+        <member name="F:Agebull.MicroZero.ZeroApplication.ZeroNetEvents">
             <summary>
             站点事件发生
             </summary>
@@ -2791,11 +2781,12 @@
             <param name="event"></param>
             <param name="sync">是否为同步操作</param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object)">
+        <member name="M:Agebull.MicroZero.ZeroApplication.InvokeEvent(System.Object,System.Boolean)">
             <summary>
             发出事件
             </summary>
             <param name="args"></param>
+            <param name="waitEnd"></param>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApplication.AppName">
             <summary>
@@ -5024,11 +5015,6 @@
         <member name="F:Agebull.MicroZero.ZeroWorkModel.Client">
             <summary>
             客户模式，仅可调用
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroWorkModel.Bridge">
-            <summary>
-            反向桥接模式
             </summary>
         </member>
         <member name="T:Agebull.MicroZero.PubSub.PublishItem">

@@ -101,7 +101,7 @@ namespace ZeroMQ
         ///
         public static bool Has(string capability)
         {
-            using (var capabilityPtr = DispoIntPtr.AllocString(capability))
+            using (var capabilityPtr = MarshalPtr.AllocString(capability))
             {
                 if (0 < zmq.has(capabilityPtr))
                 {

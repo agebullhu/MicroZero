@@ -1,15 +1,57 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" />
+    <Content Remove="MicroZero.Http.GatewayBase.deps.json" />
   </ItemGroup>
-
+  <ItemGroup>
+    <None Remove="Agebull.Common.Extend.dll" />
+    <None Remove="Agebull.Common.LogRecorder.dll" />
+    <None Remove="Agebull.EntityModel.Core.dll" />
+    <None Remove="Agebull.MicroZero.ClrZMQ.dll" />
+    <None Remove="Agebull.MicroZero.ClrZMQ.pdb" />
+    <None Remove="Agebull.MicroZero.ClrZMQ.xml" />
+    <None Remove="Agebull.MicroZero.Core.dll" />
+    <None Remove="Agebull.MicroZero.Core.pdb" />
+    <None Remove="Agebull.MicroZero.Core.xml" />
+    <None Remove="Agebull.ZeroNet.Abstractions.dll" />
+    <None Remove="ICSharpCode.SharpZipLib.dll" />
+    <None Remove="libzmq.dll" />
+    <None Remove="libzmq.pdb" />
+    <None Remove="libzmq.so" />
+    <None Remove="Microsoft.AI.DependencyCollector.dll" />
+    <None Remove="Microsoft.AI.EventCounterCollector.dll" />
+    <None Remove="Microsoft.AI.PerfCounterCollector.dll" />
+    <None Remove="Microsoft.AI.ServerTelemetryChannel.dll" />
+    <None Remove="Microsoft.AI.WindowsServer.dll" />
+    <None Remove="Microsoft.ApplicationInsights.AspNetCore.dll" />
+    <None Remove="Microsoft.ApplicationInsights.dll" />
+    <None Remove="Microsoft.Extensions.DiagnosticAdapter.dll" />
+    <None Remove="Microsoft.Extensions.Logging.ApplicationInsights.dll" />
+    <None Remove="Microsoft.Extensions.PlatformAbstractions.dll" />
+    <None Remove="Microsoft.Win32.SystemEvents.dll" />
+    <None Remove="MicroZero.Http.GatewayBase.dll" />
+    <None Remove="MicroZero.Http.GatewayBase.pdb" />
+    <None Remove="MicroZero.Http.GatewayBase.xml" />
+    <None Remove="Newtonsoft.Json.dll" />
+    <None Remove="NPOI.dll" />
+    <None Remove="NPOI.OOXML.dll" />
+    <None Remove="NPOI.OpenXml4Net.dll" />
+    <None Remove="NPOI.OpenXmlFormats.dll" />
+    <None Remove="System.ComponentModel.Composition.dll" />
+    <None Remove="System.Configuration.ConfigurationManager.dll" />
+    <None Remove="System.Diagnostics.PerformanceCounter.dll" />
+    <None Remove="System.Drawing.Common.dll" />
+    <None Remove="System.Security.Cryptography.ProtectedData.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.12.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.12.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <Description>MicroZero的HttpGateway基础库,以便打包及扩展</Description>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <DebugType>portable</DebugType>
     
     <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
@@ -25,7 +67,10 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
     <Product>MicroZero.Http.GatewayBase</Product>
-    <Version>1.4.10.37</Version>
+    <Version>1.5.0.0-bate</Version>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>MicroZero.Http.GatewayBase.xml</DocumentationFile>

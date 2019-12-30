@@ -69,7 +69,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     系统配置
         /// </summary>
-        public SystemConfig SystemConfig => _systemConfig ?? (_systemConfig = new SystemConfig());
+        public SystemConfig SystemConfig => _systemConfig ??= new SystemConfig();
 
 #pragma warning restore CS0649
 
@@ -150,9 +150,10 @@ namespace MicroZero.Http.Gateway
         private void CheckSecurity()
         {
             Option.Security.DenyTokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (Option.Security.denyTokens != null)
-                foreach (var apiItem in Option.Security.denyTokens)
-                    Option.Security.DenyTokens.Add(apiItem, apiItem);
+            if (Option.Security.denyTokens == null) 
+                return;
+            foreach (var apiItem in Option.Security.denyTokens)
+                Option.Security.DenyTokens.Add(apiItem, apiItem);
         }
 
         /// <summary>

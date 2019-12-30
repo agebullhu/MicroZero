@@ -11,7 +11,7 @@ namespace ZeroMQ.Monitoring
 		/// Initializes a new instance of the <see cref="ZMonitorEventArgs"/> class.
 		/// </summary>
 		/// <param name="monitor">The <see cref="ZMonitor"/> that triggered the event.</param>
-		/// <param name="address">The peer address.</param>
+		/// <param name="ed">The peer address.</param>
 		public ZMonitorEventArgs(ZMonitor monitor, ZMonitorEventData ed)
 		{
 			Monitor = monitor;

@@ -8,7 +8,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>微服务框架MicroZero的核心程序集</Description>
-    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <DebugType>portable</DebugType>
     <PackageId></PackageId>
     
@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.4.10.37</Version>
+    <Version>1.5.0.3-bate</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,14 +37,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|AnyCPU'">
     <Optimize>true</Optimize>
     <DefineConstants>UseStateMachine</DefineConstants>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
     <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
   </PropertyGroup>
 
@@ -102,7 +102,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Composition" Version="4.6.0" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>

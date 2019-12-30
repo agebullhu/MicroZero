@@ -4,6 +4,7 @@ using Senparc.NeuChar.Entities;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using Senparc.NeuChar;
+using Senparc.NeuChar.Context;
 using Senparc.Weixin.Tencent;
 using Senparc.NeuChar.Exceptions;
 
@@ -47,7 +48,7 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
                 decryptDoc = XDocument.Parse(msgXml);//完成解密
             }
 
-            var requestMessage = RequestMessageFactory.GetRequestEntity(decryptDoc);
+            var requestMessage = RequestMessageFactory.GetRequestEntity(decryptDoc, xml);
             if (UsingEcryptMessage)
             {
                 requestMessage.Encrypt = encrypt;

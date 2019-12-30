@@ -58,7 +58,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDefaultFiles();
             app.UseStaticFiles();
@@ -67,7 +67,7 @@ namespace MicroZero.Http.Gateway
 
             DoConfigure(app, env);
 
-            RouteApp.Initialize();
+             RouteApp.Initialize();
             app.Run(RouteApp.Call);
         }
 
@@ -76,7 +76,7 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        protected virtual void DoConfigure(IApplicationBuilder app, IHostingEnvironment env)
+        protected virtual void DoConfigure(IApplicationBuilder app, IWebHostEnvironment env)
         {
         }
     }

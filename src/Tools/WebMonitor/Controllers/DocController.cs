@@ -64,6 +64,7 @@ namespace WebMonitor.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [HttpGet]
         public async Task<JsonResult> Postman(string id)
         {
             var doc = await GetDoc(id);

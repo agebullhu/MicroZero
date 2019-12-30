@@ -61,7 +61,7 @@ namespace ZeroMQ
 
         public static readonly int MinimumFrameSize = zmq.sizeof_zmq_msg_t;
 
-        private DispoIntPtr FramePtr
+        private MarshalPtr FramePtr
         {
             get => _framePtr;
             set
@@ -85,7 +85,7 @@ namespace ZeroMQ
         private int _len;
 
         private int _position;
-        private DispoIntPtr _framePtr;
+        private MarshalPtr _framePtr;
 
         // private ZeroMQ.lib.FreeMessageDelegate _freePtr;
 
@@ -168,7 +168,7 @@ namespace ZeroMQ
 			: this(Alloc(data, size), size)
 		{ } */
 
-        internal ZFrame(DispoIntPtr frameIntPtr, int size)
+        internal ZFrame(MarshalPtr frameIntPtr, int size)
         {
             FramePtr = frameIntPtr;
             _len = size;
@@ -177,9 +177,9 @@ namespace ZeroMQ
 
         ~ZFrame() => Dispose(false);
 
-        internal static DispoIntPtr CreateEmptyNative()
+        internal static MarshalPtr CreateEmptyNative()
         {
-            var msg = DispoIntPtr.Alloc(zmq.sizeof_zmq_msg_t);
+            var msg = MarshalPtr.Alloc(zmq.sizeof_zmq_msg_t);
 
             while (-1 == zmq.msg_init(msg))
             {
@@ -195,9 +195,9 @@ namespace ZeroMQ
             return msg;
         }
 
-        internal static DispoIntPtr CreateNative(int size)
+        internal static MarshalPtr CreateNative(int size)
         {
-            var msg = DispoIntPtr.Alloc(zmq.sizeof_zmq_msg_t);
+            var msg = MarshalPtr.Alloc(zmq.sizeof_zmq_msg_t);
 
 
             while (-1 == zmq.msg_init_size(msg, size))
@@ -816,7 +816,7 @@ namespace ZeroMQ
             error = ZError.None;
 
             string result = null;
-            using (var propertyPtr = DispoIntPtr.AllocString(property))
+            using (var propertyPtr = MarshalPtr.AllocString(property))
             {
                 IntPtr resultPtr;
                 if (IntPtr.Zero == (resultPtr = zmq.msg_gets(FramePtr, propertyPtr)))

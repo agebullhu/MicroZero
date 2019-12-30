@@ -33,17 +33,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         ///     需要登录
         /// </summary>
-        public bool NeedLogin => (((int)Access) & 0xFFF0) > 0;
+        public bool NeedLogin => (Access & (ApiAccessOption.Employe | ApiAccessOption.Customer | ApiAccessOption.Business)) > 0;
 
         /// <summary>
         ///     是否公开接口
         /// </summary>
         public bool IsPublic => Access.HasFlag(ApiAccessOption.Public);
-
-        /// <summary>
-        ///     是否可能存在用户信息
-        /// </summary>
-        public bool HaseUser => (Access & (ApiAccessOption)0xFFF0) > ApiAccessOption.None;
 
         /// <summary>
         ///     参数类型

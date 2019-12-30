@@ -35,7 +35,7 @@ namespace MicroZero.Http.Gateway
         {
             ZeroApplication.Initialize();
             RouteCache.InitCache();
-            ZeroApplication.ZeroNetEvent += async (sender, e) => await OnZeroNetEvent(sender, e);
+            ZeroApplication.ZeroNetEvents.Add(OnZeroNetEvent);
             ZeroApplication.Run();
         }
 
@@ -139,7 +139,7 @@ namespace MicroZero.Http.Gateway
                     await context.Response.WriteAsync("Wecome MicroZero!", Encoding.UTF8);
                     return;
                 }
-                var ext = Path.GetExtension(folders[folders.Length - 1]);
+                var ext = Path.GetExtension(folders[^1]);
                 if (!string.IsNullOrWhiteSpace(ext))
                 {
                     if (!RouteOption.Option.UrlMap.TryGetValue(ext, out map))
@@ -286,11 +286,11 @@ namespace MicroZero.Http.Gateway
 
         #region OnZeroNetEvent
 
-        private static async Task OnZeroNetEvent(object sender, ZeroNetEventArgument e)
+        private static async Task OnZeroNetEvent(ZeroAppConfigRuntime config, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
-                case ZeroNetEventType.AppRun:
+                //case ZeroNetEventType.AppRun:
                 case ZeroNetEventType.ConfigUpdate:
                     await OnZeroNetRuning();
                     return;
@@ -298,8 +298,6 @@ namespace MicroZero.Http.Gateway
                     OnZeroNetClose();
                     return;
                 case ZeroNetEventType.CenterStationDocument:
-                    if (!e.EventConfig.IsApi)
-                        return;
                     if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
                         await UpdateApiItems(host as ZeroHost);
@@ -309,8 +307,6 @@ namespace MicroZero.Http.Gateway
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
-                    if (!e.EventConfig.IsApi)
-                        return;
                     await StationJoin(e.EventConfig);
                     break;
                 case ZeroNetEventType.CenterStationLeft:
@@ -318,8 +314,6 @@ namespace MicroZero.Http.Gateway
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
                 case ZeroNetEventType.CenterStationStop:
-                    if (!e.EventConfig.IsApi)
-                        return;
                     StationLeft(e.EventConfig);
                     break;
             }
@@ -333,7 +327,7 @@ namespace MicroZero.Http.Gateway
         private static async Task OnZeroNetRuning()
         {
             //Console.WriteLine("lock (_configs)");
-            var cfgs = ZeroApplication.Config.GetConfigs(p => p.IsApi && !string.IsNullOrWhiteSpace(p.StationName));
+            var cfgs = ZeroApplication.Config.GetConfigs();
             foreach (var config in cfgs)
                 await StationJoin(config);
         }
@@ -359,16 +353,22 @@ namespace MicroZero.Http.Gateway
 
         private static async Task StationJoin(StationConfig station)
         {
+            if (station.IsBaseStation)
+                return;
+            ZeroTrace.SystemLog("StationJoin", station.Group, station.StationName, station.Caption);
             ZeroHost zeroHost;
             if (RouteOption.RouteMap.TryGetValue(station.StationName, out var h))
             {
                 zeroHost = h as ZeroHost;
-                if (zeroHost == null) RouteOption.RouteMap[station.StationName] = zeroHost = new ZeroHost();
+                if (zeroHost == null)
+                    RouteOption.RouteMap[station.StationName] = zeroHost = new ZeroHost();
             }
             else
             {
                 RouteOption.RouteMap.TryAdd(station.StationName, zeroHost = new ZeroHost());
             }
+
+            zeroHost.Config = station;
             zeroHost.Description = null;
             zeroHost.ByZero = true;
             zeroHost.Failed = false;
@@ -394,7 +394,15 @@ namespace MicroZero.Http.Gateway
 
         private static async Task UpdateApiItems(ZeroHost zeroHost)
         {
-            var mg = new ConfigManager(ZeroApplication.Config.Master);
+            if (zeroHost.Config.IsBaseStation || !zeroHost.Config.IsApi || string.IsNullOrWhiteSpace(zeroHost.Config.StationName))
+                return;
+            var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == zeroHost.Config.Group);
+            if (center == null)
+            {
+                zeroHost.Apis = null;
+                return;
+            }
+            var mg = new ConfigManager(center);
             var doc = await mg.LoadDocument(zeroHost.Station);
             if (doc == null)
             {

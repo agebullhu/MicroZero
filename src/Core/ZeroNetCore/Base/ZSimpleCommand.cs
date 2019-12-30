@@ -24,7 +24,7 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="args">请求参数,第一个必须为命令名称</param>
         /// <returns></returns>
-        public async Task<ZeroResult> CallCommand(params string[] args)
+        public Task<ZeroResult> CallCommand(params string[] args)
         {
             byte[] description = new byte[5 + args.Length];
             description[0] = (byte)(args.Length + 1);
@@ -37,7 +37,7 @@ namespace Agebull.MicroZero
             }
             description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.ExtendEnd;
-            return await CallCommand(description, args);
+            return CallCommand(description, args);
         }
 
         /// <summary>

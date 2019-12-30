@@ -172,7 +172,6 @@ namespace Agebull.MicroZero.ZeroManagemant
                     ZeroApplication.Config.FlushConfigs(item, json);
                 }
             }
-            ZeroApplication.RaiseEvent(ZeroNetEventType.ConfigUpdate);
             return true;
         }
 

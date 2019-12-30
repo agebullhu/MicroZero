@@ -53,7 +53,7 @@ namespace RpcTest
         }
         public abstract bool Init();
 
-        public static void OnZeroEvent(object sender, ZeroNetEventArgument e)
+        public static Task OnZeroEvent(object sender, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
@@ -68,6 +68,8 @@ namespace RpcTest
                     test.Cancel?.Cancel();
                     break;
             }
+
+            return Task.CompletedTask;
         }
 
         private void StartTest()

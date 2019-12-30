@@ -34,6 +34,43 @@
         }
 
         /// <summary>
+        /// 构造
+        /// </summary>
+        public void CheckOption()
+        {
+            if (PoolTimeOut <= 0)
+                PoolTimeOut = 500;
+
+            if (ConnectTimeout <= 0)
+                ConnectTimeout = 3000;
+
+            //ReconnectIvl = 200;
+            //ReconnectIvlMax = 1400;
+
+            //ConnectTimeout = 3000;
+
+            //Linger = 3000;
+            if (Linger <= 0)
+                Linger = 500;
+            //RecvTimeout = 5000;
+            if (RecvTimeout <= 0)
+                RecvTimeout = 5000;
+            //SendTimeout = 5000;
+            if (SendTimeout <= 0)
+                SendTimeout = 5000;
+
+            //Backlog = 8192;
+
+            //HeartbeatIvl = 0;
+            //HeartbeatTimeout = 200;
+            //HeartbeatTtl = 200;
+
+            //TcpKeepalive = 1;
+            //TcpKeepaliveIdle = 7200;
+            //TcpKeepaliveIntvl = 72;
+
+        }
+        /// <summary>
         /// 使用EPool的超时时间
         /// </summary>
         public int PoolTimeOut { get; set; }  //  500;
@@ -66,7 +103,7 @@
         /// 连接队列数量
         /// </summary>
         public int Backlog { get; set; }  //  50000;
-        
+
         /// <summary>
         /// 启用Keeplive
         /// </summary>

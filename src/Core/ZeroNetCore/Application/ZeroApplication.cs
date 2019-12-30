@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -233,7 +234,7 @@ namespace Agebull.MicroZero
             AddInImporter.Instance.AutoRegist();
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
-            ZeroCenterProxy.Master =new ZeroCenterProxy(Config.Master);
+            ZeroCenterProxy.Master = new ZeroCenterProxy(Config.Master);
             IocHelper.Update();
         }
 
@@ -246,14 +247,9 @@ namespace Agebull.MicroZero
         /// </summary>
         public static bool Run()
         {
-            if (WorkModel != ZeroWorkModel.Bridge)
-            {
-                var task = Start();
-                task.Wait();
-                return task.Result;
-            }
-            ApplicationState = StationState.Run;
-            return true;
+            var task = Start();
+            task.Wait();
+            return task.Result;
         }
 
         /// <summary>
@@ -261,12 +257,7 @@ namespace Agebull.MicroZero
         /// </summary>
         public static async Task<bool> RunAsync()
         {
-            if (WorkModel != ZeroWorkModel.Bridge)
-            {
-                return await Start();
-            }
-            ApplicationState = StationState.Run;
-            return true;
+            return await Start();
         }
 
         /// <summary>
@@ -311,7 +302,8 @@ namespace Agebull.MicroZero
             ApplicationState = StationState.Start;
             var success = await JoinCenter();
             _ = SystemMonitor.Monitor();
-            _ = ApiChecker.RunCheck();
+            if (WorkModel == ZeroWorkModel.Service)
+                _ = ApiChecker.RunCheck();
             //await SystemMonitor.WaitMe();
             return success;
         }
@@ -391,17 +383,10 @@ namespace Agebull.MicroZero
                     break;
             }
             ApplicationState = StationState.Destroy;
-            if (WorkModel != ZeroWorkModel.Bridge)
-            {
-                if (GlobalObjects.Count > 0)
-                    GlobalSemaphore.Wait();
-                OnZeroDestory();
-                await SystemMonitor.WaitMe();
-            }
-            else
-            {
-                Thread.Sleep(1000);
-            }
+            if (GlobalObjects.Count > 0)
+                GlobalSemaphore.Wait();
+            OnZeroDestory();
+            await SystemMonitor.WaitMe();
             ApplicationState = StationState.Disposed;
             LogRecorderX.Shutdown();
             ZContext.Destroy();
@@ -420,7 +405,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 站点事件发生
         /// </summary>
-        public static event EventHandler<ZeroNetEventArgument> ZeroNetEvent;
+        public static List<Func<ZeroAppConfigRuntime, ZeroNetEventArgument, Task>> ZeroNetEvents = new List<Func<ZeroAppConfigRuntime, ZeroNetEventArgument, Task>>();
 
         /// <summary>
         /// 发出事件
@@ -430,10 +415,7 @@ namespace Agebull.MicroZero
             if (Config.CanRaiseEvent != true)
                 return;
             var args = new ZeroNetEventArgument(centerEvent, name, context, config);
-            if (sync)
-                InvokeEvent(args);
-            else
-                Task.Factory.StartNew(InvokeEvent, args);
+            InvokeEvent(args, !sync);
         }
 
         /// <summary>
@@ -446,27 +428,33 @@ namespace Agebull.MicroZero
             if (Config.CanRaiseEvent != true)
                 return;
             var args = new ZeroNetEventArgument(@event, null, null, null);
-            if (sync)
-                InvokeEvent(args);
-            else
-                Task.Factory.StartNew(InvokeEvent, args);
+            InvokeEvent(args, !sync);
         }
 
         /// <summary>
         /// 发出事件
         /// </summary>
         /// <param name="args"></param>
-        private static void InvokeEvent(object args)
+        /// <param name="waitEnd"></param>
+        private static void InvokeEvent(object args, bool waitEnd)
         {
+            var tasks = new List<Task>();
             var arg = (ZeroNetEventArgument)args;
-            try
+            foreach (var action in ZeroNetEvents)
             {
-                ZeroNetEvent?.Invoke(Config, arg);
+                try
+                {
+                    tasks.Add(action?.Invoke(Config, arg));
+                }
+                catch (Exception e)
+                {
+                    ZeroTrace.WriteException("ZeroNetEvent", e, arg.Event);
+                }
             }
-            catch (Exception e)
-            {
-                ZeroTrace.WriteException("ZeroNetEvent", e, arg.Event);
-            }
+
+            if (!waitEnd || tasks.Count == 0)
+                return;
+            Task.WaitAll(tasks.ToArray());
         }
         #endregion
     }

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Agebull.Common.Configuration;
 using Agebull.MicroZero;
 using Microsoft.AspNetCore;
@@ -7,11 +8,11 @@ namespace WebMonitor
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             BuildWebHost(args).Run();
             WebSocketNotify.Close();
-            ZeroApplication.Shutdown();
+           await ZeroApplication.Shutdown();
         }
 
 
