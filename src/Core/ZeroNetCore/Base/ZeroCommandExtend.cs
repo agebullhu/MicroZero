@@ -18,7 +18,7 @@ namespace Agebull.MicroZero
         /// <param name="showError">是否显示错误</param>
         /// <returns></returns>
         [Obsolete]
-        public static ZeroResult ReceiveString(this ZSocket socket, bool showError = false)
+        public static ZeroResult ReceiveString(this ZSocketEx socket, bool showError = false)
         {
             var task= Receive<ZeroResult>(socket);
             task.Wait();
@@ -30,7 +30,7 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        public static async Task<TZeroResultData> Receive<TZeroResultData>(this ZSocket socket) 
+        public static async Task<TZeroResultData> Receive<TZeroResultData>(this ZSocketEx socket) 
             where TZeroResultData : ZeroResultData, new()
         {
             ZMessage messages;

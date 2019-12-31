@@ -1,8 +1,10 @@
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using Agebull.Common.Logging;
 using ZeroMQ;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Context;
@@ -15,7 +17,7 @@ namespace Agebull.MicroZero.ZeroApis
     /// </summary>
     public class ApiProxy : ZeroStation
     {
-        #region Task
+        #region Socket
 
         /// <summary>
         /// 代理地址
@@ -196,7 +198,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns>返回False表明需要重启</returns>
         protected sealed override async Task<bool> Loop(/*CancellationToken token*/)
         {
-            //await Task.Yield();
+            await Task.Yield();
             _isChanged = true;
             while (CanLoopEx)
             {
@@ -240,6 +242,7 @@ namespace Agebull.MicroZero.ZeroApis
         #endregion
 
         #region 方法
+
         /// <summary>
         /// 调用
         /// </summary>
@@ -250,9 +253,11 @@ namespace Agebull.MicroZero.ZeroApis
             StationProxyItem item;
             ZMessage message2;
             byte[] caller;
+            string str;
             using (message)
             {
                 caller = message[0].ReadAll();
+                str = Encoding.UTF8.GetString(caller);
                 var station = message[1].ToString();
                 if (!StationProxy.TryGetValue(station, out item))
                 {
@@ -271,8 +276,19 @@ namespace Agebull.MicroZero.ZeroApis
 
             if (success)
                 return;
-            ZeroTrace.WriteError("ApiProxy . OnLocalCall", error.Text);
-            SendNetErrorResult(caller);
+            if (long.TryParse(str, out var id) && _tasks.TryGetValue(id, out var src))
+            {
+                src.SetResult(new ZeroResult
+                {
+                    State = ZeroOperatorStateType.LocalSendError,
+                    ZmqError = error
+                });
+            }
+            else
+            {
+                ZeroTrace.WriteError("ApiProxy . OnLocalCall", error.Text);
+                SendNetErrorResult(caller);
+            }
         }
 
 
@@ -294,8 +310,16 @@ namespace Agebull.MicroZero.ZeroApis
             });
             if (result.State != ZeroOperatorStateType.Runing)
                 Interlocked.Decrement(ref WaitCount);
-            message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
-            SendResult(message2);
+            if (long.TryParse(result.Requester, out var id) && _tasks.TryGetValue(id, out var src))
+            {
+                if (result.State != ZeroOperatorStateType.Runing)
+                    src.SetResult(result);
+            }
+            else
+            {
+                message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
+                SendResult(message2);
+            }
         }
 
         #endregion
@@ -403,6 +427,123 @@ namespace Agebull.MicroZero.ZeroApis
             _zmqPool.RePrepare(ZPollEvent.In);
             return _zmqPool;
         }
+
+        #endregion
+
+        #region 异步
+
+
+        private long _id;
+        /// <summary>
+        /// 取得Id
+        /// </summary>
+        /// <returns></returns>
+        public long GetId()
+        {
+            return ++_id;
+        }
+
+        private long CreateSocket(ProxyCaller2 caller, out ZSocketEx socket)
+        {
+            if (!ZeroApplication.ZerCenterIsRun)
+            {
+                caller.Result = ApiResultIoc.NoReadyJson;
+                caller.State = ZeroOperatorStateType.LocalNoReady;
+                socket = null;
+                return 0;
+            }
+
+            if (!ZeroApplication.Config.TryGetConfig(caller.Station, out caller.Config))
+            {
+                caller.Result = ApiResultIoc.NoFindJson;
+                caller.State = ZeroOperatorStateType.NotFind;
+                socket = null;
+                return 0;
+            }
+
+            //if (Config.State == ZeroCenterState.None || Config.State == ZeroCenterState.Pause)
+            //{
+            //    caller.Result = ApiResultIoc.PauseJson;
+            //    caller.State = ZeroOperatorStateType.Pause;
+            //    socket = null;
+            //    return 0;
+            //}
+
+            //if (Config.State != ZeroCenterState.Run)
+            //{
+            //    caller.Result = ApiResultIoc.NotSupportJson;
+            //    caller.State = ZeroOperatorStateType.Pause;
+            //    socket = null;
+            //    return 0;
+            //}
+
+            caller.State = ZeroOperatorStateType.None;
+            socket = ApiProxy.GetProxySocket(caller.Name.ToString());
+            socket.ServiceKey = caller.Config.ServiceKey;
+            return caller.Name;
+        }
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="description"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        internal Task<ZeroResult> Send(ProxyCaller2 caller, byte[] description, params byte[][] args)
+        {
+            return SendToZero(caller, description, args);
+        }
+
+
+        /// <summary>
+        ///     一次请求
+        /// </summary>
+        /// <param name="caller"></param>
+        /// <param name="description"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        internal Task<ZeroResult> SendToZero(ProxyCaller2 caller, byte[] description, IEnumerable<byte[]> args)
+        {
+            var id = CreateSocket(caller, out var socket);
+            if(id == 0)
+                return Task.FromResult(new ZeroResult
+                {
+                    State = ZeroOperatorStateType.NoWorker,
+                });
+            using (MonitorScope.CreateScope("SendToZero"))
+            using (var message = new ZMessage())
+            {
+                message.Add(new ZFrame(caller.Station));
+                message.Add(new ZFrame(description));
+                if (args != null)
+                {
+                    foreach (var arg in args)
+                    {
+                        message.Add(new ZFrame(arg));
+                    }
+                    message.Add(new ZFrame(caller.Config.ServiceKey));
+                }
+
+                var res = socket.SendTo(message);
+                if (!res)
+                {
+                    return Task.FromResult(new ZeroResult
+                    {
+                        State = ZeroOperatorStateType.LocalSendError,
+                        ZmqError = socket.LastError
+                    });
+                }
+            }
+
+            var src = new TaskCompletionSource<ZeroResult>();
+            _tasks.Add(id, src);
+            return src.Task;
+        }
+
+
+        private readonly Dictionary<long, TaskCompletionSource<ZeroResult>> _tasks = new Dictionary<long, TaskCompletionSource<ZeroResult>>();
+
 
         #endregion
     }

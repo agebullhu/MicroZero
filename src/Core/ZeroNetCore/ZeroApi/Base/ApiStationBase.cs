@@ -121,7 +121,7 @@ namespace Agebull.MicroZero.ZeroApis
             return true;
         }
 
-        private async Task<bool> DoPollMessage(bool checkWait, IZmqPool pool, ZSocket socket)
+        private async Task<bool> DoPollMessage(bool checkWait, IZmqPool pool, ZSocketEx socket)
         {
             //await Task.Yield();
             try
@@ -178,7 +178,7 @@ namespace Agebull.MicroZero.ZeroApis
             /// <summary>
             /// Socket句柄
             /// </summary>
-            public ZSocket Socket { get; set; }
+            public ZSocketEx Socket { get; set; }
             /// <summary>
             /// API调用的信息
             /// </summary>
@@ -361,7 +361,7 @@ namespace Agebull.MicroZero.ZeroApis
         #region 方法调用
 
         private int timeout;
-        private Task OnCall(bool checkWait, ZSocket socket, ZMessage message)
+        private Task OnCall(bool checkWait, ZSocketEx socket, ZMessage message)
         {
             //await Task.Yield();
             Interlocked.Increment(ref CallCount);
@@ -418,7 +418,6 @@ namespace Agebull.MicroZero.ZeroApis
                     await OnExecuestEnd(arg.Socket, arg.Api, ZeroOperatorStateType.Ok);
                     return;
             }
-
             if (!PrepareExecute(arg.Api))
                 return;
             arg.Executer = new ApiExecuter
@@ -722,7 +721,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal virtual async Task<bool> OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal virtual async Task<bool> OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
         {
             if (socket == null)
                 return false;
@@ -776,7 +775,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal virtual async Task SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
+        internal virtual async Task SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
         {
             //if (!CanLoop)
             //{
@@ -805,7 +804,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="socket"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        protected async Task<bool> SendResult(ZSocket socket, ZMessage message)
+        protected async Task<bool> SendResult(ZSocketEx socket, ZMessage message)
         {
             //if (!CanLoop)
             //{

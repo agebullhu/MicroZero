@@ -21,10 +21,15 @@ namespace Agebull.MicroZero.ZeroApis
             set => _core.Files = value;
         }
 
+        /*// <summary>
+        ///     返回的数据
+        /// </summary>
+        private readonly ProxyCaller _core = new ProxyCaller();*/
+
         /// <summary>
         ///     返回的数据
         /// </summary>
-        private readonly ProxyCaller _core = new ProxyCaller();
+        private readonly ProxyCaller2 _core = new ProxyCaller2();
 
         /// <summary>
         ///     返回值

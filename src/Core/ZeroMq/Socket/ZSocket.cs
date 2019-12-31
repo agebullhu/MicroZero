@@ -592,18 +592,6 @@ namespace ZeroMQ
             return SendMessage(msg, out error);
         } // just Send*
 
-        public Task<bool> SendAsync(ZMessage msg)
-        {
-            try
-            {
-                return Task.FromResult(SendMessage(msg, out _error));
-            }
-            catch (Exception e)
-            {
-                return Task.FromException<bool>(e);
-            }
-        }
-
         public void Send(ZMessage msg, ZSocketFlags flags)
         {
             SendMessage(msg, flags);
@@ -813,22 +801,23 @@ namespace ZeroMQ
             return true;
         }
 
-        public async Task<bool> SendFrameAsync(ZFrame frame, int flags)
+        protected bool SendFrame(ZFrame frame, int flags, out ZError error)
         {
             //EnsureNotDisposed();
 
-            if (frame.IsDismissed)
-                throw new ObjectDisposedException("frame");
+            if (frame.IsDismissed) throw new ObjectDisposedException("frame");
 
-            _error = null;
-            while (-1 == await Task.Run(() => zmq.msg_send(frame.Ptr, SocketPtr, (int)flags)))
+            error = _error = null;
+
+            while (-1 == zmq.msg_send(frame.Ptr, SocketPtr, (int)flags))
             {
-                _error = ZError.GetLastErr();
+                error = _error = ZError.GetLastErr();
 
-                if (!_error.IsError(ZError.Code.EINTR))
+                if (!error.IsError(ZError.Code.EINTR))
                     return false;
-                _error = null;
+                error = _error = null;
             }
+
             // Tell IDisposable to not unallocate zmq_msg
             frame.Close();
             return true;
@@ -885,25 +874,6 @@ namespace ZeroMQ
         #endregion
 
         #region Extend
-
-        /// <summary>
-        /// 发送
-        /// </summary>
-        /// <param name="message">消息</param>
-        /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        public Task<bool> SendToAsync(ZMessage message)
-        {
-            try
-            {
-                var res = SendTo(message);
-                return Task.FromResult(res);
-            }
-            catch (Exception e)
-            {
-                LogRecorderX.Exception(e);
-                return Task.FromException<bool>(e);
-            }
-        }
 
         /// <summary>
         /// 发送
@@ -1039,44 +1009,6 @@ namespace ZeroMQ
             return message.Count > 0;
         }
 
-        /// <summary>
-        /// 接收数据
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Task<ZMessage> RecvAsync(int flags = FlagsNone)
-        {
-            var message = new ZMessage();
-            _error = null;
-            do
-            {
-                if (!RecvFrame(out var frame, flags))
-                {
-                    break;
-                }
-                message.Add(frame);
-            } while (ReceiveMore);
-
-            return Task.FromResult(message.Count == 0 ? null : message);
-        }
-
-        /// <summary>
-        /// 接收数据
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        private async Task<ZFrame> RecvFrameAsync(int flags)
-        {
-            _error = null;
-            var frame = ZFrame.CreateEmpty();
-            var res = await Task.Run(() => zmq.msg_recv(frame.Ptr, SocketPtr, flags));
-            if (res != -1)
-                return frame;
-            _error = ZError.GetLastErr();
-            frame.Dispose();
-            LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
-            return null;
-        }
         #endregion
 
         #region Subscribe
@@ -1948,7 +1880,7 @@ namespace ZeroMQ
         /// <param name="frame"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        private bool RecvFrame(out ZFrame frame, int flags)
+        protected bool RecvFrame(out ZFrame frame, int flags)
         {
             frame = ZFrame.CreateEmpty();
             if (zmq.msg_recv(frame.Ptr, SocketPtr, flags) != -1)

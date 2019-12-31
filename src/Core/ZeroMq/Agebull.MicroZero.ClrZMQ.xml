@@ -1422,13 +1422,6 @@
             <param name="error"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.ZSocket.SendToAsync(ZeroMQ.ZMessage)">
-            <summary>
-            发送
-            </summary>
-            <param name="message">消息</param>
-            <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        </member>
         <member name="M:ZeroMQ.ZSocket.SendTo(ZeroMQ.ZMessage)">
             <summary>
             发送
@@ -1471,20 +1464,6 @@
             接收数据
             </summary>
             <param name="message"></param>
-            <param name="flags"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.RecvAsync(System.Int32)">
-            <summary>
-            接收数据
-            </summary>
-            <param name="flags"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocket.RecvFrameAsync(System.Int32)">
-            <summary>
-            接收数据
-            </summary>
             <param name="flags"></param>
             <returns></returns>
         </member>
@@ -1984,6 +1963,42 @@
             <param name="array">消息</param>
             <param name="extend"></param>
             <returns>是否发送成功</returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocketEx.SendAsync(ZeroMQ.ZMessage)">
+            <summary>
+            异步发送
+            </summary>
+            <param name="msg"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocketEx.SendFrameAsync(ZeroMQ.ZFrame,System.Int32)">
+            <summary>
+            异步发送
+            </summary>
+            <param name="frame"></param>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocketEx.RecvAsync(System.Int32)">
+            <summary>
+            接收数据
+            </summary>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocketEx.SendToAsync(ZeroMQ.ZMessage)">
+            <summary>
+            发送
+            </summary>
+            <param name="message">消息</param>
+            <returns>1 发送成功 0 发送失败 -1部分发送</returns>
+        </member>
+        <member name="M:ZeroMQ.ZSocketEx.RecvFrameAsync(System.Int32)">
+            <summary>
+            接收数据
+            </summary>
+            <param name="flags"></param>
+            <returns></returns>
         </member>
         <member name="F:ZeroMQ.ZSocketFlags.None">
             <summary>

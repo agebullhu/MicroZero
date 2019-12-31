@@ -569,6 +569,30 @@
             构造Pool
             </summary>
         </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.GetId">
+            <summary>
+            取得Id
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.Send(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Byte[][])">
+            <summary>
+                一次请求
+            </summary>
+            <param name="caller"></param>
+            <param name="description"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.SendToZero(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
+            <summary>
+                一次请求
+            </summary>
+            <param name="caller"></param>
+            <param name="description"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
         <member name="T:Agebull.MicroZero.ZeroApis.StationProxyItem">
             <summary>
             站点代理节点
@@ -708,14 +732,14 @@
                 请求格式说明
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Receive(ZeroMQ.ZSocket)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Receive(ZeroMQ.ZSocketEx)">
             <summary>
                 接收
             </summary>
             <param name="socket"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Send(ZeroMQ.ZSocket,System.Byte[],System.Byte[][])">
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Send(ZeroMQ.ZSocketEx,System.Byte[],System.Byte[][])">
             <summary>
                 一次请求
             </summary>
@@ -724,7 +748,7 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.SendToZero(ZeroMQ.ZSocket,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.SendToZero(ZeroMQ.ZSocketEx,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
             <summary>
                 一次请求
             </summary>
@@ -732,6 +756,120 @@
             <param name="description"></param>
             <param name="args"></param>
             <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ProxyCaller2">
+            <summary>
+                Api站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Files">
+            <summary>
+                文件
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Name">
+            <summary>
+                调用时使用的名称
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.ResultType">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Result">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Binary">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Station">
+            <summary>
+                请求站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.ContextJson">
+            <summary>
+                上下文内容（透传方式）
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.RequestId">
+            <summary>
+                请求站点
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Title">
+            <summary>
+                标题
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Commmand">
+            <summary>
+                调用命令
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Argument">
+            <summary>
+                参数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.ExtendArgument">
+            <summary>
+                扩展参数
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.State">
+            <summary>
+                结果状态
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.LastResult">
+            <summary>
+            最后一个返回值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller2.Call">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller2.CallAsync">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller2.Plan(Agebull.MicroZero.ZeroPlanInfo)">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller2.PlanAsync(Agebull.MicroZero.ZeroPlanInfo)">
+            <summary>
+                远程调用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller2.CheckStateResult">
+            <summary>
+                检查在非成功状态下的返回值
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.CallDescription">
+            <summary>
+                请求格式说明
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.PlanDescription">
+            <summary>
+                请求格式说明
+            </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiActionInfoEx">
             <summary>Api方法的信息</summary>
@@ -1423,7 +1561,7 @@
                 注册处理器
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -1432,7 +1570,7 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>
@@ -1440,7 +1578,7 @@
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocketEx,ZeroMQ.ZMessage)">
             <summary>
             发送返回值 
             </summary>
@@ -2962,7 +3100,7 @@
                 Zmq帮助类
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroCommandExtend.ReceiveString(ZeroMQ.ZSocket,System.Boolean)">
+        <member name="M:Agebull.MicroZero.ZeroCommandExtend.ReceiveString(ZeroMQ.ZSocketEx,System.Boolean)">
             <summary>
                 接收文本
             </summary>
@@ -2970,7 +3108,7 @@
             <param name="showError">是否显示错误</param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroCommandExtend.Receive``1(ZeroMQ.ZSocket)">
+        <member name="M:Agebull.MicroZero.ZeroCommandExtend.Receive``1(ZeroMQ.ZSocketEx)">
             <summary>
                 接收字节
             </summary>
@@ -5472,7 +5610,7 @@
         <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnLoopComplete">
             <inheritdoc />
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -5481,7 +5619,7 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.SendLayoutErrorResult(ZeroMQ.ZSocket,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.SendLayoutErrorResult(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>

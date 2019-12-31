@@ -87,7 +87,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal override async Task<bool> OnExecuestEnd(ZSocket socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal override async Task<bool> OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
                 await Ack(id, state == ZeroOperatorStateType.Ok);
@@ -118,7 +118,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal override async Task SendLayoutErrorResult(ZSocket socket, ApiCallItem item)
+        internal override async Task SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
                 await Ack(id, false);

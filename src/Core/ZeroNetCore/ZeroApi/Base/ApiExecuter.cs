@@ -29,7 +29,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 当前连接
         /// </summary>
-        internal ZSocket Socket { get; set; }
+        internal ZSocketEx Socket { get; set; }
         /// <summary>
         /// 调用的内容
         /// </summary>
