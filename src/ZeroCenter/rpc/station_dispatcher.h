@@ -11,7 +11,7 @@ namespace agebull
 		/**
 		 * \brief 表示站点调度服务
 		 */
-		class station_dispatcher :public zero_station
+		class station_dispatcher final :public zero_station
 		{
 		public:
 			/**

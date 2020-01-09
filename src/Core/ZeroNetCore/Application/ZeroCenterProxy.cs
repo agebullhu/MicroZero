@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Agebull.Common.Context;
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -31,7 +30,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> PingCenter()
+        public bool PingCenter()
         {
             return ByteCommand(ZeroByteCommand.Ping);
         }
@@ -39,7 +38,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartLeft()
+        public bool HeartLeft()
         {
             return HeartLeft("SystemManage", GlobalContext.ServiceRealName);
         }
@@ -47,7 +46,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartReady()
+        public bool HeartReady()
         {
             return HeartReady("SystemManage", GlobalContext.ServiceRealName);
         }
@@ -55,7 +54,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartJoin()
+        public bool HeartJoin()
         {
             return HeartJoin("SystemManage", GlobalContext.ServiceRealName);
         }
@@ -63,7 +62,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> Heartbeat()
+        public bool Heartbeat()
         {
             return Heartbeat("SystemManage", GlobalContext.ServiceRealName);
         }

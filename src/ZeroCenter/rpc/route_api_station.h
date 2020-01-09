@@ -10,7 +10,7 @@ namespace agebull
 		/**
 		* \brief API站点
 		*/
-		class route_api_station :public zero_station
+		class route_api_station final :public zero_station
 		{
 		public:
 			/**

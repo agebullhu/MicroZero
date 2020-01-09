@@ -36,8 +36,9 @@ namespace MicroZero.Http.Gateway
                     ContextJson = Data.GlobalContextJson
                 };
 
+                LogRecorderX.MonitorTrace("B");
                 await caller.CallCommandAsync();
-
+                LogRecorderX.MonitorTrace("A");
                 Data.ZeroState = caller.State;
                 Data.UserState = caller.State.ToOperatorStatus(true);
                 caller.CheckStateResult();

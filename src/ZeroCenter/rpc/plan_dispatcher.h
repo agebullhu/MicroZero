@@ -18,7 +18,7 @@ namespace agebull
 		/**
 		* \brief 表示计划任务调度服务
 		*/
-		class plan_dispatcher :public zero_station
+		class plan_dispatcher final :public zero_station
 		{
 			friend plan_message;
 			//plan_storage storage_;

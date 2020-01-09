@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.EntityModel.Common;
@@ -14,17 +13,17 @@ namespace WebMonitor.Models
     /// </summary>
     public class ZeroManager
     {
-        public static async Task<ApiResult> Command(params string[] commands)
+        public static ApiResult Command(params string[] commands)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
-                return ApiResult.Error(ErrorCode.LocalError, "系统未就绪");
+                return ApiResult.Error(ErrorCode.NoReady, "系统未就绪");
             }
             if (commands.Length == 0 || commands.Any(p => p == null))
             {
-                return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
+                return ApiResult.Error(ErrorCode.ArgumentError, "参数错误");
             }
-            var value = await ZeroCenterProxy.Master.CallCommand(commands.ToArray());
+            var value = ZeroCenterProxy.Master.CallCommand(commands.ToArray());
             if (!value.InteractiveSuccess)
             {
                 return ApiResult.Error(ErrorCode.NetworkError);
@@ -32,7 +31,7 @@ namespace WebMonitor.Models
             switch (value.State)
             {
                 case ZeroOperatorStateType.NotSupport:
-                    return ApiResult.Error(ErrorCode.LogicalError, "不支持的操作");
+                    return ApiResult.Error(ErrorCode.NoReady, "不支持的操作");
                 case ZeroOperatorStateType.Ok:
                     //BUG
                     var result = ApiValueResult.Succees(value.GetString(ZeroFrameType.Context) ?? value.State.Text());
@@ -47,7 +46,7 @@ namespace WebMonitor.Models
             }
         }
 
-        public static async Task<ApiResult> Update(StationConfig option)
+        public static ApiResult Update(StationConfig option)
         {
             if (!ZeroApplication.Config.TryGetConfig(option.Name, out _))
             {
@@ -56,7 +55,7 @@ namespace WebMonitor.Models
 
             try
             {
-                var result =await ZeroCenterProxy.Master.CallCommand("update", JsonHelper.SerializeObject(option));
+                var result =ZeroCenterProxy.Master.CallCommand("update", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");
@@ -81,7 +80,7 @@ namespace WebMonitor.Models
             }
         }
 
-        public static async Task<ApiResult> Install(StationConfig option)
+        public static ApiResult Install(StationConfig option)
         {
             if (ZeroApplication.Config.TryGetConfig(option.Name, out var config))
             {
@@ -96,7 +95,7 @@ namespace WebMonitor.Models
 
             try
             {
-                var result =await ZeroCenterProxy.Master.CallCommand("install", JsonHelper.SerializeObject(option));
+                var result =ZeroCenterProxy.Master.CallCommand("install", JsonHelper.SerializeObject(option));
                 if (!result.InteractiveSuccess)
                 {
                     return ApiResult.Error(ErrorCode.NetworkError, "服务器无法访问");

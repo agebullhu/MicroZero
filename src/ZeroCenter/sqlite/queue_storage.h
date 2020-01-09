@@ -11,7 +11,7 @@ namespace agebull
 		/**
 		* \brief 消息持久化存储(使用SQLite)
 		*/
-		class queue_storage :public sqlite_storage
+		class queue_storage final :public sqlite_storage
 		{
 			int64 last_id_;
 			sqlite3_stmt *insert_stmt_;

@@ -35,9 +35,9 @@ namespace MicroZero.Http.Route
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override Task Handle(PlanItem args)
+        public override void Handle(PlanItem args)
         {
-            return PlanManage.OnPlanEvent(args.ZeroEvent, args.Plan);
+            PlanManage.OnPlanEvent(args.ZeroEvent, args.Plan).Wait();
         }
 
         /// <summary>

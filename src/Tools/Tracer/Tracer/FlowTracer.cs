@@ -56,12 +56,12 @@ namespace MicroZero.Http.Route
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override Task Handle(PublishItem args)
+        public override void Handle(PublishItem args)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(args.RequestId))
-                    return Task.CompletedTask;
+                    return ;
                 if (string.IsNullOrWhiteSpace(args.CallId))
                     args.CallId = "0";
                 string title = args.CommandOrSubTitle;
@@ -103,7 +103,6 @@ namespace MicroZero.Http.Route
             {
                 ZeroTrace.WriteException("FlowTracer", e, args.Content);
             }
-            return Task.CompletedTask;
         }
 
         /// <summary>

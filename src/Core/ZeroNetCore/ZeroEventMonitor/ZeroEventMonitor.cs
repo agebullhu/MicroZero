@@ -45,10 +45,9 @@ namespace Agebull.MicroZero.ZeroManagemant
                 poll.Prepare(ZPollEvent.In, socket);
                 while (ZeroApplication.IsAlive)
                 {
-                    if (await poll.PollAsync())
+                    if (poll.Poll())
                     {
-                        var message = await poll.CheckInAsync(0);
-                        if (message == null)
+                        if (!poll.CheckIn(0, out var message))
                             continue;
                         failed = DateTime.MinValue;
                         if (PublishItem.Unpack(message, out var item) && MonitorStateMachine.StateMachine != null)

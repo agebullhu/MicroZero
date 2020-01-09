@@ -779,18 +779,6 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.IZmqPool.PollAsync">
-            <summary>
-            一次Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.IZmqPool.CheckInAsync(System.Int32)">
-            <summary>
-            检查下标是否有数据
-            </summary>
-            <param name="index"></param>
-        </member>
         <member name="T:ZeroMQ.ZmqPool">
             <summary>
             pool对象
@@ -848,18 +836,6 @@
             <param name="message"></param>
             <returns></returns>
         </member>
-        <member name="M:ZeroMQ.LinuxZPoll.PollAsync">
-            <summary>
-            一次Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.LinuxZPoll.CheckInAsync(System.Int32)">
-            <summary>
-            一次Pool
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:ZeroMQ.WinZPoll">
             <summary>
             pool对象
@@ -886,18 +862,6 @@
             <param name="events"></param>
         </member>
         <member name="M:ZeroMQ.WinZPoll.Poll">
-            <summary>
-            一次Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.WinZPoll.PollAsync">
-            <summary>
-            一次Pool
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.WinZPoll.CheckInAsync(System.Int32)">
             <summary>
             一次Pool
             </summary>
@@ -977,6 +941,11 @@
         <member name="M:ZeroMQ.ZPollBase.Free">
             <summary>
             释放资源
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.ZPollBase.TypeName">
+            <summary>
+            类型名称
             </summary>
         </member>
         <member name="T:ZeroMQ.ZPollEvent">
@@ -1934,6 +1903,14 @@
             <param name="array">消息</param>
             <returns>是否发送成功</returns>
         </member>
+        <member name="M:ZeroMQ.ZSocketEx.SendBy(System.Byte[],System.Byte[][])">
+            <summary>
+            发送
+            </summary>
+            <param name="desc"></param>
+            <param name="array">消息</param>
+            <returns>是否发送成功</returns>
+        </member>
         <member name="M:ZeroMQ.ZSocketEx.SendByServiceKey(System.Byte[],System.Byte[][])">
             <summary>
             发送
@@ -1964,36 +1941,7 @@
             <param name="extend"></param>
             <returns>是否发送成功</returns>
         </member>
-        <member name="M:ZeroMQ.ZSocketEx.SendAsync(ZeroMQ.ZMessage)">
-            <summary>
-            异步发送
-            </summary>
-            <param name="msg"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocketEx.SendFrameAsync(ZeroMQ.ZFrame,System.Int32)">
-            <summary>
-            异步发送
-            </summary>
-            <param name="frame"></param>
-            <param name="flags"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocketEx.RecvAsync(System.Int32)">
-            <summary>
-            接收数据
-            </summary>
-            <param name="flags"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocketEx.SendToAsync(ZeroMQ.ZMessage)">
-            <summary>
-            发送
-            </summary>
-            <param name="message">消息</param>
-            <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        </member>
-        <member name="M:ZeroMQ.ZSocketEx.RecvFrameAsync(System.Int32)">
+        <member name="M:ZeroMQ.ZSocketEx.Recv(System.Int32)">
             <summary>
             接收数据
             </summary>
@@ -2228,7 +2176,47 @@
             析构
             </summary>
         </member>
+        <member name="M:ZeroMQ.MemoryCheck.Trace">
+            <summary>
+            显示
+            </summary>
+        </member>
         <member name="M:ZeroMQ.MemoryCheck.DoDispose">
+            <summary>
+            析构
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.MemoryCheck.Alocs">
+            <summary>
+            分配记录
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.MemoryCheck.AliveCount">
+            <summary>
+            存活量
+            </summary>
+        </member>
+        <member name="F:ZeroMQ.MemoryCheck._aliveCount">
+            <summary>
+            存活量
+            </summary>
+        </member>
+        <member name="P:ZeroMQ.MemoryCheck.TypeName">
+            <summary>
+            类型名称
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.MemoryCheck.SetIsAloc(System.String)">
+            <summary>
+            析构
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.MemoryCheck.SetIsFree(System.String)">
+            <summary>
+            析构
+            </summary>
+        </member>
+        <member name="M:ZeroMQ.MemoryCheck.SetIsFree">
             <summary>
             析构
             </summary>

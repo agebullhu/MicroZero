@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Agebull.MicroZero.ZeroServices.StateMachine
+﻿namespace Agebull.MicroZero.ZeroServices.StateMachine
 {
     /// <summary>
     /// 监控状态机
@@ -10,10 +8,10 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// <summary>
         ///     开始的处理
         /// </summary>
-        Task<bool> IStationStateMachine.Start()
+        bool IStationStateMachine.Start()
         {
             ZeroApplication.OnObjectFailed(Station);
-            return Task.FromResult(false);
+            return false;
         }
 
         /// <summary>
@@ -33,9 +31,9 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// <summary>
         ///     结束的处理
         /// </summary>
-        Task<bool> IStationStateMachine.End()
+        bool IStationStateMachine.End()
         {
-            return Task.FromResult(false);
+            return false;
         }
     }
 }

@@ -1,9 +1,5 @@
 ﻿using System;
-#if UNMANAGE_MONEY_CHECK
-using System.Collections.Generic;
-using System.Threading;
-#endif
-
+using System.Collections.Concurrent;
 namespace ZeroMQ
 {
     /// <summary>
@@ -16,7 +12,7 @@ namespace ZeroMQ
         /// </summary>
         protected MemoryCheck()
         {
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
             SetIsAloc(TypeName);
 #endif
         }
@@ -46,18 +42,35 @@ namespace ZeroMQ
                 return;
             _isDisposed = 1;
 
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
             SetIsFree(TypeName);
 #endif
             DoDispose();
             GC.SuppressFinalize(this);
         }
+
+        /// <summary>
+        /// 显示
+        /// </summary>
+        public static void Trace()
+        {
+            Console.WriteLine($"MemoryCheck:{_aliveCount}");
+            foreach (var aloc in Alocs.ToArray())
+            {
+                Console.WriteLine($"MemoryCheck:{aloc.Key}:{aloc.Value}");
+            }
+        }
+
         /// <summary>
         /// 析构
         /// </summary>
         protected abstract void DoDispose();
-#if UNMANAGE_MONEY_CHECK
-        public static Dictionary<string, int> Alocs = new Dictionary<string, int>();
+#if !UNMANAGE_MONEY_CHECK
+
+        /// <summary>
+        /// 分配记录
+        /// </summary>
+        public static ConcurrentDictionary<string, int> Alocs = new ConcurrentDictionary<string, int>();
         
         /// <summary>
         /// 存活量
@@ -68,36 +81,38 @@ namespace ZeroMQ
         /// 存活量
         /// </summary>
         private static int _aliveCount;
+
+        /// <summary>
+        /// 类型名称
+        /// </summary>
         protected abstract string TypeName { get; }
+
         /// <summary>
         /// 析构
         /// </summary>
         public static void SetIsAloc(string name)
         {
-            lock (Alocs)
+            if (Alocs.ContainsKey(name))
             {
-                if (Alocs.ContainsKey(name))
-                {
-                    Alocs[name] += 1;
-                }
-                else
-                {
-                    Alocs.Add(name, 1);
-                }
+                Alocs[name] += 1;
             }
+            else
+            {
+                Alocs.TryAdd(name, 1);
+            }
+
             _aliveCount++;
         }
+
         /// <summary>
         /// 析构
         /// </summary>
         public static void SetIsFree(string name)
         {
-            lock (Alocs)
-            {
-                Alocs[name] -= 1;
-            }
+            Alocs[name] -= 1;
             _aliveCount--;
         }
+
         /// <summary>
         /// 析构
         /// </summary>

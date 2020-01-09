@@ -14,7 +14,7 @@ namespace agebull
 		/**
 		* \brief 消息持久化存储(使用SQLite)
 		*/
-		class plan_storage :public sqlite_storage
+		class plan_storage final :public sqlite_storage
 		{
 			sqlite3_stmt *insert_plan_stmt_;
 			sqlite3_stmt *insert_log_stmt_;

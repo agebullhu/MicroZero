@@ -22,7 +22,7 @@ namespace agebull
 			{
 				return;
 			}
-			shared_char caller = list[0];
+			shared_char& caller = list[0];
 			if (inner)
 				list.erase(list.begin());
 			var description = list[1];

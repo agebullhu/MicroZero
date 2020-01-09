@@ -70,27 +70,6 @@ namespace ZeroMQ
             var state = zmq.poll(natives, Size, TimeoutMs);
             return state > 0;
         }
-
-
-        /// <summary>
-        /// 一次Pool
-        /// </summary>
-        /// <returns></returns>
-        public Task<bool> PollAsync()
-        {
-            return Task.FromResult(Poll());
-        }
-
-
-        /// <summary>
-        /// 一次Pool
-        /// </summary>
-        /// <returns></returns>
-        public Task<ZMessage> CheckInAsync(int index)
-        {
-            var res = CheckIn(index, out var message);
-            return Task.FromResult(res ? message : null);
-        }
         /// <summary>
         /// 检查下标是否有数据
         /// </summary>
@@ -98,12 +77,12 @@ namespace ZeroMQ
         /// <param name="message"></param>
         public bool CheckIn(int index, out ZMessage message)
         {
-            if (index > Sockets.Length)
+            if (index >= Sockets.Length)
             {
                 message = null;
                 return false;
             }
-            var native = ((zmq_pollitem_windows_t*)Ptr.Ptr) + index;
+            var native = (zmq_pollitem_windows_t*)Ptr.Ptr + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;

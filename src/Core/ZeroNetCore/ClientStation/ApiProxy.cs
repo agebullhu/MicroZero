@@ -1,10 +1,9 @@
 using System;
-using System.Buffers.Text;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Agebull.Common.Logging;
 using ZeroMQ;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agebull.Common.Context;
@@ -94,7 +93,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override Task<bool> CheckConfig()
+        protected sealed override bool CheckConfig()
         {
             Config = new StationConfig
             {
@@ -102,7 +101,7 @@ namespace Agebull.MicroZero.ZeroApis
                 Caption = "API客户端代理",
                 IsBaseStation = true
             };
-            return Task.FromResult(true);
+            return true;
         }
 
         private static readonly byte[] LayoutErrorFrame = new byte[]
@@ -176,12 +175,6 @@ namespace Agebull.MicroZero.ZeroApis
                 LogRecorderX.Exception(e, "ApiStation.SendResult");
                 LogRecorderX.MonitorTrace(e.Message);
             }
-#if UNMANAGE_MONEY_CHECK
-            finally
-            {
-                LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
-            }
-#endif
         }
 
         #endregion
@@ -196,9 +189,8 @@ namespace Agebull.MicroZero.ZeroApis
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override async Task<bool> Loop(/*CancellationToken token*/)
+        protected sealed override bool Loop(/*CancellationToken token*/)
         {
-            await Task.Yield();
             _isChanged = true;
             while (CanLoopEx)
             {
@@ -208,24 +200,20 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         _zmqPool = CreatePool();
                     }
-                    if (!await _zmqPool.PollAsync())
+                    if (!_zmqPool.Poll())
                     {
                         continue;
                     }
 
-                    var message = await _zmqPool.CheckInAsync(0);
-                    if (message != null)
+                    if (_zmqPool.CheckIn(0, out var message))
                     {
                         OnLocalCall(message);
                     }
 
                     for (int idx = 1; idx < _zmqPool.Size; idx++)
                     {
-                        message = await _zmqPool.CheckInAsync(idx);
-                        if (message != null)
-                        {
+                        if (_zmqPool.CheckIn(idx, out message))
                             OnRemoteResult(message);
-                        }
                     }
                 }
                 catch (Exception e)
@@ -250,75 +238,76 @@ namespace Agebull.MicroZero.ZeroApis
         private void OnLocalCall(ZMessage message)
         {
             Interlocked.Increment(ref WaitCount);
-            StationProxyItem item;
-            ZMessage message2;
-            byte[] caller;
-            string str;
             using (message)
             {
-                caller = message[0].ReadAll();
-                str = Encoding.UTF8.GetString(caller);
                 var station = message[1].ToString();
-                if (!StationProxy.TryGetValue(station, out item))
+                if (!StationProxy.TryGetValue(station, out var item))
                 {
                     SendLayoutErrorResult(message[0].ReadAll());
                     return;
                 }
-                message2 = message.Duplicate(2);
-            }
-
-            bool success;
-            ZError error;
-            using (message2)
-            {
-                success = item.Socket.SendMessage(message2, ZSocketFlags.DontWait, out error);
-            }
-
-            if (success)
-                return;
-            if (long.TryParse(str, out var id) && _tasks.TryGetValue(id, out var src))
-            {
-                src.SetResult(new ZeroResult
+                var message2 = message.Duplicate(2);
+                bool success;
+                ZError error;
+                using (message2)
                 {
-                    State = ZeroOperatorStateType.LocalSendError,
-                    ZmqError = error
-                });
-            }
-            else
-            {
+                    success = item.Socket.SendMessage(message2, ZSocketFlags.DontWait, out error);
+                }
+
+                if (success)
+                    return;
                 ZeroTrace.WriteError("ApiProxy . OnLocalCall", error.Text);
+                var caller = message[0].ReadAll();
                 SendNetErrorResult(caller);
             }
-        }
 
+        }
 
         private void OnRemoteResult(ZMessage message)
         {
-            var message2 = message.Duplicate();
-            var result = ZeroResultData.Unpack<ZeroResult>(message, true, (res, type, bytes) =>
+            long id;
+            ZeroResult result;
+            using (message)
             {
-                switch (type)
+                result = ZeroResultData.Unpack<ZeroResult>(message, true, (res, type, bytes) =>
                 {
-                    case ZeroFrameType.ResultText:
-                        res.Result = ZeroNetMessage.GetString(bytes);
-                        return true;
-                    case ZeroFrameType.BinaryContent:
-                        res.Binary = bytes;
-                        return true;
-                }
-                return false;
-            });
-            if (result.State != ZeroOperatorStateType.Runing)
-                Interlocked.Decrement(ref WaitCount);
-            if (long.TryParse(result.Requester, out var id) && _tasks.TryGetValue(id, out var src))
-            {
+                    switch (type)
+                    {
+                        case ZeroFrameType.ResultText:
+                            res.Result = ZeroNetMessage.GetString(bytes);
+                            return true;
+                        case ZeroFrameType.BinaryContent:
+                            res.Binary = bytes;
+                            return true;
+                    }
+                    return false;
+                });
                 if (result.State != ZeroOperatorStateType.Runing)
-                    src.SetResult(result);
+                    Interlocked.Decrement(ref WaitCount);
+                if (!long.TryParse(result.Requester, out id))
+                {
+                    using (var message2 = message.Duplicate())
+                    {
+                        message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
+                        SendResult(message2);
+                    }
+                    return;
+                }
             }
-            else
+
+            if (!Tasks.TryGetValue(id, out var src))
+                return;
+            src.Caller.State = result.State;
+            if (result.State == ZeroOperatorStateType.Runing)
             {
-                message2.Prepend(new ZFrame(result.Requester ?? result.RequestId));
-                SendResult(message2);
+                Console.WriteLine($"task:({id})=>Runing");
+                return;
+            }
+            Tasks.TryRemove(id, out _);
+            LogRecorderX.MonitorTrace("OnRemoteResult");
+            if (!src.TaskSource.TrySetResult(result))
+            {
+                LogRecorderX.Error($"task:({id})=>Failed result({JsonHelper.SerializeObject(result)})");
             }
         }
 
@@ -351,7 +340,7 @@ namespace Agebull.MicroZero.ZeroApis
                 });
             }
             _proxyServiceSocket = ZSocketEx.CreateServiceSocket(InprocAddress, null, ZSocketType.ROUTER);
-            ZeroTrace.SystemLog("ApiProxy", "Run", $"{RealName} : {Config.RequestAddress}");
+            ZeroTrace.SystemLog("ApiProxy", "Run", RealName);
             RealState = StationState.Run;
             ZeroApplication.OnObjectActive(this);
         }
@@ -361,11 +350,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// 关闭时的处理
         /// </summary>
         /// <returns></returns>
-        protected override Task OnLoopComplete()
+        protected override void OnLoopComplete()
         {
             ZeroApplication.ZeroNetEvents.Remove(OnZeroNetEvent);
             _proxyServiceSocket.Dispose();
-            RealState = StationState.Closed;
             _zmqPool?.Dispose();
 
             foreach (var proxyItem in StationProxy.Values)
@@ -373,7 +361,7 @@ namespace Agebull.MicroZero.ZeroApis
                 proxyItem.Socket?.Dispose();
             }
             StationProxy.Clear();
-            return Task.CompletedTask;
+            RealState = StationState.Closed;
         }
 
         private Task OnZeroNetEvent(ZeroAppConfigRuntime config, ZeroNetEventArgument e)
@@ -386,6 +374,13 @@ namespace Agebull.MicroZero.ZeroApis
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
+                    if (e.EventConfig?.StationName != null)
+                        StationProxy.TryAdd(e.EventConfig.StationName, new StationProxyItem
+                        {
+                            Config = e.EventConfig
+                        });
+                    _isChanged = true;
+                    break;
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
@@ -409,21 +404,35 @@ namespace Agebull.MicroZero.ZeroApis
         public IZmqPool CreatePool()
         {
             _isChanged = false;
+            if (_zmqPool != null)
+            {
+                _zmqPool.Sockets = null;
+                _zmqPool.Dispose();
+            }
             //var added = StationProxy.Values.Where(p => p.Config.State > ZeroCenterState.Pause).Select(p => p.Socket).ToArray();
             var alive = StationProxy.Values.ToArray();
-            var list = new ZSocket[alive.Length + 1];
-            list[0] = _proxyServiceSocket;
-            for (int idx = 0; idx < alive.Length; idx++)
+            var list = new List<ZSocket>
             {
-                var item = alive[idx];
-                Console.WriteLine($"{item.Config.Name}:{item.Config.RequestAddress}");
-                if (item.Socket == null)
-                    item.Socket = ZSocketEx.CreatePoolSocket(item.Config.RequestAddress, item.Config.ServiceKey, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
-                list[idx + 1] = item.Socket;
+                _proxyServiceSocket
+            };
+            foreach (var item in alive)
+            {
+                if (item.Config.State == ZeroCenterState.None || item.Config.State == ZeroCenterState.Run)
+                {
+                    if (item.Socket == null)
+                    {
+                        item.Socket = ZSocketEx.CreatePoolSocket(item.Config.RequestAddress, item.Config.ServiceKey, ZSocketType.DEALER, ZSocket.CreateIdentity(false, item.Config.Name));
+                        item.Open = DateTime.Now;
+                    }
+                    list.Add(item.Socket);
+                }
+                else
+                {
+                    item.Socket?.Dispose();
+                }
             }
             _zmqPool = ZmqPool.CreateZmqPool();
-
-            _zmqPool.Sockets = list;
+            _zmqPool.Sockets = list.ToArray();
             _zmqPool.RePrepare(ZPollEvent.In);
             return _zmqPool;
         }
@@ -440,18 +449,27 @@ namespace Agebull.MicroZero.ZeroApis
         /// <returns></returns>
         public long GetId()
         {
-            return ++_id;
+            return Interlocked.Increment(ref _id);
         }
 
         private long CreateSocket(ProxyCaller2 caller, out ZSocketEx socket)
         {
-            if (!ZeroApplication.ZerCenterIsRun)
-            {
-                caller.Result = ApiResultIoc.NoReadyJson;
-                caller.State = ZeroOperatorStateType.LocalNoReady;
-                socket = null;
-                return 0;
-            }
+            //if (!ZeroApplication.ZerCenterIsRun)
+            //{
+            //    caller.Result = ApiResultIoc.NoReadyJson;
+            //    caller.State = ZeroOperatorStateType.LocalNoReady;
+            //    socket = null;
+            //    return 0;
+            //}
+
+            //if (!StationProxy.TryGetValue(caller.Station, out var item))
+            //{
+            //    caller.Result = ApiResultIoc.NoFindJson;
+            //    caller.State = ZeroOperatorStateType.NotFind;
+            //    socket = null;
+            //    return 0;
+            //}
+            //socket = item.Socket;
 
             if (!ZeroApplication.Config.TryGetConfig(caller.Station, out caller.Config))
             {
@@ -461,25 +479,18 @@ namespace Agebull.MicroZero.ZeroApis
                 return 0;
             }
 
-            //if (Config.State == ZeroCenterState.None || Config.State == ZeroCenterState.Pause)
-            //{
-            //    caller.Result = ApiResultIoc.PauseJson;
-            //    caller.State = ZeroOperatorStateType.Pause;
-            //    socket = null;
-            //    return 0;
-            //}
-
-            //if (Config.State != ZeroCenterState.Run)
-            //{
-            //    caller.Result = ApiResultIoc.NotSupportJson;
-            //    caller.State = ZeroOperatorStateType.Pause;
-            //    socket = null;
-            //    return 0;
-            //}
+            if (Config.State != ZeroCenterState.None && Config.State != ZeroCenterState.Run)
+            {
+                caller.Result = Config.State == ZeroCenterState.Pause
+                    ? ApiResultIoc.PauseJson
+                    : ApiResultIoc.NotSupportJson;
+                caller.State = ZeroOperatorStateType.Pause;
+                socket = null;
+                return 0;
+            }
 
             caller.State = ZeroOperatorStateType.None;
-            socket = ApiProxy.GetProxySocket(caller.Name.ToString());
-            socket.ServiceKey = caller.Config.ServiceKey;
+            socket = GetProxySocket(caller.Name.ToString());
             return caller.Name;
         }
 
@@ -490,11 +501,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="description"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        internal Task<ZeroResult> Send(ProxyCaller2 caller, byte[] description, params byte[][] args)
+        internal Task<ZeroResult> CallZero(ProxyCaller2 caller, byte[] description, params byte[][] args)
         {
-            return SendToZero(caller, description, args);
+            return CallZero(caller, description, (IEnumerable<byte[]>)args);
         }
-
 
         /// <summary>
         ///     一次请求
@@ -503,19 +513,36 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="description"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        internal Task<ZeroResult> SendToZero(ProxyCaller2 caller, byte[] description, IEnumerable<byte[]> args)
+        internal Task<ZeroResult> CallZero(ProxyCaller2 caller, byte[] description, IEnumerable<byte[]> args)
         {
-            var id = CreateSocket(caller, out var socket);
-            if(id == 0)
+            var info = new TaskInfo
+            {
+                Caller = caller,
+                Start = DateTime.Now
+            };
+            if (!Tasks.TryAdd(caller.Name, info))
+            {
                 return Task.FromResult(new ZeroResult
                 {
                     State = ZeroOperatorStateType.NoWorker,
                 });
-            using (MonitorScope.CreateScope("SendToZero"))
-            using (var message = new ZMessage())
+            }
+            var id = CreateSocket(caller, out var socket);
+            if (id == 0)
             {
-                message.Add(new ZFrame(caller.Station));
-                message.Add(new ZFrame(description));
+                return Task.FromResult(new ZeroResult
+                {
+                    State = ZeroOperatorStateType.NoWorker,
+                });
+            }
+
+            using (MonitorScope.CreateScope("SendToZero"))
+            {
+                using var message = new ZMessage
+                {
+                    new ZFrame(caller.Station),
+                    new ZFrame(description)
+                };
                 if (args != null)
                 {
                     foreach (var arg in args)
@@ -525,25 +552,47 @@ namespace Agebull.MicroZero.ZeroApis
                     message.Add(new ZFrame(caller.Config.ServiceKey));
                 }
 
-                var res = socket.SendTo(message);
+                bool res;
+                ZError error;
+                using (socket)
+                {
+                    res = socket.Send(message, out error);
+                }
                 if (!res)
                 {
                     return Task.FromResult(new ZeroResult
                     {
                         State = ZeroOperatorStateType.LocalSendError,
-                        ZmqError = socket.LastError
+                        ZmqError = error
                     });
                 }
             }
 
-            var src = new TaskCompletionSource<ZeroResult>();
-            _tasks.Add(id, src);
-            return src.Task;
+            info.TaskSource = new TaskCompletionSource<ZeroResult>();
+            return info.TaskSource.Task;
         }
 
 
-        private readonly Dictionary<long, TaskCompletionSource<ZeroResult>> _tasks = new Dictionary<long, TaskCompletionSource<ZeroResult>>();
+        internal readonly ConcurrentDictionary<long, TaskInfo> Tasks = new ConcurrentDictionary<long, TaskInfo>();
 
+
+        internal class TaskInfo
+        {
+            /// <summary>
+            /// TaskCompletionSource
+            /// </summary>
+            public TaskCompletionSource<ZeroResult> TaskSource;
+
+            /// <summary>
+            /// 任务开始时间
+            /// </summary>
+            public DateTime Start;
+
+            /// <summary>
+            /// 调用对象
+            /// </summary>
+            public ProxyCaller2 Caller;
+        }
 
         #endregion
     }
@@ -561,7 +610,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 远程连接
         /// </summary>
-        public ZSocket Socket { get; set; }
+        public ZSocketEx Socket { get; set; }
 
         /// <summary>
         /// 打开时间

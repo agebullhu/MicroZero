@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
@@ -15,12 +14,12 @@ namespace WebMonitor.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> Index(string id)
+        public IActionResult Index(string id)
         {
-            return View(await GetDoc(id));
+            return View(GetDoc(id));
         }
 
-        async Task<StationDocument> GetDoc(string station)
+        StationDocument GetDoc(string station)
         {
             if (string.IsNullOrWhiteSpace((station)))
             {
@@ -39,7 +38,7 @@ namespace WebMonitor.Controllers
             }
             var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == config.Group);
             var mg = new ConfigManager(center);
-            doc = await mg.LoadDocument(config.StationName) ?? new StationDocument
+            doc = mg.LoadDocument(config.StationName) ?? new StationDocument
             {
                 Name = config.Name,
                 Caption = config.Caption,
@@ -65,9 +64,9 @@ namespace WebMonitor.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<JsonResult> Postman(string id)
+        public JsonResult Postman(string id)
         {
-            var doc = await GetDoc(id);
+            var doc = GetDoc(id);
             var postMan = new PostmanScript();
             postMan.Info.Name = doc.Caption ?? doc.Name;
             postMan.Info.Description = doc.Description;

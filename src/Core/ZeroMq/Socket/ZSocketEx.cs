@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
-using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
@@ -49,7 +46,7 @@ namespace ZeroMQ
             socket.ServiceKey = serviceKey;
             if (socket.Bind(address, out error))
                 return socket;
-            LogRecorderX.SystemLog($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }
@@ -245,19 +242,19 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="message">消息</param>
         /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        public async Task<bool> SendByServiceKey(ZMessage message)
+        public bool SendByServiceKey(ZMessage message)
         {
             if (message == null || message.Count == 0)
                 return false;
             using (message)
             {
-                _error = null;
+                _error = null; 
                 foreach (var frame in message)
                 {
-                    if (!await SendFrameAsync(frame, FlagsSndmore))
+                    if (!SendFrame(frame, FlagsSndmore, out _error))
                         return false;
                 }
-                return await SendFrameAsync(new ZFrame(ServiceKey), FlagsDontwait);
+                return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
             }
         }
 
@@ -267,19 +264,18 @@ namespace ZeroMQ
         /// <param name="desc"></param>
         /// <param name="array">消息</param>
         /// <returns>是否发送成功</returns>
-        public async Task<bool> SendByServiceKey(byte[] desc, params string[] array)
+        public bool SendByServiceKey(byte[] desc, params string[] array)
         {
             _error = null;
-            if (!await SendFrameAsync(new ZFrame(desc), FlagsSndmore))
+            if (!SendFrame(new ZFrame(desc), FlagsSndmore,out _error))
                 return false;
             foreach (var data in array)
             {
-                if (!await SendFrameAsync(new ZFrame(data.ToZeroBytes()), FlagsSndmore))
+                if (!SendFrame(new ZFrame(data.ToZeroBytes()), FlagsSndmore, out _error))
                     return false;
             }
-            return await SendFrameAsync(new ZFrame(ServiceKey), FlagsDontwait);
+            return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
         }
-
 
         /// <summary>
         /// 发送
@@ -287,34 +283,53 @@ namespace ZeroMQ
         /// <param name="desc"></param>
         /// <param name="array">消息</param>
         /// <returns>是否发送成功</returns>
-        public async Task<bool> SendByServiceKey(byte[] desc, params byte[][] array)
+        public bool SendBy(byte[] desc, params byte[][] array)
         {
             _error = null;
-            if (!await SendFrameAsync(new ZFrame(desc), FlagsSndmore))
+            if (!SendFrame(new ZFrame(desc), FlagsSndmore,out _error))
                 return false;
             foreach (var data in array)
             {
-                if (!await SendFrameAsync(new ZFrame(data), FlagsSndmore))
+                if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
                     return false;
             }
-            return await SendFrameAsync(new ZFrame(ServiceKey), FlagsDontwait);
+            return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
+        }
+
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="desc"></param>
+        /// <param name="array">消息</param>
+        /// <returns>是否发送成功</returns>
+        public bool SendByServiceKey(byte[] desc, params byte[][] array)
+        {
+            _error = null;
+            if (!SendFrame(new ZFrame(desc), FlagsSndmore, out _error))
+                return false;
+            foreach (var data in array)
+            {
+                if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
+                    return false;
+            }
+            return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
         }
         /// <summary>
         /// 发送
         /// </summary>
         /// <param name="strs">消息</param>
         /// <returns>是否发送成功</returns>
-        public async Task<bool> SendByServiceKey(params string[] strs)
+        public bool SendByServiceKey(params string[] strs)
         {
             if (strs == null || strs.Length == 0)
                 return false;
             _error = null;
             foreach (var str in strs)
             {
-                if (!await SendFrameAsync(new ZFrame(str.ToZeroBytes()), FlagsSndmore))
+                if (!SendFrame(new ZFrame(str.ToZeroBytes()), FlagsSndmore, out _error))
                     return false;
             }
-            return await SendFrameAsync(new ZFrame(ServiceKey), FlagsDontwait);
+            return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
         }
 
         /// <summary>
@@ -322,17 +337,17 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="array">消息</param>
         /// <returns>是否发送成功</returns>
-        public async Task<bool> SendByServiceKey(params byte[][] array)
+        public bool SendByServiceKey(params byte[][] array)
         {
             if (array == null || array.Length == 0)
                 return false;
             _error = null;
             foreach (var data in array)
             {
-                if (!await SendFrameAsync(new ZFrame(data), FlagsSndmore))
+                if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
                     return false;
             }
-            return await SendFrameAsync(new ZFrame(ServiceKey), FlagsDontwait);
+            return SendFrame(new ZFrame(ServiceKey), FlagsDontwait, out _error);
         }
 
         /// <summary>
@@ -341,146 +356,42 @@ namespace ZeroMQ
         /// <param name="array">消息</param>
         /// <param name="extend"></param>
         /// <returns>是否发送成功</returns>
-        public Task<bool> SendByServiceKey(byte[][] array, params byte[][] extend)
-        {
-            return Task.Run(() =>
-            {
-                _error = null;
-                foreach (var data in array)
-                {
-                    if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
-                        return false;
-                }
-                foreach (var data in extend)
-                {
-                    if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
-                        return false;
-                }
-                return SendFrame(new ZFrame(ServiceKey), FlagsSndmore, out _error);
-            });
-        }
-
-        /// <summary>
-        /// 异步发送
-        /// </summary>
-        /// <param name="msg"></param>
-        /// <returns></returns>
-        public Task<bool> SendAsync(ZMessage msg)
-        {
-            var task = new TaskCompletionSource<bool>();
-            Task.Run(() =>
-            {
-                try
-                {
-                    var res = SendMessage(msg, out _error);
-                    task.SetResult(res);
-                }
-                catch (Exception e)
-                {
-                    task.SetException(e);
-                }
-            });
-            return task.Task;
-        }
-
-        /// <summary>
-        /// 异步发送
-        /// </summary>
-        /// <param name="frame"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Task<bool> SendFrameAsync(ZFrame frame, int flags)
-        {
-            var task = new TaskCompletionSource<bool>();
-            Task.Run(() =>
-            {
-                try
-                {
-                    var res = SendFrame(frame, flags, out _error);
-                    task.SetResult(res);
-                }
-                catch (Exception e)
-                {
-                    task.SetException(e);
-                }
-            });
-            return task.Task;
-        }
-
-        /// <summary>
-        /// 接收数据
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Task<ZMessage> RecvAsync(int flags = FlagsNone)
-        {
-            var task = new TaskCompletionSource<ZMessage>();
-            Task.Run(() =>
-            {
-                try
-                {
-                    var message = new ZMessage();
-                    _error = null;
-                    do
-                    {
-                        if (!RecvFrame(out var frame, flags))
-                        {
-                            break;
-                        }
-                        message.Add(frame);
-                    } while (ReceiveMore);
-                    task.SetResult(message);
-                }
-                catch (Exception e)
-                {
-                    task.SetException(e);
-                }
-            });
-
-            return task.Task;//Task.FromResult(message.Count == 0 ? null : message);
-        }
-
-        /// <summary>
-        /// 发送
-        /// </summary>
-        /// <param name="message">消息</param>
-        /// <returns>1 发送成功 0 发送失败 -1部分发送</returns>
-        public Task<bool> SendToAsync(ZMessage message)
-        {
-            var task = new TaskCompletionSource<bool>();
-            Task.Run(() =>
-            {
-                try
-                {
-                    var res = SendTo(message);
-                    task.SetResult(res);
-                }
-                catch (Exception e)
-                {
-                    task.SetException(e);
-                }
-            });
-
-            return task.Task;
-        }
-
-        /// <summary>
-        /// 接收数据
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        private async Task<ZFrame> RecvFrameAsync(int flags)
+        public bool SendByServiceKey(byte[][] array, params byte[][] extend)
         {
             _error = null;
-            var frame = ZFrame.CreateEmpty();
-            var res = await Task.Run(() => zmq.msg_recv(frame.Ptr, SocketPtr, flags));
-            if (res != -1)
-                return frame;
-            _error = ZError.GetLastErr();
-            frame.Dispose();
-            LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
-            return null;
+            foreach (var data in array)
+            {
+                if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
+                    return false;
+            }
+            foreach (var data in extend)
+            {
+                if (!SendFrame(new ZFrame(data), FlagsSndmore, out _error))
+                    return false;
+            }
+            return SendFrame(new ZFrame(ServiceKey), FlagsSndmore, out _error);
         }
+
+        /// <summary>
+        /// 接收数据
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public ZMessage Recv(int flags = FlagsNone)
+        {
+            var message = new ZMessage();
+            do
+            {
+                if (!RecvFrame(out var frame, flags))
+                {
+                    break;
+                }
+                message.Add(frame);
+            }
+            while (ReceiveMore);
+            return message;
+        }
+
         /*
         /// <summary>
         /// 接收数据

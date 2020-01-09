@@ -19,7 +19,7 @@
             插件对象
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.AddInImporter.Importe">
+        <member name="M:Agebull.MicroZero.ZeroApis.AddInImporter.Import">
             <summary>
             导入
             </summary>
@@ -575,7 +575,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.Send(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Byte[][])">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.CallZero(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Byte[][])">
             <summary>
                 一次请求
             </summary>
@@ -584,7 +584,7 @@
             <param name="args"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.SendToZero(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiProxy.CallZero(Agebull.MicroZero.ZeroApis.ProxyCaller2,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
             <summary>
                 一次请求
             </summary>
@@ -592,6 +592,21 @@
             <param name="description"></param>
             <param name="args"></param>
             <returns></returns>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiProxy.TaskInfo.TaskSource">
+            <summary>
+            TaskCompletionSource
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiProxy.TaskInfo.Start">
+            <summary>
+            任务开始时间
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiProxy.TaskInfo.Caller">
+            <summary>
+            调用对象
+            </summary>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.StationProxyItem">
             <summary>
@@ -617,145 +632,6 @@
             <summary>
             关闭时间
             </summary>
-        </member>
-        <member name="T:Agebull.MicroZero.ZeroApis.ProxyCaller">
-            <summary>
-                Api站点
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Files">
-            <summary>
-                文件
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Name">
-            <summary>
-                调用时使用的名称
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.ResultType">
-            <summary>
-                返回值
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Result">
-            <summary>
-                返回值
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Binary">
-            <summary>
-                返回值
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Station">
-            <summary>
-                请求站点
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.ContextJson">
-            <summary>
-                上下文内容（透传方式）
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.RequestId">
-            <summary>
-                请求站点
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Title">
-            <summary>
-                标题
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Commmand">
-            <summary>
-                调用命令
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.Argument">
-            <summary>
-                参数
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.ExtendArgument">
-            <summary>
-                扩展参数
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.State">
-            <summary>
-                结果状态
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.LastResult">
-            <summary>
-            最后一个返回值
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Call">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.CallAsync">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Plan(Agebull.MicroZero.ZeroPlanInfo)">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.PlanAsync(Agebull.MicroZero.ZeroPlanInfo)">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.CheckStateResult">
-            <summary>
-                检查在非成功状态下的返回值
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.CallDescription">
-            <summary>
-                请求格式说明
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller.PlanDescription">
-            <summary>
-                请求格式说明
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Receive(ZeroMQ.ZSocketEx)">
-            <summary>
-                接收
-            </summary>
-            <param name="socket"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.Send(ZeroMQ.ZSocketEx,System.Byte[],System.Byte[][])">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="description"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ProxyCaller.SendToZero(ZeroMQ.ZSocketEx,System.Byte[],System.Collections.Generic.IEnumerable{System.Byte[]})">
-            <summary>
-                一次请求
-            </summary>
-            <param name="socket"></param>
-            <param name="description"></param>
-            <param name="args"></param>
-            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ProxyCaller2">
             <summary>
@@ -795,11 +671,6 @@
         <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.ContextJson">
             <summary>
                 上下文内容（透传方式）
-            </summary>
-        </member>
-        <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.RequestId">
-            <summary>
-                请求站点
             </summary>
         </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ProxyCaller2.Title">
@@ -1278,7 +1149,12 @@
             范围资源
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute(System.Boolean)">
+            <summary>
+            调用 
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecuteTask">
             <summary>
             调用 
             </summary>
@@ -5490,81 +5366,6 @@
             <summary>
                 订阅时的标准网络数据说明
             </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync``1(System.String,System.String,System.String,``0)">
-            <summary>
-            发送广播
-            </summary>
-            <param name="station"></param>
-            <param name="title"></param>
-            <param name="sub"></param>
-            <param name="value"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync``1(System.String,System.String,``0)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="content"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,Agebull.MicroZero.PubSub.PublishItem)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="item"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="content"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.String,System.String,System.String)">
-            <summary>
-                发送广播
-            </summary>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.PublishAsync(System.String,System.Byte[],System.String,System.String,System.Byte[])">
-            <summary>
-                发送广播
-            </summary>
-            <param name="description"></param>
-            <param name="title"></param>
-            <param name="subTitle"></param>
-            <param name="content"></param>
-            <param name="station"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Agebull.MicroZero.PubSub.ZeroPublisher.SendAsync``1(System.String,System.String,System.String,``0)">
-            <summary>
-            发送广播
-            </summary>
-            <param name="station"></param>
-            <param name="title"></param>
-            <param name="sub"></param>
-            <param name="value"></param>
-            <returns></returns>
         </member>
         <member name="T:Agebull.MicroZero.PubSub.ZPublisher">
             <summary>

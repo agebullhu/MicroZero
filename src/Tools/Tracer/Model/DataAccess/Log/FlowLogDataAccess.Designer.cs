@@ -189,7 +189,7 @@ UPDATE `tb_zt_flow_log` SET
             if (!reader.IsDBNull(3))
                 entity._rootCommand = reader.GetString(3).ToString();
             if (!reader.IsDBNull(4))
-                try { entity._recordDate = reader.GetMySqlDateTime(4).Value; } catch { }
+                try { entity._recordDate = reader.GetMySqlDateTime(4).GetDateTime(); } catch { }
             if (!reader.IsDBNull(5))
                 entity._flowJson = reader.GetString(5).ToString();
         }

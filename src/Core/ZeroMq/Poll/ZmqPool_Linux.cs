@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using ZeroMQ.lib;
+﻿using ZeroMQ.lib;
 
 namespace ZeroMQ
 {
@@ -91,23 +90,22 @@ namespace ZeroMQ
         /// <param name="message"></param>
         public bool CheckIn(int index, out ZMessage message)
         {
-            if (index > Sockets.Length)
+            if (index >= Sockets.Length)
             {
                 message = null;
                 return false;
             }
-            var native = ((zmq_pollitem_posix_t*)Ptr.Ptr) + index;
+            var native = (zmq_pollitem_posix_t*)Ptr.Ptr + index;
             if (native->ReadyEvents == 0)
             {
                 message = null;
                 return false;
             }
-            if (!((ZPollEvent)native->ReadyEvents).HasFlag(ZPollEvent.In))
-            {
-                message = null;
-                return false;
-            }
-            return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
+
+            if (((ZPollEvent) native->ReadyEvents).HasFlag(ZPollEvent.In))
+                return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
+            message = null;
+            return false;
 
         }
 
@@ -136,27 +134,6 @@ namespace ZeroMQ
                 return false;
             }
             return Sockets[index].Recv(out message, ZSocket.FlagsDontwait);
-        }
-
-
-        /// <summary>
-        /// 一次Pool
-        /// </summary>
-        /// <returns></returns>
-        public Task<bool> PollAsync()
-        {
-            return Task.FromResult(Poll());
-        }
-
-
-        /// <summary>
-        /// 一次Pool
-        /// </summary>
-        /// <returns></returns>
-        public Task<ZMessage> CheckInAsync(int index)
-        {
-            var res = CheckIn(index, out var message);
-            return Task.FromResult(res ? message : null);
         }
     }
 }

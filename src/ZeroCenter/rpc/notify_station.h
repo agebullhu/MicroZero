@@ -12,7 +12,7 @@ namespace agebull
 		/**
 		* \brief 表示一个通知站点
 		*/
-		class notify_station :public zero_station
+		class notify_station final :public zero_station
 		{
 			//static char frames1[], frames2[], frames3[];
 		public:

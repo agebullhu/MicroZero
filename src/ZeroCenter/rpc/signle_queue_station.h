@@ -11,7 +11,7 @@ namespace agebull
 		/**
 		* \brief 表示一个通知站点
 		*/
-		class signle_queue_station :public zero_station
+		class signle_queue_station final :public zero_station
 		{
 			queue_storage storage_;
 		public:

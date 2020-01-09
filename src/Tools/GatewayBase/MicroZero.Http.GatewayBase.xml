@@ -1289,48 +1289,6 @@
             当前API
             </summary>
         </member>
-        <member name="T:MicroZero.Http.Gateway.GatewayStartup">
-            <summary>
-            启动基类
-            </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            构造
-            </summary>
-            <param name="configuration"></param>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.GatewayStartup.Configuration">
-            <summary>
-            配置对象
-            </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            This method gets called by the runtime. Use this method to add services to the container.
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            执行系统配置
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
-            <summary>
-             This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
-            <summary>
-            应用配置
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-        </member>
         <member name="T:MicroZero.Http.Gateway.ZeroManager">
             <summary>
                 管理类

@@ -27,7 +27,7 @@ namespace MicroZero.Http.Route
         public PlanManage()
         {
             ManageAddress= ZeroApplication.Config["PlanDispatcher"]?.RequestAddress;
-            FlushList().Wait();
+            FlushList();
         }
 
         #endregion
@@ -84,29 +84,29 @@ namespace MicroZero.Http.Route
         }
 
 
-        public async Task<ApiResult> Pause(string id)
+        public ApiResult Pause(string id)
         {
             if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = await CallCommand("pause", id);
+            var result = CallCommand("pause", id);
             return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
-        public async Task<ApiResult> Reset(string id)
+        public ApiResult Reset(string id)
         {
             if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = await CallCommand("reset", id);
+            var result = CallCommand("reset", id);
             return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
 
-        public async Task<ApiResult> Clear()
+        public ApiResult Clear()
         {
             StringBuilder keys = new StringBuilder();
             foreach (var plan in Plans.Where(p => p.Value.plan_state == plan_message_state.close).ToArray())
             {
-                var result = await CallCommand("remove", plan.Value.name);
+                var result = CallCommand("remove", plan.Value.name);
                 if (result.State != ZeroOperatorStateType.Ok)
                     continue;
                 Plans.Remove(plan.Key);
@@ -121,20 +121,20 @@ namespace MicroZero.Http.Route
             return ApiResult.Succees(Plans.Values.ToList());
         }
 
-        public async Task<ApiResult> Remove(string id)
+        public ApiResult Remove(string id)
         {
             if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = await CallCommand("remove", id);
+            var result = CallCommand("remove", id);
             return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
 
 
-        public async Task<ApiResult> Close(string id)
+        public ApiResult Close(string id)
         {
             if (!Plans.ContainsKey(id))
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
-            var result = await CallCommand("close", id);
+            var result = CallCommand("close", id);
             return result.State != ZeroOperatorStateType.Ok ? ApiResult.Error(ErrorCode.LogicalError, "参数错误") : ApiResult.Succees();
         }
         public IApiResult History()
@@ -180,9 +180,9 @@ namespace MicroZero.Http.Route
                 ResultData = Plans.Values.Where(p => p.plan_type == planType).ToList()
             };
         }
-        public async Task<ApiResult> FlushList()
+        public ApiResult FlushList()
         {
-            var result = await CallCommand("list");
+            var result = CallCommand("list");
             if (result.State != ZeroOperatorStateType.Ok)
             {
                 return ApiResult.Error(ErrorCode.LogicalError, "参数错误");
@@ -199,7 +199,7 @@ namespace MicroZero.Http.Route
                 Plans.Clear();
                 foreach (var plan in list)
                 {
-                    await SyncPlan(plan);
+                    SyncPlan(plan).Wait();
                 }
                 return ApiResult.Succees();
             }
@@ -257,7 +257,7 @@ namespace MicroZero.Http.Route
             ZeroFrameType.End
         };
 
-        public async Task<ApiResult> NewPlan(ClientPlan clientPlan)
+        public ApiResult NewPlan(ClientPlan clientPlan)
         {
             if (string.IsNullOrWhiteSpace(clientPlan.station) || string.IsNullOrWhiteSpace(clientPlan.command))
                 return ApiResult.Error(ErrorCode.LogicalError, "命令不能为空");
@@ -297,7 +297,7 @@ namespace MicroZero.Http.Route
 
             var socket = ApiProxy.GetSocket(clientPlan.station, null);
             if (socket == null)
-                return ApiResult.Error(ErrorCode.LocalError, "无法联系ZeroCenter");
+                return ApiResult.Error(ErrorCode.NetworkError, "无法联系ZeroCenter");
 
             using (socket)
             {
@@ -343,7 +343,7 @@ namespace MicroZero.Http.Route
                         break;
                 }
                 using (message)
-                    success = await socket.SendToAsync(message);
+                    success = socket.SendTo(message);
                 if (!success)
                 {
                     ZeroTrace.SystemLog("NewPlan", "Send", socket.GetLastError());
@@ -351,7 +351,7 @@ namespace MicroZero.Http.Route
                     return ApiResult.Error(ErrorCode.NetworkError, socket.GetLastError().Text);
                 }
 
-                message = await socket.RecvAsync();
+                message = socket.Recv();
                 if (message == null)
                 {
                     ZeroTrace.SystemLog("NewPlan", "Recv", socket.LastError);

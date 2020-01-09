@@ -17,7 +17,7 @@ namespace agebull
 #define vector_int(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? 0 : atoi(*ls[_idx_]))
 #define vector_int64(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? 0 : atoll(*ls[_idx_]))
 #define vector_ptr(ls,_idx_) (_idx_  <= 0 || _idx_ >= ls.size() ? shared_char() : ls[_idx_])
-				
+
 				typedef unsigned char uchar;
 				//“ª∞„÷’÷π∑˚∫≈
 				constexpr uchar  general_end = '\0';

@@ -11,7 +11,7 @@ namespace agebull
 		/**
 		* \brief 表示一个通知站点
 		*/
-		class queue_station :public zero_station
+		class queue_station final :public zero_station
 		{
 			queue_storage storage_;
 		public:
@@ -36,10 +36,7 @@ namespace agebull
 			/**
 			* \brief 析构
 			*/
-			virtual  ~queue_station()
-			{
-				cout << "queue_station destory" << endl;
-			}
+			virtual  ~queue_station() = default;
 
 			/**
 			* \brief 工作开始 : 处理请求数据

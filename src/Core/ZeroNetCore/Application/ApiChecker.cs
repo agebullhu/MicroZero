@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -13,19 +13,32 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         /// 执行检查
         /// </summary>
-        public static async Task RunCheck()
+        public static void RunCheck()
         {
-            await Task.Yield();
+            Console.WriteLine("ApiChecker runing");
             while (ZeroApplication.IsAlive)
             {
-                await Task.Delay(1000);
+                Thread.Sleep(1000);
+                if (!ZeroApplication.IsAlive)
+                    return;
                 foreach (var api in ZeroApplication.ActiveObjects.OfType<ApiStationBase>().ToArray())
                 {
-                    await api.CheckTask();
+                    api.CheckTask();
                 }
                 if (!ZeroApplication.IsAlive)
                     return;
-                await Task.Delay(1000);
+                foreach (var task in ApiProxy.Instance.Tasks.ToArray())
+                {
+                    if ((DateTime.Now - task.Value.Start).TotalMinutes > ZeroApplication.Config.ApiTimeout)
+                    {
+                        ApiProxy.Instance.Tasks.TryRemove(task.Key,out _);
+                        Console.WriteLine($"task:({task.Value})=>Time Out");
+                        task.Value.TaskSource.SetException(new Exception("Time Out"));
+                    }
+                }
+                if (!ZeroApplication.IsAlive)
+                    return;
+                Thread.Sleep(1000);
             }
         }
     }

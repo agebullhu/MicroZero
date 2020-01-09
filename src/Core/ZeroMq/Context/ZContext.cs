@@ -12,7 +12,7 @@ namespace ZeroMQ
     /// </summary>
     public sealed class ZContext : MemoryCheck
     {
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZContext);
 #endif
         /// <summary>

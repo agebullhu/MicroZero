@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
@@ -125,7 +124,7 @@ namespace MicroZero.Http.Gateway
             if (Data.ApiHost.Equals("Zero", StringComparison.OrdinalIgnoreCase))
             {
                 var manager = new ZeroManager();
-                await manager.Command(Data);
+                manager.Command(Data);
                 return;
             }
 
@@ -239,9 +238,9 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     写入返回
         /// </summary>
-        async Task IRouter.WriteResult()
+        Task IRouter.WriteResult()
         {
-            await WriteResult();
+            return WriteResult();
         }
 
         /// <summary>
@@ -262,7 +261,7 @@ namespace MicroZero.Http.Gateway
             }
 
             var file = JsonHelper.DeserializeObject<ApiFileResult>(Data.ResultMessage);
-            Response.Headers.ContentLength = Data.ResultBinary.Length;
+            Response.Headers["ContentLength"] = Data.ResultBinary.Length.ToString();
             Response.ContentType = file.Mime;
             Response.Headers.Add("Content-Disposition", $"attachment;filename={file.FileName}");
             await Response.Body.WriteAsync(Data.ResultBinary);

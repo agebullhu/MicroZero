@@ -17,8 +17,11 @@
 
   <ItemGroup>
     <Compile Remove="AddIn\**" />
+    <Compile Remove="logs\**" />
     <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="logs\**" />
     <None Remove="AddIn\**" />
+    <None Remove="logs\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,10 +50,6 @@
     <None Update="libzmq.pdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="logs\" />
   </ItemGroup>
 
   <ItemGroup>

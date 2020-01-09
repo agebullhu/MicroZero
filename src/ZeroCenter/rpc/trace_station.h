@@ -13,7 +13,7 @@ namespace agebull
 		/**
 		* \brief 表示一个通知站点
 		*/
-		class trace_station :public zero_station
+		class trace_station final :public zero_station
 		{
 			trace_storage* storage_;
 

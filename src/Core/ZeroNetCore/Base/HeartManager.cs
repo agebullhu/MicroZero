@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Agebull.MicroZero
 {
     /// <summary>
@@ -10,33 +8,33 @@ namespace Agebull.MicroZero
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartLeft(string station, string realName)
+        public bool HeartLeft(string station, string realName)
         {
-            return !ZeroApplication.ZerCenterIsRun ? Task.FromResult(false): ByteCommand(ZeroByteCommand.HeartLeft, station, realName);
+            return ZeroApplication.ZerCenterIsRun && ByteCommand(ZeroByteCommand.HeartLeft, station, realName);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartReady(string station, string realName)
+        public bool HeartReady(string station, string realName)
         {
-            return !ZeroApplication.ZerCenterIsRun ? Task.FromResult(false): ByteCommand(ZeroByteCommand.HeartReady, station, realName);
+            return ZeroApplication.ZerCenterIsRun && ByteCommand(ZeroByteCommand.HeartReady, station, realName);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> HeartJoin(string station, string realName)
+        public bool HeartJoin(string station, string realName)
         {
-            return !ZeroApplication.ZerCenterIsRun ? Task.FromResult(false): ByteCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
+            return ZeroApplication.ZerCenterIsRun && ByteCommand(ZeroByteCommand.HeartJoin, station, realName, ZeroApplication.Config.LocalIpAddress);
         }
 
         /// <summary>
         ///     连接到
         /// </summary>
-        public Task<bool> Heartbeat(string station, string realName)
+        public bool Heartbeat(string station, string realName)
         {
-            return !ZeroApplication.ZerCenterIsRun ? Task.FromResult(false): ByteCommand(ZeroByteCommand.HeartPitpat, station, realName);
+            return ZeroApplication.ZerCenterIsRun && ByteCommand(ZeroByteCommand.HeartPitpat, station, realName);
         }
 
     }

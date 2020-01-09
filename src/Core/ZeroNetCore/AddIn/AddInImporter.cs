@@ -26,7 +26,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 导入
         /// </summary>
-        public static void Importe()
+        public static void Import()
         {
             if (Instance != null)
                 return;

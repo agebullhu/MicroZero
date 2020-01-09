@@ -72,17 +72,6 @@ namespace ZeroMQ
         /// <returns></returns>
         bool CheckOut(int index, out ZMessage message);
 
-        /// <summary>
-        /// 一次Pool
-        /// </summary>
-        /// <returns></returns>
-        Task<bool> PollAsync();
-
-        /// <summary>
-        /// 检查下标是否有数据
-        /// </summary>
-        /// <param name="index"></param>
-        Task<ZMessage> CheckInAsync(int index);
     }
 
     /// <summary>

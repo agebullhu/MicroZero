@@ -37,18 +37,7 @@ namespace ApiTest
         /// 处理文字请求
         /// </summary>
         /// <returns></returns>
-        [Route("v1/test"),ApiAccessOptionFilter(ApiAccessOption.Anymouse| ApiAccessOption.Public)]
-        public async Task<ApiResult<TestItems>> OnTextRequest()
-        {
-            return await OnTextRequestA();
-        }
-
-
-        /// <summary>
-        /// 处理文字请求
-        /// </summary>
-        /// <returns></returns>
-        //[Route("v1/test"), ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        [Route("v1/test"), ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
         public Task<ApiResult<TestItems>> OnTextRequestA()
         {
             

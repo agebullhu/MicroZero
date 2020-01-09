@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Agebull.Common.Logging;
 
 using Agebull.Common.Tson;
-using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
 using ZeroMQ;
 
@@ -174,9 +173,8 @@ namespace Agebull.MicroZero.Log
 
         private readonly LockData _runLock = new LockData();
 
-        public async Task<bool> Start()
+        public bool Start()
         {
-            await Task.Yield();
             using var scope = OnceScope.TryCreateScope(_runLock);
             if (!scope.IsEntry)
                 return false;
@@ -191,8 +189,8 @@ namespace Agebull.MicroZero.Log
             RealName = ZSocket.CreateRealName(false, Config.StationName);
             Identity = RealName.ToAsciiBytes();
             RunTaskCancel = new CancellationTokenSource();
-            Task.Factory.StartNew(RunWaite);
-            return true;
+            Task.Factory.StartNew(Loop, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning);
+            return false;
         }
 
         /// <summary>
@@ -236,18 +234,20 @@ namespace Agebull.MicroZero.Log
                                ZeroApplication.CanDo && RealState == StationState.Run;
 
         private ZSocketEx _socket;
+
         /// <summary>
         /// 轮询
         /// </summary>
-        private async Task RunWaite()
+        private void Loop()
         {
-            await Task.Yield();
             using (var pool = ZmqPool.CreateZmqPool())
             {
-                pool.Prepare(ZPollEvent.In, ZSocketEx.CreateServiceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR));
+                pool.Prepare(ZPollEvent.In,
+                    ZSocketEx.CreateServiceSocket("inproc://RemoteLog.req", null, ZSocketType.PAIR));
                 using (_socket = ZSocketEx.CreateOnceSocket("inproc://RemoteLog.req", null, null, ZSocketType.PAIR))
                 {
-                    using (var sendSocket = ZSocketEx.CreateClientSocket(Config.RequestAddress, Config.ServiceKey, ZSocketType.DEALER,
+                    using (var sendSocket = ZSocketEx.CreateClientSocket(Config.RequestAddress, Config.ServiceKey,
+                        ZSocketType.DEALER,
                         ZSocket.CreateIdentity(false, StationName), true))
                     {
                         while (CanRun)
@@ -271,12 +271,13 @@ namespace Agebull.MicroZero.Log
                 _socket = null;
             }
         }
+
         #endregion
 
-        #region IZeroObject
-        /// <summary>
-        /// 实例
-        /// </summary>
+            #region IZeroObject
+            /// <summary>
+            /// 实例
+            /// </summary>
         public static readonly RemoteLogRecorder Instance = new RemoteLogRecorder();
 
 
@@ -294,7 +295,7 @@ namespace Agebull.MicroZero.Log
             RealState = StationState.Initialized;
         }
 
-        Task<bool> IZeroObject.OnZeroStart()
+        bool IZeroObject.OnZeroStart()
         {
             return Start();
         }
@@ -318,7 +319,7 @@ namespace Agebull.MicroZero.Log
                 if (config.State < ZeroCenterState.Run && ZeroApplication.CanDo)
                 {
                     ZeroTrace.SystemLog(Name, "Start by config state changed");
-                    Start().Wait();
+                    Start();
                 }
             }
             else

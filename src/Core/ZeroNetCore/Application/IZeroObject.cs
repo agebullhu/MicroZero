@@ -41,7 +41,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 系统启动时调用
         /// </summary>
-        Task<bool> OnZeroStart();
+        bool OnZeroStart();
 
         /// <summary>
         ///     要求心跳
@@ -61,7 +61,7 @@ namespace Agebull.MicroZero
         /// <summary>
         /// 开启
         /// </summary>
-        Task<bool> Start();
+        bool Start();
 
         /// <summary>
         /// 关闭
@@ -331,7 +331,7 @@ namespace Agebull.MicroZero
                     try
                     {
                         ZeroTrace.SystemLog(obj.StationName, $"Try start by {StationState.Text(obj.RealState)}");
-                        tasks.Add(obj.OnZeroStart());
+                        tasks.Add(Task.Run(obj.OnZeroStart));
                     }
                     catch (Exception e)
                     {
@@ -343,7 +343,7 @@ namespace Agebull.MicroZero
                 //等待所有对象信号(全开或全关)
                 await ActiveSemaphore.WaitAsync();
             }
-            await ZeroCenterProxy.Master.HeartReady();
+            ZeroCenterProxy.Master.HeartReady();
             ApplicationState = StationState.Run;
             RaiseEvent(ZeroNetEventType.AppRun, true);
             ZeroTrace.SystemLog("Application", "<<OnZeroStart]");

@@ -162,6 +162,7 @@ namespace MicroZero.Http.Gateway
         {
             var request = context.Request;
             Uri = request.GetUri();
+
             HttpMethod = request.Method.ToUpper();
 
             var userAgent = CheckHeaders(context, request);
@@ -285,7 +286,7 @@ namespace MicroZero.Http.Gateway
                             var bytes = new byte[file.Length];
                             await using (var stream = file.OpenReadStream())
                             {
-                               await stream.ReadAsync(bytes, 0, (int)file.Length);
+                                await stream.ReadAsync(bytes, 0, (int)file.Length);
                             }
                             Files.Add(file.Name, bytes);
                         }

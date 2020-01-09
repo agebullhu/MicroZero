@@ -113,7 +113,7 @@
                 发送广播的后台任务
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.Log.RemoteLogRecorder.RunWaite">
+        <member name="M:Agebull.MicroZero.Log.RemoteLogRecorder.Loop">
             <summary>
             轮询
             </summary>

@@ -5,14 +5,13 @@ using Agebull.Common.Ioc;
 using Agebull.Common.OAuth;
 using Agebull.MicroZero;
 using Agebull.MicroZero.PubSub;
-using Agebull.MicroZero.ZeroApis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RpcTest
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             ZeroApplication.CheckOption();
             IocHelper.ServiceCollection.AddSingleton<Tester, HttpTester>();

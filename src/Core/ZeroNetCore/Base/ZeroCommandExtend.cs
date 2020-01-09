@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using ZeroMQ;
 
 namespace Agebull.MicroZero
@@ -20,9 +19,7 @@ namespace Agebull.MicroZero
         [Obsolete]
         public static ZeroResult ReceiveString(this ZSocketEx socket, bool showError = false)
         {
-            var task= Receive<ZeroResult>(socket);
-            task.Wait();
-            return task.Result;
+            return Receive<ZeroResult>(socket);
         }
 
         /// <summary>
@@ -30,14 +27,13 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="socket"></param>
         /// <returns></returns>
-        public static async Task<TZeroResultData> Receive<TZeroResultData>(this ZSocketEx socket) 
+        public static TZeroResultData Receive<TZeroResultData>(this ZSocketEx socket)
             where TZeroResultData : ZeroResultData, new()
         {
             ZMessage messages;
             try
             {
-                messages = await socket.RecvAsync();
-                if (messages == null)
+                if (!socket.Recv(out messages))
                 {
                     return new TZeroResultData
                     {

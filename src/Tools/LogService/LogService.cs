@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.Common.Tson;
 using Agebull.MicroZero.PubSub;
@@ -35,11 +34,10 @@ namespace Agebull.MicroZero.LogService
             base.OnLoopBegin();
         }
 
-        protected override Task OnLoopComplete()
+        protected override void OnLoopComplete()
         {
             _recorder.Shutdown();
             _recorder = null;
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -48,14 +46,14 @@ namespace Agebull.MicroZero.LogService
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override async Task Handle(PublishItem args)
+        public override void Handle(PublishItem args)
         {
             try
             {
                 if (args.Content != null)
                 {
                     var infos = JsonConvert.DeserializeObject<List<RecordInfo>>(args.Content);
-                    await _recorder.RecordLog(infos);
+                    _recorder.RecordLog(infos).Wait();
                     return;
                 }
 
@@ -72,7 +70,7 @@ namespace Agebull.MicroZero.LogService
                         case TsonDataType.Object:
                             RecordInfo info = new RecordInfo();
                             RecordInfoTson.FromTson(serializer, info);
-                            await _recorder.RecordLog(info);
+                            _recorder.RecordLog(info).Wait();
                             break;
                         case TsonDataType.Array:
                             serializer.ReadType();
@@ -86,7 +84,7 @@ namespace Agebull.MicroZero.LogService
                                 serializer.End();
                                 infos.Add(info);
                             }
-                            await _recorder.RecordLog(infos);
+                            _recorder.RecordLog(infos).Wait();
                             break;
                     }
                 }

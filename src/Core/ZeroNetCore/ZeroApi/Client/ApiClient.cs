@@ -76,7 +76,7 @@ namespace Agebull.MicroZero.ZeroApis
         ///     扩展参数
         /// </summary>
         public string ExtendArgument { get => _core.ExtendArgument; set => _core.ExtendArgument = value; }
-
+        
         /// <summary>
         ///     结果状态
         /// </summary>

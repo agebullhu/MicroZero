@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroManagemant;
 using Agebull.MicroZero.ZeroApis;
@@ -16,7 +15,7 @@ namespace MicroZero.Http.Gateway
         private RouteData _data;
         private string[] _words;
         private IApiResult _result;
-        public async Task Command(RouteData data)
+        public void Command(RouteData data)
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -33,11 +32,11 @@ namespace MicroZero.Http.Gateway
                 return;
             }
 
-            await Call();
+            Call();
             _data.ResultMessage = JsonHelper.SerializeObject(_result);
         }
 
-        private async Task Call()
+        private void Call()
         {
             if (!ZeroApplication.ZerCenterIsRun)
             {
@@ -51,7 +50,7 @@ namespace MicroZero.Http.Gateway
                 _data.ResultMessage = ApiResultIoc.ArgumentErrorJson;
                 return;
             }
-            var value = await ZeroCenterProxy.Master.CallCommand(_words);
+            var value = ZeroCenterProxy.Master.CallCommand(_words);
             if (!value.InteractiveSuccess)
             {
                 _result = ApiResultIoc.Ioc.NetworkError;

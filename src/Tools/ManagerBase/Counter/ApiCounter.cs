@@ -50,7 +50,7 @@ namespace MicroZero.Http.Route
         //    //DoPublish();
         //    return Task.CompletedTask;
         //}
-        async Task DoPublish()
+        void DoPublish()
         {
             if ((DateTime.Now - preSend).TotalSeconds < 1 || Root.UnitCount == 0)
                 return;
@@ -59,7 +59,7 @@ namespace MicroZero.Http.Route
             var json = JsonConvert.SerializeObject(Root);
             Root.Start();
             preSend = DateTime.Now;
-            await WebSocketNotify.Publish("api", "root", json);
+            WebSocketNotify.Publish("api", "root", json).Wait();
         }
 
 
@@ -68,7 +68,7 @@ namespace MicroZero.Http.Route
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public override async Task Handle(PublishItem args)
+        public override void Handle(PublishItem args)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace MicroZero.Http.Route
                     return;
                 foreach (var data in datas)
                     Handle(data);
-                await DoPublish();
+                DoPublish();
             }
             catch (Exception e)
             {

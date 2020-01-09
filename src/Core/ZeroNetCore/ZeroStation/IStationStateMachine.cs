@@ -21,7 +21,7 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// <summary>
         ///     开始的处理
         /// </summary>
-        Task<bool> Start();
+        bool Start();
 
         /// <summary>
         ///     关闭的处理
@@ -31,7 +31,7 @@ namespace Agebull.MicroZero.ZeroServices.StateMachine
         /// <summary>
         ///     结束的处理
         /// </summary>
-        Task<bool> End();
+        bool End();
 
     }
 }

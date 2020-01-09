@@ -39,12 +39,12 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 初始化
         /// </summary>
-        protected sealed override async Task<StationConfig> OnNofindConfig()
+        protected sealed override StationConfig OnNofindConfig()
         {
             var mg = new ConfigManager(ZeroApplication.Config.Master);
-            if (!await mg.TryInstall(StationName, _typeName))
+            if (!mg.TryInstall(StationName, _typeName))
                 return null;
-            var config = await mg.LoadConfig(StationName);
+            var config = mg.LoadConfig(StationName);
             if (config == null)
                 return null;
             config.State = ZeroCenterState.Run;
@@ -68,7 +68,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected sealed override async Task<bool> Loop(/*CancellationToken token*/)
+        protected sealed override bool Loop(/*CancellationToken token*/)
         {
             //await Task.Yield();
             Tasks.Clear();
@@ -90,18 +90,18 @@ namespace Agebull.MicroZero.ZeroApis
 
             using (var pool = PrepareLoop(Identity, out var socket))
             {
-                await Hearter.HeartReady(StationName, RealName);
+                Hearter.HeartReady(StationName, RealName);
                 RealState = StationState.Run;
                 while (CanLoop)
                 {
-                    await DoPollMessage(checkWait, pool, socket);
+                    Listen(checkWait, pool, socket);
                 }
                 pool.Sockets[0].Disconnect(Config.WorkerCallAddress);
-                await Hearter.HeartLeft(StationName, RealName);
+                Hearter.HeartLeft(StationName, RealName);
                 ZeroTrace.SystemLog(StationName, "closing");
                 try
                 {
-                    while (await DoPollMessage(checkWait, pool, socket))
+                    while (Listen(checkWait, pool, socket))
                     {
                         Console.WriteLine("处理堆积任务");
                     }
@@ -114,40 +114,30 @@ namespace Agebull.MicroZero.ZeroApis
                 int cnt = 0;
                 while (WaitCount > 0 && ++cnt < 100)
                     Thread.Sleep(10);
-                CloseTask().Wait();
+                CloseTask();
             }
 
             ZeroTrace.SystemLog(StationName, "Task", "end", RealName);
             return true;
         }
 
-        private async Task<bool> DoPollMessage(bool checkWait, IZmqPool pool, ZSocketEx socket)
+        private bool Listen(bool checkWait, IZmqPool pool, ZSocketEx socket)
         {
-            //await Task.Yield();
             try
             {
-                if (!await pool.PollAsync())
+                if (!pool.Poll())
                 {
-                    //cnt += pool.TimeoutMs;
-                    await OnLoopIdle();
-                    //if (CanLoop && cnt >= 2000)
-                    //{
-                    //    hearter.Heartbeat(StationName, realName);
-                    //    cnt = 0;
-                    //}
+                    OnLoopIdle();
                     return false;
                 }
                 //对Result端口的返回的丢弃处理
-                var message = await pool.CheckInAsync(1);
-                message?.Dispose();
+                if (pool.CheckIn(1, out var message))
+                    message?.Dispose();
 
-                message = await pool.CheckInAsync(0);
-                if (message == null)
-                {
+                if (!pool.CheckIn(0, out message))
                     return false;
-                }
                 Interlocked.Increment(ref RecvCount);
-                await OnCall(checkWait, socket, message);
+                OnCall(checkWait, socket, message);
             }
             catch (Exception e)
             {
@@ -207,7 +197,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 检查超时任务
         /// </summary>
         /// <returns></returns>
-        internal async Task CheckTask()
+        internal void CheckTask()
         {
             try
             {
@@ -225,7 +215,7 @@ namespace Agebull.MicroZero.ZeroApis
                         }
                         else if ((DateTime.Now - item.Start).TotalSeconds >= _option.ApiTimeout)
                         {
-                            await KillTask(item);
+                            KillTask(item);
                         }
                     }
                     catch (Exception e)
@@ -245,7 +235,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 空转
         /// </summary>
         /// <returns></returns>
-        private async Task CloseTask()
+        private void CloseTask()
         {
             if (Tasks.Count == 0)
                 return;
@@ -258,7 +248,7 @@ namespace Agebull.MicroZero.ZeroApis
                     {
                         //强行中断线程
                         if (!item.Task.IsCanceled && !item.Task.IsCompleted && !item.Task.IsFaulted)
-                            await KillTask(item);
+                            KillTask(item);
                     }
                     catch (Exception e)
                     {
@@ -280,8 +270,10 @@ namespace Agebull.MicroZero.ZeroApis
         /// 杀死任务
         /// </summary>
         /// <param name="item"></param>
-        private async Task KillTask(ApiTaskItem item)
+        private void KillTask(ApiTaskItem item)
         {
+            if (item.Task.IsCanceled || item.Task.IsCompleted || item.Task.IsFaulted)
+                return;
             //if (item.Executer?.CancellationToken == null)
             //    return;
             //item.Executer.CancellationToken.Cancel(false);
@@ -329,7 +321,7 @@ namespace Agebull.MicroZero.ZeroApis
                 var socket = item.Socket;
                 item.Socket = null;
                 if (/*item.Executer?.CancellationToken != null &&*/ socket != null)
-                    await SendResult(socket, new ZMessage
+                    SendResult(socket, new ZMessage
                     {
                         new ZFrame(item.Api.Caller),
                         new ZFrame(TimeOutKillFrame),
@@ -361,18 +353,24 @@ namespace Agebull.MicroZero.ZeroApis
         #region 方法调用
 
         private int timeout;
-        private Task OnCall(bool checkWait, ZSocketEx socket, ZMessage message)
+        private void OnCall(bool checkWait, ZSocketEx socket, ZMessage message)
         {
-            //await Task.Yield();
             Interlocked.Increment(ref CallCount);
             if (!ApiCallItem.Unpack(message, out var item) || string.IsNullOrWhiteSpace(item.ApiName))
             {
-                return SendLayoutErrorResult(socket, item);
+                SendLayoutErrorResult(socket, item);
+                return;
             }
-            if (item.ApiName == "@")
+            switch (item.ApiName[0])
             {
-                item.Result = ApiResult.SucceesJson;
-                return OnExecuestEnd(socket, item, ZeroOperatorStateType.Ok);
+                case '$':
+                    item.Result = ApiResult.SucceesJson;
+                    OnExecuestEnd(socket, item, ZeroOperatorStateType.Ok);
+                    return;
+                case '*':
+                    item.Result = ZeroApplication.TestFunc();
+                    OnExecuestEnd(socket, item, ZeroOperatorStateType.Ok);
+                    return;
             }
 
             var arg = new ApiTaskItem
@@ -383,41 +381,24 @@ namespace Agebull.MicroZero.ZeroApis
             };
             if (!checkWait)
             {
-                return Execute(arg, true);
+                Execute(arg, true);
+                return;
             }
 
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
                 LogRecorderX.SystemLog("Unavailable");
                 item.Result = ApiResultIoc.UnavailableJson;
-                _ = OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
+                OnExecuestEnd(socket, item, ZeroOperatorStateType.Unavailable);
             }
             else
             {
-                _ = Execute(arg, false);
+                Execute(arg, false);
             }
-            return Task.CompletedTask;
         }
 
-        //private async Task ExecuteAsync(object arg)
-        //{
-        //    await Execute((ApiTaskItem)arg);
-        //}
-
-        private async Task Execute(ApiTaskItem arg, bool wait)
+        private void Execute(ApiTaskItem arg, bool wait)
         {
-            await Task.Yield();
-            switch (arg.Api.ApiName[0])
-            {
-                case '$':
-                    arg.Api.Result = ApiResult.SucceesJson;
-                    await OnExecuestEnd(arg.Socket, arg.Api, ZeroOperatorStateType.Ok);
-                    return;
-                case '*':
-                    arg.Api.Result = ZeroApplication.TestFunc();
-                    await OnExecuestEnd(arg.Socket, arg.Api, ZeroOperatorStateType.Ok);
-                    return;
-            }
             if (!PrepareExecute(arg.Api))
                 return;
             arg.Executer = new ApiExecuter
@@ -427,15 +408,10 @@ namespace Agebull.MicroZero.ZeroApis
                 Item = arg.Api,
                 Socket = arg.Socket
             };
-            arg.Task = arg.Executer.Execute();
-            arg.TaskId = arg.Task.Id;
-            Tasks.TryAdd(arg.TaskId, arg);
-            if (wait && !Task.WaitAll(new[] { arg.Task }, timeout))
-            {
-                Console.WriteLine("Time out");
-                if (!arg.Task.IsCanceled && !arg.Task.IsCompleted && !arg.Task.IsFaulted)
-                    await KillTask(arg);
-            }
+            if (!wait)
+                Task.Factory.StartNew(arg.Executer.Execute, TaskCreationOptions.DenyChildAttach);
+            else if (!Task.Factory.StartNew(arg.Executer.Execute, TaskCreationOptions.DenyChildAttach).Wait(timeout))
+                KillTask(arg);
         }
 
         /// <summary>
@@ -721,10 +697,13 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal virtual async Task<bool> OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal virtual bool OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
         {
             if (socket == null)
+            {
+                Interlocked.Increment(ref SendError);
                 return false;
+            }
             int i = 0;
             var des = new byte[10 + item.Originals.Count];
             des[i++] = (byte)(item.Originals.Count + (item.EndTag == ZeroFrameType.ResultFileEnd ? 7 : 6));
@@ -757,7 +736,7 @@ namespace Agebull.MicroZero.ZeroApis
             des[i++] = ZeroFrameType.SerivceKey;
             msg.Add(Config.ServiceKey);
             des[i] = item.EndTag > 0 ? item.EndTag : ZeroFrameType.ResultEnd;
-            return await SendResult(socket, new ZMessage(msg));
+            return SendResult(socket, new ZMessage(msg));
         }
 
         private static readonly byte[] LayoutErrorFrame = new byte[]
@@ -775,7 +754,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal virtual async Task SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
+        internal virtual void SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
         {
             //if (!CanLoop)
             //{
@@ -784,11 +763,10 @@ namespace Agebull.MicroZero.ZeroApis
             //}
             if (item == null)
             {
-                Interlocked.Increment(ref SendCount);
                 Interlocked.Increment(ref SendError);
                 return;
             }
-            await SendResult(socket, new ZMessage
+            SendResult(socket, new ZMessage
             {
                 new ZFrame(item.Caller),
                 new ZFrame(LayoutErrorFrame),
@@ -797,59 +775,47 @@ namespace Agebull.MicroZero.ZeroApis
             });
         }
 
-        readonly SemaphoreSlim sendSlim = new SemaphoreSlim(1);
+
         /// <summary>
         /// 发送返回值 
         /// </summary>
         /// <param name="socket"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        protected async Task<bool> SendResult(ZSocketEx socket, ZMessage message)
+        protected bool SendResult(ZSocketEx socket, ZMessage message)
         {
-            //if (!CanLoop)
-            //{
-            //    ZeroTrace.WriteError(StationName, "Can`t send result,station is closed");
-            //    LogRecorderX.MonitorTrace($"{StationName} : Can`t send result,station is closed");
-            //    return false;
-            //}
-
-            if (socket != null)
+            if (socket == null || socket.IsDisposed)
             {
-                try
-                {
-                    await sendSlim.WaitAsync();
-                    try
-                    {
-                        using (message)
-                        {
-                            var res = await socket.SendAsync(message);
-                            if (res)
-                            {
-                                Interlocked.Increment(ref SendCount);
-                                return true;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        sendSlim.Release();
-                    }
+                message.Dispose();
+                Interlocked.Increment(ref SendError);
+                return false;
+            }
 
-                    ZeroTrace.WriteError(StationName, socket.LastError.Text, socket.LastError.Name);
-                    LogRecorderX.MonitorTrace($"{StationName}({socket.LastError.Name}) : {socket.LastError.Text}");
+            try
+            {
+                ZError error;
+                bool success;
+                using (message)
+                {
+                    lock (socket)
+                    {
+                        success = socket.Send(message, out error);
+                    }
+                }
 
-                }
-                catch (Exception e)
+                if (success)
                 {
-                    LogRecorderX.Exception(e, "ApiStation.SendResult");
-                    LogRecorderX.MonitorTrace(e.Message);
+                    Interlocked.Increment(ref SendCount);
+                    return true;
                 }
-#if UNMANAGE_MONEY_CHECK
-                finally
-                {
-                    LogRecorderX.MonitorTrace($"MemoryCheck:{MemoryCheck.AliveCount}");
-                }
-#endif
+
+                ZeroTrace.WriteError(StationName, error.Text, error.Name);
+                LogRecorderX.MonitorTrace($"{StationName}({socket.Endpoint}) : {error.Text}");
+            }
+            catch (Exception e)
+            {
+                LogRecorderX.Exception(e, "ApiStation.SendResult");
+                LogRecorderX.MonitorTrace($"{StationName}({socket.Endpoint}) : {e.Message}");
             }
             Interlocked.Increment(ref SendError);
             return false;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Agebull.Common.Context;
@@ -48,11 +49,6 @@ namespace Agebull.MicroZero.ZeroApis
         ///     上下文内容（透传方式）
         /// </summary>
         internal string ContextJson;
-
-        /// <summary>
-        ///     请求站点
-        /// </summary>
-        internal string RequestId;
 
         /// <summary>
         ///     标题
@@ -244,7 +240,8 @@ namespace Agebull.MicroZero.ZeroApis
                 LastResult = await CallNoFileApi();
             else
                 LastResult = await CallByFileApi();
-
+            
+            State = LastResult.State;
             Result = LastResult.Result;
             Binary = LastResult.Binary;
             ResultType = LastResult.ResultType;
@@ -253,7 +250,7 @@ namespace Agebull.MicroZero.ZeroApis
         }
         private Task<ZeroResult> CallNoFileApi()
         {
-            return ApiProxy.Instance.Send(this,
+            return ApiProxy.Instance.CallZero(this,
                  CallDescription,
                  Commmand.ToZeroBytes(),
                  Argument.ToZeroBytes(),
@@ -302,7 +299,7 @@ namespace Agebull.MicroZero.ZeroApis
             description[i++] = ZeroFrameType.SerivceKey;
             description[i] = ZeroFrameType.End;
 
-            return ApiProxy.Instance.SendToZero(this, description, frames);
+            return ApiProxy.Instance.CallZero(this, description, frames);
         }
 
         /// <summary>
@@ -327,7 +324,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         private async Task<bool> CallPlan(ZeroPlanInfo plan)
         {
-            LastResult = await ApiProxy.Instance.Send(this,
+            LastResult = await ApiProxy.Instance.CallZero(this,
                 PlanDescription,
                 Commmand.ToZeroBytes(),
                 Argument.ToZeroBytes(),

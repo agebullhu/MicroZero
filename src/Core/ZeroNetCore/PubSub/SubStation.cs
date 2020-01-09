@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
-using System.Threading.Tasks;
 using Agebull.Common.Ioc;
 using Agebull.Common.Tson;
 using Newtonsoft.Json;
@@ -73,21 +72,21 @@ namespace Agebull.MicroZero.PubSub
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public abstract Task Handle(TPublishItem args);
+        public abstract void Handle(TPublishItem args);
 
         /// <summary>
         /// 执行命令
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        async Task DoHandle(TPublishItem args)
+        void DoHandle(TPublishItem args)
         {
             using (IocScope.CreateScope())
             {
                 args.RestoryContext(StationName);
                 try
                 {
-                    await Handle(args);
+                    Handle(args);
                 }
                 catch (Exception e)
                 {
@@ -109,10 +108,10 @@ namespace Agebull.MicroZero.PubSub
         /// 轮询
         /// </summary>
         /// <returns>返回False表明需要重启</returns>
-        protected override async Task<bool> Loop(/*CancellationToken token*/)
+        protected override bool Loop(/*CancellationToken token*/)
         {
             //await Task.Yield();
-            await Hearter.HeartReady(StationName, RealName);
+            Hearter.HeartReady(StationName, RealName);
             //using (var socket = ZSocket.CreateClientSocket(inporcName, ZSocketType.PAIR))
             using (var pool = ZmqPool.CreateZmqPool())
             {
@@ -120,19 +119,18 @@ namespace Agebull.MicroZero.PubSub
                 RealState = StationState.Run;
                 while (CanLoop)
                 {
-                    if (!await pool.PollAsync())
+                    if (!pool.Poll())
                     {
-                       await OnLoopIdle();
+                       OnLoopIdle();
                     }
                     else if (!CanLoop)
                         continue;
 
-                    var message = await pool.CheckInAsync(0);
-                    if (message == null)
+                    if (!pool.CheckIn(0,out var message))
                         continue;
                     if (Unpack(message, out var item))
                     {
-                        await DoHandle(item);
+                        DoHandle(item);
                     }
 
                     //socket.SendTo(message);

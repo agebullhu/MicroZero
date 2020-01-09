@@ -3,6 +3,7 @@ using Agebull.Common.Configuration;
 using Agebull.MicroZero;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using ZeroMQ;
 
 namespace MicroZero.Http.Gateway
 {
@@ -12,6 +13,7 @@ namespace MicroZero.Http.Gateway
         public static async Task Main(string[] args)
         {
             BuildWebHost(args).Run();
+            MemoryCheck.Trace();
             await ZeroApplication.Shutdown();
         }
 
@@ -19,6 +21,7 @@ namespace MicroZero.Http.Gateway
         {
             return WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(ConfigurationManager.Root)
+                
                 .UseKestrel(RouteApp.Options)//HTTPS∂Àø⁄≈‰÷√
                 .UseStartup<GatewayStartup>()
                 .Build();

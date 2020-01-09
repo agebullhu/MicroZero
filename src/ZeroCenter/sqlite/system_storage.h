@@ -11,7 +11,7 @@ namespace agebull
 		/**
 		* \brief 跟踪持久化存储(使用SQLite)
 		*/
-		class system_storage :public sqlite_storage
+		class system_storage final :public sqlite_storage
 		{
 			sqlite3_stmt *station_insert_stmt_;
 			sqlite3_stmt *station_update_stmt_;

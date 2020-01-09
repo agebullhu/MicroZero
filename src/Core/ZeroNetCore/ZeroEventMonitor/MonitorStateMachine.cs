@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Agebull.MicroZero.ApiDocuments;
 using Agebull.Common.Logging;
 using Newtonsoft.Json;
-using Agebull.MicroZero.ZeroApis;
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -79,7 +78,7 @@ namespace Agebull.MicroZero.ZeroManagemant
             }
             else
             {
-                await ConfigManager.LoadAllConfig();
+                ConfigManager.LoadAllConfig();
             }
         }
 
@@ -128,11 +127,11 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// <summary>
         /// 站点心跳
         /// </summary>
-        internal static async Task worker_sound_off()
+        internal static void worker_sound_off()
         {
             if (ZeroApplication.ApplicationState != StationState.Run || ZeroApplication.ZeroCenterState != ZeroCenterState.Run)
                 return;
-            await ZeroCenterProxy.Master.Heartbeat();
+            ZeroCenterProxy.Master.Heartbeat();
         }
 
         /// <summary>

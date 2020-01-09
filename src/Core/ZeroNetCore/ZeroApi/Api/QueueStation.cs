@@ -51,7 +51,8 @@ namespace Agebull.MicroZero.PubSub
                     data.FailedIds = data.FailedIds.Distinct().ToList();
                 ids = data.FailedIds.ToArray();
             }
-            _= ReNotify(ids);
+
+            Task.Run(() => ReNotify(ids));
 
             return pool;
         }
@@ -70,14 +71,14 @@ namespace Agebull.MicroZero.PubSub
         }
 
         /// <inheritdoc />
-        protected override async Task OnLoopComplete()
+        protected override void OnLoopComplete()
         {
             string json;
             lock (data)
             {
                 json = JsonHelper.SerializeObject(data);
             }
-            await SaveIds(json);
+            SaveIds(json).Wait();
         }
 
         /// <summary>
@@ -87,10 +88,10 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal override async Task<bool> OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal sealed override bool OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
-                await Ack(id, state == ZeroOperatorStateType.Ok);
+                Ack(id, state == ZeroOperatorStateType.Ok);
 
             var des = new byte[]
             {
@@ -109,8 +110,8 @@ namespace Agebull.MicroZero.PubSub
                 item.LocalId.ToZeroBytes(),
                 Config.ServiceKey
             };
-            return await SendResult(socket, new ZMessage(msg));
-        }
+            return SendResult(socket, new ZMessage(msg));
+        } 
 
         /// <summary>
         /// 发送返回值 
@@ -118,10 +119,10 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal override async Task SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
+        internal override void SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
-                await Ack(id, false);
+                Ack(id, false);
         }
 
         ///// <summary>
@@ -155,13 +156,13 @@ namespace Agebull.MicroZero.PubSub
         }
 
         private string _fileName;
-        private string FileName => _fileName ?? (_fileName = Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json"));
+        private string FileName => _fileName ??= Path.Combine(ZeroApplication.Config.DataFolder, StationName + ".json");
 
         /// <summary>
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        private async Task ReNotify(long[] ids)
+        private void ReNotify(long[] ids)
         {
             Thread.Sleep(1000);
 
@@ -171,14 +172,14 @@ namespace Agebull.MicroZero.PubSub
                     return;
                 foreach (var id in ids)
                 {
-                    await cmd.CallCommand(id, id);
+                    cmd.CallCommand(id, id);
                 }
                 long max;
                 lock (data)
                 {
                     max = data.Max;
                 }
-                await cmd.CallCommand(max, 0);
+                cmd.CallCommand(max, 0);
             }
         }
 
@@ -218,7 +219,7 @@ namespace Agebull.MicroZero.PubSub
         /// 空转
         /// </summary>
         /// <returns></returns>
-        protected override async Task OnLoopIdle()
+        protected override void OnLoopIdle()
         {
             using (var cmd = new QueueCommand())
             {
@@ -229,11 +230,11 @@ namespace Agebull.MicroZero.PubSub
                 {
                     max = data.Max;
                 }
-                await cmd.CallCommand(max, 0);
+                cmd.CallCommand(max, 0);
             }
         }
 
-        async Task Ack(long nowId, bool success)
+        void Ack(long nowId, bool success)
         {
             string json;
             lock (data)
@@ -247,7 +248,7 @@ namespace Agebull.MicroZero.PubSub
                     data.Max = nowId;
                 json = JsonHelper.SerializeObject(data);
             }
-            await SaveIds(json);
+            SaveIds(json).Wait();
         }
         #endregion
     }
@@ -300,12 +301,12 @@ namespace Agebull.MicroZero.PubSub
         ///     发起一次请求
         /// </summary>
         /// <returns></returns>
-        public async Task<ZeroResult> CallCommand(long start, long end)
+        public ZeroResult CallCommand(long start, long end)
         {
             try
             {
                 ZeroResult result;
-                if (await socket.SendByServiceKey(description, start.ToString(), end.ToString()))
+                if (socket.SendBy(description, start.ToString().ToZeroBytes(), end.ToString().ToZeroBytes()))
                     result = new ZeroResult
                     {
                         State = ZeroOperatorStateType.Ok,
@@ -317,7 +318,7 @@ namespace Agebull.MicroZero.PubSub
                         State = ZeroOperatorStateType.LocalRecvError,
                         ZmqError = socket.LastError
                     };
-                return !result.InteractiveSuccess ? result : await socket.Receive<ZeroResult>();
+                return !result.InteractiveSuccess ? result : socket.Receive<ZeroResult>();
             }
             catch (Exception e)
             {

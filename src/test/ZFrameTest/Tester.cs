@@ -51,17 +51,12 @@ namespace RpcTest
             using (var socket = ZSocketEx.CreateOnceSocket(address, serviceKey, ZSocket.CreateIdentity()))
             {
                 socket.SetOption(ZSocketOption.RCVTIMEO, 30000);
-                var task = socket.SendByServiceKey(frames);
-                task.Wait();
-                if (!task.Result)
+                if (!socket.SendByServiceKey(frames))
                 {
                     Console.Error.Write(" : Send Error");
                     return;
                 }
-
-               var  task2 = socket.Receive<ZeroResult>();
-               task2.Wait();
-                var result = task2.Result;
+                var result = socket.Receive<ZeroResult>();
                 if (!result.InteractiveSuccess)
                     Console.Error.WriteLine(" : Receive Error");
                 if (result.State != state)

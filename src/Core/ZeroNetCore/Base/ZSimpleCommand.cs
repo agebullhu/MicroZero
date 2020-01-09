@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using ZeroMQ;
 
 namespace Agebull.MicroZero
@@ -24,7 +23,7 @@ namespace Agebull.MicroZero
         /// </summary>
         /// <param name="args">请求参数,第一个必须为命令名称</param>
         /// <returns></returns>
-        public Task<ZeroResult> CallCommand(params string[] args)
+        public ZeroResult CallCommand(params string[] args)
         {
             byte[] description = new byte[5 + args.Length];
             description[0] = (byte)(args.Length + 1);
@@ -46,7 +45,7 @@ namespace Agebull.MicroZero
         /// <param name="cmd"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        protected async Task<bool> ByteCommand(ZeroByteCommand cmd, params string[] args)
+        protected bool ByteCommand(ZeroByteCommand cmd, params string[] args)
         {
             byte[] description = new byte[4 + args.Length];
             description[0] = (byte)(args.Length + 1);
@@ -58,7 +57,7 @@ namespace Agebull.MicroZero
             }
             description[idx++] = ZeroFrameType.SerivceKey;
             description[idx] = ZeroFrameType.ExtendEnd;
-            var res = await CallCommand(description, args);
+            var res = CallCommand(description, args);
             return res.InteractiveSuccess;
         }
 
@@ -68,7 +67,7 @@ namespace Agebull.MicroZero
         /// <param name="description"></param>
         /// <param name="args">请求参数</param>
         /// <returns></returns>
-        protected async Task<ZeroResult> CallCommand(byte[] description, params string[] args)
+        protected ZeroResult CallCommand(byte[] description, params string[] args)
         {
             if (ManageAddress == null)
                 return new ZeroResult
@@ -88,13 +87,13 @@ namespace Agebull.MicroZero
             {
                 using (socket)
                 {
-                    if (!await socket.SendByServiceKey(description, args))
+                    if (!socket.SendByServiceKey(description, args))
                         return new ZeroResult
                         {
                             State = ZeroOperatorStateType.LocalRecvError,
                             ZmqError = socket.LastError
                         };
-                    return await socket.Receive<ZeroResult>();
+                    return socket.Receive<ZeroResult>();
                 }
             }
             catch (Exception e)

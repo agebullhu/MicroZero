@@ -5,7 +5,6 @@ using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using System.Threading.Tasks;
 using Agebull.Common.Context;
 using Agebull.Common.Logging;
 
@@ -38,18 +37,18 @@ namespace ZeroMQ
         #endregion
 
         #region Field
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZSocket);
 #endif
 
-        public ZContext Context { get; private set; }
+        public ZContext Context { get; }
 
         public IntPtr SocketPtr { get; private set; }
 
         /// <summary>
         ///     Gets the <see cref="ZeroMQ.ZSocketType" /> value for the current socket.
         /// </summary>
-        public ZSocketType SocketType { get; private set; }
+        public ZSocketType SocketType { get; }
 
 
         #endregion
@@ -706,8 +705,7 @@ namespace ZeroMQ
         public bool SendFrames(IEnumerable<ZFrame> frames, ZSocketFlags flags, out ZError error)
         {
             var sent = 0;
-            if (!SendFrames(frames, ref sent, flags, out error)) return false;
-            return true;
+            return SendFrames(frames, ref sent, flags, out error);
         }
 
         public bool SendFrames(IEnumerable<ZFrame> frames, ref int sent, ZSocketFlags flags, out ZError error)
@@ -727,7 +725,7 @@ namespace ZeroMQ
                 var frame = array[i];
 
                 if (i == l - 1 && !more)
-                    flags = flags & ~ZSocketFlags.More;
+                    flags &= ~ZSocketFlags.More;
 
                 if (!SendFrame(frame, flags, out error))
                     return false;
@@ -1874,6 +1872,7 @@ namespace ZeroMQ
             pin.Free();
             return true;
         }
+
         /// <summary>
         /// 接收数据
         /// </summary>
@@ -1887,7 +1886,8 @@ namespace ZeroMQ
                 return true;
             _error = ZError.GetLastErr();
             frame.Dispose();
-            LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
+            //LogRecorderX.Error($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
+            LogRecorderX.StackTraceInfomation($"Recv Error: {_error.Text} | {Endpoint} | {SocketPtr}");
             return false;
         }
 
@@ -1927,19 +1927,18 @@ namespace ZeroMQ
         /// </summary>
         /// <param name="error"></param>
         /// <returns></returns>
-        private bool Initialize(out ZError error)
+        private void Initialize(out ZError error)
         {
             SocketPtr = zmq.socket(Context.ContextPtr, (int)SocketType);
             if (IntPtr.Zero == SocketPtr)
             {
                 State = SocketState.Failed;
                 error = _error = ZError.GetLastErr();
-                return false;
+                return;
             }
             State = SocketState.Create;
             error = _error = null;
             ZContext.AddSocket(this);
-            return true;
         }
 
         /// <summary>

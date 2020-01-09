@@ -68,14 +68,13 @@ namespace ZeroMQ
             {
                 if (_framePtr == value)
                     return;
+                _framePtr?.Dispose();
                 if (null == value)
                 {
-                    _framePtr?.Dispose();
                     _framePtr = null;
                     return;
                 }
-                _framePtr?.Dispose();
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
                 MemoryCheck.SetIsAloc(nameof(ZFrame));
 #endif
                 _framePtr = value;
@@ -732,7 +731,7 @@ namespace ZeroMQ
             }
 
             ptr.Dispose();
-#if UNMANAGE_MONEY_CHECK
+#if !UNMANAGE_MONEY_CHECK
             MemoryCheck.SetIsFree(nameof(ZFrame));
 #endif
         }

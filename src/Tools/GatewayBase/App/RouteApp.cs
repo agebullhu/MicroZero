@@ -65,11 +65,18 @@ namespace MicroZero.Http.Gateway
                         ? option.CerFile
                         : Path.Combine(Environment.CurrentDirectory, option.CerFile);
                     var certificate = new X509Certificate2(filename, option.CerPwd);
-                    options.Listen(IPAddress.Any, option.Port, listenOptions => { listenOptions.UseHttps(certificate); });
+                    options.Listen(IPAddress.Any, option.Port, listenOptions =>
+                    {
+                        listenOptions.UseHttps(certificate);
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
                 }
                 else
                 {
-                    options.Listen(IPAddress.Any, option.Port);
+                    options.Listen(IPAddress.Any, option.Port, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    });
                 }
             }
         }
@@ -84,22 +91,17 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         public static Task Call(HttpContext context)
         {
-            //跨域支持
-            if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
-            {
-                return Task.Factory.StartNew(() => HttpProtocol.CrosOption(context.Response));
-            }
-            else
-            {
-                /*
-                在ASP.Net Core的机制中，当接收到http的头为 application/x-www-form-urlencoded 或者 multipart/form-data 时，
-                netcore会通过 FormReader 预先解析 Request.Body 的 Form 的内容，经过 Reader 读取后 Request.Body 就会变 null，
-                这样我们在代码中需要再次使用 Request.Body 时就会报空异常。
-                */
-                //context.Request.EnableRewind();
+            /*
+            在ASP.Net Core的机制中，当接收到http的头为 application/x-www-form-urlencoded 或者 multipart/form-data 时，
+            netcore会通过 FormReader 预先解析 Request.Body 的 Form 的内容，经过 Reader 读取后 Request.Body 就会变 null，
+            这样我们在代码中需要再次使用 Request.Body 时就会报空异常。
+            */
+            //context.Request.EnableRewind();
 
-                return CallTask(context);
-            }
+            //跨域支持
+            return string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase) 
+                ? Task.Run(() => HttpProtocol.CrosOption(context.Response)) 
+                : CallTask(context);
         }
 
         /// <summary>
@@ -286,28 +288,28 @@ namespace MicroZero.Http.Gateway
 
         #region OnZeroNetEvent
 
-        private static async Task OnZeroNetEvent(ZeroAppConfigRuntime config, ZeroNetEventArgument e)
+        private static Task OnZeroNetEvent(ZeroAppConfigRuntime config, ZeroNetEventArgument e)
         {
             switch (e.Event)
             {
                 //case ZeroNetEventType.AppRun:
                 case ZeroNetEventType.ConfigUpdate:
-                    await OnZeroNetRuning();
-                    return;
+                    OnZeroNetRuning();
+                    break;
                 case ZeroNetEventType.AppStop:
                     OnZeroNetClose();
-                    return;
+                    break;
                 case ZeroNetEventType.CenterStationDocument:
                     if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
                     {
-                        await UpdateApiItems(host as ZeroHost);
+                        UpdateApiItems(host as ZeroHost);
                     }
                     break;
                 case ZeroNetEventType.CenterStationJoin:
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
-                    await StationJoin(e.EventConfig);
+                    StationJoin(e.EventConfig);
                     break;
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
@@ -318,18 +320,19 @@ namespace MicroZero.Http.Gateway
                     break;
             }
 
+            return Task.CompletedTask;
             //if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
             //    return;
             //LogRecorderX.SystemLog($"Reload Document by {e.Event}.");
             //OnZeroNetRuning();
         }
 
-        private static async Task OnZeroNetRuning()
+        private static void OnZeroNetRuning()
         {
             //Console.WriteLine("lock (_configs)");
             var cfgs = ZeroApplication.Config.GetConfigs();
             foreach (var config in cfgs)
-                await StationJoin(config);
+                StationJoin(config);
         }
 
         private static void OnZeroNetClose()
@@ -351,7 +354,7 @@ namespace MicroZero.Http.Gateway
         }
 
 
-        private static async Task StationJoin(StationConfig station)
+        private static void StationJoin(StationConfig station)
         {
             if (station.IsBaseStation)
                 return;
@@ -374,7 +377,7 @@ namespace MicroZero.Http.Gateway
             zeroHost.Failed = false;
             zeroHost.Station = station.StationName;
 
-            await UpdateApiItems(zeroHost);
+            UpdateApiItems(zeroHost);
 
             if (!string.IsNullOrWhiteSpace(station.ShortName))
             {
@@ -392,7 +395,7 @@ namespace MicroZero.Http.Gateway
                     RouteOption.RouteMap.TryAdd(alia, zeroHost);
         }
 
-        private static async Task UpdateApiItems(ZeroHost zeroHost)
+        private static void UpdateApiItems(ZeroHost zeroHost)
         {
             if (zeroHost.Config.IsBaseStation || !zeroHost.Config.IsApi || string.IsNullOrWhiteSpace(zeroHost.Config.StationName))
                 return;
@@ -403,7 +406,7 @@ namespace MicroZero.Http.Gateway
                 return;
             }
             var mg = new ConfigManager(center);
-            var doc = await mg.LoadDocument(zeroHost.Station);
+            var doc = mg.LoadDocument(zeroHost.Station);
             if (doc == null)
             {
                 zeroHost.Apis = null;

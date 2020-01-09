@@ -27,7 +27,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                         await center_stop(ZeroApplication.Config.ServiceName, content);
                         return;
                     case ZeroNetEventType.CenterWorkerSoundOff:
-                        await worker_sound_off();
+                        worker_sound_off();
                         return;
                     case ZeroNetEventType.CenterStationTrends:
                         station_trends(station, content);

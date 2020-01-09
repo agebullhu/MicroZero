@@ -99,6 +99,7 @@ namespace Agebull.MicroZero
             if (glc != null)
                 Config.CopyByEmpty(glc);
 
+            Console.WriteLine(JsonHelper.SerializeObject(Config.ZeroGroup));
             #endregion
 
             #region ServiceName
