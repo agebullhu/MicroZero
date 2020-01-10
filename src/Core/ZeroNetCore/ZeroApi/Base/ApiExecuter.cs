@@ -26,10 +26,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// 当前站点
         /// </summary>
         internal ApiStationBase Station;
-        /// <summary>
-        /// 当前连接
-        /// </summary>
-        internal ZSocketEx Socket { get; set; }
+
         /// <summary>
         /// 调用的内容
         /// </summary>
@@ -50,49 +47,52 @@ namespace Agebull.MicroZero.ZeroApis
         /// <summary>
         /// 调用 
         /// </summary>
-        public async void Execute()
+        public async Task Execute()
         {
-            TaskItem.Thread = Thread.CurrentThread;
-            TaskItem.TaskId = TaskItem.Task.Id;
-            Station.Tasks.TryAdd(TaskItem.TaskId, TaskItem);
-            using (ScopeResource = IocScope.CreateScope())
+            try
             {
-                try
+                TaskItem.Thread = Thread.CurrentThread;
+                using (ScopeResource = IocScope.CreateScope())
                 {
-                    if (CancellationToken.IsCancellationRequested)
-                        return;
-                    Prepare();
-                    GlobalContext.Current.DependencyObjects.Annex(Item);
-                    ZeroOperatorStateType state;
                     try
                     {
-                        state = LogRecorderX.LogMonitor
-                            ? await ApiCallByMonitor()
-                            : await ApiCallNoMonitor();
-                    }
-                    catch (Exception ex)
-                    {
-                        ZeroTrace.WriteException(Station.StationName, ex, "ApiCall", Item.ApiName, Item.Argument);
-                        Item.Result = ApiResultIoc.InnerErrorJson;
-                        state = ZeroOperatorStateType.LocalException;
-                    }
+                        if (CancellationToken.IsCancellationRequested)
+                            return;
+                        Prepare();
+                        GlobalContext.Current.DependencyObjects.Annex(Item);
+                        ZeroOperatorStateType state;
+                        try
+                        {
+                            state = LogRecorderX.LogMonitor
+                                ? await ApiCallByMonitor()
+                                : await ApiCallNoMonitor();
+                        }
+                        catch (Exception ex)
+                        {
+                            ZeroTrace.WriteException(Station.StationName, ex, "ApiCall", Item.ApiName, Item.Argument);
+                            Item.Result = ApiResultIoc.InnerErrorJson;
+                            state = ZeroOperatorStateType.LocalException;
+                        }
 
-                    var socket = Socket;
-                    Socket = null;
-                    Station.OnExecuestEnd(socket, Item, state);
-                    End();
+                        Station.OnExecuestEnd(Item, state);
+                        End();
+                    }
+                    catch (ThreadInterruptedException)
+                    {
+                        ZeroTrace.SystemLog("Timeout", Item.ApiName, Item.Argument, Item.Content, Item.Context);
+                    }
+                    finally
+                    {
+                        Station.Tasks.TryRemove(TaskItem.TaskId, out _);
+                        CancellationToken.Dispose();
+                        CancellationToken = null;
+                    }
+                    ScopeResource = null;
                 }
-                catch (ThreadInterruptedException)
-                {
-                    ZeroTrace.SystemLog("Timeout", Item.ApiName, Item.Argument, Item.Content, Item.Context);
-                }
-                finally
-                {
-                    Station.Tasks.TryRemove(TaskItem.TaskId, out _);
-                    CancellationToken.Dispose();
-                    CancellationToken = null;
-                }
-                ScopeResource = null;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 

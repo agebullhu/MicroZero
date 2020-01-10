@@ -58,7 +58,7 @@ namespace ZeroMQ
                 socket.Dispose();
             }
         }
-#if !UNMANAGE_MONEY_CHECK
+#if UNMANAGE_MONEY_CHECK
         /// <summary>
         /// 类型名称
         /// </summary>

@@ -28,7 +28,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
     <Product>MicroZero.Http.GatewayBase</Product>
-    <Version>1.5.0.16-bate</Version>
+    <Version>1.5.0.29-bate</Version>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />

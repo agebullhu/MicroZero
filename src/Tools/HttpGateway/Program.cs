@@ -13,7 +13,7 @@ namespace MicroZero.Http.Gateway
         public static async Task Main(string[] args)
         {
             BuildWebHost(args).Run();
-            MemoryCheck.Trace();
+            
             await ZeroApplication.Shutdown();
         }
 

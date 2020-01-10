@@ -943,11 +943,6 @@
             释放资源
             </summary>
         </member>
-        <member name="P:ZeroMQ.ZPollBase.TypeName">
-            <summary>
-            类型名称
-            </summary>
-        </member>
         <member name="T:ZeroMQ.ZPollEvent">
             <summary>
             pool事件
@@ -2156,11 +2151,6 @@
             内存检查对象
             </summary>
         </member>
-        <member name="M:ZeroMQ.MemoryCheck.#ctor">
-            <summary>
-            构造
-            </summary>
-        </member>
         <member name="M:ZeroMQ.MemoryCheck.Finalize">
             <summary>
             析构
@@ -2176,47 +2166,7 @@
             析构
             </summary>
         </member>
-        <member name="M:ZeroMQ.MemoryCheck.Trace">
-            <summary>
-            显示
-            </summary>
-        </member>
         <member name="M:ZeroMQ.MemoryCheck.DoDispose">
-            <summary>
-            析构
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.MemoryCheck.Alocs">
-            <summary>
-            分配记录
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.MemoryCheck.AliveCount">
-            <summary>
-            存活量
-            </summary>
-        </member>
-        <member name="F:ZeroMQ.MemoryCheck._aliveCount">
-            <summary>
-            存活量
-            </summary>
-        </member>
-        <member name="P:ZeroMQ.MemoryCheck.TypeName">
-            <summary>
-            类型名称
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.MemoryCheck.SetIsAloc(System.String)">
-            <summary>
-            析构
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.MemoryCheck.SetIsFree(System.String)">
-            <summary>
-            析构
-            </summary>
-        </member>
-        <member name="M:ZeroMQ.MemoryCheck.SetIsFree">
             <summary>
             析构
             </summary>

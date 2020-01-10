@@ -10,7 +10,7 @@ namespace ZeroMQ.lib
     /// </summary>
     public sealed class MarshalPtr : MemoryCheck
     {
-#if !UNMANAGE_MONEY_CHECK
+#if UNMANAGE_MONEY_CHECK
         protected override string TypeName { get; }= nameof(MarshalPtr);
 #endif
 

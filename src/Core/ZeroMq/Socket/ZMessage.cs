@@ -10,7 +10,7 @@ namespace ZeroMQ
     /// </summary>
     public class ZMessage : MemoryCheck, IList<ZFrame>, ICloneable
     {
-#if !UNMANAGE_MONEY_CHECK
+#if UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZMessage);
 #endif
         private List<ZFrame> _frames;

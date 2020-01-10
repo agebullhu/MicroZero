@@ -8,16 +8,6 @@ namespace ZeroMQ
     public abstract class MemoryCheck : IDisposable
     {
         /// <summary>
-        /// 构造
-        /// </summary>
-        protected MemoryCheck()
-        {
-#if !UNMANAGE_MONEY_CHECK
-            SetIsAloc(TypeName);
-#endif
-        }
-
-        /// <summary>
         /// 析构
         /// </summary>
         ~MemoryCheck()
@@ -41,12 +31,24 @@ namespace ZeroMQ
             if (_isDisposed > 0)
                 return;
             _isDisposed = 1;
-
-#if !UNMANAGE_MONEY_CHECK
-            SetIsFree(TypeName);
-#endif
             DoDispose();
+#if UNMANAGE_MONEY_CHECK
+            SetIsFree(TypeName);
             GC.SuppressFinalize(this);
+#endif
+        }
+        /// <summary>
+        /// 析构
+        /// </summary>
+        protected abstract void DoDispose();
+#if UNMANAGE_MONEY_CHECK
+        
+        /// <summary>
+        /// 构造
+        /// </summary>
+        protected MemoryCheck()
+        {
+            SetIsAloc(TypeName);
         }
 
         /// <summary>
@@ -60,12 +62,6 @@ namespace ZeroMQ
                 Console.WriteLine($"MemoryCheck:{aloc.Key}:{aloc.Value}");
             }
         }
-
-        /// <summary>
-        /// 析构
-        /// </summary>
-        protected abstract void DoDispose();
-#if !UNMANAGE_MONEY_CHECK
 
         /// <summary>
         /// 分配记录

@@ -34,12 +34,13 @@ namespace Agebull.MicroZero.PubSub
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocketEx socket)
+        protected override IZmqPool PrepareLoop()
         {
-            socket = ZSocketEx.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
-
             var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(ZPollEvent.In, ZSocketEx.CreateSubSocket(Config.WorkerCallAddress,Config.ServiceKey, identity, Subscribe), socket);
+            pool.Prepare(ZPollEvent.In,
+                ZSocketEx.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, Identity), 
+                ZSocketEx.CreateSubSocket(Config.WorkerCallAddress,Config.ServiceKey, Identity, Subscribe),
+                ZSocketEx.CreateServiceSocket(InprocAddress, null, ZSocketType.ROUTER));
 
             var queueData = LoadData() ?? new QueueData();
             long[] ids;
@@ -88,7 +89,7 @@ namespace Agebull.MicroZero.PubSub
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        internal sealed override bool OnExecuestEnd(ZSocketEx socket, ApiCallItem item, ZeroOperatorStateType state)
+        internal sealed override bool OnExecuestEnd(ApiCallItem item, ZeroOperatorStateType state)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
                 Ack(id, state == ZeroOperatorStateType.Ok);
@@ -110,16 +111,15 @@ namespace Agebull.MicroZero.PubSub
                 item.LocalId.ToZeroBytes(),
                 Config.ServiceKey
             };
-            return SendResult(socket, new ZMessage(msg));
+            return SendResult(new ZMessage(msg));
         } 
 
         /// <summary>
         /// 发送返回值 
         /// </summary>
-        /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <returns></returns>
-        internal override void SendLayoutErrorResult(ZSocketEx socket, ApiCallItem item)
+        internal override void SendLayoutErrorResult(ApiCallItem item)
         {
             if (!string.IsNullOrEmpty(item.LocalId) && long.TryParse(item.LocalId, out var id))
                 Ack(id, false);

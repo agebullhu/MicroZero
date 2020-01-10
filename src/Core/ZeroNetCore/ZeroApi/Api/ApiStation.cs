@@ -1,3 +1,4 @@
+using Agebull.EntityModel.Common;
 using ZeroMQ;
 
 
@@ -20,14 +21,16 @@ namespace Agebull.MicroZero.ZeroApis
         /// 构造Pool
         /// </summary>
         /// <returns></returns>
-        protected override IZmqPool PrepareLoop(byte[] identity, out ZSocketEx socket)
+        protected override IZmqPool PrepareLoop()
         {
-            socket = ZSocketEx.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, identity);
             var pSocket = ZeroApplication.Config.ApiRouterModel
-                    ? ZSocketEx.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.DEALER, identity)
-                    : ZSocketEx.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.PULL, identity);
+                    ? ZSocketEx.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.DEALER, Identity)
+                    : ZSocketEx.CreatePoolSocket(Config.WorkerCallAddress, Config.ServiceKey, ZSocketType.PULL, Identity);
             var pool = ZmqPool.CreateZmqPool();
-            pool.Prepare(ZPollEvent.In, pSocket, socket);
+            pool.Prepare(ZPollEvent.In,
+                ZSocketEx.CreatePoolSocket(Config.WorkerResultAddress, Config.ServiceKey, ZSocketType.DEALER, Identity),
+                pSocket,
+                ZSocketEx.CreateServiceSocket(InprocAddress, null, ZSocketType.ROUTER));
             return pool;
         }
 

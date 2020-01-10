@@ -387,7 +387,7 @@ namespace Agebull.MicroZero
             OnZeroDestory();
             await SystemMonitor.WaitMe();
             ApplicationState = StationState.Disposed;
-            LogRecorderX.Shutdown();
+            LogRecorderX.Shutdown(); 
             ZContext.Destroy();
             ZeroTrace.SystemLog("Application shutdown ,see you late.");
 

@@ -935,7 +935,7 @@
             构造
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStation.PrepareLoop">
             <summary>
             构造Pool
             </summary>
@@ -1129,11 +1129,6 @@
             当前站点
             </summary>
         </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiExecuter.Socket">
-            <summary>
-            当前连接
-            </summary>
-        </member>
         <member name="F:Agebull.MicroZero.ZeroApis.ApiExecuter.Item">
             <summary>
             调用的内容
@@ -1149,12 +1144,7 @@
             范围资源
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute(System.Boolean)">
-            <summary>
-            调用 
-            </summary>
-        </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.ExecuteTask">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiExecuter.Execute">
             <summary>
             调用 
             </summary>
@@ -1238,17 +1228,34 @@
                 配置校验
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.PrepareLoop">
             <summary>
             构造Pool
             </summary>
             <returns></returns>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase.InprocAddress">
+            <summary>
+            代理地址
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ZeroApis.ApiStationBase._proxyServiceSocket">
+            <summary>
+            本地代理
+            </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.Loop">
             <summary>
             轮询
             </summary>
             <returns>返回False表明需要重启</returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnResult(ZeroMQ.ZSocket,ZeroMQ.ZMessage)">
+            <summary>
+            调用
+            </summary>
+            <param name="socket"></param>
+            <param name="message"></param>
         </member>
         <member name="T:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem">
             <summary>
@@ -1268,11 +1275,6 @@
         <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Thread">
             <summary>
             所在线程（注意可能失效）
-            </summary>
-        </member>
-        <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Socket">
-            <summary>
-            Socket句柄
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroApis.ApiStationBase.ApiTaskItem.Api">
@@ -1437,28 +1439,25 @@
                 注册处理器
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.OnExecuestEnd(Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
-            <param name="socket"></param>
             <param name="item"></param>
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendLayoutErrorResult(Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>
-            <param name="socket"></param>
             <param name="item"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZSocketEx,ZeroMQ.ZMessage)">
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStationBase.SendResult(ZeroMQ.ZMessage)">
             <summary>
             发送返回值 
             </summary>
-            <param name="socket"></param>
             <param name="message"></param>
             <returns></returns>
         </member>
@@ -5397,7 +5396,7 @@
             构造
             </summary>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.PrepareLoop(System.Byte[],ZeroMQ.ZSocketEx@)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.PrepareLoop">
             <summary>
             构造Pool
             </summary>
@@ -5411,7 +5410,7 @@
         <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnLoopComplete">
             <inheritdoc />
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnExecuestEnd(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.OnExecuestEnd(Agebull.MicroZero.ZeroApis.ApiCallItem,Agebull.MicroZero.ZeroOperatorStateType)">
             <summary>
             发送返回值 
             </summary>
@@ -5420,11 +5419,10 @@
             <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.PubSub.QueueStation.SendLayoutErrorResult(ZeroMQ.ZSocketEx,Agebull.MicroZero.ZeroApis.ApiCallItem)">
+        <member name="M:Agebull.MicroZero.PubSub.QueueStation.SendLayoutErrorResult(Agebull.MicroZero.ZeroApis.ApiCallItem)">
             <summary>
             发送返回值 
             </summary>
-            <param name="socket"></param>
             <param name="item"></param>
             <returns></returns>
         </member>

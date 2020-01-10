@@ -37,7 +37,7 @@ namespace ZeroMQ
         #endregion
 
         #region Field
-#if !UNMANAGE_MONEY_CHECK
+#if UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZSocket);
 #endif
 
