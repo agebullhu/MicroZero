@@ -10,6 +10,7 @@ namespace NugetPush
         private static string curPath;
         static void Main(string[] args)
         {
+            Console.WriteLine("-------------Find and push to nuget service--------------");
             curPath = "C:\\Projects\\Agebull";//Environment.CurrentDirectory;
             var pkgs = IOHelper.GetAllFiles(Path.Combine(curPath, "nuget"), "nupkg");
             foreach (var file in pkgs)
@@ -17,6 +18,8 @@ namespace NugetPush
                 Push(file);
                 File.Move(file, Path.Combine(curPath, "olds", Path.GetFileName(file)));
             }
+            Console.WriteLine("-------------The end--------------");
+            Console.ReadKey();
         }
 
         static void Push(string file)

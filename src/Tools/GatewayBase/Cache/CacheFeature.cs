@@ -31,6 +31,11 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     表单相同(POST请求）
         /// </summary>
-        Form = 0x8
+        Form = 0x8,
+
+        /// <summary>
+        /// 使用键设置,忽略其它特性
+        /// </summary>
+        Keys = 0x10
     }
 }

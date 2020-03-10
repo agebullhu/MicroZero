@@ -14,6 +14,7 @@ using Agebull.EntityModel.Common;
 using Agebull.MicroZero.ZeroManagemant;
 using ZeroMQ;
 using ZeroMQ.lib;
+using Microsoft.Extensions.Logging;
 
 namespace Agebull.MicroZero
 {
@@ -156,28 +157,22 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void CheckOption()
         {
-            ZeroTrace.SystemLog("Weconme MicroZero");
+            
+            Console.WriteLine("Weconme MicroZero");
             ZContext.Initialize();
-            ZeroTrace.SystemLog("ZMQ", zmq.LibraryVersion);
             //ZeroTrace.Initialize();
-            var testContext = IocHelper.Create<GlobalContext>();
-            if (testContext == null)
-                IocHelper.AddScoped<GlobalContext, GlobalContext>();
-
-            ThreadPool.GetMaxThreads(out var worker, out var io);
+            ThreadPool.GetMaxThreads(out var worker, out _);
             ThreadPool.SetMaxThreads(worker, 4096);
             //ThreadPool.GetAvailableThreads(out worker, out io);
-            ZeroTrace.SystemLog($"   Worker threads: {worker:N0}Asynchronous I / O threads: { io:N0}");
 
             CheckConfig();
             InitializeDependency();
-            ZeroCommandExtend.AppNameBytes = AppName.ToZeroBytes();
             ShowOptionInfo();
         }
 
 
         /// <summary>
-        ///     设置LogRecorderX的依赖属性(内部使用)
+        ///     设置LogRecorder的依赖属性(内部使用)
         /// </summary>
         private static void InitializeDependency()
         {
@@ -186,12 +181,12 @@ namespace Agebull.MicroZero
             GlobalContext.ServiceRealName = $"{Config.ServiceName}:{Config.StationName}:{RandomOperate.Generate(4)}";
 
             //日志
-            ConfigurationManager.Get("LogRecorder")["txtPath"] = Config.LogFolder;
-            LogRecorderX.LogPath = Config.LogFolder;
-            LogRecorderX.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
-            LogRecorderX.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.Account ?? "*";
-            LogRecorderX.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
-            LogRecorderX.Initialize();
+            LogRecorder.LogPath = Config.LogFolder;
+            LogRecorder.GetMachineNameFunc = () => GlobalContext.ServiceRealName;
+            LogRecorder.GetUserNameFunc = () => GlobalContext.CurrentNoLazy?.User?.UserId.ToString() ?? "*";
+            LogRecorder.GetRequestIdFunc = () => GlobalContext.CurrentNoLazy?.Request?.RequestId ?? RandomOperate.Generate(10);
+            LogRecorder.Initialize();
+            IocScope.Logger = IocHelper.Create<ILoggerFactory>().CreateLogger("MicroZero");
 
             //插件
             AddInImporter.Import();
@@ -199,6 +194,11 @@ namespace Agebull.MicroZero
 
             //注册默认广播
             IocHelper.AddSingleton<IZeroPublisher, ZPublisher>();
+
+            var testContext = IocHelper.Create<GlobalContext>();
+            if (testContext == null)
+                IocHelper.AddScoped<GlobalContext, GlobalContext>();
+
         }
 
 
@@ -226,11 +226,7 @@ namespace Agebull.MicroZero
         /// </summary>
         public static void Initialize()
         {
-            if (WorkModel == ZeroWorkModel.Service)
-            {
-                RegistZeroObject<ApiProxy>();
-                //RegistZeroObject(ZeroConnectionPool.CreatePool());
-            }
+            RegistZeroObject<ApiProxy>();
             AddInImporter.Instance.AutoRegist();
             ApplicationState = StationState.Initialized;
             OnZeroInitialize();
@@ -303,7 +299,8 @@ namespace Agebull.MicroZero
             var success = await JoinCenter();
 #pragma warning disable 4014
             SystemMonitor.Monitor();
-            new Thread(ApiChecker.RunCheck).Start();
+            if (WorkModel == ZeroWorkModel.Service)
+                new Thread(ApiChecker.RunCheck).Start();
 #pragma warning restore 4014
             return success;
         }
@@ -326,7 +323,7 @@ namespace Agebull.MicroZero
                 return false;
             }
             ZeroCenterState = ZeroCenterState.Run;
-            if (WorkModel == ZeroWorkModel.Service && !ZeroCenterProxy.Master.HeartJoin())
+            if (!ZeroCenterProxy.Master.HeartJoin())
             {
                 SetFailed();
                 ZeroTrace.WriteError("ZeroCenter", "JoinCenter", "zero center can`t join.");
@@ -345,14 +342,8 @@ namespace Agebull.MicroZero
             {
                 var m = new ConfigManager(Config.Master);
                 m.UploadDocument();
-                await OnZeroStart();
-                //Task.Factory.StartNew(OnZeroStart, TaskCreationOptions.LongRunning);
             }
-            //else if (WorkModel == ZeroWorkModel.Client)
-            //{
-            //    ZeroConnectionPool.Pool = new SocketPool();
-            //    ZeroConnectionPool.Pool.OnZeroStart();
-            //}
+            await OnZeroStart();
             return true;
         }
 
@@ -387,7 +378,7 @@ namespace Agebull.MicroZero
             OnZeroDestory();
             await SystemMonitor.WaitMe();
             ApplicationState = StationState.Disposed;
-            LogRecorderX.Shutdown(); 
+            //LogRecorder.Shutdown(); 
             ZContext.Destroy();
             ZeroTrace.SystemLog("Application shutdown ,see you late.");
 
@@ -439,7 +430,7 @@ namespace Agebull.MicroZero
         {
             var tasks = new List<Task>();
             var arg = (ZeroNetEventArgument)args;
-            foreach (var action in ZeroNetEvents)
+            foreach (var action in ZeroNetEvents.ToArray())
             {
                 try
                 {

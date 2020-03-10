@@ -47,12 +47,12 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         async Task<bool> IRouter.Prepare(HttpContext context)
         {
-            LogRecorderX.BeginMonitor("Weixin");
+            LogRecorder.BeginMonitor("Weixin");
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
             Data.Prepare(HttpContext);
-            LogRecorderX.MonitorTrace($"Url:{Data.Uri.PathAndQuery}");
+            LogRecorder.MonitorTrace($"Url:{Data.Uri.PathAndQuery}");
             try
             {
                 if (Request.QueryString.HasValue)
@@ -68,7 +68,7 @@ namespace MicroZero.Http.Gateway
 
                 if (Data.Arguments.Count > 0)
                 {
-                    LogRecorderX.MonitorTrace($"Arguments:{JsonHelper.SerializeObject(Data.Arguments)}");
+                    LogRecorder.MonitorTrace($"Arguments:{JsonHelper.SerializeObject(Data.Arguments)}");
                 }
                 if (Request.ContentLength != null)
                 {
@@ -78,15 +78,15 @@ namespace MicroZero.Http.Gateway
                         if (string.IsNullOrEmpty(Data.Context))
                             Data.Context = null;
                         else
-                            LogRecorderX.MonitorTrace($"Context:{Data.Context}");
+                            LogRecorder.MonitorTrace($"Context:{Data.Context}");
                         texter.Close();
                     }
                 }
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e, "读取远程参数");
-                LogRecorderX.MonitorTrace($"Exception:{e.Message}");
+                LogRecorder.Exception(e, "读取远程参数");
+                LogRecorder.MonitorTrace($"Exception:{e.Message}");
                 return false;
             }
 
@@ -126,21 +126,21 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         void IRouter.End()
         {
-            if (!LogRecorderX.LogMonitor)
+            if (!LogRecorder.LogMonitor)
                 return;
             try
             {
-                LogRecorderX.MonitorTrace($"Status : {Data.Status}");
-                LogRecorderX.MonitorTrace($"Result：{Data.ResultMessage}");
+                LogRecorder.MonitorTrace($"Status : {Data.Status}");
+                LogRecorder.MonitorTrace($"Result：{Data.ResultMessage}");
             }
             catch (Exception e)
             {
-                LogRecorderX.MonitorTrace(e.Message);
-                LogRecorderX.Exception(e);
+                LogRecorder.MonitorTrace(e.Message);
+                LogRecorder.Exception(e);
             }
             finally
             {
-                LogRecorderX.EndMonitor();
+                LogRecorder.EndMonitor();
             }
         }
         #endregion
@@ -155,7 +155,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception exception)
             {
-                LogRecorderX.Exception(exception);
+                LogRecorder.Exception(exception);
             }
             try
             {
@@ -163,7 +163,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception exception)
             {
-                LogRecorderX.Exception(exception);
+                LogRecorder.Exception(exception);
             }
             return Task.CompletedTask;
         }

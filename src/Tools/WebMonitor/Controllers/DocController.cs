@@ -47,6 +47,7 @@ namespace WebMonitor.Controllers
             GlobalValue.Documents.TryAdd(station, doc);
             return doc;
         }
+
         /// <summary>
         /// 
         /// </summary>

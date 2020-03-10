@@ -1,5 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <Compile Remove="runtimes\**" />
+    <EmbeddedResource Remove="runtimes\**" />
+    <None Remove="runtimes\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Option\AppConfig.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Remove="MicroZero.Http.GatewayBase.deps.json" />
   </ItemGroup>
   <ItemGroup>
@@ -20,7 +28,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
     
-    <IncludeSource>true</IncludeSource>
+    <IncludeSource>false</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     
@@ -28,7 +36,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero的HttpGateway基础库</PackageReleaseNotes>
     <Product>MicroZero.Http.GatewayBase</Product>
-    <Version>1.5.0.29-bate</Version>
+    <Version>1.5.0.34-bate</Version>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />

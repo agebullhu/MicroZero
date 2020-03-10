@@ -12,16 +12,10 @@ namespace MicroZero.Http.Gateway
     public class RouteHost
     {
         /// <summary>
-        /// 等待数
+        /// 总等待数
         /// </summary>
         [IgnoreDataMember]
-        public int WaitCount;
-
-        /*// <summary>
-        /// 等待数
-        /// </summary>
-        [DataMember]
-        public int MaxWait { get; set; }*/
+        public static int WaitCount;
 
         /// <summary>
         ///     使用MicroZero通讯吗
@@ -117,12 +111,12 @@ namespace MicroZero.Http.Gateway
     public class HostConfig
     {
         /// <summary>
-        ///     使用MicroZero通讯吗
+        ///     使用MicroZero通讯
         /// </summary>
         [DataMember]
         [JsonProperty("zero", NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public bool ByZero { get; set; }
+        public bool Zero { get; set; }
 
         /// <summary>
         ///     主机列表

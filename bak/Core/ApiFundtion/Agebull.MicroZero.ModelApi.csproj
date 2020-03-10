@@ -1,0 +1,100 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>MicroZero之实体操作Api基础</Description>
+    <AssemblyTitle>Agebull.MicroZero.ModelApi</AssemblyTitle>
+    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName></AssemblyName>
+    <PackageId>Agebull.MicroZero.ModelApi</PackageId>
+    <PackageTags>Agebull.MicroZero.ModelApi</PackageTags>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
+    
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <Product>Agebull.MicroZero</Product>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <Copyright />
+    <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
+    <Version>1.4.10.36</Version>
+    <RootNamespace />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Context\**" />
+    <Compile Remove="Helper\**" />
+    <Compile Remove="MySql\**" />
+    <Compile Remove="Redis\**" />
+    <Compile Remove="SqlServer\**" />
+    <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="Helper\**" />
+    <EmbeddedResource Remove="MySql\**" />
+    <EmbeddedResource Remove="Redis\**" />
+    <EmbeddedResource Remove="SqlServer\**" />
+    <None Remove="Context\**" />
+    <None Remove="Helper\**" />
+    <None Remove="MySql\**" />
+    <None Remove="Redis\**" />
+    <None Remove="SqlServer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Api\ApiResponseMessage.cs" />
+    <Compile Remove="Api\DataExtendChecker.cs" />
+    <Compile Remove="Api\HttpResponseMessageExtend.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+  </ItemGroup>
+</Project>

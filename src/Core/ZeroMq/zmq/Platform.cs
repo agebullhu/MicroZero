@@ -75,7 +75,7 @@ namespace ZeroMQ.lib
 		{
             typeof(object).Module.GetPEKind(out var peKinds, out Architecture);
 
-            Version osVersion;
+            //Version osVersion;
 			switch (Environment.OSVersion.Platform)
 			{
 				case PlatformID.Win32Windows: // Win9x supported?

@@ -136,7 +136,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     当前适用的缓存设置对象
         /// </summary>
-        public CacheOption CacheSetting;
+        public ApiCacheOption CacheSetting;
 
         /// <summary>
         ///     上下文的JSON内容(透传)
@@ -169,7 +169,7 @@ namespace MicroZero.Http.Gateway
             var ok = CheckCall();
             GlobalContext.SetRequestContext(new RequestInfo
             {
-                RequestId = $"{Token}-{RandomOperate.Generate(6)}",
+                RequestId = $"{Token ?? "*"}-{RandomOperate.Generate(6)}",
                 UserAgent = userAgent,
                 Token = Token,
                 RequestType = RequestType.Http,
@@ -239,7 +239,7 @@ namespace MicroZero.Http.Gateway
                 return false;
             }
 
-            if (!RouteOption.Option.HostPath.TryGetValue(Uri.Host, out var idx))
+            if (!GatewayOption.Option.HostPaths.TryGetValue(Uri.Host, out var idx))
             {
                 idx = 0;
             }
@@ -269,26 +269,29 @@ namespace MicroZero.Http.Gateway
                 {
                     foreach (var key in request.Form.Keys)
                         Arguments.TryAdd(key, request.Form[key]);
-                    var files = request.Form?.Files;
-                    if (files != null && files.Count > 0)
+                    if(!GatewayOption.Option.SystemConfig.CloseFileArgument)
                     {
-                        Files = new Dictionary<string, byte[]>();
-                        foreach (var file in files)
+                        var files = request.Form?.Files;
+                        if (files != null && files.Count > 0)
                         {
-                            if (Files.ContainsKey(file.Name))
+                            Files = new Dictionary<string, byte[]>();
+                            foreach (var file in files)
                             {
-                                UserState = UserOperatorStateType.FormalError;
-                                ZeroState = ZeroOperatorStateType.ArgumentInvalid;
-                                ResultMessage = ApiResultIoc.ArgumentErrorJson;
-                                return false;
-                            }
+                                if (Files.ContainsKey(file.Name))
+                                {
+                                    UserState = UserOperatorStateType.FormalError;
+                                    ZeroState = ZeroOperatorStateType.ArgumentInvalid;
+                                    ResultMessage = ApiResultIoc.ArgumentErrorJson;
+                                    return false;
+                                }
 
-                            var bytes = new byte[file.Length];
-                            await using (var stream = file.OpenReadStream())
-                            {
-                                await stream.ReadAsync(bytes, 0, (int)file.Length);
+                                var bytes = new byte[file.Length];
+                                await using (var stream = file.OpenReadStream())
+                                {
+                                    await stream.ReadAsync(bytes, 0, (int)file.Length);
+                                }
+                                Files.Add(file.Name, bytes);
                             }
-                            Files.Add(file.Name, bytes);
                         }
                     }
                 }
@@ -306,7 +309,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e, "读取远程参数");
+                LogRecorder.Exception(e, "读取远程参数");
                 UserState = UserOperatorStateType.FormalError;
                 ZeroState = ZeroOperatorStateType.ArgumentInvalid;
                 ResultMessage = ApiResultIoc.ArgumentErrorJson;

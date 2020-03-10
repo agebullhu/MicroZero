@@ -9,6 +9,7 @@ namespace MicroZero.Http.Gateway
     /// <summary>
     ///     安全相关的配置
     /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
     public class SecurityConfig
     {
         /// <summary>
@@ -24,54 +25,48 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     启用验签
         /// </summary>
-        [JsonProperty("fireSign")]
-        public bool FireSign { get; set; }
+        [JsonProperty("fireSign")] public bool FireSign { get; set; }
 
         /// <summary>
         ///     启用验签
         /// </summary>
-        [JsonProperty("auth2")]
-        public bool Auth2 { get; set; }
+        [JsonProperty("auth2")] public bool Auth2 { get; set; }
         
         /// <summary>
         ///     黑洞地址
         /// </summary>
-        [JsonProperty("blockAddress")]
-        public string BlockHost { get; set; }
+        [JsonProperty("blockAddress")] public string BlockAddress { get; set; }
 
         /// <summary>
         ///     是否检查Auth头
         /// </summary>
-        [JsonProperty("fireBearer")]
-        public bool CheckBearer { get; set; }
+        [JsonProperty("fireBearer")] public bool FireBearer { get; set; }
 
         /// <summary>
         ///     是否检查Auth头
         /// </summary>
-        [JsonProperty("authStation")]
-        public string AuthStation { get; set; }
+        [JsonProperty("authStation")] public string AuthStation { get; set; }
 
         /// <summary>
         ///     DeviceId检查API
         /// </summary>
-        [JsonProperty("didApi")]
-        public string DeviceIdCheckApi { get; set; }
+        [JsonProperty("deviceIdCheckApi")] public string DeviceIdCheckApi { get; set; }
+
         /// <summary>
         ///     AT检查API
         /// </summary>
-        [JsonProperty("atApi")]
-        public string AccessTokenCheckApi { get; set; }
+        [JsonProperty("accessTokenCheckApi")] public string AccessTokenCheckApi { get; set; }
+
         /// <summary>
         ///     AT检查API
         /// </summary>
-        [JsonProperty("tokenApi")]
-        public string TokenCheckApi { get; set; }
+        [JsonProperty("tokenCheckApi")] public string TokenCheckApi { get; set; }
 
         /// <summary>
         ///     黑名单令牌
         /// </summary>
         [JsonProperty("denyTokens")]
-        public List<string> denyTokens { get; set; }
+        internal List<string> denyTokens { get; set; }
 
         /// <summary>
         ///     黑名单令牌
@@ -82,7 +77,7 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     禁止的Http头信息
         /// </summary>
-        [JsonProperty]
+        [JsonIgnore]
         public List<DenyItem> DenyHttpHeaders => denyHttpHeaders ?? (denyHttpHeaders = new List<DenyItem>());
 
     }

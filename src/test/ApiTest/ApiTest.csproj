@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,23 +9,42 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>doc\ApiTest.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="bin\**" />
+    <Compile Remove="logs\**" />
+    <Content Remove="logs\**" />
     <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="logs\**" />
     <None Remove="bin\**" />
+    <None Remove="logs\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="AutoRegister.cs" />
     <Compile Remove="DataEventSubscribe.cs" />
+    <Compile Remove="LoginArg.cs" />
+    <Compile Remove="LoginStation.cs" />
     <Compile Remove="MachineEventArg.cs" />
     <Compile Remove="MachineEventStation.cs" />
+    <Compile Remove="Program0.cs" />
     <Compile Remove="TemplateMessage_PaySuccessNotice.cs" />
     <Compile Remove="WeixinConfig.cs" />
     <Compile Remove="WeixinController.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="3.1.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Http\ApiFundtion\Agebull.MicroZero.ModelApi.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +56,6 @@
     </None>
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

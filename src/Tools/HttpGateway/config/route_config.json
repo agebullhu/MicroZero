@@ -1,95 +1,43 @@
 {
-  /*系统设置*/
-  "sysConfig": {
-    "IsTest": true,
-    /*是否开启MicroZero网络*/
-    "FireZero": true,
-    /*是否开启返回值检查*/
-    "CheckResult": false,
-    /*是否开启API预检：即检查API是否存在、是否需要令牌、是否可公开访问*/
-    "CheckApiItem": false,
-    /*HTTP调用超时*/
-    "HttpTimeOut": 30000,
-    /*短信超时报警的时长(毫秒)*/
-    "WaringTime": 2000,
-    /*启用管理命令*/
-    "EnableInnerCommand": false,
-    /*启用内容页*/
-    "EnableContext": true,
-    /*内容页地址*/
-    "ContextAddr": ""
-  },
-  /*路径映射（ASHX->Zero）*/
-  "urlMap": {
-    ".ashx": {
-      "action": "action",
-      "models": [
-        {
-          "station": "device",
-          "paths": [
-            {
-              "name": "/WebService/Hardware/GateBrake.ashx",
-              "value": "v1/hardware"
-            }
-          ]
-        }
-      ]
-    }
-  },
-  /*HTTP路由信息，缺省地址为找不到时使用的地址*/
-  "route": {
-    /*缺省地址* /
-    "Default": {
-      "hosts": [ "Http://127.0.0.1:8080/" ]
-    },
-    /*User对应的地址* /
-    "GoodLin-User-External-Api": {
-      "hosts": [ "http://172.16.20.142:8081/" ]
-    },
-    /*OAuth对应的地址* /
-    "GoodLin-OAuth-Api": {
-      "hosts": [ "http://172.16.20.142/" /*,"http://localhost:8080/GoodLin-OAuth-Api/"* /]
-    }*/
-  },
-  /**/
   "security": {
-    /*是否校验Auth*/
-    "fireBearer": true,
-    "auth2": true,
-    "authStation": "Authority",
-    "didApi": "v1/verify/did",
-    "atApi": "v1/verify/at",
-    "tokenApi": "v2/verify/token",
-    /*黑洞地址（字母有错，不要介意）*/
-    "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
-    /*拒绝使用的令牌，Key Value一样*/
-    "denyTokens": [],
-    /*
-	Http头拒绝的规则：其中DenyType枚举如下    
-        None,// 不阻止
-        Hase,// 有此内容
-        NonHase,// 没有此内容
-        Count,// 达到数组数量
-        Equals,// 内容等于
-        Like,// 内容包含
-        Regex// 正则匹配
-	*/
+    "checkApis": null,
     "denyHttpHeaders": [
       {
-        "Head": "X-Forwarded-For", /*Http头名称*/
-        "Value": "3", /*比对内容*/
-        "DenyType": "Count" /*比对类型*/
+        "Head": "X-Forwarded-For",
+        "Value": "3",
+        "DenyType": 3
       }
     ],
-    /*需要检查的Api*/
-    "checkApis": null
+    "fireSign": false,
+    "auth2": true,
+    "blockAddress": "https://code.jquery.com/jquery-3.3.1.js",
+    "fireBearer": true,
+    "authStation": "Authority",
+    "deviceIdCheckApi": "v1/verify/did",
+    "accessTokenCheckApi": "v1/verify/at",
+    "tokenCheckApi": "v2/verify/token",
+    "denyTokens": null
   },
-  /*缓存设置，Api是名称，OnlyName是指缓存时不包含Get参数*/
-  "cache": [
-    /*{
-      "Api": "/ApiTest/v1/test",
-      "OnlyName": true,
-      "FlushSecond": 30
-    }*/
-  ]
+  "urlMap": null,
+  "cache": {
+    "api": null,
+    "trigger": null
+  },
+  "route": null,
+  "hostPath": null,
+  "sysConfig": {
+    "FireZero": false,
+    "IsTest": false,
+    "CloseFileArgument": false,
+    "ContentType": null,
+    "CheckResult": false,
+    "CheckApiItem": false,
+    "EnableInnerCommand": false,
+    "HttpTimeOut": 0,
+    "WaringTime": 0,
+    "EnableContext": false,
+    "ContextAddr": null,
+    "EnableLinkTrace": false,
+    "EnableApiCollect": false
+  }
 }

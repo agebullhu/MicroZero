@@ -17,7 +17,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
     
-    <IncludeSource>true</IncludeSource>
+    <IncludeSource>false</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     
@@ -25,7 +25,7 @@
     <Company>Agebull</Company>
     <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
     <Product>Agebull.MicroZero</Product>
-    <Version>1.5.0.29-bate</Version>
+    <Version>1.5.0.34-bate</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -54,6 +54,7 @@
     <Compile Remove="Connection\**" />
     <Compile Remove="Context\**" />
     <Compile Remove="Entity\**" />
+    <Compile Remove="Queue\**" />
     <Compile Remove="Rpc\**" />
     <Compile Remove="Services\**" />
     <Compile Remove="Tson\**" />
@@ -62,6 +63,7 @@
     <EmbeddedResource Remove="Connection\**" />
     <EmbeddedResource Remove="Context\**" />
     <EmbeddedResource Remove="Entity\**" />
+    <EmbeddedResource Remove="Queue\**" />
     <EmbeddedResource Remove="Rpc\**" />
     <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="Tson\**" />
@@ -70,6 +72,7 @@
     <None Remove="Connection\**" />
     <None Remove="Context\**" />
     <None Remove="Entity\**" />
+    <None Remove="Queue\**" />
     <None Remove="Rpc\**" />
     <None Remove="Services\**" />
     <None Remove="Tson\**" />
@@ -77,7 +80,10 @@
 
   <ItemGroup>
     <Compile Remove="Application\SystemManager.cs" />
+    <Compile Remove="Application\SystemMonitor.cs" />
+    <Compile Remove="Application\ZeroAppConfig.cs" />
     <Compile Remove="Base\SyncBatchQueue.cs" />
+    <Compile Remove="Base\ZeroManageCommand.cs" />
     <Compile Remove="ClientStation\ApiCaller.cs" />
     <Compile Remove="ClientStation\ProxyCaller.cs" />
     <Compile Remove="Config\ZeroCommandStatus.cs" />
@@ -92,10 +98,27 @@
     <Compile Remove="PubSub\BatchPublisher.cs" />
     <Compile Remove="PubSub\LogQueue.cs" />
     <Compile Remove="PubSub\SignlePublisher.cs" />
+    <Compile Remove="PubSub\ZeroPublishExtend.cs" />
+    <Compile Remove="Tools\CountData.cs" />
+    <Compile Remove="Tools\CountDataTsonOperator.cs" />
+    <Compile Remove="Tools\IApiCounter.cs" />
+    <Compile Remove="Tools\IRuntimeWaring.cs" />
+    <Compile Remove="Tools\OperatorStatus.cs" />
+    <Compile Remove="Tools\RecordInfoTson.cs" />
+    <Compile Remove="Tools\WaringItem.cs" />
+    <Compile Remove="ZeroApi\ApiAction.cs" />
+    <Compile Remove="ZeroApi\ApiCallItem.cs" />
+    <Compile Remove="ZeroApi\ApiClient.cs" />
+    <Compile Remove="ZeroApi\ApiStation.cs" />
     <Compile Remove="ZeroApi\ApiStationItem.cs" />
     <Compile Remove="Application\ZeroHelper.cs" />
+    <Compile Remove="ZeroApi\Attribute.cs" />
     <Compile Remove="ZeroApi\Client\ApiClientCore.cs" />
+    <Compile Remove="ZeroApi\ZeroApiController.cs" />
     <Compile Remove="ZeroEventMonitor\SystemMonitor.cs" />
+    <Compile Remove="ZeroStation\StationConfig.cs" />
+    <Compile Remove="ZeroStation\ZeroStationType.cs" />
+    <Compile Remove="ZeroStation\ZeroWorker.cs" />
   </ItemGroup>
 
   <ItemGroup>

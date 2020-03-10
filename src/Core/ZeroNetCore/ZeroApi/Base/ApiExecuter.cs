@@ -63,7 +63,7 @@ namespace Agebull.MicroZero.ZeroApis
                         ZeroOperatorStateType state;
                         try
                         {
-                            state = LogRecorderX.LogMonitor
+                            state = LogRecorder.LogMonitor
                                 ? await ApiCallByMonitor()
                                 : await ApiCallNoMonitor();
                         }
@@ -90,9 +90,9 @@ namespace Agebull.MicroZero.ZeroApis
                     ScopeResource = null;
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e);
+                ZeroTrace.WriteException(Station.StationName, ex, "Api Executer", Item.ApiName, Item.Argument);
             }
         }
 
@@ -100,19 +100,17 @@ namespace Agebull.MicroZero.ZeroApis
         {
             using (MonitorScope.CreateScope($"{Station.StationName}/{Item.ApiName}"))
             {
-                LogRecorderX.MonitorTrace($"Caller:{Encoding.ASCII.GetString(Item.Caller)}");
-                LogRecorderX.MonitorTrace($"GlobalId:{Item.GlobalId}");
-                LogRecorderX.MonitorTrace(JsonConvert.SerializeObject(Item, Formatting.Indented));
+                LogRecorder.MonitorTrace(() => $"Caller:{Encoding.ASCII.GetString(Item.Caller)}");
+                LogRecorder.MonitorTrace(() => $"GlobalId:{Item.GlobalId}");
+                LogRecorder.MonitorTrace(() => JsonConvert.SerializeObject(Item, Formatting.Indented));
 
                 ZeroOperatorStateType state = RestoryContext();
-
                 if (state != ZeroOperatorStateType.Ok)
                 {
-                    LogRecorderX.MonitorTrace("Restory context failed");
+                    LogRecorder.MonitorTrace("Restory context failed");
                     Interlocked.Increment(ref Station.ErrorCount);
                     return state;
                 }
-
                 using (MonitorScope.CreateScope("Do"))
                 {
                     state = CommandPrepare(true, out var action);
@@ -123,8 +121,6 @@ namespace Agebull.MicroZero.ZeroApis
                             res = ZeroOperatorStateType.Unavailable;
                         else
                         {
-                            GlobalContext.Current.DependencyObjects.Annex(action);
-                            GlobalContext.Current.DependencyObjects.Annex(this);
                             res = CommandExec(true, action);
                         }
 
@@ -137,7 +133,7 @@ namespace Agebull.MicroZero.ZeroApis
                 else
                     Interlocked.Increment(ref Station.SuccessCount);
 
-                LogRecorderX.MonitorTrace(Item.Result);
+                LogRecorder.MonitorTrace(Item.Result);
                 return state;
             }
         }
@@ -222,6 +218,7 @@ namespace Agebull.MicroZero.ZeroApis
 
         #region 执行命令
 
+
         /// <summary>
         /// 还原调用上下文
         /// </summary>
@@ -235,15 +232,6 @@ namespace Agebull.MicroZero.ZeroApis
                 {
                     GlobalContext.SetContext(JsonConvert.DeserializeObject<GlobalContext>(Item.Context));
                 }
-                GlobalContext.Current.DependencyObjects.Annex(Item);
-                if (!string.IsNullOrWhiteSpace(Item.Argument))
-                {
-                    GlobalContext.Current.DependencyObjects.Annex(JsonConvert.DeserializeObject<Dictionary<string, string>>(Item.Argument));
-                }
-                else if (!string.IsNullOrWhiteSpace(Item.Extend))
-                {
-                    GlobalContext.Current.DependencyObjects.Annex(JsonHelper.DeserializeObject<Dictionary<string, string>>(Item.Extend));
-                }
                 GlobalContext.Current.Request.RequestId = Item.RequestId;
                 GlobalContext.Current.Request.CallGlobalId = Item.CallId;
                 GlobalContext.Current.Request.LocalGlobalId = Item.GlobalId;
@@ -251,7 +239,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.MonitorTrace($"Restory context exception:{e.Message}");
+                LogRecorder.MonitorTrace(() => $"Restory context exception:{e.Message}");
                 ZeroTrace.WriteException(Station.StationName, e, Item.ApiName, "restory context", Item.Context);
                 Item.Result = ApiResultIoc.ArgumentErrorJson;
                 Item.Status = UserOperatorStateType.FormalError;
@@ -272,7 +260,7 @@ namespace Agebull.MicroZero.ZeroApis
             if (!Station.ApiActions.TryGetValue(Item.ApiName.Trim(), out action))
             {
                 if (monitor)
-                    LogRecorderX.MonitorTrace($"Error: Action({Item.ApiName}) no find");
+                    LogRecorder.MonitorTrace(() => $"Error: Action({Item.ApiName}) no find");
                 Item.Result = ApiResultIoc.NoFindJson;
                 Item.Status = UserOperatorStateType.NotFind;
                 return ZeroOperatorStateType.NotFind;
@@ -282,7 +270,7 @@ namespace Agebull.MicroZero.ZeroApis
             if (action.NeedLogin && (GlobalContext.Customer == null || GlobalContext.Customer.UserId <= 0))
             {
                 if (monitor)
-                    LogRecorderX.MonitorTrace("Error: Need login user");
+                    LogRecorder.MonitorTrace("Error: Need login user");
                 Item.Result = ApiResultIoc.DenyAccessJson;
                 Item.Status = UserOperatorStateType.DenyAccess;
                 return ZeroOperatorStateType.DenyAccess;
@@ -296,7 +284,7 @@ namespace Agebull.MicroZero.ZeroApis
                 if (!action.RestoreArgument(Item.Argument ?? "{}"))
                 {
                     if (monitor)
-                        LogRecorderX.MonitorTrace("Error: argument can't restory.");
+                        LogRecorder.MonitorTrace("Error: argument can't restory.");
                     Item.Result = ApiResultIoc.ArgumentErrorJson;
                     Item.Status = UserOperatorStateType.FormalError;
                     return ZeroOperatorStateType.ArgumentInvalid;
@@ -305,7 +293,7 @@ namespace Agebull.MicroZero.ZeroApis
             catch (Exception e)
             {
                 if (monitor)
-                    LogRecorderX.MonitorTrace($"Error: argument restory {e.Message}.");
+                    LogRecorder.MonitorTrace($"Error: argument restory {e.Message}.");
                 ZeroTrace.WriteException(Station.StationName, e, Item.ApiName, "restory argument", Item.Argument);
                 Item.Result = ApiResultIoc.LocalExceptionJson;
                 Item.Status = UserOperatorStateType.FormalError;
@@ -317,7 +305,7 @@ namespace Agebull.MicroZero.ZeroApis
                 if (!action.Validate(out var message))
                 {
                     if (monitor)
-                        LogRecorderX.MonitorTrace($"Error: argument validate {message}.");
+                        LogRecorder.MonitorTrace($"Error: argument validate {message}.");
                     Item.Result = JsonHelper.SerializeObject(ApiResultIoc.Ioc.Error(ErrorCode.ArgumentError, message));
                     Item.Status = UserOperatorStateType.LogicalError;
                     return ZeroOperatorStateType.ArgumentInvalid;
@@ -326,7 +314,7 @@ namespace Agebull.MicroZero.ZeroApis
             catch (Exception e)
             {
                 if (monitor)
-                    LogRecorderX.MonitorTrace($"Error: argument validate {e.Message}.");
+                    LogRecorder.MonitorTrace($"Error: argument validate {e.Message}.");
                 ZeroTrace.WriteException(Station.StationName, e, Item.ApiName, "invalidate argument", Item.Argument);
                 Item.Result = ApiResultIoc.LocalExceptionJson;
                 Item.Status = UserOperatorStateType.LocalException;
@@ -345,13 +333,16 @@ namespace Agebull.MicroZero.ZeroApis
         {
             try
             {
+                GlobalContext.Current.DependencyObjects.Annex(Item);
+                GlobalContext.Current.DependencyObjects.Annex(this);
+                GlobalContext.Current.DependencyObjects.Annex(action);
                 return action.Execute();
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 if (monitor)
-                    LogRecorderX.MonitorTrace($"Error: execute {e.Message}.");
+                    LogRecorder.MonitorTrace($"Error: execute {e.Message}.");
                 ZeroTrace.WriteException(Station.StationName, e, Item.ApiName, "execute", JsonHelper.SerializeObject(Item));
                 Item.Result = ApiResultIoc.LocalExceptionJson;
                 Item.Status = UserOperatorStateType.LocalException;

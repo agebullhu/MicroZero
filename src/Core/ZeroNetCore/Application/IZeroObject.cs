@@ -318,9 +318,6 @@ namespace Agebull.MicroZero
         /// </summary>
         internal static async Task OnZeroStart()
         {
-            if (WorkModel != ZeroWorkModel.Service)
-                return;
-            await Task.Yield();
             //Debug.Assert(!HaseActiveObject);
             ZeroTrace.SystemLog("Application", "[OnZeroStart>>");
             //using (OnceScope.CreateScope(ZeroObjects, ResetObjectActive))
@@ -376,7 +373,7 @@ namespace Agebull.MicroZero
         /// </summary>
         internal static async Task OnZeroEnd(bool fromCenter = true)
         {
-            if (WorkModel != ZeroWorkModel.Service || ApplicationState >= StationState.Closing || ApplicationState == StationState.Failed)
+            if (ApplicationState >= StationState.Closing || ApplicationState == StationState.Failed)
             {
                 return;
             }

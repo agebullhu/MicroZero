@@ -2724,7 +2724,7 @@
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.InitializeDependency">
             <summary>
-                设置LogRecorderX的依赖属性(内部使用)
+                设置LogRecorder的依赖属性(内部使用)
             </summary>
         </member>
         <member name="M:Agebull.MicroZero.ZeroApplication.Discove(System.Reflection.Assembly,System.String)">
@@ -3457,7 +3457,7 @@
         </member>
         <member name="P:Agebull.MicroZero.ZeroAppConfig.StationIsolate">
             <summary>
-                站点孤立
+                站点数据使用AppName为文件夹
             </summary>
         </member>
         <member name="P:Agebull.MicroZero.ZeroAppConfig.ServiceName">
@@ -3612,12 +3612,13 @@
             <param name="config"></param>
             <returns></returns>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroAppConfigRuntime.FlushConfigs(Agebull.MicroZero.ZeroItem,System.String)">
+        <member name="M:Agebull.MicroZero.ZeroAppConfigRuntime.FlushConfigs(Agebull.MicroZero.ZeroItem,System.String,System.Boolean)">
             <summary>
                 刷新配置
             </summary>
             <param name="item">服务中心组</param>
             <param name="json"></param>
+            <param name="raiseEvent"></param>
         </member>
         <member name="T:Agebull.MicroZero.ZeroByteCommand">
             <summary>
@@ -5414,7 +5415,6 @@
             <summary>
             发送返回值 
             </summary>
-            <param name="socket"></param>
             <param name="item"></param>
             <param name="state"></param>
             <returns></returns>

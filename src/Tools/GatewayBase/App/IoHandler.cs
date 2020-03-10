@@ -47,31 +47,31 @@ namespace MicroZero.Http.Gateway
         /// <param name="data"></param>
         private static void BeginMonitor(RouteData data)
         {
-            if (!LogRecorderX.LogMonitor)
+            if (!LogRecorder.LogMonitor)
                 return;
             try
             {
-                LogRecorderX.BeginMonitor(data.Uri.ToString());
-                LogRecorderX.BeginStepMonitor("HTTP");
-                LogRecorderX.MonitorTrace($"Token     ：{GlobalContext.RequestInfo.Token}");
-                LogRecorderX.MonitorTrace($"RequestId ：{GlobalContext.RequestInfo.RequestId }");
-                LogRecorderX.MonitorTrace($"Method    ：{data.HttpMethod}");
-                LogRecorderX.MonitorTrace($"Command   ：{data.ApiHost}/{data.ApiName}");
+                LogRecorder.BeginMonitor(data.Uri.ToString());
+                LogRecorder.BeginStepMonitor("HTTP");
+                LogRecorder.MonitorTrace($"Token     ：{GlobalContext.RequestInfo.Token}");
+                LogRecorder.MonitorTrace($"RequestId ：{GlobalContext.RequestInfo.RequestId }");
+                LogRecorder.MonitorTrace($"Method    ：{data.HttpMethod}");
+                LogRecorder.MonitorTrace($"Command   ：{data.ApiHost}/{data.ApiName}");
                 if (data.Headers.Count > 0)
-                    LogRecorderX.MonitorTrace($"Headers   ：{JsonHelper.SerializeObject(data.Headers)}");
+                    LogRecorder.MonitorTrace($"Headers   ：{JsonHelper.SerializeObject(data.Headers)}");
                 if (data.Arguments.Count > 0)
-                    LogRecorderX.MonitorTrace($"Arguments ：{JsonHelper.SerializeObject(data.Arguments)}");
+                    LogRecorder.MonitorTrace($"Arguments ：{JsonHelper.SerializeObject(data.Arguments)}");
                 if (!string.IsNullOrWhiteSpace(data.HttpContent))
-                    LogRecorderX.MonitorTrace($"Context   ：{data.HttpContent}");
+                    LogRecorder.MonitorTrace($"Context   ：{data.HttpContent}");
             }
             catch (Exception e)
             {
-                LogRecorderX.MonitorTrace(e.Message);
-                LogRecorderX.Exception(e);
+                LogRecorder.MonitorTrace(e.Message);
+                LogRecorder.Exception(e);
             }
             finally
             {
-                LogRecorderX.EndStepMonitor();
+                LogRecorder.EndStepMonitor();
             }
         }
 
@@ -81,22 +81,22 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private static void EndMonitor(RouteData data)
         {
-            if (!LogRecorderX.LogMonitor)
+            if (!LogRecorder.LogMonitor)
                 return;
             try
             {
-                LogRecorderX.MonitorTrace($"UserState ：{data.UserState}");
-                LogRecorderX.MonitorTrace($"ZeroState ：{data.ZeroState}");
-                LogRecorderX.MonitorTrace($"Result    ：{data.ResultMessage}");
+                LogRecorder.MonitorTrace($"UserState ：{data.UserState}");
+                LogRecorder.MonitorTrace($"ZeroState ：{data.ZeroState}");
+                LogRecorder.MonitorTrace($"Result    ：{data.ResultMessage}");
             }
             catch (Exception e)
             {
-                LogRecorderX.MonitorTrace(e.Message);
-                LogRecorderX.Exception(e);
+                LogRecorder.MonitorTrace(e.Message);
+                LogRecorder.Exception(e);
             }
             finally
             {
-                LogRecorderX.EndMonitor();
+                LogRecorder.EndMonitor();
             }
         }
 
@@ -137,7 +137,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void BeginZeroTrace(RouteData data)
         {
-            if (!RouteOption.Option.SystemConfig.EnableLinkTrace)
+            if (!GatewayOption.Option.SystemConfig.EnableLinkTrace)
                 return;
             var result = ZeroPublisher.Send("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data);
             if (result.InteractiveSuccess && result.State == ZeroOperatorStateType.Ok)
@@ -152,7 +152,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         static void EndZeroTrace(RouteData data)
         {
-            if (!RouteOption.Option.SystemConfig.EnableLinkTrace)
+            if (!GatewayOption.Option.SystemConfig.EnableLinkTrace)
                 return;
             ZeroPublisher.Publish("TraceDispatcher", "Http", $"{data.ApiHost}/{data.ApiName}", data.ResultMessage);
         }
@@ -165,7 +165,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private static void ApiCollect(RouteData data)
         {
-            if (!RouteOption.Option.SystemConfig.EnableApiCollect)
+            if (!GatewayOption.Option.SystemConfig.EnableApiCollect)
                 return;
             var counter = IocHelper.Create<IApiCounter>();
             if (counter == null)

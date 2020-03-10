@@ -40,7 +40,7 @@ namespace ProxyTest
 
                 json = caller.Result;
 
-                LogRecorderX.MonitorTrace($"Result:{caller.Result}");
+                LogRecorder.MonitorTrace($"Result:{caller.Result}");
                 if (caller.Result == null)
                     return null;
                 GlobalContext.Current.Request.Token = token;
@@ -52,7 +52,7 @@ namespace ProxyTest
                     JObject obj = JsonConvert.DeserializeObject(json) as JObject;
                     context["user"] = obj["data"];
                 }
-                LogRecorderX.MonitorTrace(context.ToString());
+                LogRecorder.MonitorTrace(context.ToString());
                 return result;
             }
         }

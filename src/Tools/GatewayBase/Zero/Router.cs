@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Agebull.Common.Logging;
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
@@ -31,14 +29,13 @@ namespace MicroZero.Http.Gateway
                     Station = host.Station,
                     Commmand = Data.ApiName,
                     Argument = Data.HttpContent ?? form,
-                    ExtendArgument = form,
+                    ExtendArgument = Data.HttpContent == null ? null : form,
                     Files = Data.Files,
                     ContextJson = Data.GlobalContextJson
                 };
 
-                LogRecorderX.MonitorTrace("B");
                 await caller.CallCommandAsync();
-                LogRecorderX.MonitorTrace("A");
+
                 Data.ZeroState = caller.State;
                 Data.UserState = caller.State.ToOperatorStatus(true);
                 caller.CheckStateResult();

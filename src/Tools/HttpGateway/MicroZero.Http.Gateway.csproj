@@ -25,6 +25,7 @@
     <Compile Remove="AddIn\**" />
     <Compile Remove="App\**" />
     <Compile Remove="Cache\**" />
+    <Compile Remove="Chahe\**" />
     <Compile Remove="Context\**" />
     <Compile Remove="Controllers\**" />
     <Compile Remove="Datas\**" />
@@ -37,6 +38,7 @@
     <Content Remove="AddIn\**" />
     <Content Remove="App\**" />
     <Content Remove="Cache\**" />
+    <Content Remove="Chahe\**" />
     <Content Remove="Context\**" />
     <Content Remove="Controllers\**" />
     <Content Remove="Datas\**" />
@@ -49,6 +51,7 @@
     <EmbeddedResource Remove="AddIn\**" />
     <EmbeddedResource Remove="App\**" />
     <EmbeddedResource Remove="Cache\**" />
+    <EmbeddedResource Remove="Chahe\**" />
     <EmbeddedResource Remove="Context\**" />
     <EmbeddedResource Remove="Controllers\**" />
     <EmbeddedResource Remove="Datas\**" />
@@ -61,6 +64,7 @@
     <None Remove="AddIn\**" />
     <None Remove="App\**" />
     <None Remove="Cache\**" />
+    <None Remove="Chahe\**" />
     <None Remove="Context\**" />
     <None Remove="Controllers\**" />
     <None Remove="Datas\**" />
@@ -73,11 +77,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Startup.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="appsettings.Development.json" />
     <Content Remove="appsettings.json" />
     <Content Remove="bower.json" />
     <Content Remove="bundleconfig.json" />
     <Content Remove="cache.json" />
+    <Content Remove="config\httpGateway.json" />
     <Content Remove="config\route_config.json" />
     <Content Remove="machine.json" />
   </ItemGroup>
@@ -90,6 +99,7 @@
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="config\httpGateway.json" />
     <None Include="config\route_config.json" />
   </ItemGroup>
 

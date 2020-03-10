@@ -4,6 +4,7 @@ using System.Linq;
 using Agebull.Common.Context;
 using Agebull.Common.OAuth;
 using Agebull.EntityModel.Common;
+using Newtonsoft.Json;
 
 namespace Agebull.MicroZero.ZeroApis
 {
@@ -80,21 +81,45 @@ namespace Agebull.MicroZero.ZeroApis
             if (_arguments != null)
                 return _arguments;
 
-            _arguments = !string.IsNullOrWhiteSpace(ApiCallItem.Content) && ApiCallItem.Content[0] == '{'
-                ? JsonHelper.DeserializeObject<Dictionary<string, string>>(ApiCallItem.Content)
-                : new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
-            var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
-            if (context == null)
-                return _arguments;
-            foreach (var kv in context)
-            {
-                var key = kv.Key.Trim();
-                if (!_arguments.ContainsKey(key))
-                    _arguments.Add(key, kv.Value?.Trim());
-            }
+            _arguments = new Dictionary<string, string>();//StringComparer.OrdinalIgnoreCase
+            ReadArgument(ApiCallItem.Argument);
+            ReadArgument(ApiCallItem.Content);
+            ReadArgument(ApiCallItem.Extend);
 
+            //var context = GlobalContext.Current.DependencyObjects.Dependency<Dictionary<string, string>>();
+            //if (context == null)
+            //    return _arguments;
+            //foreach (var kv in context)
+            //{
+            //    var key = kv.Key.Trim();
+            //    if (!_arguments.ContainsKey(key))
+            //        _arguments.Add(key, kv.Value?.Trim());
+            //}
+
+            GlobalContext.Current.DependencyObjects.Annex(_arguments);
             GlobalContext.Current.DependencyObjects.Annex(this);
             return _arguments;
+        }
+
+        private void ReadArgument(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+            try
+            {
+                var dic = JsonConvert.DeserializeObject<Dictionary<string, string>>(value);
+                foreach (var kv in dic)
+                {
+                    var key = kv.Key.Trim();
+                    if (!_arguments.ContainsKey(key))
+                        _arguments.Add(key, kv.Value?.Trim());
+                }
+            }
+            catch
+            {
+            }
         }
 
         /// <summary>

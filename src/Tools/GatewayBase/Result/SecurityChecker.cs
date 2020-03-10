@@ -32,7 +32,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         public static bool DoCheck(RouteData data)
         {
-            if (!RouteOption.Option.SystemConfig.CheckResult || data.UserState != UserOperatorStateType.Success || data.ApiHost == null)
+            if (!GatewayOption.Option.SystemConfig.CheckResult || data.UserState != UserOperatorStateType.Success || data.ApiHost == null)
                 return false;
             if (string.IsNullOrWhiteSpace(data.ResultMessage))
             {

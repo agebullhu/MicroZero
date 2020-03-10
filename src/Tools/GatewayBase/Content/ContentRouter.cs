@@ -55,22 +55,22 @@ namespace MicroZero.Http.Gateway
             try
             {
                 FormatResponse(ext);
-                var file = Path.Combine(RouteOption.Option.SystemConfig.ContextAddr, path.LinkToString(ZeroApplication.Config.IsLinux ? '/' : '\\'));
+                var file = Path.Combine(GatewayOption.Option.SystemConfig.ContextAddr, path.LinkToString(ZeroApplication.Config.IsLinux ? '/' : '\\'));
                 if (File.Exists(file))
                 {
-                    LogRecorderX.MonitorTrace($"Success:{file}");
+                    LogRecorder.MonitorTrace(() => $"Success:{file}");
                     var bytes = await File.ReadAllBytesAsync(file);
                     await Response.Body.WriteAsync(bytes);
                 }
                 else
                 {
-                    LogRecorderX.MonitorTrace($"NoFind:{file}");
+                    LogRecorder.MonitorTrace(() => $"NoFind:{file}");
                     await Response.WriteAsync("404 No find!", Encoding.UTF8);
                 }
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 await Response.WriteAsync("404 No find!", Encoding.UTF8);
             }
         }

@@ -85,7 +85,6 @@ namespace Agebull.MicroZero.PubSub
         /// <summary>
         /// 发送返回值 
         /// </summary>
-        /// <param name="socket"></param>
         /// <param name="item"></param>
         /// <param name="state"></param>
         /// <returns></returns>
@@ -151,7 +150,7 @@ namespace Agebull.MicroZero.PubSub
             }
             catch (Exception ex)
             {
-                LogRecorderX.Exception(ex);
+                LogRecorder.Exception(ex);
             }
         }
 
@@ -196,7 +195,7 @@ namespace Agebull.MicroZero.PubSub
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
             return null;
         }
@@ -293,7 +292,7 @@ namespace Agebull.MicroZero.PubSub
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return false;
             }
         }
@@ -322,7 +321,7 @@ namespace Agebull.MicroZero.PubSub
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return new ZeroResult
                 {
                     InteractiveSuccess = false,

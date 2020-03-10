@@ -16,7 +16,7 @@ namespace MicroZero.Http.Gateway
         {
             if (!(Data.RouteHost is HttpHost host))
             {
-                LogRecorderX.MonitorTrace("Host Type Failed");
+                LogRecorder.MonitorTrace("Host Type Failed");
                 return Data.ResultMessage;
             }
             // 当前请求调用的模型对应的主机名称
@@ -45,12 +45,12 @@ namespace MicroZero.Http.Gateway
                 var caller = new HttpApiCaller(httpHost);
                 caller.CreateRequest(httpApi, Data.HttpMethod, Request, Data);
 
-                LogRecorderX.MonitorTrace($"Url:{caller.RemoteUrl} | Token:{Data.Token}");
+                LogRecorder.MonitorTrace(() => $"Url:{caller.RemoteUrl} | Token:{Data.Token}");
 
                 Data.ResultMessage = await caller.Call();
                 Data.UserState = caller.UserState;
                 Data.ZeroState = caller.ZeroState;
-                LogRecorderX.MonitorTrace(Data.ResultMessage);
+                LogRecorder.MonitorTrace(Data.ResultMessage);
             }
             return Data.ResultMessage;
         }

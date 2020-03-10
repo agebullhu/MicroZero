@@ -1,49 +1,101 @@
 ﻿using System;
 using Agebull.MicroZero.ZeroApis;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Agebull.MicroZero;
+using Microsoft.AspNetCore.Mvc;
+using Agebull.Common.Logging;
+using System.Collections.Generic;
 
 namespace ApiTest
 {
 
-    public class TestItems
-    {
-        public string Items { get; set; }
-    }
-    //static void Weixin()
-    //{
-    //    IocHelper.ServiceCollection.AddMemoryCache();
-
-    //    IocHelper.ServiceCollection
-    //        .AddSenparcGlobalServices(ConfigurationManager.Root)//Senparc.CO2NET 全局注册
-    //        .AddSenparcWeixinServices(ConfigurationManager.Root);//Senparc.Weixin 注册
-
-    //    var senparcSetting = ConfigurationManager.Root.GetSection("SecurityHeaderOptions").Get<SenparcSetting>();
-    //    var senparcWeixinSetting = ConfigurationManager.Root.GetSection("SenparcWeixinSetting").Get<SenparcWeixinSetting>();
-    //    RegisterService.Start(null, senparcSetting)
-    //        .UseSenparcGlobal()// 启动 CO2NET 全局注册
-    //        .UseSenparcWeixin(senparcWeixinSetting, senparcSetting);//微信全局注册
-    //    //注册AppId
-    //    AccessTokenContainer.Register(senparcWeixinSetting.WeixinAppId, senparcWeixinSetting.WeixinAppSecret);
-    //}
     /// <summary>
-    /// Weixin服务
+    /// 测试
     /// </summary>
-    public class TestController : ApiController
+    public class TestController : ApiControlerEx
     {
         /// <summary>
         /// 处理文字请求
         /// </summary>
+        /// <param name="Remark">说明</param>
         /// <returns></returns>
-        [Route("v1/test"), ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
-        public Task<ApiResult<TestItems>> OnTextRequestA()
+        [Route("v1/test"), HttpPost, ApiAccessOptionFilter(ApiAccessOption.Anymouse | ApiAccessOption.Public)]
+        public Task<ApiResult<List<Semple>>> OnTextRequestA(List<Semple> Remark)
         {
-            
-            //await Task.Delay(210000);
-            //throw new Exception();
-            return Task.FromResult(ApiResult<TestItems>.Succees(new TestItems()));
+            return Task.FromResult(ApiResult.Succees(Remark));
         }
+    }
+    /// <summary>
+    /// 示例
+    /// </summary>
+    public class SempleItem
+    {
+        /// <summary>
+        /// 文本
+        /// </summary>
+        public string Str { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public DateTime DateTime { get; set; }
+        /// <summary>
+        /// 文本
+        /// </summary>
+        public List<string> Values { get; set; }
+
+    }
+    /// <summary>
+    /// 示例
+    /// </summary>
+    public class Semple
+    {
+        /// <summary>
+        /// 文本
+        /// </summary>
+        public string Str { get; set; }
+        /// <summary>
+        /// 文本
+        /// </summary>
+        public List<SempleItem> Items { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public DateTime DateTime { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public double Double { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public float Float { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public decimal Decimal { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public long Long { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public int Int32 { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public uint Uint { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public short Short { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public byte Byte { get; set; }
+        /// <summary>
+        /// DateTime
+        /// </summary>
+        public char Char { get; set; }
     }
 }

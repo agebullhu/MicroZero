@@ -52,7 +52,7 @@ namespace MicroZero.Http.Gateway
         /// <param name="context"></param>
         async Task<bool> IRouter.Prepare(HttpContext context)
         {
-            LogRecorderX.MonitorTrace("ApiRouter");
+            LogRecorder.MonitorTrace("ApiRouter");
             HttpContext = context;
             Request = context.Request;
             Response = context.Response;
@@ -109,7 +109,7 @@ namespace MicroZero.Http.Gateway
                         name.Append(paths[idx].Split('.')[1]);
                         name.Append('/');
                     }
-                    Data.ApiName = $"{name}{Data.Arguments[map.ActionName]}";
+                    Data.ApiName = $"{name}{Data.Arguments[map.Action]}";
                     Data.ApiHost = model.Station;
                     return;
                 }
@@ -127,7 +127,6 @@ namespace MicroZero.Http.Gateway
                 manager.Command(Data);
                 return;
             }
-
             // 1 初始化路由信息
             if (!FindHost())
             {
@@ -137,17 +136,9 @@ namespace MicroZero.Http.Gateway
 
                 return;
             }
-            //超限熔断
-            if (Data.RouteHost.WaitCount > ZeroApplication.Config.MaxWait)
-            {
-                Data.UserState = UserOperatorStateType.Unavailable;
-                Data.ZeroState = ZeroOperatorStateType.Unavailable;
-                Data.ResultMessage = ApiResultIoc.UnavailableJson;
-                return;
-            }
 
             // 2 缓存快速处理
-            if (RouteCache.LoadCache(Data))
+            if (await RouteCache.LoadCache(Data))
             {
                 //找到并返回缓存
                 Data.UserState = UserOperatorStateType.Success;
@@ -155,10 +146,18 @@ namespace MicroZero.Http.Gateway
                 return;
             }
 
+            //3 超限熔断
+            if (RouteHost.WaitCount > ZeroApplication.Config.MaxWait)
+            {
+                Data.UserState = UserOperatorStateType.Unavailable;
+                Data.ZeroState = ZeroOperatorStateType.Unavailable;
+                Data.ResultMessage = ApiResultIoc.UnavailableJson;
+                return;
+            }
             try
             {
                 // 3 安全检查
-                Interlocked.Increment(ref Data.RouteHost.WaitCount);
+                Interlocked.Increment(ref RouteHost.WaitCount);
                 if (!TokenCheck())
                 {
                     Data.UserState = UserOperatorStateType.DenyAccess;
@@ -183,10 +182,11 @@ namespace MicroZero.Http.Gateway
             }
             finally
             {
-                Interlocked.Decrement(ref Data.RouteHost.WaitCount);
+                Interlocked.Decrement(ref RouteHost.WaitCount);
             }
             // 5 结果检查
             ResultChecker.DoCheck(Data);
+            // 6 缓存结果
             RouteCache.CacheResult(Data);
         }
 
@@ -196,26 +196,26 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         private bool FindHost()
         {
-            if (!RouteOption.RouteMap.TryGetValue(Data.ApiHost, out Data.RouteHost) || Data.RouteHost == null)
+            if (!GatewayOption.Option.RouteMaps.TryGetValue(Data.ApiHost, out Data.RouteHost) || Data.RouteHost == null)
             {
-                LogRecorderX.MonitorTrace($"{Data.ApiHost} no find");
+                LogRecorder.MonitorTrace(() => $"{Data.ApiHost} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             //if(Data.RouteHost.Failed)
             //{
-            //    LogRecorderX.MonitorTrace($"{Data.HostName} is failed({Data.RouteHost.Description})");
+            //    LogRecorder.MonitorTrace($"{Data.HostName} is failed({Data.RouteHost.Description})");
             //    return false; //Data.RouteHost = HttpHost.DefaultHost;
             //}
-            if (!RouteOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
+            if (!GatewayOption.Option.SystemConfig.CheckApiItem || !(Data.RouteHost is ZeroHost host))
                 return true;
             if (host.Apis == null || !host.Apis.TryGetValue(Data.ApiName, out Data.ApiItem))
             {
-                LogRecorderX.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} no find");
+                LogRecorder.MonitorTrace(() => $"{Data.ApiHost}/{Data.ApiName} no find");
                 return false; //Data.RouteHost = HttpHost.DefaultHost;
             }
             if (Data.ApiItem.Access == ApiAccessOption.None || Data.ApiItem.Access.HasFlag(ApiAccessOption.Public))
                 return true;
-            LogRecorderX.MonitorTrace($"{Data.ApiHost}/{Data.ApiName} deny access.");
+            LogRecorder.MonitorTrace(() => $"{Data.ApiHost}/{Data.ApiName} deny access.");
             return false;
         }
 
@@ -226,10 +226,10 @@ namespace MicroZero.Http.Gateway
         {
             //if (SecurityChecker.CheckToken())
             //    return true;
-            //Data.ResultMessage = RouteOption.Option.Security.BlockHost;
-            //Response.Redirect(RouteOption.Option.Security.BlockHost, false);
+            //Data.ResultMessage = GatewayOption.Option.Security.BlockHost;
+            //Response.Redirect(GatewayOption.Option.Security.BlockHost, false);
             //Data.Redirect = true;
-            return RouteOption.Option.Security.Auth2
+            return GatewayOption.Option.Security.Auth2
                 ? SecurityChecker.CheckToken2()
                 : SecurityChecker.CheckToken();
         }
@@ -281,7 +281,7 @@ namespace MicroZero.Http.Gateway
         {
             try
             {
-                LogRecorderX.MonitorTrace(e.Message);
+                LogRecorder.MonitorTrace(e.Message);
                 Data.UserState = UserOperatorStateType.LocalException;
                 Data.ZeroState = ZeroOperatorStateType.LocalException;
                 ZeroTrace.WriteException("Route", e);
@@ -290,7 +290,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception exception)
             {
-                LogRecorderX.Exception(exception);
+                LogRecorder.Exception(exception);
             }
         }
 

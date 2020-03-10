@@ -12,7 +12,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
     
-    <IncludeSource>true</IncludeSource>
+    <IncludeSource>false</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     
@@ -26,6 +26,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
     <DocumentationFile>Agebull.MicroZero.Tools.sys_addin.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="RemoteLog\**" />
+    <EmbeddedResource Remove="RemoteLog\**" />
+    <None Remove="RemoteLog\**" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>

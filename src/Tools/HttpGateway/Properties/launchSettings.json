@@ -12,9 +12,8 @@
     }
   },
   "profiles": {
-    "MicroZero.Http.Gateway": {
-      "commandName": "Project",
-      "use64Bit": true
+    "newProfile1": {
+      "commandName": "Project"
     }
   }
 }

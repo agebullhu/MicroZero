@@ -218,7 +218,7 @@ namespace Agebull.MicroZero.ZeroApis
         {
             if (Simple)
                 return;
-            LogRecorderX.MonitorTrace($"Station:{Station},Command:{Commmand}");
+            LogRecorder.MonitorTrace(() => $"Station:{Station},Command:{Commmand}");
             foreach (var handler in _handlers)
                 try
                 {
@@ -235,7 +235,7 @@ namespace Agebull.MicroZero.ZeroApis
             _core.CheckStateResult();
             if (Simple)
                 return;
-            LogRecorderX.MonitorTrace($"Result:{Result}");
+            LogRecorder.MonitorTrace(() => $"Result:{Result}");
             foreach (var handler in _handlers)
             {
                 try

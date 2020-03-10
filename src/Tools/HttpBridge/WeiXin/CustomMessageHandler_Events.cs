@@ -68,9 +68,9 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
                 caller.CallCommand();
                 ResultXml = caller.State == ZeroOperatorStateType.Ok ? caller.Result : "";
                 Success = caller.State == ZeroOperatorStateType.Ok && !String.IsNullOrWhiteSpace(ResultXml);
-                LogRecorderX.MonitorTrace($"{caller.State } : {caller.Result}");
-                LogRecorderX.MonitorTrace($"Success  : {Success}");
-                LogRecorderX.MonitorTrace($"ResultXml: {ResultXml}");
+                LogRecorder.MonitorTrace($"{caller.State } : {caller.Result}");
+                LogRecorder.MonitorTrace($"Success  : {Success}");
+                LogRecorder.MonitorTrace($"ResultXml: {ResultXml}");
             }
         }
 
@@ -86,7 +86,7 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
                 var res = new ResponseMessageText();
                 res.FillEntityWithXml(XDocument.Parse(ResultXml));
                 var result = CustomApi.SendText(WechatProcesser.Option.WeixinAppId, requestMessage.FromUserName, res.Content);
-                LogRecorderX.MonitorTrace(result.ToJson());
+                LogRecorder.MonitorTrace(result.ToJson());
             }
             return new ResponseMessageText();
         }
@@ -103,7 +103,7 @@ namespace Senparc.Weixin.MP.Sample.CommonService.CustomMessageHandler
                 var res = new ResponseMessageNews();
                 res.FillEntityWithXml(XDocument.Parse(ResultXml));
                 var result = CustomApi.SendNews(WechatProcesser.Option.WeixinAppId, requestMessage.FromUserName, res.Articles);
-                LogRecorderX.MonitorTrace(result.ToJson());
+                LogRecorder.MonitorTrace(result.ToJson());
             }
             return new ResponseMessageText();
         }

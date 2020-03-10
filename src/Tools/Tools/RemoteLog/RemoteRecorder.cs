@@ -28,10 +28,10 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void ILogRecorder.Initialize()
         {
-            //LogRecorderX.TraceToConsole = false;
+            //LogRecorder.TraceToConsole = false;
             IsInitialized = true;
             _state = StationState.Initialized;
-            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize", LogRecorderX.Level);
+            ZeroTrace.SystemLog("RemoteLogRecorder", "ILogRecorder.Initialize", LogRecorder.Level);
         }
 
         /// <inheritdoc />
@@ -72,7 +72,7 @@ namespace Agebull.MicroZero.Log
                 return;
             if (_socket == null)
             {
-                LogRecorderX.BaseRecorder.RecordLog(infos);
+                LogRecorder.BaseRecorder.RecordLog(infos);
                 return;
             }
             var array = infos.ToArray();
@@ -124,7 +124,7 @@ namespace Agebull.MicroZero.Log
                 if (_socket.SendTo(LogDescription, _logsByte, buf, Config.ServiceKey))
                     return;
             }
-            LogRecorderX.BaseRecorder.RecordLog(info);
+            LogRecorder.BaseRecorder.RecordLog(info);
         }
 
         #endregion

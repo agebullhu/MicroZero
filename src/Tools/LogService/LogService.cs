@@ -91,7 +91,7 @@ namespace Agebull.MicroZero.LogService
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
         }
 

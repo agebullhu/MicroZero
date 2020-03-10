@@ -12,7 +12,7 @@ namespace MicroZero.Http.Gateway
         /// action参数名称
         /// </summary>
         [JsonProperty("action")]
-        public string ActionName { get; set; }
+        public string Action { get; set; }
 
         /// <summary>
         /// 模块集合

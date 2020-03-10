@@ -30,7 +30,7 @@ namespace RpcTest
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e);
+                    LogRecorder.Exception(e);
                 }
             }
         }

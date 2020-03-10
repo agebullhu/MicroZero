@@ -32,6 +32,23 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="F:MicroZero.Http.Gateway.IoHandler.Description">
+            <summary>
+                订阅时的标准网络数据说明
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.BeginZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IoHandler.EndZeroTrace(MicroZero.Http.Gateway.RouteData)">
+            <summary>
+            发送广播
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:MicroZero.Http.Gateway.IRouter">
             <summary>
                 调用映射核心类
@@ -52,17 +69,17 @@
                 写入返回
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.IRouter.End">
-            <summary>
-                结束
-            </summary>
-        </member>
         <member name="M:MicroZero.Http.Gateway.IRouter.OnError(System.Exception,Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
             异常处理
             </summary>
             <param name="e"></param>
             <param name="context"></param>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.IRouter.End">
+            <summary>
+                结束
+            </summary>
         </member>
         <member name="M:MicroZero.Http.Gateway.IRouter.CheckMap(MicroZero.Http.Gateway.AshxMapConfig)">
             <summary>
@@ -108,11 +125,11 @@
             特殊路径使用的路由器
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(System.Object)">
+        <member name="M:MicroZero.Http.Gateway.RouteApp.CallTask(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
                 调用
             </summary>
-            <param name="arg"></param>
+            <param name="context"></param>
             <returns></returns>
         </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.InnerCommand(System.String,Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
@@ -221,12 +238,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.Router.CallZeroTask">
-            <summary>
-                远程调用
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:MicroZero.Http.Gateway.Router.CallZero">
             <summary>
                 远程调用
@@ -238,14 +249,24 @@
                 缓存数据
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.CacheData.UpdateTime">
+        <member name="F:MicroZero.Http.Gateway.CacheData.IsLoading">
             <summary>
-                下次更新时间
+            是否正在载入，如果是，等待即可
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.CacheData.Content">
             <summary>
                 缓存内容
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.Success">
+            <summary>
+                是否正确
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheData.UpdateTime">
+            <summary>
+                下次更新时间
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.CacheFeature">
@@ -471,14 +492,24 @@
             <param name="message2"></param>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.Cros(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="T:MicroZero.Http.Gateway.HttpProtocol">
+            <summary>
+            HTTP协议相关的支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosOption(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpResponse)">
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.CrosCall(Microsoft.AspNetCore.Http.HttpResponse)">
             <summary>
                 跨域支持
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpProtocol.FormatResponse(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.AspNetCore.Http.HttpResponse)">
+            <summary>
+                返回类型
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.MapModelConfig">
@@ -614,6 +645,11 @@
                 路由主机
             </summary>
         </member>
+        <member name="F:MicroZero.Http.Gateway.RouteHost.WaitCount">
+            <summary>
+            等待数
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.RouteHost.ByZero">
             <summary>
                 使用MicroZero通讯吗
@@ -644,6 +680,11 @@
                 站点
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.ZeroHost.Config">
+            <summary>
+                站点
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.ZeroHost.AppName">
             <summary>
                 适用于的App的名称组合，全适合则为null，部分适用为用逗号分隔的App名称
@@ -663,6 +704,12 @@
             <summary>
                 默认主机
             </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.HttpHost.#ctor(MicroZero.Http.Gateway.HostConfig)">
+            <summary>
+            构造
+            </summary>
+            <param name="config"></param>
         </member>
         <member name="P:MicroZero.Http.Gateway.HttpHost.Next">
             <summary>
@@ -749,7 +796,7 @@
                 HTTP method
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteData.HttpContext">
+        <member name="P:MicroZero.Http.Gateway.RouteData.HttpContent">
             <summary>
                 请求的内容
             </summary>
@@ -1048,6 +1095,11 @@
                 需要登录
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.ApiItem.Access">
+            <summary>
+            访问权限
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.ApiItem.Os">
             <summary>
                 操作系统
@@ -1088,6 +1140,16 @@
                 是否加入MicroZero
             </summary>
         </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.IsTest">
+            <summary>
+                是否测试环境
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.ContentType">
+            <summary>
+                返回的上下文类型
+            </summary>
+        </member>
         <member name="P:MicroZero.Http.Gateway.SystemConfig.CheckResult">
             <summary>
                 是否检查返回值
@@ -1124,6 +1186,16 @@
         <member name="P:MicroZero.Http.Gateway.SystemConfig.ContextAddr">
             <summary>
                 内容页地址
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableLinkTrace">
+            <summary>
+            开启链路跟踪
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.EnableApiCollect">
+            <summary>
+            开启API统计
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.ResultChecker">
@@ -1216,48 +1288,6 @@
             <summary>
             当前API
             </summary>
-        </member>
-        <member name="T:MicroZero.Http.Gateway.GatewayStartup">
-            <summary>
-            启动基类
-            </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            构造
-            </summary>
-            <param name="configuration"></param>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.GatewayStartup.Configuration">
-            <summary>
-            配置对象
-            </summary>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            This method gets called by the runtime. Use this method to add services to the container.
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            执行系统配置
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
-            <summary>
-             This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-        </member>
-        <member name="M:MicroZero.Http.Gateway.GatewayStartup.DoConfigure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
-            <summary>
-            应用配置
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
         </member>
         <member name="T:MicroZero.Http.Gateway.ZeroManager">
             <summary>

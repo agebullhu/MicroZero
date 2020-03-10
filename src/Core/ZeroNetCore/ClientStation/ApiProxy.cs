@@ -88,6 +88,12 @@ namespace Agebull.MicroZero.ZeroApis
         {
             StationName = "_api_proxy_";
             Instance = this;
+            Config = new StationConfig
+            {
+                Name = StationName,
+                Caption = "API客户端代理",
+                IsBaseStation = true
+            };
         }
 
         /// <summary>
@@ -95,12 +101,6 @@ namespace Agebull.MicroZero.ZeroApis
         /// </summary>
         protected sealed override bool CheckConfig()
         {
-            Config = new StationConfig
-            {
-                Name = StationName,
-                Caption = "API客户端代理",
-                IsBaseStation = true
-            };
             return true;
         }
 
@@ -168,12 +168,12 @@ namespace Agebull.MicroZero.ZeroApis
                 }
 
                 ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                LogRecorderX.MonitorTrace($"{StationName}({error.Name}) : {error.Text}");
+                LogRecorder.MonitorTrace(() => $"{StationName}({error.Name}) : {error.Text}");
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e, "ApiStation.SendResult");
-                LogRecorderX.MonitorTrace(e.Message);
+                LogRecorder.Exception(e, "ApiStation.SendResult");
+                LogRecorder.MonitorTrace(e.Message);
             }
         }
 
@@ -218,7 +218,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e);
+                    LogRecorder.Exception(e);
                 }
             }
 
@@ -300,14 +300,14 @@ namespace Agebull.MicroZero.ZeroApis
             src.Caller.State = result.State;
             if (result.State == ZeroOperatorStateType.Runing)
             {
-                Console.WriteLine($"task:({id})=>Runing");
+                LogRecorder.Trace($"task:({id})=>Runing");
                 return;
             }
             Tasks.TryRemove(id, out _);
-            LogRecorderX.MonitorTrace("OnRemoteResult");
+            LogRecorder.Trace("OnRemoteResult");
             if (!src.TaskSource.TrySetResult(result))
             {
-                LogRecorderX.Error($"task:({id})=>Failed result({JsonHelper.SerializeObject(result)})");
+                LogRecorder.Error($"task:({id})=>Failed result({JsonHelper.SerializeObject(result)})");
             }
         }
 
@@ -479,7 +479,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return 0;
             }
 
-            if (Config.State != ZeroCenterState.None && Config.State != ZeroCenterState.Run)
+            if (Config.State != ZeroCenterState.None && caller.Config.State != ZeroCenterState.Run)
             {
                 caller.Result = Config.State == ZeroCenterState.Pause
                     ? ApiResultIoc.PauseJson

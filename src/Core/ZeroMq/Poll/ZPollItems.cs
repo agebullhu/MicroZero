@@ -1,26 +1,27 @@
 namespace ZeroMQ
 {
-    using lib;
+#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+	using lib;
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
     public static partial class ZPollItems
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 	{
 
 		// unsafe native delegate
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
-	    public delegate bool PollManyDelegate(IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, ZPollEvent pollFirst, out ZError error, TimeSpan? timeoutMs);
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+	    public delegate bool PollManyDelegate(IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, ZPollEvent pollFirst, out ZError error, TimeSpan? timeoutMs);
+
+
+
 	    public static readonly PollManyDelegate PollMany;
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 
 		// unsafe native delegate
 		internal delegate bool PollSingleDelegate(ZSocket socket, ZPollItem item, ZPollEvent pollFirst, out ZError error, TimeSpan? timeout);
+		
 		internal static readonly PollSingleDelegate PollSingle;
 
 		static ZPollItems()
@@ -28,17 +29,17 @@ namespace ZeroMQ
 			// Initialize static Fields
 			Platform.SetupImplementation(typeof(ZPollItems));
 		}
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
         public static bool PollIn(this ZSocket socket, ZPollItem item, out ZMessage incoming, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			incoming = null;
 			return Poll(socket, item, ZPollEvent.In, ref incoming, out error, timeout);
 		}
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		public static bool PollOut(this ZSocket socket, ZPollItem item, ZMessage outgoing, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			if (outgoing == null)
 			{
@@ -47,9 +48,9 @@ namespace ZeroMQ
 			return Poll(socket, item, ZPollEvent.Out, ref outgoing, out error, timeout);
 		}
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		public static bool Poll(this ZSocket socket, ZPollItem item, ZPollEvent pollEvents, ref ZMessage message, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			if (PollSingle(socket, item, pollEvents, out error, timeout))
 			{
@@ -156,17 +157,17 @@ namespace ZeroMQ
 			return false;
 		}
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		public static bool PollIn(this IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, out ZMessage[] incoming, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			incoming = null;
 			return Poll(sockets, items, ZPollEvent.In, ref incoming, out error, timeout);
 		}
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		public static bool PollOut(this IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, ZMessage[] outgoing, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			if (outgoing == null)
 			{
@@ -175,9 +176,9 @@ namespace ZeroMQ
 			return Poll(sockets, items, ZPollEvent.Out, ref outgoing, out error, timeout);
 		}
 
-#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		public static bool Poll(this IEnumerable<ZSocket> sockets, IEnumerable<ZPollItem> items, ZPollEvent pollEvents, ref ZMessage[] messages, out ZError error, TimeSpan? timeout = null)
-#pragma warning restore CS1591 // 缺少对公共可见类型或成员的 XML 注释
+
 		{
 			if (PollMany(sockets, items, pollEvents, out error, timeout))
 			{

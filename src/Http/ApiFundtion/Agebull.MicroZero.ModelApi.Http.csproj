@@ -1,0 +1,104 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>MicroZero之实体操作Api基础</Description>
+    <AssemblyTitle>Agebull.MicroZero.ModelApi.Http</AssemblyTitle>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName></AssemblyName>
+    <PackageId>Agebull.MicroZero.ModelApi.Http</PackageId>
+    <PackageTags>Agebull.MicroZero.ModelApi.Http</PackageTags>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
+    
+    <IncludeSource>false</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <Product>Agebull.MicroZero</Product>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <Copyright />
+    <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
+    <Version>1.0.0.14-bate</Version>
+    <RootNamespace />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net472|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.Http.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.ModelApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Context\**" />
+    <Compile Remove="Helper\**" />
+    <Compile Remove="MySql\**" />
+    <Compile Remove="Redis\**" />
+    <Compile Remove="SqlServer\**" />
+    <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="Helper\**" />
+    <EmbeddedResource Remove="MySql\**" />
+    <EmbeddedResource Remove="Redis\**" />
+    <EmbeddedResource Remove="SqlServer\**" />
+    <None Remove="Context\**" />
+    <None Remove="Helper\**" />
+    <None Remove="MySql\**" />
+    <None Remove="Redis\**" />
+    <None Remove="SqlServer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Api\ApiResponseMessage.cs" />
+    <Compile Remove="Api\DataExtendChecker.cs" />
+    <Compile Remove="Api\EntityInfo.cs" />
+    <Compile Remove="Api\HttpResponseMessageExtend.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Agebull.EntityModel.Core" Version="3.1.40.9-bate" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HttpAdapter\Agebull.MicroZero.HttpAdapter.csproj" />
+  </ItemGroup>
+</Project>

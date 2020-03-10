@@ -2,18 +2,13 @@ using System;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Agebull.Common.Context;
-using Agebull.Common.Ioc;
 using Agebull.Common.Logging;
 using Agebull.Common.OAuth;
-
 using Agebull.MicroZero;
 using Agebull.MicroZero.ZeroApis;
 using Agebull.EntityModel.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Linq;
 
 namespace MicroZero.Http.Gateway
 {
@@ -76,7 +71,7 @@ namespace MicroZero.Http.Gateway
         {
             try
             {
-                foreach (var head in RouteOption.Option.Security.DenyHttpHeaders)
+                foreach (var head in GatewayOption.Option.Security.DenyHttpHeaders)
                 {
                     if (!Data.Headers.ContainsKey(head.Head))
                         continue;
@@ -124,7 +119,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return true;
             }
         }
@@ -142,7 +137,7 @@ namespace MicroZero.Http.Gateway
             //var header = Request.Headers.Values.LinkToString(" ");
             //if (string.IsNullOrWhiteSpace(header) || header.Contains("iToolsVM"))
             //    return false;
-            if (!RouteOption.Option.SystemConfig.CheckApiItem || Data.ApiItem == null)
+            if (!GatewayOption.Option.SystemConfig.CheckApiItem || Data.ApiItem == null)
                 return true;
             ////OS匹配
             //if (!string.IsNullOrWhiteSpace(Data.ApiItem.Os) && Data.Token.IndexOf(Data.ApiItem.Os, StringComparison.OrdinalIgnoreCase) < 0)
@@ -165,7 +160,7 @@ namespace MicroZero.Http.Gateway
         {
             try
             {
-                if (!RouteOption.Option.Security.CheckBearer)
+                if (!GatewayOption.Option.Security.FireBearer)
                 {
                     //GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
                     return true;
@@ -180,7 +175,7 @@ namespace MicroZero.Http.Gateway
                 }
                 if (string.IsNullOrWhiteSpace(Data.Token))
                 {
-                    if (!RouteOption.Option.SystemConfig.CheckApiItem || Data.ApiItem == null || Data.ApiItem.NoBearer)
+                    if (!GatewayOption.Option.SystemConfig.CheckApiItem || Data.ApiItem == null || Data.ApiItem.NoBearer)
                     {
                         GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
                         return true;
@@ -197,7 +192,7 @@ namespace MicroZero.Http.Gateway
                     case '#':
                         break;
                 }
-                if (RouteOption.Option.Security.DenyTokens.ContainsKey(Data.Token))
+                if (GatewayOption.Option.Security.DenyTokens.ContainsKey(Data.Token))
                 {
                     Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
@@ -207,7 +202,7 @@ namespace MicroZero.Http.Gateway
                     var ch = Data.Token[index];
                     if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_')
                         continue;
-                    LogRecorderX.MonitorTrace("Token Layout Error");
+                    LogRecorder.MonitorTrace("Token Layout Error");
                     Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                     return false;
                 }
@@ -224,7 +219,7 @@ namespace MicroZero.Http.Gateway
                             Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                             return false;
                         }
-                        result = CheckToken("DeviceId", RouteOption.Option.Security.DeviceIdCheckApi, out var vl);
+                        result = CheckToken("DeviceId", GatewayOption.Option.Security.DeviceIdCheckApi, out var vl);
                         if (result == null || result.Status.ErrorCode == ErrorCode.Auth_UnknowToken)
                         {
                             Data.ResultMessage = UnknowDeviceJson;
@@ -237,7 +232,7 @@ namespace MicroZero.Http.Gateway
                         Data.ResultMessage = vl;
                         return false;
                     case '#':
-                        result = CheckToken("AccessToken", RouteOption.Option.Security.AccessTokenCheckApi, out vl);
+                        result = CheckToken("AccessToken", GatewayOption.Option.Security.AccessTokenCheckApi, out vl);
                         if (result == null || result.Status.ErrorCode == ErrorCode.Auth_UnknowToken)
                         {
                             Data.ResultMessage = UnknowAccessTokenJson;
@@ -258,7 +253,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return true;
             }
         }
@@ -290,7 +285,7 @@ namespace MicroZero.Http.Gateway
                 var caller = new ApiClient
                 {
                     Simple = true,
-                    Station = RouteOption.Option.Security.AuthStation,
+                    Station = GatewayOption.Option.Security.AuthStation,
                     Commmand = api,
                     Argument = $"{{\"Token\":\"{Data.Token}\"}}"
                 };
@@ -375,7 +370,7 @@ namespace MicroZero.Http.Gateway
         {
             try
             {
-                if (!RouteOption.Option.Security.CheckBearer)
+                if (!GatewayOption.Option.Security.FireBearer)
                 {
                     GlobalContext.SetUser(LoginUserInfo.CreateAnymouse(Data.Token, "*", "*"));
                     return true;
@@ -402,7 +397,7 @@ namespace MicroZero.Http.Gateway
                         case '#':
                             break;
                     }
-                    if (RouteOption.Option.Security.DenyTokens.ContainsKey(Data.Token))
+                    if (GatewayOption.Option.Security.DenyTokens.ContainsKey(Data.Token))
                     {
                         Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                         return false;
@@ -412,7 +407,7 @@ namespace MicroZero.Http.Gateway
                         var ch = Data.Token[index];
                         if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z' || ch == '_')
                             continue;
-                        LogRecorderX.MonitorTrace("Token Layout Error");
+                        LogRecorder.MonitorTrace("Token Layout Error");
                         Data.ResultMessage = ApiResultIoc.DenyAccessJson;
                         return false;
                     }
@@ -474,7 +469,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return true;
             }
         }
@@ -537,8 +532,8 @@ namespace MicroZero.Http.Gateway
                 var caller = new ApiClient
                 {
                     Simple = true,
-                    Station = RouteOption.Option.Security.AuthStation,
-                    Commmand = RouteOption.Option.Security.TokenCheckApi,
+                    Station = GatewayOption.Option.Security.AuthStation,
+                    Commmand = GatewayOption.Option.Security.TokenCheckApi,
                     Argument = JsonConvert.SerializeObject(arg)
                 };
                 caller.CallCommand();

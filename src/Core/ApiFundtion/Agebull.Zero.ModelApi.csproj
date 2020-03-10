@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>2.0.3</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>WebApi支持</Description>
+    <AssemblyTitle>Agebull.Zero.ModelApi</AssemblyTitle>
+
+    <Version>1.2.0.60</Version>
+    <!--monoandroid60;xamarinios10-->
+    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>Agebull.Zero.ModelApi</AssemblyName>
+    <PackageId>Agebull.Zero.ModelApi</PackageId>
+    <PackageTags>Agebull.Zero.ModelApi</PackageTags>
+    <PackageIconUrl>https://github.com/agebullhu/EntityModel/blob/master/doc/icon.ico</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/agebullhu/EntityModel</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/agebullhu/EntityModel/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/EntityModel</RepositoryUrl>
+<PackageVersion>1.2.0.60</PackageVersion>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <Product>Agebull.Zero.ModelApi</Product>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <Copyright />
+    <PackageReleaseNotes>ZeroApi模型支持</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net47|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net47' ">
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Redis\**" />
+    <EmbeddedResource Remove="Redis\**" />
+    <None Remove="Redis\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Api\ApiResponseMessage.cs" />
+    <Compile Remove="Api\HttpResponseMessageExtend.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Agebull.WebApi.ModelBase" Version="2.3.2.68" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroNetCore\Agebull.ZeroNet.Core.csproj" />
+  </ItemGroup>
+</Project>

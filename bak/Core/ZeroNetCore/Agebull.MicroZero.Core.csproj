@@ -1,0 +1,115 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>微服务框架MicroZero的核心程序集</Description>
+    <TargetFrameworks>netcoreapp2.2;net472</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <PackageId></PackageId>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
+    
+    <IncludeSource>true</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <PackageReleaseNotes>MicroZero核心</PackageReleaseNotes>
+    <Product>Agebull.MicroZero</Product>
+    <Version>1.4.10.36</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG;UseStateMachine</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp2.2|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DefineConstants>UseStateMachine</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.2|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ApiContract\**" />
+    <Compile Remove="Bridge\**" />
+    <Compile Remove="Connection\**" />
+    <Compile Remove="Context\**" />
+    <Compile Remove="Entity\**" />
+    <Compile Remove="Rpc\**" />
+    <Compile Remove="Services\**" />
+    <Compile Remove="Tson\**" />
+    <EmbeddedResource Remove="ApiContract\**" />
+    <EmbeddedResource Remove="Bridge\**" />
+    <EmbeddedResource Remove="Connection\**" />
+    <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="Entity\**" />
+    <EmbeddedResource Remove="Rpc\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <EmbeddedResource Remove="Tson\**" />
+    <None Remove="ApiContract\**" />
+    <None Remove="Bridge\**" />
+    <None Remove="Connection\**" />
+    <None Remove="Context\**" />
+    <None Remove="Entity\**" />
+    <None Remove="Rpc\**" />
+    <None Remove="Services\**" />
+    <None Remove="Tson\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Base\SyncBatchQueue.cs" />
+    <Compile Remove="ClientStation\ApiCaller.cs" />
+    <Compile Remove="Config\ZeroCommandStatus.cs" />
+    <Compile Remove="Discover\ApiActionInfo.cs" />
+    <Compile Remove="Discover\ApiDocument.cs" />
+    <Compile Remove="Discover\DocumentItem.cs" />
+    <Compile Remove="Discover\ObjectType.cs" />
+    <Compile Remove="Discover\StationDocument.cs" />
+    <Compile Remove="Discover\TypeDocument.cs" />
+    <Compile Remove="Discover\XmlMember.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="PubSub\BatchPublisher.cs" />
+    <Compile Remove="PubSub\LogQueue.cs" />
+    <Compile Remove="PubSub\SignlePublisher.cs" />
+    <Compile Remove="ZeroApi\ApiStationItem.cs" />
+    <Compile Remove="Application\ZeroHelper.cs" />
+    <Compile Remove="ZeroApi\Client\ApiClientCore.cs" />
+    <Compile Remove="ZeroEventMonitor\SystemMonitor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Agebull.MicroZero.Core.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ComponentModel.Composition" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroMq\Agebull.MicroZero.ClrZMQ.csproj" />
+  </ItemGroup>
+
+</Project>

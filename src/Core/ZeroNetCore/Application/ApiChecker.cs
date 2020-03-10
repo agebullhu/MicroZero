@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Agebull.Common.Logging;
 using Agebull.MicroZero.ZeroApis;
 
 namespace Agebull.MicroZero.ZeroManagemant
@@ -15,7 +16,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// </summary>
         public static void RunCheck()
         {
-            Console.WriteLine("ApiChecker runing");
+            LogRecorder.SystemLog("ApiChecker runing");
             while (ZeroApplication.IsAlive)
             {
                 Thread.Sleep(1000);
@@ -32,7 +33,7 @@ namespace Agebull.MicroZero.ZeroManagemant
                     if ((DateTime.Now - task.Value.Start).TotalMinutes > ZeroApplication.Config.ApiTimeout)
                     {
                         ApiProxy.Instance.Tasks.TryRemove(task.Key,out _);
-                        Console.WriteLine($"task:({task.Value})=>Time Out");
+                        LogRecorder.Error("task:({0})=>Time Out", task.Value);
                         task.Value.TaskSource.SetException(new Exception("Time Out"));
                     }
                 }

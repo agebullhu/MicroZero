@@ -1,0 +1,1820 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Agebull.EntityModel.Redis</name>
+    </assembly>
+    <members>
+        <member name="T:Agebull.Common.DataModel.Redis.CSRedisAsync">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetTime(System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetTime(System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisAsync.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="T:Agebull.Common.DataModel.Redis.CSRedisBase">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.Redis.CSRedisBase.Option">
+            <summary>
+            配置
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.Redis.CSRedisBase.CurrentDb">
+            <summary>
+            当前数据库
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.OnOptionChange(Agebull.EntityModel.Common.RedisOption)">
+            <summary>
+            配置变更
+            </summary>
+            <param name="option"></param>
+        </member>
+        <member name="P:Agebull.Common.DataModel.Redis.CSRedisBase.NoClose">
+            <summary>
+            不关闭
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.ConnectString(System.Int64)">
+            <summary>
+            连接字符串
+            </summary>
+            <param name="db"></param>
+            <returns></returns>
+        </member>
+        <member name="F:Agebull.Common.DataModel.Redis.CSRedisBase._client">
+            <summary>
+            客户端类
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.Redis.CSRedisBase.Client">
+            <summary>
+            得到一个可用的Redis客户端
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.CreateClient(System.Int64)">
+            <summary>
+            生成一个客户端
+            </summary>
+            <param name="db"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.Original``1">
+            <summary>
+            原始对象,在不够用时扩展
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.ChangeDb(System.Int32)">
+            <summary>
+            修改Db
+            </summary>
+            <param name="db"></param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisBase.Dispose">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.DataModel.Redis.CSRedisEx">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetTime(System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetTime(System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.DataModel.Redis.CSRedisEx.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.IRedisAsync">
+            <summary>
+            Redis操作接口
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetTime(System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetTime(System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.SetNx(System.String,System.Byte[])">
+            <summary>
+            如果值不存在，则写入，否则失败
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisAsync.Incr(System.String)">
+            <summary>
+            取得一个自增值
+            </summary>
+            <param name="key"></param>
+            <returns>0表示失败，其它数字成功</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.RedisProxyAsync">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.#ctor(System.Int32)">
+            <summary>
+            构造
+            </summary>
+            <param name="db"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.CacheData``2(System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TDataAccess"></typeparam>
+            <typeparam name="TData"></typeparam>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.CacheData``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Func{``0,System.String})">
+            <summary>
+                缓存这些对象
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.ClearCache``1">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.RefreshCache``2(System.Int64,System.Func{``0,System.Boolean})">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxyAsync.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.IRedisBase">
+            <summary>
+            Redis操作接口
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.IRedisBase.Option">
+            <summary>
+            配置
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisBase.OnOptionChange(Agebull.EntityModel.Common.RedisOption)">
+            <summary>
+            配置变更
+            </summary>
+            <param name="option"></param>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.IRedisBase.CurrentDb">
+            <summary>
+            当前数据库
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.IRedisBase.NoClose">
+            <summary>
+            不关闭
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisBase.Original``1">
+            <summary>
+            原始对象,在不够用时扩展
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedisBase.ChangeDb(System.Int32)">
+            <summary>
+            更改Db
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.RedisProxy`1">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisProxy`1.IsTest">
+            <summary>
+            测试支持
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisProxy`1.Instances">
+            <summary>
+            所有实例
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisProxy`1.Option">
+            <summary>
+            配置
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.#cctor">
+            <summary>
+                初始化
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.OnOptionChange">
+            <summary>
+            配置变更
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisProxy`1.NoClose">
+            <summary>
+            不关闭
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisProxy`1._db">
+            <summary>
+            使用哪个数据库
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisProxy`1.CurrentDb">
+            <summary>
+            当前数据库
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.#ctor(System.Int32)">
+            <summary>
+            构造
+            </summary>
+            <param name="db"></param>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisProxy`1._redis">
+            <summary>
+            客户端类
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisProxy`1.Redis">
+            <summary>
+            得到一个可用的Redis客户端
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.ChangeDb(System.Int32)">
+            <summary>
+            更改
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.ChangeDb">
+            <summary>
+            更改
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.ResetClient(`0)">
+            <summary>
+            更改
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy`1.Dispose">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.RedisDataTrigger">
+            <summary>
+            版本数据更新触发器
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Redis.RedisDataTrigger.DataBaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.DataKeyBuilder">
+            <summary>
+            统一构建RedisKey的格式
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.DataKey``1(``0)">
+            <summary>
+            默认的数据键名称生成器
+            </summary>
+            <typeparam name="TData">数据键</typeparam>
+            <param name="data">数据</param>
+            <returns>数据键名</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.DataKey``1(System.Object)">
+            <summary>
+            默认的数据键名称生成器
+            </summary>
+            <typeparam name="TData">数据键</typeparam>
+            <param name="id">数据键</param>
+            <returns>数据键名</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.DataKey(System.String,System.Int32)">
+            <summary>
+            默认的数据键名称生成器
+            </summary>
+            <param name="type">数据</param>
+            <param name="id">数据键</param>
+            <returns>数据键名</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToKey(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="sp"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToKey(System.String,System.String)">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <param name="sub"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToKey(System.String,System.Object[])">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <param name="sub"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToKey(System.String,System.String,System.String)">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <param name="sub"></param>
+            <param name="level"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToEntityKey(System.String)">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToEntityKey(System.String,System.Object)">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToEntityIdsKey(System.String)">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToEntityIndexKey(System.String,System.String)">
+            <summary>
+            连接为索引Key
+            </summary>
+            <param name="entityName"></param>
+            <param name="fieldName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToQuotaPlanKey(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            生成产品额度分配的键
+            </summary>
+            <param name="fid">产品ID</param>
+            <param name="type">类型(1额度标识\2机构对照ID\3人员对照ID)</param>
+            <param name="id">额度标识\机构对照ID\人员对照ID</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.DataKeyBuilder.ToKey(System.Object[])">
+            <summary>
+            连接为Key
+            </summary>
+            <param name="sp"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.IRedis">
+            <summary>
+            Redis操作接口
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetTime(System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetTime(System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.SetNx(System.String,System.Byte[])">
+            <summary>
+            如果值不存在，则写入，否则失败
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Incr(System.String)">
+            <summary>
+            取得一个自增值
+            </summary>
+            <param name="key"></param>
+            <returns>0表示失败，其它数字成功</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.IRedis.Decr(System.String)">
+            <summary>
+            取得一个自减值
+            </summary>
+            <param name="key"></param>
+            <returns>0表示失败，其它数字成功</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.RedisKeyBuilder">
+            <summary>
+            Redis的Key生成器
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.DbSystem">
+            <summary>
+            系统数据
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.DbContext">
+            <summary>
+            上下文数据
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.DbWebCache">
+            <summary>
+            WEB端的缓存
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.DbAuthority">
+            <summary>
+            权限数据
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.DbComboCache">
+            <summary>
+            WEB端的缓存
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.SystemRegion">
+            <summary>
+            系统分区
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.AuthRegion">
+            <summary>
+            用户身份分区
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Redis.RedisKeyBuilder.BusinessRegion">
+            <summary>
+            业务分区
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisKeyBuilder.ToSystemKey(System.Object[])">
+            <summary>
+            生成系统分区的键
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisKeyBuilder.ToAuthKey(System.Object[])">
+            <summary>
+            生成用户身份分区的键
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisKeyBuilder.ToBusinessKey(System.Object[])">
+            <summary>
+            生成业务分区的键
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Redis.RedisProxy">
+            <summary>
+            REDIS代理类
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.#ctor(System.Int32)">
+            <summary>
+            构造
+            </summary>
+            <param name="db"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.RemoveKey(System.String)">
+            <summary>
+            删除KEY
+            </summary>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.FindAndRemoveKey(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Get(System.String)">
+            <summary>
+            取文本
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set(System.String,System.String)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set(System.String,System.String,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set(System.String,System.String,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.GetValue``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.SetValue``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.SetValue``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.SetValue``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.GetAll``1(System.String)">
+            <summary>
+            查找关删除KEY
+            </summary>
+            <param name="pattern">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Get``1(System.String)">
+            <summary>
+            取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns></returns>
+            <remarks>
+            如果反序列化失败会抛出异常
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.TryGet``1(System.String)">
+            <summary>
+            试图取值
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <returns>如果反序列化失败失败会访回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set``1(System.String,``0)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set``1(System.String,``0,System.DateTime)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.Set``1(System.String,``0,System.TimeSpan)">
+            <summary>
+            写值
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="span"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.GetEntity``1(System.Int64,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="id">键的组合</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.GetEntity``1(System.String,``0)">
+            <summary>
+            读缓存
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="key">数据键</param>
+            <param name="def">默认值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.SetEntity``1(``0)">
+            <summary>
+            缓存数据
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="data">键的组合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.CacheData``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TData"></typeparam>
+            <param name="datas">数据</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.CacheData``2(System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TDataAccess"></typeparam>
+            <typeparam name="TData"></typeparam>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.TryCacheData``2(System.Func{``0,System.String})">
+            <summary>
+            缓存这些对象
+            </summary>
+            <typeparam name="TDataAccess"></typeparam>
+            <typeparam name="TData"></typeparam>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.TryCacheData``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Func{``0,System.String})">
+            <summary>
+                如果没有缓存过这些对象,就缓存它
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.CacheData``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Func{``0,System.String})">
+            <summary>
+                缓存这些对象
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="keyFunc">设置键的方法,可为空</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.ClearCache``1">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.RefreshCache``2(System.Int64,System.Func{``0,System.Boolean})">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Redis.RedisProxy.RemoveCache``1(System.Int64)">
+            <summary>
+                缓存这些对象
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.RedisOption">
+            <summary>
+            数字与BYTE的转换辅助对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.ConnectionString">
+            <summary>
+            连接字符串
+            </summary>
+            <example>
+            $"{Address}:{Port},password={PassWord},defaultDatabase={db},poolsize=50,ssl=false,writeBuffer=10240";
+            </example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.DbSystem">
+            <summary>
+            系统数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.DbWebCache">
+            <summary>
+            WEB端的缓存
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.DbAuthority">
+            <summary>
+            权限数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.DbComboCache">
+            <summary>
+            WEB端的缓存
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.RedisOption.ConnectionName">
+            <summary>
+            连接字符串名称
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.ByteCommond">
+            <summary>
+            数字与BYTE的转换辅助对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.SkipEmpty(System.IO.BinaryReader,System.Byte)">
+            <summary>
+                跳过空数据
+            </summary>
+            <param name="reader">二进制读取器</param>
+            <param name="type">数据类型</param>
+            <returns>否表明数据已损坏,应该中止读取</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.String)">
+            <summary>
+                文本变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.Int32)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.Decimal)">
+            <summary>
+                小数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.Int64)">
+            <summary>
+                长整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.Single)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.ToByte(System.Double)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.StringBytes(System.String)">
+            <summary>
+                文本变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.IntBytes(System.Int32)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.DecimalBytes(System.Decimal)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.LongToBytes(System.Int64)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.DoubleToBytes(System.Double)">
+            <summary>
+                整数变为字节
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToString(System.Byte[])">
+            <summary>
+                字节变为文本
+            </summary>
+            <param name="bytes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToDecimal(System.Byte[])">
+            <summary>
+                字节变为小数
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToLong(System.Byte[])">
+            <summary>
+                字节变为长整数
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToInt(System.Byte[])">
+            <summary>
+                字节变为整数
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToDouble(System.Byte[])">
+            <summary>
+                字节变为整数
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToBoolean(System.Byte[])">
+            <summary>
+            转换到Bool
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesToShort(System.Byte[])">
+            <summary>
+            转换到Short
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesSingle(System.Byte[])">
+            <summary>
+            转换到Float
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesUInt16(System.Byte[])">
+            <summary>
+            转到ushort
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesUInt32(System.Byte[])">
+            <summary>
+            转到Uint
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ByteCommond.BytesUInt64(System.Byte[])">
+            <summary>
+            转到uint64
+            </summary>
+            <param name="buffer"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

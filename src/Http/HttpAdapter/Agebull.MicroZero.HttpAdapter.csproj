@@ -1,0 +1,134 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>MicroZero迁移AspNetCore适配器</Description>
+    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <PackageId></PackageId>
+    
+    <PackageProjectUrl>https://github.com/agebullhu/MicroZero</PackageProjectUrl>
+    <PackageLicenseExpression>MPL</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/agebullhu/MicroZero</RepositoryUrl>
+    
+    <IncludeSource>false</IncludeSource>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    
+    <Authors>Agebull</Authors>
+    <Company>Agebull</Company>
+    <PackageReleaseNotes>MicroZero迁移AspNetCore适配器</PackageReleaseNotes>
+    <Product>Agebull.MicroZero</Product>
+    <Version>1.0.0.14-bate</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG;UseStateMachine</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DefineConstants>UseStateMachine</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>Agebull.MicroZero.Core.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
+    <DocumentationFile>Agebull.MicroZero.HttpAdapter.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AddIn\**" />
+    <Compile Remove="ApiContract\**" />
+    <Compile Remove="Application\**" />
+    <Compile Remove="Base\**" />
+    <Compile Remove="Bridge\**" />
+    <Compile Remove="Config\**" />
+    <Compile Remove="Connection\**" />
+    <Compile Remove="Context\**" />
+    <Compile Remove="Discover\**" />
+    <Compile Remove="Entity\**" />
+    <Compile Remove="PubSub\**" />
+    <Compile Remove="Queue\**" />
+    <Compile Remove="Rpc\**" />
+    <Compile Remove="Services\**" />
+    <Compile Remove="Tools\**" />
+    <Compile Remove="Tson\**" />
+    <Compile Remove="ZeroApi\**" />
+    <Compile Remove="ZeroEventMonitor\**" />
+    <Compile Remove="ZeroStation\**" />
+    <EmbeddedResource Remove="AddIn\**" />
+    <EmbeddedResource Remove="ApiContract\**" />
+    <EmbeddedResource Remove="Application\**" />
+    <EmbeddedResource Remove="Base\**" />
+    <EmbeddedResource Remove="Bridge\**" />
+    <EmbeddedResource Remove="Config\**" />
+    <EmbeddedResource Remove="Connection\**" />
+    <EmbeddedResource Remove="Context\**" />
+    <EmbeddedResource Remove="Discover\**" />
+    <EmbeddedResource Remove="Entity\**" />
+    <EmbeddedResource Remove="PubSub\**" />
+    <EmbeddedResource Remove="Queue\**" />
+    <EmbeddedResource Remove="Rpc\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <EmbeddedResource Remove="Tools\**" />
+    <EmbeddedResource Remove="Tson\**" />
+    <EmbeddedResource Remove="ZeroApi\**" />
+    <EmbeddedResource Remove="ZeroEventMonitor\**" />
+    <EmbeddedResource Remove="ZeroStation\**" />
+    <None Remove="AddIn\**" />
+    <None Remove="ApiContract\**" />
+    <None Remove="Application\**" />
+    <None Remove="Base\**" />
+    <None Remove="Bridge\**" />
+    <None Remove="Config\**" />
+    <None Remove="Connection\**" />
+    <None Remove="Context\**" />
+    <None Remove="Discover\**" />
+    <None Remove="Entity\**" />
+    <None Remove="PubSub\**" />
+    <None Remove="Queue\**" />
+    <None Remove="Rpc\**" />
+    <None Remove="Services\**" />
+    <None Remove="Tools\**" />
+    <None Remove="Tson\**" />
+    <None Remove="ZeroApi\**" />
+    <None Remove="ZeroEventMonitor\**" />
+    <None Remove="ZeroStation\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Client\ApiCaller.cs" />
+    <Compile Remove="Client\ProxyCaller.cs" />
+    <Compile Remove="Middleware\ZeroApiController.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Config\ZeroPlan.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Agebull.MicroZero.Abstractions" Version="3.1.40.9-bate" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.2" />
+    <PackageReference Include="System.ComponentModel.Composition" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>

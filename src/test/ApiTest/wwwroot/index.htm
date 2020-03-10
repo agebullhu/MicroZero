@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Swagger supper</title>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        div.input-group {
+            width: 99%;
+        }
+
+            div.input-group > label {
+                display: inline-block;
+                margin-bottom: 5px;
+                font-weight: 700;
+            }
+
+            div.input-group > textarea {
+                width: 100%;
+                height: 200px;
+            }
+    </style>
+</head>
+<body>
+    <div class="input-group">
+        <label>Swagger Json：</label><textarea id="source"></textarea>
+    </div>
+    <p>
+        <button id="btnMarkdown">Markdown文档</button>
+        <button id="btnCsSDK">SDK</button>
+    </p>
+    <div class="input-group">
+        <textarea id="target"></textarea>
+    </div>
+    <script type="text/javascript">
+        var source = document.querySelector("#source"),
+            target = document.querySelector("#target"),
+            btnMarkdown = document.querySelector("#btnMarkdown"),
+            btnCsSDK = document.querySelector("#btnCsSDK"),
+            convert_result = document.querySelector("#convert_result"),
+            code, t, instru, remark;
+
+        btnMarkdown.addEventListener("click", function () {
+            try {
+                target.value = swagger2MarkDown.build(JSON.parse(source.value));
+            } catch (e) {
+                target.value = e;
+            }
+        });
+        var swagger2MarkDown = {
+            types: [],
+            code: '',
+            build: function (data) {
+                this.types = [];
+                this.findTypes(data.components.schemas, '#/components/schemas');
+                this.code = `# ${data.info.title}
+### 版本号 ${data.info.version}
+
+`;
+
+                this.findApis(data.paths);
+                return this.code;
+            },
+            findTypes: function (data, name) {
+                var typeInfo = [];
+                for (var key in data) {
+                    var value = data[key];
+                    var type;
+
+                    if (value.type == 'array') {
+                        if (value.items.type)
+                            type = value.items.type;
+                        else
+                            type = value.items["$ref"];
+                    }
+                    else if (value.type)
+                        type = value.type;
+                    else if (value.allOf)
+                        type = value.allOf[0]["$ref"];
+
+                    var line = key + ' | ' + (type[0] !== '#' ? type : 'object') + (value.type == 'array' ? "[]" : "") + ' | '
+                    if (value.description)
+                        line += value.description;
+                    line += ' | '
+
+                    if (value.nullable)
+                        line += value.nullable ? '否' : '是 ';
+                    else
+                        line += '是 '
+                    line += ' | '
+                    if (value.example)
+                        line += value.example;
+                    line += ' |\n';
+
+                    typeInfo.push({
+                        name: key,
+                        array: value.type == 'array',
+                        type: type,
+                        ref: type[0] === '#',
+                        line: line,
+                        example: this.getExample(value.format ? value.format : type, value.example)
+                    })
+                    if (value.type == 'object')
+                        this.findTypes(value.properties, name + '/' + key)
+                }
+
+                this.types[name] = typeInfo;
+            },
+            getExample(type, example) {
+                if (type && type[0] === '#')
+                    return ''
+                var h = '';
+                var f = '';
+                var vl;
+                switch (type) {
+                    default:
+                    case 'string':
+                        h = '"';
+                        f = '"';
+                        vl = example ? example : '';
+                        break;
+                    case "array":
+                        return ''
+                    case 'boolean':
+                        vl = example ? example : 'true';
+                        break;
+                    case 'int32':
+                    case 'int64':
+                    case 'integer':
+                        vl = example ? example : '0';
+                        break;
+                    case 'float':
+                    case 'double':
+                    case 'number':
+                        vl = example ? example : '0.0';
+                        break;
+                    case 'date-time':
+                        h = '"';
+                        f = '"';
+                        vl = example ? example : '2020-03-09T00:00:00';
+                        break;
+                }
+                return `${h}${vl}${f}`
+            },
+            loadTypeInfo: function (name, level) {
+                var info = '';
+                for (var idx = 0; idx < this.types[name].length; idx++) {
+                    var pro = this.types[name][idx];
+                    info += `|${level}${pro.line}`;
+                    if (pro.ref)
+                        info += this.loadTypeInfo(pro.type, level + '　');
+                }
+                return info;
+            },
+            loadJsonInfo: function (name, level) {
+                var info = '';
+                var last = this.types[name].length - 1;
+                for (var idx = 0; idx <= last; idx++) {
+                    var pro = this.types[name][idx];
+                    info += `${level}"${pro.name}" : `;
+                    var lv = level;
+                    if (pro.array) {
+                        lv += '  ';
+                        info += `[`;
+                    }
+
+                    if (pro.ref) {
+                        info += `{
+${this.loadJsonInfo(pro.type, lv + '  ')}
+${level}}`;
+                    }
+                    else {
+                        info += pro.example;
+                    }
+                    if (pro.array) {
+                        info += `]`;
+                    }
+                    if (idx < last)
+                        info += ',\n';
+
+                    //info += '\n';
+                }
+                return info;
+            },
+            /**
+             *
+             * @param data json对象
+             */
+            findApis: function (data) {
+                for (var key in data) {
+                    this.code += `
+###  API: ${key}`;
+                    for (var method in data[key]) {
+                        this.code += `
+##### 请求 ${method}`;
+                        var req = data[key][method];
+                        this.code += `
+##### 说明 ${req.summary ? req.summary : '无'}
+##### 参数
+${this.findArgument(req.parameters)}
+
+##### 返回值
+${this.findResponse(req.responses)}
+`;
+                    }
+                }
+            },
+            findResponse: function (responses) {
+                if (!responses)
+                    return '';
+                var mk = '';
+                var json = '';
+                for (var cn in responses) {
+                    var code = responses[cn];
+                    for (var mime in code.content) {
+                        var schema = code.content[mime].schema;
+                        json += this.toJson(schema, schema, 0);
+                        mk += this.toMark(schema, schema, 0);
+                        /*var type;
+                        var head, food;
+                        var level = '  ';
+                        if (schema.type == 'array') {
+                            type = schema.items.type ? schema.items.type : schema.items["$ref"];
+                            head = '[';
+                            food = ']';
+                        }
+                        else {
+                            type = schema.type ? schema.type : schema["$ref"];
+                            head = '{';
+                            food = '}';
+                        }
+                        if (type[0] != '#') {
+                            mk += '| ' + schema.name + ' | ' + type + ' | ';
+                            if (schema.description)
+                                mk += schema.description;
+                            mk += ' | \n'
+                            json += `${level}"${schema.name}" : ${this.getExample(schema.format ? schema.format : schema.type, schema.example)}`;
+                        }
+                        else {
+                            mk += this.loadTypeInfo(type, '');
+                            json += this.loadJsonInfo(type, '    ');
+                        }*/
+                        var head, food;
+                        if (schema.type == 'array') {
+                            head = '';
+                            food = '';
+                        }
+                        else {
+                            head = '{';
+                            food = '}';
+                        }
+                        return `
+###### MIME (${mime})
+| 名称 | 类型 | 说明 | 必选 | 示例 |
+|:-------|:-------|:-------|:-------|:-------|
+${mk}
+###### 示例
+${"```"}json
+${head}
+${json}
+${food}
+${"```"}`;
+                    }
+                }
+                return mk;
+            },
+            findArgument: function (parameters) {
+                if (!parameters)
+                    return '无';
+
+                var mk = '';
+                var json = "";
+                var last = parameters.length - 1;
+                for (var idx = 0; idx <= last; idx++) {
+                    var parameter = parameters[idx];
+                    json += this.toJson(parameter, parameter.schema, last,true);
+                    mk += this.toMark(parameter, parameter.schema, last);
+                    if (idx < last)
+                        json += ',\n';
+                }
+                var head, food;
+                if (parameters.length == 1 && parameters[0].schema.type == 'array') {
+                    head = '';
+                    food = '';
+                }
+                else {
+                    head = '{';
+                    food = '}';
+                }
+                return `
+| 参数名 | 类型 | 说明 | 必选 | 示例 |
+|:-------|:-------|:-------|:-------|:-------|
+${mk}
+
+###### 示例
+${"```"}json
+${head}
+${json}
+${food}
+${"```"}`;
+            },
+            toMark(parameter, schema) {
+                var mk = '';
+                var type;
+                if (schema.type == 'array') {
+                    type = schema.items.type ? schema.items.type : schema.items["$ref"];
+                }
+                else {
+                    type = schema.type ? schema.type : schema["$ref"];
+                }
+                if (type[0] != '#') {
+                    mk += '| ' + parameter.name + ' | ' + type + ' | ';
+                    if (parameter.description)
+                        mk += parameter.description;
+                    mk += ' | '
+                    if (parameter.nullable)
+                        mk += parameter.nullable ? '否' : '是 ';
+                    else
+                        mk += '是 '
+                    mk += ' | '
+                    if (parameter.example)
+                        mk += parameter.example;
+                    mk += ' | \n'
+                }
+                else {
+                    mk += this.loadTypeInfo(type, '');
+                }
+                return mk;
+            },
+            toJson(parameter, schema, last, cs) {
+                var json = '';
+                var level = '    ';
+                var type;
+                var head, food;
+                if (schema.type == 'array') {
+                    type = schema.items.type ? schema.items.type : schema.items["$ref"];
+                    head = cs ? '[{\n' : '[\n';
+                    food = cs ? '\n}]' : '\n]';
+                }
+                else {
+                    type = schema.type ? schema.type : schema["$ref"];
+
+                    head = cs ? "{" : '';
+                    food = cs ? '}' : '';
+                }
+                if (parameter.name && last > 0)
+                    json += `${level}"${parameter.name}" : `;
+                json += `${head}`;
+
+                if (type[0] != '#') {
+                    json += this.getExample(parameter.schema.format ? parameter.schema.format : parameter.schema.type, parameter.schema.example)
+                }
+                else {
+                    json += this.loadJsonInfo(type, level);
+                }
+                json += food;
+                return json;
+            }
+        }
+    </script>
+</body>
+</html>

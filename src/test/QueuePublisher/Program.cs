@@ -49,7 +49,7 @@ namespace QueuePublisher
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e);
+                    LogRecorder.Exception(e);
                 }
             }
             if (Interlocked.Add(ref idx, 1) % 100 == 0)

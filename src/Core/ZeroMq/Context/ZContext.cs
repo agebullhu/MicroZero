@@ -363,7 +363,7 @@ namespace ZeroMQ
             {
                 return true;
             }
-            LogRecorderX.SystemLog("Terminate the ZeroMQ context.");
+            LogRecorder.SystemLog("Terminate the ZeroMQ context.");
             
             var ptr = _contextPtr;
             _contextPtr = IntPtr.Zero;
@@ -374,7 +374,7 @@ namespace ZeroMQ
 
             foreach (var alive in array)
             {
-                LogRecorderX.SystemLog($"Endpoint : {alive.Endpoint}");
+                LogRecorder.SystemLog($"Endpoint : {alive.Endpoint}");
                 alive.Dispose();
             }
             if (zmq.ctx_shutdown(ptr) != -1)

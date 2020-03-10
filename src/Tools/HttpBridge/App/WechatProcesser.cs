@@ -77,7 +77,7 @@ namespace MicroZero.Http.Gateway
                 while (++cnt < 3)
                 {
                     await caller.CallCommandAsync();
-                    LogRecorderX.MonitorTrace($"{caller.State } : {caller.Result}");
+                    LogRecorder.MonitorTrace($"{caller.State } : {caller.Result}");
                     if (caller.State == ZeroOperatorStateType.Ok)
                         return;
                     Thread.Sleep(50);
@@ -104,12 +104,12 @@ namespace MicroZero.Http.Gateway
                 //自定义MessageHandler，对微信请求的详细判断操作都在这里面。
                 var handler = new CustomMessageHandler();
                 var res = handler.Handler(msg);
-                LogRecorderX.MonitorTrace($"Success : {res}");
+                LogRecorder.MonitorTrace($"Success : {res}");
             }
             catch (Exception ex)
             {
-                LogRecorderX.Exception(ex, "Router Call");
-                LogRecorderX.MonitorTrace($"Exception : {ex.Message }");
+                LogRecorder.Exception(ex, "Router Call");
+                LogRecorder.MonitorTrace($"Exception : {ex.Message }");
             }
         }
 
@@ -139,7 +139,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception ex)
             {
-                LogRecorderX.Exception(ex);
+                LogRecorder.Exception(ex);
                 return false;
             }
 
@@ -165,7 +165,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (Exception ex)
             {
-                LogRecorderX.Exception(ex);
+                LogRecorder.Exception(ex);
                 return GoWeixin(url, cnt++);
             }
         }

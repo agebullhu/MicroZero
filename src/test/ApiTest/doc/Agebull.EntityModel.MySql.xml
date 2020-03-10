@@ -1,0 +1,3356 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Agebull.EntityModel.MySql</name>
+    </assembly>
+    <members>
+        <member name="T:Agebull.EntityModel.MySql.DataStateTable`2">
+            <summary>
+            数据状态基类
+            </summary>
+            <typeparam name="TData">实体</typeparam>
+            <typeparam name="TMySqlDataBase">所在的数据库对象,可通过Ioc自动构造</typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.DataStateTable`2.DeleteSqlCode">
+            <summary>
+                删除的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.DataStateTable`2.ResetStateFileSqlCode">
+            <summary>
+                重置状态的SQL语句
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.DataStateTable`2.ContitionSqlCode(System.Collections.Generic.List{System.String})">
+            <summary>
+                得到可正确拼接的SQL条件语句（可能是没有）
+            </summary>
+            <param name="conditions"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.DataStateTable`2.ResetState(System.Int64)">
+            <summary>
+            重置状态
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.DataStateTable`2.ResetState(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+            重置状态
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.MySql.MySqlDataTrigger">
+            <summary>
+            版本数据更新触发器
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataTrigger.DataBaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.MySql.PredicateConvert">
+            <summary>
+                用于MySql的Lambda表达式解析器(仅支持查询条件)
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.PredicateConvert._columnMap">
+            <summary>
+                关联字段
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.PredicateConvert._condition">
+            <summary>
+                结果条件节点
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.PredicateConvert._mergeByAnd">
+            <summary>
+                与上一次解释的条件用AND方式组合(否则为OR组合)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.#ctor">
+            <summary>
+                构造
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.#ctor(System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+                构造
+            </summary>
+            <param name="map">关联字段</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.GetName(System.Linq.Expressions.MemberExpression)">
+            <summary>
+                取得名称
+            </summary>
+            <param name="expression">字段或属性对象</param>
+            <returns>名称</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.GetValue(System.Linq.Expressions.Expression)">
+            <summary>
+                取得值
+            </summary>
+            <param name="expression">Lambda节点对象</param>
+            <returns>计算结果值</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.String[],System.Linq.Expressions.Expression{``0})">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="columns">关联字段</param>
+            <param name="predicate">Lambda表达式</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.Collections.Generic.Dictionary{System.String,System.String},System.Linq.Expressions.Expression{``0})">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="map">关联字段</param>
+            <param name="predicate">Lambda表达式</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.Collections.Generic.Dictionary{System.String,System.String},System.Linq.Expressions.Expression{``0},Agebull.EntityModel.Common.ConditionItem,System.Boolean)">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="map">关联字段</param>
+            <param name="predicate">Lambda表达式</param>
+            <param name="condition">之前已解析的条件,可为空</param>
+            <param name="mergeByAnd">与前面的条件(condition中已存在的)是用与还是或组合</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert2``1(System.String[],System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},Agebull.EntityModel.Common.ConditionItem,System.Boolean)">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="columns">关联字段</param>
+            <param name="predicate">Lambda表达式</param>
+            <param name="condition">之前已解析的条件,可为空</param>
+            <param name="mergeByAnd">与前面的条件(condition中已存在的)是用与还是或组合</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.Collections.Generic.Dictionary{System.String,System.String},Agebull.EntityModel.Common.LambdaItem{``0})">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="map">关联字段</param>
+            <param name="filter">Lambda表达式</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.Collections.Generic.Dictionary{System.String,System.String},Agebull.EntityModel.Common.LambdaItem{``0},Agebull.EntityModel.Common.ConditionItem,System.Boolean)">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="map">关联字段</param>
+            <param name="filter">Lambda表达式</param>
+            <param name="condition">之前已解析的条件,可为空</param>
+            <param name="mergeByAnd">与前面的条件(condition中已存在的)是用与还是或组合</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert``1(System.Linq.Expressions.Expression{``0})">
+            <summary>
+                分析Lambda表达式
+            </summary>
+            <typeparam name="T">方法类型</typeparam>
+            <param name="predicate">Lambda表达式</param>
+            <returns>结果条件对象(SQL条件和参数)</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.CheckSingle(System.String)">
+            <summary>
+                不成文的表达式处理
+            </summary>
+            <param name="str">有可能不合格的SQL文本</param>
+            <returns>正确合格的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.ConvertExpression(System.Linq.Expressions.Expression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert(System.Linq.Expressions.BinaryExpression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">二元Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.GetArguments(System.Linq.Expressions.MethodCallExpression)">
+            <summary>
+                取得方法对象的参数
+            </summary>
+            <param name="expression">方法Lambda对象</param>
+            <returns>参数文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert(System.Linq.Expressions.UnaryExpression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">一元Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert(System.Linq.Expressions.MethodCallExpression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">方法Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert(System.Linq.Expressions.MemberExpression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">属性或字段Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.PredicateConvert.Convert(System.Linq.Expressions.ConstantExpression)">
+            <summary>
+                转换表达式
+            </summary>
+            <param name="expression">常量Lambda对象</param>
+            <returns>解释后的SQL文本</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.MySql.MySqlDataBase">
+            <summary>
+                表示MySql数据库对象
+            </summary>
+            <summary>
+                表示MySql数据库对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.Transaction">
+            <summary>
+                事务对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.Agebull#EntityModel#Common#IDataBase#Transaction">
+            <inheritdoc />
+            <summary>
+                事务对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.BeginTransaction">
+            <summary>
+            开始一个事务
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Agebull#EntityModel#Common#IDataBase#Rollback">
+            <summary>
+            回滚事务
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Agebull#EntityModel#Common#IDataBase#Commit">
+            <summary>
+            提交事务
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Agebull#EntityModel#Common#IDataBase#CreateDataBaseScope">
+            <summary>
+            生成数据库使用范围
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.QuoteCount">
+            <summary>
+                引用数量
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.DataBaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.Connection">
+            <summary>
+                连接对象
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlDataBase.Connections">
+            <summary>
+                连接对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.InitConnection">
+            <summary>
+            初始化连接对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlDataBase._connectionString">
+            <summary>
+                连接字符串
+                Database=test;Data Source=localhost;User Id=root;Password=123456;pooling=false;CharSet=utf8;port=3306
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.ConnectionString">
+            <summary>
+                连接字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.DataBaseName">
+            <summary>
+            数据库名称
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.LoadConnectionStringSetting">
+            <summary>
+            读取连接字符串
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Open">
+            <summary>
+                打开连接
+            </summary>
+            <returns>是否打开,是则为此时打开,否则为之前已打开</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Agebull#EntityModel#Common#IDataBase#Free">
+            <summary>
+                关闭连接
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Close">
+            <summary>
+                关闭连接
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Close(MySql.Data.MySqlClient.MySqlConnection)">
+            <summary>
+                关闭连接
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.DoDispose">
+            <summary>
+            执行与释放或重置非托管资源相关的应用程序定义的任务。
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Dispose">
+            <summary>
+            执行与释放或重置非托管资源相关的应用程序定义的任务。
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Finalize">
+            <summary>
+            析构
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Execute(System.String)">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Execute(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Execute(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalar(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                执行查询，并返回查询所返回的结果集中第一行的第一列。忽略其他列或行。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalar(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行查询，并返回查询所返回的结果集中第一行的第一列。忽略其他列或行。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalar``1(System.String)">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalar(System.String)">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalar``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.Clear(System.String)">
+            <summary>
+                清除所有数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ClearAll">
+            <summary>
+                清除所有数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                对连接执行 Transact-SQL 语句并返回受影响的行数。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行查询，并返回查询所返回的结果集中第一行的第一列。忽略其他列或行。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarInner``1(System.String)">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarInner``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.TraceSql(MySql.Data.MySqlClient.MySqlCommand)">
+            <summary>
+                记录SQL日志
+            </summary>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.TraceSql(System.String,System.Collections.Generic.IEnumerable{MySql.Data.MySqlClient.MySqlParameter})">
+            <summary>
+                记录SQL日志
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CreateCommand(System.Data.Common.DbParameter[])">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CreateCommand(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CreateCommandAsync">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CreateCommandAsync(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CreateCommand(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlDataBase._tableSql">
+            <summary>
+                表的常用SQL
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlDataBase.TableSql">
+            <summary>
+                表的常用SQL
+            </summary>
+            <remarks>请设置为键大小写不敏感字典,因为Sql没有强制表名的大小写区别</remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.BeginTransactionAsync">
+            <summary>
+            开始一个事务
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.InitConnectionAsync">
+            <summary>
+            初始化连接对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.OpenAsync">
+            <summary>
+                打开连接
+            </summary>
+            <returns>是否打开,是则为此时打开,否则为之前已打开</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CloseAsync">
+            <summary>
+                关闭连接
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.CloseAsync(MySql.Data.MySqlClient.MySqlConnection)">
+            <summary>
+                关闭连接
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ClearAsync(System.String)">
+            <summary>
+                清除所有数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ClearAllAsync">
+            <summary>
+                清除所有数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                对连接执行 Transact-SQL 语句并返回受影响的行数。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteAsync(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>被影响的行数</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?序号的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行查询，并返回查询所返回的结果集中第一行的第一列。忽略其他列或行。
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarAsync``1(System.String)">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase.ExecuteScalarAsync``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                执行SQL
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="args">参数</param>
+            <returns>操作的第一行第一列或空</returns>
+            <remarks>
+                注意,如果有参数时,都是匿名参数,请使用?的形式访问参数
+            </remarks>
+        </member>
+        <member name="T:Agebull.EntityModel.MySql.MySqlDataBase_">
+            <summary>
+                表示MySql数据库对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter(System.String,System.String,System.Object)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="csharpType">C#的类型</param>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter(System.String,System.Object,MySql.Data.MySqlClient.MySqlDbType)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <param name="type">类型</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter(System.String,System.Object)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter(System.String,System.String)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter(System.String,System.Boolean)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.CreateParameter``1(System.String,``0)">
+            <summary>
+                生成Sql参数
+            </summary>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.ToSqlDbType(System.String)">
+            <summary>
+                从C#的类型转为DBType
+            </summary>
+            <param name="csharpType"> </param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlDataBase_.ToDbType(System.String)">
+            <summary>
+                从C#的类型转为DBType
+            </summary>
+            <param name="csharpType"> </param>
+        </member>
+        <member name="T:Agebull.EntityModel.MySql.MySqlTable`2">
+            <summary>
+                Sql实体访问类
+            </summary>
+            <typeparam name="TData">实体</typeparam>
+            <typeparam name="TMySqlDataBase">所在的数据库对象,可通过Ioc自动构造</typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.DataBaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2._dataBase">
+            <summary>
+                自动数据连接对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.DataBase">
+            <summary>
+                自动数据连接对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.OriDataBase">
+            <summary>
+                无懒构造数据库对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#DataBase">
+            <summary>
+                自动数据连接对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#DeleteSql">
+            <summary>
+                删除的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#InsertSql">
+            <summary>
+                插入的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#UpdateSql">
+            <summary>
+                全部更新的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#FullLoadSql">
+            <summary>
+                全表读取的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#PrimaryKey">
+            <summary>
+                设计时的主键字段
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#ReadTableName">
+            <summary>
+                表名
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#WriteTableName">
+            <summary>
+                写表名
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable#KeyField">
+            <summary>
+                主键字段(可动态覆盖PrimaryKey)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommandAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommandAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommand(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommand(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommand(System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成载入命令
+            </summary>
+            <param name="order">排序字段</param>
+            <param name="desc">是否倒序</param>
+            <param name="condition">数据条件</param>
+            <param name="args">条件中的参数</param>
+            <returns>载入命令</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadCommandAsync(System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                生成载入命令
+            </summary>
+            <param name="order">排序字段</param>
+            <param name="desc">是否倒序</param>
+            <param name="condition">数据条件</param>
+            <param name="args">条件中的参数</param>
+            <returns>载入命令</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.GetDbType(System.String)">
+            <summary>
+                得到字段的MySqlDbType类型
+            </summary>
+            <param name="field">字段名称</param>
+            <returns>参数</returns>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.PrimaryKeyConditionSQL">
+            <summary>
+                主键的条件部分SQL
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldsParameters(System.String[])">
+            <summary>
+                生成多个字段的参数
+            </summary>
+            <param name="fields">生成参数的字段</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldsParameters(System.String[],System.Object[])">
+            <summary>
+                生成多个字段的参数
+            </summary>
+            <param name="fields">生成参数的字段</param>
+            <param name="values">生成参数的值(长度和字段长度必须一致)</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldParameter(System.String)">
+            <summary>
+                生成字段的参数
+            </summary>
+            <param name="field">生成参数的字段</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldParameter(System.String,MySql.Data.MySqlClient.MySqlDbType,System.Object)">
+            <summary>
+                生成字段的参数
+            </summary>
+            <param name="field">生成参数的字段</param>
+            <param name="type"></param>
+            <param name="value">值</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldParameter(System.String,`0)">
+            <summary>
+                生成字段的参数
+            </summary>
+            <param name="field">生成参数的字段</param>
+            <param name="entity">取值的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateFieldParameter(System.String,Agebull.EntityModel.Common.DataObjectBase,System.String)">
+            <summary>
+                生成字段的参数
+            </summary>
+            <param name="field">生成参数的字段</param>
+            <param name="entity">取值的实体</param>
+            <param name="entityField">取值的字段</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreatePimaryKeyParameter">
+            <summary>
+                生成主键字段的参数
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreatePimaryKeyParameter(System.Object)">
+            <summary>
+                生成主键字段的参数
+            </summary>
+            <param name="value">主键值</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreatePimaryKeyParameter(`0)">
+            <summary>
+                生成主键字段的参数
+            </summary>
+            <param name="entity">取值的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateConditionItem(System.Boolean,System.String[])">
+            <summary>
+                连接字段条件
+            </summary>
+            <param name="isAnd">是否用AND组合</param>
+            <param name="fields">生成参数的字段</param>
+            <returns>ConditionItem</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateConditionItem(System.Boolean,System.String[],System.Object[])">
+            <summary>
+                连接字段条件
+            </summary>
+            <param name="isAnd">是否用AND组合</param>
+            <param name="fields">生成参数的字段</param>
+            <param name="values">生成参数的值(长度和字段长度必须一致)</param>
+            <returns>ConditionItem</returns>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.UpdateByMidified">
+            <summary>
+            按修改更新
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.TableId">
+            <summary>
+                表的唯一标识
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.IsBaseClass">
+            <summary>
+                是否作为基类存在的
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.FieldDictionary">
+            <summary>
+                字段字典(运行时)
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2._keyField">
+            <summary>
+                主键字段(可动态覆盖PrimaryKey)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.KeyField">
+            <summary>
+                主键字段(可动态覆盖PrimaryKey)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.FullLoadFields">
+            <summary>
+                全表读取的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.ReadTableName">
+            <summary>
+                读表名
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.WriteTableName">
+            <summary>
+                写表名
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.FullLoadSqlCode">
+            <summary>
+                删除的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.DeleteSqlCode">
+            <summary>
+                删除的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.InsertSqlCode">
+            <summary>
+                插入的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.UpdateSqlCode">
+            <summary>
+                全部更新的SQL语句
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.BaseCondition">
+            <summary>
+                基本查询条件
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.PrimaryKey">
+            <summary>
+                设计时的主键字段
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2._fieldMap">
+            <summary>
+                字段字典
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.FieldMap">
+            <summary>
+                字段字典(设计时)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.Fields">
+            <summary>
+                所有字段(设计时)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.OverrideFieldMap">
+            <summary>
+                字段字典(动态覆盖)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.DynamicLoadAction">
+            <summary>
+            当前上下文的读取器
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.DynamicReadFields">
+            <summary>
+                动态读取的字段
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2.DynamicReadTable">
+            <summary>
+                动态读取的表
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetDynamicReadTable(System.String)">
+            <summary>
+                取得实际设置的ContextReadTable动态读取的表
+            </summary>
+            <returns>之前的动态读取的表名</returns>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.ContextLoadFields">
+            <summary>
+                动态读取的字段
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.ContextReadTable">
+            <summary>
+                当前上下文读取的表名
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2.DynamicWriteTable">
+            <summary>
+                动态写入的表
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetDynamicWriteTable(System.String)">
+            <summary>
+                取得实际设置的ContextWriteTable动态写入的表
+            </summary>
+            <returns>之前的动态写入的表名</returns>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.ContextWriteTable">
+            <summary>
+                当前上下文写入的表名
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.SimpleFields">
+            <summary>
+            简单读取SQL语句
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SimpleLoad(MySql.Data.MySqlClient.MySqlDataReader,`0)">
+            <summary>
+            简单读取载入数据
+            </summary>
+            <param name="reader">数据读取器</param>
+            <param name="entity">读取数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetUpdateCommand(`0,MySql.Data.MySqlClient.MySqlCommand)">
+            <summary>
+                设置更新数据的命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetInsertCommand(`0,MySql.Data.MySqlClient.MySqlCommand)">
+            <summary>
+                设置插入数据的命令
+            </summary>
+            <returns>返回真说明要取主键</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadEntity(MySql.Data.MySqlClient.MySqlDataReader,`0)">
+            <summary>
+                载入数据
+            </summary>
+            <param name="reader">数据读取器</param>
+            <param name="entity">读取数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable{TData}#SetUpdateCommandPara(`0,System.Data.Common.DbCommand)">
+            <summary>
+                设置更新数据的命令
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable{TData}#SetInsertCommandPara(`0,System.Data.Common.DbCommand)">
+            <summary>
+                设置插入数据的命令
+            </summary>
+            <returns>返回真说明要取主键</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Agebull#EntityModel#Common#IDataTable{TData}#Load(System.Data.Common.DbDataReader)">
+            <summary>
+                载入数据
+            </summary>
+            <param name="reader">数据读取器</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertAsync(`0)">
+            <summary>
+                插入新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                插入新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertInnerAsync(`0)">
+            <summary>
+                更新数据
+            </summary>
+            <param name="entity">更新数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateAsync(`0)">
+            <summary>
+                更新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                更新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReLoadInnerAsync(`0)">
+            <summary>
+                重新载入
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteAsync(`0)">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteInnerAsync(`0)">
+            <summary>
+                删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveAsync(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                保存数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveAsync(`0)">
+            <summary>
+                保存数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveInnerAsync(`0)">
+            <summary>
+                保存
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateInnerAsync(`0)">
+            <summary>
+                插入数据
+            </summary>
+            <param name="entity">插入数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeletePrimaryKeyAsync(System.Object)">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件删除
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PhysicalDeleteAsync(System.Object)">
+            <summary>
+                物理删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PhysicalDeleteAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                强制物理删除
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否删除成功</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteByConditionAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteInnerAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(System.String,System.Object,System.Object)">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,``1)">
+            <summary>
+                条件更新
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="value">值</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetCoustomValueAsync``1(System.String,``0)">
+            <summary>
+                设计字段按自定义表达式更新值
+            </summary>
+            <param name="valueExpression">值的SQL方式</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveValueAsync(System.String,System.Object,System.String[],System.Object[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">更新字段</param>
+            <param name="value">更新值</param>
+            <param name="conditionFiles">条件包含的字段</param>
+            <param name="conditionValues">条件包含的值</param>
+            <returns>更新行数</returns>
+            <remarks>
+            条件中使用AND组合,均为等于
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Enum}},System.Enum,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(`0,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件更新实体中已记录更新部分
+            </summary>
+            <param name="entity">实体</param>
+            <param name="lambda">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0)">
+            <summary>
+                全量更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="lambda">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueByConditionAsync(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueInnerAsync(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DoUpdateValueAsync(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueAsync(System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetMulitValueAsync(System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Data.Common.DbParameter[])">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <param name="args">参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetMulitValueAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <param name="args">参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertAsync(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},`0)">
+            <summary>
+            异步插入
+            </summary>
+            <param name="context"></param>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertAsync(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            异步插入
+            </summary>
+            <param name="context"></param>
+            <param name="entities"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateAsync(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},`0)">
+            <summary>
+            异步更新
+            </summary>
+            <param name="context"></param>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateAsync(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            异步更新
+            </summary>
+            <param name="context"></param>
+            <param name="entities"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Insert(`0)">
+            <summary>
+                插入新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Insert(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                插入新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InsertInner(`0)">
+            <summary>
+                更新数据
+            </summary>
+            <param name="entity">更新数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Update(`0)">
+            <summary>
+                更新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Update(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                更新数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Delete(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Delete(`0)">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteInner(`0)">
+            <summary>
+                删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Save(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+                保存数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Save(`0)">
+            <summary>
+                保存数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveInner(`0)">
+            <summary>
+                保存
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.GetModifiedSqlCode(`0)">
+            <summary>
+            取得仅更新的SQL语句
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.UpdateInner(`0)">
+            <summary>
+                插入数据
+            </summary>
+            <param name="entity">插入数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PrepareSave(`0,Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                保存前处理(Insert/Update/Delete)
+            </summary>
+            <param name="entity">实体</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.EndSaved(`0,Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                保存完成后期处理(Insert/Update/Delete)
+            </summary>
+            <param name="entity">实体</param>
+            <param name="operatorType">操作类型</param>
+            <remarks>
+                对当前对象的属性的更改,请自行保存,否则将丢失
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeletePrimaryKey(System.Object)">
+            <summary>
+                删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Delete(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件删除
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PhysicalDelete(System.Object)">
+            <summary>
+                物理删除数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PhysicalDelete(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                强制物理删除
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否删除成功</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Delete(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteByCondition(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DeleteInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                删除
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(System.String,System.Object,System.Object)">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,``1)">
+            <summary>
+                条件更新
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="value">值</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetCoustomValue``1(System.String,``0)">
+            <summary>
+                设计字段按自定义表达式更新值
+            </summary>
+            <param name="valueExpression">值的SQL方式</param>
+            <param name="key">主键</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SaveValue(System.String,System.Object,System.String[],System.Object[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">更新字段</param>
+            <param name="value">更新值</param>
+            <param name="conditionFiles">条件包含的字段</param>
+            <param name="conditionValues">条件包含的值</param>
+            <returns>更新行数</returns>
+            <remarks>
+            条件中使用AND组合,均为等于
+            </remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(System.Linq.Expressions.Expression{System.Func{`0,System.Enum}},System.Enum,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(`0,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件更新实体中已记录更新部分
+            </summary>
+            <param name="entity">实体</param>
+            <param name="lambda">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0)">
+            <summary>
+                全量更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},``0,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="lambda">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueByCondition(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValueInner(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.DoUpdateValue(System.String,System.Object,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件更新
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">更新条件</param>
+            <param name="args">条件参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetValue(System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetMulitValue(System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Data.Common.DbParameter[])">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <param name="args">参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetMulitValue(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                自定义更新（更新表达式自写）
+            </summary>
+            <param name="expression">更新SQL表达式</param>
+            <param name="condition">条件</param>
+            <param name="args">参数</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.BeforeUpdateSql(System.String)">
+            <summary>
+                与更新同时执行的SQL(更新之前立即执行)
+            </summary>
+            <param name="condition">当前场景的执行条件</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AfterUpdateSql(System.String)">
+            <summary>
+                与更新同时执行的SQL(更新之后立即执行)
+            </summary>
+            <param name="condition">当前场景的执行条件</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.BeforeUpdateSql(System.Text.StringBuilder,System.String)">
+            <summary>
+                与更新同时执行的SQL(更新之前立即执行)
+            </summary>
+            <param name="code">写入SQL的文本构造器</param>
+            <param name="condition">当前场景的执行条件</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AfterUpdateSql(System.Text.StringBuilder,System.String)">
+            <summary>
+                与更新同时执行的SQL(更新之后立即执行)
+            </summary>
+            <param name="code">写入SQL的文本构造器</param>
+            <param name="condition">当前场景的执行条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnPrepareSave(Agebull.EntityModel.Common.DataOperatorType,`0)">
+            <summary>
+                保存前处理
+            </summary>
+            <param name="entity">保存的对象</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnDataSaved(Agebull.EntityModel.Common.DataOperatorType,`0)">
+            <summary>
+                保存完成后期处理
+            </summary>
+            <param name="entity">保存的对象</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnOperatorExecuting(Agebull.EntityModel.Common.DataOperatorType,System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+               更新语句前处理(单个实体操作不引发)
+            </summary>
+            <param name="condition">执行条件</param>
+            <param name="args">参数值</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnOperatorExecuted(Agebull.EntityModel.Common.DataOperatorType,System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter})">
+            <summary>
+                更新语句后处理(单个实体操作不引发)
+            </summary>
+            <param name="condition">执行条件</param>
+            <param name="args">参数值</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnPrepareSave(`0,Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                保存前处理
+            </summary>
+            <param name="entity">保存的对象</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnDataSaved(`0,Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                保存完成后期处理
+            </summary>
+            <param name="entity">保存的对象</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnOperatorExecuting(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter},Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                更新语句前处理(单个实体操作不引发)
+            </summary>
+            <param name="condition">执行条件</param>
+            <param name="args">参数值</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnOperatorExecuted(System.String,System.Collections.Generic.IEnumerable{System.Data.Common.DbParameter},Agebull.EntityModel.Common.DataOperatorType)">
+            <summary>
+                更新语句后处理(单个实体操作不引发)
+            </summary>
+            <param name="condition">执行条件</param>
+            <param name="args">参数值</param>
+            <param name="operatorType">操作类型</param>
+        </member>
+        <member name="P:Agebull.EntityModel.MySql.MySqlTable`2.GlobalEvent">
+            <summary>
+            是否允许全局事件(如全局事件器,则永为否)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnKeyEvent(Agebull.EntityModel.Common.DataOperatorType,System.Object)">
+            <summary>
+                更新语句后处理(单个实体操作不引发)
+            </summary>
+            <param name="operatorType">操作类型</param>
+            <param name="key">其它参数</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnMulitUpdateEvent(Agebull.EntityModel.Common.DataOperatorType,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                更新语句后处理(单个实体操作不引发)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnEvent(Agebull.EntityModel.Common.DataOperatorType,`0)">
+            <summary>
+                更新语句后处理(单个实体操作不引发)
+            </summary>
+            <param name="operatorType">操作类型</param>
+            <param name="entity">其它参数</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SetParameterValue(`0,MySql.Data.MySqlClient.MySqlCommand)">
+            <summary>
+            设置插入数据的命令
+            </summary>
+            <param name="data">实体对象</param>
+            <param name="cmd">命令</param>
+            <returns>返回真说明要取主键</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.BeginInsert">
+            <summary>
+            开始插入
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Insert(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},`0)">
+            <summary>
+            批量插入
+            </summary>
+            <param name="context"></param>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Insert(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            批量插入
+            </summary>
+            <param name="context"></param>
+            <param name="entities"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.BeginUpdate">
+            <summary>
+            开始插入
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Update(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},`0)">
+            <summary>
+            批量更新
+            </summary>
+            <param name="context"></param>
+            <param name="entity"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Update(Agebull.EntityModel.Common.DbOperatorContext{MySql.Data.MySqlClient.MySqlCommand},System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            批量更新
+            </summary>
+            <param name="context"></param>
+            <param name="entities"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstAsync">
+            <summary>
+                载入首行
+            </summary>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstAsync(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefaultAsync(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefaultAsync">
+            <summary>
+                载入首行
+            </summary>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefaultAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefaultAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefaultAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                载入首行
+            </summary>
+            <param name="condition">查询条件</param>
+            <param name="args">参数</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastAsync">
+            <summary>
+                载入尾行
+            </summary>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefaultAsync">
+            <summary>
+                载入尾行
+            </summary>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefaultAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefaultAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefaultAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="condition">查询条件</param>
+            <param name="args">参数</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync">
+            <summary>
+                读取数据
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取数据
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync``1(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync(Agebull.EntityModel.Common.LambdaItem{`0},System.String[])">
+            <summary>
+                读取数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="orderBys">排序</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AllAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.String[])">
+            <summary>
+                读取数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="orderBys">排序</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CollectAsync(System.String,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                汇总方法
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CollectAsync(System.String,System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                汇总方法
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistAsync">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistPrimaryKeyAsync``1(``0)">
+            <summary>
+                是否存在此主键的数据
+            </summary>
+            <param name="id">id</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync">
+            <summary>
+                总数
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                总数
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                计数
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                计数
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                计数
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                计数
+            </summary>
+            <param name="field"></param>
+            <param name="condition">查询表达式</param>
+            <param name="args"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AnyAsync">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AnyAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AnyAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                是否存在数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.AnyAsync(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SumAsync(System.String)">
+            <summary>
+                汇总
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SumAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                汇总
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SumAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.String)">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="lambda">查询表达式</param>
+            <param name="condition2">条件2，默认为空</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SumAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.SumAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="condition">查询表达式</param>
+            <param name="args"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistInnerAsync(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistInnerAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountInnerAsync(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                总数据量
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CollectInnerAsync(System.String,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                总数据量
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+            <param name="page">页号(从1开始)</param>
+            <param name="limit">每页行数(小于不分页）</param>
+            <param name="order">排序字段</param>
+            <param name="desc">是否反序</param>
+            <param name="condition">查询条件</param>
+            <param name="args">查询参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageDataAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageAsync(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+            <param name="page">页号(从1开始)</param>
+            <param name="limit">每页行数(小于不分页）</param>
+            <param name="order">排序字段</param>
+            <param name="desc">是否反序</param>
+            <param name="condition">查询条件</param>
+            <param name="args">查询参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReadAsync``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``1)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="key">主键</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValueAsync``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``1)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="key">主键</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValuesAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValuesAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="condition">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValuesAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Func{System.Object,``0},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="parse">转换数据类型方法</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValueAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValueInnerAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取值
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValuesInnerAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取多个值
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync(Agebull.EntityModel.Events.MulitCondition)">
+            <summary>
+                载入条件数据
+            </summary>
+            <param name="condition">条件</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync(System.Object)">
+            <summary>
+                载入首行
+            </summary>
+            <param name="id">主键</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync">
+            <summary>
+                全表读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByPrimaryKeyAsync(System.Object)">
+            <summary>
+                主键读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByPrimaryKeiesAsync(System.Collections.IEnumerable)">
+            <summary>
+                主键读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstAsync(System.String)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstAsync(System.String,System.Object)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastAsync(System.String)">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastAsync(System.String,System.Object)">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByForeignKeyAsync(System.String,System.Object)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReLoadAsync(`0)">
+            <summary>
+                重新读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstInnerAsync(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstInnerAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastInnerAsync(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastInnerAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInnerAsync(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInnerAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInnerAsync(System.String,System.Data.Common.DbParameter[],System.String)">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataBySqlAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取全部(SQL语句是重写的,字段名称和顺序与设计时相同)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataByProcedureAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取存储过程
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUniqueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+            <param name="condition"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUniqueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object,System.Object)">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUniqueAsync``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object)">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FeachAll(System.Action{`0},System.Action{System.Collections.Generic.List{`0}})">
+            <summary>
+                遍历所有
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Compile(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                编译查询条件
+            </summary>
+            <param name="lambda">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Compile(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                编译查询条件
+            </summary>
+            <param name="lambda">查询表达式</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                取属性名称
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.First">
+            <summary>
+                载入首行
+            </summary>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.First(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefault(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefault">
+            <summary>
+                载入首行
+            </summary>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.First(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.First(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.First(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefault(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefault(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FirstOrDefault(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                载入首行
+            </summary>
+            <param name="condition">查询条件</param>
+            <param name="args">参数</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Last">
+            <summary>
+                载入尾行
+            </summary>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefault">
+            <summary>
+                载入尾行
+            </summary>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Last(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Last(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Last(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefault(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefault(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LastOrDefault(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                载入尾行
+            </summary>
+            <param name="condition">查询条件</param>
+            <param name="args">参数</param>
+            <returns>如果有载入尾行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Select">
+            <summary>
+                读取数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Select(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Select(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取数据
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All">
+            <summary>
+                读取数据
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取数据
+            </summary>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All``1(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All(Agebull.EntityModel.Common.LambdaItem{`0},System.String[])">
+            <summary>
+                读取数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="orderBys">排序</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.All(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.String[])">
+            <summary>
+                读取数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <param name="orderBys">排序</param>
+            <returns>数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                是否存在数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Where(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                是否存在数据
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Collect(System.String,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                汇总方法
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Collect(System.String,System.String,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                汇总方法
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Exist">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Exist(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistPrimaryKey``1(``0)">
+            <summary>
+                是否存在此主键的数据
+            </summary>
+            <param name="id">id</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count">
+            <summary>
+                总数
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                总数
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                计数
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count(Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                计数
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                计数
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Count``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                计数
+            </summary>
+            <param name="field"></param>
+            <param name="condition">查询表达式</param>
+            <param name="args"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Any">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Any(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Any(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                是否存在数据
+            </summary>
+            <param name="lambda">查询表达式</param>
+            <returns>是否存在数据</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Any(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入首行
+            </summary>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Sum(System.String)">
+            <summary>
+                汇总
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Sum(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                汇总
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Sum``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.String)">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="lambda">查询表达式</param>
+            <param name="condition2">条件2，默认为空</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Sum``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="a">查询表达式</param>
+            <param name="b"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Sum``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                合计
+            </summary>
+            <param name="field"></param>
+            <param name="condition">查询表达式</param>
+            <param name="args"></param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistInner(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ExistInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                是否存在数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CountInner(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                总数据量
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CollectInner(System.String,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                总数据量
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+            <param name="page">页号(从1开始)</param>
+            <param name="limit">每页行数(小于不分页）</param>
+            <param name="order">排序字段</param>
+            <param name="desc">是否反序</param>
+            <param name="condition">查询条件</param>
+            <param name="args">查询参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.PageData``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32)">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32,System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page``1(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Boolean,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Page(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                分页读取
+            </summary>
+            <param name="page">页号(从1开始)</param>
+            <param name="limit">每页行数(小于不分页）</param>
+            <param name="order">排序字段</param>
+            <param name="desc">是否反序</param>
+            <param name="condition">查询条件</param>
+            <param name="args">查询参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValue``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Read``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``1)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="key">主键</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValue``2(System.Linq.Expressions.Expression{System.Func{`0,``0}},``1)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="field">字段</param>
+            <param name="key">主键</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValues``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValues``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.String)">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="condition">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValues``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Func{System.Object,``0},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                读取一个字段
+            </summary>
+            <param name="fieldExpression">字段</param>
+            <param name="parse">转换数据类型方法</param>
+            <param name="lambda">条件</param>
+            <returns>内容</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValue(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValueInner(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取值
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadValuesInner(System.String,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取多个值
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData(Agebull.EntityModel.Events.MulitCondition)">
+            <summary>
+                载入条件数据
+            </summary>
+            <param name="condition">条件</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData(System.Object)">
+            <summary>
+                载入首行
+            </summary>
+            <param name="id">主键</param>
+            <returns>如果有载入首行,否则返回空</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData">
+            <summary>
+                全表读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadData(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                条件读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByPrimaryKey(System.Object)">
+            <summary>
+                主键读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByPrimaryKeies(System.Collections.IEnumerable)">
+            <summary>
+                主键读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirst(System.String)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirst(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirst(System.String,System.Object)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLast(System.String)">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLast(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLast(System.String,System.Object)">
+            <summary>
+                如果存在的话读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadByForeignKey(System.String,System.Object)">
+            <summary>
+                如果存在的话读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReLoad(`0)">
+            <summary>
+                重新读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReLoad(`0@)">
+            <summary>
+                重新读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.EntityLoaded(`0)">
+            <summary>
+                载入数据
+            </summary>
+            <param name="entity">读取数据的实体</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.OnEntityLoaded(`0)">
+            <summary>
+                载入后的同步处理
+            </summary>
+            <param name="entity"></param>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2.OnLoadAction">
+            <summary>
+                数据载入时给外部的处理方法
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadEntity(MySql.Data.MySqlClient.MySqlDataReader)">
+            <summary>
+                载入数据
+            </summary>
+            <param name="reader">数据读取器</param>
+            <returns>读取数据的实体</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ReLoadInner(`0)">
+            <summary>
+                重新载入
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstInner(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadFirstInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取首行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastInner(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadLastInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取尾行
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInner(System.String,System.Data.Common.DbParameter)">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInner(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataInner(System.String,System.Data.Common.DbParameter[],System.String)">
+            <summary>
+                读取全部
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataBySql(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取全部(SQL语句是重写的,字段名称和顺序与设计时相同)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.LoadDataByProcedure(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                读取存储过程
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUnique``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+            <param name="condition"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUnique``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object,System.Object)">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.IsUnique``1(System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Object)">
+            <summary>
+                检查值的唯一性
+            </summary>
+            <typeparam name="TValue"></typeparam>
+            <param name="field"></param>
+            <param name="val"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FileUpdateSql(System.String,System.Object,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+                生成单个字段更新的SQL
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="parameters">参数列表</param>
+            <returns>单个字段更新的SQL</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateUpdateSql(System.String,System.String)">
+            <summary>
+                生成更新的SQL
+            </summary>
+            <param name="valueExpression">更新表达式(SQL)</param>
+            <param name="condition">更新条件</param>
+            <returns>更新的SQL</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateUpdateSql(System.String,System.Object,System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+                生成更新的SQL
+            </summary>
+            <param name="field">字段</param>
+            <param name="value">值</param>
+            <param name="condition">条件</param>
+            <param name="parameters">参数列表</param>
+            <returns>更新的SQL</returns>
+        </member>
+        <member name="F:Agebull.EntityModel.MySql.MySqlTable`2._baseConditionInited">
+            <summary>
+            基本条件初始化完成的标识
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.InitBaseCondition">
+            <summary>
+             初始化基本条件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ContitionSqlCode(System.String)">
+            <summary>
+                得到可正确拼接的SQL条件语句（可能是没有）
+            </summary>
+            <param name="condition"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.ContitionSqlCode(System.Collections.Generic.List{System.String})">
+            <summary>
+                得到可正确拼接的SQL条件语句（可能是没有）
+            </summary>
+            <param name="conditions"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateCollectSql(System.String,System.String,System.String)">
+            <summary>
+                生成汇总的SQL语句
+            </summary>
+            <param name="fun">汇总函数名称</param>
+            <param name="field">汇总字段</param>
+            <param name="condition">汇总条件</param>
+            <returns>汇总的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadValueSql(System.String,System.String)">
+            <summary>
+                生成载入字段值的SQL语句
+            </summary>
+            <param name="field">字段</param>
+            <param name="condition">条件</param>
+            <returns>载入字段值的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadValuesSql(System.String,Agebull.EntityModel.Common.ConditionItem)">
+            <summary>
+                生成载入值的SQL
+            </summary>
+            <param name="field">字段</param>
+            <param name="convert">条件</param>
+            <returns>载入字段值的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateLoadSql(System.String,System.String)">
+            <summary>
+                生成载入的SQL语句
+            </summary>
+            <param name="condition">数据条件</param>
+            <param name="order">排序字段</param>
+            <returns>载入的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreatePageSql(System.Int32,System.Int32,System.String,System.Boolean,System.String)">
+            <summary>
+                生成分页的SQL
+            </summary>
+            <param name="page">页号</param>
+            <param name="pageSize">每页几行(强制大于0,小于500行)</param>
+            <param name="order">排序字段</param>
+            <param name="desc">是否倒序</param>
+            <param name="condition">数据条件</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateDeleteSql(System.String)">
+            <summary>
+                生成删除的SQL语句
+            </summary>
+            <param name="condition">删除条件</param>
+            <returns>删除的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.CreateDeleteSql(Agebull.EntityModel.Common.ConditionItem)">
+            <summary>
+                生成删除的SQL语句
+            </summary>
+            <param name="convert">删除条件</param>
+            <returns>删除的SQL语句</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FieldConditionSQL(System.String,System.String)">
+            <summary>
+                用在条件中的字段条件
+            </summary>
+            <param name="field">字段</param>
+            <param name="expression">条件表达式</param>
+            <returns>字段条件</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.JoinConditionSQL(System.Boolean,System.String[])">
+            <summary>
+                组合条件SQL
+            </summary>
+            <param name="isAnd">是否用AND组合</param>
+            <param name="conditions">条件</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.FieldConditionSQL(System.Boolean,System.String[])">
+            <summary>
+                连接字段条件SQL
+            </summary>
+            <param name="isAnd">是否用AND组合</param>
+            <param name="fields">生成参数的字段</param>
+        </member>
+        <member name="M:Agebull.EntityModel.MySql.MySqlTable`2.Group``1(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Action{MySql.Data.MySqlClient.MySqlDataReader,``0})">
+            <summary>
+            分组
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="group"></param>
+            <param name="colls"></param>
+            <param name="lambda"></param>
+            <param name="readAction"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

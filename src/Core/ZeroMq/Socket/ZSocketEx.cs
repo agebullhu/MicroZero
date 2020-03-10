@@ -39,14 +39,14 @@ namespace ZeroMQ
             var socket = new ZSocketEx(ZContext.Current, type, out var error);
             if (error != null)
             {
-                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             ConfigSocket(socket, null, true, false);
             socket.ServiceKey = serviceKey;
             if (socket.Bind(address, out error))
                 return socket;
-            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }
@@ -93,14 +93,14 @@ namespace ZeroMQ
             var socket = new ZSocketEx(ZContext.Current, type, out var error);
             if (error != null)
             {
-                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
             ConfigSocket(socket, identity, false, true);
             socket.ServiceKey = serviceKey;
             if (socket.Connect(address, out error))
                 return socket;
-            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return socket;
         }
@@ -171,7 +171,7 @@ namespace ZeroMQ
             var socket = new ZSocketEx(ZContext.Current, type, out var error);
             if (error != null)
             {
-                LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+                LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
                 return null;
             }
 
@@ -180,7 +180,7 @@ namespace ZeroMQ
 
             if (socket.Connect(address, out error))
                 return socket;
-            LogRecorderX.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
+            LogRecorder.Error($"CreateSocket: {error.Text} > Address:{address} > type:{type}.");
             socket.Dispose();
             return null;
         }

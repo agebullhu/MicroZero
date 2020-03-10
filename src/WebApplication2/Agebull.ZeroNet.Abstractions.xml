@@ -1,0 +1,3601 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Agebull.ZeroNet.Abstractions</name>
+    </assembly>
+    <members>
+        <member name="T:Agebull.MicroZero.ZeroApis.Argument">
+            <summary>
+                请求参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.Argument.Value">
+            <summary>
+                文本内容
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.Argument.Validate(System.String@)">
+            <summary>
+                数据校验
+            </summary>
+            <param name="message">返回的消息</param>
+            <returns>成功则返回真</returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.Argument`1">
+            <summary>
+                请求参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.Argument`1.Value">
+            <summary>
+                数值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.Argument`1.Validate(System.String@)">
+            <summary>
+                数据校验
+            </summary>
+            <param name="message">返回的消息</param>
+            <returns>成功则返回真</returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.IApiArgument">
+            <summary>
+                表示API请求参数
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.IApiArgument.Validate(System.String@)">
+            <summary>
+                数据校验
+            </summary>
+            <param name="message">返回的消息</param>
+            <returns>成功则返回真</returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.PageArgument">
+            <summary>
+                分页请求的参数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.PageArgument.PageIndex">
+            <summary>
+                页号
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.PageArgument.PageSize">
+            <summary>
+                每页行数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.PageArgument.Order">
+            <summary>
+                每页行数
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.PageArgument.Desc">
+            <summary>
+                反序
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.PageArgument.Validate(System.String@)">
+            <summary>
+                数据校验
+            </summary>
+            <param name="message">返回的消息</param>
+            <returns>成功则返回真</returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiArrayResult`1">
+            <summary>
+                API返回数组泛型类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Data">
+            <summary>
+                返回列表
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.ResultData">
+            <summary>
+                返回列表
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error(System.Int32,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error(System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error(System.Int32,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="point">错误点</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Succees(System.Collections.Generic.List{`0},System.String)">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiArrayResult`1.Error">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiFileResult">
+            <summary>
+                API返回数据泛型类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.Data">
+            <summary>
+                文件内容二进制数据
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.File">
+            <summary>
+                文件名
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.Type">
+            <summary>
+                文件类型
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.FileName">
+            <summary>
+                文件名
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.Mime">
+            <summary>
+                文件MIME类型
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiFileResult.FileType">
+            <summary>
+                文件类型
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiFileResult.ErrorResult(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiPage">
+            <summary>
+                API返回分页信息
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.Page">
+            <summary>
+                当前页号（从1开始）
+            </summary>
+            <example>1</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.PageIndex">
+            <summary>
+                当前页号（从1开始）
+            </summary>
+            <example>1</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.PageSize">
+            <summary>
+                一页行数
+            </summary>
+            <example>16</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.PageCount">
+            <summary>
+                总页数
+            </summary>
+            <example>999</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.RowCount">
+            <summary>
+                总行数
+            </summary>
+            <example>9999</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPage.Total">
+            <summary>
+                总行数
+            </summary>
+            <example>9999</example>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiPageData`1">
+            <summary>
+                API返回分布页数据
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiPageData`1.Rows">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiPageResult">
+            <summary>
+                API返回数组泛型类
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiPageResult`1">
+            <summary>
+                API返回数组泛型类
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiResult">
+            <summary>
+                API返回基类
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.RequestId">
+            <summary>
+                API请求标识
+            </summary>
+            <example>AxV6389FC</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.OperatorId">
+            <summary>
+                API操作标识
+            </summary>
+            <example>#ABCD456789</example>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Agebull#MicroZero#ZeroApis#IApiResult#Message">
+            <summary>
+                客户端信息
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Status">
+            <summary>
+                执行状态
+            </summary>
+            <remarks>success为true时,可能是空值</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Success">
+            <summary>
+                成功或失败标记
+            </summary>
+            <example>true</example>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error(System.Int32,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error(System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error(System.Int32,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="point">错误点</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Succees``1(``0,System.String)">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1(System.Int32,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1(System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1(System.Int32,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message">错误消息</param>
+            <param name="innerMessage">内部说明</param>
+            <param name="point">错误点</param>
+            <param name="guide">错误指导</param>
+            <param name="describe">错误解释</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Error``1">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Succees">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult.Succees``1">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Ok">
+            <summary>
+                成功
+            </summary>
+            <remarks>成功</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NoFind">
+            <summary>
+                页面不存在
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NotSupport">
+            <summary>
+                不支持的操作
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.ArgumentError">
+            <summary>
+                参数错误字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LogicalError">
+            <summary>
+                逻辑错误字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.DenyAccess">
+            <summary>
+                拒绝访问
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.RemoteEmptyError">
+            <summary>
+                服务器无返回值的字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NetworkError">
+            <summary>
+                服务器访问异常
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LocalError">
+            <summary>
+                本地错误
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LocalException">
+            <summary>
+                本地访问异常
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NoReady">
+            <summary>
+                系统未就绪
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Pause">
+            <summary>
+                暂停服务
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.UnknowError">
+            <summary>
+                未知错误
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.TimeOut">
+            <summary>
+                网络超时
+            </summary>
+            <remarks>调用其它Api时时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.InnerError">
+            <summary>
+                内部错误
+            </summary>
+            <remarks>执行方法时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.Unavailable">
+            <summary>
+                服务不可用
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.SucceesJson">
+            <summary>
+                成功的Json字符串
+            </summary>
+            <remarks>成功</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NoFindJson">
+            <summary>
+                页面不存在的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NotSupportJson">
+            <summary>
+                系统不支持的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.ArgumentErrorJson">
+            <summary>
+                参数错误字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LogicalErrorJson">
+            <summary>
+                逻辑错误字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.DenyAccessJson">
+            <summary>
+                拒绝访问的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.RemoteEmptyErrorJson">
+            <summary>
+                服务器无返回值的字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NetworkErrorJson">
+            <summary>
+                服务器访问异常
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LocalErrorJson">
+            <summary>
+                本地错误
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.LocalExceptionJson">
+            <summary>
+                本地访问异常的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.NoReadyJson">
+            <summary>
+                系统未就绪的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.PauseJson">
+            <summary>
+                暂停服务的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.UnknowErrorJson">
+            <summary>
+                未知错误的Json字符串
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.TimeOutJson">
+            <summary>
+                网络超时的Json字符串
+            </summary>
+            <remarks>调用其它Api时时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.InnerErrorJson">
+            <summary>
+                内部错误的Json字符串
+            </summary>
+            <remarks>执行方法时抛出未处理异常</remarks>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult.UnavailableJson">
+            <summary>
+                服务不可用的Json字符串
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiResult`1">
+            <summary>
+                API返回数据泛型类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult`1.Data">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiResult`1.ResultData">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult`1.Succees(`0,System.String)">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult`1.ErrorResult(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiResult`1.ErrorResult(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiStatusResult">
+            <summary>
+                API状态返回接口实现
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStatusResult.#ctor">
+            <summary>
+                默认构造
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiStatusResult.#ctor(System.Int32,System.String)">
+            <summary>
+                默认构造
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiValueResult">
+            <summary>
+                API返回数据泛型类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiValueResult.Data">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiValueResult.ResultData">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult.Succees(System.String,System.String)">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult.ErrorResult(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult.ErrorResult(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult.ErrorResult(System.Int32,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <param name="innerMessage"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.ApiValueResult`1">
+            <summary>
+                API返回单数据数据泛型类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.ApiValueResult`1.ResultData">
+            <summary>
+                返回值
+            </summary>
+            <example>0</example>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult`1.Succees(`0,System.String)">
+            <summary>
+                生成一个成功的标准返回
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult`1.ErrorResult(System.Int32)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult`1.ErrorResult(System.Int32,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ZeroApis.ApiValueResult`1.ErrorResult(System.Int32,System.String,System.String)">
+            <summary>
+                生成一个包含错误码的标准返回
+            </summary>
+            <param name="errCode">错误码</param>
+            <param name="message"></param>
+            <param name="innerMessage"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.IApiResult">
+            <summary>
+                API返回基类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.Success">
+            <summary>
+                成功或失败标记
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.Status">
+            <summary>
+                API执行状态（为空表示状态正常）
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.RequestId">
+            <summary>
+                API请求标识
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.OperatorId">
+            <summary>
+                API操作标识
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.ErrorCode">
+            <summary>
+                错误码（系统定义）
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult.Message">
+            <summary>
+                客户端信息
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.IApiResult`1">
+            <summary>
+                API返回基类
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ZeroApis.IApiResult`1.ResultData">
+            <summary>
+                返回值
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ZeroApis.IApiResultData">
+            <summary>
+                表示API返回数据
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiAccessOption">
+            <summary>
+                API访问配置
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.None">
+            <summary>
+                不可访问
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Public">
+            <summary>
+                公开访问(无需授权)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Internal">
+            <summary>
+                内部访问(需要授权)
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Anymouse">
+            <summary>
+                游客
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Customer">
+            <summary>
+                客户
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Employe">
+            <summary>
+                内部员工
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.Business">
+            <summary>
+                商家用户
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.ArgumentCanNil">
+            <summary>
+                参数可以为null
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiAccessOption.ArgumentIsDefault">
+            <summary>
+                参数仅为定义,其实不使用
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.AnnotationsConfig">
+            <summary>
+                自注释配置对象
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.AnnotationsConfig._caption">
+            <summary>
+                标题
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.AnnotationsConfig._description">
+            <summary>
+                说明
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.AnnotationsConfig._name">
+            <summary>
+                名称
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.AnnotationsConfig.Name">
+            <summary>
+                名称
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.AnnotationsConfig.Caption">
+            <summary>
+                标题
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.AnnotationsConfig.Description">
+            <summary>
+                说明
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.AnnotationsConfig.ToString">
+            <summary>
+                显示文本
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.ApiActionInfo">
+            <summary>
+                Api方法的信息
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiActionInfo.Action">
+            <summary>
+                无参方法
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiActionInfo.ArgumentAction">
+            <summary>
+                有参方法
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiActionInfo.ArgumenType">
+            <summary>
+                参数类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiActionInfo.Controller">
+            <summary>
+                所在控制器类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiActionInfo.HaseArgument">
+            <summary>
+                是否有调用参数
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.ApiDocument">
+            <summary>
+                Api方法的信息
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.AccessOption">
+            <summary>
+                访问设置
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.ArgumentInfo">
+            <summary>
+                参数说明
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.Category">
+            <summary>
+                分类
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.ResultInfo">
+            <summary>
+                返回值说明
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.RouteName">
+            <summary>
+                Api路由名称
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.ApiName">
+            <summary>
+                Api名称
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ApiDocument.PageUrl">
+            <summary>
+                承载页面
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.DocumentItem">
+            <summary>
+                文档节点
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.DocumentItem.Seealso">
+            <summary>
+                参见
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.DocumentItem.Example">
+            <summary>
+                示例
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.DocumentItem.Value">
+            <summary>
+                值描述
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.DocumentItem.Copy(Agebull.MicroZero.ApiDocuments.DocumentItem)">
+            <summary>
+                复制
+            </summary>
+            <param name="document"></param>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.ObjectType">
+            <summary>
+                对象类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ObjectType.Base">
+            <summary>
+                基本类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ObjectType.Array">
+            <summary>
+                数组
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ObjectType.Dictionary">
+            <summary>
+                字典
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.ObjectType.Object">
+            <summary>
+                对象
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.StationDocument">
+            <summary>
+                Api方法的信息
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.StationDocument.aips">
+            <summary>
+                Api方法
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.StationDocument.IsLocal">
+            <summary>
+                是否本地
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.StationDocument.Aips">
+            <summary>
+                Api方法
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.TypeDocument">
+            <summary>
+                Api结构的信息
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.ClassName">
+            <summary>
+                类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.fields">
+            <summary>
+                字段
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.IsEnum">
+            <summary>
+                枚举
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.JsonName">
+            <summary>
+                类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.ObjectType">
+            <summary>
+                类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.TypeDocument.TypeName">
+            <summary>
+                类型
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.TypeDocument.CanNull">
+            <summary>
+                能否为空
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.TypeDocument.Regex">
+            <summary>
+                正则校验(文本)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.TypeDocument.Min">
+            <summary>
+                最小(包含的数值或文本长度)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.TypeDocument.Max">
+            <summary>
+                最大(包含的数值或文本长度)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.TypeDocument.Fields">
+            <summary>
+                字段
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.ApiDocuments.XmlMember">
+            <summary>
+                从程序集文档读取的注释信息
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.XmlMember.HelpXml">
+            <summary>
+                读取的帮助XML
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ApiDocuments.XmlMember.Assemblies">
+            <summary>
+                读取的帮助XML
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.XmlMember.Type">
+            <summary>
+                类名
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.XmlMember.Returns">
+            <summary>
+                返回
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.XmlMember.XArguments">
+            <summary>
+                参数(XML对象)
+            </summary>
+        </member>
+        <member name="P:Agebull.MicroZero.ApiDocuments.XmlMember.Arguments">
+            <summary>
+                参数字典
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Find(System.Type)">
+            <summary>
+                查找
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Find(System.Type,System.String,System.String)">
+            <summary>
+                查找
+            </summary>
+            <param name="type">类型</param>
+            <param name="subType">注释类型 T 类型 P 属性 M 方法 F字段</param>
+            <param name="sub">子级名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Find(System.String,System.String)">
+            <summary>
+                查找
+            </summary>
+            <param name="name">名称</param>
+            <param name="type">注释类型 T 类型 P 属性 M 方法 F字段</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Find(System.String,System.String,System.String)">
+            <summary>
+                查找
+            </summary>
+            <param name="name">名称</param>
+            <param name="type">注释类型 T 类型 P 属性 M 方法 F字段</param>
+            <param name="sub">子级名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Load(System.Reflection.Assembly)">
+            <summary>
+                载入
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.MicroZero.ApiDocuments.XmlMember.Load(System.String)">
+            <summary>
+                载入
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.ArgumentType">
+            <summary>
+                参数类型
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ArgumentType.HttpForm">
+            <summary>
+                HTTP的Form格式
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ArgumentType.Json">
+            <summary>
+                Json格式
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ArgumentType.Tson">
+            <summary>
+                Tson格式（二进制）
+            </summary>
+        </member>
+        <member name="F:Agebull.MicroZero.ArgumentType.Custom">
+            <summary>
+                自定义
+            </summary>
+        </member>
+        <member name="T:Agebull.MicroZero.WebApi.IWebApiArgument">
+            <summary>表示API返回数据</summary>
+        </member>
+        <member name="M:Agebull.MicroZero.WebApi.IWebApiArgument.ToFormString">
+            <summary>
+            到Form格式的文本
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.MicroZero.IZeroPublisher">
+            <summary>
+            ZeroNet消息队列发布类
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.IZeroPublisher.Publish(System.String,System.String,System.String,System.String)">
+            <summary>
+            发布消息
+            </summary>
+            <param name="station">站点</param>
+            <param name="title">消息主标题</param>
+            <param name="sub">消息子标题</param>
+            <param name="arg">消息参数(JSON)</param>
+            <returns>发布是否成功</returns>
+        </member>
+        <member name="T:Agebull.MicroZero.MessageQueue">
+            <summary>
+            消息队列发布
+            </summary>
+        </member>
+        <member name="M:Agebull.MicroZero.MessageQueue.Publish(System.String,System.String,System.String,System.String)">
+            <summary>
+            发布消息
+            </summary>
+            <param name="station">站点</param>
+            <param name="title">消息主标题</param>
+            <param name="sub">消息子标题</param>
+            <param name="arg">消息参数(JSON)</param>
+            <returns>发布是否成功</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.DataRuleAttribute">
+            <summary>
+            数据规则(仅用于文档生成)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.DataRuleAttribute.CanNull">
+            <summary>
+            能否为空
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.DataRuleAttribute.Regex">
+            <summary>
+            正则校验(文本)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.DataRuleAttribute.Min">
+            <summary>
+            最小(包含的数值或文本长度)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.DataRuleAttribute.Max">
+            <summary>
+            最大(包含的数值或文本长度)
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.INetData">
+            <summary>
+                表示网络数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.INetData.Machine">
+            <summary>
+                机器
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.INetData.User">
+            <summary>
+                用户
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.INetData.RequestId">
+            <summary>
+                请求ID
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.NetData">
+            <summary>
+                表示网络数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.NetData.Station">
+            <summary>
+                站点
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.NetData.Machine">
+            <summary>
+                机器
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.NetData.User">
+            <summary>
+                用户
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.NetData.RequestId">
+            <summary>
+                请求ID
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.ErrorCode">
+            <summary>
+                系统错误代码
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Success">
+            <summary>
+                正确
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.LocalException">
+            <summary>
+                发生异常
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.LogicalError">
+            <summary>
+                逻辑错误
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.RemoteError">
+            <summary>
+                远端错误
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.LocalError">
+            <summary>
+                本地错误
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.NetworkError">
+            <summary>
+                网络错误
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.ArgumentError">
+            <summary>
+                参数错误
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.NoReady">
+            <summary>
+                系统未就绪
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Ignore">
+            <summary>
+                客户端应中止请求
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.ReTry">
+            <summary>
+                客户端应重新请求
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.DenyAccess">
+            <summary>
+                拒绝访问
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.NoFind">
+            <summary>
+                方法不存在
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Unavailable">
+            <summary>
+                服务不可用
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_UnknowToken">
+            <summary>
+                未知的Token
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_User_Unknow">
+            <summary>
+                未知的用户
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_Device_Unknow">
+            <summary>
+                未知的设备识别码
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_AccessToken_TimeOut">
+            <summary>
+                令牌过期
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_ServiceKey_Unknow">
+            <summary>
+                未知的ServiceKey
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_AccessToken_Unknow">
+            <summary>
+                未知的AccessToken
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.Common.ErrorCode.Auth_RefreshToken_Unknow">
+            <summary>
+                未知的RefreshToken
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.ErrorCode.GetMessage(System.Int32)">
+            <summary>
+                取得错误码对应的消息文本
+            </summary>
+            <param name="eid">错误码</param>
+            <returns>消息文本</returns>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.IOperatorStatus">
+            <summary>
+                操作状态
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.ErrorCode">
+            <summary>
+                错误码（系统定义）
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.ClientMessage">
+            <summary>
+                客户端信息
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.Point">
+            <summary>
+                错误点（系统定义）
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.GuideCode">
+            <summary>
+                指导码（系统定义）
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.HttpCode">
+            <summary>
+                对应HTTP错误码（参考）
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.Describe">
+            <summary>
+                错误说明
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.IOperatorStatus.InnerMessage">
+            <summary>
+                内部信息
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.Common.OperatorStatus">
+            <summary>
+                API状态返回接口实现
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.OperatorStatus.#ctor">
+            <summary>
+                默认构造
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.Common.OperatorStatus.#ctor(System.Int32,System.String)">
+            <summary>
+                默认构造
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Guide">
+            <summary>
+                指导码
+            </summary>
+            <remarks>
+            内部使用:指示下一步应如何处理的代码
+            </remarks>
+            <example>retry</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Msg">
+            <summary>
+                提示信息
+            </summary>
+            <remarks>
+             说明错误的原因
+            </remarks>
+            <example>你的数据不正确</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Http">
+            <summary>
+                HTTP错误码
+            </summary>
+            <remarks>
+             内部使用:不清楚请不要使用
+            </remarks>
+            <example>200</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.GuideCode">
+            <summary>
+                指导码
+            </summary>
+            <remarks>
+            内部使用:指示下一步应如何处理的代码
+            </remarks>
+            <example>retry</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Code">
+            <summary>
+                错误码
+            </summary>
+            <remarks>
+                参见 ErrorCode 说明
+            </remarks>
+            <example>-1</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Describe">
+            <summary>
+                错误说明
+            </summary>
+            <remarks>
+            内部使用:详细说明错误内容
+            </remarks>
+            <example>系统未就绪</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.Point">
+            <summary>
+                错误点
+            </summary>
+            <remarks>
+            系统在哪一个节点发生错误的标识
+            </remarks>
+            <example>http-gateway</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.ErrorCode">
+            <summary>
+                错误码
+            </summary>
+            <remarks>
+                参见 ErrorCode 说明
+            </remarks>
+            <example>-1</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.HttpCode">
+            <summary>
+                HTTP错误码
+            </summary>
+            <remarks>
+             内部使用:不清楚请不要使用
+            </remarks>
+            <example>200</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.ClientMessage">
+            <summary>
+                提示信息
+            </summary>
+            <remarks>
+             说明错误的原因
+            </remarks>
+            <example>你的数据不正确</example>
+        </member>
+        <member name="P:Agebull.EntityModel.Common.OperatorStatus.InnerMessage">
+            <summary>
+                内部提示信息
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.EasyComboValues">
+            <summary>
+            支持Easy combobox的键值对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyComboValues.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyComboValues.#ctor(System.Object,System.Object,System.Object,System.Object)">
+            <summary>
+            构造
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <param name="extend"></param>
+            <param name="tag"></param>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.EasyComboValues.Empty">
+            <summary>
+            空内容
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyComboValues.Key">
+            <summary>
+                键
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyComboValues.Value">
+            <summary>
+                值
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyComboValues.Extend">
+            <summary>
+                值
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyComboValues.Tag">
+            <summary>
+                值
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.EasyUiGridData`1">
+            <summary>
+            支持EasyUi表格列表数据的对象
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiGridData`1.Data">
+            <summary>
+                返回的数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiGridData`1.Total">
+            <summary>
+                总行数
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiGridData`1.Footer">
+            <summary>
+                页脚
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase">
+            <summary>
+                EasyUi树数据的格式
+            </summary>
+            <remarks>仅调用ToJson时符合格式</remarks>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.ID">
+            <summary>
+                节点的 id，它对于加载远程数据很重要。
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.IsChecked">
+            <summary>
+                是否已选择
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.IsSelect">
+            <summary>
+                是否已选择
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.TreeState">
+            <summary>
+                表格树关闭状态
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Icon">
+            <summary>
+                图标
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.IsOpen">
+            <summary>
+                是否展开
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.IsFolder">
+            <summary>
+            是否文件夹
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Text">
+            <summary>
+                显示的节点文字。
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Title">
+            <summary>
+                对象的原始标题
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Attributes">
+            <summary>
+                给一个节点追加的自定义属性。
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Tag">
+            <summary>
+                标签文本
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Memo">
+            <summary>
+                备注文本
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Json">
+            <summary>
+                还有其它的
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Extend">
+            <summary>
+                其它文本
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.ToString">
+            <inheritdoc />
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.EasyUiTreeNodeBase.Empty">
+            <summary>
+            空对象
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.EasyUiTreeNode">
+            <summary>
+                EasyUi树数据的格式
+            </summary>
+            <remarks>仅调用ToJson时符合格式</remarks>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyUiTreeNode.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyUiTreeNode.#ctor(System.Collections.Generic.List{Agebull.EntityModel.EasyUI.EasyUiTreeNode})">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode.HaseChildren">
+            <summary>
+            有否子级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode.Children">
+            <summary>
+                表格树的下级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode.TreeState">
+            <summary>
+                表格树关闭状态
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.EasyUiTreeNode.EmptyNode">
+            <summary>
+            空内容
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyUiTreeNode.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1">
+            <summary>
+                EasyUi树数据的格式
+            </summary>
+            <remarks>仅调用ToJson时符合格式</remarks>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1.HaseChildren">
+            <summary>
+            有否子级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1.Data">
+            <summary>
+                数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1.Children">
+            <summary>
+                表格树的下级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1.TreeState">
+            <summary>
+                表格树关闭状态
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.EasyUiTreeNode`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.FamilyData`2">
+            <summary>
+                两层树形数据
+            </summary>
+            <typeparam name="TParent">上级类型</typeparam>
+            <typeparam name="TChild">子级类型</typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.FamilyData`2.Data">
+            <summary>
+                本级数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.FamilyData`2.Children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.TreeData`1">
+            <summary>
+                树形数据
+            </summary>
+            <typeparam name="TData">数据类型</typeparam>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.TreeData`1._children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`1.Data">
+            <summary>
+                本级数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`1.Children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.TreeData`2">
+            <summary>
+                树形数据(带关联节点)
+            </summary>
+            <typeparam name="TData">本级数据</typeparam>
+            <typeparam name="TItem">其它关联节点</typeparam>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.TreeData`2._children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.TreeData`2._items">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`2.Data">
+            <summary>
+                本级数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`2.Items">
+            <summary>
+                其它关联节点
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`2.Children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.TreeData`3">
+            <summary>
+                树形数据(带关联节点)
+            </summary>
+            <typeparam name="TData">本级数据</typeparam>
+            <typeparam name="TItem">其它关联节点</typeparam>
+            <typeparam name="TFriend">本级关联数据</typeparam>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.TreeData`3._children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.EasyUI.TreeData`3._items">
+            <summary>
+                其它关联节点
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`3.Data">
+            <summary>
+                本级数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`3.Friend">
+            <summary>
+                本级关联数据
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`3.Items">
+            <summary>
+                其它关联节点
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.TreeData`3.Children">
+            <summary>
+                子级
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.EasyUI.PageData`1">
+            <summary>
+                分页类
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.EasyUI.PageData`1.#ctor">
+            <summary>
+                分页类
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.WhereStr">
+            <summary>
+                查询条件
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.PageIndex">
+            <summary>
+                当前页码
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.PageSize">
+            <summary>
+                每页显示条数
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.Count">
+            <summary>
+                总记录数
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.PageCount">
+            <summary>
+                总页码数
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.EasyUI.PageData`1.DataSoure">
+            <summary>
+                数据集
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.DataScopeType">
+            <summary>
+            权限范围枚举类型
+            </summary>
+            <remark>
+            权限范围
+            </remark>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.None">
+            <summary>
+            无
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.Person">
+            <summary>
+            本人
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.Home">
+            <summary>
+            本级
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.PersonAndHome">
+            <summary>
+            本人及本级
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.Lower">
+            <summary>
+            下级
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.HomeAndLower">
+            <summary>
+            本级及以下
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.Full">
+            <summary>
+            本人本级及下级
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.DataScopeType.Unlimited">
+            <summary>
+            无限制
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.RolePowerType">
+            <summary>
+            角色权限类型
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RolePowerType.None">
+            <summary>
+            未设置
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RolePowerType.Allow">
+            <summary>
+            允许
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RolePowerType.Deny">
+            <summary>
+            拒绝
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.UserStateType">
+            <summary>
+                数据状态
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.UserStateType.None">
+            <summary>
+                草稿
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.UserStateType.Enable">
+            <summary>
+                启用
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.UserStateType.Disable">
+            <summary>
+                禁用
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.UserStateType.Discard">
+            <summary>
+                废弃
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.UserStateType.Delete">
+            <summary>
+                删除
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.AuthEnumHelper">
+            <summary>
+            枚举扩展
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.AuthEnumHelper.ToCaption(Agebull.Common.AppManage.PageItemType)">
+            <summary>
+                节点类型枚举类型名称转换
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.AuthEnumHelper.ToCaption(Agebull.Common.OAuth.DataScopeType)">
+            <summary>
+                权限范围枚举类型名称转换
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.AuthEnumHelper.ToCaption(Agebull.Common.OAuth.RolePowerType)">
+            <summary>
+                权限枚举类型名称转换
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IPowerChecker">
+            <summary>
+                权限操作后期注入对象
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadAuthority(System.String)">
+            <summary>
+                载入用户账号信息
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.SavePageAction(System.Int32,System.String,System.String,System.String,System.String)">
+            <summary>
+            保存页面的动作
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.ReloadLoginUserInfo">
+            <summary>
+            重新载入用户信息
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadPageConfig(System.String)">
+            <summary>
+                载入页面配置
+            </summary>
+            <param name="url">不包含域名的相对url</param>
+            <returns>页面配置</returns>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadPageButtons(Agebull.Common.OAuth.ILoginUserInfo,Agebull.Common.AppManage.IPageItem)">
+            <summary>
+                载入页面关联的按钮配置
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <param name="page">页面,不能为空</param>
+            <returns>按钮配置集合</returns>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.CanDoAction(Agebull.Common.OAuth.ILoginUserInfo,Agebull.Common.AppManage.IPageItem,System.String)">
+            <summary>
+                载入页面关联的按钮配置
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <param name="page">页面</param>
+            <param name="action">动作</param>
+            <returns>是否可执行页面动作</returns>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadUserPowers(Agebull.Common.OAuth.ILoginUserInfo)">
+            <summary>
+                载入用户的角色权限
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadPagePower(Agebull.Common.OAuth.ILoginUserInfo,Agebull.Common.AppManage.IPageItem)">
+            <summary>
+                载入用户的单页角色权限
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <param name="page">页面</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.SaveQueryHistory(Agebull.Common.OAuth.ILoginUserInfo,Agebull.Common.AppManage.IPageItem,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+                保存用户的查询历史
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <param name="page">关联页面</param>
+            <param name="args">查询参数</param>
+        </member>
+        <member name="M:Agebull.Common.OAuth.IPowerChecker.LoadQueryHistory(Agebull.Common.OAuth.ILoginUserInfo,Agebull.Common.AppManage.IPageItem)">
+            <summary>
+                读取用户的查询历史
+            </summary>
+            <param name="loginUser">登录用户</param>
+            <param name="page">关联页面</param>
+            <returns>返回的是参数字典的JSON格式的文本</returns>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IRoleData">
+            <summary>
+            表示一个角色数据
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleData.Id">
+            <summary>
+            角色标识
+            </summary>
+            <remarks>
+            角色标识
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleData.Role">
+            <summary>
+            角色名称
+            </summary>
+            <remarks>
+            角色名称
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleData.Caption">
+            <summary>
+            角色显示的文本
+            </summary>
+            <remarks>
+            角色显示的文本
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleData.Memo">
+            <summary>
+            备注
+            </summary>
+            <remarks>
+            备注
+            </remarks>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IRolePower">
+            <summary>
+                角色权限
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRolePower.Id">
+            <summary>
+                对象标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRolePower.RoleId">
+            <summary>
+                角色标识
+            </summary>
+            <remarks>
+                角色标识
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRolePower.PageItemId">
+            <summary>
+                页面节点标识
+            </summary>
+            <remarks>
+                页面节点标识
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRolePower.Power">
+            <summary>
+                权限
+            </summary>
+            <remarks>
+                权限,0表示未允许,1表示允许,2表示拒绝
+            </remarks>
+        </member>
+        <member name="T:Agebull.Common.OAuth.SimpleRolePower">
+            <summary>
+                角色权限
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.SimpleRolePower.Id">
+            <summary>
+                对象标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.SimpleRolePower.RoleId">
+            <summary>
+                角色标识
+            </summary>
+            <remarks>
+                角色标识
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.SimpleRolePower.PageItemId">
+            <summary>
+                页面节点标识
+            </summary>
+            <remarks>
+                页面节点标识
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.SimpleRolePower.Power">
+            <summary>
+                权限
+            </summary>
+            <remarks>
+                权限,0表示未允许,1表示允许,2表示拒绝
+            </remarks>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IDuty">
+            <summary>
+            岗位职责
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.DutyId">
+            <summary>
+            岗位职责标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.RoleId">
+            <summary>
+            对应的权限角色设置
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.GroupId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.OrganizationId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.Organization">
+            <summary>
+                机构
+            </summary>
+            <remarks>
+                机构
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.Position">
+            <summary>
+                职位
+            </summary>
+            <remarks>
+                职位
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.Role">
+            <summary>
+                角色
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.OrgIds">
+            <summary>
+            职责所在组织
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.Start">
+            <summary>
+            开始时间（对应到人）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IDuty.End">
+            <summary>
+            结束时间（对应到人）
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.BusinessOperationalContext">
+            <summary>
+            业务的操作上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.AppId">
+            <summary>
+                应用标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.AppName">
+            <summary>
+                应用名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.PageId">
+            <summary>
+                页面标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.PageName">
+            <summary>
+                页面名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.ApiId">
+            <summary>
+                接口标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.ApiName">
+            <summary>
+                接口名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.GroupId">
+            <summary>
+                集团标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.GroupName">
+            <summary>
+                集团名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.OrganizationId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.Organization">
+            <summary>
+                机构名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.RoleId">
+            <summary>
+                用户角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.Role">
+            <summary>
+                角色
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.DutyId">
+            <summary>
+                岗位标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.DutyName">
+            <summary>
+                岗位名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.DutyStart">
+            <summary>
+            开始时间（对应到人）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.DutyEnd">
+            <summary>
+            结束时间（对应到人）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.BusinessOperationalContext.Unreadables">
+            <summary>
+            不可读数据列
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IApp">
+            <summary>
+            角色节点
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IApp.AppId">
+            <summary>
+                用户角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IApp.AppName">
+            <summary>
+                登录设备的应用
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IApp.AppKey">
+            <summary>
+                登录设备的应用
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.ILoginUserInfo">
+            <summary>
+                当前登录的用户信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Valid">
+            <summary>
+            数据有效期
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.GlobalUserId">
+            <summary>
+                全局用户数字标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.UserId">
+            <summary>
+                应用用户数字标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.OpenId">
+            <summary>
+                用户开放标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.LoginType">
+            <summary>
+                当前用户登录方式
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Phone">
+            <summary>
+                登录者的手机号
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Account">
+            <summary>
+                登录者的账号
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.NickName">
+            <summary>
+                用户昵称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.AvatarUrl">
+            <summary>
+                头像链接
+            </summary>
+            <remarks>
+                头像链接
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.State">
+            <summary>
+                状态
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.DeviceId">
+            <summary>
+                登录设备的标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.App">
+            <summary>
+                登录设备的应用
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Os">
+            <summary>
+                登录设备的操作系统
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.AccessToken">
+            <summary>
+                身份令牌
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.GroupId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.OrganizationId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Organization">
+            <summary>
+                机构
+            </summary>
+            <remarks>
+                机构
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Position">
+            <summary>
+                职位
+            </summary>
+            <remarks>
+                职位
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.RoleId">
+            <summary>
+                用户角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.Role">
+            <summary>
+                角色
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.ILoginUserInfo.ExtendValue">
+            <summary>
+                扩展信息
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IOrganizational">
+            <summary>
+            组织信息接口
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IOrganizational.OrgId">
+            <summary>
+            组织的唯一标识(数字)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IOrganizational.OrgKey">
+            <summary>
+            组织的唯一标识(文字)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IOrganizational.Name">
+            <summary>
+            组织名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IOrganizational.RouteName">
+            <summary>
+            组织的路由名称
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IRole">
+            <summary>
+            角色节点
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRole.RoleId">
+            <summary>
+                用户角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRole.Role">
+            <summary>
+                角色
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRole.AppName">
+            <summary>
+                所在的应用
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRole.OrganizationId">
+            <summary>
+                公司标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRole.Items">
+            <summary>
+            权限节点
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.RoleItemType">
+            <summary>
+            角色节点类型
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RoleItemType.None">
+            <summary>
+            不明确
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RoleItemType.Station">
+            <summary>
+            API站点
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RoleItemType.Api">
+            <summary>
+            API接口
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RoleItemType.Task">
+            <summary>
+            任务
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.RoleItemType.Page">
+            <summary>
+            页面
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.IRoleItem">
+            <summary>
+            角色节点
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleItem.OrganizationId">
+            <summary>
+                公司标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleItem.ItemType">
+            <summary>
+            节点类型
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleItem.ItemName">
+            <summary>
+                节点名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleItem.CanDo">
+            <summary>
+            是否有权限
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.IRoleItem.DataScope">
+            <summary>
+            行级权限
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.LoginUserInfo">
+            <summary>
+                当前登录的用户信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Valid">
+            <summary>
+            数据有效期
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.GlobalUserId">
+            <summary>
+                全局用户数字标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.UserId">
+            <summary>
+                用户数字标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.OpenId">
+            <summary>
+                用户开放标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.NickName">
+            <summary>
+                用户昵称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Account">
+            <summary>
+                登录者的账号
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.State">
+            <summary>
+                状态
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.AvatarUrl">
+            <summary>
+                头像
+            </summary>
+            <remarks>
+                头像
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.LoginType">
+            <summary>
+                当前用户登录方式
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Phone">
+            <summary>
+                登录者的手机号
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.DeviceId">
+            <summary>
+                登录设备的标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.AccessToken">
+            <summary>
+                身份令牌
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.OrganizationId">
+            <summary>
+                公司标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Position">
+            <summary>
+                职位
+            </summary>
+            <remarks>
+                职位
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Organization">
+            <summary>
+                机构
+            </summary>
+            <remarks>
+                机构
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Role">
+            <summary>
+                主要角色名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.RoleId">
+            <summary>
+                主要角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.AllRoleIds">
+            <summary>
+                用户角色标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Os">
+            <summary>
+                登录设备的操作系统
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.App">
+            <summary>
+                当前用户登录到哪个系统（预先定义的系统标识）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.GroupId">
+            <summary>
+                组织标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.ExtendValue">
+            <summary>
+                扩展信息
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.LoginUserInfo.AnymouseUserId">
+            <summary>
+            匿名用户ID
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.OAuth.LoginUserInfo.SystemUserId">
+            <summary>
+            系统用户ID
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.OAuth.LoginUserInfo.CreateAnymouse(System.String,System.String,System.String)">
+            <summary>
+                匿名用户
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.Anymouse">
+            <summary>
+                匿名用户(慎用)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.LoginUserInfo.System">
+            <summary>
+                系统用户(慎用)
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.OAuth.OrganizationalInfo">
+            <summary>
+            当前发生业务的组织
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.OrganizationalInfo.OrgId">
+            <summary>
+            组织的唯一标识(数字)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.OrganizationalInfo.Name">
+            <summary>
+            组织名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.OrganizationalInfo.OrgKey">
+            <summary>
+            组织的唯一标识(文字)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.OrganizationalInfo.RouteName">
+            <summary>
+            组织的路由名称
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.OAuth.OrganizationalInfo.System">
+            <summary>
+            系统用户
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.AppManage.IPageItem">
+            <summary>
+                表示页面节点
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Id">
+            <summary>
+                对象标识
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Index">
+            <summary>
+                序号
+            </summary>
+            <remarks>
+                序号
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.ItemType">
+            <summary>
+            节点类型
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Path">
+            <summary>
+                目录
+            </summary>
+            <remarks>
+                目录
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Icon">
+            <summary>
+                图标
+            </summary>
+            <remarks>
+                图标
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Name">
+            <summary>
+                名称
+            </summary>
+            <remarks>
+                名称
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Caption">
+            <summary>
+                标题
+            </summary>
+            <remarks>
+                标题
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Url">
+            <summary>
+                页面连接
+            </summary>
+            <remarks>
+                页面连接
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.Memo">
+            <summary>
+                备注
+            </summary>
+            <remarks>
+                备注
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.ParentId">
+            <summary>
+                上级节点
+            </summary>
+            <remarks>
+                上级节点
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.IsHide">
+            <summary>
+                不显示
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.AppManage.IPageItem.IsPublic">
+            <summary>
+                无权限控制的公开页面
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.AppManage.PageItemType">
+            <summary>
+            页面节点类型
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.AppManage.PageItemType.Root">
+            <summary>
+            顶级
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.AppManage.PageItemType.Folder">
+            <summary>
+            文件夹
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.AppManage.PageItemType.Page">
+            <summary>
+            页面
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.AppManage.PageItemType.Button">
+            <summary>
+            按钮
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.AppManage.PageItemType.Action">
+            <summary>
+            动作
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Context.DefaultGlobalContextHelper">
+            <inheritdoc />
+            <summary>
+            默认上下文的辅助对象
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.DefaultGlobalContextHelper.Agebull#Common#Context#IGlobalContextHelper#CreateUserObject(System.Int32)">
+            <inheritdoc />
+            <summary>
+            生成一个用户对象
+            </summary>
+            <param name="type">0 无要求即只构造，1 构造一个匿名用户，2 构造一个系统用户</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Context.DefaultGlobalContextHelper.Agebull#Common#Context#IGlobalContextHelper#CreateOrganizationalObject">
+            <inheritdoc />
+            <summary>
+            生成一个组织对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.Common.Context.GlobalContext">
+            <summary>
+                全局上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.DependencyObjects">
+            <summary>
+                依赖对象字典
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.LoginUserId">
+            <summary>
+                当前登录的用户ID
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Token">
+            <summary>
+                令牌
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.GlobalContext._user">
+            <summary>
+                当前调用的客户信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Customer">
+            <summary>
+                当前调用的客户信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.User">
+            <summary>
+                当前调用的客户信息
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.GlobalContext._organizational">
+            <summary>
+                当前调用的组织信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Organizational">
+            <summary>
+                当前调用的组织信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Role">
+            <summary>
+                当前调用的客户的角色信息
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.GlobalContext._requestInfo">
+            <summary>
+                当前调用上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.RequestInfo">
+            <summary>
+                当前调用上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Request">
+            <summary>
+                当前调用上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Helper">
+            <summary>
+            用户组织信息泛化的辅助类
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Local">
+            <summary>
+                当前线程的调用上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Current">
+            <summary>
+                当前线程的调用上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.CurrentNoLazy">
+            <summary>
+                当前线程的调用上下文(无懒构造)
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.Reset">
+            <summary>
+                内部构造
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetEmpty">
+            <summary>
+                置空并销毁当前上下文
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.#ctor">
+            <summary>
+                内部构造
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.#ctor(System.Boolean)">
+            <summary>
+                内部构造
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetContext(Agebull.Common.Context.GlobalContext)">
+            <summary>
+                设置当前上下文（框架内调用，外部误用后果未知）
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetRequestContext(System.String,System.String,System.String)">
+            <summary>
+                设置当前上下文（框架内调用，外部误用后果未知）
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetRequestContext(System.String)">
+            <summary>
+                设置当前上下文（框架内调用，外部误用后果未知）
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetRequestContext(Agebull.Common.Context.RequestInfo)">
+            <summary>
+                设置当前上下文（框架内调用，外部误用后果未知）
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetOrganizational(Agebull.Common.OAuth.IOrganizational)">
+            <summary>
+                设置当前组织（框架内调用，外部误用后果未知）
+            </summary>
+            <param name="org"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.SetUser(Agebull.Common.OAuth.ILoginUserInfo)">
+            <summary>
+                设置当前用户（框架内调用，外部误用后果未知）
+            </summary>
+            <param name="user"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.OnDispose">
+            <inheritdoc />
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.TryCheckByAnymouse">
+            <summary>
+                检查上下文，如果信息为空，加入系统匿名用户上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.IsManageMode">
+            <summary>
+                是否工作在管理模式下(数据全看模式)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.IsSystemMode">
+            <summary>
+                是否工作在系统模式下
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Feature">
+            <summary>
+                其它特性
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.LastState">
+            <summary>
+                最后操作的操作状态
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.AppendMessage(System.String)">
+            <summary>
+                加入消息
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.ResetStatus">
+            <summary>
+                重置状态
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.GlobalContext.ClearMessage">
+            <summary>
+                清除消息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.LastMessage">
+            <summary>
+                最后一个的操作消息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.LastStatus">
+            <summary>
+                最后状态(当前时间)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.Agebull#Common#Context#IGlobalContext#LastStatus">
+            <inheritdoc />
+            <summary>
+                最后状态(当前时间)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.ServiceKey">
+            <summary>
+                当前服务器的标识
+            </summary>
+            <remarks>
+                服务注册时自动分配
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.ServiceName">
+            <summary>
+                当前服务器的名称
+            </summary>
+            <remarks>
+                但实际名称，会以服务器返回为准。
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.Context.GlobalContext.ServiceRealName">
+            <summary>
+                当前服务器的运行时名称
+            </summary>
+            <remarks>
+                但实际名称，会以服务器返回为准。
+            </remarks>
+        </member>
+        <member name="T:Agebull.Common.Context.IGlobalContext">
+            <summary>
+                全局上下文
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.LastStatus">
+            <summary>
+                最后状态(当前时间)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.LoginUserId">
+            <summary>
+                当前登录的用户ID
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.Token">
+            <summary>
+                令牌
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.User">
+            <summary>
+                当前调用的客户信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.Organizational">
+            <summary>
+                当前调用的组织信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.Role">
+            <summary>
+                当前调用的客户的角色信息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.IGlobalContext.Request">
+            <summary>
+                当前调用上下文
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Context.IGlobalContextHelper">
+            <summary>
+            上下文的辅助对象
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.IGlobalContextHelper.CreateUserObject(System.Int32)">
+            <summary>
+            生成一个用户对象
+            </summary>
+            <param name="type">0 无要求即只构造，1 构造一个匿名用户，2 构造一个系统用户</param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Context.IGlobalContextHelper.CreateOrganizationalObject">
+            <summary>
+            生成一个组织对象
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.Common.Context.ManageModeScope">
+            <summary>
+            管理模式范围
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.ManageModeScope.CreateScope">
+            <summary>
+            生成范围
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Context.ManageModeScope.OnDispose">
+            <inheritdoc />
+        </member>
+        <member name="T:Agebull.Common.Context.SystemModelScope">
+            <summary>
+            系统模式范围
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.SystemModelScope.CreateScope">
+            <summary>
+            生成范围
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Context.SystemModelScope.OnDispose">
+            <inheritdoc />
+        </member>
+        <member name="T:Agebull.Common.Context.RequestInfo">
+            <summary>
+            请求信息
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.RequestInfo.SetValue(System.String,System.String)">
+            <summary>
+            修改值
+            </summary>
+            <param name="callId"></param>
+            <param name="requestId"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.RequestInfo.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Context.RequestInfo.#ctor(System.String)">
+            <summary>
+            构造
+            </summary>
+            <param name="requestId"></param>
+        </member>
+        <member name="M:Agebull.Common.Context.RequestInfo.#ctor(System.String,System.String,System.String)">
+            <summary>
+            构造
+            </summary>
+            <param name="callId"></param>
+            <param name="globalId"></param>
+            <param name="requestId"></param>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.LocalGlobalId">
+            <summary>
+            当前的全局标识(本地)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.CallGlobalId">
+            <summary>
+            请求的全局标识(传递)
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.Service">
+            <summary>
+            请求服务身份
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.RequestId">
+            <summary>
+            全局请求标识（源头为用户请求）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.Token">
+            <summary>
+            身份令牌
+            </summary>
+            <remarks>
+            Http : Head中的Authorizaition节
+            </remarks>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.ArgumentType">
+            <summary>
+            参数类型
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.RequestType">
+            <summary>
+            参数类型
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.Os">
+            <summary>
+                登录设备的操作系统
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.App">
+            <summary>
+                当前用户登录到哪个系统（预先定义的系统标识）
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.Ip">
+            <summary>
+            请求IP
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.Port">
+            <summary>
+            请求端口号
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Context.RequestInfo.UserAgent">
+            <summary>
+            HTTP的UserAgent
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Context.RequestType">
+            <summary>
+                参数类型
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.RequestType.None">
+            <summary>
+                无
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.RequestType.Http">
+            <summary>
+                HTTP请求
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Context.RequestType.Zero">
+            <summary>
+                ZeroNet请求
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Ioc.IAutoRegister">
+            <summary>
+            生自注册对象
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Ioc.IAutoRegister.Initialize">
+            <summary>
+            初始化
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Ioc.IAutoRegister.AutoRegist">
+            <summary>
+            执行自动注册
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Http.HttpCaller">
+            <summary>
+                HTTP
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Host">
+            <summary>
+                主机
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Method">
+            <summary>
+                Http Method
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Authorization">
+            <summary>
+                Authorization
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.ApiName">
+            <summary>
+                ApiName
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Query">
+            <summary>
+                Query
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Form">
+            <summary>
+                Form
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Json">
+            <summary>
+                Json
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpCaller.RemoteUrl">
+            <summary>
+                远程地址
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpCaller.RemoteRequest">
+            <summary>
+            远程请求对象
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.UserState">
+            <summary>
+            执行状态
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Message">
+            <summary>
+                Message
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.Http.HttpCaller.Error">
+            <summary>
+                ErrorCode
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Http.HttpCaller.CreateRequest">
+            <summary>
+            生成请求对象
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Http.HttpCaller.Call">
+            <summary>
+                取返回值
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Http.HttpCaller.ProtocolError(System.Net.WebException)">
+            <summary>
+                协议错误
+            </summary>
+            <param name="exception"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Http.HttpCaller.ReadResponse(System.Net.WebResponse)">
+            <summary>
+                读取返回消息
+            </summary>
+            <param name="response"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Http.HttpCaller.ToErrorString(System.Int32,System.String,System.String)">
+            <summary>
+                序列化到错误内容
+            </summary>
+            <param name="code"></param>
+            <param name="message"></param>
+            <param name="message2"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.Common.Http.HttpOperatorStateType">
+            <summary>
+            一次路由执行状态
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.Success">
+            <summary>
+            正常
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.FormalError">
+            <summary>
+            非法格式
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.LogicalError">
+            <summary>
+            逻辑错误
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.LocalException">
+            <summary>
+            本地异常
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.LocalError">
+            <summary>
+            本地错误
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.RemoteError">
+            <summary>
+            远程错误
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.RemoteException">
+            <summary>
+            远程异常
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.NetWorkError">
+            <summary>
+            网络错误
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.Unavailable">
+            <summary>
+            拒绝服务
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.NotReady">
+            <summary>
+            未准备好
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.NotFind">
+            <summary>
+            页面不存在
+            </summary>
+        </member>
+        <member name="F:Agebull.Common.Http.HttpOperatorStateType.DenyAccess">
+            <summary>
+            非法请求
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.Helper.UrlHelper">
+            <summary>
+            对URL的扩展
+            </summary>
+        </member>
+        <member name="M:Agebull.Common.Helper.UrlHelper.GetQueryString(System.String)">
+            <summary>
+            将查询字符串解析转换为名值集合.
+            </summary>
+            <param name="queryString"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Helper.UrlHelper.GetQueryString(System.String,System.Text.Encoding,System.Boolean)">
+            <summary>
+            将查询字符串解析转换为名值集合.
+            </summary>
+            <param name="queryString"></param>
+            <param name="encoding"></param>
+            <param name="isEncoded"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.Common.Helper.UrlHelper.MyUrlDeCode(System.String,System.Text.Encoding)">
+            <summary>
+            解码URL.
+            </summary>
+            <param name="encoding">null为自动选择编码</param>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.Common.DataModel.WebUI.AjaxResult">
+            <summary>
+                AJAX的标准返回
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.WebUI.AjaxResult.State">
+            <summary>
+                结果状态
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.WebUI.AjaxResult.Succeed">
+            <summary>
+                结果状态
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.WebUI.AjaxResult.Message">
+            <summary>
+                操作消息
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.WebUI.AjaxResult.Message2">
+            <summary>
+                操作消息
+            </summary>
+        </member>
+        <member name="T:Agebull.Common.DataModel.WebUI.AjaxResult`1">
+            <summary>
+                AJAX的标准返回
+            </summary>
+        </member>
+        <member name="P:Agebull.Common.DataModel.WebUI.AjaxResult`1.Value">
+            <summary>
+                结果值
+            </summary>
+        </member>
+    </members>
+</doc>

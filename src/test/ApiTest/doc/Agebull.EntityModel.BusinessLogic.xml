@@ -1,0 +1,965 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Agebull.EntityModel.BusinessLogic</name>
+    </assembly>
+    <members>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessCommandType">
+            <summary>
+            逻辑内部命令类型
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.SetState">
+            <summary>
+            无原因修改状态
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.AddNew">
+            <summary>
+            新增
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Update">
+            <summary>
+            更新
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Enable">
+            <summary>
+            启用
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Disable">
+            <summary>
+            禁用
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Discard">
+            <summary>
+            废弃
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Delete">
+            <summary>
+            删除
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Reset">
+            <summary>
+            重置
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Lock">
+            <summary>
+            锁定
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Submit">
+            <summary>
+            提交
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Pullback">
+            <summary>
+            拉回
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Back">
+            <summary>
+            退
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Pass">
+            <summary>
+            通过
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.Deny">
+            <summary>
+            否决
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.ReAudit">
+            <summary>
+            重新编辑
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessCommandType.End">
+            <summary>
+            结束
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2">
+            <summary>
+            业务逻辑对象基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.EntityType">
+            <summary>
+                实体类型
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.Agebull#EntityModel#BusinessLogic#IBusinessLogicBase{TData}#Access">
+            <summary>
+            数据访问对象
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.Access">
+            <summary>
+                数据访问对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.CreateAccess">
+            <summary>
+                数据访问对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.BaseQueryCondition">
+            <summary>
+                基本查询条件(SQL表述方式)
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.DoByIds(System.Collections.Generic.IEnumerable{System.Int64},System.Func{System.Int64,System.Boolean},System.Action)">
+            <summary>
+                执行ID组合字串的操作（来自页面的,号组合的ID）
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.LoopIds(System.Collections.Generic.IEnumerable{System.Int64},System.Func{System.Int64,System.Boolean},System.Action)">
+            <summary>
+                执行ID组合字串的操作（来自页面的,号组合的ID）
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.DoByIds(System.Collections.Generic.IEnumerable{System.Int64},System.Func{`0,System.Boolean},System.Action)">
+            <summary>
+                执行ID组合字串的操作（来自页面的,号组合的ID）
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.LoopIdsToData(System.Collections.Generic.IEnumerable{System.Int64},System.Func{`0,System.Boolean},System.Action)">
+            <summary>
+                执行ID组合字串的操作（来自页面的,号组合的ID）
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.FirstOrDefault(System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                载入当前操作的数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.Details(System.Int64)">
+            <summary>
+                载入当前操作的数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.DetailAsync(System.Int64)">
+            <summary>
+                载入当前操作的数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.OnDetailsLoaded(`0,System.Boolean)">
+            <summary>
+                详细数据载入
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicBase`2.CreateData">
+            <summary>
+                新增一条带默认值的数据
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2">
+            <summary>
+                基于审核扩展的业务逻辑基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.CancelValidate">
+            <summary>
+                取消校验(审核时有效)
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.UnAuditMessageLock">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.UnAuditMessageNoSubmit">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.SubmitMessage">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.BackMessage">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditMessageReDo">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditMessage">
+            <summary>
+            提示语
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Submit(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量提交
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Back(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量退回
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditPass(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量通过
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Pullback(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量拉回
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditDeny(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量否决
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.UnAudit(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                批量反审核
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Validate(System.Collections.Generic.IEnumerable{System.Int64},System.Action{Agebull.EntityModel.Common.ValidateResult})">
+            <summary>
+                批量数据校验
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Validate(System.Int64)">
+            <summary>
+                数据正确性校验
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditPass(System.Int64)">
+            <summary>
+                审核通过
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditDeny(System.Int64)">
+            <summary>
+                审核不通过
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.UnAudit(System.Int64)">
+            <summary>
+                反审核
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Submit(System.Int64)">
+            <summary>
+                提交审核
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Back(System.Int64)">
+            <summary>
+                退回编辑
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.PrepareDelete(System.Int64)">
+            <summary>
+                删除对象前置处理
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Reset(System.Int64)">
+            <summary>
+                禁用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Disable(System.Int64)">
+            <summary>
+                禁用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Discard(System.Int64)">
+            <summary>
+                弃用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Enable(System.Int64)">
+            <summary>
+                启用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.Lock(System.Int64)">
+            <summary>
+                锁定对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditPassInner(`0)">
+            <summary>
+                审核通过
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditDenyInner(`0)">
+            <summary>
+                审核不通过
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.PullbackInner(`0)">
+            <summary>
+                拉回
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditInner(`0,System.Boolean)">
+            <summary>
+                审核
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.UnAuditInner(`0)">
+            <summary>
+                反审核
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.BackInner(`0)">
+            <summary>
+                退回编辑
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.SubmitInner(`0)">
+            <summary>
+                提交审核
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.SetAuditState(`0,Agebull.EntityModel.Common.AuditStateType,Agebull.EntityModel.Common.DataStateType)">
+            <summary>
+                设置审核状态
+            </summary>
+            <param name="data"></param>
+            <param name="audit"></param>
+            <param name="state"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.OnAuditStateChanged(`0)">
+            <summary>
+                设置审核状态
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.CanAuditPass(`0)">
+            <summary>
+                能否通过审核)的判断
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.CanDoAuditAction(`0)">
+            <summary>
+                能否进行审核的判断
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoValidateInner(`0)">
+            <summary>
+                数据正确性校验
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoValidateInner(`0,System.Action{Agebull.EntityModel.Common.ValidateResult})">
+            <summary>
+                数据正确性校验
+            </summary>
+            <param name="data"></param>
+            <param name="putError"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.ValidateInner(`0)">
+            <summary>
+                数据正确性校验
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.ValidateInner(`0,System.Action{Agebull.EntityModel.Common.ValidateResult})">
+            <summary>
+                数据正确性校验
+            </summary>
+            <param name="data"></param>
+            <param name="putError"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.CanUnAudit(`0)">
+            <summary>
+                能否进行反审核的判断
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.AuditPrepare(`0)">
+            <summary>
+                审核通过前的准备
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoUnAudit(`0)">
+            <summary>
+                执行反审核的扩展流程
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.OnUnAudited(`0)">
+            <summary>
+                执行反审核完成后
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoSubmit(`0)">
+            <summary>
+                提交审核
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoBack(`0)">
+            <summary>
+                退回重做
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.OnBacked(`0)">
+            <summary>
+                退回完成
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.ValidateExtend(`0)">
+            <summary>
+                扩展数据校验
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.OnAuditDenyed(`0)">
+            <summary>
+                执行审核的扩展流程
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoAuditDeny(`0)">
+            <summary>
+                执行审核的扩展流程
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.DoAuditPass(`0)">
+            <summary>
+                执行审核的扩展流程
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`2.OnAuditPassed(`0)">
+            <summary>
+                执行审核的扩展流程
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessLogicByAudit`3">
+            <summary>
+                基于审核扩展的业务逻辑基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+            <typeparam name="TDatabase">数据库对象</typeparam>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2">
+            <summary>
+            基于数据状态的业务逻辑基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Enable(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                启用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Disable(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                禁用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Lock(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                禁用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.CanSave(`0,System.Boolean)">
+            <summary>
+                是否可以执行保存操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.PrepareDelete(System.Int64)">
+            <summary>
+                删除对象前置处理
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.OnDeleted(System.Int64)">
+            <summary>
+                删除对象后置处理
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.DoDelete(System.Int64)">
+            <summary>
+                删除对象操作
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.LastSaved(`0,System.Boolean)">
+            <summary>
+                保存完成后的操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.unityStateChanged">
+            <summary>
+            是否统一处理状态变化
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.OnStateChanged(`0,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                状态改变后的统一处理(unityStateChanged不设置为true时不会产生作用--基于性能的考虑)
+            </summary>
+            <param name="data">数据</param>
+            <param name="cmd">命令</param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.OnStateChanged(System.Int64,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                内部命令执行完成后的处理
+            </summary>
+            <param name="id">数据</param>
+            <param name="cmd">命令</param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.DoStateChanged(`0)">
+            <summary>
+                状态改变后的统一处理(unityStateChanged不设置为true时不会产生作用--基于性能的考虑)
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.ResetState(`0)">
+            <summary>
+                重置数据状态
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Reset(System.Int64)">
+            <summary>
+                重置数据状态
+            </summary>
+            <param name="id"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Enable(System.Int64)">
+            <summary>
+                启用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Disable(System.Int64)">
+            <summary>
+                禁用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Discard(System.Int64)">
+            <summary>
+                弃用对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.Lock(System.Int64)">
+            <summary>
+                锁定对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`2.SetDataState(System.Int64,Agebull.EntityModel.Common.DataStateType,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}},System.Nullable{System.Boolean})">
+            <summary>
+                修改状态
+            </summary>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.BusinessLogicByStateData`3">
+            <summary>
+            基于数据状态的业务逻辑基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+            <typeparam name="TDatabase">数据库对象</typeparam>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.IDataExtendChecker">
+            <summary>
+                数据扩展检查器
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.IDataExtendChecker.PrepareAddnew``1(``0)">
+            <summary>
+            新增前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.IDataExtendChecker.PrepareUpdate``1(``0)">
+            <summary>
+            更新前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.IDataExtendChecker.PrepareDelete``1(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+            删除前检查
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.IDataExtendChecker.PrepareQuery(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
+            <summary>
+            查询前检查
+            </summary>
+            <param name="dataTable"></param>
+            <param name="condition"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.DataExtendChecker">
+            <summary>
+                数据扩展检查器
+            </summary>
+        </member>
+        <member name="F:Agebull.EntityModel.BusinessLogic.DataExtendChecker.ExtendCheckers.Dictionary">
+            <summary>
+            检查器集合
+            </summary>
+        </member>
+        <member name="P:Agebull.EntityModel.BusinessLogic.DataExtendChecker.ExtendCheckers.Convert">
+            <summary>
+            转换器
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.DataExtendChecker.Regist``2">
+            <summary>
+            注册检查器
+            </summary>
+            <typeparam name="TDataExtendChecker">检查器本身</typeparam>
+            <typeparam name="TTargetType">检查的目标类型</typeparam>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.DataExtendChecker.PrepareAddnew``1(``0)">
+            <summary>
+            新增前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.DataExtendChecker.PrepareUpdate``1(``0)">
+            <summary>
+            更新前检查
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.DataExtendChecker.PrepareDelete``1(System.Int64[])">
+            <summary>
+            删除前检查
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.DataExtendChecker.PrepareQuery``1(Agebull.EntityModel.Common.IDataTable,System.String@,System.Data.Common.DbParameter[]@)">
+            <summary>
+            查询前检查
+            </summary>
+            <param name="dataTable"></param>
+            <param name="condition"></param>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2">
+            <summary>
+            支持界面操作的业务逻辑对象基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,System.String,System.Boolean,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,System.String,System.Boolean,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                取得列表数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageData(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                取得列表数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnListLoaded(System.Collections.Generic.IList{`0})">
+            <summary>
+                数据载入的处理
+            </summary>
+            <param name="datas"></param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageDataAsync(System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{`0,System.Boolean}})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageDataAsync(System.Int32,System.Int32,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+                分页读取
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PageDataAsync(System.Int32,System.Int32,System.String,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+                取得列表数据
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Export(System.String,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+            导出到Excel
+            </summary>
+            <param name="sheetName"></param>
+            <param name="filter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.ExportAsync(System.String,Agebull.EntityModel.Common.LambdaItem{`0})">
+            <summary>
+            导出到Excel
+            </summary>
+            <param name="sheetName"></param>
+            <param name="filter"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.CanSave(`0,System.Boolean)">
+            <summary>
+                是否可以执行保存操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PrepareSave(`0,System.Boolean)">
+            <summary>
+                保存前的操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.LastSaved(`0,System.Boolean)">
+            <summary>
+                保存完成后的操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PrepareSaveByUser(`0,System.Boolean)">
+            <summary>
+                被用户编辑的数据的保存前操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.LastSavedByUser(`0,System.Boolean)">
+            <summary>
+                被用户编辑的数据的保存前操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnSaving(`0,System.Boolean)">
+            <summary>
+                保存前的操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnSaved(`0,System.Boolean)">
+            <summary>
+                保存完成后的操作
+            </summary>
+            <param name="data">数据</param>
+            <param name="isAdd">是否为新增</param>
+            <returns>如果为否将阻止后续操作</returns>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Save(`0)">
+            <summary>
+                新增
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.AddNew(`0)">
+            <summary>
+                新增
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Update(`0)">
+            <summary>
+                更新对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Saved(`0,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                更新对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.SaveAsync(`0)">
+            <summary>
+                新增
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.AddNewAsync(`0)">
+            <summary>
+                新增
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.UpdateAsync(`0)">
+            <summary>
+                更新对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Delete(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.Delete(System.Int64)">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DeleteInner(System.Int64)">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DoDelete(System.Int64)">
+            <summary>
+                删除对象操作
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.PrepareDelete(System.Int64)">
+            <summary>
+                删除对象前置处理
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnDeleted(System.Int64)">
+            <summary>
+                删除对象后置处理
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DeleteAsync(System.Collections.Generic.IEnumerable{System.Int64})">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DeleteAsync(System.Int64)">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DeleteAsyncInner(System.Int64)">
+            <summary>
+                删除对象
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.DoDeleteAsync(System.Int64)">
+            <summary>
+                删除对象操作
+            </summary>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnInnerCommand(`0,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                内部命令执行完成后的处理
+            </summary>
+            <param name="data">数据</param>
+            <param name="cmd">命令</param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnStateChanged(System.Int64,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                内部命令执行完成后的处理
+            </summary>
+            <param name="id">数据</param>
+            <param name="cmd">命令</param>
+        </member>
+        <member name="M:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`2.OnStateChanged(`0,Agebull.EntityModel.BusinessLogic.BusinessCommandType)">
+            <summary>
+                状态改变后的统一处理
+            </summary>
+            <param name="data">数据</param>
+            <param name="cmd">命令</param>
+        </member>
+        <member name="T:Agebull.EntityModel.BusinessLogic.UiBusinessLogicBase`3">
+            <summary>
+            支持界面操作的业务逻辑对象基类
+            </summary>
+            <typeparam name="TData">数据对象</typeparam>
+            <typeparam name="TAccess">数据访问对象</typeparam>
+            <typeparam name="TDatabase">数据库对象</typeparam>
+        </member>
+    </members>
+</doc>

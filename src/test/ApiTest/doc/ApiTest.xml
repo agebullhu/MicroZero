@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ApiTest</name>
+    </assembly>
+    <members>
+        <member name="T:WebApplication2.AuthHelper">
+            <summary>
+            无用的令牌解析
+            </summary>
+        </member>
+        <member name="T:WebApplication2.Startup">
+            <summary>
+            启动配置
+            </summary>
+        </member>
+        <member name="M:WebApplication2.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            构造
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="P:WebApplication2.Startup.Configuration">
+            <summary>
+            配置对象
+            </summary>
+        </member>
+        <member name="M:WebApplication2.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            This method gets called by the runtime. Use this method to add services to the container.
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:WebApplication2.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+        </member>
+        <member name="M:Service.Program.Main(System.String[])">
+            <summary>
+            入口
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="T:ApiTest.TestController">
+            <summary>
+            测试
+            </summary>
+        </member>
+        <member name="M:ApiTest.TestController.OnTextRequestA(System.Collections.Generic.List{ApiTest.Semple})">
+            <summary>
+            处理文字请求
+            </summary>
+            <param name="Remark">说明</param>
+            <returns></returns>
+        </member>
+        <member name="T:ApiTest.SempleItem">
+            <summary>
+            示例
+            </summary>
+        </member>
+        <member name="P:ApiTest.SempleItem.Str">
+            <summary>
+            文本
+            </summary>
+        </member>
+        <member name="P:ApiTest.SempleItem.DateTime">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.SempleItem.Values">
+            <summary>
+            文本
+            </summary>
+        </member>
+        <member name="T:ApiTest.Semple">
+            <summary>
+            示例
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Str">
+            <summary>
+            文本
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Items">
+            <summary>
+            文本
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.DateTime">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Double">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Float">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Decimal">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Long">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Int32">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Uint">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Short">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Byte">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+        <member name="P:ApiTest.Semple.Char">
+            <summary>
+            DateTime
+            </summary>
+        </member>
+    </members>
+</doc>

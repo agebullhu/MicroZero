@@ -19,15 +19,15 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void IAutoRegister.Initialize()
         {
-            if (!ConfigurationManager.Get("LogRecorder").GetBool("remote", false))
-            {
-                ZeroTrace.SystemLog("RemoteLogRecorder", "IAutoRegister.Initialize");
-                IocHelper.ServiceCollection.AddTransient<ILogRecorder>(provider => RemoteLogRecorder.Instance);
-                IocHelper.Update();
-                LogRecorderX.Initialize();
-            }
+            //if (!ConfigurationManager.Get("LogRecorder").GetBool("remote", false))
+            //{
+            //    ZeroTrace.SystemLog("RemoteLogRecorder", "IAutoRegister.Initialize");
+            //    IocHelper.ServiceCollection.AddTransient<ILogRecorder>(provider => RemoteLogRecorder.Instance);
+            //    IocHelper.Update();
+            //    LogRecorder.Initialize();
+            //}
             //IocHelper.Update();
-            //LogRecorderX.Initialize();
+            //LogRecorder.Initialize();
             //if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))
             //    IocHelper.ServiceCollection.AddSingleton<IRuntimeWaring>(provider => RuntimeWaring.Instance);
             //if (ConfigurationManager.AppSettings.GetBool("ApiCount"))
@@ -39,7 +39,7 @@ namespace Agebull.MicroZero.Log
         void IAutoRegister.AutoRegist()
         {
             //if (ConfigurationManager.AppSettings.GetBool("RemoteLog"))
-            ZeroApplication.RegistZeroObject(RemoteLogRecorder.Instance);
+            //ZeroApplication.RegistZeroObject(RemoteLogRecorder.Instance);
             //if (ConfigurationManager.AppSettings.GetBool("RuntimeWaring"))
             //    ZeroApplication.RegistZeroObject(RuntimeWaring.Instance);
             //if (ConfigurationManager.AppSettings.GetBool("ApiCount"))

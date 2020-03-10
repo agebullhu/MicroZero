@@ -24,7 +24,14 @@ namespace MicroZero.Http.Gateway
         [JsonProperty]
         public bool IsTest { get; set; }
 
-        
+
+        /// <summary>
+        ///     关闭文件参数(防止异常流量攻击)
+        /// </summary>
+        [JsonProperty]
+        public bool CloseFileArgument { get; set; }
+
+
         /// <summary>
         ///     返回的上下文类型
         /// </summary>

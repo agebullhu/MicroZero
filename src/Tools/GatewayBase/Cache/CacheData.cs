@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MicroZero.Http.Gateway
 {
@@ -26,5 +28,12 @@ namespace MicroZero.Http.Gateway
         ///     下次更新时间
         /// </summary>
         public DateTime UpdateTime { get; set; }
+
+
+        /// <summary>
+        ///     同步等待任务
+        /// </summary>
+        public readonly List<TaskCompletionSource<string>> Waits = new List<TaskCompletionSource<string>>();
+
     }
 }

@@ -191,7 +191,7 @@ namespace MicroZero.Http.Route
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
         }
 
@@ -207,7 +207,7 @@ namespace MicroZero.Http.Route
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                LogRecorder.Exception(exception);
             }
         }
 
@@ -229,7 +229,7 @@ namespace MicroZero.Http.Route
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                LogRecorder.Exception(exception);
             }
         }
 

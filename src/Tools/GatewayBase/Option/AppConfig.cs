@@ -45,8 +45,13 @@ namespace MicroZero.Http.Gateway
         /// <summary>
         ///     缓存配置
         /// </summary>
-        [DataMember] [JsonProperty("cache")] internal List<CacheOption> CacheSettings;
+        [DataMember] [JsonProperty("cache")] internal List<ApiCacheOption> CacheSettings;
 
+        /// <summary>
+        ///     缓存配置
+        /// </summary>
+        [DataMember] [JsonProperty("cacheUpdate")] internal List<CacheFlushOption> CacheUpdateSettings;
+        
         /// <summary>
         ///     路由配置
         /// </summary>

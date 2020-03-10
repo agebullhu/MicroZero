@@ -32,10 +32,10 @@ namespace MicroZero.Http.Gateway
         /// </summary>
         internal static void FormatResponse(HttpRequest request, HttpResponse response)
         {
-            if (RouteOption.Option.SystemConfig.IsTest && request.Headers["USER-AGENT"].LinkToString("|")?.IndexOf("PostmanRuntime") == 0)
+            if (GatewayOption.Option.SystemConfig.IsTest && request.Headers["USER-AGENT"].LinkToString("|")?.IndexOf("PostmanRuntime") == 0)
                 response.Headers["Content-Type"] = response.ContentType = "application/json; charset=UTF-8";
             else
-                response.Headers["Content-Type"] = response.ContentType = RouteOption.Option.SystemConfig.ContentType;
+                response.Headers["Content-Type"] = response.ContentType = GatewayOption.Option.SystemConfig.ContentType;
         }
     }
 }

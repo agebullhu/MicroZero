@@ -113,14 +113,15 @@ namespace Agebull.MicroZero.ZeroApis
                 ZeroTrace.SystemLog(StationName, "closing");
                 try
                 {
+                    int num = 0;
                     while (Listen(checkWait, pool))
                     {
-                        Console.WriteLine("处理堆积任务");
+                        LogRecorder.Trace("处理堆积任务{0}", ++num);
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"处理堆积任务出错{e.Message}");
+                    LogRecorder.Exception(e, "处理堆积任务出错{0}", StationName);
                 }
 
                 int cnt = 0;
@@ -158,7 +159,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
 
             return true;
@@ -240,7 +241,7 @@ namespace Agebull.MicroZero.ZeroApis
                 if (Tasks.Count == 0 || !CanLoop)
                     return;
                 var array = Tasks.Values.ToArray();
-                LogRecorderX.SystemLog($"【CheckTask|{StationName}({array.Length})】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{SuccessCount},RecvCount:{RecvCount},SendCount:{SendCount},SendError:{SendError},WaitCount:{WaitCount}");
+                LogRecorder.SystemLog($"【CheckTask|{StationName}({array.Length})】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{SuccessCount},RecvCount:{RecvCount},SendCount:{SendCount},SendError:{SendError},WaitCount:{WaitCount}");
                 foreach (var item in array)
                 {
                     try
@@ -256,14 +257,14 @@ namespace Agebull.MicroZero.ZeroApis
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"CheckTask|{item.TaskId}:\r\n{e}");
+                        LogRecorder.Exception(e, "CheckTask|{0}", item.TaskId);
                         Tasks.TryRemove(item.TaskId, out _);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"CheckTask:\r\n{ex}");
+                LogRecorder.Exception(ex, "CheckTask");
             }
         }
 
@@ -277,7 +278,7 @@ namespace Agebull.MicroZero.ZeroApis
                 return;
             try
             {
-                LogRecorderX.SystemLog($"【CloseTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
+                LogRecorder.SystemLog($"【CloseTask|{StationName}】CallCount:{CallCount},ErrorCount:{ErrorCount},SuccessCount:{ SuccessCount},RecvCount:{ RecvCount},SendCount:{ SendCount},SendError:{ SendError},WaitCount:{ WaitCount}");
                 foreach (var item in Tasks.Values.ToArray())
                 {
                     try
@@ -288,13 +289,13 @@ namespace Agebull.MicroZero.ZeroApis
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"CloseTask Item:{e}");
+                        LogRecorder.Exception(e, "CloseTask|{0}", item.TaskId);
                     }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"CloseTask:{e}");
+                LogRecorder.Exception(e, "CloseTask");
             }
             finally
             {
@@ -325,7 +326,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e, "KillTask Remove");
+                LogRecorder.Exception(e, "KillTask Remove");
                 info.Append($"Remove : {e.Message}");
             }
             if (ZeroApplication.Config.ApiTimeoutKill)
@@ -338,7 +339,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e, "KillTask Interrupt");
+                    LogRecorder.Exception(e, "KillTask Interrupt");
                     info.Append($"Interrupt : {e.Message}");
                 }
 
@@ -348,7 +349,7 @@ namespace Agebull.MicroZero.ZeroApis
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e, "KillTask Dispose");
+                    LogRecorder.Exception(e, "KillTask Dispose");
                     info.Append($"Dispose : {e.Message}");
                 }
             }
@@ -364,10 +365,10 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e, "KillTask SendResult");
+                LogRecorder.Exception(e, "KillTask SendResult");
                 info.Append($"SendResult : {e.Message}");
             }
-            LogRecorderX.Error(info.ToString());
+            LogRecorder.Error(info.ToString());
         }
 
         private static readonly byte[] TimeOutKillFrame = new byte[]
@@ -419,7 +420,7 @@ namespace Agebull.MicroZero.ZeroApis
 
             if (WaitCount > ZeroApplication.Config.MaxWait)
             {
-                LogRecorderX.SystemLog("Unavailable");
+                LogRecorder.SystemLog("Unavailable");
                 item.Result = ApiResultIoc.UnavailableJson;
                 OnExecuestEnd(item, ZeroOperatorStateType.Unavailable);
             }
@@ -449,7 +450,7 @@ namespace Agebull.MicroZero.ZeroApis
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                LogRecorder.Exception(e);
             }
         }
 
@@ -839,12 +840,12 @@ namespace Agebull.MicroZero.ZeroApis
                     }
 
                     ZeroTrace.WriteError(StationName, error.Text, error.Name);
-                    LogRecorderX.MonitorTrace($"{StationName}({socket.Endpoint}) : {error.Text}");
+                    LogRecorder.MonitorTrace(() => $"{StationName}({socket.Endpoint}) : {error.Text}");
                 }
                 catch (Exception e)
                 {
-                    LogRecorderX.Exception(e, "ApiStation.SendResult");
-                    LogRecorderX.MonitorTrace($"{StationName} : {e.Message}");
+                    LogRecorder.Exception(e, "ApiStation.SendResult");
+                    LogRecorder.MonitorTrace(() => $"Exception : {StationName} : {e.Message}");
                 }
             }
             Interlocked.Increment(ref SendError);

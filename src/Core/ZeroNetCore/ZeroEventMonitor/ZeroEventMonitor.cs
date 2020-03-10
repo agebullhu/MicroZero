@@ -19,8 +19,7 @@ namespace Agebull.MicroZero.ZeroManagemant
         /// </summary>
         internal async Task WaitMe()
         {
-            if (ZeroApplication.WorkModel == ZeroWorkModel.Service)
-                await TaskEndSem.WaitAsync();
+            await TaskEndSem.WaitAsync();
         }
 
         /// <summary>

@@ -245,7 +245,7 @@ namespace Agebull.MicroZero.ZeroApis
             Result = LastResult.Result;
             Binary = LastResult.Binary;
             ResultType = LastResult.ResultType;
-            LogRecorderX.MonitorTrace($"result:{Result}");
+            LogRecorder.MonitorTrace(() => $"result:{Result}");
             return LastResult.InteractiveSuccess;
         }
         private Task<ZeroResult> CallNoFileApi()
@@ -339,7 +339,7 @@ namespace Agebull.MicroZero.ZeroApis
             Result = LastResult.Result;
             Binary = LastResult.Binary;
             ResultType = LastResult.ResultType;
-            LogRecorderX.MonitorTrace($"result:{Result}");
+            LogRecorder.MonitorTrace(() => $"result:{Result}");
             return LastResult.InteractiveSuccess;
 
         }

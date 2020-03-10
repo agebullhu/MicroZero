@@ -147,7 +147,7 @@ namespace Agebull.MicroZero.ZeroManagemant
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 ZeroTrace.WriteException(name, e, "station_state", content);
             }
         }

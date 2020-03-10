@@ -34,7 +34,6 @@ namespace MicroZero.Http.Gateway
         public static void Initialize()
         {
             ZeroApplication.Initialize();
-            RouteCache.InitCache();
             ZeroApplication.ZeroNetEvents.Add(OnZeroNetEvent);
             ZeroApplication.Run();
         }
@@ -56,6 +55,7 @@ namespace MicroZero.Http.Gateway
             options.AddServerHeader = true;
             //将此选项设置为 null 表示不应强制执行最低数据速率。
             options.Limits.MinResponseDataRate = null;
+
             var httpOptions = ConfigurationManager.Root.GetSection("http").Get<HttpOption[]>();
             foreach (var option in httpOptions)
             {
@@ -99,8 +99,8 @@ namespace MicroZero.Http.Gateway
             //context.Request.EnableRewind();
 
             //跨域支持
-            return string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase) 
-                ? Task.Run(() => HttpProtocol.CrosOption(context.Response)) 
+            return string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase)
+                ? Task.Run(() => HttpProtocol.CrosOption(context.Response))
                 : CallTask(context);
         }
 
@@ -132,7 +132,7 @@ namespace MicroZero.Http.Gateway
 
             HttpProtocol.FormatResponse(context.Request, context.Response);
             AshxMapConfig map = null;
-            if (RouteOption.Option.SystemConfig.EnableContext)
+            if (GatewayOption.Option.SystemConfig.EnableContext)
             {
                 var folders = uri.AbsolutePath.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
                 if (folders.Length == 0)
@@ -144,7 +144,7 @@ namespace MicroZero.Http.Gateway
                 var ext = Path.GetExtension(folders[^1]);
                 if (!string.IsNullOrWhiteSpace(ext))
                 {
-                    if (!RouteOption.Option.UrlMap.TryGetValue(ext, out map))
+                    if (!GatewayOption.Option.UrlMaps.TryGetValue(ext, out map))
                     {
                         var cr = new ContentRouter(context);
                         await cr.WriteContent(folders, ext);
@@ -153,9 +153,9 @@ namespace MicroZero.Http.Gateway
                 }
             }
 
-            if (RouteOption.Option.SystemConfig.EnableInnerCommand && InnerCommand(uri.AbsolutePath, context.Request, context.Response))
+            if (GatewayOption.Option.SystemConfig.EnableInnerCommand && InnerCommand(uri.AbsolutePath, context.Request, context.Response))
             {
-                LogRecorderX.MonitorTrace("InnerCommand");
+                LogRecorder.MonitorTrace("InnerCommand");
                 return;
             }
             //命令
@@ -253,7 +253,7 @@ namespace MicroZero.Http.Gateway
                 case "/_1_clear_1_":
                     HttpProtocol.FormatResponse(request, response);
                     RouteCache.Flush();
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                    response.WriteAsync(JsonConvert.SerializeObject(GatewayOption.Option, Formatting.Indented),
                         Encoding.UTF8);
                     return true;
                 //case "/_1_counter_1_/info":
@@ -265,7 +265,7 @@ namespace MicroZero.Http.Gateway
                 //    return true;
                 case "/_1_config_1_":
                     HttpProtocol.FormatResponse(request, response);
-                    response.WriteAsync(JsonConvert.SerializeObject(RouteOption.Option, Formatting.Indented),
+                    response.WriteAsync(JsonConvert.SerializeObject(GatewayOption.Option, Formatting.Indented),
                         Encoding.UTF8);
                     return true;
                 case "/publish":
@@ -292,145 +292,44 @@ namespace MicroZero.Http.Gateway
         {
             switch (e.Event)
             {
-                //case ZeroNetEventType.AppRun:
-                case ZeroNetEventType.ConfigUpdate:
-                    OnZeroNetRuning();
+                case ZeroNetEventType.AppRun:
+                    Task.Factory.StartNew(GatewayOption.Option.MapStation);
                     break;
                 case ZeroNetEventType.AppStop:
-                    OnZeroNetClose();
+                    GatewayOption.Option.OnZeroNetClose();
                     break;
                 case ZeroNetEventType.CenterStationDocument:
-                    if (RouteOption.RouteMap.TryGetValue(e.EventConfig.StationName, out var host))
+                    if (GatewayOption.Option.SystemConfig.CheckApiItem &&
+                        GatewayOption.Option.RouteMaps.TryGetValue(e.EventConfig.StationName, out var host))
                     {
-                        UpdateApiItems(host as ZeroHost);
+                        GatewayOption.Option.UpdateApiItems(host as ZeroHost);
                     }
                     break;
                 case ZeroNetEventType.CenterStationJoin:
                 case ZeroNetEventType.CenterStationInstall:
                 case ZeroNetEventType.CenterStationResume:
                 case ZeroNetEventType.CenterStationUpdate:
-                    StationJoin(e.EventConfig);
+                    //ZeroTrace.SystemLog(e.Event.ToString(), e.EventConfig.Group, e.EventConfig.StationName, e.EventConfig.Caption);
+                    GatewayOption.Option.MapStation(e.EventConfig);
                     break;
+                case ZeroNetEventType.ConfigUpdate:
                 case ZeroNetEventType.CenterStationLeft:
                 case ZeroNetEventType.CenterStationPause:
                 case ZeroNetEventType.CenterStationClosing:
                 case ZeroNetEventType.CenterStationRemove:
                 case ZeroNetEventType.CenterStationStop:
-                    StationLeft(e.EventConfig);
+                    GatewayOption.Option.StationLeft(e.EventConfig);
                     break;
             }
 
             return Task.CompletedTask;
             //if (!((DateTime.Now - _preUpdate).TotalMinutes > 5))
             //    return;
-            //LogRecorderX.SystemLog($"Reload Document by {e.Event}.");
+            //LogRecorder.SystemLog($"Reload Document by {e.Event}.");
             //OnZeroNetRuning();
         }
 
-        private static void OnZeroNetRuning()
-        {
-            //Console.WriteLine("lock (_configs)");
-            var cfgs = ZeroApplication.Config.GetConfigs();
-            foreach (var config in cfgs)
-                StationJoin(config);
-        }
 
-        private static void OnZeroNetClose()
-        {
-            foreach (var host in RouteOption.RouteMap.Where(p => p.Value.ByZero).ToArray())
-            {
-                host.Value.Failed = true;
-                host.Value.Description = "OnZeroNetClose";
-            }
-        }
-
-        private static void StationLeft(StationConfig station)
-        {
-            if (RouteOption.RouteMap.TryGetValue(station.StationName, out var host))
-            {
-                host.Failed = true;
-                host.Description = "StationLeft";
-            }
-        }
-
-
-        private static void StationJoin(StationConfig station)
-        {
-            if (station.IsBaseStation)
-                return;
-            ZeroTrace.SystemLog("StationJoin", station.Group, station.StationName, station.Caption);
-            ZeroHost zeroHost;
-            if (RouteOption.RouteMap.TryGetValue(station.StationName, out var h))
-            {
-                zeroHost = h as ZeroHost;
-                if (zeroHost == null)
-                    RouteOption.RouteMap[station.StationName] = zeroHost = new ZeroHost();
-            }
-            else
-            {
-                RouteOption.RouteMap.TryAdd(station.StationName, zeroHost = new ZeroHost());
-            }
-
-            zeroHost.Config = station;
-            zeroHost.Description = null;
-            zeroHost.ByZero = true;
-            zeroHost.Failed = false;
-            zeroHost.Station = station.StationName;
-
-            UpdateApiItems(zeroHost);
-
-            if (!string.IsNullOrWhiteSpace(station.ShortName))
-            {
-                if (RouteOption.RouteMap.ContainsKey(station.ShortName))
-                    RouteOption.RouteMap[station.ShortName] = zeroHost;
-                else
-                    RouteOption.RouteMap.TryAdd(station.ShortName, zeroHost);
-            }
-            if (station.StationAlias == null)
-                return;
-            foreach (var alia in station.StationAlias)
-                if (RouteOption.RouteMap.ContainsKey(alia))
-                    RouteOption.RouteMap[alia] = zeroHost;
-                else
-                    RouteOption.RouteMap.TryAdd(alia, zeroHost);
-        }
-
-        private static void UpdateApiItems(ZeroHost zeroHost)
-        {
-            if (zeroHost.Config.IsBaseStation || !zeroHost.Config.IsApi || string.IsNullOrWhiteSpace(zeroHost.Config.StationName))
-                return;
-            var center = ZeroApplication.Config.ZeroGroup.FirstOrDefault(p => p.Name == zeroHost.Config.Group);
-            if (center == null)
-            {
-                zeroHost.Apis = null;
-                return;
-            }
-            var mg = new ConfigManager(center);
-            var doc = mg.LoadDocument(zeroHost.Station);
-            if (doc == null)
-            {
-                zeroHost.Apis = null;
-                return;
-            }
-
-            if (zeroHost.Apis == null)
-                zeroHost.Apis = new Dictionary<string, ApiItem>(StringComparer.OrdinalIgnoreCase);
-            foreach (var api in doc.Aips.Values)
-                if (zeroHost.Apis.TryGetValue(api.RouteName, out var item))
-                {
-                    item.App = zeroHost.AppName;
-                    item.Access = api.AccessOption;
-                }
-                else
-                {
-                    zeroHost.Apis.Add(api.RouteName, new ApiItem
-                    {
-                        Name = api.RouteName,
-                        App = zeroHost.AppName,
-                        Access = api.AccessOption
-                    });
-                }
-        }
 
         #endregion
     }

@@ -54,7 +54,7 @@ namespace Agebull.MicroZero
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
         }
 
@@ -81,7 +81,7 @@ namespace Agebull.MicroZero
             }
             catch (Exception e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
             }
         }
     }

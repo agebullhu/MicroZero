@@ -85,7 +85,7 @@ namespace MicroZero.Http.Gateway
             RemoteUrl = url.ToString();
             RemoteRequest = (HttpWebRequest)WebRequest.Create(RemoteUrl);
             RemoteRequest.Headers.Add(HttpRequestHeader.Authorization, $"Bearer {data.Token}");
-            RemoteRequest.Timeout = RouteOption.Option.SystemConfig.HttpTimeOut;
+            RemoteRequest.Timeout = GatewayOption.Option.SystemConfig.HttpTimeOut;
             RemoteRequest.Method = method;
             RemoteRequest.KeepAlive = true;
 
@@ -141,7 +141,7 @@ namespace MicroZero.Http.Gateway
             }
             catch (WebException e)
             {
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 jsonResult = e.Status == WebExceptionStatus.ProtocolError
                     ? await ProtocolError(e)
                     : ResponseError(e);
@@ -150,7 +150,7 @@ namespace MicroZero.Http.Gateway
             {
                 UserState = UserOperatorStateType.LocalException;
                 ZeroState = ZeroOperatorStateType.LocalException;
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 jsonResult = ToErrorString(ErrorCode.LocalException, "未知错误", e.Message);
             }
             return string.IsNullOrWhiteSpace(jsonResult) ? ApiResultIoc.RemoteEmptyErrorJson : jsonResult;
@@ -181,14 +181,14 @@ namespace MicroZero.Http.Gateway
                         }
 
                 var msg = await ReadResponse(exception.Response);
-                LogRecorderX.Error($"Call {Host}/{ApiName} Error:{msg}");
+                LogRecorder.Error($"Call {Host}/{ApiName} Error:{msg}");
                 return msg; //ToErrorString(ErrorCode.NetworkError, "未知错误", );
             }
             catch (Exception e)
             {
                 UserState = UserOperatorStateType.LocalException;
                 ZeroState = ZeroOperatorStateType.LocalException;
-                LogRecorderX.Exception(e);
+                LogRecorder.Exception(e);
                 return ToErrorString(ErrorCode.NetworkError, "未知错误", e.Message);
             }
             finally
@@ -324,7 +324,7 @@ namespace MicroZero.Http.Gateway
         /// <returns></returns>
         private string ToErrorString(int code, string message, string message2 = null)
         {
-            LogRecorderX.MonitorTrace($"调用异常：{message}.{message2}");
+            LogRecorder.MonitorTrace(() => $"调用异常：{message}.{message2}");
             var result = ApiResultIoc.Ioc.Error(code, RemoteUrl + message, message2);
             result.Status.Point = "web api gateway";
             return JsonHelper.SerializeObject(result);
