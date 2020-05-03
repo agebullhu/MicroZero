@@ -1,0 +1,132 @@
+{
+  "Zero": {
+    "AuthVerify": {
+      "StationName": "NAuthVerify",
+      /*限速模式（Single 单线程 ThreadCount 按线程数限制 WaitCount 按等待数限制）*/
+      "SpeedLimitModel": "WaitCount",
+      /*最大等待数*/
+      "MaxWait": 4096
+    }
+  },
+  "ConnectionStrings": {
+    "CSRedis": "shhpc919.redis.rds.aliyuncs.com:6379,password=NupZRgExLzJjwoo8,poolsize=500,ssl=false,writeBuffer=10240"
+  },
+  "AppSettings": {
+    "appId": "10V6WMADM",
+    "orgShortName": "荟品仓",
+    "orgFullName": "上海荟力电子商务有限公司",
+    /* 以小时为单位的AccessToken过期时间 */
+    "AccessTokenExpiresHour": 24,
+    /* 以小时为单位的RefreshToken过期时间 */
+    "RefreshTokenExpiresHour": 72,
+    /* 以小时为单位的DeviceId过期时间 */
+    "DeviceIdExpiresHour": 1440,
+    /* 超级短信验证码,测试使用*/
+    "SupperSmsVc": "0000",
+    /* 超级图片验证码,测试使用*/
+    "SupperImgVc": "0000",
+    //后台管理地址,用于取文件服务中的文件
+    "ManageAddress": "http://127.0.0.1",
+    //第一版API地址
+    "V1ApiAddress": "https://n.hpcang.com"
+  },
+  "redisDb": {
+    "DbSystem": 3,
+    "DbWebCache": 4,
+    "DbAuthority": 5,
+    "DbComboCache": 6
+  },
+  "verifyTokenOption": {
+    // 保存api到页面表
+    "saveApi": false,
+    // 匿名用户无限制
+    "anymouseSupper": false,
+	"loginSupper":true,
+    //超级角色的ID
+    "supperRole": 0,
+    //匿名用户可访问的接口(anymouseSupper为true时无意义)
+    "anymouseApi": [
+      "Authority/v2/login/wx",
+      "Authority/v1/refresh/did",
+      "Authority/v1/refresh/at",
+      "Authority/v1/login/hpc",
+      "Authority/v2/login/hpc",
+      "Authority/v1/verify/at",
+      "Authority/v2/verify/token",
+      "Authority/v1/verify/did",
+	  "Authority/v3/trd/token",
+	  "inlineProduct/ord/orderItem/v1/collect/pay",
+	  "inlineProduct/ord/orderItem/v1/collect/list",
+	  "inlineProduct/ord/orderDetail/v1/collect/list",
+	  "inlineProduct/ord/orderItem/v1/collect/users",
+      "BusinessAuth/v2/login/wx",
+      "BusinessAuth/v1/refresh/did",
+      "BusinessAuth/v1/refresh/at",
+      "BusinessAuth/v1/login/hpc",
+      "BusinessAuth/v2/login/hpc",
+      "BusinessAuth/v1/verify/at",
+      "BusinessAuth/v2/verify/token",
+      "BusinessAuth/v1/verify/did",
+	  "BusinessAuth/v3/trd/token"
+    ],
+    //不需要特殊权限的接口
+    "supperApis": [
+      "App/v1/page/tree",
+      "App/v1/page/info",
+      "App/app/combo/v1/*",
+	  "BusinessAuth/*",
+      "Authority/v2/org/list",
+      "Authority/v2/token/info",
+      "Authority/v1/scene/org/site",
+      "Authority/v1/scene/org/org",
+      "Authority/v1/scene/begin",
+      "Authority/v1/scene/close",
+      "Authority/v1/scene/verify",
+	  "inlineProduct/*",
+      "*/edit/combo",
+	  "eShop/*",
+	  "App/*",
+	  "User/*",
+	  "hpc/*",
+	  "TestCtr/*",
+	  "PayCallback/*",
+	  "Import/*",
+	  "SkuImport/*",
+	  "logistics/*",
+	  "wms_epc/*",
+	  "wms_test/*",
+	  "TestWMS/*",
+	  "wxMessage/*",
+	  "Yunlv/*",
+	  "eShop2/*",
+	  "eShop*",
+	  "member919/*",
+	  "member/*",
+	  "MarkPoint*",
+	  "coupon/*",
+	  "OffLineOrder/*",
+	  "SkuProductManage/*",
+	  "Settlement*",
+	  "Auth*",
+	  "device/*",
+	  "pay/*",
+	  "Hpcdev/*",
+	  "CouponManager/*",
+	  "Content*",
+	  "TestinlineProduct*",
+	  "Test*"
+    ],
+    "roleId": [
+      6533749502384275456
+    ],
+    "roleApi": [
+      "hpc/storageBill/v1/edit/addnew",
+      "hpc/storageBill/v1/audit/pass",
+      "hpc/storageBill/v1/edit/delete",
+      "hpc/storageBill/v1/audit/redo",
+      "hpc/storageBillUnit/v1/edit/delete",
+      "hpc/storageBillUnit/v1/audit/pass",
+      "hpc/storageBillUnit/v1/audit/redo"
+    ]
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "ASPNETCORE_ENVIRONMENT_": "Production",
+  /*ZeroNet站点配置*/
+  "Zero": {
+    "Global": {
+      "ZeroGroup": [
+        {
+          "Name": "Prd",
+          /*ZeroCenter主机IP地址*/
+          "Address": "172.19.138.169",
+          /*ZeroCenter管理端口号*/
+          "ManagePort": 14000,
+          /*ZeroCenter监测端口号*/
+          "MonitorPort": 14001,
+          /*服务器唯一标识*/
+          "ServiceKey": "u9RAEm5HpNOGK5wo"
+        }
+      ],
+      /*ZeroCenter主机IP地址*/
+      "ZeroAddress": "172.19.138.169",
+      /*ZeroCenter管理端口号*/
+      "ZeroManagePort": 14000,
+      /*ZeroCenter监测端口号*/
+      "ZeroMonitorPort": 14001,
+      "ServiceKey": "u9RAEm5HpNOGK5wo",
+	  "StationIsolate":false,
+	  "ServiceName":"ZeroCenter",
+      /*ZeroApplication是否发出与ZeroCenter相关的同步事件,工具扩展应用使用*/
+      "CanRaiseEvent": true,
+      /*限速模式（0 单线程 1 按线程数限制 2 按等待数限制）*/
+      "SpeedLimitModel": "WaitCount",
+      /*最大等待数*/
+      "MaxWait": 256,
+      /*最大Task与Cpu核心数的倍数关系*/
+      "TaskCpuMultiple": 0.6,
+    },
+    "socketOption": {
+	  "PoolTimeOut":1000,
+      "Backlog": 50000, //连接队列数量
+      "ConnectTimeout": 500, // 连接失败时长
+      "HeartbeatIvl": 0, //心跳间隔时长
+      "HeartbeatTimeout": 200, //心跳超时时长
+      "HeartbeatTtl": 200, //心跳TTL
+      "Linger": 200, //自动关闭时长
+      "ReconnectIvl": 100, // 重新连接时间间隔
+      "ReconnectIvlMax": 500, //重新连接失败时长
+      "RecvTimeout": 300000, //接收超时时长
+      "SendTimeout": 300000, //发送超时时长
+      "TcpKeepalive": 0, //启用Keeplive
+      "TcpKeepaliveIdle": 4096, //TCP发送keepalive消息的频度,单位秒
+      "TcpKeepaliveIntvl": 4096 //当TcpKeepalive探测没有确认时，重新发送探测的频度,单位秒
+    }
+  },
+  "LogRecorder": {
+    /*是否记录跟踪日志*/
+    "sql": false,
+    "monitor": false,
+    "level": "System",
+	"console":false
+  },
+  "ConnectionStrings": {
+    "Redis": "shhpc919.redis.rds.aliyuncs.com:6379,NupZRgExLzJjwoo8",
+	
+	
+    "HpcSqlServerDb":"Data Source=172.19.17.83;Connection Timeout=2;User ID=hpc_iis;Password=jkl#B*Ao!AYMjepX;Initial Catalog=db_hpc_v1;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;",
+    "hpc_sqlserver": "Data Source=172.19.17.83;Connection Timeout=2;User ID=hpc_iis;Password=jkl#B*Ao!AYMjepX;Initial Catalog=db_hpc_v1;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=1000;",
+	
+	"HpcBaseMySqlDb":      "Data Source=rfid-hpc.mysql.rds.aliyuncs.com;User Id=hpc_mysql;Password=jkl#B*Ao!AYMjepXHpc;Database=db_hpc_v1; SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Pooling=true;Min Pool Size=0;Max Pool Size=100;Connection Lifetime=0;",
+    
+    "MarkPointDb"   :"Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_mark_point;Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+	
+	"Shopping":      "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_hpc_eshop; Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+    "UserCenter":    "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_zero_base; Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+    "UserCenterDb":  "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_zero_base; Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+    "ZeroTrace":     "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_zero_trace;Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+	"HpcMySqlEPCDb": "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_hpc_epc;   Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+    "AnnexDb":       "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_zero_base; Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+    "hpc_myserver":  "Data Source=shhpc919.mysql.rds.aliyuncs.com;User Id=prd_zero;Password=xofI$4WFEewAntF$;Database=db_hpc_eshop; Connection Timeout=2;SslMode=none;CharSet=utf8mb4;port=3306;Compress=false;Persist Security Info=True;Pooling=true;Min Pool Size=0;Max Pool Size=500;",
+	"HpcSgDb": 		 "Database=hpc;Data Source=172.19.138.170;User Id=hpcdbuser;Password=hpcdbuser2019;Persist Security Info=true;pooling=true;CharSet=utf8;port=3306"
+  },
+  "wsPay": {
+    "isTest": false,
+    "callUrl": "http://n.hpcang.com:8080/WxPay",
+    //云律科技相关
+    "appid_server_yl": "wxae5986a3048e8443", //云律科技服务号
+    "mch_id_server_yl": "1510078651", //云律科技服务商商号
+    "mch_key_server_yl": "2b4e10a210d198aebc09cfdfac3805bd", //云律科技服务商秘钥
+
+    //测试服务器：云律
+    "server_ip_yl": "121.199.29.143",
+    "server_url_yl": "https://yl2018.survey-cc.com",
+
+    //正式服务器：荟品仓
+    "server_ip_hpc": "47.101.214.125",
+    //"server_url_hpc" : "https://hpc.survey-cc.com",
+    "server_url_hpc": "https://mp.hpcang.com",
+
+
+    //信堇信息(微信公众号)
+    "appid": "wx40c94fb497efaa3d",
+    "appsecret": "41cb2c649bf22ee3e5e4aa58e60a89a1",
+    "apptoken": "xjxx_weixin_token",
+    "appshortname": "信堇信息",
+    //用于上传图片的路径；微信支付的回调路径
+    "host": "http://www.shxjxx.net",
+    //用于微信官方后台服务器配置URL
+    "wxServerUrl": "http://www.shxjxx.net/WebService/Weixin/weixin_response.ashx?appid=wxb066374b2536685f",
+    "EncodingAESKey": "MFqhoPlDxuEHpbxGPdIZcctpQDJQS2kBpHOnVdWiKpg",
+
+
+    "autoReply": "信堇信息，产业互联网综合服务平台",
+    //新用户关注
+    "newUserSubscribe": "欢迎关注【信堇信息】微信公众号",
+    //老用户关注
+    "oldUserSubscribe": "欢迎再次关注【信堇信息】微信公众号",
+    //信堇信息科技(网站应用)
+    "appid_xjxxkj": "wx269022836a988f1a",
+    "appsecret_xjxxkj": "a93467eed4e903e5be506266e7f1fe4b",
+
+
+
+    //微信支付
+    //商户号
+    "MCHID": "1474158702",
+    //商户支付密钥，参考开户邮件设置
+    "KEY": "e5e4aa58e60a89a141cb2c649bf22ee3",
+    //腾讯LBS开放平台
+    //http://lbs.qq.com/javascript_v2/index.html
+    "LbsKey": "LG6BZ-TN6W4-WEPUO-DIGOJ-42WTS-TLFYM"
+  }
+}
