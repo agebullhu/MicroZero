@@ -131,9 +131,9 @@ namespace agebull
 		log_msg1("          pool_timeout : %d", global_config::pool_timeout);
 		log_msg1("          worker_sound_ivl : %d", global_config::worker_sound_ivl);
 		//log_msg1("config => use_ipc_protocol : %d", use_ipc_protocol);
-		log_msg2("link_trace => %s storage: %s"
-			, global_config::link_trace_open ? "open" : "close"
-			, global_config::link_trace_storage ? "sqlite" : "close");
+		//log_msg2("link_trace => %s storage: %s"
+		//	, global_config::link_trace_open ? "open" : "close"
+		//	, global_config::link_trace_storage ? "sqlite" : "close");
 
 		log_msg2("redis => %s:%d", global_config::redis_addr , global_config::redis_defdb);
 

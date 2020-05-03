@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2035
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agebull.Common.Mvvm", "ZeroTester\WpfMvvmBase\Agebull.Common.Mvvm.csproj", "{6F6DC5D2-85EF-4BB5-82FA-BD21F7AA3053}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agebull.ZeroTester.Model", "ZeroTester\Model\Agebull.ZeroTester.Model.csproj", "{675EE1A7-84FE-47E4-968F-1E3D43C8C019}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agebull.Common.Entity", "ZeroTester\Entities\Agebull.Common.Entity.csproj", "{0D626DDA-02C0-4BD8-B2FD-EFEE0971510F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfControlLibrary1", "WpfControlLibrary1\WpfControlLibrary1.csproj", "{53A32AA7-D11C-4BB4-BD79-60FC11F29318}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{0D626DDA-02C0-4BD8-B2FD-EFEE0971510F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D626DDA-02C0-4BD8-B2FD-EFEE0971510F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D626DDA-02C0-4BD8-B2FD-EFEE0971510F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53A32AA7-D11C-4BB4-BD79-60FC11F29318}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53A32AA7-D11C-4BB4-BD79-60FC11F29318}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53A32AA7-D11C-4BB4-BD79-60FC11F29318}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53A32AA7-D11C-4BB4-BD79-60FC11F29318}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

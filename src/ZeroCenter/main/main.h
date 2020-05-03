@@ -4,11 +4,11 @@
 #include "../stdafx.h"
 #include "service.h"
 #include <mcheck.h>  
-#include "../sqlite/queue_storage.h"
+//#include "../sqlite/queue_storage.h"
 using namespace agebull;
 
 int zero_center_main();
 
-int test_sqlite();
+//int test_sqlite();
 
 #endif

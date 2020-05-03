@@ -13,7 +13,7 @@ namespace ZeroMQ
 #if UNMANAGE_MONEY_CHECK
         protected override string TypeName => nameof(ZMessage);
 #endif
-        private List<ZFrame> _frames;
+        private readonly List<ZFrame> _frames;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ZMessage"/> class.
@@ -94,7 +94,7 @@ namespace ZeroMQ
                     frame.Close();
                 }
             }
-            _frames = null;
+            _frames.Clear();
         }
 
 #pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释

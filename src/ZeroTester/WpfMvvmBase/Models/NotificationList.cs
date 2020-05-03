@@ -14,9 +14,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Web.UI.MobileControls.Adapters;
-using Newtonsoft.Json;
 
 #endregion
 
@@ -223,7 +220,7 @@ namespace Agebull.EntityModel
             // ISSUE: reference to a compiler-generated field
             if (_monitor.Busy && CollectionChanged != null &&
                 CollectionChanged.GetInvocationList().Length > 1)
-                throw new InvalidOperationException(SR.GetString("ObservableCollectionReentrancyNotAllowed"));
+                throw new InvalidOperationException("ObservableCollectionReentrancyNotAllowed");
         }
 
         private void OnPropertyChanged(string propertyName)

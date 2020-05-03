@@ -1104,9 +1104,6 @@
             </summary>
             <param name="innerStream"></param>
         </member>
-        <member name="M:Agebull.MicroZero.ZeroApis.MemoryWrappedHttpResponseStream.Flush">
-            <inheritdoc/>
-        </member>
         <member name="M:Agebull.MicroZero.ZeroApis.MemoryWrappedHttpResponseStream.Write(System.Byte[],System.Int32,System.Int32)">
             <inheritdoc/>
         </member>

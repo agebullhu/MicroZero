@@ -102,12 +102,6 @@
                 刷新
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteApp.Options(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions)">
-            <summary>
-            配置HTTP
-            </summary>
-            <param name="options"></param>
-        </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.Call(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
                 POST调用
@@ -814,31 +808,6 @@
         <member name="P:MicroZero.Http.Gateway.HostConfig.Alias">
             <summary>
                 别名
-            </summary>
-        </member>
-        <member name="T:MicroZero.Http.Gateway.HttpOption">
-            <summary>
-                Http配置类
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.Port">
-            <summary>
-            端口号
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.IsHttps">
-            <summary>
-            是否Https
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerFile">
-            <summary>
-            证书文件路径
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerPwd">
-            <summary>
-            证书密码
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.RouteData">

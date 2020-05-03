@@ -3,7 +3,7 @@
 #include "api_station.h"
 #include "route_api_station.h"
 #include "notify_station.h"
-#include "queue_station.h"
+
 
 
 
@@ -17,10 +17,12 @@ namespace agebull
 		 * \brief 活动实例集合
 		 */
 		map<string, zero_station*> station_warehouse::examples_;
+#ifndef _ZERO_REDIS
 		/**
 		* \brief sqlite存储类
 		*/
 		system_storage station_warehouse::storage_;
+#endif
 		/**
 		* \brief 配置集合
 		*/
@@ -132,9 +134,9 @@ namespace agebull
 			case zero_def::station_type::notify:
 				notify_station::run(config);
 				return true;
-			case zero_def::station_type::queue:
-				queue_station::run(config);
-				return true;
+			//case zero_def::station_type::queue:
+			//	queue_station::run(config);
+			//	return true;
 			default:
 				return false;
 			}

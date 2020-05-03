@@ -18,7 +18,7 @@ namespace MicroZero.Http.Route
     /// <summary>
     /// API调用跟踪器
     /// </summary>
-    public class FlowTracer : SubStation<CountData, PublishItem>
+    public class FlowTracer : SubStation
     {
         private readonly bool _saveTrace;
         /// <summary>

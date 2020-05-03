@@ -102,12 +102,6 @@
                 刷新
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteApp.Options(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions)">
-            <summary>
-            配置HTTP
-            </summary>
-            <param name="options"></param>
-        </member>
         <member name="M:MicroZero.Http.Gateway.RouteApp.Call(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
                 POST调用
@@ -269,6 +263,24 @@
                 下次更新时间
             </summary>
         </member>
+        <member name="F:MicroZero.Http.Gateway.CacheData.Waits">
+            <summary>
+                同步等待任务
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.CacheEventProcess">
+            <summary>
+            缓存事件处理器
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.CacheEventProcess.#ctor">
+            <summary>
+            构造
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.CacheEventProcess.Handle(Agebull.MicroZero.PubSub.PublishItem)">
+            <inheritdoc/>
+        </member>
         <member name="T:MicroZero.Http.Gateway.CacheFeature">
             <summary>
                 缓存特征
@@ -299,6 +311,11 @@
                 表单相同(POST请求）
             </summary>
         </member>
+        <member name="F:MicroZero.Http.Gateway.CacheFeature.Keys">
+            <summary>
+            使用键设置,忽略其它特性
+            </summary>
+        </member>
         <member name="T:MicroZero.Http.Gateway.CacheOption">
             <summary>
                 缓存设置
@@ -306,37 +323,82 @@
         </member>
         <member name="P:MicroZero.Http.Gateway.CacheOption.Api">
             <summary>
-                API名称
+                缓存API设置
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.CacheOption.Bear">
+        <member name="P:MicroZero.Http.Gateway.CacheOption.Trigger">
             <summary>
-                用于校验的身份头
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.CacheOption.FlushSecond">
-            <summary>
-                缓存更新的秒数
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.CacheOption.OnlyName">
-            <summary>
-                缓存时仅使用名称（否则包含查询字符串）
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.CacheOption.ByNetError">
-            <summary>
-                发生网络错误时缓存
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.CacheOption.Feature">
-            <summary>
-                缓存特征
+                刷新触发API配置
             </summary>
         </member>
         <member name="M:MicroZero.Http.Gateway.CacheOption.Initialize">
             <summary>
                 初始化
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.ApiCacheOption">
+            <summary>
+                缓存设置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.Api">
+            <summary>
+                API名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.Keys">
+            <summary>
+                用于校验的身份头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.Bear">
+            <summary>
+                用于校验的身份头
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.FlushSecond">
+            <summary>
+                缓存更新的秒数
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.OnlyName">
+            <summary>
+                缓存时仅使用名称（否则包含查询字符串）
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.ByNetError">
+            <summary>
+                发生网络错误时缓存
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.ApiCacheOption.Feature">
+            <summary>
+                缓存特征
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.ApiCacheOption.Initialize">
+            <summary>
+                初始化
+            </summary>
+        </member>
+        <member name="T:MicroZero.Http.Gateway.CacheFlushOption">
+            <summary>
+                缓存触发刷新设置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheFlushOption.TriggerApi">
+            <summary>
+                触发更新的API名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheFlushOption.CacheApi">
+            <summary>
+                需要缓存的API名称
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.CacheFlushOption.Map">
+            <summary>
+             字段映射
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.RouteCache">
@@ -367,6 +429,11 @@
             <param name="data"></param>
         </member>
         <member name="P:MicroZero.Http.Gateway.RouteCache.CacheMap">
+            <summary>
+                路由配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.RouteCache.UpdateMap">
             <summary>
                 路由配置
             </summary>
@@ -541,7 +608,7 @@
             ASH的URL与接口映射
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.AshxMapConfig.ActionName">
+        <member name="P:MicroZero.Http.Gateway.AshxMapConfig.Action">
             <summary>
             action参数名称
             </summary>
@@ -551,94 +618,96 @@
             模块集合
             </summary>
         </member>
-        <member name="T:MicroZero.Http.Gateway.RouteOption">
+        <member name="T:MicroZero.Http.Gateway.GatewayOption">
             <summary>
                 路由配置
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.Option">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.Option">
             <summary>
             实例配置
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.Security">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.Security">
             <summary>
                 安全设置
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.UrlMap">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.UrlMaps">
             <summary>
                 路径映射
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption.UrlMaps">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.RouteMaps">
             <summary>
-                路径映射
+                缓存图
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption.CacheSettings">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.SystemConfig">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.HostPaths">
+            <summary>
+                系统配置
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.CacheSettings">
             <summary>
                 缓存配置
             </summary>
         </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption.RouteConfig">
-            <summary>
-                路由配置
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.HostPath">
-            <summary>
-                系统配置
-            </summary>
-        </member>
-        <member name="F:MicroZero.Http.Gateway.RouteOption._systemConfig">
-            <summary>
-                系统配置
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.SystemConfig">
-            <summary>
-                系统配置
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.ConfigFileName">
-            <summary>
-                文件名称
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.IsInitialized">
+        <member name="P:MicroZero.Http.Gateway.GatewayOption.IsInitialized">
             <summary>
                 是否已初始化
             </summary>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckOption">
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.CheckOption">
             <summary>
                 初始化
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckSecurity">
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.Load">
+            <summary>
+                初始化
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.CheckSecurity(Microsoft.Extensions.Configuration.IConfigurationSection)">
             <summary>
                 初始化安全检查
             </summary>
             <returns></returns>
         </member>
-        <member name="P:MicroZero.Http.Gateway.RouteOption.RouteMap">
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.CheckUrlMap(Microsoft.Extensions.Configuration.IConfigurationSection)">
             <summary>
-                缓存图
+                初始化路径映射
             </summary>
+            <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckRouteMap">
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.CheckRouteMap(Microsoft.Extensions.Configuration.IConfigurationSection)">
             <summary>
                 初始化路由
             </summary>
             <returns></returns>
         </member>
-        <member name="M:MicroZero.Http.Gateway.RouteOption.CheckUrlMap">
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.MapStation">
             <summary>
-                初始化路径映射
+            MapStation
             </summary>
-            <returns></returns>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.MapStation(Agebull.MicroZero.StationConfig)">
+            <summary>
+            MapStation
+            </summary>
+        </member>
+        <member name="M:MicroZero.Http.Gateway.GatewayOption.UpdateApiItems(MicroZero.Http.Gateway.ZeroHost)">
+            <summary>
+            
+            </summary>
+            <param name="zeroHost"></param>
         </member>
         <member name="T:MicroZero.Http.Gateway.RouteHost">
             <summary>
@@ -647,7 +716,7 @@
         </member>
         <member name="F:MicroZero.Http.Gateway.RouteHost.WaitCount">
             <summary>
-            等待数
+            总等待数
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.RouteHost.ByZero">
@@ -726,9 +795,9 @@
                 路由主机
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.HostConfig.ByZero">
+        <member name="P:MicroZero.Http.Gateway.HostConfig.Zero">
             <summary>
-                使用MicroZero通讯吗
+                使用MicroZero通讯
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.HostConfig.Hosts">
@@ -739,31 +808,6 @@
         <member name="P:MicroZero.Http.Gateway.HostConfig.Alias">
             <summary>
                 别名
-            </summary>
-        </member>
-        <member name="T:MicroZero.Http.Gateway.HttpOption">
-            <summary>
-                Http配置类
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.Port">
-            <summary>
-            端口号
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.IsHttps">
-            <summary>
-            是否Https
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerFile">
-            <summary>
-            证书文件路径
-            </summary>
-        </member>
-        <member name="P:MicroZero.Http.Gateway.HttpOption.CerPwd">
-            <summary>
-            证书密码
             </summary>
         </member>
         <member name="T:MicroZero.Http.Gateway.RouteData">
@@ -990,12 +1034,12 @@
                 启用验签
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.SecurityConfig.BlockHost">
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.BlockAddress">
             <summary>
                 黑洞地址
             </summary>
         </member>
-        <member name="P:MicroZero.Http.Gateway.SecurityConfig.CheckBearer">
+        <member name="P:MicroZero.Http.Gateway.SecurityConfig.FireBearer">
             <summary>
                 是否检查Auth头
             </summary>
@@ -1143,6 +1187,11 @@
         <member name="P:MicroZero.Http.Gateway.SystemConfig.IsTest">
             <summary>
                 是否测试环境
+            </summary>
+        </member>
+        <member name="P:MicroZero.Http.Gateway.SystemConfig.CloseFileArgument">
+            <summary>
+                关闭文件参数(防止异常流量攻击)
             </summary>
         </member>
         <member name="P:MicroZero.Http.Gateway.SystemConfig.ContentType">

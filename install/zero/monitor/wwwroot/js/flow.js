@@ -274,7 +274,7 @@ function create_ws(val) {
         onmessage: function (flow) {
             if (vue_option.data.flows.length > 300)
                 return;
-            console.log(JSON.stringify(flow));
+            console.table(JSON.stringify(flow));
             vue_update_array(vue_option.data.flows, flow, 'rid');
         }
     });

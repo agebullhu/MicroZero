@@ -147,6 +147,18 @@
                 location.href = `/Monitor/Index/${index}?min=@min&max=@max`;
             }
         });
+        function qpsData(qps) {
+            // 生成随机值
+            const data = [];
+            const time = (new Date()).getTime();
+            for (let i = -36; i <= 0; i += 1) {
+                data.push({
+                    x: time + i * 1000,
+                    y: qps
+                });
+            }
+            return data;
+        }
     </script>
 }
 
@@ -309,16 +321,7 @@
                         series: [{
                                 name: 'TPS',
                                 data: (function() {
-                                    // 生成随机值
-                                    const data = [];
-                                    const time = (new Date()).getTime();
-                                    for (let i = -36; i <= 0; i += 1) {
-                                        data.push({
-                                            x: time + i * 1000,
-                                            y: @item.LastTps
-                                        });
-                                    }
-                                    return data;
+                                    return qpsData(@item.LastTps);
                                 }())
                             }]
                     }));
@@ -342,17 +345,8 @@
                 series: [
                     {
                         name: 'TPS',
-                        data: (function() {
-                            // 生成随机值
-                            const data = [];
-                            const time = (new Date()).getTime();
-                            for (let i = -36; i <= 0; i += 1) {
-                                data.push({
-                                    x: time + i * 1000,
-                                    y: @item.LastQps
-                                });
-                            }
-                            return data;
+                        data: (function () {
+                            return qpsData(@item.LastQps);
                         }())
                     }
                 ]

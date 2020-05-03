@@ -46,7 +46,7 @@ namespace MicroZero.Http.Gateway
             RouteCache.Flush();
         }
 
-        /// <summary>
+        /*// <summary>
         /// 配置HTTP
         /// </summary>
         /// <param name="options"></param>
@@ -79,7 +79,7 @@ namespace MicroZero.Http.Gateway
                     });
                 }
             }
-        }
+        }*/
         #endregion
 
         #region 基本调用

@@ -9,7 +9,7 @@
     <Compile Remove="logs\**" />
     <Compile Remove="Pages\**" />
     <Compile Remove="Views\MachineEvent\**" />
-    <Compile Remove="Views\Monitor\**" />
+    <Compile Remove="Views\Trace\**" />
     <Compile Remove="WebSocket\**" />
     <Compile Remove="WS\**" />
     <Content Remove="Business\**" />
@@ -18,7 +18,7 @@
     <Content Remove="logs\**" />
     <Content Remove="Pages\**" />
     <Content Remove="Views\MachineEvent\**" />
-    <Content Remove="Views\Monitor\**" />
+    <Content Remove="Views\Trace\**" />
     <Content Remove="WebSocket\**" />
     <Content Remove="WS\**" />
     <EmbeddedResource Remove="Business\**" />
@@ -27,7 +27,7 @@
     <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="Pages\**" />
     <EmbeddedResource Remove="Views\MachineEvent\**" />
-    <EmbeddedResource Remove="Views\Monitor\**" />
+    <EmbeddedResource Remove="Views\Trace\**" />
     <EmbeddedResource Remove="WebSocket\**" />
     <EmbeddedResource Remove="WS\**" />
     <None Remove="Business\**" />
@@ -36,13 +36,14 @@
     <None Remove="logs\**" />
     <None Remove="Pages\**" />
     <None Remove="Views\MachineEvent\**" />
-    <None Remove="Views\Monitor\**" />
+    <None Remove="Views\Trace\**" />
     <None Remove="WebSocket\**" />
     <None Remove="WS\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Controllers\FLowController - 复制.cs" />
     <Compile Remove="Controllers\MachineEventController.cs" />
+    <Compile Remove="Controllers\TraceController.cs" />
     <Compile Remove="Controllers\WebSocketNotify.cs" />
     <Compile Remove="Models\CountItem.cs" />
     <Compile Remove="Models\KLine.cs" />
@@ -53,6 +54,7 @@
     <None Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Views\Monitor\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tracer\ZeroNet.Devops.Tracer.csproj" />

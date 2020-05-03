@@ -32,7 +32,7 @@ namespace MicroZero.Http.Route
 
         #endregion
 
-        public static Dictionary<string, ZeroPlan> Plans = new Dictionary<string, ZeroPlan>();
+        public readonly static Dictionary<string, ZeroPlan> Plans = new Dictionary<string, ZeroPlan>();
 
         public static async Task OnPlanEvent(ZeroNetEventType eventType, ZeroPlan plan)
         {

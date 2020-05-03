@@ -4,7 +4,7 @@
 
 #include "../stdafx.h"
 #include "service.h"
-#include "../rpc/trace_station.h"
+//#include "../rpc/trace_station.h"
 #include "../rpc/route_api_station.h"
 
 
@@ -194,15 +194,15 @@ namespace agebull
 		//启动网络命令环境
 		int start_trace_dispatcher()
 		{
-			log_msg("$start trace dispatcher ...");
-			station_warehouse::install(zero_def::name::trace_dispatcher, zero_def::station_type::trace, "trace", "ZeroNet net data trace station.", true);
-			trace_station::run();
-			station_thread_sync_semaphore.wait();
-			if (zero_thread_bad == 1)
-			{
-				log_msg("trace dispatcher failed ...");
-				//net_state = zero_def::net_state::failed;
-			}
+			//log_msg("$start trace dispatcher ...");
+			//station_warehouse::install(zero_def::name::trace_dispatcher, zero_def::station_type::trace, "trace", "ZeroNet net data trace station.", true);
+			//trace_station::run();
+			//station_thread_sync_semaphore.wait();
+			//if (zero_thread_bad == 1)
+			//{
+			//	log_msg("trace dispatcher failed ...");
+			//	//net_state = zero_def::net_state::failed;
+			//}
 			return net_state;
 		}
 		//启动网络命令环境

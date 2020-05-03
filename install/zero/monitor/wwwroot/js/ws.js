@@ -26,8 +26,7 @@ var ws = function(option) {
         that.socket = null;
         console.log("close " + that.addr);
     };
-    that.change_sub = function (title) {
-        console.log("change_sub: " + that.sub);
+    that.change_sub = function(title) {
         try {
             if (that.state === "+ok" && that.sub) {
                 that.socket.send("-" + that.sub);

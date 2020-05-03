@@ -21,20 +21,12 @@ namespace Agebull.MicroZero.ZeroApis
         {
             this._innerStream = innerStream ?? throw new ArgumentNullException(nameof(innerStream));
         }
-        /// <inheritdoc/>
-        public override void Flush()
-        {
-            this._innerStream.Flush();
-            base.Flush();
-        }
 
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
-            var json = Encoding.UTF8.GetString(buffer, offset, count);
-            LogRecorder.MonitorTrace(json);
-            //base.Write(buffer, offset, count);
-            //this._innerStream.WriteAsync(buffer, offset, count).Wait();
+            LogRecorder.MonitorTrace(() => Encoding.UTF8.GetString(buffer, offset, count));
+            this._innerStream.WriteAsync(buffer, offset, count).Wait();
         }
 
         ///// <inheritdoc/>
@@ -47,7 +39,7 @@ namespace Agebull.MicroZero.ZeroApis
         /// <inheritdoc/>
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            await base.WriteAsync(buffer, offset, count, cancellationToken);
+            LogRecorder.MonitorTrace(()=> Encoding.UTF8.GetString(buffer, offset, count));
             await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
         ///// <inheritdoc/>

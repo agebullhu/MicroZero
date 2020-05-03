@@ -17,12 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Counter\ApiCounter.cs" />
+    <Compile Remove="Counter\CountItem.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="WS\WebSocketClient.cs" />
     <Compile Include="WS\WebSocketConfig.cs" />
     <Compile Include="WS\WebSocketNotify.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Tools\Agebull.MicroZero.Tools.csproj" />
+    <ProjectReference Include="..\..\Core\ZeroNetCore\Agebull.MicroZero.Core.csproj" />
   </ItemGroup>
 </Project>

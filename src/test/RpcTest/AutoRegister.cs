@@ -1,7 +1,7 @@
 using System.ComponentModel.Composition;
 using Agebull.Common.Ioc;
 using Microsoft.Extensions.DependencyInjection;
-using RpcTest;
+
 
 namespace Agebull.MicroZero.Log
 {
@@ -12,9 +12,7 @@ namespace Agebull.MicroZero.Log
     [Export(typeof(IAutoRegister))]
     [ExportMetadata("Symbol", '%')]
     public sealed class AutoRegister : IAutoRegister
-    { 
-
-
+    {
         /// <summary>
         /// 初始化
         /// </summary>
@@ -28,8 +26,7 @@ namespace Agebull.MicroZero.Log
         /// </summary>
         void IAutoRegister.AutoRegist()
         {
-            ZeroApplication.ZeroNetEvent += Tester.OnZeroEvent;
-            //ZeroApplication.RegistZeroObject(TestEventProxy.Instance);
+            ZeroApplication.RegistZeroObject(TestEventProxy.Instance);
         }
     }
 }

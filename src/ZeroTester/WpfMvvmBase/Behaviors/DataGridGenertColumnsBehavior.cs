@@ -1,7 +1,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Controls;
-using System.Windows.Interactivity;
+using Microsoft.Xaml.Behaviors;
 
 namespace Agebull.Common.Mvvm
 {
